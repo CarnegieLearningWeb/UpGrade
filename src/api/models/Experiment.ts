@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
+import { ExperimentCondition } from './ExperimentCondition';
 
 export enum CONSISTENCY_RULE {
   INDIVIDUAL = 'individual',
@@ -17,6 +18,14 @@ export enum POST_EXPERIMENT_RULE {
   REVERT_TO_DEFAULT = 'revertToDefault',
 }
 
+export enum EXPERIMENT_STATE {
+  INACTIVE = 'inactive',
+  DEMO = 'demo',
+  SCHEDULED = 'scheduled',
+  ENROLLING = 'enrolling',
+  ENROLLMENT_COMPLETE = 'enrolmentComplete',
+}
+
 @Entity()
 export class Experiment {
   @PrimaryColumn('uuid')
@@ -28,6 +37,10 @@ export class Experiment {
 
   @Column()
   public description: string;
+
+  @IsNotEmpty()
+  @Column()
+  public state: EXPERIMENT_STATE;
 
   @IsNotEmpty()
   @Column({
@@ -46,4 +59,7 @@ export class Experiment {
     name: 'post_experiment_rule',
   })
   public postExperimentRule: POST_EXPERIMENT_RULE;
+
+  @OneToMany(type => ExperimentCondition, condition => condition.experiment, { cascade: true })
+  public conditions: ExperimentCondition[];
 }

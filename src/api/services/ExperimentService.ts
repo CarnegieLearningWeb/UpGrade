@@ -14,17 +14,24 @@ export class ExperimentService {
 
   public find(): Promise<Experiment[]> {
     this.log.info(`Find all experiments`);
-    return this.experimentRepository.find();
+    return this.experimentRepository.find({ relations: ['conditions'] });
   }
 
   public findOne(id: string): Promise<Experiment | undefined> {
     this.log.info(`Find experiment by id => ${id}`);
-    return this.experimentRepository.findOne({ id });
+    return this.experimentRepository.findOne({ id }, { relations: ['conditions'] });
   }
 
   public create(experiment: Experiment): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     experiment.id = uuid();
+    // adding random id for experimental conditions
+    if (experiment.conditions && experiment.conditions.length > 0) {
+      experiment.conditions.forEach(condition => {
+        condition.id = uuid();
+        condition.experiment = experiment.id as any;
+      });
+    }
     return this.experimentRepository.save(experiment);
   }
 
