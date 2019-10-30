@@ -1,6 +1,7 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { Experiment } from './Experiment';
+// import { ExperimentSegmentCondition } from './ExperimentSegmentCondition';
 
 @Entity()
 export class ExperimentCondition {

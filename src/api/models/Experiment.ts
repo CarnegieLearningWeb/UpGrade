@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
+import { ExperimentSegment } from './ExperimentSegment';
 
 export enum CONSISTENCY_RULE {
   INDIVIDUAL = 'individual',
@@ -62,4 +63,7 @@ export class Experiment {
 
   @OneToMany(type => ExperimentCondition, condition => condition.experiment, { cascade: true })
   public conditions: ExperimentCondition[];
+
+  @OneToMany(type => ExperimentSegment, segment => segment.experiment, { cascade: true })
+  public segments: ExperimentSegment[];
 }

@@ -14,12 +14,23 @@ export class ExperimentService {
 
   public find(): Promise<Experiment[]> {
     this.log.info(`Find all experiments`);
-    return this.experimentRepository.find({ relations: ['conditions'] });
+    return this.experimentRepository
+      .createQueryBuilder('experiment')
+      .innerJoinAndSelect('experiment.conditions', 'conditions')
+      .innerJoinAndSelect('experiment.segments', 'segments')
+      .innerJoinAndSelect('segments.segmentConditions', 'segmentConditions')
+      .getMany();
   }
 
   public findOne(id: string): Promise<Experiment | undefined> {
     this.log.info(`Find experiment by id => ${id}`);
-    return this.experimentRepository.findOne({ id }, { relations: ['conditions'] });
+    return this.experimentRepository
+      .createQueryBuilder('experiment')
+      .innerJoinAndSelect('experiment.conditions', 'conditions')
+      .innerJoinAndSelect('experiment.segments', 'segments')
+      .innerJoinAndSelect('segments.segmentConditions', 'segmentConditions')
+      .where({ id })
+      .getOne();
   }
 
   public create(experiment: Experiment): Promise<Experiment> {
@@ -30,6 +41,18 @@ export class ExperimentService {
       experiment.conditions.forEach(condition => {
         condition.id = uuid();
         condition.experiment = experiment.id as any;
+      });
+    }
+    // adding random id for experimental segments
+    if (experiment.segments && experiment.segments.length > 0) {
+      experiment.segments.forEach(segment => {
+        segment.id = uuid();
+        segment.experiment = experiment.id as any;
+        segment.segmentConditions.forEach((segmentCondition, index) => {
+          segmentCondition.id = uuid();
+          segmentCondition.experimentSegment = segment.id as any;
+          segmentCondition.experimentConditionId = experiment.conditions[index].id;
+        });
       });
     }
     return this.experimentRepository.save(experiment);
