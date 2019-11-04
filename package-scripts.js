@@ -4,7 +4,36 @@ module.exports = {
   scripts: {
     default: 'nps',
     help: 'npm start help',
-    test: 'echo "Error: no test specified" && exit 1',
+    test: {
+      default: 'nps test.integration',
+      integration: {
+        default: {
+          script: series(
+            'nps banner.testIntegration',
+            'nps test.integration.pretest',
+            'nps test.integration.run'
+          ),
+          description: 'Runs the integration tests'
+        },
+        pretest: {
+          script: tslint(`./test/integration/**.ts`),
+          hiddenFromHelp: true
+        },
+        run: {
+          // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
+          script: 'cross-env NODE_ENV=test jest --testPathPattern=integration -i',
+          hiddenFromHelp: true
+        },
+        verbose: {
+          script: 'nps "test --verbose"',
+          hiddenFromHelp: true
+        },
+        coverage: {
+          script: 'nps "test --coverage"',
+          hiddenFromHelp: true
+        }
+      }
+    },
     /**
      * Serves the current app and watches for changes to restart it
      */
