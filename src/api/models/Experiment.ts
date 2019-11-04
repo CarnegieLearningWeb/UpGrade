@@ -24,7 +24,8 @@ export enum EXPERIMENT_STATE {
   DEMO = 'demo',
   SCHEDULED = 'scheduled',
   ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrolmentComplete',
+  ENROLLMENT_COMPLETE = 'enrollmentComplete',
+  CANCELLED = 'cancelled',
 }
 
 @Entity()

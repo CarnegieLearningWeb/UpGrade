@@ -3,6 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Experiment } from '../models/Experiment';
+import { getExperimentAssignment } from './ConditionAssignment';
 import uuid from 'uuid/v4';
 
 @Service()
@@ -62,5 +63,26 @@ export class ExperimentService {
     this.log.info('Update a new experiment => ', experiment.toString());
     experiment.id = id;
     return this.experimentRepository.save(experiment);
+  }
+
+  public getExperimentCondition(data: any): string {
+    const {
+      userId,
+      userEnvironment,
+      experiment,
+      markedExperimentPoint,
+      individualAssignment,
+      groupAssignment,
+      isExcluded,
+    } = data;
+    return getExperimentAssignment(
+      userId,
+      userEnvironment,
+      experiment,
+      markedExperimentPoint,
+      individualAssignment,
+      groupAssignment,
+      isExcluded
+    );
   }
 }
