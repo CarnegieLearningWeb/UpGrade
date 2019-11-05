@@ -70,18 +70,20 @@ export class ExperimentService {
       userId,
       userEnvironment,
       experiment,
-      markedExperimentPoint,
       individualAssignment,
       groupAssignment,
       isExcluded,
+      individualExclusion,
+      groupExclusion,
     } = data;
     return getExperimentAssignment(
       userId,
       userEnvironment,
       experiment,
-      markedExperimentPoint,
       individualAssignment,
       groupAssignment,
+      individualExclusion,
+      groupExclusion,
       isExcluded
     );
   }
