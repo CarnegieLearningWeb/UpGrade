@@ -60,7 +60,7 @@ export class ExperimentService {
   }
 
   public update(id: string, experiment: Experiment): Promise<Experiment> {
-    this.log.info('Update a new experiment => ', experiment.toString());
+    this.log.info('Update an experiment => ', experiment.toString());
     experiment.id = id;
     return this.experimentRepository.save(experiment);
   }
