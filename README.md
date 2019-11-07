@@ -9,6 +9,6 @@
 3. Create .env file from .env.example
 4. Run npm start serve
 
-### Postman Requests
+#### Postman Link
 Use this link to get sample request
 https://www.getpostman.com/collections/0a0cf0c77eb203eb231f
