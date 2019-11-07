@@ -5,11 +5,18 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Experiment } from '../models/Experiment';
 import { getExperimentAssignment } from './ConditionAssignment';
 import uuid from 'uuid/v4';
+import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
+import { ExperimentSegmentConditionRepository } from '../repositories/ExperimentSegmentConditionRepository';
+import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 
 @Service()
 export class ExperimentService {
   constructor(
     @OrmRepository() private experimentRepository: ExperimentRepository,
+    @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
+    @OrmRepository() private experimentSegmentRepository: ExperimentSegmentRepository,
+    @OrmRepository() private experimentSegmentConditionRepository: ExperimentSegmentConditionRepository,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -36,33 +43,12 @@ export class ExperimentService {
 
   public create(experiment: Experiment): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
-    experiment.id = uuid();
-    // adding random id for experimental conditions
-    if (experiment.conditions && experiment.conditions.length > 0) {
-      experiment.conditions.forEach(condition => {
-        condition.id = uuid();
-        condition.experiment = experiment.id as any;
-      });
-    }
-    // adding random id for experimental segments
-    if (experiment.segments && experiment.segments.length > 0) {
-      experiment.segments.forEach(segment => {
-        segment.id = uuid();
-        segment.experiment = experiment.id as any;
-        segment.segmentConditions.forEach((segmentCondition, index) => {
-          segmentCondition.id = uuid();
-          segmentCondition.experimentSegment = segment.id as any;
-          segmentCondition.experimentConditionId = experiment.conditions[index].id;
-        });
-      });
-    }
-    return this.experimentRepository.save(experiment);
+    return this.addExperimentInDB(experiment);
   }
 
   public update(id: string, experiment: Experiment): Promise<Experiment> {
     this.log.info('Update an experiment => ', experiment.toString());
-    experiment.id = id;
-    return this.experimentRepository.save(experiment);
+    return this.addExperimentInDB(experiment);
   }
 
   public getExperimentCondition(data: any): string {
@@ -86,5 +72,52 @@ export class ExperimentService {
       groupExclusion,
       isExcluded
     );
+  }
+
+  private async addExperimentInDB(experiment: Experiment): Promise<Experiment> {
+    experiment.id = experiment.id || uuid();
+    // save the experiment over here
+    const { conditions, segments, ...expDoc } = experiment;
+    // saving experiment doc
+    const experimentDoc = await this.experimentRepository.save(expDoc);
+
+    // adding random id for experimental conditions
+    if (conditions && conditions.length > 0) {
+      const conditionDoc = conditions.map((condition: ExperimentCondition) => {
+        condition.id = condition.id || uuid();
+        condition.experiment = experimentDoc;
+        return condition;
+      });
+
+      // saving conditions
+      await this.experimentConditionRepository.save(conditionDoc);
+    }
+    // adding random id for experimental segments
+    if (segments && segments.length > 0) {
+      const segmentDocTpSave = segments.map(segment => {
+        segment.id = segment.id || uuid();
+        segment.experiment = experimentDoc;
+        const { segmentConditions, ...segmentDoc } = segment;
+        return segmentDoc;
+      });
+
+      // saving segments
+      const segmentSavedDocs = await this.experimentSegmentRepository.save(segmentDocTpSave);
+
+      segmentSavedDocs.map(async (segmentSaved, segmentIndex) => {
+        const segmentConditionDocs = [
+          ...segments[segmentIndex].segmentConditions.map((segmentCondition, segmentConditionIndex) => {
+            segmentCondition.id = segmentCondition.id || uuid();
+            segmentCondition.experimentSegment = segmentSaved;
+            segmentCondition.experimentConditionId = conditions[segmentConditionIndex].id;
+            return segmentCondition;
+          }),
+        ];
+        // saving segment conditions
+        await this.experimentSegmentConditionRepository.save(segmentConditionDocs);
+      });
+    }
+
+    return experimentDoc;
   }
 }
