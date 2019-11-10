@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ExperimentSegment } from './ExperimentSegment';
 
 @Entity()
@@ -9,7 +9,15 @@ export class ExperimentSegmentCondition {
   @Column()
   public conditionCode: string;
 
-  @ManyToOne(type => ExperimentSegment, experimentSegment => experimentSegment.segmentConditions)
+  @ManyToOne(type => ExperimentSegment)
+  @JoinColumn([
+    {
+      referencedColumnName: 'point',
+    },
+    {
+      referencedColumnName: 'id',
+    },
+  ])
   public experimentSegment: ExperimentSegment;
 
   @Column()

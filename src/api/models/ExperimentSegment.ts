@@ -8,6 +8,9 @@ export class ExperimentSegment {
   @PrimaryColumn('uuid')
   public id: string;
 
+  @PrimaryColumn()
+  public point: string;
+
   @IsNotEmpty()
   @Column()
   public name: string;
@@ -18,6 +21,6 @@ export class ExperimentSegment {
   @ManyToOne(type => Experiment, experiment => experiment.segments)
   public experiment: Experiment;
 
-  @OneToMany(type => ExperimentSegmentCondition, condition => condition.experimentSegment, { cascade: true })
+  @OneToMany(type => ExperimentSegmentCondition, condition => condition.experimentSegment)
   public segmentConditions: ExperimentSegmentCondition[];
 }

@@ -62,9 +62,9 @@ export class Experiment {
   })
   public postExperimentRule: POST_EXPERIMENT_RULE;
 
-  @OneToMany(type => ExperimentCondition, condition => condition.experiment, { cascade: true })
+  @OneToMany(type => ExperimentCondition, condition => condition.experiment)
   public conditions: ExperimentCondition[];
 
-  @OneToMany(type => ExperimentSegment, segment => segment.experiment, { cascade: true })
+  @OneToMany(type => ExperimentSegment, segment => segment.experiment)
   public segments: ExperimentSegment[];
 }
