@@ -53,6 +53,12 @@ export const env = {
     synchronize: toBool(getOsEnvOptional('TYPEORM_SYNCHRONIZE')),
     logging: getOsEnv('TYPEORM_LOGGING'),
   },
-  swagger: {},
+  swagger: {
+    enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
+    route: getOsEnv('SWAGGER_ROUTE'),
+    file: getOsEnv('SWAGGER_FILE'),
+    username: getOsEnv('SWAGGER_USERNAME'),
+    password: getOsEnv('SWAGGER_PASSWORD'),
+  },
   monitor: {},
 };

@@ -7,6 +7,15 @@ import { UserNotFoundError } from '../errors/UserNotFoundError';
 export class UserController {
   constructor(public userService: UserService) {}
 
+  /**
+   * @swagger
+   * /users:
+   *    get:
+   *       description: Testing Feature
+   *       responses:
+   *          '200':
+   *            description: Successful
+   */
   @Get()
   public find(): Promise<User[]> {
     return this.userService.find();
