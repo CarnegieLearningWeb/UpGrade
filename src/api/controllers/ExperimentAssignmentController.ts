@@ -7,6 +7,6 @@ export class ExperimentConditionController {
 
   @Post()
   public create(@Body() experiment: any): string {
-    return this.experimentService.getExperimentCondition(experiment);
+    return this.experimentService.getExperimentAssignment(experiment);
   }
 }
