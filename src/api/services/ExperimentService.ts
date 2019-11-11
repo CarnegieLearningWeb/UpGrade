@@ -9,6 +9,7 @@ import { ExperimentConditionRepository } from '../repositories/ExperimentConditi
 import { ExperimentSegmentConditionRepository } from '../repositories/ExperimentSegmentConditionRepository';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { ExperimentSegment } from '../models/ExperimentSegment';
 
 @Service()
 export class ExperimentService {
@@ -51,7 +52,19 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment);
   }
 
-  public getExperimentCondition(data: any): string {
+  public getExperimentalConditions(experimentId: string, experimentPoint: string): Promise<ExperimentSegment> {
+    this.log.info('Get experimental conditions => ', experimentId, experimentPoint);
+    return this.experimentSegmentRepository.findOne({
+      where: {
+        id: experimentId,
+        point: experimentPoint,
+      },
+      select: ['id', 'point'],
+      relations: ['segmentConditions'],
+    });
+  }
+
+  public getExperimentAssignment(data: any): string {
     const {
       userId,
       userEnvironment,
@@ -75,6 +88,7 @@ export class ExperimentService {
   }
 
   private async addExperimentInDB(experiment: Experiment): Promise<Experiment> {
+    // TODO add transaction over here
     experiment.id = experiment.id || uuid();
     // save the experiment over here
     const { conditions, segments, ...expDoc } = experiment;
