@@ -7,6 +7,15 @@ import { ExperimentService } from '../services/ExperimentService';
 export class ExperimentController {
   constructor(public experimentService: ExperimentService) {}
   @Get()
+  /**
+   * @swagger
+   * /experiments:
+   *    get:
+   *       description: Get all the experiments
+   *       responses:
+   *          '200':
+   *            description: Successful
+   */
   public find(): Promise<Experiment[]> {
     return this.experimentService.find();
   }

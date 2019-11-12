@@ -5,13 +5,13 @@ import { UserNotFoundError } from '../errors/UserNotFoundError';
 
 @JsonController('/users')
 export class UserController {
-  constructor(public userService: UserService) {}
+  constructor(public userService: UserService) { }
 
   /**
    * @swagger
    * /users:
    *    get:
-   *       description: Testing Feature
+   *       description: Get all the users
    *       responses:
    *          '200':
    *            description: Successful

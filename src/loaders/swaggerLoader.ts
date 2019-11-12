@@ -1,57 +1,29 @@
-// import basicAuth from 'express-basic-auth';
-import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework-w3tec';
-// import * as path from 'path';
+import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
 import * as swaggerUi from 'swagger-ui-express';
-import * as swaggerJsDoc from 'swagger-jsdoc';
+// tslint:disable-next-line:no-var-requires
+const swaggerJSDoc = require('swagger-jsdoc');
 
 import { env } from '../env';
 
 export const swaggerLoader: MicroframeworkLoader = (settings: MicroframeworkSettings | undefined) => {
     if (settings && env.swagger.enabled) {
         const expressApp = settings.getData('express_app');
-        // const swaggerFile = require(path.join(__dirname, '..', env.swagger.file));
-
-        // // Add npm infos to the swagger doc
-        // swaggerFile.info = {
-        //     title: env.app.name,
-        //     description: env.app.description,
-        //     version: env.app.version,
-        // };
-
-        // swaggerFile.servers = [
-        //     {
-        //         url: `${env.app.schema}://${env.app.host}:${env.app.port}${env.app.routePrefix}`,
-        //     },
-        // ];
-
-        // expressApp.use(
-        //     env.swagger.route,
-        //     env.swagger.username ? basicAuth({
-        //         users: {
-        //             [`${env.swagger.username}`]: env.swagger.password,
-        //         },
-        //         challenge: true,
-        //     }) : (req, res, next) => next(),
-        //     swaggerUi.serve,
-        //     swaggerUi.setup(swaggerFile)
-        // );
-
         const swaggerOptions = {
             swaggerDefinition: {
+                components: {},
+                basePath: `${env.app.routePrefix}`,
                 info: {
                     title: env.app.name,
                     description: env.app.description,
-                    contact: {
-                        name: 'Rupank',
-                    },
-                    servers: ['http://localhost:3000'],
+                    servers: [{
+                        url: `${env.app.schema}://${env.app.host}:${env.app.port}${env.app.routePrefix}`,
+                    }],
                 },
             },
-            // ['.routes/*.js']
-            // apis: ["app.js"]
+            explorer: true,
+            apis: ['**/*.ts'],
         };
-
-        const swaggerDocs = swaggerJsDoc(swaggerOptions);
+        const swaggerDocs = swaggerJSDoc(swaggerOptions);
         expressApp.use(env.swagger.route, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
     }
 };
