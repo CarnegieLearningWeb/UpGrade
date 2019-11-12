@@ -1,12 +1,27 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, BodyParam, Get } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
+import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 
-@JsonController('/experimentCondition')
+@JsonController('/assign')
 export class ExperimentConditionController {
-  constructor(public experimentService: ExperimentService) {}
+  constructor(
+    public experimentService: ExperimentService,
+    public experimentAssignmentService: ExperimentAssignmentService
+  ) {}
 
   @Post()
-  public create(@Body() experiment: any): string {
-    return this.experimentService.getExperimentAssignment(experiment);
+  public markExperimentPoint(
+    @BodyParam('experimentId') experimentId: string,
+    @BodyParam('experimentPoint') experimentPoint: string,
+    @BodyParam('userId') userId: string,
+    @BodyParam('userEnvironment') userEnvironment: object
+  ): any {
+    return this.experimentAssignmentService.markExperimentPoint(experimentId, experimentPoint, userId, userEnvironment);
+  }
+
+  // TODO - only for checking
+  @Get()
+  public check(): Promise<any> {
+    return this.experimentAssignmentService.check();
   }
 }

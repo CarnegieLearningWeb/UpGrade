@@ -62,6 +62,9 @@ export class Experiment {
   })
   public postExperimentRule: POST_EXPERIMENT_RULE;
 
+  @Column('text', { nullable: true })
+  public group: string;
+
   @OneToMany(type => ExperimentCondition, condition => condition.experiment)
   public conditions: ExperimentCondition[];
 
