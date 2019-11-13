@@ -56,9 +56,6 @@ export const env = {
   swagger: {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
     route: getOsEnv('SWAGGER_ROUTE'),
-    file: getOsEnv('SWAGGER_FILE'),
-    username: getOsEnv('SWAGGER_USERNAME'),
-    password: getOsEnv('SWAGGER_PASSWORD'),
   },
   monitor: {},
 };

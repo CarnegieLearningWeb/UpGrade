@@ -1,7 +1,6 @@
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
 import * as swaggerUi from 'swagger-ui-express';
-// tslint:disable-next-line:no-var-requires
-const swaggerJSDoc = require('swagger-jsdoc');
+import swaggerJSDoc from 'swagger-jsdoc';
 
 import { env } from '../env';
 
@@ -21,7 +20,7 @@ export const swaggerLoader: MicroframeworkLoader = (settings: MicroframeworkSett
                 },
             },
             explorer: true,
-            apis: ['**/*.ts'],
+            apis: ['**/controllers/*.ts'],
         };
         const swaggerDocs = swaggerJSDoc(swaggerOptions);
         expressApp.use(env.swagger.route, swaggerUi.serve, swaggerUi.setup(swaggerDocs));

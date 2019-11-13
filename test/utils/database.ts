@@ -14,7 +14,6 @@ export const createDatabaseConnection = async (): Promise<Connection> => {
         entities: env.app.dirs.entities,
         migrations: env.app.dirs.migrations,
     });
-    console.log('Rupank', connection);
     return connection;
 };
 
