@@ -5,8 +5,17 @@ import { UserNotFoundError } from '../errors/UserNotFoundError';
 
 @JsonController('/users')
 export class UserController {
-  constructor(public userService: UserService) {}
+  constructor(public userService: UserService) { }
 
+  /**
+   * @swagger
+   * /users:
+   *    get:
+   *       description: Get all the users
+   *       responses:
+   *          '200':
+   *            description: Successful
+   */
   @Get()
   public find(): Promise<User[]> {
     return this.userService.find();

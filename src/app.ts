@@ -9,6 +9,7 @@ import { homeLoader } from './loaders/homeLoader';
 import { publicLoader } from './loaders/publicLoader';
 import { iocLoader } from './loaders/iocLoader';
 import { typeormLoader } from './loaders/typeormLoader';
+import { swaggerLoader } from './loaders/swaggerLoader';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
@@ -18,7 +19,7 @@ import { typeormLoader } from './loaders/typeormLoader';
 const log = new Logger(__filename);
 
 bootstrapMicroframework({
-  loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, homeLoader, publicLoader],
+  loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 }).then(() => {
   banner(log);
 });
