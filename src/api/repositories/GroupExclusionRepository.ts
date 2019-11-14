@@ -11,4 +11,19 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       .onConflict(`DO NOTHING`)
       .execute();
   }
+
+  public findExcluded(
+    groupIds: string[],
+    experimentIds: string[]
+  ): Promise<GroupExclusion[]> {
+    return this.createQueryBuilder('groupExclusion')
+      .where(
+        'groupExclusion.groupId IN (:...groupIds) AND groupExclusion.experimentId IN (:...experimentIds)',
+        {
+          groupIds,
+          experimentIds,
+        }
+      )
+      .getMany();
+  }
 }

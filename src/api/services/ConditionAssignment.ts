@@ -1,5 +1,6 @@
 import { EXPERIMENT_STATE, CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE } from '../models/Experiment';
 
+// TODO - delete this after completing the logic
 interface Experiment {
   id: string;
   point: string;
