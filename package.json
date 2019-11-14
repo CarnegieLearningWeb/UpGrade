@@ -11,6 +11,20 @@
   },
   "keywords": [],
   "author": "",
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/test/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ],
+    "testEnvironment": "node",
+    "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts"
+  },
   "license": "ISC",
   "devDependencies": {
     "@types/body-parser": "^1.17.1",
@@ -27,6 +41,7 @@
     "nps-utils": "^1.7.0"
   },
   "dependencies": {
+    "@types/jest": "^24.0.21",
     "@types/uuid": "^3.4.5",
     "body-parser": "^1.19.0",
     "chalk": "^2.4.2",
@@ -38,6 +53,7 @@
     "express": "^4.17.1",
     "figlet": "^1.2.4",
     "helmet": "^3.21.2",
+    "jest": "^24.9.0",
     "jsonfile": "^5.0.0",
     "microframework": "^0.6.4",
     "morgan": "^1.9.1",
@@ -47,6 +63,9 @@
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.8.0",
     "serve-favicon": "^2.5.0",
+    "swagger-jsdoc": "^3.4.0",
+    "swagger-ui-express": "^4.1.2",
+    "ts-jest": "^24.1.0",
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
     "typedi": "^0.8.0",
