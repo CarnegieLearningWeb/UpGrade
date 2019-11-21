@@ -23,4 +23,9 @@ export class Demo {
   public groupExclusion(): Promise<any> {
     return this.check.getAllGroupExclusions();
   }
+
+  @Get('/monitoredExperimentPoint')
+  public monitoredExperimentPoint(): Promise<any> {
+    return this.check.getAllMarkedExperimentPoints();
+  }
 }
