@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class MonitoredExperimentPoint {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn()
   public experimentId: string;
 
   @PrimaryColumn()

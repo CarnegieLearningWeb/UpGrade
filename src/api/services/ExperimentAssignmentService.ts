@@ -169,7 +169,9 @@ export class ExperimentAssignmentService {
         return {
           id,
           point,
-          assignedCondition: conditionAssigned || 'default',
+          assignedCondition: conditionAssigned || {
+            conditionCode: 'default',
+          },
         };
       });
       return [...accumulator, ...segments];

@@ -12,7 +12,9 @@ export class ExperimentCondition {
   @Column()
   public name: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   public description: string;
 
   @IsNotEmpty()

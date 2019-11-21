@@ -23,7 +23,7 @@
       "json"
     ],
     "testEnvironment": "node",
-    "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts"
+    "setupFilesAfterEnv": ["./test/unit/lib/setup.ts"]
   },
   "license": "ISC",
   "devDependencies": {

@@ -22,10 +22,13 @@ export class UserService {
     return this.userRepository.findOne({ id });
   }
 
-  public create(user: User): Promise<User> {
-    this.log.info('Create a new experiment => ', user.toString());
-    user.id = uuid();
-    return this.userRepository.save(user);
+  public create(users: User[]): Promise<User[]> {
+    this.log.info('Create a new user => ', users.toString());
+    const multipleUsers = users.map(user => {
+      user.id = user.id || uuid();
+      return user;
+    });
+    return this.userRepository.save(multipleUsers);
   }
 
   public update(id: string, user: User): Promise<User> {

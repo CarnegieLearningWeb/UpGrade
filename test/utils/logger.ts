@@ -1,12 +1,14 @@
-import { configure, transports } from 'winston';
+import { configure, transports, format } from 'winston';
+import { env } from '../../src/env';
 
 export const configureLogger = () => {
-    configure({
-        transports: [
-            new transports.Console({
-                level: 'none',
-                handleExceptions: false,
-            }),
-        ],
-    });
+  configure({
+    transports: [
+      new transports.Console({
+        level: env.log.level,
+        handleExceptions: true,
+        format: format.combine(format.colorize(), format.simple()),
+      }),
+    ],
+  });
 };

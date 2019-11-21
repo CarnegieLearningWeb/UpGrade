@@ -5,7 +5,7 @@ import { ExperimentSegmentCondition } from './ExperimentSegmentCondition';
 
 @Entity()
 export class ExperimentSegment {
-  @PrimaryColumn('uuid')
+  @PrimaryColumn()
   public id: string;
 
   @PrimaryColumn()
