@@ -8,8 +8,9 @@ export class ExperimentCondition {
   @PrimaryColumn('uuid')
   public id: string;
 
-  @IsNotEmpty()
-  @Column()
+  @Column({
+    nullable: true,
+  })
   public name: string;
 
   @Column({

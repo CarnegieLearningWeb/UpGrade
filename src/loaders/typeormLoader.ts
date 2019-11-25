@@ -3,7 +3,9 @@ import { createConnection, getConnectionOptions } from 'typeorm';
 
 import { env } from '../env';
 
-export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
+export const typeormLoader: MicroframeworkLoader = async (
+  settings: MicroframeworkSettings | undefined
+) => {
   const loadedConnectionOptions = await getConnectionOptions();
 
   const connectionOptions = Object.assign(loadedConnectionOptions, {
@@ -19,10 +21,14 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     migrations: env.app.dirs.migrations,
   });
 
-  const connection = await createConnection(connectionOptions);
+  try {
+    const connection = await createConnection(connectionOptions);
 
-  if (settings) {
-    settings.setData('connection', connection);
-    settings.onShutdown(() => connection.close());
+    if (settings) {
+      settings.setData('connection', connection);
+      settings.onShutdown(() => connection.close());
+    }
+  } catch (error) {
+    console.log(error);
   }
 };
