@@ -13,45 +13,72 @@ module.exports = {
             'nps test.integration.pretest',
             'nps test.integration.run'
           ),
-          description: 'Runs the integration tests'
+          description: 'Runs the integration tests',
         },
         pretest: {
           script: tslint(`./test/integration/**.ts`),
-          hiddenFromHelp: true
+          hiddenFromHelp: true,
         },
         run: {
           // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
-          script: 'cross-env NODE_ENV=test jest --testPathPattern=integration -i',
-          hiddenFromHelp: true
+          script:
+            'cross-env NODE_ENV=test jest --testPathPattern=integration -i',
+          hiddenFromHelp: true,
         },
         verbose: {
           script: 'nps "test --verbose"',
-          hiddenFromHelp: true
+          hiddenFromHelp: true,
         },
         coverage: {
           script: 'nps "test --coverage"',
-          hiddenFromHelp: true
-        }
-      }
+          hiddenFromHelp: true,
+        },
+      },
     },
     /**
      * Serves the current app and watches for changes to restart it
      */
     serve: {
+      default: {
+        script: series('nps banner.serve', 'nodemon'),
+        hiddenFromHelp: true,
+      },
       inspector: {
         script: series('nps banner.serve', 'nodemon --inspect'),
-        description: 'Serves the current app and watches for changes to restart it, you may attach inspector to it.'
+        description:
+          'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
       },
-      script: series('nps banner.serve', 'nodemon'),
-      description: 'Serves the current app and watches for changes to restart it'
+      production: {
+        script: 'cross-env NODE_ENV=production node dist/src/app.js',
+      },
+      description:
+        'Serves the current app and watches for changes to restart it',
     },
     /**
      * Creates the needed configuration files
      */
     config: {
       script: series(runFast('./commands/tsconfig.ts')),
-      hiddenFromHelp: true
+      hiddenFromHelp: true,
     },
+    /**
+     * Copies static files to the build folder
+     */
+    copy: {
+      default: {
+        script: series(`nps copy.public`),
+        hiddenFromHelp: true,
+      },
+      public: {
+        script: copy('./src/public/*', './dist/src'),
+        hiddenFromHelp: true,
+      },
+      tmp: {
+        script: copyDir('./.tmp/src', './dist'),
+        hiddenFromHelp: true,
+      },
+    },
+
     /**
      * Builds the app into the dist directory
      */
@@ -61,26 +88,24 @@ module.exports = {
         'nps config',
         'nps lint',
         'nps clean.dist',
-        'nps transpile'
-        // 'nps copy',
-        // 'nps copy.tmp',
-        // 'nps clean.tmp'
+        'nps transpile',
+        'nps copy'
       ),
-      description: 'Builds the app into the dist directory'
+      description: 'Builds the app into the dist directory',
     },
     /**
      * Runs TSLint over your project
      */
     lint: {
       script: tslint(`./src/**/*.ts`),
-      hiddenFromHelp: true
+      hiddenFromHelp: true,
     },
     /**
      * Transpile your app into javascript
      */
     transpile: {
-      script: `tsc --project ./tsconfig.build.json`,
-      hiddenFromHelp: true
+      script: `cross-env NODE_ENV=production tsc --project ./tsconfig.build.json`,
+      hiddenFromHelp: true,
     },
     /**
      * Clean files and folders
@@ -88,16 +113,16 @@ module.exports = {
     clean: {
       default: {
         script: series(`nps banner.clean`, `nps clean.dist`),
-        description: 'Deletes the ./dist folder'
+        description: 'Deletes the ./dist folder',
       },
       dist: {
         script: rimraf('./dist'),
-        hiddenFromHelp: true
+        hiddenFromHelp: true,
       },
       tmp: {
         script: rimraf('./.tmp'),
-        hiddenFromHelp: true
-      }
+        hiddenFromHelp: true,
+      },
     },
     /**
      * This creates pretty banner to the terminal
@@ -111,17 +136,25 @@ module.exports = {
       migrate: banner('migrate'),
       seed: banner('seed'),
       reverst: banner('revert'),
-      clean: banner('clean')
-    }
-  }
+      clean: banner('clean'),
+    },
+  },
 };
+
+function copy(source, target) {
+  return `copyfiles --up 1 ${source} ${target}`;
+}
+
+function copyDir(source, target) {
+  return `ncp ${source} ${target}`;
+}
 
 function banner(name) {
   return {
     hiddenFromHelp: true,
     silent: true,
     description: `Shows ${name} banners to the console`,
-    script: runFast(`./commands/banner.ts ${name}`)
+    script: runFast(`./commands/banner.ts ${name}`),
   };
 }
 
