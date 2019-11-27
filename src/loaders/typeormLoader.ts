@@ -9,7 +9,7 @@ export const typeormLoader: MicroframeworkLoader = async (
   const loadedConnectionOptions = await getConnectionOptions();
 
   const connectionOptions = Object.assign(loadedConnectionOptions, {
-    type: env.db.type as any, // See createConnection options for valid types
+    type: env.db.type, // See createConnection options for valid types
     host: env.db.host,
     port: env.db.port,
     username: env.db.username,

@@ -3,13 +3,24 @@ import * as path from 'path';
 
 import * as pkg from '../package.json';
 
-import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
+import {
+  getOsEnv,
+  getOsPath,
+  getOsPaths,
+  normalizePort,
+  toBool,
+} from './lib/env';
 import { getOsEnvOptional, toNumber } from './lib/env/utils';
 
 /**
  * Load .env file or for tests the .env.test file.
  */
-dotenv.config({ path: path.join(process.cwd(), `.env${process.env.NODE_ENV === 'test' ? '.test' : ''}`) });
+dotenv.config({
+  path: path.join(
+    process.cwd(),
+    `.env${process.env.NODE_ENV === 'test' ? '.test' : ''}`
+  ),
+});
 
 /**
  * Environment variables
@@ -44,6 +55,7 @@ export const env = {
     output: getOsEnv('LOG_OUTPUT'),
   },
   db: {
+    url: getOsEnv('DATABASE_URL'),
     type: getOsEnv('TYPEORM_CONNECTION'),
     host: getOsEnvOptional('TYPEORM_HOST'),
     port: toNumber(getOsEnvOptional('TYPEORM_PORT')),
