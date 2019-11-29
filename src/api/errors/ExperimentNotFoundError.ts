@@ -1,7 +1,7 @@
-import { HttpError } from 'routing-controllers';
+import { NotFoundError } from './NotFoundError';
 
-export class ExperimentNotFoundError extends HttpError {
+export class ExperimentNotFoundError extends NotFoundError {
   constructor() {
-    super(404, 'Experiment not found!');
+    super('Experiment');
   }
 }

@@ -55,7 +55,6 @@ export const env = {
     output: getOsEnv('LOG_OUTPUT'),
   },
   db: {
-    url: getOsEnv('DATABASE_URL'),
     type: getOsEnv('TYPEORM_CONNECTION'),
     host: getOsEnvOptional('TYPEORM_HOST'),
     port: toNumber(getOsEnvOptional('TYPEORM_PORT')),
@@ -68,6 +67,7 @@ export const env = {
   swagger: {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
     route: getOsEnv('SWAGGER_ROUTE'),
+    api: getOsEnv('SWAGGER_API'),
   },
   monitor: {},
 };
