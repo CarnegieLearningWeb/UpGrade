@@ -171,13 +171,10 @@ export class ExperimentAssignmentService {
 
     const { consistencyRule, group } = experiment;
     const subExperiments = experiment.segments.map(({ id, point }) => {
-      return { id, point };
+      return { experimentId: id, experimentPoint: point };
     });
-
-    // query all monitored experiment point for this experiemnt Id
-    const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findManyWithExperimentIdAndPoint(
-      subExperiments
-    );
+    // query all monitored experiment point for this experiment Id
+    const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find(subExperiments as any);
     const uniqueUserIds = new Set(monitoredExperimentPoints.map(({ userId }) => userId));
 
     // populate Individual and Group Exclusion Table
