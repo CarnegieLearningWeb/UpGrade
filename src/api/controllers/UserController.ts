@@ -3,6 +3,27 @@ import { UserService } from '../services/UserService';
 import { User } from '../models/User';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 
+/**
+ * @swagger
+ * definitions:
+ *   User:
+ *     required:
+ *       - id
+ *       - group
+ *     properties:
+ *       id:
+ *         type: string
+ *       group:
+ *         type: object
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   - name: users
+ *     description: CRUD operations related to users
+ */
+
 @JsonController('/users')
 export class UserController {
   constructor(public userService: UserService) { }
@@ -21,17 +42,91 @@ export class UserController {
     return this.userService.find();
   }
 
+  /**
+   * @swagger
+   * /users/{id}:
+   *    get:
+   *       description: Get user by id
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: user Id
+   *       tags:
+   *         - users
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get user By Id
+   *          '404':
+   *            description: user not found
+   */
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
   public one(@Param('id') id: string): Promise<User> {
     return this.userService.findOne(id);
   }
 
+  /**
+   * @swagger
+   * /users:
+   *    post:
+   *       description: Create New User
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/User'
+   *           description: User Structure
+   *       tags:
+   *         - users
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New User is created
+   */
   @Post()
   public create(@Body() users: User[]): Promise<User[]> {
     return this.userService.create(users);
   }
 
+  /**
+   * @swagger
+   * /users/{id}:
+   *    put:
+   *       description: Create New User
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: User ID
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/User'
+   *           description: User Structure
+   *       tags:
+   *         - users
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: User is updated
+   */
   @Put('/:id')
   public update(@Param('id') id: string, @Body() user: User): Promise<User> {
     return this.userService.update(id, user);
