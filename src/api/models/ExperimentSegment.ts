@@ -1,7 +1,6 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { Experiment } from './Experiment';
-import { ExperimentSegmentCondition } from './ExperimentSegmentCondition';
 
 @Entity()
 export class ExperimentSegment {
@@ -18,9 +17,9 @@ export class ExperimentSegment {
   @Column()
   public description: string;
 
-  @ManyToOne(type => Experiment, experiment => experiment.segments)
+  @ManyToOne(
+    type => Experiment,
+    experiment => experiment.segments
+  )
   public experiment: Experiment;
-
-  @OneToMany(type => ExperimentSegmentCondition, condition => condition.experimentSegment)
-  public segmentConditions: ExperimentSegmentCondition[];
 }

@@ -6,7 +6,6 @@ import { Experiment } from '../models/Experiment';
 import { getExperimentAssignment } from './ConditionAssignment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
-import { ExperimentSegmentConditionRepository } from '../repositories/ExperimentSegmentConditionRepository';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentSegment } from '../models/ExperimentSegment';
@@ -17,7 +16,6 @@ export class ExperimentService {
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
     @OrmRepository() private experimentSegmentRepository: ExperimentSegmentRepository,
-    @OrmRepository() private experimentSegmentConditionRepository: ExperimentSegmentConditionRepository,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -27,7 +25,6 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.segments', 'segments')
-      .innerJoinAndSelect('segments.segmentConditions', 'segmentConditions')
       .getMany();
   }
 
@@ -37,7 +34,6 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.segments', 'segments')
-      .innerJoinAndSelect('segments.segmentConditions', 'segmentConditions')
       .where({ id })
       .getOne();
   }
@@ -49,7 +45,7 @@ export class ExperimentService {
 
   public update(id: string, experiment: Experiment): Promise<Experiment> {
     this.log.info('Update an experiment => ', experiment.toString());
-    return this.addExperimentInDB(experiment);
+    return this.updateExperimentInDB(experiment);
   }
 
   public getExperimentalConditions(experimentId: string, experimentPoint: string): Promise<ExperimentSegment> {
@@ -59,8 +55,8 @@ export class ExperimentService {
         id: experimentId,
         point: experimentPoint,
       },
+      relations: ['experiment', 'experiment.conditions'],
       select: ['id', 'point'],
-      relations: ['segmentConditions'],
     });
   }
 
@@ -87,51 +83,123 @@ export class ExperimentService {
     );
   }
 
+  private async updateExperimentInDB(experiment: Experiment): Promise<Experiment> {
+    // TODO add transaction over here
+    const { conditions, segments, ...expDoc } = experiment;
+    let experimentDoc: Experiment;
+    try {
+      experimentDoc = ((await this.experimentRepository.updateExperiment(expDoc.id, expDoc)) as any).raw[0];
+    } catch (error) {
+      throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
+    }
+
+    // creating condition docs
+    const conditionDocToSave =
+      conditions &&
+      conditions.length > 0 &&
+      conditions.map((condition: ExperimentCondition) => {
+        condition.experiment = experimentDoc;
+        return condition;
+      });
+
+    // creating segment docs
+    const segmentDocToSave =
+      segments &&
+      segments.length > 0 &&
+      segments.map(segment => {
+        segment.experiment = experimentDoc;
+        return segment;
+      });
+
+    // saving conditions and saving segments
+    let conditionDocs: ExperimentCondition[];
+    let segmentDocs: ExperimentSegment[];
+    try {
+      [conditionDocs, segmentDocs] = await Promise.all([
+        Promise.all(
+          conditionDocToSave.map(async conditionDoc => {
+            return this.experimentConditionRepository.updateExperimentCondition(conditionDoc.id, conditionDoc);
+          })
+        ) as any,
+        Promise.all(
+          segmentDocToSave.map(async segmentDoc => {
+            return this.experimentSegmentRepository.updateExperimentSegment(
+              segmentDoc.id,
+              segmentDoc.point,
+              segmentDoc
+            );
+          })
+        ) as any,
+      ]);
+    } catch (error) {
+      throw new Error(`Error in creating conditions and segments "addExperimentInDB" ${error}`);
+    }
+
+    const conditionDocToReturn = conditionDocs.map(conditionDoc => {
+      return { ...conditionDoc, experiment: conditionDoc.experiment };
+    });
+
+    const segmentDocToReturn = segmentDocs.map(segmentDoc => {
+      return { ...segmentDoc, experiment: segmentDoc.experiment };
+    });
+
+    return { ...experimentDoc, conditions: conditionDocToReturn as any, segments: segmentDocToReturn as any };
+  }
+
   private async addExperimentInDB(experiment: Experiment): Promise<Experiment> {
     // TODO add transaction over here
     experiment.id = experiment.id || uuid();
-    // save the experiment over here
     const { conditions, segments, ...expDoc } = experiment;
     // saving experiment doc
-    const experimentDoc = await this.experimentRepository.save(expDoc);
+    let experimentDoc: Experiment;
+    try {
+      experimentDoc = ((await this.experimentRepository.insertExperiment(expDoc as any)) as any).raw[0];
+    } catch (error) {
+      throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
+    }
 
-    // adding random id for experimental conditions
-    if (conditions && conditions.length > 0) {
-      const conditionDoc = conditions.map((condition: ExperimentCondition) => {
+    // creating condition docs
+    const conditionDocsToSave =
+      conditions &&
+      conditions.length > 0 &&
+      conditions.map((condition: ExperimentCondition) => {
         condition.id = condition.id || uuid();
         condition.experiment = experimentDoc;
         return condition;
       });
 
-      // saving conditions
-      await this.experimentConditionRepository.save(conditionDoc);
-    }
-    // adding random id for experimental segments
-    if (segments && segments.length > 0) {
-      const segmentDocTpSave = segments.map(segment => {
+    // creating segment docs
+    const segmentDocsToSave =
+      segments &&
+      segments.length > 0 &&
+      segments.map(segment => {
         segment.id = segment.id || uuid();
         segment.experiment = experimentDoc;
-        const { segmentConditions, ...segmentDoc } = segment;
-        return segmentDoc;
+        return segment;
       });
 
-      // saving segments
-      const segmentSavedDocs = await this.experimentSegmentRepository.save(segmentDocTpSave);
-
-      segmentSavedDocs.map(async (segmentSaved, segmentIndex) => {
-        const segmentConditionDocs = [
-          ...segments[segmentIndex].segmentConditions.map((segmentCondition, segmentConditionIndex) => {
-            segmentCondition.id = segmentCondition.id || uuid();
-            segmentCondition.experimentSegment = segmentSaved;
-            segmentCondition.experimentConditionId = conditions[segmentConditionIndex].id;
-            return segmentCondition;
-          }),
-        ];
-        // saving segment conditions
-        await this.experimentSegmentConditionRepository.save(segmentConditionDocs);
-      });
+    // saving conditions and saving segments
+    let conditionDocs: ExperimentCondition[];
+    let segmentDocs: ExperimentSegment[];
+    try {
+      [conditionDocs, segmentDocs] = await Promise.all([
+        this.experimentConditionRepository.insertConditions(conditionDocsToSave),
+        this.experimentSegmentRepository.insertSegments(segmentDocsToSave),
+      ]);
+    } catch (error) {
+      throw new Error(`Error in creating conditions and segments "addExperimentInDB" ${error}`);
     }
 
-    return experimentDoc;
+    const conditionDocToReturn = conditionDocs.map(conditionDoc => {
+      const { experimentId, ...rest } = conditionDoc as any;
+      return rest;
+    });
+
+    const segmentDocToReturn = segmentDocs.map(segmentDoc => {
+      const { experimentId, ...rest } = segmentDoc as any;
+      return rest;
+    });
+
+    return { ...experimentDoc, conditions: conditionDocToReturn as any, segments: segmentDocToReturn as any };
   }
 }

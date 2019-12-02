@@ -1,7 +1,6 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { Experiment } from './Experiment';
-// import { ExperimentSegmentCondition } from './ExperimentSegmentCondition';
 
 @Entity()
 export class ExperimentCondition {
@@ -18,6 +17,9 @@ export class ExperimentCondition {
   })
   public description: string;
 
+  @Column()
+  public conditionCode: string;
+
   @IsNotEmpty()
   @Column({
     name: 'assignment_weight',
@@ -25,6 +27,9 @@ export class ExperimentCondition {
   })
   public assignmentWeight: number;
 
-  @ManyToOne(type => Experiment, experiment => experiment.conditions)
+  @ManyToOne(
+    type => Experiment,
+    experiment => experiment.conditions
+  )
   public experiment: Experiment;
 }
