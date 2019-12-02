@@ -20,7 +20,7 @@ import { UserNotFoundError } from '../errors/UserNotFoundError';
 /**
  * @swagger
  * tags:
- *   - name: users
+ *   - name: Users
  *     description: CRUD operations related to users
  */
 
@@ -55,7 +55,7 @@ export class UserController {
    *             type: string
    *           description: user Id
    *       tags:
-   *         - users
+   *         - Users
    *       produces:
    *         - application/json
    *       responses:
@@ -86,7 +86,7 @@ export class UserController {
    *             $ref: '#/definitions/User'
    *           description: User Structure
    *       tags:
-   *         - users
+   *         - Users
    *       produces:
    *         - application/json
    *       responses:
@@ -120,7 +120,7 @@ export class UserController {
    *             $ref: '#/definitions/User'
    *           description: User Structure
    *       tags:
-   *         - users
+   *         - Users
    *       produces:
    *         - application/json
    *       responses:
