@@ -5,18 +5,6 @@ import { EXPERIMENT_STATE } from '../models/Experiment';
 
 /**
  * @swagger
- * definitions:
- *   EXPERIMENT_STATE:
- *     required:
- *       - state
- *     properties:
- *       state:
- *         type: string
- *         enum: [inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled]
- */
-
-/**
- * @swagger
  * tags:
  *   - name: Experiment Point
  *     description: CRUD operations related to experiments points
@@ -141,7 +129,7 @@ export class ExperimentConditionController {
    *           required: true
    *           schema:
    *             type: object
-   *             $ref: '#/definitions/EXPERIMENT_STATE'
+   *             $ref: '#/definitions/Experiment/state'
    *           description: Experiment State
    *       tags:
    *         - Experiment Point

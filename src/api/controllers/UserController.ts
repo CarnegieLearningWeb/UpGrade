@@ -33,6 +33,8 @@ export class UserController {
    * /users:
    *    get:
    *       description: Get all the users
+   *       tags:
+   *         - Users
    *       responses:
    *          '200':
    *            description: Successful
@@ -102,7 +104,7 @@ export class UserController {
    * @swagger
    * /users/{id}:
    *    put:
-   *       description: Create New User
+   *       description: Update User
    *       consumes:
    *         - application/json
    *       parameters:
