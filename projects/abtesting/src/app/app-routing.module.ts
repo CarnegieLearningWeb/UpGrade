@@ -13,6 +13,11 @@ const routes: Routes = [
       import('./features/home/home.module').then(m => m.HomeModule)
   },
   {
+    path: 'audit',
+    loadChildren: () =>
+      import('./features/audit/audit.module').then(m => m.AuditModule)
+  },
+  {
     path: '**',
     redirectTo: 'home'
   }

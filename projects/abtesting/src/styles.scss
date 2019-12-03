@@ -42,3 +42,10 @@
   @include angular-material-theme($nature-theme);
   @include custom-components-theme($nature-theme);
 }
+
+// TODO material specific style which cannot be changed by scope
+.mat-drawer-inner-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
