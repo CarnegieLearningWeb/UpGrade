@@ -5,6 +5,8 @@
 
 const packageJson = require('../../../../package.json');
 
+const endpointApi = 'https://ees-backend.herokuapp.com/api';
+
 export const environment = {
   appName: 'EES Client',
   envName: 'DEV',
@@ -24,7 +26,7 @@ export const environment = {
     typescript: packageJson.devDependencies['typescript'],
     cypress: packageJson.devDependencies['cypress']
   },
-  endpoints : {
-
+  api: {
+    getAllExperiments: `${endpointApi}/experiments`
   }
 };
