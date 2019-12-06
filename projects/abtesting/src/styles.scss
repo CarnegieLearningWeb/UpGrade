@@ -1,19 +1,15 @@
-@import 'styles-variables';
-
+@import '~@angular/material/theming';
 @import '~bootstrap/scss/bootstrap-reboot';
 @import '~bootstrap/scss/bootstrap-grid';
-@import 'styles-reset';
-
-@import '~@angular/material/theming';
-
 @include mat-core();
 
+@import './styles/styles-variables';
+@import './styles/styles-reset';
 @import './themes/default-theme';
 @import './themes/light-theme';
 @import './themes/black-theme';
 @import './themes/nature-theme';
-
-@import 'styles-reset.scss-theme';
+@import './styles/styles-reset.scss-theme';
 @import './app/app/app.component.scss-theme';
 @import './app/shared/big-input/big-input/big-input.component.scss-theme';
 
