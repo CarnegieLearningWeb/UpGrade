@@ -1,13 +1,13 @@
 .big-input {
-  width: 100%;
-  transition: all 0.5s;
   display: flex;
+  transition: all 0.5s;
   padding: 10px 10px 10px 20px;
+  width: 100%;
 
   input {
     flex-grow: 1;
     border: 0;
-    font-size: 20px;
     min-width: 100px;
+    font-size: 20px;
   }
 }

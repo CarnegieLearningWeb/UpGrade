@@ -1,1 +1,8 @@
-{}
+{
+  "global.experiment.title": "Experiments",
+  "global.audit-logs.title": "Audit Logs",
+  "global.username.title": "User Name",
+  "home.experiment.text.subtitle": "Create and analyze new experiments",
+  "home.no-experiment.text": "Welcome! <br> Let's start by creating a new experiment!",
+  "home.experiment.add-experiment.text": "ADD EXPERIMENT"
+}
