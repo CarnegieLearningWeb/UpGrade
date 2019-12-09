@@ -1,10 +1,12 @@
-import { Repository, EntityRepository, InsertResult } from 'typeorm';
+import { Repository, EntityRepository } from 'typeorm';
 import { User } from '../models/User';
+
+type UserInput = Omit<User, 'createdAt' | 'updatedAt' | 'versionNumber'>;
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  public saveRawJson(rawData: User): Promise<InsertResult> {
-    return this.createQueryBuilder('user')
+  public async saveRawJson(rawData: UserInput): Promise<User> {
+    const result = await this.createQueryBuilder('user')
       .insert()
       .into(User)
       .values(rawData)
@@ -12,5 +14,7 @@ export class UserRepository extends Repository<User> {
       .setParameter('group', rawData.group)
       .returning('*')
       .execute();
+
+    return result.raw;
   }
 }

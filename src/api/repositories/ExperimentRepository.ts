@@ -1,5 +1,5 @@
 import { Experiment, EXPERIMENT_STATE } from '../models/Experiment';
-import { Repository, EntityRepository, UpdateResult, InsertResult } from 'typeorm';
+import { Repository, EntityRepository } from 'typeorm';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
@@ -14,29 +14,35 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany();
   }
 
-  public updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<UpdateResult> {
-    return this.createQueryBuilder('experiment')
+  public async updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
+    const result = await this.createQueryBuilder('experiment')
       .update()
       .set({ state })
       .where({ id: experimentId })
       .returning('*')
       .execute();
+
+    return result.raw;
   }
 
-  public updateExperiment(experimentId: string, experimentDoc: Partial<Experiment>): Promise<UpdateResult> {
-    return this.createQueryBuilder('experiment')
+  public async updateExperiment(experimentId: string, experimentDoc: Partial<Experiment>): Promise<Experiment> {
+    const result = await this.createQueryBuilder('experiment')
       .update()
       .set(experimentDoc)
       .where({ id: experimentId })
       .returning('*')
       .execute();
+
+    return result.raw;
   }
 
-  public insertExperiment(experimentDoc: Experiment): Promise<InsertResult> {
-    return this.createQueryBuilder()
+  public async insertExperiment(experimentDoc: Experiment): Promise<Experiment> {
+    const result = await this.createQueryBuilder()
       .insert()
       .values(experimentDoc)
       .returning('*')
       .execute();
+
+    return result.raw;
   }
 }

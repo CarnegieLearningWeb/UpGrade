@@ -20,6 +20,7 @@ import { GroupAssignment } from '../models/GroupAssignment';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { UserRepository } from '../repositories/UserRepository';
+import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -154,7 +155,7 @@ export class ExperimentAssignmentService {
     }, []);
   }
 
-  public updateState(experimentId: string, state: EXPERIMENT_STATE): any {
+  public updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
     // TODO populate exclusion table when state is changed to ENROLLING
     if (state === EXPERIMENT_STATE.ENROLLING) {
       this.populateExclusionTable(experimentId);
@@ -175,7 +176,9 @@ export class ExperimentAssignmentService {
     });
     // query all monitored experiment point for this experiment Id
     const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find(subExperiments as any);
-    const uniqueUserIds = new Set(monitoredExperimentPoints.map(({ userId }) => userId));
+    const uniqueUserIds = new Set(
+      monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
+    );
 
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {

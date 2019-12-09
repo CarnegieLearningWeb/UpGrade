@@ -1,8 +1,9 @@
 import { Entity, PrimaryColumn, ManyToOne } from 'typeorm';
 import { ExperimentCondition } from './ExperimentCondition';
+import { BaseModel } from './base/BaseModel';
 
 @Entity()
-export class GroupAssignment {
+export class GroupAssignment extends BaseModel {
   @PrimaryColumn()
   public experimentId: string;
 

@@ -1,9 +1,10 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 import { Experiment } from './Experiment';
+import { BaseModel } from './base/BaseModel';
 
 @Entity()
-export class ExperimentCondition {
+export class ExperimentCondition extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 

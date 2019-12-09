@@ -1,7 +1,8 @@
 import { Entity, PrimaryColumn } from 'typeorm';
+import { BaseModel } from './base/BaseModel';
 
 @Entity()
-export class GroupExclusion {
+export class GroupExclusion extends BaseModel {
   @PrimaryColumn()
   public experimentId: string;
 
