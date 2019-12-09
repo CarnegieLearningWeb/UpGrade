@@ -1,2 +1,23 @@
-<h1>A/B Testing</h1>
-<app-experiment-list></app-experiment-list>
+<div class="experiments-container">
+  <h1 class="title">{{ 'global.experiment.title' | translate }}</h1>
+  <span
+    class="subtitle"
+    [innerHTML]="'home.experiment.text.subtitle' | translate"
+  ></span>
+
+  <div *ngIf="(experiments$ | async).length; else noExperimentTemplate">
+    <app-experiment-list></app-experiment-list>
+  </div>
+  <ng-template #noExperimentTemplate>
+    <div class="no-experiment-container">
+      <span
+        class="text"
+        [innerHTML]="'home.no-experiment.text' | translate"
+      ></span>
+      <button mat-flat-button color="primary">
+        <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
+        {{ 'home.experiment.add-experiment.text' | translate }}
+      </button>
+    </div>
+  </ng-template>
+</div>

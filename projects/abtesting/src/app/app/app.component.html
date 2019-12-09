@@ -1,28 +1,46 @@
 <mat-drawer-container>
-  <mat-drawer mode="side" opened class="drawer__side-nav">
-    <mat-list class="drawer__options-start">
-      <mat-list-item>
-        <a
-          class="nav-item"
-          routerLinkActive="selected"
-          [routerLink]="['/home']"
-        >
-          Experiment
-        </a>
-      </mat-list-item>
-      <mat-list-item>
-        <a
-          class="nav-item"
-          routerLinkActive="selected"
-          [routerLink]="['/audit']"
-        >
-          Audit Logs
-        </a></mat-list-item
-      >
-    </mat-list>
-    <mat-list class="drawer__options-end">
-      <mat-list-item>User Name</mat-list-item>
-    </mat-list>
+  <mat-drawer mode="side" opened>
+    <div class="drawer-container">
+      <div class="logo">
+        <!-- TODO: Replace with actual logo -->
+        <span>LOGO</span>
+      </div>
+      <div class="list-item-container">
+        <mat-list class="list">
+          <mat-list-item>
+            <a
+              class="nav-item"
+              routerLinkActive="selected"
+              [routerLink]="['/home']"
+              #linkInfo="routerLinkActive"
+            >
+              <app-shared-icons
+                class="icon"
+                [iconType]="
+                  linkInfo.isActive ? 'experiment' : 'inactive-experiment'
+                "
+              ></app-shared-icons>
+              {{ 'global.experiment.title' | translate }}
+            </a>
+          </mat-list-item>
+          <mat-list-item>
+            <a
+              class="nav-item"
+              routerLinkActive="selected"
+              [routerLink]="['/audit']"
+              #linkInfo2="routerLinkActive"
+            >
+              <app-shared-icons
+                class="icon"
+                [iconType]="linkInfo2.isActive ? 'audit' : 'inactive-audit'"
+              ></app-shared-icons>
+              {{ 'global.audit-logs.title' | translate }}
+            </a></mat-list-item
+          >
+        </mat-list>
+        <span class="username">{{ 'global.username.title' | translate }}</span>
+      </div>
+    </div>
   </mat-drawer>
   <mat-drawer-content class="drawer__main-content">
     <router-outlet></router-outlet>

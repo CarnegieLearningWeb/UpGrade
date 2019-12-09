@@ -1,0 +1,49 @@
+@import '../../../../styles/styles-variables.scss';
+
+.experiments-container {
+  background-color: #f0f2f9;
+  padding: 2rem 4.375rem;
+  height: 100%;
+
+  .title {
+    margin-bottom: 0;
+    color: #222b45;
+    font-size: $text-size-xxxxx-large;
+    font-weight: 400;
+  }
+
+  .subtitle {
+    display: block;
+    margin-bottom: 40px;
+    color: #929fae;
+    font-size: $text-size-normal;
+  }
+
+  .no-experiment-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    box-shadow: 0 0 7px grey;
+    background-color: $white;
+    height: calc(100% - 112px);
+
+    .text {
+      text-align: center;
+      line-height: 60px;
+      font-size: $text-size-xxx-large;
+    }
+
+    button {
+      margin-top: 30px;
+      background-color: $blue;
+      color: $white;
+
+      .icon {
+        margin-right: 5px;
+        vertical-align: unset;
+      }
+    }
+  }
+}
