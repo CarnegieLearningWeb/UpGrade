@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { ExperimentService } from '../store/experiments/experiments.service';
 import { Observable, of } from 'rxjs';
-import { Experiment } from '../store/experiments/experiments.model';
+import { Experiment } from '../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-home',

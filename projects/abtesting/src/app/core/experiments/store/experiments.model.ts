@@ -1,4 +1,5 @@
 import { EntityState } from '@ngrx/entity';
+import { AppState } from '../../core.module';
 
 export enum EXPERIMENT_STATE {
   INACTIVE = 'inactive',
@@ -54,3 +55,7 @@ export interface Experiment {
 }
 
 export interface ExperimentState extends EntityState<Experiment> {}
+
+export interface State extends AppState {
+  experiments: ExperimentState;
+}

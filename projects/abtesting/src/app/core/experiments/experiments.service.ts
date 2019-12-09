@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Experiment } from './experiments.model';
+import { Experiment } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
-import { AppState } from '../../../../core/core.state';
-import { selectAllExperiment } from './experiments.selectors';
-import * as experimentAction from './experiments.actions';
+import { selectAllExperiment } from './store/experiments.selectors';
+import * as experimentAction from './store//experiments.actions';
+import { AppState } from '../core.state';
 
 @Injectable()
 export class ExperimentService {
