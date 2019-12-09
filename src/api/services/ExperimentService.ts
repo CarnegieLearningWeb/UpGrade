@@ -88,7 +88,7 @@ export class ExperimentService {
     const { conditions, segments, ...expDoc } = experiment;
     let experimentDoc: Experiment;
     try {
-      experimentDoc = ((await this.experimentRepository.updateExperiment(expDoc.id, expDoc)) as any).raw[0];
+      experimentDoc = (await this.experimentRepository.updateExperiment(expDoc.id, expDoc))[0];
     } catch (error) {
       throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
     }
@@ -132,7 +132,7 @@ export class ExperimentService {
         ) as any,
       ]);
     } catch (error) {
-      throw new Error(`Error in creating conditions and segments "addExperimentInDB" ${error}`);
+      throw new Error(`Error in creating conditions and segments "updateExperimentInDB" ${error}`);
     }
 
     const conditionDocToReturn = conditionDocs.map(conditionDoc => {
@@ -153,7 +153,7 @@ export class ExperimentService {
     // saving experiment doc
     let experimentDoc: Experiment;
     try {
-      experimentDoc = ((await this.experimentRepository.insertExperiment(expDoc as any)) as any).raw[0];
+      experimentDoc = (await this.experimentRepository.insertExperiment(expDoc as any))[0];
     } catch (error) {
       throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
     }
