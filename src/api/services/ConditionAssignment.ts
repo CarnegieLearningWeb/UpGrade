@@ -1,4 +1,4 @@
-import { EXPERIMENT_STATE, CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE } from '../models/Experiment';
+import { EXPERIMENT_STATE, CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE } from 'ees_types';
 
 // TODO - delete this after completing the logic
 interface Experiment {

@@ -1,7 +1,7 @@
 import { JsonController, Post, BodyParam, Put } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
-import { EXPERIMENT_STATE } from '../models/Experiment';
+import { EXPERIMENT_STATE } from 'ees_types';
 
 /**
  * @swagger
@@ -14,7 +14,7 @@ export class ExperimentConditionController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService
-  ) { }
+  ) {}
 
   /**
    * @swagger
@@ -63,12 +63,7 @@ export class ExperimentConditionController {
     @BodyParam('userId') userId: string,
     @BodyParam('userEnvironment') userEnvironment: object
   ): any {
-    return this.experimentAssignmentService.markExperimentPoint(
-      experimentId,
-      experimentPoint,
-      userId,
-      userEnvironment
-    );
+    return this.experimentAssignmentService.markExperimentPoint(experimentId, experimentPoint, userId, userEnvironment);
   }
 
   /**
@@ -104,10 +99,7 @@ export class ExperimentConditionController {
     @BodyParam('userId') userId: string,
     @BodyParam('userEnvironment') userEnvironment: any
   ): any {
-    return this.experimentAssignmentService.getAllExperimentConditions(
-      userId,
-      userEnvironment
-    );
+    return this.experimentAssignmentService.getAllExperimentConditions(userId, userEnvironment);
   }
 
   /**

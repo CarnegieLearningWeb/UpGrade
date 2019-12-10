@@ -1,5 +1,6 @@
-import { Experiment, EXPERIMENT_STATE } from '../models/Experiment';
+import { EXPERIMENT_STATE } from 'ees_types';
 import { Repository, EntityRepository } from 'typeorm';
+import { Experiment } from '../models/Experiment';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {

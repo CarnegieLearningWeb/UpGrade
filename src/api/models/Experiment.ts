@@ -3,31 +3,7 @@ import { IsNotEmpty } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentSegment } from './ExperimentSegment';
 import { BaseModel } from './base/BaseModel';
-
-export enum CONSISTENCY_RULE {
-  INDIVIDUAL = 'individual',
-  EXPERIMENT = 'experiment',
-  GROUP = 'group',
-}
-
-export enum ASSIGNMENT_UNIT {
-  INDIVIDUAL = 'individual',
-  GROUP = 'group',
-}
-
-export enum POST_EXPERIMENT_RULE {
-  CONTINUE = 'continue',
-  REVERT_TO_DEFAULT = 'revertToDefault',
-}
-
-export enum EXPERIMENT_STATE {
-  INACTIVE = 'inactive',
-  DEMO = 'demo',
-  SCHEDULED = 'scheduled',
-  ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollmentComplete',
-  CANCELLED = 'cancelled',
-}
+import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'ees_types';
 
 @Entity()
 export class Experiment extends BaseModel {
