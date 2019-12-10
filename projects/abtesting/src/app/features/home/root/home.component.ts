@@ -1,7 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { ExperimentService } from '../store/experiments/experiments.service';
-import { Observable, of } from 'rxjs';
-import { Experiment } from '../store/experiments/experiments.model';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Experiment } from '../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-home',
@@ -9,14 +9,11 @@ import { Experiment } from '../store/experiments/experiments.model';
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit {
-  // TODO: Will be un commented after experiments list view
-  // experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
-  experiments$: Observable<Experiment[]> = of([]);
+export class HomeComponent {
+
+  experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
+  isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   constructor(private experimentService: ExperimentService) {
-    // load all experiment
     this.experimentService.loadExperiments();
   }
-
-  ngOnInit() {}
 }

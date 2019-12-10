@@ -6,22 +6,12 @@ import { SharedModule } from '../../shared/shared.module';
 import { HomeComponent } from './root/home.component';
 import { HomeRoutingModule } from './home-routing.module';
 import { ExperimentListComponent } from './components/experiment-list/experiment-list.component';
-import { StoreModule } from '@ngrx/store';
-import { FEATURE_NAME, reducers } from './home.state';
-import { EffectsModule } from '@ngrx/effects';
-import { ExperimentEffects } from './store/experiments/experiments.effects';
-import { ExperimentDataService } from './store/experiments/experiments.data.service';
-import { ExperimentService } from './store/experiments/experiments.service';
+import { ExperimentStateColorPipe } from './components/pipes/experiment-state-color.pipe';
+import { FormatDatePipe } from './components/pipes/format-date.pipe';
 
 @NgModule({
-  declarations: [HomeComponent, ExperimentListComponent],
-  imports: [
-    CommonModule,
-    SharedModule,
-    HomeRoutingModule,
-    StoreModule.forFeature(FEATURE_NAME, reducers),
-    EffectsModule.forFeature([ExperimentEffects])
-  ],
-  providers: [ExperimentDataService, ExperimentService]
+  declarations: [HomeComponent, ExperimentListComponent, ExperimentStateColorPipe, FormatDatePipe],
+  imports: [CommonModule, SharedModule, HomeRoutingModule],
+  providers: []
 })
 export class HomeModule {}

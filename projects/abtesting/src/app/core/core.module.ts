@@ -45,6 +45,7 @@ import {
   selectEffectiveTheme,
   selectSettingsStickyHeader
 } from './settings/settings.selectors';
+import { ExperimentsModule } from './experiments/experiments.module';
 
 export {
   TitleService,
@@ -78,6 +79,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     // angular
     CommonModule,
     HttpClientModule,
+
+    // Store Modules
+    ExperimentsModule,
 
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),

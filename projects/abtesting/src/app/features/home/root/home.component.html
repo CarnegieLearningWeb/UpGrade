@@ -5,19 +5,27 @@
     [innerHTML]="'home.experiment.text.subtitle' | translate"
   ></span>
 
-  <div *ngIf="(experiments$ | async).length; else noExperimentTemplate">
-    <app-experiment-list></app-experiment-list>
-  </div>
-  <ng-template #noExperimentTemplate>
-    <div class="no-experiment-container">
-      <span
-        class="text"
-        [innerHTML]="'home.no-experiment.text' | translate"
-      ></span>
-      <button mat-flat-button color="primary">
-        <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
-        {{ 'home.experiment.add-experiment.text' | translate }}
-      </button>
+  <ng-container *ngIf="!(isLoadingExperiments$ | async); else loadingExperimentState">
+    <div *ngIf="(experiments$ | async).length; else noExperimentTemplate">
+      <home-experiment-list></home-experiment-list>
     </div>
-  </ng-template>
+    <ng-template #noExperimentTemplate>
+      <div class="no-experiment-container">
+        <span
+          class="text"
+          [innerHTML]="'home.no-experiment.text' | translate"
+        ></span>
+        <button mat-flat-button color="primary">
+          <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
+          {{ 'home.experiment.add-experiment.text' | translate }}
+        </button>
+      </div>
+    </ng-template>
+  </ng-container>
 </div>
+
+<ng-template #loadingExperimentState>
+  <div class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>

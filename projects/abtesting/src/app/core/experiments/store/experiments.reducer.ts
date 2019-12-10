@@ -14,12 +14,18 @@ export const {
   selectTotal
 } = adapter.getSelectors();
 
-export const initialState: ExperimentState = adapter.getInitialState({});
+export const initialState: ExperimentState = adapter.getInitialState({
+  isLoadingExperiment: false
+});
 
 const reducer = createReducer(
   initialState,
+  on(experimentsAction.actionGetAllExperiment, state => ({
+    ...state,
+    isLoadingExperiment: true
+  })),
   on(experimentsAction.actionStoreExperiment, (state, { experiments }) => {
-    return adapter.addMany(experiments, state);
+    return adapter.addMany(experiments, { ...state, isLoadingExperiment: false });
   })
 );
 

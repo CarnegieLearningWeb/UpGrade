@@ -8,11 +8,11 @@ $link-hover-decoration: none;
 $label-margin-bottom: 0;
 
 $grid-breakpoints: (
-  xs: 0,
-  sm: 576px,
-  md: 768px,
-  lg: 992px,
-  xl: 1200px
+xs: 0,
+sm: 576px,
+md: 768px,
+lg: 992px,
+xl: 1200px
 );
 
 $success-colors: mat-palette($mat-green, 400);
@@ -20,7 +20,9 @@ $warning-colors: mat-palette($mat-amber, 400);
 
 $blue: #3366ff;
 $black: #000;
+$black-2: #222b45;
 $white: #fff;
+$grey: #808080;
 $light-grey: #d3d3d3;
 
 $text-size-xxxxx-large: 2rem;

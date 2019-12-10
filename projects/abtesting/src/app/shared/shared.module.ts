@@ -24,6 +24,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSliderModule } from '@angular/material/';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -120,6 +123,9 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
     MatSnackBarModule,
     MatSlideToggleModule,
     MatDividerModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
 
     FontAwesomeModule
   ],
@@ -156,6 +162,9 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
     MatSliderModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
 
     FontAwesomeModule,
 

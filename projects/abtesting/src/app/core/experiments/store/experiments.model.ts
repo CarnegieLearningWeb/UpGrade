@@ -1,4 +1,5 @@
 import { EntityState } from '@ngrx/entity';
+import { AppState } from '../../core.module';
 
 export enum EXPERIMENT_STATE {
   INACTIVE = 'inactive',
@@ -44,13 +45,22 @@ export interface Experiment {
   id: string;
   name: string;
   description: string;
+  createdAt: string;
+  updatedAt: string;
   state: EXPERIMENT_STATE;
   consistencyRule: CONSISTENCY_RULE;
   assignmentUnit: ASSIGNMENT_UNIT;
   postExperimentRule: POST_EXPERIMENT_RULE;
   group: string;
+  tags: string[];
   conditions: ExperimentCondition[];
   segments: ExperimentSegment[];
 }
 
-export interface ExperimentState extends EntityState<Experiment> {}
+export interface ExperimentState extends EntityState<Experiment> {
+  isLoadingExperiment: boolean;
+}
+
+export interface State extends AppState {
+  experiments: ExperimentState;
+}
