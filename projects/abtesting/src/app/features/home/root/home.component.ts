@@ -6,11 +6,10 @@ import { ExperimentService } from '../../../core/experiments/experiments.service
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
+  styleUrls: ['./home.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
-
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   constructor(private experimentService: ExperimentService) {

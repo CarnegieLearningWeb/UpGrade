@@ -24,7 +24,7 @@ import {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  styleUrls: ['./app.component.less'],
   animations: [routeAnimations]
 })
 export class AppComponent implements OnInit {
