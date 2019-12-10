@@ -4,5 +4,12 @@
   "global.username.title": "User Name",
   "home.experiment.text.subtitle": "Create and analyze new experiments",
   "home.no-experiment.text": "Welcome! <br> Let's start by creating a new experiment!",
-  "home.experiment.add-experiment.text": "ADD EXPERIMENT"
+  "home.experiment.add-experiment.text": "ADD EXPERIMENT",
+  "home.experiments-table.text.name": "NAME",
+  "home.experiments-table.text.status": "STATUS",
+  "home.experiments-table.text.experiment-segments": "EXPERIMENT SEGMENTS",
+  "home.experiments-table.text.start-date": "START DATE",
+  "home.experiments-table.text.tags": "TAGS",
+  "home.experiments-table.text.enrollment": "ENROLLMENT",
+  "home.experiments-table.text.view": "View"
 }

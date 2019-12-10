@@ -1,13 +1,17 @@
 @import '../../../../styles/styles-variables.scss';
 
+// File scope scss variables
+$white-background: #f0f2f9;
+$grey-text-color: #929fae;
+
 .experiments-container {
-  background-color: #f0f2f9;
+  background-color: $white-background;
   padding: 2rem 4.375rem;
   height: 100%;
 
   .title {
     margin-bottom: 0;
-    color: #222b45;
+    color: $black-2;
     font-size: $text-size-xxxxx-large;
     font-weight: 400;
   }
@@ -15,7 +19,7 @@
   .subtitle {
     display: block;
     margin-bottom: 40px;
-    color: #929fae;
+    color: $grey-text-color;
     font-size: $text-size-normal;
   }
 
@@ -25,7 +29,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    box-shadow: 0 0 7px grey;
+    box-shadow: 0 0 7px $grey;
     background-color: $white;
     height: calc(100% - 112px);
 
@@ -45,5 +49,12 @@
         vertical-align: unset;
       }
     }
+  }
+
+  .loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 112px);
   }
 }
