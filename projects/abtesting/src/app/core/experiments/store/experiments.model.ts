@@ -1,30 +1,18 @@
 import { EntityState } from '@ngrx/entity';
 import { AppState } from '../../core.module';
+import {
+  CONSISTENCY_RULE,
+  ASSIGNMENT_UNIT,
+  POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE
+} from 'ees_types';
 
-export enum EXPERIMENT_STATE {
-  INACTIVE = 'inactive',
-  DEMO = 'demo',
-  SCHEDULED = 'scheduled',
-  ENROLLING = 'enrolling',
-  ENROLLMENT_COMPLETE = 'enrollmentComplete',
-  CANCELLED = 'cancelled'
-}
-
-export enum CONSISTENCY_RULE {
-  INDIVIDUAL = 'individual',
-  EXPERIMENT = 'experiment',
-  GROUP = 'group'
-}
-
-export enum ASSIGNMENT_UNIT {
-  INDIVIDUAL = 'individual',
-  GROUP = 'group'
-}
-
-export enum POST_EXPERIMENT_RULE {
-  CONTINUE = 'continue',
-  REVERT_TO_DEFAULT = 'revertToDefault'
-}
+export {
+  CONSISTENCY_RULE,
+  ASSIGNMENT_UNIT,
+  POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE
+};
 
 export interface ExperimentCondition {
   id: string;
