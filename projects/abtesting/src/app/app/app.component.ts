@@ -2,14 +2,11 @@ import browser from 'browser-detect';
 import { Component, OnInit } from '@angular/core';
 import { environment as env } from '../../environments/environment';
 import {
-  authLogin,
-  authLogout,
   routeAnimations,
   LocalStorageService,
-  AppState
 } from '../core/core.module';
 import { SettingsService } from '../core/settings/settings.service';
-import { Store } from '@ngrx/store';
+import { AuthService } from '../core/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -37,7 +34,7 @@ export class AppComponent implements OnInit {
   constructor(
     private storageService: LocalStorageService,
     private settingsService: SettingsService,
-    private store: Store<AppState>
+    private authService: AuthService
   ) {}
 
   private static isIEorEdgeOrSafari() {
@@ -52,11 +49,11 @@ export class AppComponent implements OnInit {
   }
 
   onLoginClick() {
-    this.store.dispatch(authLogin());
+    this.authService.authLogin();
   }
 
   onLogoutClick() {
-    this.store.dispatch(authLogout());
+    this.authService.authLogout();
   }
 
   onLanguageSelect({ value: language }) {
