@@ -2,11 +2,8 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Experiment } from '../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../core/experiments/experiments.service';
-import { Store, select } from '@ngrx/store';
-import { AppState } from '../../../core/core.state';
-import { selectEffectiveTheme } from '../../../core/core.module';
-import * as SettingsActions from '../../../core/settings/settings.actions';
-import { ThemeOptions } from '../../../core/settings/settings.model';
+import { ThemeOptions } from '../../../core/settings/store/settings.model';
+import { SettingsService } from '../../../core/settings/settings.service';
 
 @Component({
   selector: 'app-home',
@@ -24,16 +21,16 @@ export class HomeComponent {
 
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
-  theme$ = this.store$.pipe(select(selectEffectiveTheme));
+  theme$ = this.settingsService.theme$;
 
   constructor(
     private experimentService: ExperimentService,
-    private store$: Store<AppState>
+    private settingsService: SettingsService
   ) {
     this.experimentService.loadExperiments();
   }
 
   changeTheme(theme) {
-    this.store$.dispatch(SettingsActions.actionSettingsChangeTheme({ theme }));
+    this.settingsService.changeTheme(theme);
   }
 }
