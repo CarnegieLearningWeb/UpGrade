@@ -1,4 +1,8 @@
 @import '../../../node_modules/ng-zorro-antd/ng-zorro-antd.less';
+@import './themes/black-theme.less';
+@import './themes/default-theme.less';
+@import './themes/light-theme.less';
+@import './themes/nature-theme.less';
 // The prefix to use on all css classes from ant.
 @ant-prefix: ant;
 
@@ -16,6 +20,19 @@
 @normal-color: #d9d9d9;
 @white: #fff;
 @black: #000;
+
+.get-theme-colors(@theme) when (@theme = 'default-theme') {
+  .default-theme();
+}
+.get-theme-colors(@theme) when (@theme = 'black-theme') {
+  .black-theme();
+}
+.get-theme-colors(@theme) when (@theme = 'light-theme') {
+  .light-theme();
+}
+.get-theme-colors(@theme) when (@theme = 'nature-theme') {
+  .nature-theme();
+}
 
 // Color used by default to control hover and active backgrounds and for
 // alert info backgrounds.

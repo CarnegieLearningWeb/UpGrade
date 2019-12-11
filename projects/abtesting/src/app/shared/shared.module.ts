@@ -69,11 +69,33 @@ library.add(
   faBook
 );
 
+import { NzLayoutModule } from 'ng-zorro-antd/layout';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzMessageModule } from 'ng-zorro-antd/message';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+
 import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, TranslateModule, FontAwesomeModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    FontAwesomeModule,
+    NzLayoutModule,
+    NzIconModule,
+    NzSpinModule,
+    NzButtonModule,
+    NzTableModule,
+    NzTagModule,
+    NzMessageModule,
+    NzSelectModule
+  ],
   declarations: [RtlSupportDirective, SharedIconsComponent],
   exports: [
     CommonModule,
@@ -86,7 +108,16 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
 
     RtlSupportDirective,
 
-    SharedIconsComponent
+    SharedIconsComponent,
+
+    NzLayoutModule,
+    NzIconModule,
+    NzSpinModule,
+    NzButtonModule,
+    NzTableModule,
+    NzTagModule,
+    NzMessageModule,
+    NzSelectModule
   ]
 })
 export class SharedModule {}

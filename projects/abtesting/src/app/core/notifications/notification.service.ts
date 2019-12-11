@@ -1,54 +1,48 @@
 import { Injectable, NgZone } from '@angular/core';
-// import { MatSnackBar, MatSnackBarConfig } from '@angular/material';
+import { NzMessageService } from 'ng-zorro-antd';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
   constructor(
-    // private readonly snackBar: MatSnackBar,
+    private message: NzMessageService,
     private readonly zone: NgZone
   ) {}
 
   default(message: string) {
     this.show(message, {
-      duration: 2000,
-      panelClass: 'default-notification-overlay'
+      duration: 2000
     });
   }
 
   info(message: string) {
     this.show(message, {
-      duration: 2000,
-      panelClass: 'info-notification-overlay'
+      duration: 2000
     });
   }
 
   success(message: string) {
     this.show(message, {
-      duration: 2000,
-      panelClass: 'success-notification-overlay'
+      duration: 2000
     });
   }
 
   warn(message: string) {
     this.show(message, {
-      duration: 2500,
-      panelClass: 'warning-notification-overlay'
+      duration: 2500
     });
   }
 
   error(message: string) {
     this.show(message, {
-      duration: 3000,
-      panelClass: 'error-notification-overlay'
+      duration: 3000
     });
   }
 
-  // private show(message: string, configuration: MatSnackBarConfig) {
   private show(message: string, configuration: any) {
-    // Need to open snackBar from Angular zone to prevent issues with its position per
-    // https://stackoverflow.com/questions/50101912/snackbar-position-wrong-when-use-errorhandler-in-angular-5-and-material
-    // this.zone.run(() => this.snackBar.open(message, null, configuration));
+    this.zone.run(() =>
+      this.message.error(message, { nzDuration: configuration.duration })
+    );
   }
 }

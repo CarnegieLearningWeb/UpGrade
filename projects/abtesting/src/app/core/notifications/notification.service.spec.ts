@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
 import { NotificationService } from './notification.service';
-// import { MatSnackBar } from '@angular/material';
 import { Overlay } from '@angular/cdk/overlay';
 
 describe('NotificationsService', () => {
@@ -9,7 +8,6 @@ describe('NotificationsService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      // providers: [NotificationService, MatSnackBar, Overlay]
       providers: [NotificationService, Overlay]
     });
     service = TestBed.get(NotificationService);

@@ -1,10 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ViewChild
-} from '@angular/core';
-import { Experiment } from '../../../../core/experiments/store/experiments.model';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 
 @Component({
@@ -13,30 +7,8 @@ import { ExperimentService } from '../../../../core/experiments/experiments.serv
   styleUrls: ['./experiment-list.component.less'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExperimentListComponent implements OnInit {
-  // displayedColumns: string[] = ['name', 'state', 'experimentSegments', 'startDate', 'tags', 'enrollment', 'view'];
-  // allExperiments: MatTableDataSource<Experiment>;
+export class ExperimentListComponent {
+  allExperiments = this.experimentService.experiments$;
 
-  // @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  // @ViewChild(MatSort, {static: true}) sort: MatSort;
-
-  // constructor(private experimentService: ExperimentService) {
-  //   this.experimentService.experiments$.subscribe(allExperiments => {
-  //     this.allExperiments = new MatTableDataSource(allExperiments);
-  //   });
-  // }
-
-  ngOnInit() {
-    //   this.allExperiments.paginator = this.paginator;
-    //   this.allExperiments.sort = this.sort;
-  }
-
-  // // TODO: Update experiment filter logic
-  // applyFilter(filterValue: string) {
-  //   this.allExperiments.filter = filterValue.trim().toLowerCase();
-
-  //   if (this.allExperiments.paginator) {
-  //     this.allExperiments.paginator.firstPage();
-  //   }
-  // }
+  constructor(private experimentService: ExperimentService) {}
 }

@@ -1,60 +1,75 @@
-// @import '../../../../styles/styles-variables.scss';
+@import '../../../../styles/styles-variables.less';
+@import '../../../../theme.less';
 
-// // File scope scss variables
-// $white-background: #f0f2f9;
-// $grey-text-color: #929fae;
+// File scope less variables
+@white-background: #f0f2f9;
+@grey-text-color: #929fae;
 
-// .experiments-container {
-//   background-color: $white-background;
-//   padding: 2rem 4.375rem;
-//   height: 100%;
+.apply-component-theme(@theme) {
+  .get-theme-colors(@theme);
 
-//   .title {
-//     margin-bottom: 0;
-//     color: $black-2;
-//     font-size: $text-size-xxxxx-large;
-//     font-weight: 400;
-//   }
+  .experiments-container {
+    background-color: @primary-color;
+    padding: 2rem 4.375rem;
+    height: 100%;
+    overflow: scroll;
 
-//   .subtitle {
-//     display: block;
-//     margin-bottom: 40px;
-//     color: $grey-text-color;
-//     font-size: $text-size-normal;
-//   }
+    .theme-options {
+      display: flex;
+      justify-content: flex-end;
+    }
 
-//   .no-experiment-container {
-//     display: flex;
-//     flex-direction: column;
-//     align-items: center;
-//     justify-content: center;
-//     border-radius: 10px;
-//     box-shadow: 0 0 7px $grey;
-//     background-color: $white;
-//     height: calc(100% - 112px);
+    .ant-select-selection {
+      width: 100px;
+    }
 
-//     .text {
-//       text-align: center;
-//       line-height: 60px;
-//       font-size: $text-size-xxx-large;
-//     }
+    .title {
+      margin-bottom: 0;
+      color: @black-2;
+      font-size: @text-size-xxxxx-large;
+      font-weight: 400;
+    }
 
-//     button {
-//       margin-top: 30px;
-//       background-color: $blue;
-//       color: $white;
+    .subtitle {
+      display: block;
+      margin-bottom: 40px;
+      color: @grey-text-color;
+      font-size: @text-size-normal;
+    }
 
-//       .icon {
-//         margin-right: 5px;
-//         vertical-align: unset;
-//       }
-//     }
-//   }
+    .no-experiment-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-shadow: 0 0 7px @grey;
+      background-color: @white;
+      height: calc(100% - 112px);
 
-//   .loading-container {
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     height: calc(100% - 112px);
-//   }
-// }
+      .text {
+        text-align: center;
+        line-height: 60px;
+        font-size: @text-size-xxx-large;
+      }
+
+      button {
+        margin-top: 30px;
+        background-color: @blue;
+        color: @white;
+
+        .icon {
+          margin-right: 5px;
+          vertical-align: unset;
+        }
+      }
+    }
+
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: calc(100% - 112px);
+    }
+  }
+}

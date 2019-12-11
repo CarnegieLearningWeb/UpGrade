@@ -16,6 +16,13 @@ export interface SettingsState {
   hour: number;
 }
 
+export enum ThemeOptions {
+  DEFAULT_THEME = 'default-theme',
+  DARK_THEME = 'black-theme',
+  NATURE_THEME = 'nature-theme',
+  LIGHT_THEME = 'light-theme'
+}
+
 export interface State extends AppState {
   settings: SettingsState;
 }

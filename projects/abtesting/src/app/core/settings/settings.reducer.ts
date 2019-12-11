@@ -1,4 +1,8 @@
-import { SettingsState, NIGHT_MODE_THEME } from './settings.model';
+import {
+  SettingsState,
+  NIGHT_MODE_THEME,
+  ThemeOptions
+} from './settings.model';
 import {
   actionSettingsChangeAnimationsElements,
   actionSettingsChangeAnimationsPage,
@@ -13,7 +17,7 @@ import { Action, createReducer, on } from '@ngrx/store';
 
 export const initialState: SettingsState = {
   language: 'en',
-  theme: 'DEFAULT-THEME',
+  theme: ThemeOptions.DEFAULT_THEME,
   autoNightMode: false,
   nightTheme: NIGHT_MODE_THEME,
   stickyHeader: true,

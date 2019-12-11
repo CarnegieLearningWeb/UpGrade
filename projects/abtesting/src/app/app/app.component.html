@@ -1,48 +1,30 @@
-<!-- <mat-drawer-container [class]="theme$ | async">
-  <mat-drawer mode="side" opened>
-    <div class="drawer-container">
+<nz-layout class="layout" [ngClass]="theme$ | async">
+  <div nz-row class="row">
+    <div nz-col nzSpan="4" class="sidebar">
       <div class="logo">
         <span>LOGO</span>
       </div>
+
       <div class="list-item-container">
-        <mat-list class="list">
-          <mat-list-item>
-            <a
-              class="nav-item"
-              routerLinkActive="selected"
-              [routerLink]="['/home']"
-              #linkInfo="routerLinkActive"
-            >
-              <app-shared-icons
-                class="icon"
-                [iconType]="
-                  linkInfo.isActive ? 'experiment' : 'inactive-experiment'
-                "
-              ></app-shared-icons>
-              {{ 'global.experiment.title' | translate }}
+        <ul nz-menu class="list">
+          <li nz-menu-item>
+            <a routerLinkActive="selected" [routerLink]="['/home']">
+              <i nz-icon nzType="file-done"></i>
+              <span [innerHTML]="'global.experiment.title' | translate"></span>
             </a>
-          </mat-list-item>
-          <mat-list-item>
-            <a
-              class="nav-item"
-              routerLinkActive="selected"
-              [routerLink]="['/audit']"
-              #linkInfo2="routerLinkActive"
-            >
-              <app-shared-icons
-                class="icon"
-                [iconType]="linkInfo2.isActive ? 'audit' : 'inactive-audit'"
-              ></app-shared-icons>
-              {{ 'global.audit-logs.title' | translate }}
-            </a></mat-list-item
-          >
-        </mat-list>
+          </li>
+          <li nz-menu-item>
+            <a routerLinkActive="selected" [routerLink]="['/audit']">
+              <i nz-icon nzType="menu"></i>
+              <span [innerHTML]="'global.audit-logs.title' | translate"></span>
+            </a>
+          </li>
+        </ul>
         <span class="username">{{ 'global.username.title' | translate }}</span>
       </div>
     </div>
-  </mat-drawer>
-  <mat-drawer-content class="drawer__main-content">
-    <router-outlet></router-outlet>
-  </mat-drawer-content>
-</mat-drawer-container> -->
-app Works
+    <div nz-col nzSpan="20" class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</nz-layout>

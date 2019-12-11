@@ -48,7 +48,6 @@ export class AppComponent implements OnInit {
   stickyHeader$: Observable<boolean>;
   language$: Observable<string>;
   theme$: Observable<string>;
-
   constructor(
     private store: Store<AppState>,
     private storageService: LocalStorageService
