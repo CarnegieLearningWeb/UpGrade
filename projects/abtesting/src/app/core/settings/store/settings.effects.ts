@@ -14,10 +14,8 @@ import {
   filter
 } from 'rxjs/operators';
 
-import { selectSettingsState } from '../core.state';
-import { LocalStorageService } from '../local-storage/local-storage.service';
-import { AnimationsService } from '../animations/animations.service';
-import { TitleService } from '../title/title.service';
+import { LocalStorageService } from '../../local-storage/local-storage.service';
+import { TitleService } from '../../title/title.service';
 
 import {
   actionSettingsChangeAnimationsElements,
@@ -33,9 +31,11 @@ import {
   selectEffectiveTheme,
   selectSettingsLanguage,
   selectPageAnimations,
-  selectElementsAnimations
+  selectElementsAnimations,
+  selectSettingsState
 } from './settings.selectors';
 import { State } from './settings.model';
+import { AnimationsService } from '../../animations/animations.service';
 
 export const SETTINGS_KEY = 'SETTINGS';
 

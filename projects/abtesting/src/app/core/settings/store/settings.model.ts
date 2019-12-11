@@ -1,4 +1,4 @@
-import { AppState } from '../core.module';
+import { AppState } from '../../core.module';
 
 export type Language = 'en' | 'sk' | 'de' | 'fr' | 'es' | 'pt-br' | 'he';
 
