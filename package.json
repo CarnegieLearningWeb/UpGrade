@@ -57,6 +57,7 @@
     "@ngx-translate/http-loader": "^4.0.0",
     "bootstrap": "^4.3.1",
     "browser-detect": "^0.2.28",
+    "ees_types": "github:CarnegieLearningWeb/educational-experiment-types#master",
     "hammerjs": "^2.0.8",
     "ng-zorro-antd": "^8.5.2",
     "rxjs": "~6.5.0",
