@@ -23,10 +23,6 @@ import {
   metaReducers,
   selectRouterState
 } from './core.state';
-import { AuthEffects } from './auth/auth.effects';
-import { selectIsAuthenticated, selectAuth } from './auth/auth.selectors';
-import { authLogin, authLogout } from './auth/auth.actions';
-import { AuthGuardService } from './auth/auth-guard.service';
 import { TitleService } from './title/title.service';
 import {
   ROUTE_ANIMATIONS_ELEMENTS,
@@ -41,19 +37,15 @@ import { GoogleAnalyticsEffects } from './google-analytics/google-analytics.effe
 import { NotificationService } from './notifications/notification.service';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { SettingsModule } from './settings/settings.module';
+import { AuthModule } from './auth/auth.module';
 
 export {
   TitleService,
-  selectAuth,
-  authLogin,
-  authLogout,
   routeAnimations,
   AppState,
   LocalStorageService,
-  selectIsAuthenticated,
   ROUTE_ANIMATIONS_ELEMENTS,
   AnimationsService,
-  AuthGuardService,
   selectRouterState,
   NotificationService
 };
@@ -73,20 +65,20 @@ export function HttpLoaderFactory(http: HttpClient) {
     HttpClientModule,
 
     // Store Modules
-    ExperimentsModule,
+    AuthModule,
     SettingsModule,
+    ExperimentsModule,
 
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
     StoreRouterConnectingModule.forRoot(),
     EffectsModule.forRoot([
-      AuthEffects,
       GoogleAnalyticsEffects
     ]),
     environment.production
       ? []
       : StoreDevtoolsModule.instrument({
-          name: 'Angular NgRx Material Starter'
+          name: 'AB Testing Starter'
         }),
 
     // 3rd party

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 
-import { AppState } from '../core.state';
+import { AppState } from '../../core.state';
 
 import { AuthGuardService } from './auth-guard.service';
 import { AuthState } from './auth.models';
@@ -40,9 +40,3 @@ describe('AuthGuardService', () => {
     });
   });
 });
-
-function createState(authState: AuthState) {
-  return {
-    auth: authState
-  } as AppState;
-}
