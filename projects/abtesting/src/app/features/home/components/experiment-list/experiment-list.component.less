@@ -1,0 +1,45 @@
+@import '../../../../../styles/styles-variables.less';
+
+@table-heading-color: #8992a3;
+
+.experiments-list-container {
+  border-radius: 10px;
+  box-shadow: 0 0 7px @grey;
+  background-color: @white;
+  padding: 2rem;
+  height: calc(100% - 112px);
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    // TODO: Update it to space-between after implementing search component
+    justify-content: flex-end;
+
+    button {
+      background-color: @blue;
+      height: 40px;
+      color: @white;
+
+      .icon {
+        margin-right: 5px;
+        vertical-align: unset;
+      }
+    }
+  }
+
+  .experiment-table {
+    margin-top: 30px;
+
+    th {
+      background-color: @white;
+    }
+
+    td {
+      font-size: @text-size-x-small;
+    }
+
+    .tag {
+      margin-bottom: 5px;
+    }
+  }
+}

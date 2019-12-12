@@ -1,0 +1,75 @@
+@import '../../../../styles/styles-variables.less';
+@import '../../../../theme.less';
+
+// File scope less variables
+@white-background: #f0f2f9;
+@grey-text-color: #929fae;
+
+.apply-component-theme(@theme) {
+  .get-theme-colors(@theme);
+
+  .experiments-container {
+    background-color: @primary-color;
+    padding: 2rem 4.375rem;
+    height: 100%;
+    overflow: scroll;
+
+    .theme-options {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .ant-select-selection {
+      width: 100px;
+    }
+
+    .title {
+      margin-bottom: 0;
+      color: @black-2;
+      font-size: @text-size-xxxxx-large;
+      font-weight: 400;
+    }
+
+    .subtitle {
+      display: block;
+      margin-bottom: 40px;
+      color: @grey-text-color;
+      font-size: @text-size-normal;
+    }
+
+    .no-experiment-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-shadow: 0 0 7px @grey;
+      background-color: @white;
+      height: calc(100% - 112px);
+
+      .text {
+        text-align: center;
+        line-height: 60px;
+        font-size: @text-size-xxx-large;
+      }
+
+      button {
+        margin-top: 30px;
+        background-color: @blue;
+        color: @white;
+
+        .icon {
+          margin-right: 5px;
+          vertical-align: unset;
+        }
+      }
+    }
+
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: calc(100% - 112px);
+    }
+  }
+}
