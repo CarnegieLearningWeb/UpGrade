@@ -11,11 +11,13 @@ export const experiment = {
       name: 'Condition A',
       description: 'Condition A',
       assignmentWeight: 0.4,
+      conditionCode: 'ConditionA',
     },
     {
       name: 'Condition B',
       description: 'Condition B',
       assignmentWeight: 0.6,
+      conditionCode: 'ConditionB',
     },
   ],
   segments: [
@@ -24,28 +26,12 @@ export const experiment = {
       point: 'CurriculumSequence ',
       name: 'WorkSpace 1',
       description: 'Segment on Workspace 1',
-      segmentConditions: [
-        {
-          conditionCode: '[Segment W1]- ConditionA',
-        },
-        {
-          conditionCode: '[Segment W1]- ConditionB',
-        },
-      ],
     },
     {
       id: 'W2',
       point: 'CurriculumSequence',
       name: 'Workspace 2',
       description: 'Segment on Workspace 2',
-      segmentConditions: [
-        {
-          conditionCode: '[Segment W2]- ConditionA',
-        },
-        {
-          conditionCode: '[Segment W2]- ConditionB',
-        },
-      ],
     },
   ],
 };

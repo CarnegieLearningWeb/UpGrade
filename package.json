@@ -9,6 +9,7 @@
     "build": "npm start build",
     "production": "npm start serve.production",
     "test": "npm start test",
+    "test:watch": "npm start test.watch",
     "help": "npm start help"
   },
   "keywords": [],

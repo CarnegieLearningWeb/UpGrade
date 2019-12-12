@@ -8,11 +8,7 @@ module.exports = {
       default: 'nps test.integration',
       integration: {
         default: {
-          script: series(
-            'nps banner.testIntegration',
-            'nps test.integration.pretest',
-            'nps test.integration.run'
-          ),
+          script: series('nps banner.testIntegration', 'nps test.integration.pretest', 'nps test.integration.run'),
           description: 'Runs the integration tests',
         },
         pretest: {
@@ -20,10 +16,15 @@ module.exports = {
           hiddenFromHelp: true,
         },
         run: {
-          // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
-          script:
-            'cross-env NODE_ENV=test jest --testPathPattern=integration -i',
-          hiddenFromHelp: true,
+          default: {
+            // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
+            script: 'cross-env NODE_ENV=test jest --testPathPattern=integration -i',
+            hiddenFromHelp: true,
+          },
+          watch: {
+            script: 'cross-env NODE_ENV=test jest --watch --testPathPattern=integration -i',
+            hiddenFromHelp: true,
+          },
         },
         verbose: {
           script: 'nps "test --verbose"',
@@ -33,6 +34,10 @@ module.exports = {
           script: 'nps "test --coverage"',
           hiddenFromHelp: true,
         },
+      },
+      watch: {
+        script: series('nps banner.testIntegration', 'nps test.integration.pretest', 'nps test.integration.run.watch'),
+        description: 'Runs the integration tests',
       },
     },
     /**
@@ -45,14 +50,12 @@ module.exports = {
       },
       inspector: {
         script: series('nps banner.serve', 'nodemon --inspect'),
-        description:
-          'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
+        description: 'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
       },
       production: {
         script: 'cross-env NODE_ENV=production node dist/src/app.js',
       },
-      description:
-        'Serves the current app and watches for changes to restart it',
+      description: 'Serves the current app and watches for changes to restart it',
     },
     /**
      * Creates the needed configuration files
@@ -83,14 +86,7 @@ module.exports = {
      * Builds the app into the dist directory
      */
     build: {
-      script: series(
-        'nps banner.build',
-        'nps config',
-        'nps lint',
-        'nps clean.dist',
-        'nps transpile',
-        'nps copy'
-      ),
+      script: series('nps banner.build', 'nps config', 'nps lint', 'nps clean.dist', 'nps transpile', 'nps copy'),
       description: 'Builds the app into the dist directory',
     },
     /**

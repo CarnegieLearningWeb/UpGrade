@@ -1,6 +1,6 @@
 import { Container } from 'typedi';
 import { Connection } from 'typeorm';
-import { individualAssignmentExperiment } from '../mockData/experiment';
+import { individualAssignmentExperimentConsistencyRuleExperiemnt } from '../mockData/experiment';
 import { multipleUsers } from '../mockData/users';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { closeDatabase, createDatabaseConnection, synchronizeDatabase } from '../../utils/database';
@@ -13,7 +13,7 @@ import { User } from '../../../src/api/models/User';
 import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExperimentPoint';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 
-describe('Experiment Scenario 1 - Individual Assignment', () => {
+describe('Experiment Scenario', () => {
   // -------------------------------------------------------------------------
   // Setup up
   // -------------------------------------------------------------------------
@@ -48,17 +48,17 @@ describe('Experiment Scenario 1 - Individual Assignment', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
-  test('Scenario 1', async done => {
+  test('Scenario 2 - Individual Assignment with Experiment consistency rule', async done => {
     const logger = new WinstonLogger(__filename);
     const experimentService = Container.get<ExperimentService>(ExperimentService);
     const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
     // const checkService = Container.get<CheckService>(CheckService);
 
     // experiment object
-    const experimentObject = individualAssignmentExperiment;
+    const experimentObject = individualAssignmentExperimentConsistencyRuleExperiemnt;
 
     // create experiment
-    await experimentService.create(individualAssignmentExperiment as any);
+    await experimentService.create(experimentObject as any);
     let experiments = await experimentService.find();
     expect(experiments).toEqual(
       expect.arrayContaining([
@@ -108,7 +108,7 @@ describe('Experiment Scenario 1 - Individual Assignment', () => {
 
     // get all experiment condition for user 1
     experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
-    checkExperimentAssignedIsDefault(experimentConditionAssignments);
+    checkExperimentAssignedIsNotDefault(experimentConditionAssignments);
 
     // mark experiment point for user 1
     markedExperimentPoint = await markExperimentPoint(multipleUsers[0]);
@@ -149,7 +149,7 @@ describe('Experiment Scenario 1 - Individual Assignment', () => {
 
     // get all experiment condition for user 2
     experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[1]);
-    checkExperimentAssignedIsNotDefault(experimentConditionAssignments);
+    checkExperimentAssignedIsDefault(experimentConditionAssignments);
 
     // mark experiment point for user 2
     markedExperimentPoint = await markExperimentPoint(multipleUsers[1]);
@@ -157,7 +157,7 @@ describe('Experiment Scenario 1 - Individual Assignment', () => {
 
     // get all experiment condition for user 3
     experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[2]);
-    checkExperimentAssignedIsNotDefault(experimentConditionAssignments);
+    checkExperimentAssignedIsDefault(experimentConditionAssignments);
 
     // mark experiment point for user 3
     markedExperimentPoint = await markExperimentPoint(multipleUsers[2]);
