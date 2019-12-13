@@ -69,6 +69,7 @@ export class ExperimentAssignmentService {
   }
 
   public async getAllExperimentConditions(userId: string, userEnvironment: any): Promise<any> {
+    this.log.info(`Get all experiment for User Id ${userId} and User Environment ${JSON.stringify(userEnvironment)}`);
     // store userId and userEnvironment
     this.userRepository.saveRawJson({
       id: userId,
@@ -87,11 +88,12 @@ export class ExperimentAssignmentService {
 
     // TODO add explicit exclusion table query
     // query assignment/exclusion for user
+    const allGroupIds: string[] = Object.values(userEnvironment);
     const promiseAssignmentExclusion: any[] = [
       this.individualAssignmentRepository.findAssignment(userId, experimentIds),
-      this.groupAssignmentRepository.findExperiment([userEnvironment.class], experimentIds),
+      this.groupAssignmentRepository.findExperiment(allGroupIds, experimentIds),
       this.individualExclusionRepository.findExcluded(userId, experimentIds),
-      this.groupExclusionRepository.findExcluded([userEnvironment.class], experimentIds),
+      this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds),
     ];
 
     const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
@@ -150,10 +152,10 @@ export class ExperimentAssignmentService {
     }, []);
   }
 
-  public updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
+  public async updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
     // TODO populate exclusion table when state is changed to ENROLLING
     if (state === EXPERIMENT_STATE.ENROLLING) {
-      this.populateExclusionTable(experimentId);
+      await this.populateExclusionTable(experimentId);
     }
     return this.experimentRepository.updateState(experimentId, state);
   }
@@ -179,7 +181,11 @@ export class ExperimentAssignmentService {
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
       // query all user information
       const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
-      const groupsToExclude = new Set(userDetails.map(userDetail => userDetail.group[group]));
+      const groupsToExclude = new Set(
+        userDetails.map(userDetail => {
+          return userDetail.group[group];
+        })
+      );
 
       // group exclusion documents
       const groupExclusionDocs = [...groupsToExclude].map(groupId => {
@@ -211,9 +217,9 @@ export class ExperimentAssignmentService {
       // query individual assignment for user
       this.individualAssignmentRepository.findAssignment(userId, [id]),
       // query group assignment
-      this.groupAssignmentRepository.findExperiment([userEnvironment.class], [id]),
+      this.groupAssignmentRepository.findExperiment([userEnvironment[experiment.group]], [id]),
       // query group exclusion
-      this.groupExclusionRepository.findExcluded([userEnvironment.class], [id]),
+      this.groupExclusionRepository.findExcluded([userEnvironment[experiment.group]], [id]),
     ];
     const [individualAssignments, groupAssignments, groupExcluded] = await Promise.all(assignmentPromise);
 

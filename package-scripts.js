@@ -18,22 +18,22 @@ module.exports = {
         run: {
           default: {
             // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
-            script: 'cross-env NODE_ENV=test jest --testPathPattern=integration -i',
+            script: 'cross-env NODE_ENV=test jest --runInBand --testPathPattern=integration -i',
             hiddenFromHelp: true,
           },
           watch: {
-            script: 'cross-env NODE_ENV=test jest --watch --testPathPattern=integration -i',
+            script: 'cross-env NODE_ENV=test jest --runInBand --watch --testPathPattern=integration -i',
             hiddenFromHelp: true,
           },
         },
-        verbose: {
-          script: 'nps "test --verbose"',
-          hiddenFromHelp: true,
-        },
-        coverage: {
-          script: 'nps "test --coverage"',
-          hiddenFromHelp: true,
-        },
+      },
+      verbose: {
+        script: 'nps test.verbose',
+        hiddenFromHelp: true,
+      },
+      coverage: {
+        script: 'cross-env NODE_ENV=test jest --coverage',
+        hiddenFromHelp: true,
       },
       watch: {
         script: series('nps banner.testIntegration', 'nps test.integration.pretest', 'nps test.integration.run.watch'),

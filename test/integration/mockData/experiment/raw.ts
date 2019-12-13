@@ -5,7 +5,7 @@ export const experiment = {
   assignmentUnit: 'individual',
   postExperimentRule: 'continue',
   state: 'scheduled',
-  group: 'class',
+  group: 'teacher',
   conditions: [
     {
       name: 'Condition A',

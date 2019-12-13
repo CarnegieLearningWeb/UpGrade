@@ -10,6 +10,7 @@
     "production": "npm start serve.production",
     "test": "npm start test",
     "test:watch": "npm start test.watch",
+    "test:coverage": "npm start test.coverage",
     "help": "npm start help"
   },
   "keywords": [],
