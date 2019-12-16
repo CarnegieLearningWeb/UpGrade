@@ -8,6 +8,7 @@ $grey-text-color: #929fae;
   background-color: $white-background;
   padding: 2rem 4.375rem;
   height: 100%;
+  overflow: scroll;
 
   .theme-selector {
     display: flex;
