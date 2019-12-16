@@ -16,6 +16,8 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { UserRepository } from '../repositories/UserRepository';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { Experiment } from '../models/Experiment';
+import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
+import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -34,6 +36,10 @@ export class ExperimentAssignmentService {
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
     private userRepository: UserRepository,
+    @OrmRepository()
+    private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
+    @OrmRepository()
+    private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
     @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
@@ -86,8 +92,25 @@ export class ExperimentAssignmentService {
       return [];
     }
 
-    // TODO add explicit exclusion table query
-    // query assignment/exclusion for user
+    // ============= check if user or group is excluded
+    const userGroup = Object.keys(userEnvironment).map((type: string) => {
+      return {
+        groupId: userEnvironment[type] as string,
+        type,
+      };
+    });
+    const [individualExcluded, groupExcluded] = await Promise.all([
+      this.explicitIndividualExclusionRepository.find({ userId }),
+      this.explicitGroupExclusionRepository.find(userGroup as any),
+    ]);
+
+    this.log.info('individualExcluded', individualExcluded);
+    this.log.info('groupExcluded', groupExcluded);
+    if (individualExcluded.length > 0 || groupExcluded.length > 0) {
+      return [];
+    }
+
+    // ============ query assignment/exclusion for user
     const allGroupIds: string[] = Object.values(userEnvironment);
     const promiseAssignmentExclusion: any[] = [
       this.individualAssignmentRepository.findAssignment(userId, experimentIds),
@@ -171,11 +194,17 @@ export class ExperimentAssignmentService {
     const subExperiments = experiment.segments.map(({ id, point }) => {
       return { experimentId: id, experimentPoint: point };
     });
+
     // query all monitored experiment point for this experiment Id
     const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find(subExperiments as any);
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
     );
+
+    // end the loop if no users
+    if (uniqueUserIds.size === 0) {
+      return;
+    }
 
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
