@@ -8,10 +8,16 @@ import { HomeRoutingModule } from './home-routing.module';
 import { ExperimentListComponent } from './components/experiment-list/experiment-list.component';
 import { ExperimentStateColorPipe } from './components/pipes/experiment-state-color.pipe';
 import { FormatDatePipe } from './components/pipes/format-date.pipe';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
-  declarations: [HomeComponent, ExperimentListComponent, ExperimentStateColorPipe, FormatDatePipe],
-  imports: [CommonModule, SharedModule, HomeRoutingModule],
+  declarations: [
+    HomeComponent,
+    ExperimentListComponent,
+    ExperimentStateColorPipe,
+    FormatDatePipe
+  ],
+  imports: [CommonModule, FormsModule, SharedModule, HomeRoutingModule],
   providers: []
 })
 export class HomeModule {}

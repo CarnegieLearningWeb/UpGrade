@@ -2,9 +2,16 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 
 import { SettingsState, State } from './settings.model';
 
+<<<<<<< HEAD:projects/abtesting/src/app/core/settings/store/settings.selectors.ts
 export const selectSettingsState = createFeatureSelector<State, SettingsState>(
   'settings'
 );
+=======
+export const selectSettingsState = createFeatureSelector<
+  State,
+  SettingsState
+>('settings');
+>>>>>>> ccbc0153a7b561ca000bf8e2fe6584f6f80dd372:projects/abtesting/src/app/core/settings/settings.selectors.ts
 
 export const selectSettings = createSelector(
   selectSettingsState,

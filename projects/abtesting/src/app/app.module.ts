@@ -7,6 +7,8 @@ import { CoreModule } from './core/core.module';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app/app.component';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   imports: [
@@ -19,7 +21,9 @@ import { AppComponent } from './app/app.component';
     SharedModule,
 
     // app
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule,
+    HttpClientModule
   ],
   declarations: [AppComponent],
   bootstrap: [AppComponent]
