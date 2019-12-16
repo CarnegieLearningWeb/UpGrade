@@ -16,6 +16,13 @@ export class HomeComponent {
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   theme$ = this.settingsService.theme$;
 
+  themeOptions = [
+    {value: ThemeOptions.DEFAULT_THEME, viewValue: 'Default'},
+    {value: ThemeOptions.DARK_THEME, viewValue: 'Dark'},
+    {value: ThemeOptions.LIGHT_THEME, viewValue: 'Light'},
+    {value: ThemeOptions.NATURE_THEME, viewValue: 'Nature'}
+  ];
+
   constructor(
     private experimentService: ExperimentService,
     private settingsService: SettingsService

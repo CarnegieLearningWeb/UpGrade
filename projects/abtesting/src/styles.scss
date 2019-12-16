@@ -8,12 +8,10 @@
 @import './themes/light-theme';
 @import './themes/black-theme';
 @import './themes/nature-theme';
-@import './app/app/app.component.scss';
-@import './app/features/home/root/home.component.scss';
+@import './app/app/app.component.scss-theme';
 
 @mixin custom-components-theme($theme) {
   @include app-component-theme($theme);
-  @include home-component-theme($theme);
 }
 
 .default-theme {
