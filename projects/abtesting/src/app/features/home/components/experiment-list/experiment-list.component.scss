@@ -12,8 +12,7 @@ $table-heading-color: #8992a3;
   .header {
     display: flex;
     flex-direction: row;
-    // TODO: Update it to space-between after implementing search component
-    justify-content: flex-end;
+    justify-content: space-between;
 
     button {
       background-color: $blue;
@@ -25,6 +24,10 @@ $table-heading-color: #8992a3;
         vertical-align: unset;
       }
     }
+  }
+
+  ::ng-deep .mat-form-field-suffix {
+    top: 5px;
   }
 
   .experiment-list {
