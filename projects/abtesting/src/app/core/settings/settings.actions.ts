@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { Language } from './settings.model';
+import { Language, ThemeOptions } from './settings.model';
 
 export const actionSettingsChangeLanguage = createAction(
   '[Settings] Change Language',
@@ -9,7 +9,7 @@ export const actionSettingsChangeLanguage = createAction(
 
 export const actionSettingsChangeTheme = createAction(
   '[Settings] Change Theme',
-  props<{ theme: string }>()
+  props<{ theme: ThemeOptions }>()
 );
 export const actionSettingsChangeAutoNightMode = createAction(
   '[Settings] Change Auto Night Mode',

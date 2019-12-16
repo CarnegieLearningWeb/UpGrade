@@ -1,67 +1,93 @@
 @import '../../styles/styles-variables.scss';
 
-mat-drawer-container {
-  width: 100%;
-  height: 100%;
-}
+@mixin app-component-theme($theme) {
+  $primary: map-get($theme, primary);
+  $accent: map-get($theme, accent);
+  $warn: map-get($theme, warn);
 
-mat-drawer {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
-  width: 20em;
-}
-
-.drawer-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  .logo {
-    display: flex;
-    align-items: flex-end;
-    box-shadow: 0 5px 5px $light-grey;
-    height: 150px;
-
-    span {
-      margin: 0 0 10px 20px;
-      color: $blue;
-      font-size: 36px;
-      font-weight: bold;
-    }
+  mat-drawer-container {
+    width: 100%;
+    height: 100%;
   }
 
-  .list-item-container {
+  mat-drawer {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+    width: 20em;
+  }
+
+  .drawer-container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    margin-top: 50px;
     height: 100%;
 
-    .list {
-      .nav-item {
-        cursor: pointer;
-        padding: 0.75rem 1rem;
-        width: 100%;
-        text-align: inherit;
-        text-decoration: none;
-        color: $black;
-        font-size: inherit;
-        user-select: none;
+    .logo {
+      display: flex;
+      align-items: flex-end;
+      box-shadow: 0 5px 5px $light-grey;
+      height: 150px;
 
-        .icon {
-          margin-right: 5px;
-        }
+      span {
+        margin: 0 0 10px 20px;
+        color: $blue;
+        font-size: 36px;
+        font-weight: bold;
+      }
+    }
 
-        &.selected {
-          border-radius: 7px;
-          background-color: $blue;
-          color: $white;
+    .list-item-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-top: 50px;
+      height: 100%;
+
+      .list {
+        .nav-item {
+          cursor: pointer;
+          padding: 0.75rem 1rem;
+          width: 100%;
+          text-align: inherit;
+          text-decoration: none;
+          color: $black;
+          font-size: inherit;
+          user-select: none;
+
+          .icon {
+            margin-right: 5px;
+          }
+
+          &.selected {
+            border-radius: 7px;
+            background-color: $blue;
+            color: $white;
+          }
         }
       }
     }
+
+    .username {
+      border-top: 2px solid $light-grey;
+      padding: 1.5rem 1rem;
+    }
   }
 
-  .username {
-    border-top: 2px solid $light-grey;
-    padding: 1.5rem 1rem;
+  .error-notification-overlay {
+    background-color: mat-color($warn);
+    color: mat-color($warn, default-contrast);
+  }
+
+  .info-notification-overlay {
+    background-color: mat-color($accent);
+    color: mat-color($accent, default-contrast);
+  }
+
+  .success-notification-overlay {
+    background-color: mat-color($success-colors);
+    color: mat-color($success-colors, default-contrast);
+  }
+
+  .warning-notification-overlay {
+    background-color: mat-color($warning-colors);
+    color: mat-color($warning-colors, default-contrast);
   }
 }

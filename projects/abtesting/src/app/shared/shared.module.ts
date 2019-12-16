@@ -94,8 +94,6 @@ library.add(
   faBook
 );
 
-import { BigInputComponent } from './big-input/big-input/big-input.component';
-import { BigInputActionComponent } from './big-input/big-input-action/big-input-action.component';
 import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 
@@ -129,12 +127,7 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
 
     FontAwesomeModule
   ],
-  declarations: [
-    BigInputComponent,
-    BigInputActionComponent,
-    RtlSupportDirective,
-    SharedIconsComponent
-  ],
+  declarations: [RtlSupportDirective, SharedIconsComponent],
   exports: [
     CommonModule,
     FormsModule,
@@ -168,8 +161,6 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
 
     FontAwesomeModule,
 
-    BigInputComponent,
-    BigInputActionComponent,
     RtlSupportDirective,
 
     SharedIconsComponent

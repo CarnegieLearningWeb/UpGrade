@@ -4,19 +4,16 @@
 @include mat-core();
 
 @import './styles/styles-variables';
-@import './styles/styles-reset';
 @import './themes/default-theme';
 @import './themes/light-theme';
 @import './themes/black-theme';
 @import './themes/nature-theme';
-@import './styles/styles-reset.scss-theme';
-@import './app/app/app.component.scss-theme';
-@import './app/shared/big-input/big-input/big-input.component.scss-theme';
+@import './app/app/app.component.scss';
+@import './app/features/home/root/home.component.scss';
 
 @mixin custom-components-theme($theme) {
-  @include styles-reset-theme($theme);
   @include app-component-theme($theme);
-  @include big-input-component-theme($theme);
+  @include home-component-theme($theme);
 }
 
 .default-theme {

@@ -20,6 +20,7 @@ import {
   actionSettingsChangeAnimationsPageDisabled,
   actionSettingsChangeLanguage
 } from '../core/settings/settings.actions';
+import { ThemeOptions } from '../core/settings/settings.model';
 
 @Component({
   selector: 'app-root',
@@ -47,7 +48,7 @@ export class AppComponent implements OnInit {
   isAuthenticated$: Observable<boolean>;
   stickyHeader$: Observable<boolean>;
   language$: Observable<string>;
-  theme$: Observable<string>;
+  theme$: Observable<ThemeOptions>;
 
   constructor(
     private store: Store<AppState>,
