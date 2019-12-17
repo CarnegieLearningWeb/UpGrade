@@ -8,7 +8,7 @@
       "schematics": {
         "@schematics/angular:component": {
           "changeDetection": "OnPush",
-          "style": "less"
+          "style": "scss"
         }
       },
       "root": "projects/abtesting",
@@ -26,17 +26,11 @@
             "aot": false,
             "assets": [
               "projects/abtesting/src/favicon.ico",
-              "projects/abtesting/src/assets",
-              {
-                "glob": "**/*",
-                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                "output": "/assets/"
-              }
+              "projects/abtesting/src/assets"
             ],
             "styles": [
-              "projects/abtesting/src/styles/styles-app-loading.less",
-              "projects/abtesting/src/styles.less",
-              "projects/abtesting/src/theme.less"
+              "projects/abtesting/src/styles/styles-app-loading.scss",
+              "projects/abtesting/src/styles.scss"
             ],
             "scripts": []
           },
@@ -112,9 +106,8 @@
               "projects/abtesting/src/assets"
             ],
             "styles": [
-              "projects/abtesting/src/styles/styles-app-loading.less",
-              "projects/abtesting/src/styles.less",
-              "projects/abtesting/src/theme.less"
+              "projects/abtesting/src/styles/styles-app-loading.scss",
+              "projects/abtesting/src/styles.scss"
             ],
             "scripts": []
           },

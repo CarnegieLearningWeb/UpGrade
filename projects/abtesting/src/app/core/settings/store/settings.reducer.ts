@@ -1,8 +1,4 @@
-import {
-  SettingsState,
-  NIGHT_MODE_THEME,
-  ThemeOptions
-} from './settings.model';
+import { SettingsState, ThemeOptions } from './settings.model';
 import {
   actionSettingsChangeAnimationsElements,
   actionSettingsChangeAnimationsPage,
@@ -19,7 +15,7 @@ export const initialState: SettingsState = {
   language: 'en',
   theme: ThemeOptions.DEFAULT_THEME,
   autoNightMode: false,
-  nightTheme: NIGHT_MODE_THEME,
+  nightTheme: ThemeOptions.DARK_THEME,
   stickyHeader: true,
   pageAnimations: true,
   pageAnimationsDisabled: false,

@@ -2,10 +2,9 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 
 import { SettingsState, State } from './settings.model';
 
-export const selectSettingsState = createFeatureSelector<
-  State,
-  SettingsState
->('settings');
+export const selectSettingsState = createFeatureSelector<State, SettingsState>(
+  'settings'
+);
 
 export const selectSettings = createSelector(
   selectSettingsState,
@@ -62,6 +61,5 @@ export const selectEffectiveTheme = createSelector(
   selectTheme,
   selectNightTheme,
   selectIsNightHour,
-  (theme, nightTheme, isNightHour) =>
-    (isNightHour ? nightTheme : theme).toLowerCase()
+  (theme, nightTheme, isNightHour) => (isNightHour ? nightTheme : theme)
 );

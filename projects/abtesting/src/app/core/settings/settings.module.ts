@@ -6,7 +6,6 @@ import { SettingsEffects } from './store/settings.effects';
 import { settingsReducer } from './store/settings.reducer';
 import { SettingsService } from './settings.service';
 
-
 @NgModule({
   declarations: [],
   imports: [

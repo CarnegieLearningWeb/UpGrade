@@ -1,0 +1,67 @@
+@import '../../styles/styles-variables.scss';
+
+mat-drawer-container {
+  width: 100%;
+  height: 100%;
+}
+
+mat-drawer {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+  width: 20em;
+}
+
+.drawer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .logo {
+    display: flex;
+    align-items: flex-end;
+    box-shadow: 0 5px 5px $light-grey;
+    height: 150px;
+
+    span {
+      margin: 0 0 10px 20px;
+      color: $blue;
+      font-size: 36px;
+      font-weight: bold;
+    }
+  }
+
+  .list-item-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-top: 50px;
+    height: 100%;
+
+    .list {
+      .nav-item {
+        cursor: pointer;
+        padding: 0.75rem 1rem;
+        width: 100%;
+        text-align: inherit;
+        text-decoration: none;
+        color: $black;
+        font-size: inherit;
+        user-select: none;
+
+        .icon {
+          margin-right: 5px;
+        }
+
+        &.selected {
+          border-radius: 7px;
+          background-color: $blue;
+          color: $white;
+        }
+      }
+    }
+  }
+
+  .username {
+    border-top: 2px solid $light-grey;
+    padding: 1.5rem 1rem;
+  }
+}

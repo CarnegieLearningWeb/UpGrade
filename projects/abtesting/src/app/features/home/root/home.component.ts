@@ -8,20 +8,20 @@ import { SettingsService } from '../../../core/settings/settings.service';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.less'],
+  styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent {
-  themes = [
-    { label: 'Default', value: ThemeOptions.DEFAULT_THEME },
-    { label: 'Dark', value: ThemeOptions.DARK_THEME },
-    { label: 'Light', value: ThemeOptions.LIGHT_THEME },
-    { label: 'Nature', value: ThemeOptions.NATURE_THEME }
-  ];
-
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
   theme$ = this.settingsService.theme$;
+
+  themeOptions = [
+    {value: ThemeOptions.DEFAULT_THEME, viewValue: 'Default'},
+    {value: ThemeOptions.DARK_THEME, viewValue: 'Dark'},
+    {value: ThemeOptions.LIGHT_THEME, viewValue: 'Light'},
+    {value: ThemeOptions.NATURE_THEME, viewValue: 'Nature'}
+  ];
 
   constructor(
     private experimentService: ExperimentService,

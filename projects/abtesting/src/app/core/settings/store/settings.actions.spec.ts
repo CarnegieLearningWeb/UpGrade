@@ -8,16 +8,16 @@ import {
   actionSettingsChangeStickyHeader,
   actionSettingsChangeTheme
 } from './settings.actions';
-import { NIGHT_MODE_THEME } from './settings.model';
+import { ThemeOptions } from './settings.model';
 
 describe('Settings Actions', () => {
   it('should create ActionSettingsChangeTheme action', () => {
     const action = actionSettingsChangeTheme({
-      theme: NIGHT_MODE_THEME
+      theme: ThemeOptions.DARK_THEME
     });
 
     expect(action.type).toEqual(actionSettingsChangeTheme.type);
-    expect(action.theme).toEqual(NIGHT_MODE_THEME);
+    expect(action.theme).toEqual(ThemeOptions.DARK_THEME);
   });
 
   it('should create ActionSettingsChangeAnimationsElements action', () => {

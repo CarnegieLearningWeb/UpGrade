@@ -1,25 +1,18 @@
 <div class="experiments-container">
-  <nz-select
-    class="theme-options"
-    [ngModel]="theme$ | async"
-    (ngModelChange)="changeTheme($event)"
-    nzPlaceHolder="Choose Theme"
-  >
-    <nz-option
-      *ngFor="let theme of themes"
-      [nzValue]="theme.value"
-      [nzLabel]="theme.label"
-    ></nz-option>
-  </nz-select>
+  <mat-form-field class="theme-selector">
+    <mat-select [ngModel]="theme$ | async" (ngModelChange)="changeTheme($event)">
+      <mat-option *ngFor="let theme of themeOptions" [value]="theme.value">
+        {{ theme.viewValue }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
   <h1 class="title">{{ 'global.experiment.title' | translate }}</h1>
   <span
     class="subtitle"
     [innerHTML]="'home.experiment.text.subtitle' | translate"
   ></span>
 
-  <ng-container
-    *ngIf="!(isLoadingExperiments$ | async); else loadingExperimentState"
-  >
+  <ng-container *ngIf="!(isLoadingExperiments$ | async); else loadingExperimentState">
     <div *ngIf="(experiments$ | async).length; else noExperimentTemplate">
       <home-experiment-list></home-experiment-list>
     </div>
@@ -29,8 +22,8 @@
           class="text"
           [innerHTML]="'home.no-experiment.text' | translate"
         ></span>
-        <button nz-button nzType="primary" [nzSize]="'default'">
-          <i nz-icon nzType="plus"></i>
+        <button mat-flat-button color="primary">
+          <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
           {{ 'home.experiment.add-experiment.text' | translate }}
         </button>
       </div>
@@ -40,6 +33,6 @@
 
 <ng-template #loadingExperimentState>
   <div class="loading-container">
-    <nz-spin nzSimple [nzSize]="'large'"></nz-spin>
+    <mat-spinner diameter="60"></mat-spinner>
   </div>
 </ng-template>

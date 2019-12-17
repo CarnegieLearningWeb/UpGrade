@@ -3,6 +3,31 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { TranslateModule } from '@ngx-translate/core';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSliderModule } from '@angular/material/';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {
@@ -69,15 +94,6 @@ library.add(
   faBook
 );
 
-import { NzLayoutModule } from 'ng-zorro-antd/layout';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzSpinModule } from 'ng-zorro-antd/spin';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzTagModule } from 'ng-zorro-antd/tag';
-import { NzMessageModule } from 'ng-zorro-antd/message';
-import { NzSelectModule } from 'ng-zorro-antd/select';
-
 import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 
@@ -85,16 +101,31 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
   imports: [
     CommonModule,
     FormsModule,
+
     TranslateModule,
-    FontAwesomeModule,
-    NzLayoutModule,
-    NzIconModule,
-    NzSpinModule,
-    NzButtonModule,
-    NzTableModule,
-    NzTagModule,
-    NzMessageModule,
-    NzSelectModule
+
+    MatButtonModule,
+    MatToolbarModule,
+    MatSelectModule,
+    MatTabsModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    MatCardModule,
+    MatSidenavModule,
+    MatCheckboxModule,
+    MatListModule,
+    MatMenuModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatSnackBarModule,
+    MatSlideToggleModule,
+    MatDividerModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+
+    FontAwesomeModule
   ],
   declarations: [RtlSupportDirective, SharedIconsComponent],
   exports: [
@@ -104,20 +135,35 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
 
     TranslateModule,
 
+    MatButtonModule,
+    MatMenuModule,
+    MatTabsModule,
+    MatChipsModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatCheckboxModule,
+    MatCardModule,
+    MatSidenavModule,
+    MatListModule,
+    MatSelectModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatSnackBarModule,
+    MatSlideToggleModule,
+    MatDividerModule,
+    MatSliderModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+
     FontAwesomeModule,
 
     RtlSupportDirective,
 
-    SharedIconsComponent,
-
-    NzLayoutModule,
-    NzIconModule,
-    NzSpinModule,
-    NzButtonModule,
-    NzTableModule,
-    NzTagModule,
-    NzMessageModule,
-    NzSelectModule
+    SharedIconsComponent
   ]
 })
 export class SharedModule {}
