@@ -9,7 +9,7 @@ export declare enum ASSIGNMENT_UNIT {
 }
 export declare enum POST_EXPERIMENT_RULE {
     CONTINUE = "continue",
-    REVERT_TO_DEFAULT = "revertToDefault"
+    REVERT = "revert"
 }
 export declare enum EXPERIMENT_STATE {
     INACTIVE = "inactive",
