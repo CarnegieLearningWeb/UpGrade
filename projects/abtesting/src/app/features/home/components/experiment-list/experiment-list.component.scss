@@ -7,7 +7,6 @@ $table-heading-color: #8992a3;
   box-shadow: 0 0 7px $grey;
   background-color: $white;
   padding: 2rem;
-  height: calc(100% - 112px);
 
   .header {
     display: flex;
@@ -49,6 +48,10 @@ $table-heading-color: #8992a3;
       border-color: $light-grey;
       color: $black-2;
       font-size: $text-size-x-small;
+    }
+
+    .mat-column-experimentSegments {
+      padding-right: 6px;
     }
 
     .mat-cell {

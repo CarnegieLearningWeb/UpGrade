@@ -1,0 +1,46 @@
+@import '../../../../../styles/styles-variables.scss';
+
+.experiment-overview {
+  display: flex;
+  flex-direction: column;
+
+  mat-form-field {
+    font-size: $text-size-small;
+  }
+
+  .name {
+    width: 50%;
+  }
+
+  .description {
+    width: 100%;
+  }
+
+  .property-container {
+    .unit-of-assignment {
+      margin-right: 10%;
+      width: 30%;
+    }
+
+    .group-type {
+      width: 25%;
+    }
+  }
+
+  .consistency-rule {
+    width: 30%;
+  }
+
+  .tags {
+    margin-top: 5px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      margin-left: 20px;
+    }
+  }
+}

@@ -14,6 +14,12 @@ export {
   EXPERIMENT_STATE
 };
 
+export enum GroupTypes {
+  CLASS = 'class',
+  SCHOOL = 'school',
+  DISTRICT = 'district'
+}
+
 export interface ExperimentCondition {
   id: string;
   name: string;

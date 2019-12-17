@@ -5,6 +5,8 @@ import { MatSort } from '@angular/material/sort';
 import { Experiment } from '../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
+import { MatDialog } from '@angular/material';
+import { NewExperimentComponent } from '../new-experiment/new-experiment.component';
 
 @Component({
   selector: 'home-experiment-list',
@@ -20,7 +22,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
   @ViewChild(MatSort, {static: true}) sort: MatSort;
 
-  constructor(private experimentService: ExperimentService) {
+  constructor(
+    private experimentService: ExperimentService,
+    public dialog: MatDialog
+  ) {
     this.allExperimentsSub = this.experimentService.experiments$.subscribe(allExperiments => {
       this.allExperiments = new MatTableDataSource(allExperiments);
     });
@@ -38,6 +43,16 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     if (this.allExperiments.paginator) {
       this.allExperiments.paginator.firstPage();
     }
+  }
+
+  openNewExperimentDialog() {
+    const dialogRef = this.dialog.open(NewExperimentComponent, {
+      width: '50%',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Code will be executed after closing dialog
+    });
   }
 
   ngOnDestroy() {

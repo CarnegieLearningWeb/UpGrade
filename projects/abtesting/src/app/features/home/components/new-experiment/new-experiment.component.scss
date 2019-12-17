@@ -1,0 +1,18 @@
+::ng-deep .mat-horizontal-stepper-header {
+  box-sizing: border-box;
+  flex-direction: column-reverse !important;
+  padding: 24px;
+  height: auto;
+}
+
+::ng-deep .mat-horizontal-stepper-header .mat-step-label {
+  padding: 0px 0px 16px !important;
+}
+
+::ng-deep .mat-stepper-label-position-bottom .mat-horizontal-stepper-header:not(:first-child)::before, ::ng-deep .mat-stepper-label-position-bottom .mat-horizontal-stepper-header:not(:last-child)::after{
+  top: 68px !important;
+}
+
+::ng-deep .mat-stepper-label-position-bottom .mat-stepper-horizontal-line {
+  top: 68px !important;
+}
