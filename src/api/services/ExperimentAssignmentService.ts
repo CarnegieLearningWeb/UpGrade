@@ -161,10 +161,10 @@ export class ExperimentAssignmentService {
     return experiments.reduce((accumulator, experiment, index) => {
       const assignment = experimentAssignment[index];
       const segments = experiment.segments.map(segment => {
-        const { id, point } = segment;
+        const { name, point } = segment;
         const conditionAssigned = assignment;
         return {
-          id,
+          name,
           point,
           assignedCondition: conditionAssigned || {
             conditionCode: 'default',

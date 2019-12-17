@@ -12,7 +12,7 @@ export function checkExperimentAssignedIsDefault(
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experimentName,
+        name: experimentName,
         point: experimentPoint,
         assignedCondition: 'default',
       }),
@@ -28,11 +28,11 @@ export function checkExperimentAssignedIsNotDefault(
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experimentName,
+        name: experimentName,
         point: experimentPoint,
       }),
       expect.not.objectContaining({
-        id: experimentName,
+        name: experimentName,
         point: experimentPoint,
         assignedCondition: 'default',
       }),

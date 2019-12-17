@@ -1,5 +1,5 @@
 import { Container } from 'typedi';
-import { individualAssignmentExperiment } from '../mockData/experiment';
+import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment';
 import { multipleUsers } from '../mockData/users';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
@@ -8,8 +8,8 @@ import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import {
   checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
   checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNotDefault,
 } from '../utils/index';
 
 export default async function testCase(): Promise<void> {
@@ -19,10 +19,13 @@ export default async function testCase(): Promise<void> {
   // const checkService = Container.get<CheckService>(CheckService);
 
   // experiment object
-  const experimentObject = individualAssignmentExperiment;
+  const experimentObject = groupAssignmentWithGroupConsistencyExperiment;
+
+  const experimentName = experimentObject.segments[0].name;
+  const experimentPoint = experimentObject.segments[0].point;
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any);
+  await experimentService.create(experimentObject as any);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -35,9 +38,6 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
-
-  const experimentName = experimentObject.segments[0].id;
-  const experimentPoint = experimentObject.segments[0].point;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
@@ -67,7 +67,7 @@ export default async function testCase(): Promise<void> {
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[1]);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(multipleUsers[1], experimentName, experimentPoint);
@@ -116,7 +116,7 @@ export default async function testCase(): Promise<void> {
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[1]);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
   markedExperimentPoint = await markExperimentPoint(multipleUsers[1], experimentName, experimentPoint);
@@ -132,7 +132,7 @@ export default async function testCase(): Promise<void> {
 
   // get all experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[3]);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 4
   markedExperimentPoint = await markExperimentPoint(multipleUsers[3], experimentName, experimentPoint);

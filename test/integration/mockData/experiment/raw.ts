@@ -22,15 +22,13 @@ export const experiment = {
   ],
   segments: [
     {
-      id: 'W1',
       point: 'CurriculumSequence ',
-      name: 'WorkSpace 1',
+      name: 'W1',
       description: 'Segment on Workspace 1',
     },
     {
-      id: 'W2',
       point: 'CurriculumSequence',
-      name: 'Workspace 2',
+      name: 'W2',
       description: 'Segment on Workspace 2',
     },
   ],

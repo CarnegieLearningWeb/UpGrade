@@ -48,16 +48,14 @@ export class ExperimentService {
     return this.updateExperimentInDB(experiment);
   }
 
-  public getExperimentalConditions(experimentId: string, experimentPoint: string): Promise<ExperimentSegment> {
-    this.log.info('Get experimental conditions => ', experimentId, experimentPoint);
-    return this.experimentSegmentRepository.findOne({
-      where: {
-        id: experimentId,
-        point: experimentPoint,
-      },
-      relations: ['experiment', 'experiment.conditions'],
-      select: ['id', 'point'],
-    });
+  public async getExperimentalConditions(experimentId: string): Promise<ExperimentCondition[]> {
+    const experiment: Experiment = await this.findOne(experimentId);
+    return experiment.conditions;
+  }
+
+  public async getExperimentSegments(experimentId: string): Promise<ExperimentSegment[]> {
+    const experiment: Experiment = await this.findOne(experimentId);
+    return experiment.segments;
   }
 
   public getExperimentAssignment(data: any): string {
@@ -84,8 +82,14 @@ export class ExperimentService {
   }
 
   private async updateExperimentInDB(experiment: Experiment): Promise<Experiment> {
+    // get old experiment document
+    const oldExperiment = await this.findOne(experiment.id);
+    const oldConditions = oldExperiment.conditions;
+    const oldSegments = oldExperiment.segments;
+
     // TODO add transaction over here
-    const { conditions, segments, ...expDoc } = experiment;
+
+    const { conditions, segments, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
     let experimentDoc: Experiment;
     try {
       experimentDoc = (await this.experimentRepository.updateExperiment(expDoc.id, expDoc))[0];
@@ -94,22 +98,34 @@ export class ExperimentService {
     }
 
     // creating condition docs
-    const conditionDocToSave =
-      conditions &&
-      conditions.length > 0 &&
-      conditions.map((condition: ExperimentCondition) => {
-        condition.experiment = experimentDoc;
-        return condition;
-      });
+    const conditionDocToSave: Array<Partial<ExperimentCondition>> =
+      (conditions &&
+        conditions.length > 0 &&
+        conditions.map((condition: ExperimentCondition) => {
+          // tslint:disable-next-line:no-shadowed-variable
+          const { createdAt, updatedAt, versionNumber, ...rest } = condition;
+          rest.experiment = experimentDoc;
+          rest.id = rest.id || uuid();
+          return rest;
+        })) ||
+      [];
 
     // creating segment docs
     const segmentDocToSave =
-      segments &&
-      segments.length > 0 &&
-      segments.map(segment => {
-        segment.experiment = experimentDoc;
-        return segment;
-      });
+      (segments &&
+        segments.length > 0 &&
+        segments.map(segment => {
+          // tslint:disable-next-line:no-shadowed-variable
+          const { createdAt, updatedAt, versionNumber, ...rest } = segment;
+          if (rest.id && rest.id === `${rest.name}_${rest.point}`) {
+            rest.id = rest.id;
+          } else {
+            rest.id = `${rest.name}_${rest.point}`;
+          }
+          rest.experiment = experimentDoc;
+          return rest;
+        })) ||
+      [];
 
     // saving conditions and saving segments
     let conditionDocs: ExperimentCondition[];
@@ -118,22 +134,45 @@ export class ExperimentService {
       [conditionDocs, segmentDocs] = await Promise.all([
         Promise.all(
           conditionDocToSave.map(async conditionDoc => {
-            return this.experimentConditionRepository.updateExperimentCondition(conditionDoc.id, conditionDoc);
+            return this.experimentConditionRepository.upsertExperimentCondition(conditionDoc);
           })
         ) as any,
         Promise.all(
           segmentDocToSave.map(async segmentDoc => {
-            return this.experimentSegmentRepository.updateExperimentSegment(
-              segmentDoc.id,
-              segmentDoc.point,
-              segmentDoc
-            );
+            return this.experimentSegmentRepository.upsertExperimentSegment(segmentDoc);
           })
         ) as any,
       ]);
     } catch (error) {
       throw new Error(`Error in creating conditions and segments "updateExperimentInDB" ${error}`);
     }
+
+    // delete conditions which don't exist in new experiment document
+    const toDeleteConditions = [];
+    oldConditions.forEach(({ id }) => {
+      if (
+        !conditionDocs.find(doc => {
+          return doc.id === id;
+        })
+      ) {
+        toDeleteConditions.push(this.experimentConditionRepository.delete({ id }));
+      }
+    });
+
+    // delete segments which don't exist in new experiment document
+    const toDeleteSegments = [];
+    oldSegments.forEach(({ id, point, name }) => {
+      if (
+        !segmentDocs.find(doc => {
+          return doc.id === id && doc.point === point && doc.name === name;
+        })
+      ) {
+        toDeleteSegments.push(this.experimentSegmentRepository.delete({ id, point }));
+      }
+    });
+
+    // delete old segments and conditions
+    await Promise.all([...toDeleteConditions, ...toDeleteSegments]);
 
     const conditionDocToReturn = conditionDocs.map(conditionDoc => {
       return { ...conditionDoc, experiment: conditionDoc.experiment };
@@ -173,7 +212,7 @@ export class ExperimentService {
       segments &&
       segments.length > 0 &&
       segments.map(segment => {
-        segment.id = segment.id || uuid();
+        segment.id = `${segment.name}_${segment.point}`;
         segment.experiment = experimentDoc;
         return segment;
       });

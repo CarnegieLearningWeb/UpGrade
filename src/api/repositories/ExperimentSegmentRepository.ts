@@ -3,6 +3,19 @@ import { Repository, EntityRepository } from 'typeorm';
 
 @EntityRepository(ExperimentSegment)
 export class ExperimentSegmentRepository extends Repository<ExperimentSegment> {
+  public async upsertExperimentSegment(segmentDoc: Partial<ExperimentSegment>): Promise<ExperimentSegment> {
+    const result = await this.createQueryBuilder('segment')
+      .insert()
+      .values(segmentDoc)
+      .onConflict(`("id") DO UPDATE SET "name" = :name, "description" = :description`)
+      .setParameter('name', segmentDoc.name)
+      .setParameter('description', segmentDoc.description)
+      .returning('*')
+      .execute();
+
+    return result.raw[0];
+  }
+
   public async updateExperimentSegment(
     segmentId: string,
     segmentPoint: string,

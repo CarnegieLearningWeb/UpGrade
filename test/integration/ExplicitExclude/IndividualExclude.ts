@@ -2,13 +2,13 @@ import { individualAssignmentExperiment } from '../mockData/experiment/index';
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
-import { Logger as WinstonLogger } from '../../../src/lib/logger';
+// import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { multipleUsers } from '../mockData/users/index';
 import { ExcludeService } from '../../../src/api/services/ExcludeService';
 
 export default async function IndividualExclude(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
+  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const excludeService = Container.get<ExcludeService>(ExcludeService);
@@ -30,9 +30,6 @@ export default async function IndividualExclude(): Promise<void> {
       }),
     ])
   );
-
-  const experimentName = experimentObject.segments[0].id;
-  const experimentPoint = experimentObject.segments[0].point;
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;

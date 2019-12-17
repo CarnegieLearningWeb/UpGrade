@@ -1,8 +1,9 @@
 import { Connection } from 'typeorm';
 import { configureLogger } from '../utils/logger';
 import { synchronizeDatabase, createDatabaseConnection, closeDatabase } from '../utils/database';
-import { Scenario1, Scenario2, Scenario3, Scenario4, Scenario5, Scenario6 } from './ExperimentServiceTest';
+import { Scenario1, Scenario2, Scenario3, Scenario4, Scenario5, Scenario6 } from './ExperimentAssignment';
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
+import { UpdateExperiment } from './Experiment/update';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -57,13 +58,20 @@ describe('Integration Tests', () => {
     done();
   });
 
+  // testing exclusion over here
   test('Individual Exclude', async done => {
     await IndividualExclude();
     done();
   });
 
-//   test('Group Exclude', async done => {
-//     await GroupExclude();
-//     done();
-//   });
+  test('Group Exclude', async done => {
+    await GroupExclude();
+    done();
+  });
+
+  // testing experiment update over here
+  test('Update Experiment', async done => {
+    await UpdateExperiment();
+    done();
+  });
 });

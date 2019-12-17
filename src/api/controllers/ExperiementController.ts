@@ -2,7 +2,7 @@ import { Body, Get, JsonController, OnUndefined, Param, Post, Put } from 'routin
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
-import { ExperimentSegment } from '../models/ExperimentSegment';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 
 /**
  * @swagger
@@ -55,8 +55,6 @@ import { ExperimentSegment } from '../models/ExperimentSegment';
  *         items:
  *           type: object
  *           properties:
- *             id:
- *               type: string
  *             point:
  *               type: string
  *             name:
@@ -122,7 +120,7 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/conditions/{id}/{point}:
+   * /experiments/conditions/{id}:
    *    get:
    *       description: Get experiment conditions
    *       parameters:
@@ -131,13 +129,7 @@ export class ExperimentController {
    *           required: true
    *           schema:
    *             type: string
-   *           description: Experiment Segment Id
-   *         - in: path
-   *           name: point
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Experiment Segment Point
+   *           description: Experiment Id
    *       tags:
    *         - Experiments
    *       produces:
@@ -148,10 +140,10 @@ export class ExperimentController {
    *          '404':
    *            description: Experiment not found
    */
-  @Get('/conditions/:id/:point')
+  @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string, @Param('point') point: string): Promise<ExperimentSegment> | undefined {
-    return this.experimentService.getExperimentalConditions(id, point);
+  public getCondition(@Param('id') id: string): Promise<ExperimentCondition[]> {
+    return this.experimentService.getExperimentalConditions(id);
   }
 
   /**

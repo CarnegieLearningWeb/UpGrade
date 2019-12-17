@@ -31,9 +31,6 @@ export default async function GroupExclude(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.segments[0].id;
-  const experimentPoint = experimentObject.segments[0].point;
-
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
   await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
@@ -52,17 +49,18 @@ export default async function GroupExclude(): Promise<void> {
     ])
   );
 
-  // store individual user over hereF
+  // store individual user over here
   const user = multipleUsers[0];
-  const groupType = Object.keys(user.group)[0];
-  const groupId = user.group[groupType];
+
+  const groupType: string = Object.keys(user.group)[0];
+  const groupId: string = user.group[groupType].toString();
 
   let experimentCondition = await experimentAssignmentService.getAllExperimentConditions(user.id, user.group);
   expect(experimentCondition.length).not.toEqual(0);
 
-  // add user in individual exclude
-  const excludedUser = await excludeService.excludeGroup(groupId, groupType);
-  expect(excludedUser).toEqual(
+  // add user in group exclude
+  const excludedGroup = await excludeService.excludeGroup(groupId, groupType);
+  expect(excludedGroup).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         groupId,
