@@ -4,6 +4,8 @@ import { Experiment } from '../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../core/experiments/experiments.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
 import { SettingsService } from '../../../core/settings/settings.service';
+import { MatDialog } from '@angular/material';
+import { NewExperimentComponent } from '../components/new-experiment/new-experiment.component';
 
 @Component({
   selector: 'app-home',
@@ -25,12 +27,23 @@ export class HomeComponent {
 
   constructor(
     private experimentService: ExperimentService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    public dialog: MatDialog
   ) {
     this.experimentService.loadExperiments();
   }
 
   changeTheme(theme) {
     this.settingsService.changeTheme(theme);
+  }
+
+  openNewExperimentDialog() {
+    const dialogRef = this.dialog.open(NewExperimentComponent, {
+      width: '50%',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Code will be executed after closing dialog
+    });
   }
 }

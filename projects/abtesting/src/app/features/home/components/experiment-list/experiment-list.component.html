@@ -4,7 +4,7 @@
       <input matInput (keydown.enter)="applyFilter($event.target.value)" [placeholder]="'home.experiments-table.search.text' | translate">
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
-    <button mat-flat-button color="primary">
+    <button mat-flat-button color="primary" (click)="openNewExperimentDialog()">
       <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
       {{ 'home.experiment.add-experiment.text' | translate }}
     </button>

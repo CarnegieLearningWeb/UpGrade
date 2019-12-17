@@ -5,9 +5,12 @@ $white-background: #f0f2f9;
 $grey-text-color: #929fae;
 
 .experiments-container {
+  display: flex;
+  flex-direction: column;
   background-color: $white-background;
   padding: 2rem 4.375rem;
   height: 100%;
+  overflow: scroll;
 
   .theme-selector {
     display: flex;
@@ -31,12 +34,12 @@ $grey-text-color: #929fae;
   .no-experiment-container {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     align-items: center;
     justify-content: center;
     border-radius: 10px;
     box-shadow: 0 0 7px $grey;
     background-color: $white;
-    height: calc(100% - 112px);
 
     .text {
       text-align: center;
@@ -58,8 +61,8 @@ $grey-text-color: #929fae;
 
   .loading-container {
     display: flex;
+    flex-grow: 1;
     align-items: center;
     justify-content: center;
-    height: calc(100% - 112px);
   }
 }
