@@ -12,9 +12,11 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  *       - id
  *       - name
  *       - state
+ *       - startOn
  *       - consistencyRule
  *       - assignmentUnit
  *       - postExperimentRule
+ *       - enrollmentCompleteCondition
  *       - group
  *       - conditions
  *       - segments
@@ -28,6 +30,9 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  *       state:
  *         type: string
  *         enum: [inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled]
+ *       startOn:
+ *          type: string
+ *          format: date-time
  *       consistencyRule:
  *         type: string
  *         enum: [individual, experiment, group]
@@ -37,6 +42,16 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  *       postExperimentRule:
  *         type: string
  *         enum: [continue, revertToDefault]
+ *       enrollmentCompleteCondition:
+ *          type: object
+ *          properties:
+ *           userCount:
+ *             type: integer
+ *           groupCount:
+ *             type: integer
+ *       endOn:
+ *          type: string
+ *          format: date-time
  *       group:
  *         type: string
  *       conditions:

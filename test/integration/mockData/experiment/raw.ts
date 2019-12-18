@@ -5,6 +5,7 @@ export const experiment = {
   assignmentUnit: 'individual',
   postExperimentRule: 'continue',
   state: 'scheduled',
+  // startOn: new Date().toISOString(),
   group: 'teacher',
   conditions: [
     {

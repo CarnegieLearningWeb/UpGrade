@@ -17,7 +17,8 @@ export const individualAssignmentExperimentConsistencyRuleExperiemnt = {
   description: 'Individual Assignment',
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
-  postExperimentRule: POST_EXPERIMENT_RULE.REVERT_TO_DEFAULT,
+  postExperimentRule: POST_EXPERIMENT_RULE.REVERT,
+  revertTo: 'default',
   state: EXPERIMENT_STATE.SCHEDULED,
 };
 

@@ -1,10 +1,15 @@
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsDate } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentSegment } from './ExperimentSegment';
 import { BaseModel } from './base/BaseModel';
-import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'ees_types';
-
+import {
+  CONSISTENCY_RULE,
+  ASSIGNMENT_UNIT,
+  POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE,
+  IEnrollmentCompleteCondition,
+} from 'ees_types';
 @Entity()
 export class Experiment extends BaseModel {
   @PrimaryColumn('uuid')
@@ -24,6 +29,11 @@ export class Experiment extends BaseModel {
     default: EXPERIMENT_STATE.INACTIVE,
   })
   public state: EXPERIMENT_STATE;
+
+  // TODO add conditional validity here ie EXPERIMENT_STATE is scheduled
+  @IsDate()
+  @Column({ nullable: true })
+  public startOn: Date;
 
   @IsNotEmpty()
   @Column({
@@ -48,6 +58,18 @@ export class Experiment extends BaseModel {
     enum: POST_EXPERIMENT_RULE,
   })
   public postExperimentRule: POST_EXPERIMENT_RULE;
+
+  // TODO add conditional validity here ie endOn is null
+  @Column({ nullable: true, type: 'json' })
+  public enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
+
+  // TODO add conditional validity here ie enrollmentCompleteCondition is null
+  @IsDate()
+  @Column({ nullable: true })
+  public endOn: Date;
+
+  @Column({ nullable: true })
+  public revertTo: string;
 
   @Column('text', { array: true, nullable: true })
   public tags: string[];

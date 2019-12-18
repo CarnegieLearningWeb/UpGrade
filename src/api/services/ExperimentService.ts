@@ -3,7 +3,6 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Experiment } from '../models/Experiment';
-import { getExperimentAssignment } from './ConditionAssignment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
@@ -56,29 +55,6 @@ export class ExperimentService {
   public async getExperimentSegments(experimentId: string): Promise<ExperimentSegment[]> {
     const experiment: Experiment = await this.findOne(experimentId);
     return experiment.segments;
-  }
-
-  public getExperimentAssignment(data: any): string {
-    const {
-      userId,
-      userEnvironment,
-      experiment,
-      individualAssignment,
-      groupAssignment,
-      isExcluded,
-      individualExclusion,
-      groupExclusion,
-    } = data;
-    return getExperimentAssignment(
-      userId,
-      userEnvironment,
-      experiment,
-      individualAssignment,
-      groupAssignment,
-      individualExclusion,
-      groupExclusion,
-      isExcluded
-    );
   }
 
   private async updateExperimentInDB(experiment: Experiment): Promise<Experiment> {

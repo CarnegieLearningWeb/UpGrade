@@ -309,7 +309,7 @@ export class ExperimentAssignmentService {
         } else {
           return 'default';
         }
-      } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT_TO_DEFAULT) {
+      } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT) {
         return 'default';
       }
     } else if (experiment.state === EXPERIMENT_STATE.ENROLLING) {
