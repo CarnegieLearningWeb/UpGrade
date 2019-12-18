@@ -1,27 +1,24 @@
-<mat-horizontal-stepper linear="true" labelPosition="bottom" #stepper>
+<mat-horizontal-stepper labelPosition="bottom" #stepper>
   <ng-template matStepperIcon="edit">
     <mat-icon>done</mat-icon>
   </ng-template>
   <mat-step [stepControl]="overviewForm">
     <ng-template matStepLabel>{{ 'home.new-experiment.overview.text' | translate }}</ng-template>
     <home-experiment-overview
-      [overviewForm]="overviewForm"
-      (emitDialogCloseEvent)="onNoClick()"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-overview>
   </mat-step>
 
-  <mat-step>
+  <mat-step [stepControl]="experimentDesignForm">
     <ng-template matStepLabel>{{ 'home.new-experiment.experiment-design.text' | translate }}</ng-template>
-    <!-- Experiment design form goes here -->
-      <div>
-          <button mat-button matStepperPrevious>{{ 'global.back.text' | translate }}</button>
-          <button mat-button matStepperNext>{{ 'global.next.text' | translate }}</button>
-      </div>
+    <home-experiment-design
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-experiment-design>
   </mat-step>
 
   <mat-step>
     <ng-template matStepLabel>{{ 'home.new-experiment.schedule.text' | translate }}</ng-template>
-    <!-- Experiment schedule form goes here -->
+    <home-experiment-schedule></home-experiment-schedule>
     <div>
       <button mat-button matStepperPrevious>{{ 'global.back.text' | translate }}</button>
       <button mat-button (click)="stepper.reset()">{{ 'global.reset.text' | translate }}</button>

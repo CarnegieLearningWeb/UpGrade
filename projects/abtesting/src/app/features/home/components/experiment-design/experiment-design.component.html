@@ -1,0 +1,200 @@
+<form class="experiment-design" [formGroup]="experimentDesignForm">
+  <!-- Condition table -->
+  <ng-container>
+    <mat-table
+      class="condition-table"
+      [dataSource]="conditionDataSource"
+      formArrayName="conditions"
+    >
+      <!-- CONDITION NAME Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.condition.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <mat-form-field floatLabel="never">
+            <input
+              matInput
+              [placeholder]="
+                'home.new-experiment.design.condition.placeholder.text'
+                  | translate
+              "
+              formControlName="name"
+            />
+          </mat-form-field>
+        </mat-cell>
+      </ng-container>
+
+      <!-- ASSIGNMENT WEIGHT Column -->
+      <ng-container matColumnDef="assignmentWeight">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.assignment-weight.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <mat-form-field floatLabel="never">
+            <input
+              type="number"
+              matInput
+              [placeholder]="
+                'home.new-experiment.design.assignment-weight.placeholder.text'
+                  | translate
+              "
+              formControlName="assignmentWeight"
+            />
+          </mat-form-field>
+        </mat-cell>
+      </ng-container>
+
+      <!-- DESCRIPTION Column -->
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.description.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <mat-form-field floatLabel="never">
+            <input
+              matInput
+              [placeholder]="
+                'home.new-experiment.design.description.placeholder.text'
+                  | translate
+              "
+              formControlName="description"
+            />
+          </mat-form-field>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="removeCondition">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <span
+            class="remove-icon"
+            (click)="removeConditionOrSegment('condition', groupIndex)"
+            >X</span
+          >
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row
+        *matHeaderRowDef="conditionDisplayedColumns; sticky: true"
+      ></mat-header-row>
+      <mat-row
+        *matRowDef="let row; columns: conditionDisplayedColumns"
+      ></mat-row>
+    </mat-table>
+    <button class="add-condition" (click)="addConditionOrSegment('condition')">
+      + {{ 'home.new-experiment.design.add-condition.text' | translate }}
+    </button>
+  </ng-container>
+
+  <!-- Segment Table -->
+  <ng-container>
+    <mat-table
+      class="segment-table"
+      [dataSource]="segmentDataSource"
+      formArrayName="segments"
+    >
+      <!-- SEGMENT POINT Column -->
+      <ng-container matColumnDef="point">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.segment-point.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <mat-form-field floatLabel="never">
+            <input
+              matInput
+              [placeholder]="
+                'home.new-experiment.design.segment-point.placeholder.text'
+                  | translate
+              "
+              formControlName="point"
+            />
+          </mat-form-field>
+        </mat-cell>
+      </ng-container>
+
+      <!-- SEGMENT NAME Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.segment-name.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <mat-form-field floatLabel="never">
+            <input
+              matInput
+              [placeholder]="
+                'home.new-experiment.design.segment-name.placeholder.text'
+                  | translate
+              "
+              formControlName="name"
+            />
+          </mat-form-field>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="removeSegment">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <span
+            class="remove-icon"
+            (click)="removeConditionOrSegment('segment', groupIndex)"
+            >X</span
+          >
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row
+        *matHeaderRowDef="segmentDisplayedColumns"
+      ></mat-header-row>
+      <mat-row *matRowDef="let row; columns: segmentDisplayedColumns"></mat-row>
+    </mat-table>
+    <button class="add-segment" (click)="addConditionOrSegment('segment')">
+      +
+      {{ 'home.new-experiment.design.add-point-and-segment.text' | translate }}
+    </button>
+  </ng-container>
+
+  <div class="button-container">
+    <button mat-raised-button matStepperPrevious color="primary">
+      {{ 'global.back.text' | translate }}
+    </button>
+    <div>
+      <button
+        mat-raised-button
+        (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+      >
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        matStepperNext
+        [disabled]="!this.experimentDesignForm.valid"
+        (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+      >
+        {{ 'global.next.text' | translate }}
+      </button>
+    </div>
+  </div>
+</form>

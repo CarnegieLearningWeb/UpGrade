@@ -16,3 +16,7 @@
 ::ng-deep .mat-stepper-label-position-bottom .mat-stepper-horizontal-line {
   top: 68px !important;
 }
+
+::ng-deep .mat-horizontal-stepper-header{
+  pointer-events: none !important;
+}

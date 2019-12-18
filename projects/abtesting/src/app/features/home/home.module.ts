@@ -11,6 +11,8 @@ import { FormatDatePipe } from './components/pipes/format-date.pipe';
 import { FormsModule } from '@angular/forms';
 import { NewExperimentComponent } from './components/new-experiment/new-experiment.component';
 import { ExperimentOverviewComponent } from './components/experiment-overview/experiment-overview.component';
+import { ExperimentDesignComponent } from './components/experiment-design/experiment-design.component';
+import { ExperimentScheduleComponent } from './components/experiment-schedule/experiment-schedule.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +21,9 @@ import { ExperimentOverviewComponent } from './components/experiment-overview/ex
     ExperimentStateColorPipe,
     FormatDatePipe,
     NewExperimentComponent,
-    ExperimentOverviewComponent
+    ExperimentOverviewComponent,
+    ExperimentDesignComponent,
+    ExperimentScheduleComponent
   ],
   imports: [CommonModule, FormsModule, SharedModule, HomeRoutingModule],
   providers: [],

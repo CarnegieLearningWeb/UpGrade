@@ -103,10 +103,16 @@
   </mat-form-field>
 
   <div class="button-container">
-    <button mat-raised-button (click)="closeDialog()">
+    <button mat-raised-button (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)">
       {{ 'global.cancel.text' | translate }}
     </button>
-    <button mat-raised-button color="primary" matStepperNext>
+    <button
+      mat-raised-button
+      color="primary"
+      matStepperNext
+      [disabled]="!this.overviewForm.valid"
+      (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+    >
       {{ 'global.next.text' | translate }}
     </button>
   </div>

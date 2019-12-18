@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'ees_types';
-import { GroupTypes } from '../../../../core/experiments/store/experiments.model';
+import { GroupTypes, NewExperimentDialogEvents, NewExperimentDialogData } from '../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { FormGroup } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
   selector: 'home-experiment-overview',
@@ -11,10 +11,10 @@ import { FormGroup } from '@angular/forms';
   styleUrls: ['./experiment-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExperimentOverviewComponent {
+export class ExperimentOverviewComponent implements OnInit {
 
-  @Input() overviewForm: FormGroup;
-  @Output() emitDialogCloseEvent = new EventEmitter<boolean>();
+  @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
+  overviewForm: FormGroup;
   unitOfAssignments = [
     { type: ASSIGNMENT_UNIT.INDIVIDUAL, viewValue: 'Individual'},
     { type: ASSIGNMENT_UNIT.INDIVIDUAL, viewValue: 'Group'}
@@ -40,7 +40,17 @@ export class ExperimentOverviewComponent {
 
   experimentTags = [];
 
-  constructor() { }
+  constructor(private _formBuilder: FormBuilder) { }
+
+  ngOnInit() {
+    this.overviewForm = this._formBuilder.group({
+      experimentName: [null, Validators.required],
+      description: [null, Validators.required],
+      unitOfAssignment: [null, Validators.required],
+      groupType: [null, Validators.required],
+      consistencyRule: [null, Validators.required],
+    });
+  }
 
   addTag(event: MatChipInputEvent): void {
     const input = event.input;
@@ -64,7 +74,14 @@ export class ExperimentOverviewComponent {
     }
   }
 
-  closeDialog() {
-    this.emitDialogCloseEvent.emit(true);
+  emitEvent(eventType: NewExperimentDialogEvents) {
+    (eventType === NewExperimentDialogEvents.CLOSE_DIALOG)
+    ? this.emitExperimentDialogEvent.emit({ type: eventType })
+    : this.emitExperimentDialogEvent.emit({ type: eventType, formData: this.overviewForm.value});
   }
+
+  get NewExperimentDialogEvents() {
+    return NewExperimentDialogEvents;
+  }
+
 }
