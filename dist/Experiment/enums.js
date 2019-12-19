@@ -25,4 +25,13 @@ var EXPERIMENT_STATE;
     EXPERIMENT_STATE["ENROLLMENT_COMPLETE"] = "enrollmentComplete";
     EXPERIMENT_STATE["CANCELLED"] = "cancelled";
 })(EXPERIMENT_STATE = exports.EXPERIMENT_STATE || (exports.EXPERIMENT_STATE = {}));
+var SERVER_ERROR;
+(function (SERVER_ERROR) {
+    SERVER_ERROR["DB_UNREACHABLE"] = "Database not reachable";
+    SERVER_ERROR["DB_AUTH_FAIL"] = "Database auth fail";
+    SERVER_ERROR["ASSIGNMENT_ERROR"] = "Error in the assignment algorithm";
+    SERVER_ERROR["MISSING_PARAMS"] = "Parameter missing in the client request";
+    SERVER_ERROR["INCORRECT_PARAM_FORMAT"] = "Parameter not in the correct format";
+    SERVER_ERROR["USER_NOT_FOUND"] = "User ID not found";
+})(SERVER_ERROR = exports.SERVER_ERROR || (exports.SERVER_ERROR = {}));
 //# sourceMappingURL=enums.js.map
