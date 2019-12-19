@@ -184,7 +184,7 @@ export class ExperimentController {
   // }
 
   @Post()
-  public create(@Body({ validate: true }) experiment: Experiment): Promise<Experiment> {
+  public create(@Body({ validate: {validationError : {target : false, value: false}} }) experiment: Experiment): Promise<Experiment> {
     return this.experimentService.create(experiment);
   }
 
