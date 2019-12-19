@@ -3,6 +3,7 @@ import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentSegment } from '../models/ExperimentSegment';
+import { ExperimentValidator } from '../validators/ExperimentValidator';
 
 /**
  * @swagger
@@ -177,8 +178,15 @@ export class ExperimentController {
    *          '200':
    *            description: New Experiment is created
    */
+
+  // @Post()
+  // public create(@Body() experiment: Experiment): Promise<Experiment> {
+  //   return this.experimentService.create(experiment);
+  // }
+
   @Post()
-  public create(@Body() experiment: Experiment): Promise<Experiment> {
+  public create(@Body({ validate: true }) experimentValidator: ExperimentValidator): Promise<Experiment> {
+    const experiment: Experiment = experimentValidator as Experiment;
     return this.experimentService.create(experiment);
   }
 
