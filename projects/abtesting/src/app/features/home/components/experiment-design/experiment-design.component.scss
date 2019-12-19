@@ -1,0 +1,48 @@
+@import '../../../../../styles/styles-variables.scss';
+
+.experiment-design {
+  .condition-table,
+  .segment-table {
+    max-height: 200px;
+    overflow: scroll;
+
+    .remove-icon {
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+
+  .add-condition,
+  .add-segment {
+    margin-top: 10px;
+    outline: 0;
+    border: 0;
+    background-color: transparent;
+    color: $blue;
+    font-size: $text-size-small;
+  }
+
+  .segment-table {
+    margin-top: 50px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+
+    button {
+      margin-left: 10px;
+    }
+  }
+
+  ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
+    bottom: unset;
+    background-color: unset !important;
+  }
+
+  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
+    display: none;
+  }
+}

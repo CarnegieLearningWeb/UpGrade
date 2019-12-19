@@ -49,6 +49,12 @@ mat-drawer {
 
         .icon {
           margin-right: 5px;
+
+          &--activated {
+            ::ng-deep #Logs--Error {
+              fill: $white;
+            }
+          }
         }
 
         &.selected {

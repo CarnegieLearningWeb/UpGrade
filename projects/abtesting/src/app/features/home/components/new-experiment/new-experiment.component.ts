@@ -1,10 +1,10 @@
 import {
   Component,
   ChangeDetectionStrategy,
-  OnInit,
 } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
+import { NewExperimentDialogEvents, NewExperimentDialogData } from '../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-new-experiment',
@@ -12,26 +12,32 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
   styleUrls: ['./new-experiment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewExperimentComponent implements OnInit {
+export class NewExperimentComponent {
 
   overviewForm: FormGroup;
+  experimentDesignForm: FormGroup;
+  newExperimentData: any = {};
   constructor(
     public dialogRef: MatDialogRef<NewExperimentComponent>,
-    private _formBuilder: FormBuilder,
-  ) {
-  }
+  ) {}
 
-  ngOnInit() {
-    this.overviewForm = this._formBuilder.group({
-      experimentName: [null, Validators.required],
-      description: [null, Validators.required],
-      unitOfAssignment: [null, Validators.required],
-      groupType: [null, Validators.required],
-      consistencyRule: [null, Validators.required],
-    });
-  }
-
-  onNoClick(event?: any): void {
+  onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  getExperimentData(event: NewExperimentDialogData) {
+    const { type, formData } = event;
+    switch (type) {
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.onNoClick();
+        break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.newExperimentData = {
+          ...this.newExperimentData,
+          ...formData
+        };
+        break;
+    }
+    console.log('Form data ', this.newExperimentData);
   }
 }

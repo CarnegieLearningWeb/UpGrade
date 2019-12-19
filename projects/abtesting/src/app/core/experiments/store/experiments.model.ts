@@ -20,6 +20,16 @@ export enum GroupTypes {
   DISTRICT = 'district'
 }
 
+export enum NewExperimentDialogEvents {
+  CLOSE_DIALOG = 'Close Dialog',
+  SEND_FORM_DATA = 'Send Form Data'
+}
+
+export interface NewExperimentDialogData {
+  type: NewExperimentDialogEvents;
+  formData?: any;
+}
+
 export interface ExperimentCondition {
   id: string;
   name: string;

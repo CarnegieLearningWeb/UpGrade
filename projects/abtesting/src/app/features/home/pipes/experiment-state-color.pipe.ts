@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { EXPERIMENT_STATE } from '../../../../core/experiments/store/experiments.model';
+import { EXPERIMENT_STATE } from '../../../core/experiments/store/experiments.model';
 
 @Pipe({
   name: 'experimentStateColor'

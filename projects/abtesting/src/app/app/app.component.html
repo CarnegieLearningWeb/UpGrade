@@ -15,10 +15,8 @@
               #linkInfo="routerLinkActive"
             >
               <app-shared-icons
-                class="icon"
-                [iconType]="
-                  linkInfo.isActive ? 'experiment' : 'inactive-experiment'
-                "
+                [ngClass]="linkInfo.isActive ? 'icon--activated' : 'icon'"
+                [iconType]="'files'"
               ></app-shared-icons>
               {{ 'global.experiment.title' | translate }}
             </a>
@@ -31,8 +29,8 @@
               #linkInfo2="routerLinkActive"
             >
               <app-shared-icons
-                class="icon"
-                [iconType]="linkInfo2.isActive ? 'audit' : 'inactive-audit'"
+                [ngClass]="linkInfo2.isActive ? 'icon--activated' : 'icon'"
+                [iconType]="'list'"
               ></app-shared-icons>
               {{ 'global.audit-logs.title' | translate }}
             </a></mat-list-item

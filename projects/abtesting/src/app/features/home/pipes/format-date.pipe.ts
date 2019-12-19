@@ -23,16 +23,18 @@ export class FormatDatePipe implements PipeTransform {
       ];
       const dateNumber = experimentDate.getDate();
       const dateHours = experimentDate.getHours();
-      return dateNumber +
+      return (
+        dateNumber +
         this.getSuffix(dateNumber) +
         ' ' +
         months[experimentDate.getMonth()].substring(0, 3) +
         ', ' +
-        (dateHours < 12 ? dateHours : (dateHours - 12) ) +
+        (dateHours < 12 ? dateHours : dateHours - 12) +
         ':' +
         experimentDate.getMinutes() +
         ' ' +
-        (experimentDate.getHours() < 12 ? 'AM' : 'PM');
+        (experimentDate.getHours() < 12 ? 'AM' : 'PM')
+      );
     } else {
       return '';
     }
