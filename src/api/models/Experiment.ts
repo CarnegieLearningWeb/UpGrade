@@ -1,9 +1,10 @@
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentSegment } from './ExperimentSegment';
 import { BaseModel } from './base/BaseModel';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'ees_types';
+import { Type } from 'class-transformer';
 
 @Entity()
 export class Experiment extends BaseModel {
@@ -59,11 +60,11 @@ export class Experiment extends BaseModel {
     type => ExperimentCondition,
     condition => condition.experiment
   )
-  public conditions: ExperimentCondition[];
+  @ValidateNested() @Type(() => ExperimentCondition) public  conditions: ExperimentCondition[];
 
   @OneToMany(
     type => ExperimentSegment,
     segment => segment.experiment
   )
-  public segments: ExperimentSegment[];
+  @ValidateNested() @Type(() => ExperimentSegment) public segments: ExperimentSegment[];
 }
