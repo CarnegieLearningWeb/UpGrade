@@ -30,7 +30,7 @@
           *ngFor="let unitOfAssignment of unitOfAssignments"
           [value]="unitOfAssignment"
         >
-          {{ unitOfAssignment.viewValue }}
+          {{ unitOfAssignment.value | titlecase }}
         </mat-option>
       </mat-select>
       <mat-error
@@ -49,7 +49,7 @@
       }}</mat-label>
       <mat-select formControlName="groupType">
         <mat-option *ngFor="let group of groupTypes" [value]="group">{{
-          group.viewValue
+          group.value | titlecase
         }}</mat-option>
       </mat-select>
       <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
@@ -67,7 +67,7 @@
         *ngFor="let consistencyRule of consistencyRules"
         [value]="consistencyRule"
       >
-        {{ consistencyRule.viewValue }}
+        {{ consistencyRule.value | titlecase }}
       </mat-option>
     </mat-select>
     <mat-error
@@ -103,7 +103,10 @@
   </mat-form-field>
 
   <div class="button-container">
-    <button mat-raised-button (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)">
+    <button
+      mat-raised-button
+      (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+    >
       {{ 'global.cancel.text' | translate }}
     </button>
     <button
