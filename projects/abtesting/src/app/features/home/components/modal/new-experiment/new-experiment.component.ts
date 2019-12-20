@@ -3,8 +3,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
-import { FormGroup } from '@angular/forms';
-import { NewExperimentDialogEvents, NewExperimentDialogData } from '../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-new-experiment',
@@ -14,8 +13,6 @@ import { NewExperimentDialogEvents, NewExperimentDialogData } from '../../../../
 })
 export class NewExperimentComponent {
 
-  overviewForm: FormGroup;
-  experimentDesignForm: FormGroup;
   newExperimentData: any = {};
   constructor(
     public dialogRef: MatDialogRef<NewExperimentComponent>,
@@ -26,7 +23,7 @@ export class NewExperimentComponent {
   }
 
   getExperimentData(event: NewExperimentDialogData) {
-    const { type, formData } = event;
+    const { type, formData, path } = event;
     switch (type) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
         this.onNoClick();
@@ -34,10 +31,15 @@ export class NewExperimentComponent {
       case NewExperimentDialogEvents.SEND_FORM_DATA:
         this.newExperimentData = {
           ...this.newExperimentData,
-          ...formData
+          ...formData,
+          state: EXPERIMENT_STATE.INACTIVE,
+          postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE
         };
+        if (path === NewExperimentPaths.EXPERIMENT_SCHEDULE) {
+          this.newExperimentData.startOn = new Date().toISOString();
+          console.log('Experiment form data', this.newExperimentData);
+        }
         break;
     }
-    console.log('Form data ', this.newExperimentData);
   }
 }

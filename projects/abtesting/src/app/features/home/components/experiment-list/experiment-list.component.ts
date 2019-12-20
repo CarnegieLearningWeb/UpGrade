@@ -6,7 +6,7 @@ import { Experiment } from '../../../../core/experiments/store/experiments.model
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material';
-import { NewExperimentComponent } from '../new-experiment/new-experiment.component';
+import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 
 @Component({
   selector: 'home-experiment-list',

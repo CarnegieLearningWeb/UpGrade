@@ -5,7 +5,7 @@ import { ExperimentService } from '../../../core/experiments/experiments.service
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { MatDialog } from '@angular/material';
-import { NewExperimentComponent } from '../components/new-experiment/new-experiment.component';
+import { NewExperimentComponent } from '../components/modal/new-experiment/new-experiment.component';
 
 @Component({
   selector: 'app-home',

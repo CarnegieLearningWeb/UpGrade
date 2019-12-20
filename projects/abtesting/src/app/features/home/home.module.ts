@@ -9,7 +9,7 @@ import { ExperimentListComponent } from './components/experiment-list/experiment
 import { ExperimentStateColorPipe } from './pipes/experiment-state-color.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { FormsModule } from '@angular/forms';
-import { NewExperimentComponent } from './components/new-experiment/new-experiment.component';
+import { NewExperimentComponent } from './components/modal/new-experiment/new-experiment.component';
 import { ExperimentOverviewComponent } from './components/experiment-overview/experiment-overview.component';
 import { ExperimentDesignComponent } from './components/experiment-design/experiment-design.component';
 import { ExperimentScheduleComponent } from './components/experiment-schedule/experiment-schedule.component';

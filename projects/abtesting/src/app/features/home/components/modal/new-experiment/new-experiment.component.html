@@ -2,14 +2,14 @@
   <ng-template matStepperIcon="edit">
     <mat-icon>done</mat-icon>
   </ng-template>
-  <mat-step [stepControl]="overviewForm">
+  <mat-step>
     <ng-template matStepLabel>{{ 'home.new-experiment.overview.text' | translate }}</ng-template>
     <home-experiment-overview
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-overview>
   </mat-step>
 
-  <mat-step [stepControl]="experimentDesignForm">
+  <mat-step>
     <ng-template matStepLabel>{{ 'home.new-experiment.experiment-design.text' | translate }}</ng-template>
     <home-experiment-design
       (emitExperimentDialogEvent)="getExperimentData($event)"
@@ -18,10 +18,9 @@
 
   <mat-step>
     <ng-template matStepLabel>{{ 'home.new-experiment.schedule.text' | translate }}</ng-template>
-    <home-experiment-schedule></home-experiment-schedule>
-    <div>
-      <button mat-button matStepperPrevious>{{ 'global.back.text' | translate }}</button>
-      <button mat-button (click)="stepper.reset()">{{ 'global.reset.text' | translate }}</button>
-    </div>
+    <home-experiment-schedule
+    (emitExperimentDialogEvent)="getExperimentData($event)"
+    [assignmentUnit]="newExperimentData?.assignmentUnit"
+    ></home-experiment-schedule>
   </mat-step>
 </mat-horizontal-stepper>

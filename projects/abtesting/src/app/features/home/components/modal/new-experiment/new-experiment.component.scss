@@ -1,3 +1,5 @@
+@import '../../../../../../styles/styles-variables.scss';
+
 ::ng-deep .mat-horizontal-stepper-header {
   box-sizing: border-box;
   flex-direction: column-reverse !important;
@@ -19,4 +21,9 @@
 
 ::ng-deep .mat-horizontal-stepper-header{
   pointer-events: none !important;
+}
+
+
+::ng-deep .mat-step-header .mat-step-icon-selected, ::ng-deep .mat-step-header .mat-step-icon-state-done, ::ng-deep .mat-step-header .mat-step-icon-state-edit {
+  background-color: $blue !important;
 }
