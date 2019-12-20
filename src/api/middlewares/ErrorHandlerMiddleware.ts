@@ -3,6 +3,7 @@ import { ExpressErrorMiddlewareInterface, HttpError, Middleware } from 'routing-
 
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
+import { formatBadReqErrorMessage } from '../../lib/env/utils';
 
 @Middleware({ type: 'after' })
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
@@ -17,7 +18,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
 
       res.json({
         name: error.name,
-        message: error.message,
+        message: error.httpCode === 400 ? formatBadReqErrorMessage(error[`errors`]) : error.message,
         errors: error[`errors`] || [],
       });
     }
