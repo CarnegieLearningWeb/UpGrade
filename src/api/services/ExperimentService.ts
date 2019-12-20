@@ -52,7 +52,7 @@ export class ExperimentService {
     this.log.info('Get experimental conditions => ', experimentId, experimentPoint);
     return this.experimentSegmentRepository.findOne({
       where: {
-        id: experimentId,
+        experimentid: experimentId,
         point: experimentPoint,
       },
       relations: ['experiment', 'experiment.conditions'],

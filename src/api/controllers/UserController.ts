@@ -2,6 +2,7 @@ import { JsonController, Get, OnUndefined, Param, Post, Put, Body } from 'routin
 import { UserService } from '../services/UserService';
 import { User } from '../models/User';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
+import { SERVER_ERROR } from 'ees_types';
 
 /**
  * @swagger
@@ -69,6 +70,9 @@ export class UserController {
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
   public one(@Param('id') id: string): Promise<User> {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id shoud be of type UUID.'));
+    }
     return this.userService.findOne(id);
   }
 
