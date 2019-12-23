@@ -343,7 +343,9 @@ export class ExperimentAssignmentService {
         });
         return groupAssignment.condition.id;
       } else {
-        const randomConditions = Math.floor(Math.random() * experiment.conditions.length);
+        const randomConditions = this.weightedRandom(
+          experiment.conditions.map(condition => condition.assignmentWeight)
+        );
         const experimentalCondition = experiment.conditions[randomConditions];
         // assignment operations will happen here
         if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
@@ -371,5 +373,17 @@ export class ExperimentAssignmentService {
       }
     }
     return 'default';
+  }
+
+  private weightedRandom(spec: number[]): number {
+    let sum = 0;
+    const r = Math.random();
+    for (let i = 0; i < spec.length; i++) {
+      sum += spec[i];
+      if (r <= sum) {
+        return i;
+      }
+    }
+    return 0;
   }
 }
