@@ -227,7 +227,7 @@ export class ExperimentController {
    *            description: Experiment is updated
    */
   @Put('/:id')
-  public update(@Param('id') id: string, @Body({ validate: { validationError: { target: false, value: false }} })
+  public update(@Param('id') id: string, @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
   experiment: Experiment): Promise<Experiment> {
     return this.experimentService.update(id, experiment);
   }
