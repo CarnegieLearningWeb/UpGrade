@@ -8,7 +8,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .insert()
       .values(conditionDoc)
       .onConflict(
-        `("id") DO UPDATE SET "name" = :name, "description" = :description, "conditionCode" = :conditionCode, "assignment_weight" = :assignmentWeight`
+        `("id") DO UPDATE SET "name" = :name, "description" = :description, "conditionCode" = :conditionCode, "assignmentWeight" = :assignmentWeight`
       )
       .setParameter('name', conditionDoc.name)
       .setParameter('description', conditionDoc.description)

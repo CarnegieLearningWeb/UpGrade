@@ -8,6 +8,7 @@ import { ExperimentConditionRepository } from '../repositories/ExperimentConditi
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentSegment } from '../models/ExperimentSegment';
+import { ScheduledJobService } from './ScheduledJobService';
 
 @Service()
 export class ExperimentService {
@@ -15,6 +16,7 @@ export class ExperimentService {
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
     @OrmRepository() private experimentSegmentRepository: ExperimentSegmentRepository,
+    public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -62,6 +64,9 @@ export class ExperimentService {
     const oldExperiment = await this.findOne(experiment.id);
     const oldConditions = oldExperiment.conditions;
     const oldSegments = oldExperiment.segments;
+
+    // create schedules to start experiment and end experiment
+    await this.scheduledJobService.updateExperimentSchedules(experiment);
 
     // TODO add transaction over here
 
@@ -123,6 +128,8 @@ export class ExperimentService {
       throw new Error(`Error in creating conditions and segments "updateExperimentInDB" ${error}`);
     }
 
+    // TODO checking/storing revert condition in the experiment doc with conditionId
+
     // delete conditions which don't exist in new experiment document
     const toDeleteConditions = [];
     oldConditions.forEach(({ id }) => {
@@ -173,6 +180,9 @@ export class ExperimentService {
       throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
     }
 
+    // create schedules to start experiment and end experiment
+    await this.scheduledJobService.updateExperimentSchedules(experiment);
+
     // creating condition docs
     const conditionDocsToSave =
       conditions &&
@@ -204,6 +214,8 @@ export class ExperimentService {
     } catch (error) {
       throw new Error(`Error in creating conditions and segments "addExperimentInDB" ${error}`);
     }
+
+    // TODO checking/storing revert condition in the experiment doc with conditionId
 
     const conditionDocToReturn = conditionDocs.map(conditionDoc => {
       const { experimentId, ...rest } = conditionDoc as any;

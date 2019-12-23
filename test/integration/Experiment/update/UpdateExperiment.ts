@@ -90,7 +90,7 @@ export default async function UpdateExperiment(): Promise<void> {
         name: 'Condition C',
         description: 'Condition C',
         conditionCode: 'Condition C',
-        assignment_weight: '0.5',
+        assignmentWeight: '0.5',
       }),
     ])
   );

@@ -12,7 +12,6 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  *       - id
  *       - name
  *       - state
- *       - startOn
  *       - consistencyRule
  *       - assignmentUnit
  *       - postExperimentRule
@@ -41,7 +40,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  *         enum: [individual, group]
  *       postExperimentRule:
  *         type: string
- *         enum: [continue, revertToDefault]
+ *         enum: [continue, revert]
  *       enrollmentCompleteCondition:
  *          type: object
  *          properties:
@@ -52,6 +51,12 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  *       endOn:
  *          type: string
  *          format: date-time
+ *       revertTo:
+ *          type: string
+ *       tags:
+ *          type: array
+ *          items:
+ *            type: string
  *       group:
  *         type: string
  *       conditions:

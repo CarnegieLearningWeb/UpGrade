@@ -7,6 +7,8 @@ import TestCase3 from './Scenario3';
 import TestCase4 from './Scenario4';
 import TestCase5 from './Scenario5';
 import TestCase6 from './Scenario6';
+import RevertToDefaultTestCase from './RevertToDefault';
+import RevertToConditionTestCase from './RevertToCondition';
 import { CheckService } from '../../../src/api/services/CheckService';
 
 const initialChecks = async () => {
@@ -71,4 +73,14 @@ export const Scenario5 = async () => {
 export const Scenario6 = async () => {
   await initialChecks();
   await TestCase6();
+};
+
+export const RevertToDefault = async () => {
+  await initialChecks();
+  await RevertToDefaultTestCase();
+};
+
+export const RevertToCondition = async () => {
+  await initialChecks();
+  await RevertToConditionTestCase();
 };

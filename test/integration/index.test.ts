@@ -4,6 +4,14 @@ import { synchronizeDatabase, createDatabaseConnection, closeDatabase } from '..
 import { Scenario1, Scenario2, Scenario3, Scenario4, Scenario5, Scenario6 } from './ExperimentAssignment';
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
 import { UpdateExperiment } from './Experiment/update';
+import { RevertToDefault, RevertToCondition } from './ExperimentAssignment/index';
+import {
+  EndExperiment,
+  StartExperiment,
+  UpdateExperimentState,
+  DeleteStartExperiment,
+  DeleteEndExperiment,
+} from './Experiment/scheduleJob';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -57,6 +65,14 @@ describe('Integration Tests', () => {
     await Scenario6();
     done();
   });
+  test('Revert to Default', async done => {
+    await RevertToDefault();
+    done();
+  });
+  test('Revert to Condition', async done => {
+    await RevertToCondition();
+    done();
+  });
 
   // testing exclusion over here
   test('Individual Exclude', async done => {
@@ -72,6 +88,32 @@ describe('Integration Tests', () => {
   // testing experiment update over here
   test('Update Experiment', async done => {
     await UpdateExperiment();
+    done();
+  });
+
+  // testing ScheduleJob
+  test('Create Scheduled Job in database to start experiment', async done => {
+    await StartExperiment();
+    done();
+  });
+
+  test('End Experiment after some timestamp', async done => {
+    await EndExperiment();
+    done();
+  });
+
+  test('Update Experiment state some timestamp', async done => {
+    await UpdateExperimentState();
+    done();
+  });
+
+  test('Delete Start Experiment', async done => {
+    await DeleteStartExperiment();
+    done();
+  });
+
+  test('Delete End Experiment', async done => {
+    await DeleteEndExperiment();
     done();
   });
 });

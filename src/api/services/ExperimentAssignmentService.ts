@@ -18,6 +18,7 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { Experiment } from '../models/Experiment';
 import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
 import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
+import { ScheduledJobService } from './ScheduledJobService';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -40,6 +41,7 @@ export class ExperimentAssignmentService {
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
+    public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
@@ -64,6 +66,8 @@ export class ExperimentAssignmentService {
       // Can be shift to job queue
       this.updateExclusionFromMarkExperimentPoint(userId, userEnvironment, experimentSegment.experiment);
     }
+
+    // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
 
     // TODO add in the experiments logs
     // adding in monitored experiment point table
@@ -180,7 +184,14 @@ export class ExperimentAssignmentService {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       await this.populateExclusionTable(experimentId);
     }
-    return this.experimentRepository.updateState(experimentId, state);
+
+    const updatedState = await this.experimentRepository.updateState(experimentId, state);
+    const experiment = await this.experimentRepository.findByIds([experimentId]);
+    if (experiment.length > 0) {
+      await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
+    }
+
+    return updatedState;
   }
 
   private async populateExclusionTable(experimentId: string): Promise<void> {
@@ -310,7 +321,11 @@ export class ExperimentAssignmentService {
           return 'default';
         }
       } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT) {
-        return 'default';
+        if (!experiment.revertTo) {
+          return 'default';
+        } else {
+          return experiment.revertTo;
+        }
       }
     } else if (experiment.state === EXPERIMENT_STATE.ENROLLING) {
       if (individualAssignment) {

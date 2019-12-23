@@ -37,7 +37,6 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
-    name: 'consistency_rule',
     type: 'enum',
     enum: CONSISTENCY_RULE,
   })
@@ -45,7 +44,6 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
-    name: 'assignment_unit',
     type: 'enum',
     enum: ASSIGNMENT_UNIT,
   })
@@ -53,7 +51,6 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
-    name: 'post_experiment_rule',
     type: 'enum',
     enum: POST_EXPERIMENT_RULE,
   })
@@ -68,7 +65,7 @@ export class Experiment extends BaseModel {
   @Column({ nullable: true })
   public endOn: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'uuid' })
   public revertTo: string;
 
   @Column('text', { array: true, nullable: true })
