@@ -1,7 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData } from '../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths } from '../../../../core/experiments/store/experiments.model';
+import { uuid } from 'uuidv4';
 
 @Component({
   selector: 'home-experiment-design',
@@ -27,8 +28,19 @@ export class ExperimentDesignComponent implements OnInit {
     this.experimentDesignForm = this._formBuilder.group({
       conditions: this._formBuilder.array([this.addConditions()]),
       segments: this._formBuilder.array([this.addSegments()])
-    });
+    }, { validators: this.validateExperimentDesignForm });
     this.updateView();
+  }
+
+  validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
+    const conditions = controls.get('conditions').value;
+    const segments = controls.get('segments').value;
+    if (conditions.length < 2) {
+      return { conditionCountError: true }
+    } else if (segments.length < 1) {
+      return { segmentCountError: true }
+    }
+    return null;
   }
 
   addConditions() {
@@ -48,11 +60,11 @@ export class ExperimentDesignComponent implements OnInit {
   }
 
   get condition(): FormArray {
-    return <FormArray>this.experimentDesignForm.get('conditions');
+    return this.experimentDesignForm.get('conditions') as FormArray;
   }
 
   get segment(): FormArray {
-    return <FormArray>this.experimentDesignForm.get('segments');
+    return this.experimentDesignForm.get('segments') as FormArray;
   }
 
   addConditionOrSegment(type: string) {
@@ -72,9 +84,22 @@ export class ExperimentDesignComponent implements OnInit {
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
-    (eventType === NewExperimentDialogEvents.CLOSE_DIALOG)
-    ? this.emitExperimentDialogEvent.emit({ type: eventType })
-    : this.emitExperimentDialogEvent.emit({ type: eventType, formData: this.experimentDesignForm.value});
+    switch (eventType) {
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.emitExperimentDialogEvent.emit({ type: eventType });
+        break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        const experimentDesignFormData = {
+          ...this.experimentDesignForm.value
+        }
+        experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(condition => ({ id: uuid(), ...condition }));
+        this.emitExperimentDialogEvent.emit({
+          type: eventType,
+          formData: experimentDesignFormData,
+          path: NewExperimentPaths.EXPERIMENT_DESIGN
+        });
+        break;
+    }
   }
 
   get NewExperimentDialogEvents() {

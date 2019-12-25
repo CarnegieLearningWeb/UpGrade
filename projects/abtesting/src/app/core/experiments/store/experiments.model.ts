@@ -25,9 +25,16 @@ export enum NewExperimentDialogEvents {
   SEND_FORM_DATA = 'Send Form Data'
 }
 
+export enum NewExperimentPaths {
+  EXPERIMENT_OVERVIEW = 'Experiment Overview',
+  EXPERIMENT_DESIGN = 'Experiment Design',
+  EXPERIMENT_SCHEDULE = 'Experiment Schedule'
+}
+
 export interface NewExperimentDialogData {
   type: NewExperimentDialogEvents;
   formData?: any;
+  path?: NewExperimentPaths;
 }
 
 export interface ExperimentCondition {

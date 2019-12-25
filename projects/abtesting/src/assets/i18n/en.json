@@ -6,6 +6,7 @@
   "global.next.text": "NEXT",
   "global.reset.text": "Reset",
   "global.cancel.text": "CANCEL",
+  "global.create.text": "CREATE",
   "home.experiment.text.subtitle": "Create and analyze new experiments",
   "home.no-experiment.text": "Welcome! <br> Let's start by creating a new experiment!",
   "home.experiment.add-experiment.text": "ADD EXPERIMENT",
@@ -40,5 +41,12 @@
   "home.new-experiment.design.segment-name.text": "EXPERIMENT SEGMENT",
   "home.new-experiment.design.segment-point.placeholder.text": "Add segment point",
   "home.new-experiment.design.segment-name.placeholder.text": "Add segment name",
-  "home.new-experiment.design.add-point-and-segment.text": "Add Point and Segment"
+  "home.new-experiment.design.add-point-and-segment.text": "Add Point and Segment",
+  "home.new-experiment.schedule.end-automatically.text": "End Automatically",
+  "home.new-experiment.schedule.end-on.text": "Ends on",
+  "home.new-experiment.schedule.end-criteria.text": "End when experiment reaches",
+  "home.new-experiment.schedule.date-picker.placeholder.text": "Choose a date",
+  "home.new-experiment.schedule.user-count.placeholder.text": "Number of Students",
+  "home.new-experiment.schedule.user-count.title.text": "Students",
+  "home.new-experiment.schedule.group-count.title.text": "Enrollments per Class"
 }

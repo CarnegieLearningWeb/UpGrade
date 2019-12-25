@@ -1,0 +1,47 @@
+@import '../../../../../styles/styles-variables.scss';
+
+.experiment-schedule-form {
+  margin: 20px 0 0 20px;
+
+  .date-picker-container {
+    margin: 0 0 30px 20px;
+
+    mat-form-field {
+      margin-left: 30px;
+    }
+  }
+
+  .experiment-end-criteria {
+    margin-left: 20px;
+
+    .end-criteria {
+      margin-left: 30px;
+
+      .group-type {
+        margin-left: 30px;
+      }
+    }
+  }
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+
+  button {
+    margin-left: 10px;
+  }
+}
+
+::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
+  background-color: $blue !important;
+}
+
+::ng-deep .mat-radio-button.mat-primary.mat-radio-checked .mat-radio-outer-circle {
+  border-color: $blue !important;
+}
+
+::ng-deep .mat-radio-button.mat-primary .mat-radio-inner-circle {
+  background-color: $blue !important;
+}

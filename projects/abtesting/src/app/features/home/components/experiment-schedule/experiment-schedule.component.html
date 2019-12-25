@@ -1,1 +1,94 @@
-<p>experiment-schedule works!</p>
+<form class="experiment-schedule-form" [formGroup]="experimentScheduleForm">
+  <mat-checkbox color="primary" formControlName="endExperimentAutomatically">
+    {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
+  </mat-checkbox>
+
+  <mat-radio-group formControlName="endCondition">
+
+    <div class="date-picker-container">
+      <mat-radio-button [value]="EndExperimentCondition.END_ON_DATE" color="primary">
+        {{ 'home.new-experiment.schedule.end-on.text' | translate }}
+      </mat-radio-button>
+      <mat-form-field>
+          <input
+            matInput
+            [min]="minDate"
+            [matDatepicker]="picker"
+            [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
+            formControlName="dateOfExperimentEnd"
+          >
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="experiment-end-criteria">
+      <mat-radio-button [value]="EndExperimentCondition.END_CRITERIA" color="primary">
+        {{ 'home.new-experiment.schedule.end-criteria.text' | translate }}
+      </mat-radio-button>
+      <div class="end-criteria">
+        <mat-form-field>
+          <input
+            type="number"
+            matInput
+            [placeholder]="'home.new-experiment.schedule.user-count.placeholder.text' | translate"
+            formControlName="userCount"
+          />
+        </mat-form-field>
+        <mat-form-field class="group-type">
+          <input
+            matInput
+            [value]="'home.new-experiment.schedule.user-count.title.text' | translate"
+            readonly
+          />
+        </mat-form-field>
+      </div>
+      <div class="end-criteria" *ngIf="assignmentUnit === AssignmentUnit.GROUP">
+        <mat-form-field>
+          <input
+            type="number"
+            matInput
+            [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate"
+            formControlName="groupCount"
+          />
+        </mat-form-field>
+        <mat-form-field class="group-type">
+          <input
+            matInput
+            [value]="'home.new-experiment.schedule.group-count.title.text' | translate"
+            readonly
+          />
+        </mat-form-field>
+      </div>
+    </div>
+
+  </mat-radio-group>
+</form>
+
+<div class="button-container">
+  <button
+    matStepperPrevious
+    mat-raised-button
+    class="default-button"
+  >
+    {{ 'global.back.text' | translate }}
+  </button>
+  <div>
+    <button
+      mat-raised-button
+      (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+    >
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      matStepperNext
+      mat-raised-button
+      class="default-button"
+      [ngClass]="{'default-button--disabled': !this.experimentScheduleForm.valid}"
+      [disabled]="!this.experimentScheduleForm.valid"
+      (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+    >
+      {{ 'global.create.text' | translate }}
+    </button>
+  </div>
+</div>

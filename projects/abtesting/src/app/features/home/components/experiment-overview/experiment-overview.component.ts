@@ -10,7 +10,8 @@ import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'ees_types';
 import {
   GroupTypes,
   NewExperimentDialogEvents,
-  NewExperimentDialogData
+  NewExperimentDialogData,
+  NewExperimentPaths
 } from '../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -86,12 +87,27 @@ export class ExperimentOverviewComponent implements OnInit {
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
-    eventType === NewExperimentDialogEvents.CLOSE_DIALOG
-      ? this.emitExperimentDialogEvent.emit({ type: eventType })
-      : this.emitExperimentDialogEvent.emit({
+    switch (eventType) {
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.emitExperimentDialogEvent.emit({ type: eventType })
+        break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        const { experimentName, description, unitOfAssignment, groupType, consistencyRule } = this.overviewForm.value;
+        const overviewFormData = {
+          name: experimentName,
+          description,
+          consistencyRule: consistencyRule.value,
+          assignmentUnit: unitOfAssignment.value,
+          group: groupType.value,
+          tags: this.experimentTags.map(tag => tag.name)
+        };
+        this.emitExperimentDialogEvent.emit({
           type: eventType,
-          formData: this.overviewForm.value
+          formData: overviewFormData,
+          path: NewExperimentPaths.EXPERIMENT_OVERVIEW
         });
+        break;
+    }
   }
 
   get NewExperimentDialogEvents() {

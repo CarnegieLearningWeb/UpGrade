@@ -10,6 +10,7 @@
 @import './themes/black-theme';
 @import './themes/nature-theme';
 @import './app/app/app.component.scss-theme';
+@import './styles/utility.scss';
 
 @mixin custom-components-theme($theme) {
   @include app-component-theme($theme);
@@ -40,4 +41,14 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.default-button {
+  background-color: $blue !important;
+  padding: 0 1rem;
+  color: $white !important;
+
+  &--disabled {
+    opacity: 0.7;
+  }
 }
