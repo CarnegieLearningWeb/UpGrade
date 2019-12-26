@@ -37,6 +37,11 @@ export interface NewExperimentDialogData {
   path?: NewExperimentPaths;
 }
 
+export interface EnrollmentCompleteCondition {
+  userCount: number;
+  groupCount: number;
+}
+
 export interface ExperimentCondition {
   id: string;
   name: string;
@@ -59,11 +64,15 @@ export interface Experiment {
   createdAt: string;
   updatedAt: string;
   state: EXPERIMENT_STATE;
+  startOn: string;
   consistencyRule: CONSISTENCY_RULE;
   assignmentUnit: ASSIGNMENT_UNIT;
   postExperimentRule: POST_EXPERIMENT_RULE;
-  group: string;
+  enrollmentCompleteCondition: EnrollmentCompleteCondition;
+  endOn: string;
+  revertTo: string;
   tags: string[];
+  group: string;
   conditions: ExperimentCondition[];
   segments: ExperimentSegment[];
 }

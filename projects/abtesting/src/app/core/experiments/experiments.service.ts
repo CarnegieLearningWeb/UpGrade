@@ -16,4 +16,8 @@ export class ExperimentService {
   loadExperiments() {
     return this.store$.dispatch(experimentAction.actionGetAllExperiment());
   }
+
+  createNewExperiment(experiment: Experiment) {
+    this.store$.dispatch(experimentAction.actionCreateNewExperiment({ experiment }));
+  }
 }

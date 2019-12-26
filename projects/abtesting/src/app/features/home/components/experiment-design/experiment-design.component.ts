@@ -18,7 +18,7 @@ export class ExperimentDesignComponent implements OnInit {
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   segmentDataSource = new BehaviorSubject<AbstractControl[]>([]);
 
-  conditionDisplayedColumns = ['name', 'assignmentWeight', 'description', 'removeCondition']
+  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition']
   segmentDisplayedColumns = ['point', 'name', 'removeSegment']
   constructor(
     private _formBuilder: FormBuilder
@@ -45,7 +45,7 @@ export class ExperimentDesignComponent implements OnInit {
 
   addConditions() {
      return this._formBuilder.group({
-       name: [ null, Validators.required ],
+       conditionCode: [ null, Validators.required ],
        assignmentWeight: [ null, Validators.required ],
        description: [ null, Validators.required ]
      });
@@ -92,7 +92,9 @@ export class ExperimentDesignComponent implements OnInit {
         const experimentDesignFormData = {
           ...this.experimentDesignForm.value
         }
-        experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(condition => ({ id: uuid(), ...condition }));
+        experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(condition => ({
+          id: uuid(), ...condition, name: ''
+        }));
         this.emitExperimentDialogEvent.emit({
           type: eventType,
           formData: experimentDesignFormData,
