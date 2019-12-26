@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
-import { IsNotEmpty, IsDate } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentSegment } from './ExperimentSegment';
 import { BaseModel } from './base/BaseModel';
@@ -31,7 +31,6 @@ export class Experiment extends BaseModel {
   public state: EXPERIMENT_STATE;
 
   // TODO add conditional validity here ie EXPERIMENT_STATE is scheduled
-  @IsDate()
   @Column({ nullable: true })
   public startOn: Date;
 
@@ -61,7 +60,6 @@ export class Experiment extends BaseModel {
   public enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
 
   // TODO add conditional validity here ie enrollmentCompleteCondition is null
-  @IsDate()
   @Column({ nullable: true })
   public endOn: Date;
 
