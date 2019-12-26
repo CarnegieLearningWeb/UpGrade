@@ -48,5 +48,6 @@
   "home.new-experiment.schedule.date-picker.placeholder.text": "Choose a date",
   "home.new-experiment.schedule.user-count.placeholder.text": "Number of Students",
   "home.new-experiment.schedule.user-count.title.text": "Students",
+  "home.new-experiment.schedule.group-count.placeholder.text": "Number of enrollments",
   "home.new-experiment.schedule.group-count.title.text": "Enrollments per Class"
 }

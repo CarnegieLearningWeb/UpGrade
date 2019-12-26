@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-new-experiment',
@@ -16,6 +17,7 @@ export class NewExperimentComponent {
   newExperimentData: any = {};
   constructor(
     public dialogRef: MatDialogRef<NewExperimentComponent>,
+    private experimentService: ExperimentService
   ) {}
 
   onNoClick(): void {
@@ -32,12 +34,12 @@ export class NewExperimentComponent {
         this.newExperimentData = {
           ...this.newExperimentData,
           ...formData,
-          state: EXPERIMENT_STATE.INACTIVE,
-          postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE
         };
         if (path === NewExperimentPaths.EXPERIMENT_SCHEDULE) {
-          this.newExperimentData.startOn = new Date().toISOString();
-          console.log('Experiment form data', this.newExperimentData);
+          this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE,
+          this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE,
+          this.experimentService.createNewExperiment(this.newExperimentData);
+          this.onNoClick();
         }
         break;
     }

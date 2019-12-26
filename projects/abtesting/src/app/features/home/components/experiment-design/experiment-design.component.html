@@ -7,7 +7,7 @@
       formArrayName="conditions"
     >
       <!-- CONDITION NAME Column -->
-      <ng-container matColumnDef="name">
+      <ng-container matColumnDef="conditionCode">
         <mat-header-cell *matHeaderCellDef>
           {{ 'home.new-experiment.design.condition.text' | translate }}
         </mat-header-cell>
@@ -22,7 +22,7 @@
                 'home.new-experiment.design.condition.placeholder.text'
                   | translate
               "
-              formControlName="name"
+              formControlName="conditionCode"
             />
           </mat-form-field>
         </mat-cell>
