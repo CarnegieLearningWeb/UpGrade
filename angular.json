@@ -26,7 +26,8 @@
             "aot": false,
             "assets": [
               "projects/abtesting/src/favicon.ico",
-              "projects/abtesting/src/assets"
+              "projects/abtesting/src/assets",
+              "projects/abtesting/src/_redirects"
             ],
             "styles": [
               "projects/abtesting/src/styles/styles-app-loading.scss",
