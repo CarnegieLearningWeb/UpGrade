@@ -43,7 +43,8 @@ mat-drawer {
         width: 100%;
         text-align: inherit;
         text-decoration: none;
-        color: $black;
+        color: $black-2;
+        font-family: OpenSans-SemiBold;
         font-size: inherit;
         user-select: none;
 
@@ -51,6 +52,8 @@ mat-drawer {
           margin-right: 5px;
 
           &--activated {
+            margin-right: 5px;
+
             ::ng-deep #Logs--Error {
               fill: $white;
             }
@@ -69,5 +72,6 @@ mat-drawer {
   .username {
     border-top: 2px solid $light-grey;
     padding: 1.5rem 1rem;
+    font-family: OpenSans-SemiBold;
   }
 }

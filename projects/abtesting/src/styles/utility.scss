@@ -1,3 +1,22 @@
+@font-face {
+  font-family: OpenSans-Bold;
+  src: ur('../assets/fonts/openSans-Bold.ttf');
+}
+
+@font-face {
+  font-family: OpenSans-SemiBold;
+  src: ur('../assets/fonts/openSans-SemiBold.ttf');
+}
+
+@font-face {
+  font-family: OpenSans-ExtraBold;
+  src: ur('../assets/fonts/openSans-ExtraBold.ttf');
+}
+
+@font-face {
+  font-family: OpenSans-Regular;
+  src: ur('../assets/fonts/openSans-Regular.ttf');
+}
 
 button:focus {
   outline: none;

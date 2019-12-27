@@ -15,6 +15,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 export class NewExperimentComponent {
 
   newExperimentData: any = {};
+  selectedStepperIndex = 0 ;
   constructor(
     public dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService
@@ -43,5 +44,9 @@ export class NewExperimentComponent {
         }
         break;
     }
+  }
+
+  stepChanged(event) {
+    this.selectedStepperIndex = event.selectedIndex;
   }
 }

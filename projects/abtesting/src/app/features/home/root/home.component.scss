@@ -20,14 +20,15 @@ $grey-text-color: #929fae;
   .title {
     margin-bottom: 0;
     color: $black-2;
+    font-family: OpenSans-Bold;
     font-size: $text-size-xxxxx-large;
-    font-weight: 400;
   }
 
   .subtitle {
     display: block;
     margin-bottom: 40px;
     color: $grey-text-color;
+    font-family: OpenSans-Regular;
     font-size: $text-size-normal;
   }
 
@@ -44,6 +45,8 @@ $grey-text-color: #929fae;
     .text {
       text-align: center;
       line-height: 60px;
+      color: $black-2;
+      font-family: OpenSans-SemiBold;
       font-size: $text-size-xxx-large;
     }
 
@@ -51,6 +54,7 @@ $grey-text-color: #929fae;
       margin-top: 30px;
       background-color: $blue;
       color: $white;
+      font-family: OpenSans-Bold;
 
       .icon {
         margin-right: 5px;

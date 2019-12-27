@@ -1,7 +1,5 @@
 @import '../../../../../styles/styles-variables.scss';
 
-$table-heading-color: #8992a3;
-
 .experiments-list-container {
   border-radius: 10px;
   box-shadow: 0 0 7px $grey;
@@ -13,10 +11,15 @@ $table-heading-color: #8992a3;
     flex-direction: row;
     justify-content: space-between;
 
+    .search-input {
+      font-family: OpenSans-Regular;
+    }
+
     button {
       background-color: $blue;
       height: 40px;
       color: $white;
+      font-family: OpenSans-Bold;
 
       .icon {
         margin-right: 5px;
@@ -35,7 +38,8 @@ $table-heading-color: #8992a3;
 
     th {
       border-color: $light-grey;
-      color: $table-heading-color;
+      color: $grey-2;
+      font-family: OpenSans-Bold;
       font-size: $text-size-x-small;
     }
 
@@ -47,6 +51,7 @@ $table-heading-color: #8992a3;
     td {
       border-color: $light-grey;
       color: $black-2;
+      font-family: OpenSans-SemiBold;
       font-size: $text-size-x-small;
     }
 
@@ -75,6 +80,7 @@ $table-heading-color: #8992a3;
     .tags {
       height: auto;
       color: $black-2;
+      font-family: OpenSans-Regular;
       font-size: $text-size-x-small;
     }
 
