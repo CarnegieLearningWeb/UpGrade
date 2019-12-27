@@ -1,10 +1,11 @@
-@import url( 'https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import '~@angular/material/theming';
 @import '~bootstrap/scss/bootstrap-reboot';
 @import '~bootstrap/scss/bootstrap-grid';
 @include mat-core();
 
 @import './styles/styles-variables';
+@import './styles/variables.css';
 @import './themes/default-theme';
 @import './themes/light-theme';
 @import './themes/black-theme';
@@ -44,9 +45,9 @@
 }
 
 .default-button {
-  background-color: $blue !important;
+  background-color: var(--blue) !important;
   padding: 0 1rem;
-  color: $white !important;
+  color: var(--white) !important;
 
   &--disabled {
     opacity: 0.7;

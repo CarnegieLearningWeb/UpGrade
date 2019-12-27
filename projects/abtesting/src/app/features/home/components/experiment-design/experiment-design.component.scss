@@ -1,10 +1,13 @@
-@import '../../../../../styles/styles-variables.scss';
-
 .experiment-design {
   .condition-table,
   .segment-table {
     max-height: 200px;
     overflow: scroll;
+
+    mat-header-cell {
+      color: var(--grey-2);
+      font-family: OpenSans-Bold;
+    }
 
     mat-cell {
       margin-right: 15px;
@@ -23,8 +26,9 @@
     outline: 0;
     border: 0;
     background-color: transparent;
-    color: $blue;
-    font-size: $text-size-small;
+    color: var(--blue);
+    font-family: OpenSans-Bold;
+    font-size: var(--text-size-x-small);
   }
 
   .segment-table {

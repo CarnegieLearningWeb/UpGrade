@@ -1,7 +1,12 @@
-@import '../../../../../styles/styles-variables.scss';
-
 .experiment-schedule-form {
   margin: 20px 0 0 20px;
+
+  mat-checkbox,
+  mat-radio-button,
+  mat-form-field {
+    font-family: OpenSans-SemiBold;
+    font-size: var(--text-size-small);
+  }
 
   .date-picker-container {
     margin: 0 0 30px 20px;
@@ -35,13 +40,15 @@
 }
 
 ::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
-  background-color: $blue !important;
+  background-color: var(--blue) !important;
 }
 
-::ng-deep .mat-radio-button.mat-primary.mat-radio-checked .mat-radio-outer-circle {
-  border-color: $blue !important;
+::ng-deep
+  .mat-radio-button.mat-primary.mat-radio-checked
+  .mat-radio-outer-circle {
+  border-color: var(--blue) !important;
 }
 
 ::ng-deep .mat-radio-button.mat-primary .mat-radio-inner-circle {
-  background-color: $blue !important;
+  background-color: var(--blue) !important;
 }
