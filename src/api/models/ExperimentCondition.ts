@@ -23,7 +23,6 @@ export class ExperimentCondition extends BaseModel {
 
   @IsNotEmpty()
   @Column({
-    name: 'assignment_weight',
     type: 'decimal',
   })
   public assignmentWeight: number;

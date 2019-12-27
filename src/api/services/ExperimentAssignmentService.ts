@@ -16,6 +16,9 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { UserRepository } from '../repositories/UserRepository';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { Experiment } from '../models/Experiment';
+import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
+import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
+import { ScheduledJobService } from './ScheduledJobService';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -34,6 +37,11 @@ export class ExperimentAssignmentService {
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
     private userRepository: UserRepository,
+    @OrmRepository()
+    private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
+    @OrmRepository()
+    private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
+    public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
@@ -59,6 +67,8 @@ export class ExperimentAssignmentService {
       this.updateExclusionFromMarkExperimentPoint(userId, userEnvironment, experimentSegment.experiment);
     }
 
+    // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
+
     // TODO add in the experiments logs
     // adding in monitored experiment point table
     return this.monitoredExperimentPointRepository.saveRawJson({
@@ -69,12 +79,12 @@ export class ExperimentAssignmentService {
   }
 
   public async getAllExperimentConditions(userId: string, userEnvironment: any): Promise<any> {
-    try {
-      // store userId and userEnvironment
-      this.userRepository.saveRawJson({
-        id: userId,
-        group: userEnvironment,
-      });
+    this.log.info(`Get all experiment for User Id ${userId} and User Environment ${JSON.stringify(userEnvironment)}`);
+    // store userId and userEnvironment
+    this.userRepository.saveRawJson({
+      id: userId,
+      group: userEnvironment,
+    });
 
       // query all experiment and sub experiment
       const experiments = await this.experimentRepository.getEnrollingAndEnrollmentComplete();
@@ -86,14 +96,32 @@ export class ExperimentAssignmentService {
         return [];
       }
 
-      // TODO add explicit exclusion table query
-      // query assignment/exclusion for user
-      const promiseAssignmentExclusion: any[] = [
-        this.individualAssignmentRepository.findAssignment(userId, experimentIds),
-        this.groupAssignmentRepository.findExperiment([userEnvironment.class], experimentIds),
-        this.individualExclusionRepository.findExcluded(userId, experimentIds),
-        this.groupExclusionRepository.findExcluded([userEnvironment.class], experimentIds),
-      ];
+    // ============= check if user or group is excluded
+    const userGroup = Object.keys(userEnvironment).map((type: string) => {
+      return {
+        groupId: userEnvironment[type] as string,
+        type,
+      };
+    });
+    const [individualExcluded, groupExcluded] = await Promise.all([
+      this.explicitIndividualExclusionRepository.find({ userId }),
+      this.explicitGroupExclusionRepository.find(userGroup as any),
+    ]);
+
+    this.log.info('individualExcluded', individualExcluded);
+    this.log.info('groupExcluded', groupExcluded);
+    if (individualExcluded.length > 0 || groupExcluded.length > 0) {
+      return [];
+    }
+
+    // ============ query assignment/exclusion for user
+    const allGroupIds: string[] = Object.values(userEnvironment);
+    const promiseAssignmentExclusion: any[] = [
+      this.individualAssignmentRepository.findAssignment(userId, experimentIds),
+      this.groupAssignmentRepository.findExperiment(allGroupIds, experimentIds),
+      this.individualExclusionRepository.findExcluded(userId, experimentIds),
+      this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds),
+    ];
 
       const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
         promiseAssignmentExclusion
@@ -136,32 +164,36 @@ export class ExperimentAssignmentService {
         })
       );
 
-      return experiments.reduce((accumulator, experiment, index) => {
-        const assignment = experimentAssignment[index];
-        const segments = experiment.segments.map(segment => {
-          const { id, point } = segment;
-          const conditionAssigned = assignment;
-          return {
-            id,
-            point,
-            assignedCondition: conditionAssigned || {
-              conditionCode: 'default',
-            },
-          };
-        });
-        return [...accumulator, ...segments];
-      }, []);
-    } catch (error) {
-      return Promise.reject(new Error(SERVER_ERROR.ASSIGNMENT_ERROR));
-    }
+    return experiments.reduce((accumulator, experiment, index) => {
+      const assignment = experimentAssignment[index];
+      const segments = experiment.segments.map(segment => {
+        const { name, point } = segment;
+        const conditionAssigned = assignment;
+        return {
+          name,
+          point,
+          assignedCondition: conditionAssigned || {
+            conditionCode: 'default',
+          },
+        };
+      });
+      return [...accumulator, ...segments];
+    }, []);
   }
 
-  public updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
+  public async updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
     // TODO populate exclusion table when state is changed to ENROLLING
     if (state === EXPERIMENT_STATE.ENROLLING) {
-      this.populateExclusionTable(experimentId);
+      await this.populateExclusionTable(experimentId);
     }
-    return this.experimentRepository.updateState(experimentId, state);
+
+    const updatedState = await this.experimentRepository.updateState(experimentId, state);
+    const experiment = await this.experimentRepository.findByIds([experimentId]);
+    if (experiment.length > 0) {
+      await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
+    }
+
+    return updatedState;
   }
 
   private async populateExclusionTable(experimentId: string): Promise<void> {
@@ -175,17 +207,27 @@ export class ExperimentAssignmentService {
     const subExperiments = experiment.segments.map(({ id, point }) => {
       return { experimentId: id, experimentPoint: point };
     });
+
     // query all monitored experiment point for this experiment Id
     const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find(subExperiments as any);
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
     );
 
+    // end the loop if no users
+    if (uniqueUserIds.size === 0) {
+      return;
+    }
+
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
       // query all user information
       const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
-      const groupsToExclude = new Set(userDetails.map(userDetail => userDetail.group[group]));
+      const groupsToExclude = new Set(
+        userDetails.map(userDetail => {
+          return userDetail.group[group];
+        })
+      );
 
       // group exclusion documents
       const groupExclusionDocs = [...groupsToExclude].map(groupId => {
@@ -217,9 +259,9 @@ export class ExperimentAssignmentService {
       // query individual assignment for user
       this.individualAssignmentRepository.findAssignment(userId, [id]),
       // query group assignment
-      this.groupAssignmentRepository.findExperiment([userEnvironment.class], [id]),
+      this.groupAssignmentRepository.findExperiment([userEnvironment[experiment.group]], [id]),
       // query group exclusion
-      this.groupExclusionRepository.findExcluded([userEnvironment.class], [id]),
+      this.groupExclusionRepository.findExcluded([userEnvironment[experiment.group]], [id]),
     ];
     const [individualAssignments, groupAssignments, groupExcluded] = await Promise.all(assignmentPromise);
 
@@ -280,8 +322,12 @@ export class ExperimentAssignmentService {
         } else {
           return 'default';
         }
-      } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT_TO_DEFAULT) {
-        return 'default';
+      } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT) {
+        if (!experiment.revertTo) {
+          return 'default';
+        } else {
+          return experiment.revertTo;
+        }
       }
     } else if (experiment.state === EXPERIMENT_STATE.ENROLLING) {
       if (individualAssignment) {
@@ -299,7 +345,9 @@ export class ExperimentAssignmentService {
         });
         return groupAssignment.condition.id;
       } else {
-        const randomConditions = Math.floor(Math.random() * experiment.conditions.length);
+        const randomConditions = this.weightedRandom(
+          experiment.conditions.map(condition => condition.assignmentWeight)
+        );
         const experimentalCondition = experiment.conditions[randomConditions];
         // assignment operations will happen here
         if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
@@ -327,5 +375,17 @@ export class ExperimentAssignmentService {
       }
     }
     return 'default';
+  }
+
+  private weightedRandom(spec: number[]): number {
+    let sum = 0;
+    const r = Math.random();
+    for (let i = 0; i < spec.length; i++) {
+      sum += spec[i];
+      if (r <= sum) {
+        return i;
+      }
+    }
+    return 0;
   }
 }

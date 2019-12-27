@@ -2,9 +2,9 @@ import { Body, Get, JsonController, OnUndefined, Param, Post, Put } from 'routin
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
-import { ExperimentSegment } from '../models/ExperimentSegment';
 import { SERVER_ERROR } from 'ees_types';
 import { Validator } from 'class-validator';
+import { ExperimentCondition } from '../models/ExperimentCondition';
 const validator = new Validator();
 
 /**
@@ -18,6 +18,7 @@ const validator = new Validator();
  *       - consistencyRule
  *       - assignmentUnit
  *       - postExperimentRule
+ *       - enrollmentCompleteCondition
  *       - group
  *       - conditions
  *       - segments
@@ -31,6 +32,9 @@ const validator = new Validator();
  *       state:
  *         type: string
  *         enum: [inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled]
+ *       startOn:
+ *          type: string
+ *          format: date-time
  *       consistencyRule:
  *         type: string
  *         enum: [individual, experiment, group]
@@ -39,7 +43,23 @@ const validator = new Validator();
  *         enum: [individual, group]
  *       postExperimentRule:
  *         type: string
- *         enum: [continue, revertToDefault]
+ *         enum: [continue, revert]
+ *       enrollmentCompleteCondition:
+ *          type: object
+ *          properties:
+ *           userCount:
+ *             type: integer
+ *           groupCount:
+ *             type: integer
+ *       endOn:
+ *          type: string
+ *          format: date-time
+ *       revertTo:
+ *          type: string
+ *       tags:
+ *          type: array
+ *          items:
+ *            type: string
  *       group:
  *         type: string
  *       conditions:
@@ -58,8 +78,6 @@ const validator = new Validator();
  *         items:
  *           type: object
  *           properties:
- *             id:
- *               type: string
  *             point:
  *               type: string
  *             name:
@@ -128,7 +146,7 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/conditions/{id}/{point}:
+   * /experiments/conditions/{id}:
    *    get:
    *       description: Get experiment conditions
    *       parameters:
@@ -137,13 +155,7 @@ export class ExperimentController {
    *           required: true
    *           schema:
    *             type: string
-   *           description: Experiment Segment Id
-   *         - in: path
-   *           name: point
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Experiment Segment Point
+   *           description: Experiment Id
    *       tags:
    *         - Experiments
    *       produces:
@@ -154,13 +166,13 @@ export class ExperimentController {
    *          '404':
    *            description: Experiment not found
    */
-  @Get('/conditions/:id/:point')
+  @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string, @Param('point') point: string): Promise<ExperimentSegment> | undefined {
-    if (!validator.isUUID(id) || !validator.isString(point)) {
+  public getCondition(@Param('id') id: string): Promise<ExperimentCondition[]> {
+    if (!validator.isUUID(id)) {
       return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id shoud be of type UUID.'));
     }
-    return this.experimentService.getExperimentalConditions(id, point);
+    return this.experimentService.getExperimentalConditions(id);
   }
 
   /**

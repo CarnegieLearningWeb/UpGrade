@@ -3,9 +3,8 @@ import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentSegment } from './ExperimentSegment';
 import { BaseModel } from './base/BaseModel';
-import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'ees_types';
+import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE , IEnrollmentCompleteCondition,} from 'ees_types';
 import { Type } from 'class-transformer';
-
 @Entity()
 export class Experiment extends BaseModel {
   @PrimaryColumn('uuid')
@@ -26,9 +25,12 @@ export class Experiment extends BaseModel {
   })
   public state: EXPERIMENT_STATE;
 
+  // TODO add conditional validity here ie EXPERIMENT_STATE is scheduled
+  @Column({ nullable: true })
+  public startOn: Date;
+
   @IsNotEmpty()
   @Column({
-    name: 'consistency_rule',
     type: 'enum',
     enum: CONSISTENCY_RULE,
   })
@@ -36,7 +38,6 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
-    name: 'assignment_unit',
     type: 'enum',
     enum: ASSIGNMENT_UNIT,
   })
@@ -44,11 +45,21 @@ export class Experiment extends BaseModel {
 
   @IsNotEmpty()
   @Column({
-    name: 'post_experiment_rule',
     type: 'enum',
     enum: POST_EXPERIMENT_RULE,
   })
   public postExperimentRule: POST_EXPERIMENT_RULE;
+
+  // TODO add conditional validity here ie endOn is null
+  @Column({ nullable: true, type: 'json' })
+  public enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
+
+  // TODO add conditional validity here ie enrollmentCompleteCondition is null
+  @Column({ nullable: true })
+  public endOn: Date;
+
+  @Column({ nullable: true, type: 'uuid' })
+  public revertTo: string;
 
   @Column('text', { array: true, nullable: true })
   public tags: string[];

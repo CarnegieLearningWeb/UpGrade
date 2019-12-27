@@ -8,7 +8,8 @@ export class ExperimentSegment extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
-  @PrimaryColumn()
+  @IsNotEmpty()
+  @Column()
   public point: string;
 
   @IsNotEmpty()
