@@ -1,5 +1,3 @@
-@import '../../styles/styles-variables.scss';
-
 mat-drawer-container {
   width: 100%;
   height: 100%;
@@ -18,12 +16,12 @@ mat-drawer {
   .logo {
     display: flex;
     align-items: flex-end;
-    box-shadow: 0 5px 5px $light-grey;
+    box-shadow: 0 5px 5px var(--light-grey);
     height: 150px;
 
     span {
       margin: 0 0 10px 20px;
-      color: $blue;
+      color: var(--blue);
       font-size: 36px;
       font-weight: bold;
     }
@@ -43,7 +41,7 @@ mat-drawer {
         width: 100%;
         text-align: inherit;
         text-decoration: none;
-        color: $black-2;
+        color: var(--black-2);
         font-family: OpenSans-SemiBold;
         font-size: inherit;
         user-select: none;
@@ -55,22 +53,22 @@ mat-drawer {
             margin-right: 5px;
 
             ::ng-deep #Logs--Error {
-              fill: $white;
+              fill: var(--white);
             }
           }
         }
 
         &.selected {
           border-radius: 7px;
-          background-color: $blue;
-          color: $white;
+          background-color: var(--blue);
+          color: var(--white);
         }
       }
     }
   }
 
   .username {
-    border-top: 2px solid $light-grey;
+    border-top: 2px solid var(--light-grey);
     padding: 1.5rem 1rem;
     font-family: OpenSans-SemiBold;
   }

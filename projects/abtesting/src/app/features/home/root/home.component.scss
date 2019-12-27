@@ -1,5 +1,3 @@
-@import '../../../../styles/styles-variables.scss';
-
 // File scope scss variables
 $white-background: #f0f2f9;
 $grey-text-color: #929fae;
@@ -19,9 +17,9 @@ $grey-text-color: #929fae;
 
   .title {
     margin-bottom: 0;
-    color: $black-2;
+    color: var(--black-2);
     font-family: OpenSans-Bold;
-    font-size: $text-size-xxxxx-large;
+    font-size: var(--text-size-xxxxx-large);
   }
 
   .subtitle {
@@ -29,7 +27,7 @@ $grey-text-color: #929fae;
     margin-bottom: 40px;
     color: $grey-text-color;
     font-family: OpenSans-Regular;
-    font-size: $text-size-normal;
+    font-size: var(--text-size-normal);
   }
 
   .no-experiment-container {
@@ -39,21 +37,21 @@ $grey-text-color: #929fae;
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    box-shadow: 0 0 7px $grey;
-    background-color: $white;
+    box-shadow: 0 0 7px var(--grey);
+    background-color: var(--white);
 
     .text {
       text-align: center;
       line-height: 60px;
-      color: $black-2;
+      color: var(--black-2);
       font-family: OpenSans-SemiBold;
-      font-size: $text-size-xxx-large;
+      font-size: var(--text-size-xxx-large);
     }
 
     button {
       margin-top: 30px;
-      background-color: $blue;
-      color: $white;
+      background-color: var(--blue);
+      color: var(--white);
       font-family: OpenSans-Bold;
 
       .icon {

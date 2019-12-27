@@ -1,6 +1,4 @@
-@import '../../../../../../styles/styles-variables.scss';
-
-$step-label-color: #A0A7B5;
+$step-label-color: #a0a7b5;
 
 ::ng-deep .mat-horizontal-stepper-header {
   box-sizing: border-box;
@@ -13,7 +11,12 @@ $step-label-color: #A0A7B5;
   padding: 0px 0px 16px !important;
 }
 
-::ng-deep .mat-stepper-label-position-bottom .mat-horizontal-stepper-header:not(:first-child)::before, ::ng-deep .mat-stepper-label-position-bottom .mat-horizontal-stepper-header:not(:last-child)::after{
+::ng-deep
+  .mat-stepper-label-position-bottom
+  .mat-horizontal-stepper-header:not(:first-child)::before,
+::ng-deep
+  .mat-stepper-label-position-bottom
+  .mat-horizontal-stepper-header:not(:last-child)::after {
   top: 68px !important;
 }
 
@@ -21,13 +24,14 @@ $step-label-color: #A0A7B5;
   top: 68px !important;
 }
 
-::ng-deep .mat-horizontal-stepper-header{
+::ng-deep .mat-horizontal-stepper-header {
   pointer-events: none !important;
 }
 
-
-::ng-deep .mat-step-header .mat-step-icon-selected, ::ng-deep .mat-step-header .mat-step-icon-state-done, ::ng-deep .mat-step-header .mat-step-icon-state-edit {
-  background-color: $blue !important;
+::ng-deep .mat-step-header .mat-step-icon-selected,
+::ng-deep .mat-step-header .mat-step-icon-state-done,
+::ng-deep .mat-step-header .mat-step-icon-state-edit {
+  background-color: var(--blue) !important;
 }
 
 .step-label {
@@ -35,6 +39,6 @@ $step-label-color: #A0A7B5;
   font-family: OpenSans-Regular;
 
   &--selected {
-    color: $black;
+    color: var(--black);
   }
 }

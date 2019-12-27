@@ -1,9 +1,7 @@
-@import '../../../../../styles/styles-variables.scss';
-
 .experiments-list-container {
   border-radius: 10px;
-  box-shadow: 0 0 7px $grey;
-  background-color: $white;
+  box-shadow: 0 0 7px var(--grey);
+  background-color: var(--white);
   padding: 2rem;
 
   .header {
@@ -16,9 +14,9 @@
     }
 
     button {
-      background-color: $blue;
+      background-color: var(--blue);
       height: 40px;
-      color: $white;
+      color: var(--white);
       font-family: OpenSans-Bold;
 
       .icon {
@@ -37,10 +35,10 @@
     width: 100%;
 
     th {
-      border-color: $light-grey;
-      color: $grey-2;
+      border-color: var(--light-grey);
+      color: var(--grey-2);
       font-family: OpenSans-Bold;
-      font-size: $text-size-x-small;
+      font-size: var(--text-size-x-small);
     }
 
     tr.mat-footer-row,
@@ -49,10 +47,10 @@
     }
 
     td {
-      border-color: $light-grey;
-      color: $black-2;
+      border-color: var(--light-grey);
+      color: var(--black-2);
       font-family: OpenSans-SemiBold;
-      font-size: $text-size-x-small;
+      font-size: var(--text-size-x-small);
     }
 
     .mat-column-experimentSegments {
@@ -79,19 +77,19 @@
 
     .tags {
       height: auto;
-      color: $black-2;
+      color: var(--black-2);
       font-family: OpenSans-Regular;
-      font-size: $text-size-x-small;
+      font-size: var(--text-size-x-small);
     }
 
     .mat-form-field {
       width: 40%;
-      font-size: $text-size-small;
+      font-size: var(--text-size-small);
     }
 
     .link {
       text-decoration: none;
-      color: $blue;
+      color: var(--blue);
     }
   }
 }

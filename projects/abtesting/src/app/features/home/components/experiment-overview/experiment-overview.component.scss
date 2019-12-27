@@ -1,12 +1,10 @@
-@import '../../../../../styles/styles-variables.scss';
-
 .experiment-overview {
   display: flex;
   flex-direction: column;
 
   mat-form-field {
     font-family: OpenSans-Regular;
-    font-size: $text-size-small;
+    font-size: var(--text-size-small);
   }
 
   .name {
