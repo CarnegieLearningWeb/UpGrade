@@ -90,6 +90,25 @@ module.exports = {
       description: 'Builds the app into the dist directory',
     },
     /**
+     * Database scripts
+     */
+    db: {
+      seed: {
+        script: series(
+          'nps banner.seed',
+          'nps db.drop',
+          'nps config',
+          runFast('./node_modules/typeorm-seeding/dist/cli.js seed')
+        ),
+        description: 'Seeds generated records into the database',
+      },
+      drop: {
+        script: runFast('./node_modules/typeorm/cli.js schema:drop'),
+        description: 'Drops the schema of the database',
+      },
+    },
+
+    /**
      * Runs TSLint over your project
      */
     lint: {
