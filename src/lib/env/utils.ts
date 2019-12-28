@@ -1,4 +1,6 @@
 import { join } from 'path';
+import { ValidationError } from 'class-validator';
+import { SERVER_ERROR } from 'ees_types';
 
 export function getOsEnv(key: string): string {
   if (typeof process.env[key] === 'undefined') {
@@ -53,4 +55,21 @@ export function normalizePort(port: string): number | string | boolean {
     return parsedPort;
   }
   return false;
+}
+
+export function formatBadReqErrorMessage(validationError: ValidationError[]): string {
+  const formatErrors = [];
+  validationError.forEach((error: ValidationError | ValidationError[]) => {
+    if (error[`children`].length === 0) {
+      formatErrors.push('in main object: ' + Object.values(error[`constraints`]).join(' or '));
+    } else {
+      const nestedElemError = error[`children`] as ValidationError[];
+      nestedElemError.forEach((innerError: ValidationError) => {
+        const keyPorperty = 'property';
+        formatErrors.push(`in ${error[keyPorperty]} - ${innerError[keyPorperty]} inner object: ` +
+          Object.values(innerError[`children`][0][`constraints`]).join(' or '));
+      });
+    }
+  });
+  return (SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' ===>  ' + formatErrors.join(', '));
 }

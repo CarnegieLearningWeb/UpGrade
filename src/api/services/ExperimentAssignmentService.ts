@@ -1,7 +1,7 @@
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
-import { EXPERIMENT_STATE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT } from 'ees_types';
+import { EXPERIMENT_STATE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT, SERVER_ERROR } from 'ees_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -86,15 +86,15 @@ export class ExperimentAssignmentService {
       group: userEnvironment,
     });
 
-    // query all experiment and sub experiment
-    const experiments = await this.experimentRepository.getEnrollingAndEnrollmentComplete();
+      // query all experiment and sub experiment
+      const experiments = await this.experimentRepository.getEnrollingAndEnrollmentComplete();
 
-    const experimentIds = experiments.map(experiment => experiment.id);
+      const experimentIds = experiments.map(experiment => experiment.id);
 
-    // return if no experiment
-    if (experimentIds.length === 0) {
-      return [];
-    }
+      // return if no experiment
+      if (experimentIds.length === 0) {
+        return [];
+      }
 
     // ============= check if user or group is excluded
     const userGroup = Object.keys(userEnvironment).map((type: string) => {
@@ -123,44 +123,46 @@ export class ExperimentAssignmentService {
       this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds),
     ];
 
-    const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
-      promiseAssignmentExclusion
-    );
-    this.log.info('individualAssignments', individualAssignments);
-    this.log.info('groupAssignment', groupAssignments);
-    this.log.info('individualExclusion', individualExclusions);
-    this.log.info('groupExclusion', groupExclusions);
+      const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
+        promiseAssignmentExclusion
+      );
+      this.log.info('individualAssignments', individualAssignments);
+      this.log.info('groupAssignment', groupAssignments);
+      this.log.info('individualExclusion', individualExclusions);
+      this.log.info('groupExclusion', groupExclusions);
 
-    // assign remaining experiment
-    const experimentAssignment = await Promise.all(
-      experiments.map(experiment => {
-        const individualAssignment = individualAssignments.find(assignment => {
-          return assignment.experimentId === experiment.id;
-        });
+      // assign remaining experiment
+      const experimentAssignment = await Promise.all(
+        experiments.map(experiment => {
+          const individualAssignment = individualAssignments.find(assignment => {
+            return assignment.experimentId === experiment.id;
+          });
 
-        const groupAssignment = groupAssignments.find(assignment => {
-          return assignment.experimentId === experiment.id && assignment.groupId === userEnvironment[experiment.group];
-        });
+          const groupAssignment = groupAssignments.find(assignment => {
+            return (
+              assignment.experimentId === experiment.id && assignment.groupId === userEnvironment[experiment.group]
+            );
+          });
 
-        const individualExclusion = individualExclusions.find(exclusion => {
-          return exclusion.experimentId === experiment.id;
-        });
+          const individualExclusion = individualExclusions.find(exclusion => {
+            return exclusion.experimentId === experiment.id;
+          });
 
-        const groupExclusion = groupExclusions.find(exclusion => {
-          return exclusion.experimentId === experiment.id && exclusion.groupId === userEnvironment[experiment.group];
-        });
+          const groupExclusion = groupExclusions.find(exclusion => {
+            return exclusion.experimentId === experiment.id && exclusion.groupId === userEnvironment[experiment.group];
+          });
 
-        return this.assignExperiment(
-          userId,
-          userEnvironment,
-          experiment,
-          individualAssignment,
-          groupAssignment,
-          individualExclusion,
-          groupExclusion
-        );
-      })
-    );
+          return this.assignExperiment(
+            userId,
+            userEnvironment,
+            experiment,
+            individualAssignment,
+            groupAssignment,
+            individualExclusion,
+            groupExclusion
+          );
+        })
+      );
 
     return experiments.reduce((accumulator, experiment, index) => {
       const assignment = experimentAssignment[index];

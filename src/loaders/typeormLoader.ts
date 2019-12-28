@@ -2,6 +2,7 @@ import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
 import { createConnection, getConnectionOptions } from 'typeorm';
 
 import { env } from '../env';
+import { SERVER_ERROR } from 'ees_types';
 
 export const typeormLoader: MicroframeworkLoader = async (
   settings: MicroframeworkSettings | undefined
@@ -29,6 +30,10 @@ export const typeormLoader: MicroframeworkLoader = async (
       settings.onShutdown(() => connection.close());
     }
   } catch (error) {
-    console.log(error);
+    if ( error.code === 'ECONNREFUSED') {
+      throw new Error(SERVER_ERROR.DB_UNREACHABLE);
+    } else {
+      throw new Error(SERVER_ERROR.DB_AUTH_FAIL);
+    }
   }
 };

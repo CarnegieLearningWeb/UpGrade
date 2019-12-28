@@ -1,7 +1,9 @@
-import { JsonController, Post, BodyParam, Put } from 'routing-controllers';
+import { JsonController, Post, Put, Body } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
+import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
+import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 
 /**
  * @swagger
@@ -14,7 +16,7 @@ export class ExperimentConditionController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService
-  ) {}
+  ) { }
 
   /**
    * @swagger
@@ -57,13 +59,10 @@ export class ExperimentConditionController {
    *            description: Experiment Point is Marked
    */
   @Post('mark')
-  public markExperimentPoint(
-    @BodyParam('experimentId') experimentId: string,
-    @BodyParam('experimentPoint') experimentPoint: string,
-    @BodyParam('userId') userId: string,
-    @BodyParam('userEnvironment') userEnvironment: object
-  ): any {
-    return this.experimentAssignmentService.markExperimentPoint(experimentId, experimentPoint, userId, userEnvironment);
+  public markExperimentPoint(@Body({ validate: { validationError: { target: false, value: false } } })
+  experiment: MarkExperimentValidator): any {
+    return this.experimentAssignmentService.markExperimentPoint(experiment.experimentId, experiment.experimentPoint,
+      experiment.userId, experiment.userEnvironment);
   }
 
   /**
@@ -95,11 +94,9 @@ export class ExperimentConditionController {
    *            description: Experiment Point is Assigned
    */
   @Post('assign')
-  public getAllExperimentConditions(
-    @BodyParam('userId') userId: string,
-    @BodyParam('userEnvironment') userEnvironment: any
-  ): any {
-    return this.experimentAssignmentService.getAllExperimentConditions(userId, userEnvironment);
+  public getAllExperimentConditions(@Body({ validate: { validationError: { target: false, value: false } } })
+  experiment: ExperimentAssignmentValidator): any {
+    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.userEnvironment);
   }
 
   /**
@@ -133,9 +130,8 @@ export class ExperimentConditionController {
    */
   @Put('state')
   public updateState(
-    @BodyParam('experimentId') experimentId: string,
-    @BodyParam('state') state: EXPERIMENT_STATE
-  ): any {
-    return this.experimentAssignmentService.updateState(experimentId, state);
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    experiment: AssignmentStateUpdateValidator): any {
+    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state);
   }
 }
