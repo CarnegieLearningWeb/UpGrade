@@ -2,7 +2,10 @@ import { Body, Get, JsonController, OnUndefined, Param, Post, Put } from 'routin
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
+import { SERVER_ERROR } from 'ees_types';
+import { Validator } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+const validator = new Validator();
 
 /**
  * @swagger
@@ -91,7 +94,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
  */
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(public experimentService: ExperimentService) {}
+  constructor(public experimentService: ExperimentService) { }
   /**
    * @swagger
    * /experiments:
@@ -135,6 +138,9 @@ export class ExperimentController {
   @Get('/:id')
   @OnUndefined(ExperimentNotFoundError)
   public one(@Param('id') id: string): Promise<Experiment> | undefined {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id shoud be of type UUID.'));
+    }
     return this.experimentService.findOne(id);
   }
 
@@ -163,6 +169,9 @@ export class ExperimentController {
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
   public getCondition(@Param('id') id: string): Promise<ExperimentCondition[]> {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id shoud be of type UUID.'));
+    }
     return this.experimentService.getExperimentalConditions(id);
   }
 
@@ -189,8 +198,14 @@ export class ExperimentController {
    *          '200':
    *            description: New Experiment is created
    */
+
+  // @Post()
+  // public create(@Body() experiment: Experiment): Promise<Experiment> {
+  //   return this.experimentService.create(experiment);
+  // }
+
   @Post()
-  public create(@Body() experiment: Experiment): Promise<Experiment> {
+  public create(@Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment): Promise<Experiment> {
     return this.experimentService.create(experiment);
   }
 
@@ -224,7 +239,8 @@ export class ExperimentController {
    *            description: Experiment is updated
    */
   @Put('/:id')
-  public update(@Param('id') id: string, @Body() experiment: Experiment): Promise<Experiment> {
+  public update(@Param('id') id: string, @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
+  experiment: Experiment): Promise<Experiment> {
     return this.experimentService.update(id, experiment);
   }
 }

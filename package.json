@@ -69,6 +69,7 @@
     "figlet": "^1.2.4",
     "helmet": "^3.21.2",
     "jest": "^24.9.0",
+    "json-diff": "^0.5.4",
     "jsonfile": "^5.0.0",
     "microframework": "^0.6.4",
     "morgan": "^1.9.1",
