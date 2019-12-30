@@ -1,5 +1,5 @@
 import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
+// import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobService';
@@ -8,7 +8,7 @@ import { EXPERIMENT_STATE } from 'ees_types';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 
 export default async function UpdateExperimentState(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
+  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
@@ -59,6 +59,8 @@ export default async function UpdateExperimentState(): Promise<void> {
   const experimentId = experiments[0].id;
   await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
 
+  await new Promise(r => setTimeout(r, 1000));
+
   // fetch experiment
   experiments = await experimentService.find();
   expect(experiments).toEqual(
@@ -72,6 +74,8 @@ export default async function UpdateExperimentState(): Promise<void> {
       }),
     ])
   );
+
+  await new Promise(r => setTimeout(r, 1000));
 
   startExperiment = await scheduledJobService.getAllStartExperiment();
   expect(startExperiment.length).toEqual(0);
@@ -91,6 +95,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   // change experiment status to Enrollment Complete
   await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
 
+  await new Promise(r => setTimeout(r, 1000));
   // fetch experiment
   experiments = await experimentService.find();
   expect(experiments).toEqual(

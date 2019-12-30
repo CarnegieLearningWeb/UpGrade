@@ -1,12 +1,14 @@
 import { BaseModel } from './base/BaseModel';
-import { PrimaryGeneratedColumn, Column } from 'typeorm';
+import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
 
-enum EXPERIMENT_LOG_TYPE {
+export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_CREATED = 'experimentCreated',
   EXPERIMENT_UPDATED = 'experimentUpdated',
+  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
 }
 
+@Entity()
 export class ExperimentAuditLog extends BaseModel {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
@@ -15,6 +17,6 @@ export class ExperimentAuditLog extends BaseModel {
   @Column()
   public type: EXPERIMENT_LOG_TYPE;
 
-  @Column()
-  public data: any;
+  @Column({ type: 'json' })
+  public data: object;
 }

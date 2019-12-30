@@ -10,6 +10,9 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentSegment } from '../models/ExperimentSegment';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection } from 'typeorm';
+import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { EXPERIMENT_LOG_TYPE } from '../models/ExperimentAuditLog';
+import { diffString } from 'json-diff';
 
 @Service()
 export class ExperimentService {
@@ -17,6 +20,7 @@ export class ExperimentService {
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
     @OrmRepository() private experimentSegmentRepository: ExperimentSegmentRepository,
+    @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -42,11 +46,13 @@ export class ExperimentService {
 
   public create(experiment: Experiment): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
+    // TODO add entry in audit log of creating experiment
     return this.addExperimentInDB(experiment);
   }
 
   public update(id: string, experiment: Experiment): Promise<Experiment> {
     this.log.info('Update an experiment => ', experiment.toString());
+    // TODO add entry in audit log of updating experiment
     return this.updateExperimentInDB(experiment);
   }
 
@@ -67,7 +73,14 @@ export class ExperimentService {
     const oldSegments = oldExperiment.segments;
 
     // create schedules to start experiment and end experiment
-    await this.scheduledJobService.updateExperimentSchedules(experiment);
+    this.scheduledJobService.updateExperimentSchedules(experiment);
+
+    // add AuditLogs here
+    const updateAuditLog = {
+      diff: diffString(experiment, oldExperiment),
+    };
+
+    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog);
 
     return getConnection().transaction(async transactionalEntityManager => {
       const { conditions, segments, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
@@ -171,7 +184,10 @@ export class ExperimentService {
   }
 
   private async addExperimentInDB(experiment: Experiment): Promise<Experiment> {
-    return getConnection().transaction(async transactionalEntityManager => {
+    // create schedules to start experiment and end experiment
+    this.scheduledJobService.updateExperimentSchedules(experiment);
+
+    const createdExperiment = await getConnection().transaction(async transactionalEntityManager => {
       experiment.id = experiment.id || uuid();
       const { conditions, segments, ...expDoc } = experiment;
       // saving experiment doc
@@ -183,9 +199,6 @@ export class ExperimentService {
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
       }
-
-      // create schedules to start experiment and end experiment
-      await this.scheduledJobService.updateExperimentSchedules(experiment);
 
       // creating condition docs
       const conditionDocsToSave =
@@ -231,5 +244,13 @@ export class ExperimentService {
 
       return { ...experimentDoc, conditions: conditionDocToReturn as any, segments: segmentDocToReturn as any };
     });
+
+    // add auditLog here
+    const createAuditLogData = {
+      experimentId: createdExperiment.id,
+    };
+    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData);
+
+    return createdExperiment;
   }
 }

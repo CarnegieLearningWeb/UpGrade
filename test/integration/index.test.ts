@@ -12,6 +12,7 @@ import {
   DeleteStartExperiment,
   DeleteEndExperiment,
 } from './Experiment/scheduleJob';
+import { MainAuditLog } from './Experiment/auditLogs';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -114,6 +115,11 @@ describe('Integration Tests', () => {
 
   test('Delete End Experiment', async done => {
     await DeleteEndExperiment();
+    done();
+  });
+
+  test('Check audit log', async done => {
+    await MainAuditLog();
     done();
   });
 });

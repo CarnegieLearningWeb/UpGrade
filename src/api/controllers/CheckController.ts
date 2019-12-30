@@ -1,6 +1,7 @@
 import { JsonController, Get } from 'routing-controllers';
 import { CheckService } from '../services/CheckService';
 
+// TODO delete this after completing
 @JsonController('/check')
 export class Demo {
   constructor(public check: CheckService) {}

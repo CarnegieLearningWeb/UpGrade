@@ -28,6 +28,7 @@ export default async function EndExperiment(): Promise<void> {
     ])
   );
 
+  await new Promise(r => setTimeout(r, 1000));
   const endExperiment = await scheduledJobService.getAllEndExperiment();
 
   expect(endExperiment).toEqual(

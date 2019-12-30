@@ -19,6 +19,8 @@ import { Experiment } from '../models/Experiment';
 import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
 import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
 import { ScheduledJobService } from './ScheduledJobService';
+import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { EXPERIMENT_LOG_TYPE } from '../models/ExperimentAuditLog';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -41,6 +43,8 @@ export class ExperimentAssignmentService {
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
+    @OrmRepository()
+    private experimentAuditLogRepository: ExperimentAuditLogRepository,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -53,6 +57,7 @@ export class ExperimentAssignmentService {
     this.log.info(
       `Mark experiment point => Experiment: ${experimentId}, Experiment Point: ${experimentPoint} for User: ${userId}`
     );
+
     // query root experiment details
     const experimentSegment = await this.experimentSegmentRepository.findOne({
       where: {
@@ -179,18 +184,32 @@ export class ExperimentAssignmentService {
   }
 
   public async updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
-    // TODO populate exclusion table when state is changed to ENROLLING
     if (state === EXPERIMENT_STATE.ENROLLING) {
       await this.populateExclusionTable(experimentId);
     }
 
+    // add experiment audit logs
+    this.experimentAuditLogRepository.save({
+      type: EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
+      data: {
+        id: experimentId,
+        state,
+      },
+    });
+
     const updatedState = await this.experimentRepository.updateState(experimentId, state);
+
+    // updating experiment schedules here
+    this.updateExperimentSchedules(experimentId);
+
+    return updatedState;
+  }
+
+  private async updateExperimentSchedules(experimentId: string): Promise<void> {
     const experiment = await this.experimentRepository.findByIds([experimentId]);
     if (experiment.length > 0) {
       await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
     }
-
-    return updatedState;
   }
 
   private async populateExclusionTable(experimentId: string): Promise<void> {

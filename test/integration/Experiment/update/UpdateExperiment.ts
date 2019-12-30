@@ -1,10 +1,10 @@
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
+// import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 
 export default async function UpdateExperiment(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
+  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;

@@ -94,7 +94,7 @@ const validator = new Validator();
  */
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(public experimentService: ExperimentService) { }
+  constructor(public experimentService: ExperimentService) {}
   /**
    * @swagger
    * /experiments:
@@ -205,7 +205,9 @@ export class ExperimentController {
   // }
 
   @Post()
-  public create(@Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment): Promise<Experiment> {
+  public create(
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment
+  ): Promise<Experiment> {
     return this.experimentService.create(experiment);
   }
 
@@ -239,8 +241,11 @@ export class ExperimentController {
    *            description: Experiment is updated
    */
   @Put('/:id')
-  public update(@Param('id') id: string, @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
-  experiment: Experiment): Promise<Experiment> {
+  public update(
+    @Param('id') id: string,
+    @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
+    experiment: Experiment
+  ): Promise<Experiment> {
     return this.experimentService.update(id, experiment);
   }
 }

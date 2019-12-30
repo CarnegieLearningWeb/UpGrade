@@ -16,7 +16,7 @@ export class ExperimentConditionController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService
-  ) { }
+  ) {}
 
   /**
    * @swagger
@@ -59,10 +59,17 @@ export class ExperimentConditionController {
    *            description: Experiment Point is Marked
    */
   @Post('mark')
-  public markExperimentPoint(@Body({ validate: { validationError: { target: false, value: false } } })
-  experiment: MarkExperimentValidator): any {
-    return this.experimentAssignmentService.markExperimentPoint(experiment.experimentId, experiment.experimentPoint,
-      experiment.userId, experiment.userEnvironment);
+  public markExperimentPoint(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    experiment: MarkExperimentValidator
+  ): any {
+    // TODO add entry in audit log of updating experiment state
+    return this.experimentAssignmentService.markExperimentPoint(
+      experiment.experimentId,
+      experiment.experimentPoint,
+      experiment.userId,
+      experiment.userEnvironment
+    );
   }
 
   /**
@@ -94,8 +101,10 @@ export class ExperimentConditionController {
    *            description: Experiment Point is Assigned
    */
   @Post('assign')
-  public getAllExperimentConditions(@Body({ validate: { validationError: { target: false, value: false } } })
-  experiment: ExperimentAssignmentValidator): any {
+  public getAllExperimentConditions(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    experiment: ExperimentAssignmentValidator
+  ): any {
     return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.userEnvironment);
   }
 
@@ -131,7 +140,8 @@ export class ExperimentConditionController {
   @Put('state')
   public updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    experiment: AssignmentStateUpdateValidator): any {
+    experiment: AssignmentStateUpdateValidator
+  ): any {
     return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state);
   }
 }

@@ -29,6 +29,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
     ])
   );
 
+  await new Promise(r => setTimeout(r, 1000));
   let endExperiment = await scheduledJobService.getAllEndExperiment();
 
   expect(endExperiment).toEqual(
@@ -60,6 +61,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
     ])
   );
 
+  await new Promise(r => setTimeout(r, 1000));
   endExperiment = await scheduledJobService.getAllEndExperiment();
   expect(endExperiment.length).toEqual(0);
 }
