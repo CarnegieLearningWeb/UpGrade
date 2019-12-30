@@ -23,6 +23,8 @@ export const environment = {
     cypress: packageJson.devDependencies['cypress']
   },
   api: {
-    getAllExperiments: `${endpointApi}/experiments`
+    getAllExperiments: `${endpointApi}/experiments`,
+    createNewExperiments: `${endpointApi}/experiments`,
+    updateExperiments: `${endpointApi}/experiments`
   }
 };
