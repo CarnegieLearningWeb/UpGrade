@@ -16,6 +16,7 @@
       </span>
     </ng-template>
     <home-experiment-overview
+      [experimentInfo]="experimentInfo"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-overview>
   </mat-step>
@@ -30,6 +31,7 @@
       </span>
     </ng-template>
     <home-experiment-design
+      [experimentInfo]="experimentInfo"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
   </mat-step>
@@ -45,6 +47,7 @@
     </ng-template>
     <home-experiment-schedule
     (emitExperimentDialogEvent)="getExperimentData($event)"
+    [experimentInfo]="experimentInfo"
     [assignmentUnit]="newExperimentData?.assignmentUnit"
     ></home-experiment-schedule>
   </mat-step>

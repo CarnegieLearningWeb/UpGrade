@@ -22,7 +22,8 @@ export enum GroupTypes {
 
 export enum NewExperimentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
-  SEND_FORM_DATA = 'Send Form Data'
+  SEND_FORM_DATA = 'Send Form Data',
+  UPDATE_EXPERIMENT = 'Update experiment'
 }
 
 export enum NewExperimentPaths {
@@ -45,6 +46,11 @@ export enum DateType {
 export enum UpsertExperimentType {
   CREATE_NEW_EXPERIMENT = 'Create new experiment',
   UPDATE_EXPERIMENT = 'Update experiment'
+}
+
+export enum EndExperimentCondition {
+  END_ON_DATE = 'End on Date',
+  END_CRITERIA = 'End Criteria'
 }
 
 export interface EnrollmentCompleteCondition {

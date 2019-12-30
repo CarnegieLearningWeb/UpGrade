@@ -1,9 +1,10 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  Inject,
 } from '@angular/core';
-import { MatDialogRef } from '@angular/material';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE, Experiment } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
@@ -16,10 +17,14 @@ export class NewExperimentComponent {
 
   newExperimentData: any = {};
   selectedStepperIndex = 0 ;
+  experimentInfo: Experiment;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
-    private experimentService: ExperimentService
-  ) {}
+    private experimentService: ExperimentService,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.experimentInfo = data;
+  }
 
   onNoClick(): void {
     this.dialogRef.close();
@@ -42,6 +47,15 @@ export class NewExperimentComponent {
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }
+        break;
+      case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
+        this.newExperimentData = {
+          ...this.experimentInfo,
+          ...this.newExperimentData,
+          ...formData,
+        };
+        this.experimentService.updateExperiment(this.newExperimentData);
+        this.onNoClick();
         break;
     }
   }
