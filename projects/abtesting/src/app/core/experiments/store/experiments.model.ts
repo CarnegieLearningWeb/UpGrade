@@ -37,6 +37,16 @@ export interface NewExperimentDialogData {
   path?: NewExperimentPaths;
 }
 
+export enum DateType {
+  MEDIUM_DATE = 'medium date',
+  SHORT_DATE = 'short date'
+}
+
+export enum UpsertExperimentType {
+  CREATE_NEW_EXPERIMENT = 'Create new experiment',
+  UPDATE_EXPERIMENT = 'Update experiment'
+}
+
 export interface EnrollmentCompleteCondition {
   userCount: number;
   groupCount: number;

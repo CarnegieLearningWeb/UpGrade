@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Experiment } from './experiments.model';
+import { Experiment, UpsertExperimentType } from './experiments.model';
 
 export const actionGetAllExperiment = createAction('[Experiment] Get All');
 
@@ -10,16 +10,16 @@ export const actionStoreExperiment = createAction(
   props<{ experiments: Experiment[] }>()
 );
 
-export const actionCreateNewExperiment = createAction(
-  '[Experiment] Create New Experiment',
+export const actionUpsertExperiment = createAction(
+  '[Experiment] Upsert Experiment',
+  props<{ experiment: Experiment, actionType: UpsertExperimentType }>()
+);
+
+export const actionUpsertExperimentSuccess = createAction(
+  '[Experiment] Upsert Experiment Success',
   props<{ experiment: Experiment }>()
 );
 
-export const actionCreateNewExperimentSuccess = createAction(
-  '[Experiment] Create New Experiment Success',
-  props<{ experiment: Experiment }>()
-);
-
-export const actionCreateNewExperimentFailure = createAction(
-  '[Experiment] Create New Experiment Failure'
+export const actionUpsertExperimentFailure = createAction(
+  '[Experiment] Upsert Experiment Failure'
 );

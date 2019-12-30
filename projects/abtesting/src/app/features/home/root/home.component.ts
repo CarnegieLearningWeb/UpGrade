@@ -29,9 +29,7 @@ export class HomeComponent {
     private experimentService: ExperimentService,
     private settingsService: SettingsService,
     public dialog: MatDialog
-  ) {
-    this.experimentService.loadExperiments();
-  }
+  ) {}
 
   changeTheme(theme) {
     this.settingsService.changeTheme(theme);

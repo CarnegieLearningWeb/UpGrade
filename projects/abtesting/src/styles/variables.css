@@ -1,4 +1,5 @@
 :root {
+
   /* color variables */
   --blue: #3366ff;
   --black: #000;
@@ -6,6 +7,7 @@
   --white: #fff;
   --grey: #808080;
   --grey-2: #8992a3;
+  --grey-3: #929FAE;
   --light-grey: #d3d3d3;
 
   /* font-size variables */

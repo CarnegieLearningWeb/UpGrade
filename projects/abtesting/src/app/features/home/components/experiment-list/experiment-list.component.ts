@@ -24,7 +24,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentService: ExperimentService,
-    public dialog: MatDialog
+    private dialog: MatDialog
   ) {
     this.allExperimentsSub = this.experimentService.experiments$.subscribe(allExperiments => {
       this.allExperiments = new MatTableDataSource(allExperiments);

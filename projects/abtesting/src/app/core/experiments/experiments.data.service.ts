@@ -16,4 +16,9 @@ export class ExperimentDataService {
     const url = environment.api.createNewExperiments;
     return this.http.post(url, { ...experiment });
   }
+
+  updateExperiment(experiment: Experiment) {
+    const url = `${environment.api.updateExperiments}/${experiment.id}`;
+    return this.http.put(url, { ...experiment });
+  }
 }

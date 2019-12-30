@@ -1,0 +1,51 @@
+<div class="experiment-status">
+  <span class="title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
+  <form [formGroup]="statusForm" class="experiment-status-form">
+      <mat-form-field>
+        <mat-label>{{ 'home.change-experiment-status.current-status.text' | translate }}</mat-label>
+        <mat-select disabled="true" [(value)]="experimentInfo.state">
+          <mat-option
+            *ngFor="let status of experimentStatus"
+            [value]="status.value"
+          >
+            {{ status.value | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
+        <mat-select formControlName="newStatus">
+          <mat-option
+            *ngFor="let status of experimentStatus"
+            [value]="status"
+          >
+            {{ status.value | titlecase }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="statusForm.controls.newStatus.hasError('required')"
+        >
+          {{ 'home.change-experiment-status.new-status.error.text' | translate }}
+        </mat-error>
+      </mat-form-field>
+  </form>
+
+  <div class="button-container">
+    <button
+      mat-raised-button
+      (click)="onCancelClick()"
+    >
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="default-button"
+      [ngClass]="{'default-button--disabled': !this.statusForm.valid}"
+      [disabled]="!this.statusForm.valid"
+      (click)="changeStatus()"
+    >
+      {{ 'global.save.text' | translate }}
+    </button>
+  </div>
+</div>

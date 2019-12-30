@@ -17,7 +17,7 @@ export class NewExperimentComponent {
   newExperimentData: any = {};
   selectedStepperIndex = 0 ;
   constructor(
-    public dialogRef: MatDialogRef<NewExperimentComponent>,
+    private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService
   ) {}
 
