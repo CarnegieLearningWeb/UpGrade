@@ -40,7 +40,8 @@ $dark-grey-text-color: #707A85;
         font-size: var(--text-size-large);
       }
 
-      .edit-button {
+      .edit-button,
+      .experiment-design-button {
         margin-left: 15px !important;
         border: 1px solid var(--blue);
         background: $white-background;

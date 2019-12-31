@@ -94,7 +94,11 @@
         *matRowDef="let row; columns: conditionDisplayedColumns"
       ></mat-row>
     </mat-table>
-    <button class="add-condition" (click)="addConditionOrSegment('condition')">
+    <button
+      class="add-condition"
+      (click)="addConditionOrSegment('condition')"
+      [ngClass]="{'add-condition--disabled': disableControls}"
+    >
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
     </button>
   </ng-container>
@@ -169,14 +173,25 @@
       ></mat-header-row>
       <mat-row *matRowDef="let row; columns: segmentDisplayedColumns"></mat-row>
     </mat-table>
-    <button class="add-segment" (click)="addConditionOrSegment('segment')">
+    <button
+      class="add-segment"
+      (click)="addConditionOrSegment('segment')"
+      [ngClass]="{'add-segment--disabled': disableControls}"
+    >
       +
       {{ 'home.new-experiment.design.add-point-and-segment.text' | translate }}
     </button>
   </ng-container>
 
   <div class="button-container">
-    <button matStepperPrevious mat-raised-button class="default-button">
+    <button
+      matStepperPrevious
+      mat-raised-button
+      class="default-button"
+      [ngClass]="{
+        'default-button--disabled': disableControls
+      }"
+    >
       {{ 'global.back.text' | translate }}
     </button>
     <div>
@@ -191,9 +206,9 @@
         mat-raised-button
         class="default-button"
         [ngClass]="{
-          'default-button--disabled': !this.experimentDesignForm.valid
+          'default-button--disabled': (!this.experimentDesignForm.valid || disableControls)
         }"
-        [disabled]="!this.experimentDesignForm.valid"
+        [disabled]="!this.experimentDesignForm.valid || disableControls"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
       >
         {{ 'global.next.text' | translate }}

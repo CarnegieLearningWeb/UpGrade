@@ -10,10 +10,16 @@
           ({{ experiment.segments?.length + ' ' + ('home.view-experiment.experiments-segments.text' | translate) }})
         </span>
       </span>
-      <button mat-flat-button class="edit-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT)">
-        <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
-        {{ 'home.view-experiment.edit-button.text' | translate }}
-      </button>
+
+      <div>
+        <button mat-flat-button class="experiment-design-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT, 1)">
+          {{ 'home.view-experiment.view-experiment-button.text' | translate }}
+        </button>
+        <button mat-flat-button class="edit-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT)">
+          <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
+          {{ 'home.view-experiment.edit-button.text' | translate }}
+        </button>
+      </div>
     </div>
 
     <div class="experiment-description">

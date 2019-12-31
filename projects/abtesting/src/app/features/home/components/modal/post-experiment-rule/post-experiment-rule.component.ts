@@ -26,9 +26,9 @@ export class PostExperimentRuleComponent implements OnInit {
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private dialogRef: MatDialogRef<ExperimentStatusComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) private data: any
   ) {
-    this.experimentInfo = data;
+    this.experimentInfo = this.data.experiment;
    }
 
   onCancelClick(): void {

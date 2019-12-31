@@ -33,14 +33,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
-  openDialog(dialogType: DialogType) {
+  openDialog(dialogType: DialogType, stepperIndex?: number) {
     const dialogComponent =
       dialogType === DialogType.CHANGE_STATUS
         ? ExperimentStatusComponent
         : (dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE ?  PostExperimentRuleComponent : NewExperimentComponent);
     const dialogRef = this.dialog.open(dialogComponent as any, {
       width: '50%',
-      data: this.experiment
+      data: { experiment: this.experiment, stepperIndex: stepperIndex || 0 }
     });
 
     dialogRef.afterClosed().subscribe(result => {
