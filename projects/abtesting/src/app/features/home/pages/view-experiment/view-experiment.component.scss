@@ -83,6 +83,24 @@ $dark-grey-text-color: #707A85;
         .state-data {
           margin-bottom: 20px;
 
+          &.end-criteria-container {
+            width: 200px;
+
+            .end-criteria {
+              color: $dark-grey-text-color;
+              font-family: OpenSans-SemiBold;
+              font-size: var(--text-size-normal);
+
+              &--text {
+                display: unset;
+              }
+
+              &--data {
+                color: var(--blue);
+              }
+            }
+          }
+
           &--fixed {
             height: 66px;
           }
