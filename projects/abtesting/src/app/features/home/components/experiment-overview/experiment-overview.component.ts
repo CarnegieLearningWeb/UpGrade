@@ -3,7 +3,8 @@ import {
   ChangeDetectionStrategy,
   Output,
   EventEmitter,
-  OnInit
+  OnInit,
+  Input
 } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'ees_types';
@@ -11,7 +12,8 @@ import {
   GroupTypes,
   NewExperimentDialogEvents,
   NewExperimentDialogData,
-  NewExperimentPaths
+  NewExperimentPaths,
+  Experiment
 } from '../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -23,6 +25,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentOverviewComponent implements OnInit {
+  @Input() experimentInfo: Experiment;
   @Output() emitExperimentDialogEvent = new EventEmitter<
     NewExperimentDialogData
   >();
@@ -62,6 +65,18 @@ export class ExperimentOverviewComponent implements OnInit {
       groupType: [null, Validators.required],
       consistencyRule: [null, Validators.required]
     });
+
+    // populate values in form to update experiment if experiment data is available
+    if (this.experimentInfo) {
+      this.overviewForm.setValue({
+        experimentName: this.experimentInfo.name,
+        description: this.experimentInfo.description,
+        unitOfAssignment: this.experimentInfo.assignmentUnit,
+        groupType: this.experimentInfo.group,
+        consistencyRule: this.experimentInfo.consistencyRule
+      });
+      this.experimentTags = this.experimentInfo.tags
+    }
   }
 
   addTag(event: MatChipInputEvent): void {
@@ -70,7 +85,7 @@ export class ExperimentOverviewComponent implements OnInit {
 
     // Add our experimentTags
     if ((value || '').trim()) {
-      this.experimentTags.push({ name: value.trim() });
+      this.experimentTags.push(value.trim());
     }
 
     // Reset the input value
@@ -96,10 +111,10 @@ export class ExperimentOverviewComponent implements OnInit {
         const overviewFormData = {
           name: experimentName,
           description,
-          consistencyRule: consistencyRule.value,
-          assignmentUnit: unitOfAssignment.value,
-          group: groupType.value,
-          tags: this.experimentTags.map(tag => tag.name)
+          consistencyRule: consistencyRule,
+          assignmentUnit: unitOfAssignment,
+          group: groupType,
+          tags: this.experimentTags
         };
         this.emitExperimentDialogEvent.emit({
           type: eventType,

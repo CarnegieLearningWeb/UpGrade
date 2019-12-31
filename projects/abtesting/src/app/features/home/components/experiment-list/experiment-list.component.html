@@ -31,7 +31,7 @@
 
       <ng-container matColumnDef="state">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'home.experiments-table.text.status' | translate }}
+          {{ 'home-global.status.text' | translate }}
         </th>
         <td
           mat-cell
@@ -85,9 +85,7 @@
       <ng-container matColumnDef="view">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let experiment">
-          <a [routerLink]="['/home']" class="link">{{
-            'home.experiments-table.text.view' | translate
-          }}</a>
+          <a [routerLink]="['/home','detail', experiment.id]" class="link">{{ 'home.experiments-table.text.view' | translate }}</a>
         </td>
       </ng-container>
 

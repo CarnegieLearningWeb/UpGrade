@@ -13,6 +13,9 @@ import { NewExperimentComponent } from './components/modal/new-experiment/new-ex
 import { ExperimentOverviewComponent } from './components/experiment-overview/experiment-overview.component';
 import { ExperimentDesignComponent } from './components/experiment-design/experiment-design.component';
 import { ExperimentScheduleComponent } from './components/experiment-schedule/experiment-schedule.component';
+import { ViewExperimentComponent } from './pages/view-experiment/view-experiment.component';
+import { ExperimentStatusComponent } from './components/modal/experiment-status/experiment-status.component';
+import { PostExperimentRuleComponent } from './components/modal/post-experiment-rule/post-experiment-rule.component';
 
 @NgModule({
   declarations: [
@@ -23,10 +26,17 @@ import { ExperimentScheduleComponent } from './components/experiment-schedule/ex
     NewExperimentComponent,
     ExperimentOverviewComponent,
     ExperimentDesignComponent,
-    ExperimentScheduleComponent
+    ExperimentScheduleComponent,
+    ViewExperimentComponent,
+    ExperimentStatusComponent,
+    PostExperimentRuleComponent
   ],
   imports: [CommonModule, FormsModule, SharedModule, HomeRoutingModule],
   providers: [],
-  entryComponents: [NewExperimentComponent]
+  entryComponents: [
+    NewExperimentComponent,
+    ExperimentStatusComponent,
+    PostExperimentRuleComponent
+  ]
 })
 export class HomeModule {}

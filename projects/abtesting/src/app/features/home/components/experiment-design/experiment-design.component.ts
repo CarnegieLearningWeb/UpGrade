@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths } from '../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, Experiment } from '../../../../core/experiments/store/experiments.model';
 import { uuid } from 'uuidv4';
+import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 
 @Component({
   selector: 'home-experiment-design',
@@ -12,6 +13,7 @@ import { uuid } from 'uuidv4';
 })
 export class ExperimentDesignComponent implements OnInit {
 
+  @Input() experimentInfo: Experiment;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   experimentDesignForm: FormGroup;
@@ -28,34 +30,36 @@ export class ExperimentDesignComponent implements OnInit {
     this.experimentDesignForm = this._formBuilder.group({
       conditions: this._formBuilder.array([this.addConditions()]),
       segments: this._formBuilder.array([this.addSegments()])
-    }, { validators: this.validateExperimentDesignForm });
+    }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
+
+    // populate values in form to update experiment if experiment data is available
+    if (this.experimentInfo) {
+      // Remove previously added group of conditions and segments
+      this.condition.removeAt(0);
+      this.segment.removeAt(0);
+      this.experimentInfo.conditions.forEach(condition => {
+        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description));
+      });
+      this.experimentInfo.segments.forEach(segment => {
+        this.segment.push(this.addSegments(segment.point, segment.name, segment.description));
+      });
+    }
     this.updateView();
   }
 
-  validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
-    const conditions = controls.get('conditions').value;
-    const segments = controls.get('segments').value;
-    if (conditions.length < 2) {
-      return { conditionCountError: true }
-    } else if (segments.length < 1) {
-      return { segmentCountError: true }
-    }
-    return null;
-  }
-
-  addConditions() {
+  addConditions(conditionCode = null, assignmentWeight = null, description = null) {
      return this._formBuilder.group({
-       conditionCode: [ null, Validators.required ],
-       assignmentWeight: [ null, Validators.required ],
-       description: [ null, Validators.required ]
+       conditionCode: [ conditionCode, Validators.required ],
+       assignmentWeight: [ assignmentWeight, Validators.required ],
+       description: [ description, Validators.required ]
      });
   }
 
-  addSegments() {
+  addSegments(point = null, name = null, description = '') {
     return this._formBuilder.group({
-      point: [ null, Validators.required ],
-      name: [ null, Validators.required],
-      description: [ '' ]
+      point: [ point, Validators.required ],
+      name: [ name, Validators.required],
+      description: [ description ]
     });
   }
 

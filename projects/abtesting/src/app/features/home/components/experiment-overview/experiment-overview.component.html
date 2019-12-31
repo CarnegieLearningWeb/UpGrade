@@ -22,13 +22,13 @@
   <div class="property-container">
     <mat-form-field class="unit-of-assignment">
       <mat-label>{{
-        'home.new-experiment.overview.unit-of-assignment.placeHolder'
+        'home-global.unit-of-assignment.text'
           | translate
       }}</mat-label>
       <mat-select formControlName="unitOfAssignment">
         <mat-option
           *ngFor="let unitOfAssignment of unitOfAssignments"
-          [value]="unitOfAssignment"
+          [value]="unitOfAssignment.value"
         >
           {{ unitOfAssignment.value | titlecase }}
         </mat-option>
@@ -48,7 +48,7 @@
         'home.new-experiment.overview.group-type.placeHolder' | translate
       }}</mat-label>
       <mat-select formControlName="groupType">
-        <mat-option *ngFor="let group of groupTypes" [value]="group">{{
+        <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{
           group.value | titlecase
         }}</mat-option>
       </mat-select>
@@ -60,12 +60,12 @@
 
   <mat-form-field class="consistency-rule">
     <mat-label>{{
-      'home.new-experiment.overview.consistency-rule.placeHolder' | translate
+      'home-global.consistency-rule.text' | translate
     }}</mat-label>
     <mat-select formControlName="consistencyRule">
       <mat-option
         *ngFor="let consistencyRule of consistencyRules"
-        [value]="consistencyRule"
+        [value]="consistencyRule.value"
       >
         {{ consistencyRule.value | titlecase }}
       </mat-option>
@@ -87,7 +87,7 @@
         [removable]="isTagRemovable"
         (removed)="removeTag(experimentTag)"
       >
-        {{ experimentTag.name }}
+        {{ experimentTag }}
         <mat-icon matChipRemove *ngIf="isTagRemovable">cancel</mat-icon>
       </mat-chip>
       <input

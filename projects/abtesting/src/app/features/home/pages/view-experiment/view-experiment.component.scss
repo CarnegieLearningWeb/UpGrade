@@ -1,0 +1,122 @@
+$white-background: #f0f2f9;
+$dark-grey-text-color: #707A85;
+
+.experiment-container {
+  background-color: $white-background;
+  padding: 40px 100px 40px;
+  height: 100%;
+  overflow: scroll;
+
+  .experiment-title {
+    color: var(--black-2);
+    font-family: OpenSans-Regular;
+    font-size: var(--text-size-large);
+  }
+
+  .experiment {
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 0 2px var(--light-grey);
+    background-color: var(--white);
+    padding: 30px;
+
+    &-overview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &-title {
+        display: flex;
+        align-items: center;
+        color: var(--black-2);
+        font-family: OpenSans-Bold;
+        font-size: var(--text-size-xxxxx-large);
+      }
+
+      &-segments {
+        margin-left: 10px;
+        color: var(--grey-3);
+        font-family: OpenSans-Regular;
+        font-size: var(--text-size-large);
+      }
+
+      .edit-button {
+        margin-left: 15px !important;
+        border: 1px solid var(--blue);
+        background: $white-background;
+        color: var(--blue);
+        font-size: var(--text-size-small);
+
+        .icon {
+          margin-right: 3px;
+          vertical-align: unset;
+        }
+      }
+    }
+
+    &-description {
+      margin: 15px 0 15px;
+      color: var(--grey-3);
+      font-family: OpenSans-Regular;
+      font-size: var(--text-size-small);
+    }
+
+    &-create-date {
+      display: block;
+      margin-bottom: 20px;
+      color: var(--grey-2);
+      font-family: OpenSans-Regular;
+      font-size: var(--text-size-x-small);
+    }
+
+    &-state {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin-right: 25px;
+
+      &-container {
+        display: flex;
+        flex-direction: column;
+
+        .state-data {
+          margin-bottom: 20px;
+
+          &--fixed {
+            height: 66px;
+          }
+
+          &-value {
+            color: $dark-grey-text-color;
+            font-family: OpenSans-SemiBold;
+            font-size: var(--text-size-large);
+          }
+
+          span {
+            display: block;
+
+            &:first-of-type {
+              margin-bottom: 5px;
+              color: var(--grey-3);
+              font-family: OpenSans-SemiBold;
+              font-size: var(--text-size-small);
+            }
+          }
+
+          button {
+            padding: 0;
+            height: 40px;
+            color: var(--blue);
+            font-family: OpenSans-SemiBold;
+            font-size: var(--text-size-large);
+
+            .icon {
+              margin-left: 5px;
+              vertical-align: unset;
+            }
+          }
+        }
+      }
+    }
+  }
+}

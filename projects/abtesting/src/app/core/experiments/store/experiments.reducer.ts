@@ -28,9 +28,9 @@ const reducer = createReducer(
     return adapter.addMany(experiments, { ...state, isLoadingExperiment: false });
   }),
   on(
-    experimentsAction.actionCreateNewExperimentSuccess,
+    experimentsAction.actionUpsertExperimentSuccess,
     (state, { experiment }) => {
-      return adapter.addOne(experiment, { ...state });
+      return adapter.upsertOne(experiment, { ...state });
     }
   )
 );

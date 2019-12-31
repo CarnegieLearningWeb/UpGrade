@@ -1,0 +1,26 @@
+.experiment-rule {
+  .title {
+    color: var(--black-2);
+    font-family: OpenSans-SemiBold;
+    font-size: var(--text-size-x-large);
+  }
+
+  &-form {
+    display: flex;
+    justify-content: space-between;
+    margin: 25px 0;
+
+    mat-form-field {
+      width: 45%;
+    }
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      margin-left: 20px;
+    }
+  }
+}

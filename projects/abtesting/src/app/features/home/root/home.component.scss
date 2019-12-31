@@ -1,6 +1,5 @@
 // File scope scss variables
 $white-background: #f0f2f9;
-$grey-text-color: #929fae;
 
 .experiments-container {
   display: flex;
@@ -25,7 +24,7 @@ $grey-text-color: #929fae;
   .subtitle {
     display: block;
     margin-bottom: 40px;
-    color: $grey-text-color;
+    color: var(--grey-3);
     font-family: OpenSans-Regular;
     font-size: var(--text-size-normal);
   }

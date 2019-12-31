@@ -1,11 +1,14 @@
 import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
-import { NewExperimentDialogEvents, NewExperimentDialogData, ASSIGNMENT_UNIT, NewExperimentPaths } from '../../../../core/experiments/store/experiments.model';
-
-enum EndExperimentCondition {
-  END_ON_DATE = 'End on Date',
-  END_CRITERIA = 'End Criteria'
-}
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import {
+  NewExperimentDialogEvents,
+  NewExperimentDialogData,
+  ASSIGNMENT_UNIT,
+  NewExperimentPaths,
+  Experiment,
+  EndExperimentCondition
+} from '../../../../core/experiments/store/experiments.model';
+import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 
 @Component({
   selector: 'home-experiment-schedule',
@@ -16,6 +19,7 @@ enum EndExperimentCondition {
 export class ExperimentScheduleComponent implements OnInit {
 
   @Input() assignmentUnit: ASSIGNMENT_UNIT;
+  @Input() experimentInfo: Experiment;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;
   minDate = new Date();
@@ -28,40 +32,40 @@ export class ExperimentScheduleComponent implements OnInit {
       dateOfExperimentEnd: [{ value: '', disabled: true }],
       userCount: [{ value: '', disabled: true }, Validators.min(1)],
       groupCount: [{ value: '', disabled: true }, Validators.min(1)]
-    }, { validators: this.validateScheduleForm });
+    }, { validators: ExperimentFormValidators.validateScheduleForm });
 
-    this.experimentScheduleForm.get('endExperimentAutomatically').valueChanges.subscribe((isExperimentEndAutomatically) => {
-      if (isExperimentEndAutomatically) {
-        Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
-          if (formControlName !== 'endExperimentAutomatically') {
-            this.experimentScheduleForm.controls[formControlName].enable();
-          }
-        });
-      } else {
-        Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
-          if (formControlName !== 'endExperimentAutomatically') {
-            this.experimentScheduleForm.controls[formControlName].disable();
-          }
-        });
-      }
-    });
-  }
+    this.experimentScheduleForm.get('endExperimentAutomatically').valueChanges.subscribe(
+      (isExperimentEndAutomatically) => {
+        if (isExperimentEndAutomatically) {
+          Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
+            if (formControlName !== 'endExperimentAutomatically') {
+              this.experimentScheduleForm.controls[formControlName].enable();
+            }
+          });
+        } else {
+          Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
+            if (formControlName !== 'endExperimentAutomatically') {
+              this.experimentScheduleForm.controls[formControlName].disable();
+            }
+          });
+        }
+      });
 
-  validateScheduleForm(controls: AbstractControl): { [key: string]: any } | null {
-    const endExperimentAutomatically = controls.get('endExperimentAutomatically').value;
-    const endCondition = controls.get('endCondition').value;
-    const dateOfExperimentEnd = controls.get('dateOfExperimentEnd').value;
-    const userCount = controls.get('userCount').value;
-    const groupCount = controls.get('groupCount').value;
-    if (endExperimentAutomatically && !!endCondition) {
-      if ((endCondition === EndExperimentCondition.END_ON_DATE && !!dateOfExperimentEnd) ||
-        (endCondition === EndExperimentCondition.END_CRITERIA && (!!userCount || !!groupCount))) {
-        return null;
-      } else {
-        return { formValidationError: true };
-      }
+    // populate values in form to update experiment if experiment data is available
+    if (this.experimentInfo) {
+      const isEndAutomaticallyChecked = !!this.experimentInfo.endOn || !!this.experimentInfo.enrollmentCompleteCondition;
+      const endCondition = isEndAutomaticallyChecked
+      ? (this.experimentInfo.endOn ? EndExperimentCondition.END_ON_DATE : EndExperimentCondition.END_CRITERIA)
+      : null;
+      const { enrollmentCompleteCondition } = this.experimentInfo;
+      this.experimentScheduleForm.patchValue({
+        endExperimentAutomatically: isEndAutomaticallyChecked,
+        endCondition,
+        dateOfExperimentEnd: this.experimentInfo.endOn,
+        userCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.userCount : null,
+        groupCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.groupCount : null
+      });
     }
-    return null;
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
@@ -70,10 +74,7 @@ export class ExperimentScheduleComponent implements OnInit {
     } else {
       let scheduleData = {
         endOn: null,
-        enrollmentCompleteCondition: {
-          userCount: 0,
-          groupCount: 0
-        }
+        enrollmentCompleteCondition: null
       };
       const { endExperimentAutomatically, endCondition, dateOfExperimentEnd, userCount, groupCount } = this.experimentScheduleForm.value;
       if (endExperimentAutomatically) {
@@ -97,7 +98,7 @@ export class ExperimentScheduleComponent implements OnInit {
         }
       }
       this.emitExperimentDialogEvent.emit({
-        type: eventType,
+        type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
         formData: scheduleData,
         path: NewExperimentPaths.EXPERIMENT_SCHEDULE
       });

@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { mergeMap, map, filter, switchMap, catchError } from 'rxjs/operators';
+import { UpsertExperimentType } from './experiments.model';
 
 @Injectable()
 export class ExperimentEffects {
@@ -11,7 +12,7 @@ export class ExperimentEffects {
     private experimentDataService: ExperimentDataService
   ) {}
 
-  getAllExperiment = createEffect(
+  getAllExperiment$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionGetAllExperiment),
@@ -28,17 +29,21 @@ export class ExperimentEffects {
     { dispatch: true }
   );
 
-  createNewExperiment = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(experimentAction.actionCreateNewExperiment),
-        map(action => action.experiment),
-        filter(experiment => !!experiment),
-        switchMap((experiment) => this.experimentDataService.createNewExperiment(experiment).pipe(
-            map((data: any) => experimentAction.actionCreateNewExperimentSuccess({ experiment: data })),
-            catchError(() => [experimentAction.actionCreateNewExperimentFailure()])
-          )
-        )
-      )
+  UpsertExperiment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpsertExperiment),
+      map(action => ({ experiment: action.experiment, actionType: action.actionType })),
+      filter(({ experiment, actionType }) => !!experiment && !!actionType),
+      switchMap(({ experiment, actionType }) => {
+        const experimentMethod =
+          actionType === UpsertExperimentType.CREATE_NEW_EXPERIMENT
+            ? this.experimentDataService.createNewExperiment(experiment)
+            : this.experimentDataService.updateExperiment(experiment);
+        return experimentMethod.pipe(
+          map((data: any) => experimentAction.actionUpsertExperimentSuccess({ experiment: data }) ),
+          catchError(() => [experimentAction.actionUpsertExperimentFailure()])
+        );
+      })
+    )
   );
 }
