@@ -7,10 +7,15 @@ $dark-grey-text-color: #707A85;
   height: 100%;
   overflow: scroll;
 
-  .experiment-title {
+  .experiment-title,
+  .experiment-link {
     color: var(--black-2);
     font-family: OpenSans-Regular;
     font-size: var(--text-size-large);
+  }
+
+  .experiment-link {
+    text-decoration: none;
   }
 
   .experiment {
@@ -134,25 +139,6 @@ $dark-grey-text-color: #707A85;
               vertical-align: unset;
             }
           }
-        }
-      }
-    }
-
-    .enrollment-over-time {
-      margin-top: 20px;
-
-      &__title {
-        color: var(--black-2);
-        font-family: OpenSans-SemiBold;
-        font-size: var(--text-size-xxx-large);
-      }
-
-      .enrollment-filters {
-        display: flex;
-        justify-content: space-between;
-
-        mat-form-field {
-          margin-right: 20px;
         }
       }
     }

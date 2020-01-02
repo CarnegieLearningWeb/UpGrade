@@ -1,0 +1,67 @@
+$text-size-largest: 50px;
+
+.enrollment-over-time {
+  margin-top: 20px;
+
+  &__title {
+    color: var(--black-2);
+    font-family: OpenSans-SemiBold;
+    font-size: var(--text-size-xxx-large);
+  }
+
+  .enrollment-filters {
+    display: flex;
+    justify-content: space-between;
+
+    mat-form-field {
+      margin-right: 20px;
+    }
+  }
+
+  .chart-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .chart {
+      flex-grow: 1;
+    }
+
+    .enrollment-statistic {
+      display: flex;
+      flex-direction: column;
+      margin-left: 30px;
+      width: 225px;
+
+      &__unique {
+        border-bottom: 1px solid var(--grey);
+        padding-bottom: 30px;
+      }
+
+      &__class {
+        padding-top: 30px;
+      }
+
+      .title {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--grey-4);
+        font-family: OpenSans-SemiBold;
+        font-size: var(--text-size-normal);
+      }
+
+      .numbers {
+        color: var(--blue);
+        font-family: OpenSans-SemiBold;
+        font-size: $text-size-largest;
+
+        &--excluded {
+          color: var(--grey-4);
+          font-family: OpenSans-Regular;
+          font-size: var(--text-size-normal);
+        }
+      }
+    }
+  }
+}
+
