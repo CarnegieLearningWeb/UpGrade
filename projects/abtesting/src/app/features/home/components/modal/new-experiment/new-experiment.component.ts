@@ -8,7 +8,7 @@ import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths,
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
-  selector: 'app-new-experiment',
+  selector: 'home-new-experiment',
   templateUrl: './new-experiment.component.html',
   styleUrls: ['./new-experiment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -16,7 +16,7 @@ enum DialogType {
 }
 
 @Component({
-  selector: 'app-view-experiment',
+  selector: 'home-view-experiment',
   templateUrl: './view-experiment.component.html',
   styleUrls: ['./view-experiment.component.scss']
 })

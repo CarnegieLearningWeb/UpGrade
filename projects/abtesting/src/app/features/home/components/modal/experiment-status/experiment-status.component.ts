@@ -6,7 +6,7 @@ import { Experiment } from '../../../../../core/experiments/store/experiments.mo
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
-  selector: 'app-experiment-status',
+  selector: 'home-experiment-status',
   templateUrl: './experiment-status.component.html',
   styleUrls: ['./experiment-status.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

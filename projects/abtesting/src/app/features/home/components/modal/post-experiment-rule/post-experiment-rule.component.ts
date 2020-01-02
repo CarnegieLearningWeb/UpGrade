@@ -6,7 +6,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ExperimentStatusComponent } from '../experiment-status/experiment-status.component';
 
 @Component({
-  selector: 'app-post-experiment-rule',
+  selector: 'home-post-experiment-rule',
   templateUrl: './post-experiment-rule.component.html',
   styleUrls: ['./post-experiment-rule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
