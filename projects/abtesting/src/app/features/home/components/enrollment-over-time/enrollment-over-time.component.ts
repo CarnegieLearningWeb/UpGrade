@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges } f
 import { ASSIGNMENT_UNIT } from 'ees_types';
 import { GroupTypes, Experiment } from '../../../../core/experiments/store/experiments.model';
 
+// Used in EnrollmentOverTimeComponent
 enum ExperimentFilterType {
   GROUP_FILTER = 'Group filter',
   CONDITION_FILTER = 'Condition filter',

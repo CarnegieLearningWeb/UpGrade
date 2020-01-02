@@ -19,6 +19,7 @@ import { PostExperimentRuleComponent } from './components/modal/post-experiment-
 import { SatDatepickerModule, SatNativeDateModule } from 'saturn-datepicker'
 import { MatDatepickerModule } from '@angular/material';
 import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
+import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/e
     ViewExperimentComponent,
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
-    EnrollmentOverTimeComponent
+    EnrollmentOverTimeComponent,
+    EnrollmentConditionTableComponent
   ],
   imports: [
     CommonModule,

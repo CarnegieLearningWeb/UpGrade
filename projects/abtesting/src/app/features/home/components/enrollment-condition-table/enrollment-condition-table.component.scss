@@ -1,0 +1,26 @@
+.enrollment-condition-table-container {
+  margin-top: 30px;
+
+  .title {
+    color: var(--black-2);
+    font-family: OpenSans-SemiBold;
+    font-size: var(--text-size-xxx-large);
+  }
+
+  .enrollment-condition-table {
+    mat-cell,
+    mat-header-cell {
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+      word-break: break-all;
+    }
+
+    mat-header-cell {
+      border-color: var(--light-grey);
+      color: var(--grey-2);
+      font-family: OpenSans-Bold;
+      font-size: var(--text-size-x-small);
+    }
+  }
+}
