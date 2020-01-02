@@ -96,5 +96,72 @@
       </div>
     </div>
 
+    <!-- Enrollment over time section -->
+    <div class="enrollment-over-time">
+      <span class="enrollment-over-time__title">{{ 'home.view-experiment.enrollment-over-time.text' | translate }}</span>
+      <div class="enrollment-filters">
+        <div>
+          <mat-form-field>
+            <mat-select
+              [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
+              [(ngModel)]="selectedGroupFilter"
+              (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
+            >
+              <mat-option
+                *ngFor="let groupValue of groupFiltersOptions"
+                [value]="groupValue"
+              >
+                {{ groupValue | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-select
+              [(ngModel)]="selectedCondition"
+              multiple
+              (selectionChange)="applyExperimentFilter(ExperimentFilter.CONDITION_FILTER)"
+            >
+              <mat-option
+                *ngFor="let condition of conditionsFilterOptions"
+                [value]="condition"
+              >
+                {{ condition | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div>
+          <mat-form-field>
+            <input
+              matInput
+              [placeholder]="'home.view-experiment.enrollment-over-time.choose-date-range.text' | translate"
+              [satDatepicker]="dateRangePicker"
+              [disabled]="selectedDateFilter !== ExperimentDateFilterOptions.CUSTOM"
+              [ngModel]="selectedDateRange"
+              (ngModelChange)="selectedDateRange = $event;applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
+            >
+            <sat-datepicker #dateRangePicker [rangeMode]="true"></sat-datepicker>
+            <sat-datepicker-toggle matSuffix [for]="dateRangePicker"></sat-datepicker-toggle>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-select
+              [(ngModel)]="selectedDateFilter"
+              (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
+            >
+              <mat-option
+                *ngFor="let dateFilterType of dateFilterOptions"
+                [value]="dateFilterType"
+              >
+                {{ dateFilterType | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

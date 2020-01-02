@@ -61,6 +61,7 @@
     "ees_types": "github:CarnegieLearningWeb/educational-experiment-types#master",
     "hammerjs": "^2.0.8",
     "rxjs": "~6.5.0",
+    "saturn-datepicker": "^8.0.1",
     "tslib": "^1.9.0",
     "uuid": "^3.3.2",
     "uuidv4": "^6.0.0",

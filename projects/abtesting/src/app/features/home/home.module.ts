@@ -16,6 +16,8 @@ import { ExperimentScheduleComponent } from './components/experiment-schedule/ex
 import { ViewExperimentComponent } from './pages/view-experiment/view-experiment.component';
 import { ExperimentStatusComponent } from './components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from './components/modal/post-experiment-rule/post-experiment-rule.component';
+import { SatDatepickerModule, SatNativeDateModule } from 'saturn-datepicker'
+import { MatDatepickerModule } from '@angular/material';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,15 @@ import { PostExperimentRuleComponent } from './components/modal/post-experiment-
     ExperimentStatusComponent,
     PostExperimentRuleComponent
   ],
-  imports: [CommonModule, FormsModule, SharedModule, HomeRoutingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SharedModule,
+    HomeRoutingModule,
+    SatDatepickerModule,
+    SatNativeDateModule,
+    MatDatepickerModule
+  ],
   providers: [],
   entryComponents: [
     NewExperimentComponent,
