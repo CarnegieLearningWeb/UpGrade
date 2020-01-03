@@ -6,7 +6,9 @@ import { PostExperimentRuleComponent } from '../../components/modal/post-experim
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
 import { Experiment } from '../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
+// Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
   CHANGE_POST_EXPERIMENT_RULE = 'Change post experiment rule',
@@ -14,7 +16,7 @@ enum DialogType {
 }
 
 @Component({
-  selector: 'app-view-experiment',
+  selector: 'home-view-experiment',
   templateUrl: './view-experiment.component.html',
   styleUrls: ['./view-experiment.component.scss']
 })
@@ -22,28 +24,31 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   experiment: Experiment;
   experimentSub: Subscription;
+
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit() {
-    this.experimentSub = this.experimentService.selectedExperiment$.subscribe(experiment => {
+    this.experimentSub = this.experimentService.selectedExperiment$.pipe(
+      filter(experiment => !!experiment)
+    ).subscribe(experiment => {
       this.experiment = experiment;
     });
   }
 
-  openDialog(dialogType: DialogType) {
+  openDialog(dialogType: DialogType, stepperIndex?: number) {
     const dialogComponent =
       dialogType === DialogType.CHANGE_STATUS
         ? ExperimentStatusComponent
         : (dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE ?  PostExperimentRuleComponent : NewExperimentComponent);
     const dialogRef = this.dialog.open(dialogComponent as any, {
       width: '50%',
-      data: this.experiment
+      data: { experiment: this.experiment, stepperIndex: stepperIndex || 0 }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(() => {
     });
   }
 

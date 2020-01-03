@@ -6,7 +6,7 @@ import { Experiment } from '../../../../../core/experiments/store/experiments.mo
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
-  selector: 'app-experiment-status',
+  selector: 'home-experiment-status',
   templateUrl: './experiment-status.component.html',
   styleUrls: ['./experiment-status.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,9 +27,9 @@ export class ExperimentStatusComponent implements OnInit {
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private dialogRef: MatDialogRef<ExperimentStatusComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) private data: any
   ) {
-    this.experimentInfo = data;
+    this.experimentInfo = this.data.experiment;
    }
 
   onCancelClick(): void {

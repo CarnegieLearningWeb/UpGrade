@@ -7,10 +7,15 @@ $dark-grey-text-color: #707A85;
   height: 100%;
   overflow: scroll;
 
-  .experiment-title {
+  .experiment-title,
+  .experiment-link {
     color: var(--black-2);
     font-family: OpenSans-Regular;
     font-size: var(--text-size-large);
+  }
+
+  .experiment-link {
+    text-decoration: none;
   }
 
   .experiment {
@@ -40,7 +45,8 @@ $dark-grey-text-color: #707A85;
         font-size: var(--text-size-large);
       }
 
-      .edit-button {
+      .edit-button,
+      .experiment-design-button {
         margin-left: 15px !important;
         border: 1px solid var(--blue);
         background: $white-background;
@@ -81,6 +87,24 @@ $dark-grey-text-color: #707A85;
 
         .state-data {
           margin-bottom: 20px;
+
+          &.end-criteria-container {
+            width: 200px;
+
+            .end-criteria {
+              color: $dark-grey-text-color;
+              font-family: OpenSans-SemiBold;
+              font-size: var(--text-size-normal);
+
+              &--text {
+                display: unset;
+              }
+
+              &--data {
+                color: var(--blue);
+              }
+            }
+          }
 
           &--fixed {
             height: 66px;

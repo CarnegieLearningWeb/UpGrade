@@ -58,6 +58,15 @@ export interface EnrollmentCompleteCondition {
   groupCount: number;
 }
 
+export interface EnrollmentByConditionData {
+  condition: string;
+  weight: number;
+  userEnrolled: number;
+  userExcluded: number;
+  classesEnrolled: number;
+  classesExcluded: number;
+}
+
 export interface ExperimentCondition {
   id: string;
   name: string;

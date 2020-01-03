@@ -2,6 +2,8 @@
 @import '~@angular/material/theming';
 @import '~bootstrap/scss/bootstrap-reboot';
 @import '~bootstrap/scss/bootstrap-grid';
+
+@import '~saturn-datepicker/theming';
 @include mat-core();
 
 @import './styles/styles-variables';
@@ -15,6 +17,7 @@
 
 @mixin custom-components-theme($theme) {
   @include app-component-theme($theme);
+  @include sat-datepicker-theme($theme);
 }
 
 .default-theme {
@@ -51,5 +54,6 @@
 
   &--disabled {
     opacity: 0.7;
+    pointer-events: none;
   }
 }

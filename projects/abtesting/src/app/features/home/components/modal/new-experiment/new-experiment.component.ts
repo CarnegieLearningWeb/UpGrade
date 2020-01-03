@@ -8,7 +8,7 @@ import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths,
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
-  selector: 'app-new-experiment',
+  selector: 'home-new-experiment',
   templateUrl: './new-experiment.component.html',
   styleUrls: ['./new-experiment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -21,9 +21,12 @@ export class NewExperimentComponent {
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) private data: any
   ) {
-    this.experimentInfo = data;
+    if (this.data) {
+      this.experimentInfo = this.data.experiment;
+      this.selectedStepperIndex = this.data.stepperIndex;
+    }
   }
 
   onNoClick(): void {

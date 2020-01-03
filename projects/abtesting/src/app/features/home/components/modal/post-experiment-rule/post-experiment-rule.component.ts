@@ -6,7 +6,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ExperimentStatusComponent } from '../experiment-status/experiment-status.component';
 
 @Component({
-  selector: 'app-post-experiment-rule',
+  selector: 'home-post-experiment-rule',
   templateUrl: './post-experiment-rule.component.html',
   styleUrls: ['./post-experiment-rule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -26,9 +26,9 @@ export class PostExperimentRuleComponent implements OnInit {
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private dialogRef: MatDialogRef<ExperimentStatusComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) private data: any
   ) {
-    this.experimentInfo = data;
+    this.experimentInfo = this.data.experiment;
    }
 
   onCancelClick(): void {

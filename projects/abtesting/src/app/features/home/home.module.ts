@@ -16,6 +16,11 @@ import { ExperimentScheduleComponent } from './components/experiment-schedule/ex
 import { ViewExperimentComponent } from './pages/view-experiment/view-experiment.component';
 import { ExperimentStatusComponent } from './components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from './components/modal/post-experiment-rule/post-experiment-rule.component';
+import { SatDatepickerModule, SatNativeDateModule } from 'saturn-datepicker'
+import { MatDatepickerModule } from '@angular/material';
+import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
+import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
+import { EnrollmentPointSegmentTableComponent } from './components/enrollment-point-segment-table/enrollment-point-segment-table.component';
 
 @NgModule({
   declarations: [
@@ -29,9 +34,20 @@ import { PostExperimentRuleComponent } from './components/modal/post-experiment-
     ExperimentScheduleComponent,
     ViewExperimentComponent,
     ExperimentStatusComponent,
-    PostExperimentRuleComponent
+    PostExperimentRuleComponent,
+    EnrollmentOverTimeComponent,
+    EnrollmentConditionTableComponent,
+    EnrollmentPointSegmentTableComponent
   ],
-  imports: [CommonModule, FormsModule, SharedModule, HomeRoutingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SharedModule,
+    HomeRoutingModule,
+    SatDatepickerModule,
+    SatNativeDateModule,
+    MatDatepickerModule
+  ],
   providers: [],
   entryComponents: [
     NewExperimentComponent,

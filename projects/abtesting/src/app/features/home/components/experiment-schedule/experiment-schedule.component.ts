@@ -30,8 +30,8 @@ export class ExperimentScheduleComponent implements OnInit {
       endExperimentAutomatically: [null],
       endCondition: [{ value: '', disabled: true } , Validators.required],
       dateOfExperimentEnd: [{ value: '', disabled: true }],
-      userCount: [{ value: '', disabled: true }, Validators.min(1)],
-      groupCount: [{ value: '', disabled: true }, Validators.min(1)]
+      userCount: [{ value: '', disabled: true }],
+      groupCount: [{ value: '', disabled: true }]
     }, { validators: ExperimentFormValidators.validateScheduleForm });
 
     this.experimentScheduleForm.get('endExperimentAutomatically').valueChanges.subscribe(
@@ -53,15 +53,15 @@ export class ExperimentScheduleComponent implements OnInit {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      const isEndAutomaticallyChecked = !!this.experimentInfo.endOn || !!this.experimentInfo.enrollmentCompleteCondition;
+      const { enrollmentCompleteCondition, endOn } = this.experimentInfo;
+      const isEndAutomaticallyChecked = !!endOn || !!enrollmentCompleteCondition;
       const endCondition = isEndAutomaticallyChecked
-      ? (this.experimentInfo.endOn ? EndExperimentCondition.END_ON_DATE : EndExperimentCondition.END_CRITERIA)
+      ? (endOn ? EndExperimentCondition.END_ON_DATE : EndExperimentCondition.END_CRITERIA)
       : null;
-      const { enrollmentCompleteCondition } = this.experimentInfo;
       this.experimentScheduleForm.patchValue({
         endExperimentAutomatically: isEndAutomaticallyChecked,
         endCondition,
-        dateOfExperimentEnd: this.experimentInfo.endOn,
+        dateOfExperimentEnd: endOn ? new Date(endOn) : null,
         userCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.userCount : null,
         groupCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.groupCount : null
       });

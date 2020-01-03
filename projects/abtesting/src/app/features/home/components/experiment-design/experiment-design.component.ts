@@ -14,6 +14,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 export class ExperimentDesignComponent implements OnInit {
 
   @Input() experimentInfo: Experiment;
+  @Input() disableControls = false;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   experimentDesignForm: FormGroup;
