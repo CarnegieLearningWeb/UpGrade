@@ -1,15 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Experiment } from '../../../../core/experiments/store/experiments.model';
-
-// Used in EnrollmentConditionTableComponent only
-interface EnrollmentByConditionData {
-  condition: string;
-  weight: number;
-  userEnrolled: number;
-  userExcluded: number;
-  classesEnrolled: number;
-  classesExcluded: number;
-}
+import { Experiment, EnrollmentByConditionData } from '../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'home-enrollment-condition-table',
