@@ -1,4 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ViewChild,
+  OnDestroy
+} from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -16,20 +22,33 @@ import { ExperimentStatePipeType } from '../../pipes/experiment-state.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentListComponent implements OnInit, OnDestroy {
-  displayedColumns: string[] = ['name', 'state', 'experimentSegments', 'startDate', 'tags', 'enrollment', 'view'];
+  displayedColumns: string[] = [
+    'name',
+    'state',
+    'experimentSegments',
+    'startDate',
+    'tags',
+    'enrollment',
+    'view'
+  ];
   allExperiments: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog
   ) {
-    this.allExperimentsSub = this.experimentService.experiments$.subscribe(allExperiments => {
-      this.allExperiments = new MatTableDataSource(allExperiments);
-    });
+    this.allExperimentsSub = this.experimentService.experiments$.subscribe(
+      allExperiments => {
+        this.allExperiments = new MatTableDataSource();
+        this.allExperiments.data = allExperiments;
+        this.allExperiments.paginator = this.paginator;
+        this.allExperiments.sort = this.sort;
+      }
+    );
   }
 
   ngOnInit() {
@@ -48,7 +67,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
-      width: '50%',
+      width: '50%'
     });
 
     dialogRef.afterClosed().subscribe(result => {
