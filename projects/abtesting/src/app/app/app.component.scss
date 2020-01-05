@@ -19,8 +19,9 @@ mat-drawer {
     box-shadow: 0 5px 5px var(--light-grey);
     height: 150px;
 
-    span {
+    &-link {
       margin: 0 0 10px 20px;
+      text-decoration: none;
       color: var(--blue);
       font-size: 36px;
       font-weight: bold;
