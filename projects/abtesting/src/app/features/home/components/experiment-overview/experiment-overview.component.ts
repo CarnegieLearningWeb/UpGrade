@@ -62,8 +62,20 @@ export class ExperimentOverviewComponent implements OnInit {
       experimentName: [null, Validators.required],
       description: [null, Validators.required],
       unitOfAssignment: [null, Validators.required],
-      groupType: [null, Validators.required],
+      groupType: [{ value: null, disabled: true }, Validators.required],
       consistencyRule: [null, Validators.required]
+    });
+
+    this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
+      switch (assignmentUnit) {
+        case ASSIGNMENT_UNIT.INDIVIDUAL:
+          this.overviewForm.get('groupType').disable();
+          this.overviewForm.get('groupType').reset();
+          break;
+        case ASSIGNMENT_UNIT.GROUP:
+        this.overviewForm.get('groupType').enable();
+          break;
+      }
     });
 
     // populate values in form to update experiment if experiment data is available
@@ -113,7 +125,7 @@ export class ExperimentOverviewComponent implements OnInit {
           description,
           consistencyRule: consistencyRule,
           assignmentUnit: unitOfAssignment,
-          group: groupType,
+          group: groupType || null,
           tags: this.experimentTags
         };
         this.emitExperimentDialogEvent.emit({
