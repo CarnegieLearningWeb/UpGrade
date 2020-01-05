@@ -6,7 +6,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { HomeComponent } from './root/home.component';
 import { HomeRoutingModule } from './home-routing.module';
 import { ExperimentListComponent } from './components/experiment-list/experiment-list.component';
-import { ExperimentStateColorPipe } from './pipes/experiment-state-color.pipe';
+import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { FormsModule } from '@angular/forms';
 import { NewExperimentComponent } from './components/modal/new-experiment/new-experiment.component';
@@ -26,7 +26,7 @@ import { EnrollmentPointSegmentTableComponent } from './components/enrollment-po
   declarations: [
     HomeComponent,
     ExperimentListComponent,
-    ExperimentStateColorPipe,
+    ExperimentStatePipe,
     FormatDatePipe,
     NewExperimentComponent,
     ExperimentOverviewComponent,

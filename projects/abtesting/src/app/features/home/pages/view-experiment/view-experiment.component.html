@@ -36,7 +36,7 @@
         <div class="state-data state-data--fixed">
           <span>{{ 'home-global.status.text' | translate }}</span>
           <button mat-flat-button (click)="openDialog(DialogType.CHANGE_STATUS)">
-            {{ experiment.state | titlecase }}
+            {{ experiment.state | experimentState }}
             <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           </button>
         </div>

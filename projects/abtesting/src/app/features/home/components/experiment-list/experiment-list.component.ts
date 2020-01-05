@@ -7,6 +7,7 @@ import { ExperimentService } from '../../../../core/experiments/experiments.serv
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
+import { ExperimentStatePipeType } from '../../pipes/experiment-state.pipe';
 
 @Component({
   selector: 'home-experiment-list',
@@ -57,5 +58,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
+  }
+
+  get ExperimentStatePipeTypes() {
+    return ExperimentStatePipeType;
   }
 }

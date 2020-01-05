@@ -36,9 +36,9 @@
         <td
           mat-cell
           *matCellDef="let experiment"
-          [ngStyle]="{ color: experiment.state | experimentStateColor }"
+          [ngStyle]="{ color: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"
         >
-          {{ experiment.state | titlecase }}
+          {{ experiment.state | experimentState }}
         </td>
       </ng-container>
 
