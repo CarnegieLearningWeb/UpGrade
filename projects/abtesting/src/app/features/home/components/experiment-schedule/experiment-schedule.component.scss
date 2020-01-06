@@ -24,6 +24,14 @@
 
       .group-type {
         margin-left: 30px;
+
+        &--enable {
+          color: var(--black);
+        }
+
+        &--disable {
+          color: rgba(0, 0, 0, 0.38);
+        }
       }
     }
   }

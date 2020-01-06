@@ -48,9 +48,9 @@
       </span>
     </ng-template>
     <home-experiment-schedule
-    (emitExperimentDialogEvent)="getExperimentData($event)"
-    [experimentInfo]="experimentInfo"
-    [assignmentUnit]="newExperimentData?.assignmentUnit"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+      [experimentInfo]="experimentInfo"
+      [groupType]="newExperimentData?.group"
     ></home-experiment-schedule>
   </mat-step>
 </mat-horizontal-stepper>

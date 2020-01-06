@@ -136,9 +136,9 @@
                 *ngIf="endCondition?.groupCount as groupCount"
               >
                 {{
-                  groupCount +
-                    ('home.view-experiment.ending-criteria.enrollments-per-class.text'
-                      | translate)
+                  groupCount + ' ' +
+                    ('home-global.enrollments-per-custom.text'
+                      | translate: { groupType: experiment.group } | lowercase)
                 }}
               </span>
               <span class="end-criteria end-criteria--text">{{

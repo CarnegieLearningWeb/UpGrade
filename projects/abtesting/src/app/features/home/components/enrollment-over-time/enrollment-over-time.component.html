@@ -34,12 +34,11 @@
     </div>
 
     <div>
-      <mat-form-field>
+      <mat-form-field *ngIf="selectedDateFilter === ExperimentDateFilterOptions.CUSTOM">
         <input
           matInput
           [placeholder]="'home.view-experiment.enrollment-over-time.choose-date-range.text' | translate"
           [satDatepicker]="dateRangePicker"
-          [disabled]="selectedDateFilter !== ExperimentDateFilterOptions.CUSTOM"
           [ngModel]="selectedDateRange"
           (ngModelChange)="selectedDateRange = $event;applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
         >

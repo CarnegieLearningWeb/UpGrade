@@ -18,7 +18,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 })
 export class ExperimentScheduleComponent implements OnInit {
 
-  @Input() assignmentUnit: ASSIGNMENT_UNIT;
+  @Input() groupType: string;
   @Input() experimentInfo: Experiment;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;
@@ -37,19 +37,30 @@ export class ExperimentScheduleComponent implements OnInit {
     this.experimentScheduleForm.get('endExperimentAutomatically').valueChanges.subscribe(
       (isExperimentEndAutomatically) => {
         if (isExperimentEndAutomatically) {
-          Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
-            if (formControlName !== 'endExperimentAutomatically') {
-              this.experimentScheduleForm.controls[formControlName].enable();
-            }
-          });
+          this.experimentScheduleForm.get('endCondition').enable();
         } else {
           Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
             if (formControlName !== 'endExperimentAutomatically') {
               this.experimentScheduleForm.controls[formControlName].disable();
+              this.experimentScheduleForm.controls[formControlName].reset();
             }
           });
         }
       });
+
+      this.experimentScheduleForm.get('endCondition').valueChanges.subscribe(
+        endCondition => {
+          if (endCondition === EndExperimentCondition.END_ON_DATE) {
+            this.experimentScheduleForm.get('dateOfExperimentEnd').enable();
+            this.experimentScheduleForm.get('userCount').disable();
+            this.experimentScheduleForm.get('groupCount').disable();
+          } else if (endCondition === EndExperimentCondition.END_CRITERIA) {
+            this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
+            this.experimentScheduleForm.get('userCount').enable();
+            this.experimentScheduleForm.get('groupCount').enable();
+          }
+        }
+      );
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -109,11 +120,11 @@ export class ExperimentScheduleComponent implements OnInit {
     return NewExperimentDialogEvents;
   }
 
-  get AssignmentUnit() {
-    return ASSIGNMENT_UNIT;
-  }
-
   get EndExperimentCondition() {
     return EndExperimentCondition;
+  }
+
+  get groupTypeValue(): boolean {
+    return this.experimentScheduleForm && this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
   }
 }
