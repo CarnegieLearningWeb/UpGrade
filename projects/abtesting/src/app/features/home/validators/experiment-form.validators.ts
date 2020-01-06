@@ -1,7 +1,16 @@
 import { AbstractControl } from '@angular/forms';
-import { EndExperimentCondition } from '../../../core/experiments/store/experiments.model';
+import { EndExperimentCondition, GroupTypes } from '../../../core/experiments/store/experiments.model';
 
 export class ExperimentFormValidators {
+
+  static validateExperimentOverviewForm(controls: AbstractControl): { [key: string]: any } | null {
+    const groupValue = controls.get('groupType').value;
+    const customGroupValue = controls.get('customGroupName').value;
+    if (groupValue === GroupTypes.OTHER) {
+      return !!customGroupValue ? { customGroupNameError: false } : { customGroupNameError: true };
+    }
+    return null;
+  }
 
   static validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
     const conditions = controls.get('conditions').value;

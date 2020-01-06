@@ -56,6 +56,19 @@
         {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
       </mat-error>
     </mat-form-field>
+
+    <mat-form-field
+      class="group-type"
+      *ngIf="groupTypeValue"
+    >
+      <input
+        matInput
+        [placeholder]="
+          'home.new-experiment.overview.group-custom-type.placeHolder' | translate
+        "
+        formControlName="customGroupName"
+      />
+    </mat-form-field>
   </div>
 
   <mat-form-field class="consistency-rule">
