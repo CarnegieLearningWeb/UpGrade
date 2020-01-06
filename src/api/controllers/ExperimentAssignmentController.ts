@@ -110,7 +110,7 @@ export class ExperimentConditionController {
 
   /**
    * @swagger
-   * /state/:
+   * /state:
    *    put:
    *       description: Update Experiment State
    *       consumes:

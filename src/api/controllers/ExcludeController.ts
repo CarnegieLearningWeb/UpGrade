@@ -1,4 +1,4 @@
-import { JsonController, Post, BodyParam } from 'routing-controllers';
+import { JsonController, Post, BodyParam, Get } from 'routing-controllers';
 import { ExcludeService } from '../services/ExcludeService';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
@@ -12,6 +12,24 @@ import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
 @JsonController('/exclude')
 export class ExcludeController {
   constructor(public exclude: ExcludeService) {}
+
+  /**
+   * @swagger
+   * /user:
+   *    get:
+   *       description: Get all Excluded Users
+   *       tags:
+   *         - Exclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: All Excluded Users
+   */
+  @Get('/user')
+  public getExcludedUser(): Promise<ExplicitIndividualExclusion[]> {
+    return this.exclude.getAllUser();
+  }
 
   /**
    * @swagger
@@ -38,6 +56,24 @@ export class ExcludeController {
   @Post('/user')
   public excludeUser(@BodyParam('id') id: string): Promise<ExplicitIndividualExclusion> {
     return this.exclude.excludeUser(id);
+  }
+
+  /**
+   * @swagger
+   * /group:
+   *    get:
+   *       description: Get all Excluded Groups
+   *       tags:
+   *         - Exclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: All Excluded Groups
+   */
+  @Get('/group')
+  public getExcludedGroups(): Promise<ExplicitGroupExclusion[]> {
+    return this.exclude.getAllGroups();
   }
 
   /**

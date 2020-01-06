@@ -47,7 +47,7 @@ export class AnalyticsController {
 
   /**
    * @swagger
-   * /:
+   * /stats:
    *    post:
    *       description: Get Enrollment Analytics
    *       consumes:
