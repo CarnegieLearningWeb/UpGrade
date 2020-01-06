@@ -35,9 +35,42 @@ export interface ExperimentEnrollmentStats {
   ];
 }
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Analytics
+ *     description: Get Experiment Analytics Information
+ */
 @JsonController('/stats')
 export class AnalyticsController {
   constructor(public auditService: AnalyticsService) {}
+
+  /**
+   * @swagger
+   * /:
+   *    post:
+   *       description: Get Enrollment Analytics
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: props
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *              experimentIds:
+   *               type: array
+   *               items:
+   *                type: string
+   *       tags:
+   *         - Analytics
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Experiment is created
+   */
   @Post('/')
   public async analyticsService(@Body() auditParams: IExperimentParams): Promise<ExperimentEnrollmentStats[]> {
     return this.auditService.getStats(auditParams.experimentIds);
