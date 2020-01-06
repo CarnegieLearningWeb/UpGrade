@@ -69,7 +69,7 @@ export class AnalyticsController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: New Experiment is created
+   *            description: Analytics For Experiment Enrollment
    */
   @Post('/')
   public async analyticsService(@Body() auditParams: IExperimentParams): Promise<ExperimentEnrollmentStats[]> {
