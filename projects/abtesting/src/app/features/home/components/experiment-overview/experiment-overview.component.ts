@@ -60,7 +60,7 @@ export class ExperimentOverviewComponent implements OnInit {
   ngOnInit() {
     this.overviewForm = this._formBuilder.group({
       experimentName: [null, Validators.required],
-      description: [null, Validators.required],
+      description: [null],
       unitOfAssignment: [null, Validators.required],
       groupType: [{ value: null, disabled: true }, Validators.required],
       consistencyRule: [null, Validators.required]
@@ -122,7 +122,7 @@ export class ExperimentOverviewComponent implements OnInit {
         const { experimentName, description, unitOfAssignment, groupType, consistencyRule } = this.overviewForm.value;
         const overviewFormData = {
           name: experimentName,
-          description,
+          description: description || '',
           consistencyRule: consistencyRule,
           assignmentUnit: unitOfAssignment,
           group: groupType || null,
