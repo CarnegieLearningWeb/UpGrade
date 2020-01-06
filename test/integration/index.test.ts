@@ -13,6 +13,7 @@ import {
   DeleteEndExperiment,
 } from './Experiment/scheduleJob';
 import { MainAuditLog } from './Experiment/auditLogs';
+import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -120,6 +121,16 @@ describe('Integration Tests', () => {
 
   test('Check audit log', async done => {
     await MainAuditLog();
+    done();
+  });
+
+  test('Stats for Group Experiment', async done => {
+    await StatsGroupExperiment();
+    done();
+  });
+
+  test('Stats for Individual Experiment', async done => {
+    await StatsIndividualExperiment();
     done();
   });
 });

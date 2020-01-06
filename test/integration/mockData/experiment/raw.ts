@@ -26,7 +26,7 @@ export const experiment = {
   ],
   segments: [
     {
-      point: 'CurriculumSequence ',
+      point: 'CurriculumSequence',
       name: 'W1',
       description: 'Segment on Workspace 1',
     },

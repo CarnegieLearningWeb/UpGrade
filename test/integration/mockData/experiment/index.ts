@@ -67,3 +67,13 @@ export const revertToDefault = {
 export const revertToCondition = {
   ...individualAssignmentExperimentConsistencyRuleExperiemnt,
 };
+
+export const individualExperimentStats = {
+  ...individualAssignmentExperiment,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
+export const groupExperimentStats = {
+  ...groupAssignmentWithGroupConsistencyExperiment,
+  state: EXPERIMENT_STATE.INACTIVE,
+}

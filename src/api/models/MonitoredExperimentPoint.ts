@@ -4,10 +4,7 @@ import { BaseModel } from './base/BaseModel';
 @Entity()
 export class MonitoredExperimentPoint extends BaseModel {
   @PrimaryColumn()
-  public experimentId: string;
-
-  @PrimaryColumn()
-  public experimentPoint: string;
+  public id: string;
 
   @PrimaryColumn()
   public userId: string;

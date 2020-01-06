@@ -49,26 +49,24 @@ export class ExperimentAssignmentService {
     @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
-    experimentId: string,
+    experimentName: string,
     experimentPoint: string,
     userId: string,
     userEnvironment: any
   ): Promise<any> {
     this.log.info(
-      `Mark experiment point => Experiment: ${experimentId}, Experiment Point: ${experimentPoint} for User: ${userId}`
+      `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
     );
 
     // query root experiment details
     const experimentSegment = await this.experimentSegmentRepository.findOne({
       where: {
-        id: experimentId,
-        point: experimentPoint,
+        id: `${experimentName}_${experimentPoint}`,
       },
       relations: ['experiment'],
     });
 
     if (experimentSegment) {
-      // Can be shift to job queue
       this.updateExclusionFromMarkExperimentPoint(userId, userEnvironment, experimentSegment.experiment);
     }
 
@@ -76,8 +74,7 @@ export class ExperimentAssignmentService {
 
     // adding in monitored experiment point table
     return this.monitoredExperimentPointRepository.saveRawJson({
-      experimentId,
-      experimentPoint,
+      id: `${experimentName}_${experimentPoint}`,
       userId,
     });
   }
