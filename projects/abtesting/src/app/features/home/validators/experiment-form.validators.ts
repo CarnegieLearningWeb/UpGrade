@@ -7,7 +7,7 @@ export class ExperimentFormValidators {
     const groupValue = controls.get('groupType').value;
     const customGroupValue = controls.get('customGroupName').value;
     if (groupValue === GroupTypes.OTHER) {
-      return !!customGroupValue ? { customGroupNameError: false } : { customGroupNameError: true };
+      return !!customGroupValue ? null : { customGroupNameError: true };
     }
     return null;
   }

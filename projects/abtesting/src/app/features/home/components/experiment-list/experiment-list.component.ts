@@ -15,6 +15,13 @@ import { MatDialog } from '@angular/material';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 import { ExperimentStatePipeType } from '../../pipes/experiment-state.pipe';
 
+enum ExperimentFilterOptionsType {
+  ALL = 'All',
+  NAME = 'Name',
+  TAGS = 'Tags',
+  STATUS = 'Status'
+}
+
 @Component({
   selector: 'home-experiment-list',
   templateUrl: './experiment-list.component.html',
@@ -33,6 +40,14 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   ];
   allExperiments: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
+  experimentFilterOptions = [
+    ExperimentFilterOptionsType.ALL,
+    ExperimentFilterOptionsType.NAME,
+    ExperimentFilterOptionsType.STATUS,
+    ExperimentFilterOptionsType.TAGS
+  ];
+  selectedExperimentFilterOption = ExperimentFilterOptionsType.ALL;
+  searchValue: string;
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
@@ -56,13 +71,37 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     this.allExperiments.sort = this.sort;
   }
 
+  // Modify angular material's table's default search behavior
+  filterExperimentPredicate(type: ExperimentFilterOptionsType) {
+    this.allExperiments.filterPredicate = (data, filter: string): boolean => {
+      switch (type) {
+        case ExperimentFilterOptionsType.ALL:
+          return data.name.toLowerCase().includes(filter) || data.state.toLocaleLowerCase().includes(filter) ||
+            !!data.tags.filter(tags => tags.toLocaleLowerCase().includes(filter)).length;
+        case ExperimentFilterOptionsType.NAME:
+          return data.name.toLowerCase().includes(filter);
+        case ExperimentFilterOptionsType.STATUS:
+          return data.state.toLowerCase().includes(filter);
+        case ExperimentFilterOptionsType.TAGS:
+          return !!data.tags.filter(tags => tags.toLocaleLowerCase().includes(filter)).length;
+      }
+    };
+  }
+
   // TODO: Update experiment filter logic
   applyFilter(filterValue: string) {
+    this.filterExperimentPredicate(this.selectedExperimentFilterOption);
     this.allExperiments.filter = filterValue.trim().toLowerCase();
 
     if (this.allExperiments.paginator) {
       this.allExperiments.paginator.firstPage();
     }
+  }
+
+  filterExperimentByTags(tagValue: string) {
+    this.searchValue = tagValue;
+    this.selectedExperimentFilterOption = ExperimentFilterOptionsType.TAGS;
+    this.applyFilter(tagValue);
   }
 
   openNewExperimentDialog() {

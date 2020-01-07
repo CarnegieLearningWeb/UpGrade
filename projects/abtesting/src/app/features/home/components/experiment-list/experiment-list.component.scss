@@ -9,6 +9,16 @@
     flex-direction: row;
     justify-content: space-between;
 
+    .filter-options {
+      margin-right: 10px;
+      width: 80px;
+
+      ::ng-deep .mat-form-field-underline,
+      ::ng-deep .mat-form-field-ripple {
+        background-color: unset;
+      }
+    }
+
     .search-input {
       font-family: OpenSans-Regular;
     }

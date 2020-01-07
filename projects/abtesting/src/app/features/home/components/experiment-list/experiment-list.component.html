@@ -1,14 +1,30 @@
 <div class="experiments-list-container">
   <div class="header">
-    <mat-form-field>
-      <input
-        class="search-input"
-        matInput
-        (keyup)="applyFilter($event.target.value)"
-        [placeholder]="'home.experiments-table.search.text' | translate"
-      />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
+    <div>
+      <mat-form-field class="filter-options">
+        <mat-select
+          [(ngModel)]="selectedExperimentFilterOption"
+          (selectionChange)="applyFilter(searchValue)"
+        >
+          <mat-option
+            *ngFor="let filterOption of experimentFilterOptions"
+            [value]="filterOption"
+          >
+            {{ filterOption }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          class="search-input"
+          matInput
+          [(ngModel)]="searchValue"
+          (keyup)="applyFilter($event.target.value)"
+          [placeholder]="'home.experiments-table.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
     <button mat-flat-button color="primary" (click)="openNewExperimentDialog()">
       <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
       {{ 'home.experiment.add-experiment.text' | translate }}
@@ -66,9 +82,13 @@
         </th>
         <td mat-cell *matCellDef="let experiment">
           <mat-chip-list>
-            <mat-chip class="tags" *ngFor="let tag of experiment.tags">{{
-              tag
-            }}</mat-chip>
+            <mat-chip
+              class="tags"
+              *ngFor="let tag of experiment.tags"
+              (click)="filterExperimentByTags(tag)"
+            >
+              {{ tag }}
+            </mat-chip>
           </mat-chip-list>
         </td>
       </ng-container>
