@@ -21,6 +21,7 @@ import { MatDatepickerModule } from '@angular/material';
 import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 import { EnrollmentPointSegmentTableComponent } from './components/enrollment-point-segment-table/enrollment-point-segment-table.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { EnrollmentPointSegmentTableComponent } from './components/enrollment-po
     HomeRoutingModule,
     SatDatepickerModule,
     SatNativeDateModule,
-    MatDatepickerModule
+    MatDatepickerModule,
+    NgxChartsModule
   ],
   providers: [],
   entryComponents: [
