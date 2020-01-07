@@ -15,7 +15,7 @@ export class ExcludeController {
 
   /**
    * @swagger
-   * /user:
+   * /exclude/user:
    *    get:
    *       description: Get all Excluded Users
    *       tags:
@@ -60,7 +60,7 @@ export class ExcludeController {
 
   /**
    * @swagger
-   * /group:
+   * /exclude/group:
    *    get:
    *       description: Get all Excluded Groups
    *       tags:
