@@ -33,7 +33,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     'name',
     'state',
     'experimentSegments',
-    'startDate',
+    'createdAt',
     'tags',
     'enrollment',
     'view'
@@ -69,6 +69,17 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.allExperiments.paginator = this.paginator;
     this.allExperiments.sort = this.sort;
+
+    // Update angular material table's default sort
+    this.allExperiments.sortingDataAccessor = (data, property) => {
+      if (property === 'experimentSegments') {
+        return data.segments.length;
+      } else if (property === 'enrollment') {
+        // TODO: Implement custom sorting for enrollment column
+      } else {
+        return data[property];
+      }
+    };
   }
 
   // Modify angular material's table's default search behavior

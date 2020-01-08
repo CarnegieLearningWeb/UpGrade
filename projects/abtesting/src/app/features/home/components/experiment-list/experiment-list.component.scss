@@ -63,10 +63,6 @@
       font-size: var(--text-size-x-small);
     }
 
-    .mat-column-experimentSegments {
-      padding-right: 6px;
-    }
-
     .mat-cell {
       padding: 10px 5px;
       width: 15%;
@@ -77,11 +73,17 @@
       }
 
       &.cdk-column-experimentSegments {
-        padding-left: 3%;
+        padding-left: 5%;
       }
 
       &.cdk-column-tags {
         width: 20%;
+      }
+    }
+
+    .mat-column-experimentSegments {
+      ::ng-deep .mat-sort-header-arrow, ::ng-deep [dir=rtl] .mat-sort-header-position-before .mat-sort-header-arrow {
+        margin-right: 15px;
       }
     }
 
