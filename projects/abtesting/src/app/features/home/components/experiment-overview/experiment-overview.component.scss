@@ -3,8 +3,9 @@
   flex-direction: column;
 
   mat-form-field {
+    line-height: 20px;
     font-family: OpenSans-Regular;
-    font-size: var(--text-size-small);
+    font-size: var(--text-size-normal);
   }
 
   .name {
@@ -17,11 +18,11 @@
 
   .property-container {
     .unit-of-assignment {
-      margin-right: 10%;
       width: 30%;
     }
 
     .group-type {
+      margin-left: 10%;
       width: 25%;
     }
   }

@@ -17,6 +17,8 @@ import {
 } from '../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
+import * as find from 'lodash.find';
 
 @Component({
   selector: 'home-experiment-overview',
@@ -38,7 +40,8 @@ export class ExperimentOverviewComponent implements OnInit {
   groupTypes = [
     { value: GroupTypes.CLASS },
     { value: GroupTypes.SCHOOL },
-    { value: GroupTypes.DISTRICT }
+    { value: GroupTypes.DISTRICT },
+    { value: GroupTypes.OTHER }
   ];
 
   consistencyRules = [
@@ -60,23 +63,46 @@ export class ExperimentOverviewComponent implements OnInit {
   ngOnInit() {
     this.overviewForm = this._formBuilder.group({
       experimentName: [null, Validators.required],
-      description: [null, Validators.required],
+      description: [null],
       unitOfAssignment: [null, Validators.required],
-      groupType: [null, Validators.required],
+      groupType: [{ value: null, disabled: true }, Validators.required],
+      customGroupName: [null],
       consistencyRule: [null, Validators.required]
+    }, { validators: ExperimentFormValidators.validateExperimentOverviewForm });
+
+    this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
+      switch (assignmentUnit) {
+        case ASSIGNMENT_UNIT.INDIVIDUAL:
+          this.overviewForm.get('groupType').disable();
+          this.overviewForm.get('groupType').reset();
+          break;
+        case ASSIGNMENT_UNIT.GROUP:
+          this.overviewForm.get('groupType').enable();
+          break;
+      }
     });
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
+      const { groupType, customGroupName = null } = this.setGroupTypeControlValue();
       this.overviewForm.setValue({
         experimentName: this.experimentInfo.name,
         description: this.experimentInfo.description,
         unitOfAssignment: this.experimentInfo.assignmentUnit,
-        groupType: this.experimentInfo.group,
+        groupType,
+        customGroupName,
         consistencyRule: this.experimentInfo.consistencyRule
       });
       this.experimentTags = this.experimentInfo.tags
     }
+  }
+
+  setGroupTypeControlValue() {
+    if (!this.experimentInfo.group) {
+      return { groupType: null, customGroupName: null };
+    }
+    const result = find(this.groupTypes, (type) => type.value === this.experimentInfo.group);
+    return result ? { groupType: result.value } : { groupType: GroupTypes.OTHER, customGroupName: this.experimentInfo.group };
   }
 
   addTag(event: MatChipInputEvent): void {
@@ -107,13 +133,13 @@ export class ExperimentOverviewComponent implements OnInit {
         this.emitExperimentDialogEvent.emit({ type: eventType })
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        const { experimentName, description, unitOfAssignment, groupType, consistencyRule } = this.overviewForm.value;
+        const { experimentName, description, unitOfAssignment, groupType, customGroupName, consistencyRule } = this.overviewForm.value;
         const overviewFormData = {
           name: experimentName,
-          description,
+          description: description || '',
           consistencyRule: consistencyRule,
           assignmentUnit: unitOfAssignment,
-          group: groupType,
+          group: groupType ?  groupType === GroupTypes.OTHER ? customGroupName : groupType : null,
           tags: this.experimentTags
         };
         this.emitExperimentDialogEvent.emit({
@@ -127,5 +153,9 @@ export class ExperimentOverviewComponent implements OnInit {
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
+  }
+
+  get groupTypeValue() {
+    return this.overviewForm.get('groupType').value === GroupTypes.OTHER;
   }
 }

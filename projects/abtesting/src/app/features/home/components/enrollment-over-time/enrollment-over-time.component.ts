@@ -42,6 +42,185 @@ export class EnrollmentOverTimeComponent implements OnChanges {
   selectedDateFilter: ExperimentDateFilterOptions = ExperimentDateFilterOptions.CUSTOM;
   selectedDateRange: string;
 
+  chartData = [
+    {
+      'name': 'Jan',
+      'series': [
+        {
+          'name': '5 students 2010',
+          'value': 3,
+        },
+        {
+          'name': '2011',
+          'value': 2
+        },
+        {
+          'name': '1990',
+          'value': 5
+        }
+      ]
+    },
+    {
+      'name': 'Feb',
+      'series': [
+        {
+          'name': '2010',
+          'value': 1
+        },
+        {
+          'name': '2011',
+          'value': 7
+        },
+        {
+          'name': '1990',
+          'value': 2
+        }
+      ]
+    },
+    {
+      'name': 'Mar',
+      'series': [
+        {
+          'name': '2010',
+          'value': 3
+        },
+        {
+          'name': '2011',
+          'value': 3
+        },
+        {
+          'name': '1990',
+          'value': 4
+        }
+      ]
+    },
+    {
+      'name': 'Apr',
+      'series': [
+        {
+          'name': '2010',
+          'value': 2
+        },
+        {
+          'name': '1990',
+          'value': 4
+        }
+      ]
+    },
+    {
+      'name': 'May',
+      'series': [
+        {
+          'name': '2010',
+          'value': 4
+        },
+        {
+          'name': '1990',
+          'value': 3
+        }
+      ]
+    },
+    {
+      'name': 'Jun',
+      'series': [
+        {
+          'name': '2010',
+          'value': 2
+        },
+        {
+          'name': '1990',
+          'value': 6
+        }
+      ]
+    },
+    {
+      'name': 'Jul',
+      'series': [
+        {
+          'name': '2010',
+          'value': 1
+        },
+        {
+          'name': '2011',
+          'value': 2
+        },
+        {
+          'name': '1990',
+          'value': 3
+        }
+      ]
+    },
+    {
+      'name': 'Aug',
+      'series': [
+        {
+          'name': '2010',
+          'value': 3
+        },
+        {
+          'name': '1990',
+          'value': 2
+        }
+      ]
+    },
+    {
+      'name': 'Sep',
+      'series': [
+        {
+          'name': '2010',
+          'value': 4
+        },
+        {
+          'name': '1990',
+          'value': 1
+        }
+      ]
+    },
+    {
+      'name': 'Oct',
+      'series': [
+        {
+          'name': '2010',
+          'value': 6
+        },
+        {
+          'name': '1990',
+          'value': 3
+        }
+      ]
+    },
+    {
+      'name': 'Nov',
+      'series': [
+        {
+          'name': '2010',
+          'value': 2
+        },
+        {
+          'name': '1990',
+          'value': 4
+        }
+      ]
+    },
+    {
+      'name': 'Dec',
+      'series': [
+        {
+          'name': '2010',
+          'value': 6
+        },
+        {
+          'name': '1990',
+          'value': 4
+        }
+      ]
+    }
+  ];
+  colors = ['#14c9be', '#6bc2ff', '#ff8084'];
+  colorScheme = {
+    domain: this.colors
+  };
+
   constructor() { }
 
   ngOnChanges(changes: SimpleChanges) {

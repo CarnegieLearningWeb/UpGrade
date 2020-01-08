@@ -34,12 +34,11 @@
     </div>
 
     <div>
-      <mat-form-field>
+      <mat-form-field *ngIf="selectedDateFilter === ExperimentDateFilterOptions.CUSTOM">
         <input
           matInput
           [placeholder]="'home.view-experiment.enrollment-over-time.choose-date-range.text' | translate"
           [satDatepicker]="dateRangePicker"
-          [disabled]="selectedDateFilter !== ExperimentDateFilterOptions.CUSTOM"
           [ngModel]="selectedDateRange"
           (ngModelChange)="selectedDateRange = $event;applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
         >
@@ -64,23 +63,47 @@
   </div>
 
   <div class="chart-container">
-    <div class="chart">
-      <!-- Chart here -->
-    </div>
-    <div class="enrollment-statistic">
-      <div class="enrollment-statistic__unique">
-        <span class="title">{{ 'home.view-experiment.enrollment-over-time.unique-enrolled.text' | translate }}</span>
-        <span class="numbers">67
-          <span class="numbers--excluded">{{ 'home.view-experiment.enrollment-over-time.excluded.text' | translate: { numbers: 50 } }}</span>
-        </span>
-      </div>
-      <div class="enrollment-statistic__class">
-        <span class="title">{{ 'home.view-experiment.enrollment-over-time.classes-enrolled.text' | translate }}</span>
-        <span class="numbers">12
-          <span class="numbers--excluded">{{ 'home.view-experiment.enrollment-over-time.excluded.text' | translate: { numbers: 12 } }}</span>
-        </span>
+    <div class="condition-container">
+      <div class="condition" *ngFor="let condition of experiment.conditions; let index= index">
+        <span class="color-box" [ngStyle]="{'background-color': colors[index]}" ></span>
+        <span>{{ condition.conditionCode }}</span>
       </div>
     </div>
 
+    <div class="chart">
+      <div class="chart-data">
+        <ngx-charts-bar-vertical-normalized
+          [scheme]="colorScheme"
+          [results]="chartData"
+          xAxis="true"
+          yAxis="true"
+          [legend]="false"
+        >
+        </ngx-charts-bar-vertical-normalized>
+      </div>
+
+      <div class="enrollment-statistic">
+        <div class="enrollment-statistic__unique">
+          <span class="title">
+            {{ 'home.view-experiment.enrollment-over-time.unique-enrolled.text' | translate }}
+          </span>
+          <span class="numbers">67
+            <span class="numbers--excluded">
+              {{ 'home.view-experiment.enrollment-over-time.excluded.text' | translate: { numbers: 50 } }}
+            </span>
+          </span>
+        </div>
+        <div class="enrollment-statistic__class">
+          <span class="title">
+            {{ 'home.view-experiment.enrollment-over-time.classes-enrolled.text' | translate }}
+          </span>
+          <span class="numbers">12
+            <span class="numbers--excluded">
+              {{ 'home.view-experiment.enrollment-over-time.excluded.text' | translate: { numbers: 12 } }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -5,7 +5,7 @@
   mat-radio-button,
   mat-form-field {
     font-family: OpenSans-SemiBold;
-    font-size: var(--text-size-small);
+    font-size: var(--text-size-normal);
   }
 
   .date-picker-container {
@@ -24,6 +24,14 @@
 
       .group-type {
         margin-left: 30px;
+
+        &--enable {
+          color: var(--black);
+        }
+
+        &--disable {
+          color: rgba(0, 0, 0, 0.38);
+        }
       }
     }
   }
@@ -43,9 +51,7 @@
   background-color: var(--blue) !important;
 }
 
-::ng-deep
-  .mat-radio-button.mat-primary.mat-radio-checked
-  .mat-radio-outer-circle {
+::ng-deep .mat-radio-button.mat-primary.mat-radio-checked .mat-radio-outer-circle {
   border-color: var(--blue) !important;
 }
 

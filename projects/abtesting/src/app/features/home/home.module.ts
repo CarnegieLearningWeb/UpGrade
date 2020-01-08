@@ -6,7 +6,7 @@ import { SharedModule } from '../../shared/shared.module';
 import { HomeComponent } from './root/home.component';
 import { HomeRoutingModule } from './home-routing.module';
 import { ExperimentListComponent } from './components/experiment-list/experiment-list.component';
-import { ExperimentStateColorPipe } from './pipes/experiment-state-color.pipe';
+import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { FormsModule } from '@angular/forms';
 import { NewExperimentComponent } from './components/modal/new-experiment/new-experiment.component';
@@ -21,12 +21,13 @@ import { MatDatepickerModule } from '@angular/material';
 import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 import { EnrollmentPointSegmentTableComponent } from './components/enrollment-point-segment-table/enrollment-point-segment-table.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 @NgModule({
   declarations: [
     HomeComponent,
     ExperimentListComponent,
-    ExperimentStateColorPipe,
+    ExperimentStatePipe,
     FormatDatePipe,
     NewExperimentComponent,
     ExperimentOverviewComponent,
@@ -46,7 +47,8 @@ import { EnrollmentPointSegmentTableComponent } from './components/enrollment-po
     HomeRoutingModule,
     SatDatepickerModule,
     SatNativeDateModule,
-    MatDatepickerModule
+    MatDatepickerModule,
+    NgxChartsModule
   ],
   providers: [],
   entryComponents: [

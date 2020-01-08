@@ -1,6 +1,8 @@
 <div class="experiment-container" *ngIf="experiment">
   <span class="experiment-title">
-    <a [routerLink]="['/home']" class="experiment-link">{{ 'home.view-experiment.experiments.text' | translate }} </a>
+    <a [routerLink]="['/home']" class="experiment-link"
+      >{{ 'home.view-experiment.experiments.text' | translate }}
+    </a>
     > <b> {{ experiment?.name }} </b>
   </span>
   <div class="experiment">
@@ -8,15 +10,26 @@
       <span class="experiment-overview-title">
         {{ experiment?.name }}
         <span class="experiment-overview-segments">
-          ({{ experiment.segments?.length + ' ' + ('home.view-experiment.experiments-segments.text' | translate) }})
+          ({{ experiment.segments?.length +
+              ' ' +
+              ('home.view-experiment.experiments-segments.text' | translate)
+          }})
         </span>
       </span>
 
       <div>
-        <button mat-flat-button class="experiment-design-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT, 1)">
+        <button
+          mat-flat-button
+          class="experiment-design-button"
+          (click)="openDialog(DialogType.EDIT_EXPERIMENT, 1)"
+        >
           {{ 'home.view-experiment.view-experiment-button.text' | translate }}
         </button>
-        <button mat-flat-button class="edit-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT)">
+        <button
+          mat-flat-button
+          class="edit-button"
+          (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
+        >
           <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           {{ 'home.view-experiment.edit-button.text' | translate }}
         </button>
@@ -24,38 +37,54 @@
     </div>
 
     <div class="experiment-description">
-        {{ experiment.description }}
+      {{ experiment.description }}
     </div>
 
     <span class="experiment-create-date">
-      <b>{{ ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate: 'medium date') }}</b>
+      <b>{{
+        ('home.view-experiment.created-on.text' | translate) +
+          (experiment.createdAt | formatDate: 'medium date')
+      }}</b>
     </span>
     <div class="experiment-state">
-
       <div class="experiment-state-container">
         <div class="state-data state-data--fixed">
           <span>{{ 'home-global.status.text' | translate }}</span>
-          <button mat-flat-button (click)="openDialog(DialogType.CHANGE_STATUS)">
-            {{ experiment.state | titlecase }}
-            <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
+          <button
+            mat-flat-button
+            (click)="openDialog(DialogType.CHANGE_STATUS)"
+          >
+            {{ experiment.state | experimentState }}
+            <app-shared-icons
+              class="icon"
+              [iconType]="'edit'"
+            ></app-shared-icons>
           </button>
         </div>
         <div class="state-data">
           <span>{{ 'home-global.post-experiment-rule.text' | translate }}</span>
-          <button mat-flat-button (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)">
+          <button
+            mat-flat-button
+            (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
+          >
             {{ experiment.postExperimentRule | titlecase }}
-            <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
+            <app-shared-icons
+              class="icon"
+              [iconType]="'edit'"
+            ></app-shared-icons>
           </button>
         </div>
       </div>
 
       <div class="experiment-state-container">
         <div class="state-data state-data--fixed">
-          <span>{{ 'home-global.unit-of-assignment.text' | translate }} </span>
+          <span
+            >{{ 'home-global.unit-of-assignment.text' | translate | uppercase }}
+          </span>
           <span class="state-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
         </div>
         <div class="state-data">
-          <span>{{ 'home-global.consistency-rule.text' | translate }}</span>
+          <span>{{ 'home-global.consistency-rule.text' | translate | uppercase }}</span>
           <span class="state-data-value">{{ experiment.consistencyRule | titlecase }}</span>
         </div>
       </div>
@@ -63,14 +92,27 @@
       <div class="experiment-state-container">
         <div class="state-data end-criteria-container">
           <span>{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
-          <ng-container *ngIf="(experiment.endOn || experiment.enrollmentCompleteCondition); else noCriteriaTemplate">
-            <ng-container *ngIf="experiment.enrollmentCompleteCondition as endCondition">
-              <span class="end-criteria end-criteria--text">{{ 'home.view-experiment.ending-criteria.reaches.text' | translate }}</span>
+          <ng-container
+            *ngIf="
+              experiment.endOn || experiment.enrollmentCompleteCondition;
+              else noCriteriaTemplate
+            "
+          >
+            <ng-container
+              *ngIf="experiment.enrollmentCompleteCondition as endCondition"
+            >
+              <span class="end-criteria end-criteria--text">
+                {{ 'home.view-experiment.ending-criteria.reaches.text' | translate }}
+              </span>
               <span
                 class="end-criteria end-criteria--data end-criteria--text"
                 *ngIf="endCondition?.userCount as studentCount"
               >
-                {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
+                {{
+                  studentCount +
+                    ('home.view-experiment.ending-criteria.students.text'
+                      | translate)
+                }}
               </span>
               <span
                 class="end-criteria end-criteria--text"
@@ -82,28 +124,44 @@
                 class="end-criteria end-criteria--data end-criteria--text"
                 *ngIf="endCondition?.groupCount as groupCount"
               >
-                {{ groupCount + ('home.view-experiment.ending-criteria.enrollments-per-class.text' | translate) }}
+                {{
+                  groupCount + ' ' +
+                    ('home-global.enrollments-per-custom.text'
+                      | translate: { groupType: experiment.group } | lowercase)
+                }}
               </span>
-              <span class="end-criteria end-criteria--text">{{ 'home.view-experiment.ending-criteria.close-parentheses.text' | translate }}</span>
+              <span class="end-criteria end-criteria--text">
+                {{ 'home.view-experiment.ending-criteria.close-parentheses.text' | translate }}
+              </span>
             </ng-container>
-            <span class="end-criteria" *ngIf="experiment.endOn">{{ experiment.endOn | formatDate: 'medium date' }}</span>
+            <span class="end-criteria" *ngIf="experiment.endOn">
+              {{ experiment.endOn | formatDate: 'medium date' }}
+            </span>
           </ng-container>
 
           <!-- Show template if ending criteria is not set -->
           <ng-template #noCriteriaTemplate>
-            <span class="end-criteria">{{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}</span>
+            <span class="end-criteria">
+              {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
+            </span>
           </ng-template>
         </div>
       </div>
     </div>
 
     <!-- Enrollment over time section -->
-    <home-enrollment-over-time [experiment]="experiment"></home-enrollment-over-time>
+    <home-enrollment-over-time
+      [experiment]="experiment"
+    ></home-enrollment-over-time>
 
     <!-- Enrollment by condition table -->
-    <home-enrollment-condition-table [experiment]="experiment"></home-enrollment-condition-table>
+    <home-enrollment-condition-table
+      [experiment]="experiment"
+    ></home-enrollment-condition-table>
 
     <!-- Enrollment by experiment Point and Segment table -->
-    <home-enrollment-point-segment-table [experiment]="experiment"></home-enrollment-point-segment-table>
+    <home-enrollment-point-segment-table
+      [experiment]="experiment"
+    ></home-enrollment-point-segment-table>
   </div>
 </div>

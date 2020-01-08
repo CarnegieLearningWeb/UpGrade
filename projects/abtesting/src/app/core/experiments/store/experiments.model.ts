@@ -17,7 +17,8 @@ export {
 export enum GroupTypes {
   CLASS = 'class',
   SCHOOL = 'school',
-  DISTRICT = 'district'
+  DISTRICT = 'district',
+  OTHER = 'Other'
 }
 
 export enum NewExperimentDialogEvents {

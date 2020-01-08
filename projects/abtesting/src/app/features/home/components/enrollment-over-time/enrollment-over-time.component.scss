@@ -20,11 +20,37 @@ $text-size-largest: 50px;
 
   .chart-container {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     margin-top: 20px;
 
+    .condition-container {
+      display: flex;
+      flex-direction: row;
+      margin-bottom: 20px;
+      padding-left: 15px;
+
+      .condition {
+        display: flex;
+        align-items: center;
+        margin-right: 30px;
+
+        .color-box {
+          display: inline-block;
+          margin-right: 12px;
+          border-radius: 4px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+
     .chart {
-      flex-grow: 1;
+      display: flex;
+
+      &-data {
+        flex-grow: 1;
+      }
     }
 
     .enrollment-statistic {

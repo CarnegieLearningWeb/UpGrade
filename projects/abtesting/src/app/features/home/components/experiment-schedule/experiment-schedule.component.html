@@ -35,15 +35,13 @@
             formControlName="userCount"
           />
         </mat-form-field>
-        <mat-form-field class="group-type">
-          <input
-            matInput
-            [value]="'home.new-experiment.schedule.user-count.title.text' | translate"
-            readonly
-          />
-        </mat-form-field>
+        <span
+          class="group-type"
+          [innerHTML]="'home.new-experiment.schedule.user-count.title.text' | translate"
+          [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
+        ></span>
       </div>
-      <div class="end-criteria" *ngIf="assignmentUnit === AssignmentUnit.GROUP">
+      <div class="end-criteria" *ngIf="groupType">
         <mat-form-field>
           <input
             type="number"
@@ -52,13 +50,11 @@
             formControlName="groupCount"
           />
         </mat-form-field>
-        <mat-form-field class="group-type">
-          <input
-            matInput
-            [value]="'home.new-experiment.schedule.group-count.title.text' | translate"
-            readonly
-          />
-        </mat-form-field>
+        <span
+          class="group-type"
+          [innerHTML]="'home-global.enrollments-per-custom.text' | translate: { groupType: groupType | titlecase }"
+          [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
+        ></span>
       </div>
     </div>
 
