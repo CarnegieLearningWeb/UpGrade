@@ -40,14 +40,24 @@
     >
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'home.experiments-table.text.name' | translate }}
+          <span
+            [matTooltip]="'home.experiments-table.name-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+            {{ 'home.experiments-table.text.name' | translate }}
+          </span>
         </th>
         <td mat-cell *matCellDef="let experiment">{{ experiment.name }}</td>
       </ng-container>
 
       <ng-container matColumnDef="state">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'home-global.status.text' | translate }}
+          <span
+            [matTooltip]="'home.experiments-table.status-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+            {{ 'home-global.status.text' | translate }}
+          </span>
         </th>
         <td
           mat-cell
@@ -60,7 +70,12 @@
 
       <ng-container matColumnDef="experimentSegments">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'home.experiments-table.text.experiment-segments' | translate }}
+          <span
+            [matTooltip]="'home.experiments-table.experiment-segments-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+            {{ 'home.experiments-table.text.experiment-segments' | translate }}
+          </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
           {{ experiment.segments.length }}
@@ -69,7 +84,11 @@
 
       <ng-container matColumnDef="createdAt">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'home.experiments-table.text.start-date' | translate }}
+          <span
+            [matTooltip]="'home.experiments-table.start-date-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+          {{ 'home.experiments-table.text.start-date' | translate }}</span>
         </th>
         <td mat-cell *matCellDef="let experiment">
           {{ experiment.createdAt | formatDate }}
@@ -78,7 +97,12 @@
 
       <ng-container matColumnDef="tags">
         <th mat-header-cell *matHeaderCellDef>
-          {{ 'home.experiments-table.text.tags' | translate }}
+          <span
+            [matTooltip]="'home.experiments-table.tags-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+            {{ 'home.experiments-table.text.tags' | translate }}
+          </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
           <mat-chip-list>
@@ -95,7 +119,12 @@
 
       <ng-container matColumnDef="enrollment">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'home.experiments-table.text.enrollment' | translate }}
+          <span
+            [matTooltip]="'home.experiments-table.enrollments-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+            {{ 'home.experiments-table.text.enrollment' | translate }}
+          </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
           {{ experiment.students ? experiment.students.length : '0 students' }}
