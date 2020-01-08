@@ -106,12 +106,31 @@
         </th>
         <td mat-cell *matCellDef="let experiment">
           <mat-chip-list>
+            <ng-container *ngFor="let tag of experiment.tags; let tagIndex = index;">
+              <mat-chip
+                *ngIf="tagIndex < 2; else moreTagsTemplate"
+                class="tags"
+                (click)="filterExperimentByTags(tag)"
+                #tagValue=""
+              >
+                {{ tag }}
+              </mat-chip>
+              <ng-template #moreTagsTemplate>
+                <mat-chip
+                  class="tags"
+                  *ngIf="isAllTagVisible(experiment.id)"
+                  (click)="filterExperimentByTags(tag)"
+                >
+                  {{ tag }}
+                </mat-chip>
+              </ng-template>
+            </ng-container>
             <mat-chip
-              class="tags"
-              *ngFor="let tag of experiment.tags"
-              (click)="filterExperimentByTags(tag)"
+              *ngIf="experiment.tags.length > 2 && !isAllTagVisible(experiment.id)"
+              class="tags tags--clicked"
+              (click)="setTagsVisible(experiment.id)"
             >
-              {{ tag }}
+              {{ '+' + (experiment.tags.length - 2) }}
             </mat-chip>
           </mat-chip-list>
         </td>

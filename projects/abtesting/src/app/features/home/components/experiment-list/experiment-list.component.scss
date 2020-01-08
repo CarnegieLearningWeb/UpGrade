@@ -92,6 +92,12 @@
       color: var(--black-2);
       font-family: OpenSans-Regular;
       font-size: var(--text-size-x-small);
+
+      &--clicked {
+        &:hover {
+          cursor: pointer;
+        }
+      }
     }
 
     .mat-form-field {

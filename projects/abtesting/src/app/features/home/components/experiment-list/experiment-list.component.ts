@@ -48,6 +48,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   ];
   selectedExperimentFilterOption = ExperimentFilterOptionsType.ALL;
   searchValue: string;
+  tagsVisibility = [];
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
@@ -123,6 +124,26 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       // Code will be executed after closing dialog
     });
+  }
+
+  setTagsVisible(experimentId: string) {
+    const index = this.tagsVisibility.findIndex(data => data.experimentId === experimentId);
+    if (index !== -1) {
+      this.tagsVisibility[index] = { experimentId, visibility: true };
+    } else {
+      this.tagsVisibility.push({ experimentId, visibility: true });
+    }
+    this.tagsVisibility.forEach((data, tagIndex) => {
+      if (data.experimentId !== experimentId) {
+        this.tagsVisibility[tagIndex] = { ...data, visibility: false };
+      }
+    });
+  }
+
+  // Used to check whether tags are visible for particular experiment or not
+  isAllTagVisible(experimentId: string): boolean {
+    const index = this.tagsVisibility.findIndex(data => data.experimentId === experimentId);
+    return (index !== -1) ? this.tagsVisibility[index].visibility : false;
   }
 
   ngOnDestroy() {
