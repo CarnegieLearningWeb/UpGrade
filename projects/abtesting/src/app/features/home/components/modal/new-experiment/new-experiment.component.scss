@@ -9,14 +9,11 @@ $step-label-color: #a0a7b5;
 
 ::ng-deep .mat-horizontal-stepper-header .mat-step-label {
   padding: 0px 0px 16px !important;
+  font-size: var(--text-size-x-large);
 }
 
-::ng-deep
-  .mat-stepper-label-position-bottom
-  .mat-horizontal-stepper-header:not(:first-child)::before,
-::ng-deep
-  .mat-stepper-label-position-bottom
-  .mat-horizontal-stepper-header:not(:last-child)::after {
+::ng-deep .mat-stepper-label-position-bottom .mat-horizontal-stepper-header:not(:first-child)::before,
+::ng-deep .mat-stepper-label-position-bottom .mat-horizontal-stepper-header:not(:last-child)::after {
   top: 73px !important;
 }
 
