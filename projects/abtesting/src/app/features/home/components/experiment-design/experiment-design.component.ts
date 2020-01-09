@@ -21,8 +21,8 @@ export class ExperimentDesignComponent implements OnInit {
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   segmentDataSource = new BehaviorSubject<AbstractControl[]>([]);
 
-  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition']
-  segmentDisplayedColumns = ['point', 'name', 'removeSegment']
+  conditionDisplayedColumns = ['conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition']
+  segmentDisplayedColumns = ['segmentNumber', 'point', 'name', 'removeSegment']
   constructor(
     private _formBuilder: FormBuilder
   ) { }

@@ -5,18 +5,40 @@
     overflow: scroll;
 
     mat-header-cell {
+      justify-content: center;
       color: var(--grey-2);
       font-family: OpenSans-Bold;
     }
 
     mat-cell {
+      justify-content: center;
       margin-right: 15px;
+
+      &.cdk-column-removeCondition {
+        margin-right: 0;
+        padding-right: 0;
+      }
+    }
+
+    .cdk-column-conditionNumber,
+    .cdk-column-segmentNumber,
+    .cdk-column-removeCondition {
+      flex: 0 0 10%;
+      width: 10%;
     }
 
     .remove-icon {
+      position: relative;
+      top: -3px;
+
       &:hover {
         cursor: pointer;
       }
+    }
+
+    mat-form-field {
+      width: 100%;
+      text-align: center;
     }
   }
 

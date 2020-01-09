@@ -6,6 +6,16 @@
       [dataSource]="conditionDataSource"
       formArrayName="conditions"
     >
+      <!-- CONDITION NUMBER Column -->
+      <ng-container matColumnDef="conditionNumber">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.number.text' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index">
+          <span>{{ groupIndex + 1 }}</span>
+        </mat-cell>
+      </ng-container>
+
       <!-- CONDITION NAME Column -->
       <ng-container matColumnDef="conditionCode">
         <mat-header-cell *matHeaderCellDef>
@@ -79,12 +89,12 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <span
+          <app-shared-icons
+            [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="!experimentInfo"
+            *ngIf="!experimentInfo && groupIndex !== 0 && groupIndex !== 1"
             (click)="removeConditionOrSegment('condition', groupIndex)"
-            >X</span
-          >
+          ></app-shared-icons>
         </mat-cell>
       </ng-container>
 
@@ -111,6 +121,17 @@
       [dataSource]="segmentDataSource"
       formArrayName="segments"
     >
+
+     <!-- SEGMENT NUMBER Column -->
+     <ng-container matColumnDef="segmentNumber">
+      <mat-header-cell *matHeaderCellDef>
+        {{ 'home.new-experiment.design.number.text' | translate }}
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element; let groupIndex = index">
+        <span>{{ groupIndex + 1 }}</span>
+      </mat-cell>
+    </ng-container>
+
       <!-- SEGMENT POINT Column -->
       <ng-container matColumnDef="point">
         <mat-header-cell *matHeaderCellDef>
@@ -161,12 +182,12 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <span
+          <app-shared-icons
+            [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="!experimentInfo"
+            *ngIf="!experimentInfo && groupIndex !== 0"
             (click)="removeConditionOrSegment('segment', groupIndex)"
-            >X</span
-          >
+          ></app-shared-icons>
         </mat-cell>
       </ng-container>
 
