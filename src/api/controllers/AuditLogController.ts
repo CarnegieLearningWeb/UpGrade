@@ -4,14 +4,14 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
 interface ExperimentAuditPaginationInfo {
   total: number;
-  limit: number;
-  offset: number;
+  skip: number;
+  take: number;
   nodes: ExperimentAuditLog[];
 }
 
 interface IAuditParams {
-  limit: number;
-  offset: number;
+  skip: number;
+  take: number;
 }
 
 /**
@@ -33,19 +33,19 @@ export class AuditLogController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: limit
+   *           name: params
    *           required: true
    *           schema:
-   *             type: integer
-   *             example: 10
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
    *           description: number of audit logs to requests
-   *         - in: body
-   *           name: offset
-   *           required: true
-   *           schema:
-   *             type: integer
-   *             example: 5
-   *           description: skip number of offset to audit logs
    *       tags:
    *         - Audit Logs
    *       produces:
@@ -57,7 +57,7 @@ export class AuditLogController {
   @Post('/')
   public async getAuditLogService(@Body() auditParams: IAuditParams): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
-      this.auditService.getAuditLogs(auditParams.limit, auditParams.offset),
+      this.auditService.getAuditLogs(auditParams.take, auditParams.skip),
       this.auditService.getTotalLogs(),
     ]);
     return {

@@ -34,6 +34,18 @@ export class ExperimentService {
       .getMany();
   }
 
+  public findPaginated(skip: number, take: number): Promise<Experiment[]> {
+    this.log.info(`Find paginated experiments`);
+    return this.experimentRepository
+      .createQueryBuilder('experiment')
+      .innerJoinAndSelect('experiment.conditions', 'conditions')
+      .innerJoinAndSelect('experiment.segments', 'segments')
+      .skip(skip)
+      .take(take)
+      .orderBy('experiment.createdAt', 'DESC')
+      .getMany();
+  }
+
   public findOne(id: string): Promise<Experiment | undefined> {
     this.log.info(`Find experiment by id => ${id}`);
     return this.experimentRepository
@@ -42,6 +54,10 @@ export class ExperimentService {
       .innerJoinAndSelect('experiment.segments', 'segments')
       .where({ id })
       .getOne();
+  }
+
+  public getTotalCount(): Promise<number> {
+    return this.experimentRepository.count();
   }
 
   public create(experiment: Experiment): Promise<Experiment> {

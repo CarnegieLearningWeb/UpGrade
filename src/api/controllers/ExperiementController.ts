@@ -5,7 +5,15 @@ import { ExperimentService } from '../services/ExperimentService';
 import { SERVER_ERROR } from 'ees_types';
 import { Validator } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 const validator = new Validator();
+
+interface ExperimentPaginationInfo {
+  total: number;
+  skip: number;
+  take: number;
+  nodes: Experiment[];
+}
 
 /**
  * @swagger
@@ -115,6 +123,51 @@ export class ExperimentController {
 
   /**
    * @swagger
+   * /experiments/paginated:
+   *    post:
+   *       description: Get Paginated Experiment
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
+   *           description: Experiments to skip
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get Paginated Experiments
+   */
+  @Post('/paginated')
+  public async paginatedFind(
+    @Body({ validate: { validationError: { target: false, value: false } } }) paginatedParams: PaginatedParamsValidator
+  ): Promise<ExperimentPaginationInfo> {
+    const [experiments, count] = await Promise.all([
+      this.experimentService.findPaginated(paginatedParams.skip, paginatedParams.take),
+      this.experimentService.getTotalCount(),
+    ]);
+    return {
+      total: count,
+      nodes: experiments,
+      ...paginatedParams,
+    };
+  }
+
+  /**
+   * @swagger
    * /experiments/{id}:
    *    get:
    *       description: Get experiment by id
@@ -139,7 +192,7 @@ export class ExperimentController {
   @OnUndefined(ExperimentNotFoundError)
   public one(@Param('id') id: string): Promise<Experiment> | undefined {
     if (!validator.isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id shoud be of type UUID.'));
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
     }
     return this.experimentService.findOne(id);
   }
@@ -198,11 +251,6 @@ export class ExperimentController {
    *          '200':
    *            description: New Experiment is created
    */
-
-  // @Post()
-  // public create(@Body() experiment: Experiment): Promise<Experiment> {
-  //   return this.experimentService.create(experiment);
-  // }
 
   @Post()
   public create(
