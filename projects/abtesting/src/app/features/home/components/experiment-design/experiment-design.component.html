@@ -5,6 +5,7 @@
       class="condition-table"
       [dataSource]="conditionDataSource"
       formArrayName="conditions"
+      #conditionTable
     >
       <!-- CONDITION NUMBER Column -->
       <ng-container matColumnDef="conditionNumber">
@@ -120,6 +121,7 @@
       class="segment-table"
       [dataSource]="segmentDataSource"
       formArrayName="segments"
+      #segmentTable
     >
 
      <!-- SEGMENT NUMBER Column -->

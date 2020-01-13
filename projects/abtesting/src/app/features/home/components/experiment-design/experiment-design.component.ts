@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, Experiment } from '../../../../core/experiments/store/experiments.model';
@@ -16,6 +16,9 @@ export class ExperimentDesignComponent implements OnInit {
   @Input() experimentInfo: Experiment;
   @Input() disableControls = false;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
+
+  @ViewChild('conditionTable', {static: false, read: ElementRef}) conditionTable: ElementRef;
+  @ViewChild('segmentTable', {static: false, read: ElementRef}) segmentTable: ElementRef;
 
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -75,7 +78,8 @@ export class ExperimentDesignComponent implements OnInit {
   addConditionOrSegment(type: string) {
     const form = (type === 'condition') ? this.addConditions() : this.addSegments();
     this[type].push(form);
-    this.updateView();
+    const scrollTableType = type === 'condition' ? 'conditionTable' : 'segmentTable';
+    this.updateView(scrollTableType);
   }
 
   removeConditionOrSegment(type: string, groupIndex: number) {
@@ -83,9 +87,15 @@ export class ExperimentDesignComponent implements OnInit {
     this.updateView();
   }
 
-  updateView() {
+  updateView(type?: string) {
     this.conditionDataSource.next(this.condition.controls);
     this.segmentDataSource.next(this.segment.controls);
+    if (type) {
+      this[type].nativeElement.scroll({
+        top: this[type].nativeElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
