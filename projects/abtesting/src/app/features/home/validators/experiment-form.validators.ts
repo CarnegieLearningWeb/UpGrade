@@ -17,7 +17,12 @@ export class ExperimentFormValidators {
     const segments = controls.get('segments').value;
     if (conditions.length < 2) {
       return { conditionCountError: true }
-    } else if (segments.length < 1) {
+    } else if (conditions.length >= 2) {
+      let sumOfAssignmentWeights = 0;
+      conditions.forEach(condition => sumOfAssignmentWeights += condition.assignmentWeight);
+      return sumOfAssignmentWeights !== 100 ? { assignmentWightsSumError: true } : null;
+    }
+    if (segments.length < 1) {
       return { segmentCountError: true }
     }
     return null;

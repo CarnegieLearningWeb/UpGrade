@@ -32,7 +32,7 @@ export class ExperimentDesignComponent implements OnInit {
 
   ngOnInit() {
     this.experimentDesignForm = this._formBuilder.group({
-      conditions: this._formBuilder.array([this.addConditions()]),
+      conditions: this._formBuilder.array([this.addConditions(), this.addConditions()]),
       segments: this._formBuilder.array([this.addSegments()])
     }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
 
@@ -121,5 +121,12 @@ export class ExperimentDesignComponent implements OnInit {
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
+  }
+
+  get isAssignmentWeightControlDirty() {
+    if (this.experimentDesignForm) {
+      return (this.experimentDesignForm.controls.conditions as any).controls[1].controls.assignmentWeight.dirty;
+    }
+    return false;
   }
 }
