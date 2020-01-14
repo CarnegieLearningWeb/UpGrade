@@ -1,1 +1,1 @@
-web: npm run build && npm run seed && npm run production
+web: npm run build && npm run production

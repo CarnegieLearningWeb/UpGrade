@@ -142,6 +142,14 @@ export class ExperimentController {
    *                type: integer
    *               take:
    *                type: integer
+   *               searchParams:
+   *                type: object
+   *                properties:
+   *                  key:
+   *                    type: string
+   *                    enum: [all, name, status, tag]
+   *                  string:
+   *                    type: string
    *           description: Experiments to skip
    *       tags:
    *         - Experiments
@@ -156,7 +164,7 @@ export class ExperimentController {
     @Body({ validate: { validationError: { target: false, value: false } } }) paginatedParams: PaginatedParamsValidator
   ): Promise<ExperimentPaginationInfo> {
     const [experiments, count] = await Promise.all([
-      this.experimentService.findPaginated(paginatedParams.skip, paginatedParams.take),
+      this.experimentService.findPaginated(paginatedParams.skip, paginatedParams.take, paginatedParams.searchParams),
       this.experimentService.getTotalCount(),
     ]);
     return {

@@ -11,6 +11,19 @@ import {
   IEnrollmentCompleteCondition,
 } from 'ees_types';
 import { Type } from 'class-transformer';
+
+export enum SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  STATUS = 'status',
+  TAG = 'tag',
+}
+
+export interface SearchParams {
+  key: SEARCH_KEY;
+  string: string;
+}
+
 @Entity()
 export class Experiment extends BaseModel {
   @PrimaryColumn('uuid')

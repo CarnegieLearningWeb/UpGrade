@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
-import { Experiment } from '../models/Experiment';
+import { Experiment, SearchParams, SEARCH_KEY } from '../models/Experiment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
@@ -34,16 +34,24 @@ export class ExperimentService {
       .getMany();
   }
 
-  public findPaginated(skip: number, take: number): Promise<Experiment[]> {
+  public findPaginated(skip: number, take: number, searchParams: SearchParams): Promise<Experiment[]> {
     this.log.info(`Find paginated experiments`);
-    return this.experimentRepository
+    // add search query
+    const postgresSearchString = this.postgresSearchString(searchParams.key);
+    console.log('postgresSearchString', postgresSearchString);
+
+    const queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.segments', 'segments')
+      .addSelect(`ts_rank_cd(to_tsvector('english', ${postgresSearchString}), to_tsquery(:query))`, 'rank')
+      // .addSelect(`ts_rank_cd(${postgresSearchString}, to_tsquery(:query))`, 'rank')
+      .orderBy('rank', 'DESC')
+      .setParameter('query', searchParams.string)
       .skip(skip)
-      .take(take)
-      .orderBy('experiment.createdAt', 'DESC')
-      .getMany();
+      .take(take);
+
+    return queryBuilder.getMany();
   }
 
   public findOne(id: string): Promise<Experiment | undefined> {
@@ -268,5 +276,35 @@ export class ExperimentService {
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData);
 
     return createdExperiment;
+  }
+
+  private postgresSearchString(type: string): string {
+    const searchString: string[] = [];
+    switch (type) {
+      case SEARCH_KEY.NAME:
+        searchString.push("coalesce(experiment.name::TEXT,'')");
+        // searchString.push("to_tsvector('english', experiment.name)");
+        searchString.push("coalesce(segments.name::TEXT,'')");
+        // searchString.push("to_tsvector('english', coalesce(segments.name::TEXT,''))");
+        break;
+      case SEARCH_KEY.STATUS:
+        searchString.push("coalesce(experiment.state::TEXT,'')");
+        // searchString.push("to_tsvector('english', coalesce(experiment.state::TEXT,''))");
+        break;
+      case SEARCH_KEY.TAG:
+        searchString.push("coalesce(experiment.tags::TEXT,'')");
+        // searchString.push("to_tsvector('english', coalesce(experiment.tags::TEXT,''))");
+        break;
+      default:
+        searchString.push("coalesce(experiment.name::TEXT,'')");
+        searchString.push("coalesce(segments.name::TEXT,'')");
+        searchString.push("coalesce(experiment.state::TEXT,'')");
+        searchString.push("coalesce(experiment.tags::TEXT,'')");
+        break;
+    }
+    const stringConcat = searchString.join(',');
+    console.log('stringConcat', stringConcat);
+    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+    return searchStringConcatenated;
   }
 }
