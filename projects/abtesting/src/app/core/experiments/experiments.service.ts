@@ -5,12 +5,20 @@ import { Store, select } from '@ngrx/store';
 import { selectAllExperiment, selectIsLoadingExperiment, selectSelectedExperiment } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ExperimentService {
   constructor(private store$: Store<AppState>) {}
 
-  experiments$: Observable<Experiment[]> = this.store$.pipe(select(selectAllExperiment));
+  experiments$: Observable<Experiment[]> = this.store$.pipe(
+    select(selectAllExperiment),
+    map(experiments => experiments.sort((a, b) => {
+      const d1 = new Date(a.createdAt);
+      const d2 = new Date(b.createdAt);
+      return d1 < d2 ? 1 : (d1 > d2) ? -1 : 0;
+    }))
+  );
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
 

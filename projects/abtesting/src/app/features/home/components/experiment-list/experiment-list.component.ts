@@ -32,7 +32,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'name',
     'state',
-    'experimentSegments',
     'createdAt',
     'tags',
     'enrollment',
@@ -73,9 +72,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
     // Update angular material table's default sort
     this.allExperiments.sortingDataAccessor = (data, property) => {
-      if (property === 'experimentSegments') {
-        return data.segments.length;
-      } else if (property === 'enrollment') {
+      if (property === 'enrollment') {
         // TODO: Implement custom sorting for enrollment column
       } else {
         return data[property];
