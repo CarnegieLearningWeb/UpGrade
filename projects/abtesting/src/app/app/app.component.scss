@@ -4,7 +4,7 @@ mat-drawer-container {
 }
 
 mat-drawer {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
   width: 20em;
 }
 
@@ -16,7 +16,7 @@ mat-drawer {
   .logo {
     display: flex;
     align-items: flex-end;
-    box-shadow: 0 5px 5px var(--light-grey);
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     height: 150px;
 
     &-link {
@@ -71,7 +71,7 @@ mat-drawer {
   .user {
     display: flex;
     align-items: center;
-    border-top: 2px solid var(--light-grey);
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     padding: 1.5rem 1.8125rem;
     font-family: OpenSans-SemiBold;
 

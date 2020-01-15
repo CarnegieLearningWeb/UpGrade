@@ -1,6 +1,6 @@
 .experiments-list-container {
   border-radius: 10px;
-  box-shadow: 0 0 7px var(--grey);
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
   background-color: var(--white);
   padding: 2rem;
 
@@ -74,6 +74,14 @@
 
       &.cdk-column-tags {
         width: 20%;
+      }
+    }
+
+    .mat-header-cell {
+      &.cdk-column-state,
+      &.cdk-column-tags,
+      &.cdk-column-createdAt {
+        padding-left: 5px;
       }
     }
 
