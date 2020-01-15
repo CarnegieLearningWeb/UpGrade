@@ -68,9 +68,19 @@ mat-drawer {
     }
   }
 
-  .username {
+  .user {
+    display: flex;
+    align-items: center;
     border-top: 2px solid var(--light-grey);
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 1.8125rem;
     font-family: OpenSans-SemiBold;
+
+    &-pic {
+      display: inline-block;
+      margin-right: 18px;
+      border: 1px solid var(--blue);
+      border-radius: 50%;
+      padding: 10px;
+    }
   }
 }
