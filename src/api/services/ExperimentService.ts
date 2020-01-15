@@ -44,16 +44,9 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.segments', 'segments')
-<<<<<<< HEAD
-      .addSelect(`ts_rank_cd(to_tsvector('english', ${postgresSearchString}), to_tsquery(:query))`, 'rank')
-      // .addSelect(`ts_rank_cd(${postgresSearchString}, to_tsquery(:query))`, 'rank')
-      .orderBy('rank', 'DESC')
-      .setParameter('query', searchParams.string)
-=======
       .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
       .orderBy('rank', 'DESC')
       .setParameter('query', `${searchParams.string}:*`)
->>>>>>> build/ExperimentFilter
       .skip(skip)
       .take(take);
 
@@ -289,19 +282,6 @@ export class ExperimentService {
     switch (type) {
       case SEARCH_KEY.NAME:
         searchString.push("coalesce(experiment.name::TEXT,'')");
-<<<<<<< HEAD
-        // searchString.push("to_tsvector('english', experiment.name)");
-        searchString.push("coalesce(segments.name::TEXT,'')");
-        // searchString.push("to_tsvector('english', coalesce(segments.name::TEXT,''))");
-        break;
-      case SEARCH_KEY.STATUS:
-        searchString.push("coalesce(experiment.state::TEXT,'')");
-        // searchString.push("to_tsvector('english', coalesce(experiment.state::TEXT,''))");
-        break;
-      case SEARCH_KEY.TAG:
-        searchString.push("coalesce(experiment.tags::TEXT,'')");
-        // searchString.push("to_tsvector('english', coalesce(experiment.tags::TEXT,''))");
-=======
         searchString.push("coalesce(segments.name::TEXT,'')");
         break;
       case SEARCH_KEY.STATUS:
@@ -309,7 +289,6 @@ export class ExperimentService {
         break;
       case SEARCH_KEY.TAG:
         searchString.push("coalesce(experiment.tags::TEXT,'')");
->>>>>>> build/ExperimentFilter
         break;
       default:
         searchString.push("coalesce(experiment.name::TEXT,'')");
@@ -319,10 +298,6 @@ export class ExperimentService {
         break;
     }
     const stringConcat = searchString.join(',');
-<<<<<<< HEAD
-    console.log('stringConcat', stringConcat);
-=======
->>>>>>> build/ExperimentFilter
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
   }
