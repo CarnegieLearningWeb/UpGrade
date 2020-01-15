@@ -65,7 +65,7 @@ export class ExperimentOverviewComponent implements OnInit {
       experimentName: [null, Validators.required],
       description: [null],
       unitOfAssignment: [null, Validators.required],
-      groupType: [{ value: null, disabled: true }, Validators.required],
+      groupType: [null],
       customGroupName: [null],
       consistencyRule: [null, Validators.required]
     }, { validators: ExperimentFormValidators.validateExperimentOverviewForm });
@@ -157,5 +157,9 @@ export class ExperimentOverviewComponent implements OnInit {
 
   get groupTypeValue() {
     return this.overviewForm.get('groupType').value === GroupTypes.OTHER;
+  }
+
+  get unitOfAssignmentValue() {
+    return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
   }
 }
