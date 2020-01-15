@@ -15,14 +15,7 @@ export class ExperimentStatusComponent implements OnInit {
 
   experimentInfo: Experiment;
   statusForm: FormGroup;
-  experimentStatus = [
-    { value: EXPERIMENT_STATE.DEMO },
-    { value: EXPERIMENT_STATE.INACTIVE },
-    { value: EXPERIMENT_STATE.SCHEDULED },
-    { value: EXPERIMENT_STATE.ENROLLING },
-    { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
-    { value: EXPERIMENT_STATE.CANCELLED },
-  ];
+  experimentStatus = [];
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -40,6 +33,25 @@ export class ExperimentStatusComponent implements OnInit {
     this.statusForm = this._formBuilder.group({
       newStatus: ['', Validators.required]
     });
+    switch (this.experimentInfo.state) {
+      case EXPERIMENT_STATE.ENROLLING:
+      case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
+        this.experimentStatus = [
+          { value: EXPERIMENT_STATE.ENROLLING },
+          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
+          { value: EXPERIMENT_STATE.CANCELLED }
+        ];
+        break;
+      default:
+        this.experimentStatus = [
+          { value: EXPERIMENT_STATE.DEMO },
+          { value: EXPERIMENT_STATE.INACTIVE },
+          { value: EXPERIMENT_STATE.SCHEDULED },
+          { value: EXPERIMENT_STATE.ENROLLING },
+          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
+          { value: EXPERIMENT_STATE.CANCELLED }
+        ];
+    }
   }
 
   changeStatus() {

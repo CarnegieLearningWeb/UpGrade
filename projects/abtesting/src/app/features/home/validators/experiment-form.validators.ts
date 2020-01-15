@@ -20,7 +20,7 @@ export class ExperimentFormValidators {
       return { conditionCountError: true }
     } else if (conditions.length >= 2) {
       let sumOfAssignmentWeights = 0;
-      conditions.forEach(condition => sumOfAssignmentWeights += condition.assignmentWeight);
+      conditions.forEach(condition => sumOfAssignmentWeights += parseInt(condition.assignmentWeight, 10));
       return sumOfAssignmentWeights !== 100 ? { assignmentWightsSumError: true } : null;
     }
     if (segments.length < 1) {

@@ -93,7 +93,7 @@
           <app-shared-icons
             [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="!experimentInfo && groupIndex !== 0 && groupIndex !== 1"
+            *ngIf="groupIndex !== 0 && groupIndex !== 1 && !disableControls"
             (click)="removeConditionOrSegment('condition', groupIndex)"
           ></app-shared-icons>
         </mat-cell>
@@ -192,7 +192,7 @@
           <app-shared-icons
             [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="!experimentInfo && groupIndex !== 0"
+            *ngIf="groupIndex !== 0 && !disableControls"
             (click)="removeConditionOrSegment('segment', groupIndex)"
           ></app-shared-icons>
         </mat-cell>

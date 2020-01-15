@@ -29,6 +29,7 @@
           mat-flat-button
           class="edit-button"
           (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
+          *ngIf="experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE"
         >
           <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           {{ 'home.view-experiment.edit-button.text' | translate }}
