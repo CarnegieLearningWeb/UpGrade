@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
-import { Experiment, SearchParams, SEARCH_KEY } from '../models/Experiment';
+import { Experiment, SearchParams, SEARCH_KEY, SortParams } from '../models/Experiment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
@@ -34,21 +34,35 @@ export class ExperimentService {
       .getMany();
   }
 
-  public findPaginated(skip: number, take: number, searchParams: SearchParams): Promise<Experiment[]> {
+  public findPaginated(
+    skip: number,
+    take: number,
+    searchParams?: SearchParams,
+    sortParams?: SortParams[]
+  ): Promise<Experiment[]> {
     this.log.info(`Find paginated experiments`);
-    // add search query
-    const postgresSearchString = this.postgresSearchString(searchParams.key);
-    console.log('postgresSearchString', postgresSearchString);
 
-    const queryBuilder = this.experimentRepository
+    let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.segments', 'segments')
-      .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-      .orderBy('rank', 'DESC')
-      .setParameter('query', `${searchParams.string}:*`)
-      .skip(skip)
-      .take(take);
+      .innerJoinAndSelect('experiment.segments', 'segments');
+
+    if (searchParams) {
+      // add search query
+      const postgresSearchString = this.postgresSearchString(searchParams.key);
+      queryBuilder = queryBuilder
+        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
+        .orderBy('rank', 'DESC')
+        .setParameter('query', `${searchParams.string}:*`);
+    }
+
+    if (sortParams && sortParams.length > 0) {
+      sortParams.map(({ key, sortAs }) => {
+        queryBuilder = queryBuilder.orderBy(`experiment.${key}`, sortAs);
+      });
+    }
+
+    queryBuilder = queryBuilder.skip(skip).take(take);
 
     return queryBuilder.getMany();
   }

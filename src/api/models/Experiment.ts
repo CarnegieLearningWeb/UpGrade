@@ -19,9 +19,25 @@ export enum SEARCH_KEY {
   TAG = 'tag',
 }
 
+export enum SORT_KEY {
+  NAME = 'name',
+  STATUS = 'status',
+  CREATED_AT = 'createdAt',
+}
+
+export enum SORT_AS {
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC',
+}
+
 export interface SearchParams {
   key: SEARCH_KEY;
   string: string;
+}
+
+export interface SortParams {
+  key: SORT_KEY;
+  sortAs: SORT_AS;
 }
 
 @Entity()
