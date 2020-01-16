@@ -36,7 +36,10 @@
             </a></mat-list-item
           >
         </mat-list>
-        <span class="username">{{ 'global.username.title' | translate }}</span>
+        <div class="user">
+          <app-shared-icons class="user-pic" [iconType]="'user'"></app-shared-icons>
+          <span>{{ 'global.username.title' | translate }}</span>
+        </div>
       </div>
     </div>
   </mat-drawer>

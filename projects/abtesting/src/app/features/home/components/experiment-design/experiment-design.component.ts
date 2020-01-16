@@ -40,6 +40,7 @@ export class ExperimentDesignComponent implements OnInit {
     if (this.experimentInfo) {
       // Remove previously added group of conditions and segments
       this.condition.removeAt(0);
+      this.condition.removeAt(0);
       this.segment.removeAt(0);
       this.experimentInfo.conditions.forEach(condition => {
         this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description));
@@ -125,7 +126,9 @@ export class ExperimentDesignComponent implements OnInit {
 
   get isAssignmentWeightControlDirty() {
     if (this.experimentDesignForm) {
-      return (this.experimentDesignForm.controls.conditions as any).controls[1].controls.assignmentWeight.dirty;
+      return (this.experimentDesignForm.controls.conditions as any).controls.some(control =>
+        control.controls.assignmentWeight.dirty
+      );
     }
     return false;
   }

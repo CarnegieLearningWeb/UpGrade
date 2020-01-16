@@ -26,7 +26,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else conditionCodeTemplate">
             <input
               matInput
               [placeholder]="
@@ -36,6 +36,9 @@
               formControlName="conditionCode"
             />
           </mat-form-field>
+          <ng-template #conditionCodeTemplate>
+            <span> {{ experimentInfo.conditions[groupIndex].conditionCode }} </span>
+          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -48,7 +51,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else assignmentWeightTemplate">
             <input
               type="number"
               matInput
@@ -59,6 +62,9 @@
               formControlName="assignmentWeight"
             />
           </mat-form-field>
+          <ng-template #assignmentWeightTemplate>
+            <span> {{ experimentInfo.conditions[groupIndex].assignmentWeight }} </span>
+          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -71,7 +77,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else conditionDescriptionTemplate">
             <input
               matInput
               [placeholder]="
@@ -81,6 +87,9 @@
               formControlName="description"
             />
           </mat-form-field>
+          <ng-template #conditionDescriptionTemplate>
+            <span class="condition-description"> {{ experimentInfo.conditions[groupIndex].description }} </span>
+          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -93,7 +102,7 @@
           <app-shared-icons
             [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="!experimentInfo && groupIndex !== 0 && groupIndex !== 1"
+            *ngIf="groupIndex !== 0 && groupIndex !== 1 && !disableControls"
             (click)="removeConditionOrSegment('condition', groupIndex)"
           ></app-shared-icons>
         </mat-cell>
@@ -148,7 +157,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else segmentPointTemplate">
             <input
               matInput
               [placeholder]="
@@ -158,6 +167,9 @@
               formControlName="point"
             />
           </mat-form-field>
+          <ng-template #segmentPointTemplate>
+            <span> {{ experimentInfo.segments[groupIndex].point }} </span>
+          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -170,7 +182,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else segmentNameTemplate">
             <input
               matInput
               [placeholder]="
@@ -180,6 +192,9 @@
               formControlName="name"
             />
           </mat-form-field>
+          <ng-template #segmentNameTemplate>
+            <span> {{ experimentInfo.segments[groupIndex].name }} </span>
+          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -192,7 +207,7 @@
           <app-shared-icons
             [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="!experimentInfo && groupIndex !== 0"
+            *ngIf="groupIndex !== 0 && !disableControls"
             (click)="removeConditionOrSegment('segment', groupIndex)"
           ></app-shared-icons>
         </mat-cell>

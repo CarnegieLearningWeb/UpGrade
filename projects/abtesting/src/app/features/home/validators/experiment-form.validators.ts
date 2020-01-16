@@ -1,15 +1,16 @@
 import { AbstractControl } from '@angular/forms';
-import { EndExperimentCondition, GroupTypes } from '../../../core/experiments/store/experiments.model';
+import { EndExperimentCondition, GroupTypes, ASSIGNMENT_UNIT } from '../../../core/experiments/store/experiments.model';
 
 export class ExperimentFormValidators {
 
   static validateExperimentOverviewForm(controls: AbstractControl): { [key: string]: any } | null {
     const groupValue = controls.get('groupType').value;
     const customGroupValue = controls.get('customGroupName').value;
+    const assignmentUnit = controls.get('unitOfAssignment').value;
     if (groupValue === GroupTypes.OTHER) {
       return !!customGroupValue ? null : { customGroupNameError: true };
     }
-    return null;
+    return (assignmentUnit === ASSIGNMENT_UNIT.GROUP && !groupValue) ? { groupValueError: true } : null;
   }
 
   static validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
@@ -19,7 +20,7 @@ export class ExperimentFormValidators {
       return { conditionCountError: true }
     } else if (conditions.length >= 2) {
       let sumOfAssignmentWeights = 0;
-      conditions.forEach(condition => sumOfAssignmentWeights += condition.assignmentWeight);
+      conditions.forEach(condition => sumOfAssignmentWeights += parseInt(condition.assignmentWeight, 10));
       return sumOfAssignmentWeights !== 100 ? { assignmentWightsSumError: true } : null;
     }
     if (segments.length < 1) {

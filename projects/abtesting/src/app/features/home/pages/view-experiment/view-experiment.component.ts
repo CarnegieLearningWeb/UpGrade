@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
-import { Experiment } from '../../../../core/experiments/store/experiments.model';
+import { Experiment, EXPERIMENT_STATE } from '../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -58,5 +58,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
   }
 }
