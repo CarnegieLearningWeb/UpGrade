@@ -121,6 +121,7 @@
       [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
     ></span>
     <button
+      type="button"
       class="add-condition"
       (click)="addConditionOrSegment('condition')"
       [ngClass]="{'add-condition--disabled': disableControls}"
@@ -219,6 +220,7 @@
       <mat-row *matRowDef="let row; columns: segmentDisplayedColumns"></mat-row>
     </mat-table>
     <button
+      type="button"
       class="add-segment"
       (click)="addConditionOrSegment('segment')"
       [ngClass]="{'add-segment--disabled': disableControls}"
