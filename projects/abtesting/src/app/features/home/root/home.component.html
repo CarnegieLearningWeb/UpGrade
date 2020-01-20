@@ -1,11 +1,4 @@
 <div class="experiments-container">
-  <mat-form-field class="theme-selector">
-    <mat-select [ngModel]="theme$ | async" (ngModelChange)="changeTheme($event)">
-      <mat-option *ngFor="let theme of themeOptions" [value]="theme.value">
-        {{ theme.viewValue }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
   <h1 class="title">{{ 'global.experiment.title' | translate }}</h1>
   <span
     class="subtitle"

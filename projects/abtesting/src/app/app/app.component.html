@@ -44,6 +44,13 @@
     </div>
   </mat-drawer>
   <mat-drawer-content class="drawer__main-content">
+    <mat-form-field class="theme-selector">
+      <mat-select [ngModel]="theme$ | async" (ngModelChange)="changeTheme($event)">
+        <mat-option *ngFor="let theme of themeOptions" [value]="theme.value">
+          {{ theme.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
     <router-outlet></router-outlet>
   </mat-drawer-content>
 </mat-drawer-container>

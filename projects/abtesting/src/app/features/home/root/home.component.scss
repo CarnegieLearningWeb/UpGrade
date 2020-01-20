@@ -1,18 +1,7 @@
-// File scope scss variables
-$white-background: #f0f2f9;
-
 .experiments-container {
   display: flex;
   flex-direction: column;
-  background-color: $white-background;
-  padding: 2rem 4.375rem;
-  height: 100%;
-  overflow: scroll;
-
-  .theme-selector {
-    display: flex;
-    justify-content: flex-end;
-  }
+  padding: 0 4.375rem 2rem 2rem;
 
   .title {
     margin-bottom: 0;

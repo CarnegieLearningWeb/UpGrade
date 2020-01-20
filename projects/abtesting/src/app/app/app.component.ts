@@ -8,6 +8,7 @@ import {
 import { SettingsService } from '../core/settings/settings.service';
 import { AuthService } from '../core/auth/auth.service';
 import { ExperimentService } from '../core/experiments/experiments.service';
+import { ThemeOptions } from '../core/settings/store/settings.model';
 
 @Component({
   selector: 'app-root',
@@ -29,6 +30,13 @@ export class AppComponent implements OnInit {
   navigationSideMenu = [
     ...this.navigation,
     { link: 'settings', label: 'app.menu.settings' }
+  ];
+
+  themeOptions = [
+    { value: ThemeOptions.DEFAULT_THEME, viewValue: 'Default' },
+    { value: ThemeOptions.DARK_THEME, viewValue: 'Dark' },
+    { value: ThemeOptions.LIGHT_THEME, viewValue: 'Light' },
+    { value: ThemeOptions.NATURE_THEME, viewValue: 'Nature' }
   ];
 
   theme$ = this.settingsService.theme$;
@@ -61,5 +69,9 @@ export class AppComponent implements OnInit {
 
   onLanguageSelect({ value: language }) {
     this.settingsService.changeLanguage(language);
+  }
+
+  changeTheme(theme) {
+    this.settingsService.changeTheme(theme);
   }
 }
