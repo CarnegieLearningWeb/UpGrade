@@ -1,0 +1,16 @@
+.error-logs {
+  &__searching {
+    display: flex;
+    justify-content: space-between;
+
+    .search-input {
+      width: 250px;
+      line-height: 20px;
+      font-family: OpenSans-Regular;
+    }
+
+    ::ng-deep .mat-form-field-suffix {
+      top: 5px;
+    }
+  }
+}

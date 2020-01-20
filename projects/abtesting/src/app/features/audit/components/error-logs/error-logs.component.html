@@ -1,0 +1,20 @@
+<div class="error-logs">
+  <div class="error-logs__searching">
+    <mat-form-field class="search-input">
+      <input
+        matInput
+        [(ngModel)]="searchValue"
+        (keyup)="searchLogs($event.target.value)"
+        [placeholder]="'audit.error-logs-search.text' | translate"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <mat-form-field class="theme-selector">
+      <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
+        <mat-option *ngFor="let option of logsOptions" [value]="option.value">
+          {{ option.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>

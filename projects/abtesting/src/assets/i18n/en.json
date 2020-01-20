@@ -89,5 +89,11 @@
   "home.change-experiment-status.current-status.text": "CURRENT STATUS",
   "home.change-experiment-status.new-status.text": "NEW STATUS",
   "home.change-experiment-status.new-status.error.text": "Please choose new status",
-  "home.change-post-experiment-rule.title.text": "Change post Experiment Condition"
+  "home.change-post-experiment-rule.title.text": "Change post Experiment Condition",
+  "audit.main-heading.text": "Logs",
+  "audit.sub-heading.text": "Use this page to track changes made in environment",
+  "audit.error-logs-tab.text": "Error Logs",
+  "audit.audit-logs-tab.text": "Audit Logs",
+  "audit.error-logs-search.text": "Search Error Logs...",
+  "audit.audit-logs-search.text": "Search Audit Logs..."
 }
