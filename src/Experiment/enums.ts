@@ -31,3 +31,9 @@ export enum SERVER_ERROR {
   INCORRECT_PARAM_FORMAT = 'Parameter not in the correct format',
   USER_NOT_FOUND = 'User ID not found'
 }
+
+export enum EXPERIMENT_LOG_TYPE {
+  EXPERIMENT_CREATED = 'experimentCreated',
+  EXPERIMENT_UPDATED = 'experimentUpdated',
+  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
+}

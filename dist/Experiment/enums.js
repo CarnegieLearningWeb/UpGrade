@@ -34,4 +34,10 @@ var SERVER_ERROR;
     SERVER_ERROR["INCORRECT_PARAM_FORMAT"] = "Parameter not in the correct format";
     SERVER_ERROR["USER_NOT_FOUND"] = "User ID not found";
 })(SERVER_ERROR = exports.SERVER_ERROR || (exports.SERVER_ERROR = {}));
+var EXPERIMENT_LOG_TYPE;
+(function (EXPERIMENT_LOG_TYPE) {
+    EXPERIMENT_LOG_TYPE["EXPERIMENT_CREATED"] = "experimentCreated";
+    EXPERIMENT_LOG_TYPE["EXPERIMENT_UPDATED"] = "experimentUpdated";
+    EXPERIMENT_LOG_TYPE["EXPERIMENT_STATE_CHANGED"] = "experimentStateChanged";
+})(EXPERIMENT_LOG_TYPE = exports.EXPERIMENT_LOG_TYPE || (exports.EXPERIMENT_LOG_TYPE = {}));
 //# sourceMappingURL=enums.js.map
