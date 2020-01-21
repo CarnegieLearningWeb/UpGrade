@@ -1,7 +1,8 @@
 version: 0.2
 phases:
   install:
-    nodejs: 8
+    runtime-versions:
+      nodejs: 8
   pre_build:
     commands:
       - yarn
