@@ -4,20 +4,18 @@ export interface IEnrollmentCompleteCondition {
 }
 
 export interface IExperimentEnrollmentStats {
-  experiment: {
-    id: string;
-    users: number;
-    group?: number;
-    userExcluded: number;
-    groupExcluded?: number;
-    conditions: [
-      {
-        conditionId: string;
-        uniqueUsers: number;
-        uniqueGroups: number;
-      }
-    ];
-  };
+  id: string;
+  users: number;
+  group?: number;
+  userExcluded: number;
+  groupExcluded?: number;
+  conditions: [
+    {
+      conditionId: string;
+      uniqueUsers: number;
+      uniqueGroups: number;
+    }
+  ];
   segments: [
     {
       id: string;
