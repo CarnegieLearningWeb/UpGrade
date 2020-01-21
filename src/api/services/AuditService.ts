@@ -1,7 +1,8 @@
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { ExperimentAuditLog, EXPERIMENT_LOG_TYPE } from '../models/ExperimentAuditLog';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 
 @Service()
 export class AuditService {

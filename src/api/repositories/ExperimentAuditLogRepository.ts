@@ -1,5 +1,6 @@
-import { ExperimentAuditLog, EXPERIMENT_LOG_TYPE } from '../models/ExperimentAuditLog';
+import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { EntityRepository, Repository } from 'typeorm';
+import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {

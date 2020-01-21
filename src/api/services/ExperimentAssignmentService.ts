@@ -1,7 +1,7 @@
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
-import { EXPERIMENT_STATE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT } from 'ees_types';
+import { EXPERIMENT_STATE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT, EXPERIMENT_LOG_TYPE } from 'ees_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -20,7 +20,6 @@ import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitI
 import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { EXPERIMENT_LOG_TYPE } from '../models/ExperimentAuditLog';
 
 @Service()
 export class ExperimentAssignmentService {

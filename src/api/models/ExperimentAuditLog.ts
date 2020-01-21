@@ -1,12 +1,7 @@
 import { BaseModel } from './base/BaseModel';
 import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
-
-export enum EXPERIMENT_LOG_TYPE {
-  EXPERIMENT_CREATED = 'experimentCreated',
-  EXPERIMENT_UPDATED = 'experimentUpdated',
-  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
-}
+import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 
 @Entity()
 export class ExperimentAuditLog extends BaseModel {

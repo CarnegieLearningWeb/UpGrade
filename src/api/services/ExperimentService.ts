@@ -11,8 +11,8 @@ import { ExperimentSegment } from '../models/ExperimentSegment';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
-import { EXPERIMENT_LOG_TYPE } from '../models/ExperimentAuditLog';
 import { diffString } from 'json-diff';
+import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 
 @Service()
 export class ExperimentService {
