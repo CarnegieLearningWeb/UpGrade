@@ -9,6 +9,7 @@ import { SettingsService } from '../core/settings/settings.service';
 import { AuthService } from '../core/auth/auth.service';
 import { ExperimentService } from '../core/experiments/experiments.service';
 import { ThemeOptions } from '../core/settings/store/settings.model';
+import { AuditService } from '../core/audit/audit.service';
 
 @Component({
   selector: 'app-root',
@@ -44,7 +45,8 @@ export class AppComponent implements OnInit {
     private storageService: LocalStorageService,
     private settingsService: SettingsService,
     private authService: AuthService,
-    private experimentService: ExperimentService
+    private experimentService: ExperimentService,
+    private auditService: AuditService
   ) {}
 
   private static isIEorEdgeOrSafari() {
@@ -54,6 +56,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.storageService.testLocalStorage();
     this.experimentService.loadExperiments();
+    this.auditService.loadAudits();
     if (AppComponent.isIEorEdgeOrSafari()) {
       this.settingsService.changeAnimationsPageDisabled(true);
     }

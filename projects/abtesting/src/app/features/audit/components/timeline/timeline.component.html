@@ -1,0 +1,24 @@
+<div class="timeline">
+  <ng-container *ngFor="let data of logData">
+    <div class="timeline-container">
+      <app-shared-icons
+        *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate"
+        class="icon icon--yellow"
+        [iconType]="'user-2'"
+      ></app-shared-icons>
+
+      <ng-template #errorLogIconTemplate>
+        <app-shared-icons
+          class="{{ 'icon icon--' + (data.value | errorLog: 'class') }}"
+          [iconType]="data.value | errorLog: 'icon'"
+        ></app-shared-icons>
+      </ng-template>
+
+      <div class="content">
+        <span class="error-type"><u>{{ data.value }}</u></span>
+        <span *ngIf="logType === LogType.ERROR_LOG"> :</span>
+        <span class="error-message">{{ ' ' + data.message }}</span>
+      </div>
+    </div>
+  </ng-container>
+</div>

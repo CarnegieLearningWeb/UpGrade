@@ -25,8 +25,7 @@ export class ExperimentEffects {
             })
           )
         )
-      ),
-    { dispatch: true }
+      )
   );
 
   UpsertExperiment$ = createEffect(() =>

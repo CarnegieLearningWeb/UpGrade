@@ -29,6 +29,7 @@ export const environment = {
   api: {
     getAllExperiments: `${endpointApi}/experiments`,
     createNewExperiments: `${endpointApi}/experiments`,
-    updateExperiments: `${endpointApi}/experiments`
+    updateExperiments: `${endpointApi}/experiments`,
+    getAllAudits: `${endpointApi}/audit`
   }
 };

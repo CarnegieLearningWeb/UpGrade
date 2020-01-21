@@ -1,5 +1,5 @@
-<div class="error-logs">
-  <div class="error-logs__searching">
+<div class="logs">
+  <div class="logs__searching">
     <mat-form-field class="search-input">
       <input
         matInput
@@ -16,5 +16,18 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+  </div>
+
+  <!-- Use ngFor on timeline-container -->
+  <div class="timeline-container">
+    <div class="error-date">
+      <span class="date-info">21st July</span>
+      <span class="day-info">2019, Monday</span>
+    </div>
+    <audit-timeline
+      class="timeline"
+      [logData]="errorLogData"
+      [logType]="LogType.ERROR_LOG"
+    ></audit-timeline>
   </div>
 </div>

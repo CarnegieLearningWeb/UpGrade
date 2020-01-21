@@ -38,6 +38,7 @@ import { NotificationService } from './notifications/notification.service';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { SettingsModule } from './settings/settings.module';
 import { AuthModule } from './auth/auth.module';
+import { AuditModule } from './audit/audit.module';
 
 export {
   TitleService,
@@ -68,6 +69,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     AuthModule,
     SettingsModule,
     ExperimentsModule,
+    AuditModule,
 
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
