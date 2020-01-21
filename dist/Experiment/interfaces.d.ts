@@ -2,7 +2,7 @@ export interface IEnrollmentCompleteCondition {
     userCount: number;
     groupCount: number;
 }
-export interface ExperimentEnrollmentStats {
+export interface IExperimentEnrollmentStats {
     experiment: {
         id: string;
         users: number;
