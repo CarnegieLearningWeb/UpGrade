@@ -11,7 +11,7 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
-import { ASSIGNMENT_UNIT } from 'ees_types';
+import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'ees_types';
 
 @Service()
 export class AnalyticsService {
@@ -32,14 +32,14 @@ export class AnalyticsService {
     private userRepository: UserRepository
   ) {}
 
-  public async getStats(experimentIds: string[]): Promise<any> {
+  public async getStats(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
     // get experiment definition
     const experimentDefinition = await this.experimentRepository.findByIds(experimentIds, {
       relations: ['segments', 'conditions'],
     });
 
     if (experimentDefinition && experimentDefinition.length === 0) {
-      return {};
+      return [];
     }
 
     const experimentIdAndPoint = [];
@@ -114,82 +114,35 @@ export class AnalyticsService {
     });
 
     // structure data here
-    const experimentsStats = experimentDefinition.map(experiment => {
-      const usersAssignedToExperiment = individualAssignments.filter(individualAssignment => {
-        return individualAssignment.experimentId === experiment.id;
-      });
-      const usersExcludedFromExperiment = individualExclusions.filter(individualExclusion => {
-        return individualExclusion.experimentId === experiment.id;
-      });
-
-      const groupAssignedToExperiment =
-        (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-          groupAssignments.filter(groupAssignment => {
-            return groupAssignment.experimentId === experiment.id;
-          })) ||
-        [];
-      const groupExcludedFromExperiment =
-        (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-          groupExclusions.filter(groupExclusion => {
-            return groupExclusion.experimentId === experiment.id;
-          })) ||
-        [];
-
-      const conditionStats = experiment.conditions.map(condition => {
-        const conditionAssignedUser = usersAssignedToExperiment.filter(userSegment => {
-          return (
-            mappedIndividualAssignment.has(`${experiment.id}_${userSegment.userId}`) &&
-            mappedIndividualAssignment.get(`${experiment.id}_${userSegment.userId}`).condition.id === condition.id
-          );
+    const experimentsStats: IExperimentEnrollmentStats[] = experimentDefinition.map(
+      (experiment): IExperimentEnrollmentStats => {
+        const usersAssignedToExperiment = individualAssignments.filter(individualAssignment => {
+          return individualAssignment.experimentId === experiment.id;
         });
-        const conditionAssignedGroup =
-          (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            Array.from(
-              new Set(
-                conditionAssignedUser.map(
-                  monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
-                )
-              )
-            )) ||
-          [];
-
-        return {
-          id: condition.id,
-          user: conditionAssignedUser.length,
-          group: conditionAssignedGroup.length,
-        };
-      });
-
-      const segmentStats = experiment.segments.map(segment => {
-        const segmentId = segment.id;
-
-        const usersSegmentIncluded = monitoredExperimentPoints.filter(monitoredPoint => {
-          return (
-            monitoredPoint.id === segmentId &&
-            mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.userId}`)
-          );
+        const usersExcludedFromExperiment = individualExclusions.filter(individualExclusion => {
+          return individualExclusion.experimentId === experiment.id;
         });
 
-        const groupSegmentIncluded =
+        const groupAssignedToExperiment =
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            Array.from(
-              new Set(
-                usersSegmentIncluded.map(
-                  monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
-                )
-              )
-            )) ||
+            groupAssignments.filter(groupAssignment => {
+              return groupAssignment.experimentId === experiment.id;
+            })) ||
+          [];
+        const groupExcludedFromExperiment =
+          (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+            groupExclusions.filter(groupExclusion => {
+              return groupExclusion.experimentId === experiment.id;
+            })) ||
           [];
 
-        // condition
-        const conditions = experiment.conditions.map(condition => {
-          const conditionAssignedUser = usersSegmentIncluded.filter(userSegment => {
+        const conditionStats = experiment.conditions.map(condition => {
+          const conditionAssignedUser = usersAssignedToExperiment.filter(userSegment => {
             return (
               mappedIndividualAssignment.has(`${experiment.id}_${userSegment.userId}`) &&
               mappedIndividualAssignment.get(`${experiment.id}_${userSegment.userId}`).condition.id === condition.id
             );
           });
-
           const conditionAssignedGroup =
             (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
               Array.from(
@@ -200,6 +153,7 @@ export class AnalyticsService {
                 )
               )) ||
             [];
+
           return {
             id: condition.id,
             user: conditionAssignedUser.length,
@@ -207,25 +161,73 @@ export class AnalyticsService {
           };
         });
 
+        const segmentStats = experiment.segments.map(segment => {
+          const segmentId = segment.id;
+
+          const usersSegmentIncluded = monitoredExperimentPoints.filter(monitoredPoint => {
+            return (
+              monitoredPoint.id === segmentId &&
+              mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.userId}`)
+            );
+          });
+
+          const groupSegmentIncluded =
+            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+              Array.from(
+                new Set(
+                  usersSegmentIncluded.map(
+                    monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
+                  )
+                )
+              )) ||
+            [];
+
+          // condition
+          const conditions = experiment.conditions.map(condition => {
+            const conditionAssignedUser = usersSegmentIncluded.filter(userSegment => {
+              return (
+                mappedIndividualAssignment.has(`${experiment.id}_${userSegment.userId}`) &&
+                mappedIndividualAssignment.get(`${experiment.id}_${userSegment.userId}`).condition.id === condition.id
+              );
+            });
+
+            const conditionAssignedGroup =
+              (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+                Array.from(
+                  new Set(
+                    conditionAssignedUser.map(
+                      monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
+                    )
+                  )
+                )) ||
+              [];
+            return {
+              id: condition.id,
+              user: conditionAssignedUser.length,
+              group: conditionAssignedGroup.length,
+            };
+          });
+
+          return {
+            id: segmentId,
+            user: usersSegmentIncluded.length,
+            group: groupSegmentIncluded.length,
+            conditions,
+          };
+        });
+
         return {
-          id: segmentId,
-          user: usersSegmentIncluded.length,
-          group: groupSegmentIncluded.length,
-          conditions,
+          id: experiment.id,
+          users: usersAssignedToExperiment.length,
+          group: groupAssignedToExperiment.length,
+          userExcluded: usersExcludedFromExperiment.length,
+          groupExcluded: groupExcludedFromExperiment.length,
+          segments: segmentStats,
+          conditions: conditionStats,
         };
-      });
+      }
+    );
 
-      return {
-        id: experiment.id,
-        users: usersAssignedToExperiment.length,
-        group: groupAssignedToExperiment.length,
-        userExcluded: usersExcludedFromExperiment.length,
-        groupExcluded: groupExcludedFromExperiment.length,
-        segments: segmentStats,
-        conditions: conditionStats,
-      };
-    });
-
-    return Promise.all(experimentsStats);
+    return experimentsStats;
   }
 }
