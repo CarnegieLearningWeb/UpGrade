@@ -6,7 +6,7 @@ export interface IEnrollmentCompleteCondition {
 export interface IExperimentEnrollmentStats {
   id: string;
   users: number;
-  group?: number;
+  group: number;
   userExcluded: number;
   groupExcluded?: number;
   conditions: [
@@ -20,12 +20,12 @@ export interface IExperimentEnrollmentStats {
     {
       id: string;
       user: number;
-      group?: number;
+      group: number;
       conditions: [
         {
           id: string;
           user: number;
-          group?: number;
+          group: number;
         }
       ];
     }
