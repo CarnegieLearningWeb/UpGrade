@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, Experiment } from '../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM } from '../../../../core/experiments/store/experiments.model';
 import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 
@@ -21,7 +21,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentDesignComponent implements OnInit {
-  @Input() experimentInfo: Experiment;
+  @Input() experimentInfo: ExperimentVM;
   @Input() disableControls = false;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 

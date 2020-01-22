@@ -10,6 +10,16 @@ export const actionStoreExperiment = createAction(
   props<{ experiments: Experiment[] }>()
 );
 
+export const actionStoreExperimentStats = createAction(
+  '[Experiment] Store Experiment Stats',
+  props<{ stats: any }>()
+);
+
+export const actionGetAllExperimentFailure = createAction(
+  '[Experiment] Get All Experiment Failure',
+  props<{ error: any }>()
+);
+
 export const actionUpsertExperiment = createAction(
   '[Experiment] Upsert Experiment',
   props<{ experiment: Experiment, actionType: UpsertExperimentType }>()

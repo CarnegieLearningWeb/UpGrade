@@ -13,7 +13,7 @@ import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
-  Experiment
+  ExperimentVM
 } from '../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -27,7 +27,7 @@ import * as find from 'lodash.find';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentOverviewComponent implements OnInit {
-  @Input() experimentInfo: Experiment;
+  @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<
     NewExperimentDialogData
   >();

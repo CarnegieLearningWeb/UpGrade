@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { Experiment, POST_EXPERIMENT_RULE } from '../../../../../core/experiments/store/experiments.model';
+import { POST_EXPERIMENT_RULE, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
@@ -13,7 +13,7 @@ import { ExperimentStatusComponent } from '../experiment-status/experiment-statu
 })
 export class PostExperimentRuleComponent implements OnInit {
 
-  experimentInfo: Experiment;
+  experimentInfo: ExperimentVM;
   postExperimentRuleForm: FormGroup;
   postExperimentRules = [
     { value: POST_EXPERIMENT_RULE.CONTINUE },

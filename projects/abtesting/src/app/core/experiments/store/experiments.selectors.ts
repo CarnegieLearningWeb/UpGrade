@@ -8,9 +8,17 @@ export const selectExperimentState = createFeatureSelector<
   ExperimentState
 >('experiments');
 
-export const selectAllExperiment = createSelector(
+export const selectAllExperimentFromState = createSelector(
   selectExperimentState,
   selectAll
+);
+
+export const selectAllExperiment = createSelector(
+  selectExperimentState,
+  selectAllExperimentFromState,
+  (experimentState, allExperiments) =>  allExperiments.map(experiment =>
+      ({ ...experiment, stat: experimentState.stats[experiment.id] })
+    )
 );
 
 export const selectIsLoadingExperiment = createSelector(
@@ -21,5 +29,9 @@ export const selectIsLoadingExperiment = createSelector(
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
-  ({ state: { params } }, experimentState) => experimentState.entities[params.experimentId]
+  ({ state: { params } }, experimentState) => {
+    return experimentState.stats[params.experimentId]
+      ? ({ ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] })
+      : undefined;
+  }
 );

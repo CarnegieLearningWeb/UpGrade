@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ASSIGNMENT_UNIT } from 'ees_types';
-import { GroupTypes, Experiment } from '../../../../core/experiments/store/experiments.model';
+import { GroupTypes, ExperimentVM } from '../../../../core/experiments/store/experiments.model';
 
 // Used in EnrollmentOverTimeComponent
 enum ExperimentFilterType {
@@ -27,7 +27,7 @@ const USERS = 'Users';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EnrollmentOverTimeComponent implements OnChanges {
-  @Input() experiment: Experiment;
+  @Input() experiment: ExperimentVM;
   groupFiltersOptions: string[] = [];
   conditionsFilterOptions: string[] = [ALL_CONDITIONS];
   dateFilterOptions: ExperimentDateFilterOptions[] = [

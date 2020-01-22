@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/cor
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { Experiment } from '../../../../../core/experiments/store/experiments.model';
+import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
@@ -13,7 +13,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 })
 export class ExperimentStatusComponent implements OnInit {
 
-  experimentInfo: Experiment;
+  experimentInfo: ExperimentVM;
   statusForm: FormGroup;
   experimentStatus = [];
   constructor(

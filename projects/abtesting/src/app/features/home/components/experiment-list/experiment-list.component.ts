@@ -71,9 +71,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     this.allExperiments.sort = this.sort;
 
     // Update angular material table's default sort
-    this.allExperiments.sortingDataAccessor = (data, property) => {
+    this.allExperiments.sortingDataAccessor = (data: any, property) => {
       if (property === 'enrollment') {
-        // TODO: Implement custom sorting for enrollment column
+        return data.stat.users ? data.stat.users : data.stat.group;
       } else {
         return data[property];
       }

@@ -29,6 +29,8 @@
   "home.experiments-table.tags-tooltip.text": "Experiment tags",
   "home.experiments-table.enrollments-tooltip.text": "Experiment enrollment details",
   "home.experiments-table.search.text": "Search...",
+  "home.experiments-table.students.text": "{{ noOfStudents }} students",
+  "home.experiments-table.classes.text": "{{ noOfClasses }} classes",
   "home.new-experiment.overview.text": "Overview",
   "home.new-experiment.experiment-design.text": "Experiment Design",
   "home.new-experiment.schedule.text": "Schedule",

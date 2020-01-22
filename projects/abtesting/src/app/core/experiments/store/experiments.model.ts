@@ -4,14 +4,16 @@ import {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
-  EXPERIMENT_STATE
+  EXPERIMENT_STATE,
+  IExperimentEnrollmentStats
 } from 'ees_types';
 
 export {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
-  EXPERIMENT_STATE
+  EXPERIMENT_STATE,
+  IExperimentEnrollmentStats
 };
 
 export enum GroupTypes {
@@ -103,8 +105,15 @@ export interface Experiment {
   segments: ExperimentSegment[];
 }
 
+export interface ExperimentVM extends Experiment {
+  stat: IExperimentEnrollmentStats
+}
+
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
+  stats: {
+    [key: string]: IExperimentEnrollmentStats
+  }
 }
 
 export interface State extends AppState {

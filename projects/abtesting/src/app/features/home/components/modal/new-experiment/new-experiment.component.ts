@@ -4,7 +4,7 @@ import {
   Inject,
 } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE, Experiment } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
@@ -17,7 +17,7 @@ export class NewExperimentComponent {
 
   newExperimentData: any = {};
   selectedStepperIndex = 0 ;
-  experimentInfo: Experiment;
+  experimentInfo: ExperimentVM;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
