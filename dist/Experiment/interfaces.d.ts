@@ -10,8 +10,8 @@ export interface IExperimentEnrollmentStats {
     groupExcluded?: number;
     conditions: [{
         conditionId: string;
-        uniqueUsers: number;
-        uniqueGroups: number;
+        users: number;
+        groups: number;
     }];
     segments: [{
         id: string;
