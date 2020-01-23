@@ -49,4 +49,16 @@ export class ExperimentRepository extends Repository<Experiment> {
 
     return result.raw;
   }
+
+  public async deleteById(id: string, entityManager: EntityManager): Promise<Experiment> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(Experiment)
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    return result.raw;
+  }
 }

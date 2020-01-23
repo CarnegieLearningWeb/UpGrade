@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 
 type MonitoredExperimentPointInput = Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber'>;
@@ -11,6 +11,17 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .values(rawData)
       .onConflict(`DO NOTHING`)
       .returning('*')
+      .execute();
+
+    return result.raw;
+  }
+
+  public async deleteById(ids: string[], entityManager: EntityManager): Promise<MonitoredExperimentPoint[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(MonitoredExperimentPoint)
+      .where('id IN (:...ids)', { ids })
       .execute();
 
     return result.raw;

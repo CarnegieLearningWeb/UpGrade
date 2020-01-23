@@ -13,6 +13,12 @@ import { getConnection } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
+import { GroupAssignmentRepository } from '../repositories/GroupAssignmentRepository';
+import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
+import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
+import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 
 @Service()
 export class ExperimentService {
@@ -21,6 +27,13 @@ export class ExperimentService {
     @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
     @OrmRepository() private experimentSegmentRepository: ExperimentSegmentRepository,
     @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @OrmRepository() private individualAssignmentRepository: IndividualAssignmentRepository,
+    @OrmRepository() private groupAssignmentRepository: GroupAssignmentRepository,
+    @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
+    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
+    @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
+
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -85,6 +98,47 @@ export class ExperimentService {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
     return this.addExperimentInDB(experiment);
+  }
+
+  public async delete(experimentId: string): Promise<Experiment | undefined> {
+    this.log.info('Delete experiment => ', experimentId);
+
+    return getConnection().transaction(async transactionalEntityManager => {
+      const experiment = await this.findOne(experimentId);
+
+      if (experiment) {
+        // delete conditions and segments
+        const conditionIds = experiment.conditions.map(condition => condition.id);
+        const segmentIds = experiment.segments.map(segment => segment.id);
+
+        // monitoredIds
+        const monitoredIds = experiment.segments.map(segment => {
+          return segment.id;
+        });
+
+        // deleting data related to experiment
+        await Promise.all([
+          this.groupAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.groupExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.individualAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.individualExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.monitoredExperimentPointRepository.deleteById(monitoredIds, transactionalEntityManager),
+          this.scheduledJobRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+        ]);
+
+        // deleting segments and conditions
+        await Promise.all([
+          this.experimentConditionRepository.deleteByIds(conditionIds, transactionalEntityManager),
+          this.experimentSegmentRepository.deleteByIds(segmentIds, transactionalEntityManager),
+        ]);
+
+        const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
+        console.log('deletedExperiment', deletedExperiment);
+        return deletedExperiment;
+      }
+
+      return undefined;
+    });
   }
 
   public update(id: string, experiment: Experiment): Promise<Experiment> {

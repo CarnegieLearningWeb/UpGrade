@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 
 type IndividualExclusionInput = Omit<IndividualExclusion, 'createdAt' | 'updatedAt' | 'versionNumber'>;
@@ -23,5 +23,19 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
         experimentIds,
       })
       .getMany();
+  }
+
+  public async deleteByExperimentId(
+    experimentId: string,
+    entityManager: EntityManager
+  ): Promise<IndividualExclusion[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(IndividualExclusion)
+      .where('experimentId = :experimentId', { experimentId })
+      .execute();
+
+    return result.raw;
   }
 }

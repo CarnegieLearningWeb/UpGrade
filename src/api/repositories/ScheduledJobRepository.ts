@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { ScheduledJob } from '../models/ScheduledJob';
 
 @EntityRepository(ScheduledJob)
@@ -13,5 +13,16 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .execute();
 
     return result.raw[0];
+  }
+
+  public async deleteByExperimentId(experimentId: string, entityManager: EntityManager): Promise<ScheduledJob[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(ScheduledJob)
+      .where('experimentId = :experimentId', { experimentId })
+      .execute();
+
+    return result.raw;
   }
 }

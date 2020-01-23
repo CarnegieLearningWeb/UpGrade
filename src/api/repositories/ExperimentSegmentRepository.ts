@@ -36,6 +36,17 @@ export class ExperimentSegmentRepository extends Repository<ExperimentSegment> {
   //   return result.raw[0];
   // }
 
+  public async deleteByIds(ids: string[], entityManager: EntityManager): Promise<ExperimentSegment[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(ExperimentSegment)
+      .where('id IN (:...ids)', { ids })
+      .execute();
+
+    return result.raw;
+  }
+
   public async insertSegments(
     segmentDocs: ExperimentSegment[],
     entityManager: EntityManager

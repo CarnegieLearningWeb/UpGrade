@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { GroupAssignment } from '../models/GroupAssignment';
 
 type GroupAssignmentInput = Omit<GroupAssignment, 'createdAt' | 'updatedAt' | 'versionNumber'>;
@@ -12,6 +12,17 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
         experimentIds,
       })
       .getMany();
+  }
+
+  public async deleteByExperimentId(experimentId: string, entityManager: EntityManager): Promise<GroupAssignment[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(GroupAssignment)
+      .where('experimentId = :experimentId', { experimentId })
+      .execute();
+
+    return result.raw;
   }
 
   public async saveRawJson(rawData: GroupAssignmentInput): Promise<GroupAssignment> {
