@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { mergeMap, map, filter, switchMap, catchError } from 'rxjs/operators';
-import { UpsertExperimentType } from './experiments.model';
+import { UpsertExperimentType, IExperimentEnrollmentStats } from './experiments.model';
 
 @Injectable()
 export class ExperimentEffects {
@@ -18,15 +18,25 @@ export class ExperimentEffects {
         ofType(experimentAction.actionGetAllExperiment),
         mergeMap(() =>
           this.experimentDataService.getAllExperiment().pipe(
-            map((data: any) => {
-              return experimentAction.actionStoreExperiment({
-                experiments: data
-              });
-            })
+            switchMap((experiments: any) => {
+              const experimentIds = experiments.map(experiment => experiment.id);
+              return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
+                switchMap((stats: any) => {
+                  const experimentStats = stats.reduce((acc, stat: IExperimentEnrollmentStats) =>
+                    ({ ...acc, [stat.id]: stat })
+                    , {});
+                  return [
+                    experimentAction.actionStoreExperiment({ experiments }),
+                    experimentAction.actionStoreExperimentStats({ stats: experimentStats })
+                  ];
+                }),
+                catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
+              );
+            }),
+            catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
           )
         )
-      ),
-    { dispatch: true }
+      )
   );
 
   UpsertExperiment$ = createEffect(() =>

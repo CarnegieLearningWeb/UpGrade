@@ -61,6 +61,10 @@
       color: var(--black-2);
       font-family: OpenSans-SemiBold;
       font-size: var(--text-size-x-small);
+
+      .enrollment-info {
+        display: block;
+      }
     }
 
     .mat-cell {

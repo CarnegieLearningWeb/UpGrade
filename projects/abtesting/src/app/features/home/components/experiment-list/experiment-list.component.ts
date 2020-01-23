@@ -71,9 +71,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     this.allExperiments.sort = this.sort;
 
     // Update angular material table's default sort
-    this.allExperiments.sortingDataAccessor = (data, property) => {
+    this.allExperiments.sortingDataAccessor = (data: any, property) => {
       if (property === 'enrollment') {
-        // TODO: Implement custom sorting for enrollment column
+        return data.stat.users ? data.stat.users : data.stat.group;
       } else {
         return data[property];
       }
@@ -85,14 +85,21 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     this.allExperiments.filterPredicate = (data, filter: string): boolean => {
       switch (type) {
         case ExperimentFilterOptionsType.ALL:
-          return data.name.toLowerCase().includes(filter) || data.state.toLocaleLowerCase().includes(filter) ||
-            !!data.tags.filter(tags => tags.toLocaleLowerCase().includes(filter)).length;
+          return (
+            data.name.toLowerCase().includes(filter) ||
+            data.state.toLocaleLowerCase().includes(filter) ||
+            !!data.tags.filter(tags =>
+              tags.toLocaleLowerCase().includes(filter)
+            ).length
+          );
         case ExperimentFilterOptionsType.NAME:
           return data.name.toLowerCase().includes(filter);
         case ExperimentFilterOptionsType.STATUS:
           return data.state.toLowerCase().includes(filter);
         case ExperimentFilterOptionsType.TAGS:
-          return !!data.tags.filter(tags => tags.toLocaleLowerCase().includes(filter)).length;
+          return !!data.tags.filter(tags =>
+            tags.toLocaleLowerCase().includes(filter)
+          ).length;
       }
     };
   }
@@ -100,7 +107,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   // TODO: Update experiment filter logic
   applyFilter(filterValue: string) {
     this.filterExperimentPredicate(this.selectedExperimentFilterOption);
-    this.allExperiments.filter = filterValue.trim().toLowerCase();
+    if (filterValue !== undefined) {
+      this.allExperiments.filter = filterValue.trim().toLowerCase();
+    }
 
     if (this.allExperiments.paginator) {
       this.allExperiments.paginator.firstPage();
@@ -124,7 +133,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   }
 
   setTagsVisible(experimentId: string) {
-    const index = this.tagsVisibility.findIndex(data => data.experimentId === experimentId);
+    const index = this.tagsVisibility.findIndex(
+      data => data.experimentId === experimentId
+    );
     if (index !== -1) {
       this.tagsVisibility[index] = { experimentId, visibility: true };
     } else {
@@ -139,8 +150,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
   // Used to check whether tags are visible for particular experiment or not
   isAllTagVisible(experimentId: string): boolean {
-    const index = this.tagsVisibility.findIndex(data => data.experimentId === experimentId);
-    return (index !== -1) ? this.tagsVisibility[index].visibility : false;
+    const index = this.tagsVisibility.findIndex(
+      data => data.experimentId === experimentId
+    );
+    return index !== -1 ? this.tagsVisibility[index].visibility : false;
   }
 
   ngOnDestroy() {

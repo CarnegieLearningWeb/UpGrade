@@ -1,0 +1,33 @@
+<div class="logs">
+  <div class="logs__searching">
+    <mat-form-field class="search-input">
+      <input
+        matInput
+        [(ngModel)]="searchValue"
+        (keyup)="searchLogs($event.target.value)"
+        [placeholder]="'audit.audit-logs-search.text' | translate"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+    <mat-form-field class="theme-selector">
+      <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
+        <mat-option *ngFor="let option of logsOptions" [value]="option.value">
+          {{ option.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- TODO: Use ngFor on timeline-container -->
+  <div class="timeline-container">
+    <div class="error-date">
+      <span class="date-info">21st July</span>
+      <span class="day-info">2019, Monday</span>
+    </div>
+    <audit-timeline
+      class="timeline"
+      [logData]="auditLogData"
+      [logType]="LogType.AUDIT_LOG"
+    ></audit-timeline>
+  </div>
+</div>

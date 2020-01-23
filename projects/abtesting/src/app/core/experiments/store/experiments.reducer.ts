@@ -15,7 +15,8 @@ export const {
 } = adapter.getSelectors();
 
 export const initialState: ExperimentState = adapter.getInitialState({
-  isLoadingExperiment: false
+  isLoadingExperiment: false,
+  stats: {}
 });
 
 const reducer = createReducer(
@@ -25,12 +26,18 @@ const reducer = createReducer(
     isLoadingExperiment: true
   })),
   on(experimentsAction.actionStoreExperiment, (state, { experiments }) => {
-    return adapter.addMany(experiments, { ...state, isLoadingExperiment: false });
+    return adapter.addMany(experiments, { ...state });
   }),
   on(
     experimentsAction.actionUpsertExperimentSuccess,
     (state, { experiment }) => {
       return adapter.upsertOne(experiment, { ...state });
+    }
+  ),
+  on(
+    experimentsAction.actionStoreExperimentStats,
+    (state, { stats }) => {
+      return { ...state, stats, isLoadingExperiment: false };
     }
   )
 );

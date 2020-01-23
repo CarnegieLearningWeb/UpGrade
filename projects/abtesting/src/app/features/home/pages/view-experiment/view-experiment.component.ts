@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
-import { Experiment, EXPERIMENT_STATE } from '../../../../core/experiments/store/experiments.model';
+import { EXPERIMENT_STATE, ExperimentVM } from '../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -22,7 +22,7 @@ enum DialogType {
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
 
-  experiment: Experiment;
+  experiment: ExperimentVM;
   experimentSub: Subscription;
 
   constructor(

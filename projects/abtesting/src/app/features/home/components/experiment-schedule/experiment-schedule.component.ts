@@ -5,8 +5,8 @@ import {
   NewExperimentDialogData,
   ASSIGNMENT_UNIT,
   NewExperimentPaths,
-  Experiment,
-  EndExperimentCondition
+  EndExperimentCondition,
+  ExperimentVM
 } from '../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 
@@ -19,7 +19,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 export class ExperimentScheduleComponent implements OnInit {
 
   @Input() groupType: string;
-  @Input() experimentInfo: Experiment;
+  @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;
   minDate = new Date();

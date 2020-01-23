@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, OnChanges, Input, SimpleChanges } from '@angular/core';
-import { Experiment, EnrollmentByConditionData } from '../../../../core/experiments/store/experiments.model';
+import { EnrollmentByConditionData, ExperimentVM } from '../../../../core/experiments/store/experiments.model';
 
 // Used in EnrollmentPointSegmentTableComponent only
 interface EnrollmentByPointSegmentData extends EnrollmentByConditionData {
@@ -16,7 +16,7 @@ interface EnrollmentByPointSegmentData extends EnrollmentByConditionData {
 })
 export class EnrollmentPointSegmentTableComponent implements OnChanges {
 
-  @Input() experiment: Experiment;
+  @Input() experiment: ExperimentVM;
   displayedColumns: string[] = [
     'experimentPoint',
     'experimentSegment',
@@ -32,22 +32,35 @@ export class EnrollmentPointSegmentTableComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.experiment) {
       this.enrollmentPointSegmentData = [];
-      this.experiment.segments.forEach(segment => {
+      this.experiment.stat.segments.forEach(segment => {
 
-        // TODO: Replace by actual data
-        // Creating random values for dummy data
-        this.enrollmentPointSegmentData.push({
-          experimentPoint: segment.point,
-          experimentSegment: segment.name,
-          condition: 'A',
-          weight: (Math.random() * 40 + 10).toFixed(5) as any,
-          userEnrolled: parseInt((Math.random() * 40 + 10).toFixed(5), 10),
-          userExcluded: parseInt((Math.random() * 40 + 10).toFixed(5), 10),
-          classesEnrolled: parseInt((Math.random() * 40 + 10).toFixed(5), 10),
-          classesExcluded: parseInt((Math.random() * 40 + 10).toFixed(5), 10)
+        segment.conditions.forEach(condition => {
+
+          // TODO: Remained userExcluded and classesExcluded data
+          this.enrollmentPointSegmentData.push({
+            experimentPoint: this.getSegmentData(segment.id, 'point'),
+            experimentSegment: this.getSegmentData(segment.id, 'name'),
+            condition: this.getConditionData(condition.id, 'conditionCode'),
+            weight: this.getConditionData(condition.id, 'assignmentWeight'),
+            userEnrolled: condition.user,
+            userExcluded: 0,
+            classesEnrolled: condition.group,
+            classesExcluded: 0
+          });
         });
-      });
+        });
     }
   }
 
+  getConditionData(conditionId: string,  key: string) {
+    return this.experiment.conditions.reduce((acc, condition) =>
+      condition.id === conditionId ? acc = condition[key] : acc
+    , null);
+  }
+
+  getSegmentData(segmentId: string,  key: string) {
+    return this.experiment.segments.reduce((acc, segment) =>
+      segment.id === segmentId ? acc = segment[key] : acc
+    , null);
+  }
 }

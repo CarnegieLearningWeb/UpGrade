@@ -142,7 +142,21 @@
           </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
-          {{ experiment.students ? experiment.students.length : '0 students' }}
+          <span
+            class="enrollment-info"
+            *ngIf="experiment.stat.users"
+            [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat.users }"
+          ></span>
+          <span
+            class="enrollment-info"
+            *ngIf="experiment.stat.group"
+            [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat.group }"
+          ></span>
+          <span
+            class="enrollment-info"
+            *ngIf="!experiment.stat.group && !experiment.stat.users"
+            [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: 0 }"
+          ></span>
         </td>
       </ng-container>
 
