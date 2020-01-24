@@ -150,7 +150,7 @@ function checkConditionAssigned(
       expect.objectContaining({
         name: experimentName,
         point: experimentPoint,
-        assignedCondition: conditionAssigned,
+        assignedCondition: expect.objectContaining({ id: conditionAssigned }),
       }),
     ])
   );
