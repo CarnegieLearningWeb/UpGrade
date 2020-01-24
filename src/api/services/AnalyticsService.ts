@@ -35,7 +35,7 @@ export class AnalyticsService {
   public async getStats(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
     // get experiment definition
     const experimentDefinition = await this.experimentRepository.findByIds(experimentIds, {
-      relations: ['segments', 'conditions'],
+      relations: ['partitions', 'conditions'],
     });
 
     if (experimentDefinition && experimentDefinition.length === 0) {
@@ -44,9 +44,9 @@ export class AnalyticsService {
 
     const experimentIdAndPoint = [];
     experimentDefinition.forEach(experiment => {
-      const segments = experiment.segments;
-      segments.map(segment => {
-        experimentIdAndPoint.push(`${segment.name}_${segment.point}`);
+      const partitions = experiment.partitions;
+      partitions.map(partition => {
+        experimentIdAndPoint.push(`${partition.name}_${partition.point}`);
       });
     });
 
@@ -137,10 +137,10 @@ export class AnalyticsService {
           [];
 
         const conditionStats = experiment.conditions.map(condition => {
-          const conditionAssignedUser = usersAssignedToExperiment.filter(userSegment => {
+          const conditionAssignedUser = usersAssignedToExperiment.filter(userPartition => {
             return (
-              mappedIndividualAssignment.has(`${experiment.id}_${userSegment.userId}`) &&
-              mappedIndividualAssignment.get(`${experiment.id}_${userSegment.userId}`).condition.id === condition.id
+              mappedIndividualAssignment.has(`${experiment.id}_${userPartition.userId}`) &&
+              mappedIndividualAssignment.get(`${experiment.id}_${userPartition.userId}`).condition.id === condition.id
             );
           });
           const conditionAssignedGroup =
@@ -161,21 +161,21 @@ export class AnalyticsService {
           };
         });
 
-        const segmentStats = experiment.segments.map(segment => {
-          const segmentId = segment.id;
+        const partitionStats = experiment.partitions.map(partition => {
+          const partitionId = partition.id;
 
-          const usersSegmentIncluded = monitoredExperimentPoints.filter(monitoredPoint => {
+          const usersPartitionIncluded = monitoredExperimentPoints.filter(monitoredPoint => {
             return (
-              monitoredPoint.id === segmentId &&
+              monitoredPoint.id === partitionId &&
               mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.userId}`)
             );
           });
 
-          const groupSegmentIncluded =
+          const groupPartitionIncluded =
             (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
               Array.from(
                 new Set(
-                  usersSegmentIncluded.map(
+                  usersPartitionIncluded.map(
                     monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
                   )
                 )
@@ -184,10 +184,10 @@ export class AnalyticsService {
 
           // condition
           const conditions = experiment.conditions.map(condition => {
-            const conditionAssignedUser = usersSegmentIncluded.filter(userSegment => {
+            const conditionAssignedUser = usersPartitionIncluded.filter(userPartition => {
               return (
-                mappedIndividualAssignment.has(`${experiment.id}_${userSegment.userId}`) &&
-                mappedIndividualAssignment.get(`${experiment.id}_${userSegment.userId}`).condition.id === condition.id
+                mappedIndividualAssignment.has(`${experiment.id}_${userPartition.userId}`) &&
+                mappedIndividualAssignment.get(`${experiment.id}_${userPartition.userId}`).condition.id === condition.id
               );
             });
 
@@ -209,9 +209,9 @@ export class AnalyticsService {
           });
 
           return {
-            id: segmentId,
-            user: usersSegmentIncluded.length,
-            group: groupSegmentIncluded.length,
+            id: partitionId,
+            user: usersPartitionIncluded.length,
+            group: groupPartitionIncluded.length,
             conditions,
           };
         });
@@ -222,7 +222,7 @@ export class AnalyticsService {
           group: groupAssignedToExperiment.length,
           userExcluded: usersExcludedFromExperiment.length,
           groupExcluded: groupExcludedFromExperiment.length,
-          segments: segmentStats,
+          partitions: partitionStats,
           conditions: conditionStats,
         };
       }

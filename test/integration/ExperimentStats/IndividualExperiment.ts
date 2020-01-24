@@ -49,9 +49,9 @@ export default async function testCase(): Promise<void> {
         group: 0,
       };
     }),
-    segments: experiments[0].segments.map(segment => {
+    partitions: experiments[0].partitions.map(partition => {
       return {
-        id: segment.id,
+        id: partition.id,
         user: 0,
         group: 0,
         conditions: experiments[0].conditions.map(condition => {
@@ -68,11 +68,11 @@ export default async function testCase(): Promise<void> {
   // check when no stats in database
   checkStatsObject(stats[0], customStats);
 
-  const experimentName1 = experimentObject.segments[0].name;
-  const experimentPoint1 = experimentObject.segments[0].point;
+  const experimentName1 = experimentObject.partitions[0].name;
+  const experimentPoint1 = experimentObject.partitions[0].point;
 
-  const experimentName2 = experimentObject.segments[1].name;
-  const experimentPoint2 = experimentObject.segments[1].point;
+  const experimentName2 = experimentObject.partitions[1].name;
+  const experimentPoint2 = experimentObject.partitions[1].point;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
@@ -149,13 +149,13 @@ export default async function testCase(): Promise<void> {
         group: 0,
       };
     }),
-    segments: experiments[0].segments.map(segment => {
+    partitions: experiments[0].partitions.map(partition => {
       const conditions = experiments[0].conditions.map(condition => {
         const conditionAssigned = individualAssignment.filter(assignedExperiment => {
           const conditionIsSame = assignedExperiment.condition.id === condition.id;
           const userId = assignedExperiment.userId;
           const isInMonitoredPoint = monitoredExperimentPoints.find(monitoredPoint => {
-            return monitoredPoint.id === segment.id && monitoredPoint.userId === userId;
+            return monitoredPoint.id === partition.id && monitoredPoint.userId === userId;
           });
           return conditionIsSame && isInMonitoredPoint;
         });
@@ -166,7 +166,7 @@ export default async function testCase(): Promise<void> {
         };
       });
       return {
-        id: segment.id,
+        id: partition.id,
         user: conditions.reduce((acc, condition) => acc + condition.user, 0),
         group: 0,
         conditions,
@@ -199,13 +199,13 @@ export default async function testCase(): Promise<void> {
         group: 0,
       };
     }),
-    segments: experiments[0].segments.map(segment => {
+    partitions: experiments[0].partitions.map(partition => {
       const conditions = experiments[0].conditions.map(condition => {
         const conditionAssigned = individualAssignment.filter(assignedExperiment => {
           const conditionIsSame = assignedExperiment.condition.id === condition.id;
           const userId = assignedExperiment.userId;
           const isInMonitoredPoint = monitoredExperimentPoints.find(monitoredPoint => {
-            return monitoredPoint.id === segment.id && monitoredPoint.userId === userId;
+            return monitoredPoint.id === partition.id && monitoredPoint.userId === userId;
           });
           return conditionIsSame && isInMonitoredPoint;
         });
@@ -216,7 +216,7 @@ export default async function testCase(): Promise<void> {
         };
       });
       return {
-        id: segment.id,
+        id: partition.id,
         user: conditions.reduce((acc, condition) => acc + condition.user, 0),
         group: 0,
         conditions,
@@ -252,13 +252,13 @@ export default async function testCase(): Promise<void> {
         group: 0,
       };
     }),
-    segments: experiments[0].segments.map(segment => {
+    partitions: experiments[0].partitions.map(partition => {
       const conditions = experiments[0].conditions.map(condition => {
         const conditionAssigned = individualAssignment.filter(assignedExperiment => {
           const conditionIsSame = assignedExperiment.condition.id === condition.id;
           const userId = assignedExperiment.userId;
           const isInMonitoredPoint = monitoredExperimentPoints.find(monitoredPoint => {
-            return monitoredPoint.id === segment.id && monitoredPoint.userId === userId;
+            return monitoredPoint.id === partition.id && monitoredPoint.userId === userId;
           });
           return conditionIsSame && isInMonitoredPoint;
         });
@@ -269,7 +269,7 @@ export default async function testCase(): Promise<void> {
         };
       });
       return {
-        id: segment.id,
+        id: partition.id,
         user: conditions.reduce((acc, condition) => acc + condition.user, 0),
         group: 0,
         conditions,
@@ -302,13 +302,13 @@ export default async function testCase(): Promise<void> {
         group: 0,
       };
     }),
-    segments: experiments[0].segments.map(segment => {
+    partitions: experiments[0].partitions.map(partition => {
       const conditions = experiments[0].conditions.map(condition => {
         const conditionAssigned = individualAssignment.filter(assignedExperiment => {
           const conditionIsSame = assignedExperiment.condition.id === condition.id;
           const userId = assignedExperiment.userId;
           const isInMonitoredPoint = monitoredExperimentPoints.find(monitoredPoint => {
-            return monitoredPoint.id === segment.id && monitoredPoint.userId === userId;
+            return monitoredPoint.id === partition.id && monitoredPoint.userId === userId;
           });
           return conditionIsSame && isInMonitoredPoint;
         });
@@ -319,7 +319,7 @@ export default async function testCase(): Promise<void> {
         };
       });
       return {
-        id: segment.id,
+        id: partition.id,
         user: conditions.reduce((acc, condition) => acc + condition.user, 0),
         group: 0,
         conditions,
@@ -330,12 +330,12 @@ export default async function testCase(): Promise<void> {
 }
 
 function checkStatsObject(receivedStats: any, expectedStats: any): void {
-  const { conditions, segments, ...rest } = expectedStats;
+  const { conditions, partitions, ...rest } = expectedStats;
   expect(receivedStats).toEqual(expect.objectContaining(rest));
   expect(receivedStats.conditions).toEqual(
     expect.arrayContaining(conditions.map(conditionDoc => expect.objectContaining(conditionDoc)))
   );
-  expect(receivedStats.segments).toEqual(
-    expect.arrayContaining(segments.map(segmentStat => expect.objectContaining(segmentStat)))
+  expect(receivedStats.partitions).toEqual(
+    expect.arrayContaining(partitions.map(partitionStat => expect.objectContaining(partitionStat)))
   );
 }

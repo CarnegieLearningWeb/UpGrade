@@ -29,7 +29,7 @@ interface ExperimentPaginationInfo {
  *       - enrollmentCompleteCondition
  *       - group
  *       - conditions
- *       - segments
+ *       - partitions
  *     properties:
  *       id:
  *         type: string
@@ -81,7 +81,7 @@ interface ExperimentPaginationInfo {
  *                type: number
  *               description:
  *                type: string
- *       segments:
+ *       partitions:
  *         type: array
  *         items:
  *           type: object

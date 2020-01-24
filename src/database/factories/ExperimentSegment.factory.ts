@@ -1,14 +1,14 @@
 import * as Faker from 'faker';
 import { define } from 'typeorm-seeding';
-import { ExperimentSegment } from '../../api/models/ExperimentSegment';
+import { ExperimentPartition } from '../../api/models/ExperimentPartition';
 import * as uuid from 'uuid';
 
-define(ExperimentSegment, (faker: typeof Faker, settings: { experimentId: string }) => {
+define(ExperimentPartition, (faker: typeof Faker, settings: { experimentId: string }) => {
   const name = faker.random.words(1);
   const description = faker.random.words(4);
   const point = faker.random.words(1);
 
-  const experimentCondition = new ExperimentSegment();
+  const experimentCondition = new ExperimentPartition();
   experimentCondition.id = uuid.v4();
   experimentCondition.name = name;
   experimentCondition.description = description;

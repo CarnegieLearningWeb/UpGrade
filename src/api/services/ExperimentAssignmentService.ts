@@ -1,6 +1,6 @@
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
-import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
+import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
 import {
   EXPERIMENT_STATE,
   CONSISTENCY_RULE,
@@ -33,7 +33,7 @@ export class ExperimentAssignmentService {
   constructor(
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository()
-    private experimentSegmentRepository: ExperimentSegmentRepository,
+    private experimentPartitionRepository: ExperimentPartitionRepository,
     @OrmRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
@@ -65,15 +65,15 @@ export class ExperimentAssignmentService {
     );
 
     // query root experiment details
-    const experimentSegment = await this.experimentSegmentRepository.findOne({
+    const experimentPartition = await this.experimentPartitionRepository.findOne({
       where: {
         id: `${experimentName}_${experimentPoint}`,
       },
       relations: ['experiment'],
     });
 
-    if (experimentSegment) {
-      this.updateExclusionFromMarkExperimentPoint(userId, userEnvironment, experimentSegment.experiment);
+    if (experimentPartition) {
+      this.updateExclusionFromMarkExperimentPoint(userId, userEnvironment, experimentPartition.experiment);
     }
 
     // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
@@ -171,8 +171,8 @@ export class ExperimentAssignmentService {
 
     return experiments.reduce((accumulator, experiment, index) => {
       const assignment = experimentAssignment[index];
-      const segments = experiment.segments.map(segment => {
-        const { name, point } = segment;
+      const partitions = experiment.partitions.map(partition => {
+        const { name, point } = partition;
         const conditionAssigned = assignment;
         return {
           name,
@@ -182,7 +182,7 @@ export class ExperimentAssignmentService {
           },
         };
       });
-      return [...accumulator, ...segments];
+      return [...accumulator, ...partitions];
     }, []);
   }
 
@@ -219,11 +219,11 @@ export class ExperimentAssignmentService {
     // query all sub-experiment
     const experiment: Experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['segments'],
+      relations: ['partitions'],
     });
 
     const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.segments.map(({ id, point }) => {
+    const subExperiments = experiment.partitions.map(({ id, point }) => {
       return { experimentId: id, experimentPoint: point };
     });
 

@@ -36,8 +36,8 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.segments[0].name;
-  const experimentPoint = experimentObject.segments[0].point;
+  const experimentName = experimentObject.partitions[0].name;
+  const experimentPoint = experimentObject.partitions[0].point;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);

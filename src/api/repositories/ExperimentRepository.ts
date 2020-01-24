@@ -6,7 +6,7 @@ import { Experiment } from '../models/Experiment';
 export class ExperimentRepository extends Repository<Experiment> {
   public getEnrollingAndEnrollmentComplete(): Promise<Experiment[]> {
     return this.createQueryBuilder('experiment')
-      .leftJoinAndSelect('experiment.segments', 'segments')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete', {
         enrolling: 'enrolling',

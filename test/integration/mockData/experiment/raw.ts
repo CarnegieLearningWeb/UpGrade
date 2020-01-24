@@ -24,16 +24,16 @@ export const experiment = {
       conditionCode: 'ConditionB',
     },
   ],
-  segments: [
+  partitions: [
     {
       point: 'CurriculumSequence',
       name: 'W1',
-      description: 'Segment on Workspace 1',
+      description: 'Partition on Workspace 1',
     },
     {
       point: 'CurriculumSequence',
       name: 'W2',
-      description: 'Segment on Workspace 2',
+      description: 'Partition on Workspace 2',
     },
   ],
 };

@@ -1773,7 +1773,7 @@ ee-first@1.1.1:
 
 ees_types@CarnegieLearningWeb/educational-experiment-types#master:
   version "1.0.0"
-  resolved "https://codeload.github.com/CarnegieLearningWeb/educational-experiment-types/tar.gz/0b9876254ede92c0edc65dbb252cc0f75f3ebf77"
+  resolved "https://codeload.github.com/CarnegieLearningWeb/educational-experiment-types/tar.gz/9e3e4113a13d88d0185fe708a89f445c01c9b040"
 
 emoji-regex@^7.0.1:
   version "7.0.3"

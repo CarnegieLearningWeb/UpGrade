@@ -2,7 +2,7 @@ import { Factory, Seeder, times } from 'typeorm-seeding';
 import { Connection } from 'typeorm/connection/Connection';
 import { Experiment } from '../../api/models/Experiment';
 import { ExperimentCondition } from '../../api/models/ExperimentCondition';
-import { ExperimentSegment } from '../../api/models/ExperimentSegment';
+import { ExperimentPartition } from '../../api/models/ExperimentPartition';
 import { POST_EXPERIMENT_RULE } from 'ees_types';
 
 export class CreateExperiments implements Seeder {
@@ -29,10 +29,10 @@ export class CreateExperiments implements Seeder {
         experiment.revertTo = createdConditions[Math.floor(createdConditions.length * Math.random())].id;
       }
 
-      const numberOfSegments = Math.floor(2 * Math.random()) + 2;
-      await factory(ExperimentSegment)({
+      const numberOfPartitions = Math.floor(2 * Math.random()) + 2;
+      await factory(ExperimentPartition)({
         experimentId: experiment.id,
-      }).seedMany(numberOfSegments);
+      }).seedMany(numberOfPartitions);
 
       await em.save(experiment);
     });
