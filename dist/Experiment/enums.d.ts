@@ -13,7 +13,7 @@ export declare enum POST_EXPERIMENT_RULE {
 }
 export declare enum EXPERIMENT_STATE {
     INACTIVE = "inactive",
-    DEMO = "demo",
+    PREVIEW = "preview",
     SCHEDULED = "scheduled",
     ENROLLING = "enrolling",
     ENROLLMENT_COMPLETE = "enrollmentComplete",

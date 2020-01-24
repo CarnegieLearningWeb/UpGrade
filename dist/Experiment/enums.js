@@ -19,7 +19,7 @@ var POST_EXPERIMENT_RULE;
 var EXPERIMENT_STATE;
 (function (EXPERIMENT_STATE) {
     EXPERIMENT_STATE["INACTIVE"] = "inactive";
-    EXPERIMENT_STATE["DEMO"] = "demo";
+    EXPERIMENT_STATE["PREVIEW"] = "preview";
     EXPERIMENT_STATE["SCHEDULED"] = "scheduled";
     EXPERIMENT_STATE["ENROLLING"] = "enrolling";
     EXPERIMENT_STATE["ENROLLMENT_COMPLETE"] = "enrollmentComplete";
