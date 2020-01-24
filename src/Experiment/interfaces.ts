@@ -9,7 +9,7 @@ interface IConditionEnrollmentStats {
   group: number;
 }
 
-interface ISegmentEnrollmentStats {
+interface IPartitionEnrollmentStats {
   id: string;
   user: number;
   group: number;
@@ -23,5 +23,5 @@ export interface IExperimentEnrollmentStats {
   userExcluded: number;
   groupExcluded?: number;
   conditions: IConditionEnrollmentStats[];
-  segments: ISegmentEnrollmentStats[];
+  partitions: IPartitionEnrollmentStats[];
 }
