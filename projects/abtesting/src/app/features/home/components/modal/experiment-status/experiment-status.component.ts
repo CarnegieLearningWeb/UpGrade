@@ -44,7 +44,7 @@ export class ExperimentStatusComponent implements OnInit {
         break;
       default:
         this.experimentStatus = [
-          { value: EXPERIMENT_STATE.DEMO },
+          { value: EXPERIMENT_STATE.PREVIEW },
           { value: EXPERIMENT_STATE.INACTIVE },
           { value: EXPERIMENT_STATE.SCHEDULED },
           { value: EXPERIMENT_STATE.ENROLLING },
