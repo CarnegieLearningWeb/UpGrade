@@ -16,7 +16,7 @@ export enum POST_EXPERIMENT_RULE {
 
 export enum EXPERIMENT_STATE {
   INACTIVE = 'inactive',
-  DEMO = 'demo',
+  PREVIEW = 'preview',
   SCHEDULED = 'scheduled',
   ENROLLING = 'enrolling',
   ENROLLMENT_COMPLETE = 'enrollmentComplete',
@@ -29,7 +29,7 @@ export enum SERVER_ERROR {
   ASSIGNMENT_ERROR = 'Error in the assignment algorithm',
   MISSING_PARAMS = 'Parameter missing in the client request',
   INCORRECT_PARAM_FORMAT = 'Parameter not in the correct format',
-  USER_NOT_FOUND = 'User ID not found'
+  USER_NOT_FOUND = 'User ID not found',
 }
 
 export enum EXPERIMENT_LOG_TYPE {
