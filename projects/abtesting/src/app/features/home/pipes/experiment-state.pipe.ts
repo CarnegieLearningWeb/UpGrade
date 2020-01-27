@@ -12,8 +12,8 @@ export enum ExperimentStatePipeType {
 export class ExperimentStatePipe implements PipeTransform {
   transform(experimentState: EXPERIMENT_STATE, type: ExperimentStatePipeType = ExperimentStatePipeType.TEXT): any {
     switch (experimentState) {
-      case EXPERIMENT_STATE.DEMO:
-        return type === ExperimentStatePipeType.TEXT ? 'Demo' : '#000';
+      case EXPERIMENT_STATE.PREVIEW:
+        return type === ExperimentStatePipeType.TEXT ? 'Preview' : '#000';
       case EXPERIMENT_STATE.SCHEDULED:
         return type === ExperimentStatePipeType.TEXT ? 'Scheduled' : '#000';
       case EXPERIMENT_STATE.INACTIVE:

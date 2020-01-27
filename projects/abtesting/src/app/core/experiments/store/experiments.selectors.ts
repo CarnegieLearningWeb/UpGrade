@@ -35,3 +35,8 @@ export const selectSelectedExperiment = createSelector(
       : undefined;
   }
 );
+
+export const selectExperimentStats = createSelector(
+  selectExperimentState,
+  (state) => state.stats
+);

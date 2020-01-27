@@ -71,6 +71,7 @@
   "home.view-experiment.experiments-segments.text": "Experiment Segments",
   "home.view-experiment.view-experiment-button.text": "VIEW EXPERIMENT DESIGN",
   "home.view-experiment.edit-button.text": "EDIT",
+  "home.view-experiment.delete-button.text": "DELETE",
   "home.view-experiment.created-on.text": "CREATED ON: ",
   "home.view-experiment.ending-criteria.text": "ENDING CRITERIA",
   "home.view-experiment.ending-criteria.reaches.text": "( Reaches ",

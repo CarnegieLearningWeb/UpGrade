@@ -116,7 +116,11 @@ export class ExperimentDesignComponent implements OnInit {
           ...this.experimentDesignForm.value
         };
         experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
-          condition => ({ id: uuid(), ...condition, name: ''})
+          (condition, index) => {
+            return this.experimentInfo
+              ? ({ ...this.experimentInfo.conditions[index], ...condition })
+              : ({ id: uuid(), ...condition, name: ''});
+          }
         );
         this.emitExperimentDialogEvent.emit({
           type: eventType,

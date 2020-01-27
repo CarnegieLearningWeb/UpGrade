@@ -39,6 +39,20 @@ const reducer = createReducer(
     (state, { stats }) => {
       return { ...state, stats, isLoadingExperiment: false };
     }
+  ),
+  on(
+    experimentsAction.actionRemoveExperimentStat,
+    (state, { experimentStatId }) => {
+      delete state.stats[experimentStatId];
+      const stats = state.stats;
+      return { ...state, stats };
+    }
+  ),
+  on(
+    experimentsAction.actionDeleteExperimentSuccess,
+    (state, { experimentId }) => {
+      return adapter.removeOne(experimentId, state);
+    }
   )
 );
 

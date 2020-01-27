@@ -34,4 +34,8 @@ export class ExperimentService {
     delete experiment.stat;
     this.store$.dispatch(experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.UPDATE_EXPERIMENT }));
   }
+
+  deleteExperiment(experimentId) {
+    this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
+  }
 }

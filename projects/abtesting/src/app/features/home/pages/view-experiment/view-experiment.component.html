@@ -31,8 +31,14 @@
           (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
           *ngIf="experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE"
         >
-          <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           {{ 'home.view-experiment.edit-button.text' | translate }}
+        </button>
+        <button
+          mat-flat-button
+          class="experiment-design-button"
+          (click)="deleteExperiment(experiment.id)"
+        >
+          {{ 'home.view-experiment.delete-button.text' | translate }}
         </button>
       </div>
     </div>

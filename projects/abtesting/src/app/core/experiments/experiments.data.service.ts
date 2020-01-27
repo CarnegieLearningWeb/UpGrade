@@ -26,4 +26,9 @@ export class ExperimentDataService {
     const url = `${environment.api.updateExperiments}/${experiment.id}`;
     return this.http.put(url, { ...experiment });
   }
+
+  deleteExperiment(experimentId: string) {
+    const url = `${environment.api.updateExperiments}/${experimentId}`;
+    return this.http.delete(url);
+  }
 }
