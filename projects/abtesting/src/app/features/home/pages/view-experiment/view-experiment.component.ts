@@ -52,6 +52,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
+  deleteExperiment(experimentId: string) {
+    this.experimentService.deleteExperiment(experimentId);
+  }
+
   get DialogType() {
     return DialogType;
   }
