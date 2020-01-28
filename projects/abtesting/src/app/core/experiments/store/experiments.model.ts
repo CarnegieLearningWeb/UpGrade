@@ -78,7 +78,7 @@ export interface ExperimentCondition {
   assignmentWeight: number;
 }
 
-export interface ExperimentSegment {
+export interface ExperimentPartition {
   id: string;
   point: string;
   name: string;
@@ -102,7 +102,7 @@ export interface Experiment {
   tags: string[];
   group: string;
   conditions: ExperimentCondition[];
-  segments: ExperimentSegment[];
+  partitions: ExperimentPartition[];
 }
 
 export interface ExperimentVM extends Experiment {

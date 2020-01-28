@@ -9,10 +9,10 @@
     <div class="experiment-overview">
       <span class="experiment-overview-title">
         {{ experiment?.name }}
-        <span class="experiment-overview-segments">
-          ({{ experiment.segments?.length +
+        <span class="experiment-overview-partitions">
+          ({{ experiment.partitions?.length +
               ' ' +
-              ('home.view-experiment.experiments-segments.text' | translate)
+              ('home.view-experiment.experiments-partitions.text' | translate)
           }})
         </span>
       </span>
@@ -166,9 +166,9 @@
       [experiment]="experiment"
     ></home-enrollment-condition-table>
 
-    <!-- Enrollment by experiment Point and Segment table -->
-    <home-enrollment-point-segment-table
+    <!-- Enrollment by experiment Point and Partition table -->
+    <home-enrollment-point-partition-table
       [experiment]="experiment"
-    ></home-enrollment-point-segment-table>
+    ></home-enrollment-point-partition-table>
   </div>
 </div>

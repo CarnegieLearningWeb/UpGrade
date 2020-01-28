@@ -1,21 +1,21 @@
-<div class="enrollment-point-segment-table-container">
-  <span class="title">{{ 'home.view-experiment.enrollment-by-point-segment.title.text' | translate }}</span>
-  <mat-table [dataSource]="enrollmentPointSegmentData" class="enrollment-point-segment-table">
+<div class="enrollment-point-partition-table-container">
+  <span class="title">{{ 'home.view-experiment.enrollment-by-point-partition.title.text' | translate }}</span>
+  <mat-table [dataSource]="enrollmentPointPartitionData" class="enrollment-point-partition-table">
 
     <!-- Experiment Point Column -->
     <ng-container matColumnDef="experimentPoint">
       <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.enrollment-by-point-segment.experiment-point.text' | translate }}
+        {{ 'home.view-experiment.enrollment-by-point-partition.experiment-point.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let data"> {{ data.experimentPoint }} </mat-cell>
     </ng-container>
 
-    <!-- Experiment Segment Column -->
-    <ng-container matColumnDef="experimentSegment">
+    <!-- Experiment Partition Column -->
+    <ng-container matColumnDef="experimentPartition">
       <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.enrollment-by-point-segment.experiment-segment.text' | translate }}
+        {{ 'home.view-experiment.enrollment-by-point-partition.experiment-partition.text' | translate }}
       </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.experimentSegment }} </mat-cell>
+      <mat-cell *matCellDef="let data"> {{ data.experimentPartition }} </mat-cell>
     </ng-container>
 
     <!-- Condition Column -->

@@ -20,7 +20,7 @@ import { SatDatepickerModule, SatNativeDateModule } from 'saturn-datepicker'
 import { MatDatepickerModule } from '@angular/material';
 import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
-import { EnrollmentPointSegmentTableComponent } from './components/enrollment-point-segment-table/enrollment-point-segment-table.component';
+import { EnrollmentPointPartitionTableComponent } from './components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 @NgModule({
@@ -38,7 +38,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     PostExperimentRuleComponent,
     EnrollmentOverTimeComponent,
     EnrollmentConditionTableComponent,
-    EnrollmentPointSegmentTableComponent
+    EnrollmentPointPartitionTableComponent
   ],
   imports: [
     CommonModule,
