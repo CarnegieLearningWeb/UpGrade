@@ -41,10 +41,15 @@ export class ExcludeController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: id
+   *           name: body
    *           required: true
    *           schema:
-   *             type: string
+   *             type: object
+   *             required:
+   *               - id
+   *             properties:
+   *               id:
+   *                type: string
    *           description: UserId to exclude
    *       tags:
    *         - Exclude
@@ -61,7 +66,7 @@ export class ExcludeController {
 
   /**
    * @swagger
-   * /exclude/{id}:
+   * /exclude/user/{id}:
    *    delete:
    *       description: Delete excluded user
    *       parameters:
@@ -79,10 +84,10 @@ export class ExcludeController {
    *          '200':
    *            description: Delete User By Id
    */
-  @Delete('/:id')
+  @Delete('/user/:id')
   public delete(@Param('id') id: string): Promise<ExplicitIndividualExclusion | undefined> {
-    if (!validator.isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null.'));
     }
     return this.exclude.deleteUser(id);
   }
@@ -114,17 +119,18 @@ export class ExcludeController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: type
+   *           name: body
    *           required: true
    *           schema:
-   *             type: string
-   *           description: Group type to exclude
-   *         - in: body
-   *           name: id
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Group Id to exclude
+   *             type: object
+   *             required:
+   *               - id
+   *               - type
+   *             properties:
+   *               id:
+   *                type: string
+   *               type:
+   *                type: string
    *       tags:
    *         - Exclude
    *       produces:
@@ -136,5 +142,45 @@ export class ExcludeController {
   @Put('/group')
   public excludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitGroupExclusion> {
     return this.exclude.excludeGroup(id, type);
+  }
+
+  /**
+   * @swagger
+   * /exclude/group/{type}/{id}:
+   *    delete:
+   *       description: Delete excluded user
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Group Id
+   *         - in: path
+   *           name: type
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Group Id
+   *       tags:
+   *         - Exclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete User By Id
+   */
+  @Delete('/group/:type/:id')
+  public deleteGroup(
+    @Param('id') id: string,
+    @Param('type') type: string
+  ): Promise<ExplicitGroupExclusion | undefined> {
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null'));
+    }
+    if (!type) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : type should be provided for delete'));
+    }
+    return this.exclude.deleteGroup(id, type);
   }
 }

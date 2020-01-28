@@ -14,4 +14,15 @@ export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIn
 
     return result.raw;
   }
+
+  public async deleteById(userId: string): Promise<ExplicitIndividualExclusion> {
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(ExplicitIndividualExclusion)
+      .where('userId=:userId', { userId })
+      .returning('*')
+      .execute();
+
+    return result.raw;
+  }
 }

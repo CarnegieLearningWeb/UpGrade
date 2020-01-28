@@ -23,8 +23,8 @@ export class ExcludeService {
   }
 
   public async deleteUser(userId: string): Promise<ExplicitIndividualExclusion | undefined> {
-    const deletedDoc = await this.explicitIndividualExclusionRepository.delete({ userId });
-    return deletedDoc.raw;
+    const deletedDoc = await this.explicitIndividualExclusionRepository.deleteById(userId);
+    return deletedDoc;
   }
 
   public getAllGroups(): Promise<ExplicitGroupExclusion[]> {
@@ -33,5 +33,9 @@ export class ExcludeService {
 
   public excludeGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion> {
     return this.explicitGroupExclusionRepository.saveRawJson({ groupId, type });
+  }
+
+  public deleteGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion | undefined> {
+    return this.explicitGroupExclusionRepository.deleteGroup(groupId, type);
   }
 }
