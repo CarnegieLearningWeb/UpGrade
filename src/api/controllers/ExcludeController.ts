@@ -1,7 +1,8 @@
-import { JsonController, Post, BodyParam, Get } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Put, Delete, Param } from 'routing-controllers';
 import { ExcludeService } from '../services/ExcludeService';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
+import { SERVER_ERROR } from 'ees_types';
 
 /**
  * @swagger
@@ -34,7 +35,7 @@ export class ExcludeController {
   /**
    * @swagger
    * /exclude/user:
-   *    post:
+   *    put:
    *       description: Exclude an User
    *       consumes:
    *         - application/json
@@ -53,9 +54,37 @@ export class ExcludeController {
    *          '200':
    *            description: Exclude user from experiment
    */
-  @Post('/user')
+  @Put('/user')
   public excludeUser(@BodyParam('id') id: string): Promise<ExplicitIndividualExclusion> {
     return this.exclude.excludeUser(id);
+  }
+
+  /**
+   * @swagger
+   * /exclude/{id}:
+   *    delete:
+   *       description: Delete excluded user
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: User Id
+   *       tags:
+   *         - Exclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete User By Id
+   */
+  @Delete('/:id')
+  public delete(@Param('id') id: string): Promise<ExplicitIndividualExclusion | undefined> {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
+    }
+    return this.exclude.deleteUser(id);
   }
 
   /**
@@ -79,7 +108,7 @@ export class ExcludeController {
   /**
    * @swagger
    * /exclude/group:
-   *    post:
+   *    put:
    *       description: Exclude a Group
    *       consumes:
    *         - application/json
@@ -104,7 +133,7 @@ export class ExcludeController {
    *          '200':
    *            description: Exclude group from experiment
    */
-  @Post('/group')
+  @Put('/group')
   public excludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitGroupExclusion> {
     return this.exclude.excludeGroup(id, type);
   }

@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
@@ -22,9 +22,8 @@ export class ExperimentCondition extends BaseModel {
   public conditionCode: string;
 
   @IsNotEmpty()
-  @Column({
-    type: 'decimal',
-  })
+  @IsNumber()
+  @Column()
   public assignmentWeight: number;
 
   @ManyToOne(

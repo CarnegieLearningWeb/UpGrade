@@ -22,6 +22,11 @@ export class ExcludeService {
     return this.explicitIndividualExclusionRepository.saveRawJson({ userId });
   }
 
+  public async deleteUser(userId: string): Promise<ExplicitIndividualExclusion | undefined> {
+    const deletedDoc = await this.explicitIndividualExclusionRepository.delete({ userId });
+    return deletedDoc.raw;
+  }
+
   public getAllGroups(): Promise<ExplicitGroupExclusion[]> {
     return this.explicitGroupExclusionRepository.find();
   }
