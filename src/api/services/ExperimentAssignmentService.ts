@@ -399,7 +399,7 @@ export class ExperimentAssignmentService {
 
   private weightedRandom(spec: number[]): number {
     let sum = 0;
-    const r = Math.random();
+    const r = Math.random() * 100;
     for (let i = 0; i < spec.length; i++) {
       sum += spec[i];
       if (r <= sum) {
