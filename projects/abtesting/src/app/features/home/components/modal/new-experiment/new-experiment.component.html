@@ -3,6 +3,7 @@
   #stepper
   (selectionChange)="stepChanged($event)"
   [selectedIndex]="selectedStepperIndex"
+  (animationDone)="animationDone()"
 >
   <ng-template matStepperIcon="edit">
     <mat-icon>done</mat-icon>
@@ -34,6 +35,7 @@
     <home-experiment-design
       [experimentInfo]="experimentInfo"
       [disableControls]="data?.stepperIndex === 1"
+      [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
   </mat-step>

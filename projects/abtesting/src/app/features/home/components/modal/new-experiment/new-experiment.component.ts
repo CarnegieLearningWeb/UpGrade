@@ -18,6 +18,7 @@ export class NewExperimentComponent {
   newExperimentData: any = {};
   selectedStepperIndex = 0 ;
   experimentInfo: ExperimentVM;
+  animationCompletedIndex: Number;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
@@ -65,5 +66,9 @@ export class NewExperimentComponent {
 
   stepChanged(event) {
     this.selectedStepperIndex = event.selectedIndex;
+  }
+
+  animationDone() {
+    this.animationCompletedIndex = this.selectedStepperIndex;
   }
 }

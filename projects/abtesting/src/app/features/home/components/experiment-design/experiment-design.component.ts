@@ -6,7 +6,9 @@ import {
   EventEmitter,
   Input,
   ViewChild,
-  ElementRef
+  ElementRef,
+  OnChanges,
+  SimpleChanges
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
@@ -20,13 +22,15 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
   styleUrls: ['./experiment-design.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExperimentDesignComponent implements OnInit {
+export class ExperimentDesignComponent implements OnInit, OnChanges {
   @Input() experimentInfo: ExperimentVM;
   @Input() disableControls = false;
+  @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   @ViewChild('conditionTable', { static: false, read: ElementRef }) conditionTable: ElementRef;
   @ViewChild('partitionTable', { static: false, read: ElementRef }) partitionTable: ElementRef;
+  @ViewChild('conditionCode', { static: false }) conditionCode: ElementRef;
 
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -35,6 +39,12 @@ export class ExperimentDesignComponent implements OnInit {
   conditionDisplayedColumns = [ 'conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
   partitionDisplayedColumns = ['partitionNumber', 'point', 'name', 'removePartition'];
   constructor(private _formBuilder: FormBuilder) {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.animationCompleteStepperIndex && changes.animationCompleteStepperIndex.currentValue === 1) {
+      this.conditionCode.nativeElement.focus();
+    }
+  }
 
   ngOnInit() {
     this.experimentDesignForm = this._formBuilder.group(
