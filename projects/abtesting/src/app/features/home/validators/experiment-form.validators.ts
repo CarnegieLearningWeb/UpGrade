@@ -15,7 +15,7 @@ export class ExperimentFormValidators {
 
   static validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
     const conditions = controls.get('conditions').value;
-    const segments = controls.get('segments').value;
+    const partitions = controls.get('partitions').value;
     if (conditions.length < 2) {
       return { conditionCountError: true }
     } else if (conditions.length >= 2) {
@@ -23,8 +23,8 @@ export class ExperimentFormValidators {
       conditions.forEach(condition => sumOfAssignmentWeights += parseInt(condition.assignmentWeight, 10));
       return sumOfAssignmentWeights !== 100 ? { assignmentWightsSumError: true } : null;
     }
-    if (segments.length < 1) {
-      return { segmentCountError: true }
+    if (partitions.length < 1) {
+      return { partitionCountError: true }
     }
     return null;
   }

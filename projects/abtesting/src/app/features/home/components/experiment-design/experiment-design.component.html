@@ -103,7 +103,7 @@
             [iconType]="'delete'"
             class="remove-icon"
             *ngIf="groupIndex !== 0 && groupIndex !== 1 && !disableControls"
-            (click)="removeConditionOrSegment('condition', groupIndex)"
+            (click)="removeConditionOrPartition('condition', groupIndex)"
           ></app-shared-icons>
         </mat-cell>
       </ng-container>
@@ -123,24 +123,24 @@
     <button
       type="button"
       class="add-condition"
-      (click)="addConditionOrSegment('condition')"
+      (click)="addConditionOrPartition('condition')"
       [ngClass]="{'add-condition--disabled': disableControls}"
     >
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
     </button>
   </ng-container>
 
-  <!-- Segment Table -->
+  <!-- Partition Table -->
   <ng-container>
     <mat-table
-      class="segment-table"
-      [dataSource]="segmentDataSource"
-      formArrayName="segments"
-      #segmentTable
+      class="partition-table"
+      [dataSource]="partitionDataSource"
+      formArrayName="partitions"
+      #partitionTable
     >
 
-     <!-- SEGMENT NUMBER Column -->
-     <ng-container matColumnDef="segmentNumber">
+     <!-- PARTITION NUMBER Column -->
+     <ng-container matColumnDef="partitionNumber">
       <mat-header-cell *matHeaderCellDef>
         {{ 'home.new-experiment.design.number.text' | translate }}
       </mat-header-cell>
@@ -149,57 +149,57 @@
       </mat-cell>
     </ng-container>
 
-      <!-- SEGMENT POINT Column -->
+      <!-- PARTITION POINT Column -->
       <ng-container matColumnDef="point">
         <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.segment-point.text' | translate }}
+          {{ 'home.new-experiment.design.partition-point.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else segmentPointTemplate">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else partitionPointTemplate">
             <input
               matInput
               [placeholder]="
-                'home.new-experiment.design.segment-point.placeholder.text'
+                'home.new-experiment.design.partition-point.placeholder.text'
                   | translate
               "
               formControlName="point"
             />
           </mat-form-field>
-          <ng-template #segmentPointTemplate>
-            <span> {{ experimentInfo.segments[groupIndex].point }} </span>
+          <ng-template #partitionPointTemplate>
+            <span> {{ experimentInfo.partitions[groupIndex].point }} </span>
           </ng-template>
         </mat-cell>
       </ng-container>
 
-      <!-- SEGMENT NAME Column -->
+      <!-- PARTITION NAME Column -->
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.segment-name.text' | translate }}
+          {{ 'home.new-experiment.design.partition-name.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else segmentNameTemplate">
+          <mat-form-field floatLabel="never" *ngIf="!disableControls; else partitionNameTemplate">
             <input
               matInput
               [placeholder]="
-                'home.new-experiment.design.segment-name.placeholder.text'
+                'home.new-experiment.design.partition-name.placeholder.text'
                   | translate
               "
               formControlName="name"
             />
           </mat-form-field>
-          <ng-template #segmentNameTemplate>
-            <span> {{ experimentInfo.segments[groupIndex].name }} </span>
+          <ng-template #partitionNameTemplate>
+            <span> {{ experimentInfo.partitions[groupIndex].name }} </span>
           </ng-template>
         </mat-cell>
       </ng-container>
 
-      <ng-container matColumnDef="removeSegment">
+      <ng-container matColumnDef="removePartition">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
@@ -209,24 +209,24 @@
             [iconType]="'delete'"
             class="remove-icon"
             *ngIf="groupIndex !== 0 && !disableControls"
-            (click)="removeConditionOrSegment('segment', groupIndex)"
+            (click)="removeConditionOrPartition('partition', groupIndex)"
           ></app-shared-icons>
         </mat-cell>
       </ng-container>
 
       <mat-header-row
-        *matHeaderRowDef="segmentDisplayedColumns; sticky: true"
+        *matHeaderRowDef="partitionDisplayedColumns; sticky: true"
       ></mat-header-row>
-      <mat-row *matRowDef="let row; columns: segmentDisplayedColumns"></mat-row>
+      <mat-row *matRowDef="let row; columns: partitionDisplayedColumns"></mat-row>
     </mat-table>
     <button
       type="button"
-      class="add-segment"
-      (click)="addConditionOrSegment('segment')"
-      [ngClass]="{'add-segment--disabled': disableControls}"
+      class="add-partition"
+      (click)="addConditionOrPartition('partition')"
+      [ngClass]="{'add-partition--disabled': disableControls}"
     >
       +
-      {{ 'home.new-experiment.design.add-point-and-segment.text' | translate }}
+      {{ 'home.new-experiment.design.add-point-and-partition.text' | translate }}
     </button>
   </ng-container>
 

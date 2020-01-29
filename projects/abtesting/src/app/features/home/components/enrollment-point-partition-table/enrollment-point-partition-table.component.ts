@@ -1,25 +1,25 @@
 import { Component, ChangeDetectionStrategy, OnChanges, Input, SimpleChanges } from '@angular/core';
 import { EnrollmentByConditionData, ExperimentVM } from '../../../../core/experiments/store/experiments.model';
 
-// Used in EnrollmentPointSegmentTableComponent only
-interface EnrollmentByPointSegmentData extends EnrollmentByConditionData {
+// Used in EnrollmentPointPartitionTableComponent only
+interface EnrollmentByPointPartitionData extends EnrollmentByConditionData {
   experimentPoint: string;
-  experimentSegment: string;
+  experimentPartition: string;
 }
 
 
 @Component({
-  selector: 'home-enrollment-point-segment-table',
-  templateUrl: './enrollment-point-segment-table.component.html',
-  styleUrls: ['./enrollment-point-segment-table.component.scss'],
+  selector: 'home-enrollment-point-partition-table',
+  templateUrl: './enrollment-point-partition-table.component.html',
+  styleUrls: ['./enrollment-point-partition-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EnrollmentPointSegmentTableComponent implements OnChanges {
+export class EnrollmentPointPartitionTableComponent implements OnChanges {
 
   @Input() experiment: ExperimentVM;
   displayedColumns: string[] = [
     'experimentPoint',
-    'experimentSegment',
+    'experimentPartition',
     'condition',
     'weight',
     'usersEnrolled',
@@ -27,19 +27,19 @@ export class EnrollmentPointSegmentTableComponent implements OnChanges {
     'classesEnrolled',
     'classesExcluded'
   ];
-  enrollmentPointSegmentData: EnrollmentByPointSegmentData[] = [];
+  enrollmentPointPartitionData: EnrollmentByPointPartitionData[] = [];
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.experiment) {
-      this.enrollmentPointSegmentData = [];
-      this.experiment.stat.segments.forEach(segment => {
+      this.enrollmentPointPartitionData = [];
+      this.experiment.stat.partitions.forEach(partition => {
 
-        segment.conditions.forEach(condition => {
+        partition.conditions.forEach(condition => {
 
           // TODO: Remained userExcluded and classesExcluded data
-          this.enrollmentPointSegmentData.push({
-            experimentPoint: this.getSegmentData(segment.id, 'point'),
-            experimentSegment: this.getSegmentData(segment.id, 'name'),
+          this.enrollmentPointPartitionData.push({
+            experimentPoint: this.getPartitionData(partition.id, 'point'),
+            experimentPartition: this.getPartitionData(partition.id, 'name'),
             condition: this.getConditionData(condition.id, 'conditionCode'),
             weight: this.getConditionData(condition.id, 'assignmentWeight'),
             userEnrolled: condition.user,
@@ -58,9 +58,9 @@ export class EnrollmentPointSegmentTableComponent implements OnChanges {
     , null);
   }
 
-  getSegmentData(segmentId: string,  key: string) {
-    return this.experiment.segments.reduce((acc, segment) =>
-      segment.id === segmentId ? acc = segment[key] : acc
+  getPartitionData(partitionId: string,  key: string) {
+    return this.experiment.partitions.reduce((acc, partition) =>
+      partition.id === partitionId ? acc = partition[key] : acc
     , null);
   }
 }
