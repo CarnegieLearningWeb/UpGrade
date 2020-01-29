@@ -1,10 +1,4 @@
-FROM alpine:3.8
-
-RUN apk update
-
-RUN apk add nodejs
-
-RUN apk add yarn
+FROM node:8
 
 # Create app directory
 WORKDIR /usr/src/app
