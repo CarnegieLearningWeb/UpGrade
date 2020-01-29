@@ -8,6 +8,7 @@
     "dev": "npm start serve",
     "build": "npm start build",
     "production": "npm start serve.production",
+    "docker": "npm run build && npm run production",
     "test": "npm start test",
     "test:watch": "npm start test.watch",
     "test:coverage": "npm start test.coverage",
