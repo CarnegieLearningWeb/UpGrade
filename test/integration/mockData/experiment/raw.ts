@@ -13,27 +13,27 @@ export const experiment = {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
       name: 'Condition A',
       description: 'Condition A',
-      assignmentWeight: 0.4,
+      assignmentWeight: 40,
       conditionCode: 'ConditionA',
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
       name: 'Condition B',
       description: 'Condition B',
-      assignmentWeight: 0.6,
+      assignmentWeight: 60,
       conditionCode: 'ConditionB',
     },
   ],
-  segments: [
+  partitions: [
     {
       point: 'CurriculumSequence',
       name: 'W1',
-      description: 'Segment on Workspace 1',
+      description: 'Partition on Workspace 1',
     },
     {
       point: 'CurriculumSequence',
       name: 'W2',
-      description: 'Segment on Workspace 2',
+      description: 'Partition on Workspace 2',
     },
   ],
 };

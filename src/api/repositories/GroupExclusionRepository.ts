@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { GroupExclusion } from '../models/GroupExclusion';
 
 type GroupExclusionInput = Omit<GroupExclusion, 'createdAt' | 'updatedAt' | 'versionNumber'>;
@@ -11,6 +11,17 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       .values(rawData)
       .onConflict(`DO NOTHING`)
       .returning('*')
+      .execute();
+
+    return result.raw;
+  }
+
+  public async deleteByExperimentId(experimentId: string, entityManager: EntityManager): Promise<GroupExclusion[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(GroupExclusion)
+      .where('experimentId = :experimentId', { experimentId })
       .execute();
 
     return result.raw;

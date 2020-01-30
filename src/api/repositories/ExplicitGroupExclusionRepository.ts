@@ -14,4 +14,15 @@ export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupEx
 
     return result.raw;
   }
+
+  public async deleteGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion | undefined> {
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(ExplicitGroupExclusion)
+      .where('groupId=:groupId AND type=:type', { groupId, type })
+      .returning('*')
+      .execute();
+
+    return result.raw;
+  }
 }

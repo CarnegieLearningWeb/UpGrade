@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
-import { ExperimentSegment } from './ExperimentSegment';
+import { ExperimentPartition } from './ExperimentPartition';
 import { BaseModel } from './base/BaseModel';
 import {
   CONSISTENCY_RULE,
@@ -111,10 +111,10 @@ export class Experiment extends BaseModel {
   public conditions: ExperimentCondition[];
 
   @OneToMany(
-    type => ExperimentSegment,
-    segment => segment.experiment
+    type => ExperimentPartition,
+    partition => partition.experiment
   )
   @ValidateNested()
-  @Type(() => ExperimentSegment)
-  public segments: ExperimentSegment[];
+  @Type(() => ExperimentPartition)
+  public partitions: ExperimentPartition[];
 }

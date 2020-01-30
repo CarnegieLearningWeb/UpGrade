@@ -1,7 +1,8 @@
-import { JsonController, Post, BodyParam, Get } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Put, Delete, Param } from 'routing-controllers';
 import { ExcludeService } from '../services/ExcludeService';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
+import { SERVER_ERROR } from 'ees_types';
 
 /**
  * @swagger
@@ -34,16 +35,21 @@ export class ExcludeController {
   /**
    * @swagger
    * /exclude/user:
-   *    post:
+   *    put:
    *       description: Exclude an User
    *       consumes:
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: id
+   *           name: body
    *           required: true
    *           schema:
-   *             type: string
+   *             type: object
+   *             required:
+   *               - id
+   *             properties:
+   *               id:
+   *                type: string
    *           description: UserId to exclude
    *       tags:
    *         - Exclude
@@ -53,9 +59,37 @@ export class ExcludeController {
    *          '200':
    *            description: Exclude user from experiment
    */
-  @Post('/user')
+  @Put('/user')
   public excludeUser(@BodyParam('id') id: string): Promise<ExplicitIndividualExclusion> {
     return this.exclude.excludeUser(id);
+  }
+
+  /**
+   * @swagger
+   * /exclude/user/{id}:
+   *    delete:
+   *       description: Delete excluded user
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: User Id
+   *       tags:
+   *         - Exclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete User By Id
+   */
+  @Delete('/user/:id')
+  public delete(@Param('id') id: string): Promise<ExplicitIndividualExclusion | undefined> {
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null.'));
+    }
+    return this.exclude.deleteUser(id);
   }
 
   /**
@@ -79,23 +113,24 @@ export class ExcludeController {
   /**
    * @swagger
    * /exclude/group:
-   *    post:
+   *    put:
    *       description: Exclude a Group
    *       consumes:
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: type
+   *           name: body
    *           required: true
    *           schema:
-   *             type: string
-   *           description: Group type to exclude
-   *         - in: body
-   *           name: id
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Group Id to exclude
+   *             type: object
+   *             required:
+   *               - id
+   *               - type
+   *             properties:
+   *               id:
+   *                type: string
+   *               type:
+   *                type: string
    *       tags:
    *         - Exclude
    *       produces:
@@ -104,8 +139,48 @@ export class ExcludeController {
    *          '200':
    *            description: Exclude group from experiment
    */
-  @Post('/group')
+  @Put('/group')
   public excludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitGroupExclusion> {
     return this.exclude.excludeGroup(id, type);
+  }
+
+  /**
+   * @swagger
+   * /exclude/group/{type}/{id}:
+   *    delete:
+   *       description: Delete excluded user
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Group Id
+   *         - in: path
+   *           name: type
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Group Id
+   *       tags:
+   *         - Exclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete User By Id
+   */
+  @Delete('/group/:type/:id')
+  public deleteGroup(
+    @Param('id') id: string,
+    @Param('type') type: string
+  ): Promise<ExplicitGroupExclusion | undefined> {
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null'));
+    }
+    if (!type) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : type should be provided for delete'));
+    }
+    return this.exclude.deleteGroup(id, type);
   }
 }

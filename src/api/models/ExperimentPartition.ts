@@ -4,7 +4,7 @@ import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
 @Entity()
-export class ExperimentSegment extends BaseModel {
+export class ExperimentPartition extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
@@ -21,7 +21,7 @@ export class ExperimentSegment extends BaseModel {
 
   @ManyToOne(
     type => Experiment,
-    experiment => experiment.segments
+    experiment => experiment.partitions
   )
   public experiment: Experiment;
 }

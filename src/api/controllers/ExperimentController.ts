@@ -1,4 +1,4 @@
-import { Body, Get, JsonController, OnUndefined, Param, Post, Put } from 'routing-controllers';
+import { Body, Get, JsonController, OnUndefined, Param, Post, Put, Delete } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
@@ -29,7 +29,7 @@ interface ExperimentPaginationInfo {
  *       - enrollmentCompleteCondition
  *       - group
  *       - conditions
- *       - segments
+ *       - partitions
  *     properties:
  *       id:
  *         type: string
@@ -81,7 +81,7 @@ interface ExperimentPaginationInfo {
  *                type: number
  *               description:
  *                type: string
- *       segments:
+ *       partitions:
  *         type: array
  *         items:
  *           type: object
@@ -246,7 +246,7 @@ export class ExperimentController {
   @OnUndefined(ExperimentNotFoundError)
   public getCondition(@Param('id') id: string): Promise<ExperimentCondition[]> {
     if (!validator.isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id shoud be of type UUID.'));
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
     }
     return this.experimentService.getExperimentalConditions(id);
   }
@@ -280,6 +280,35 @@ export class ExperimentController {
     @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment
   ): Promise<Experiment> {
     return this.experimentService.create(experiment);
+  }
+
+  /**
+   * @swagger
+   * /experiments/{id}:
+   *    delete:
+   *       description: Delete experiment by id
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment Id
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete Experiment By Id
+   */
+
+  @Delete('/:id')
+  public delete(@Param('id') id: string): Promise<Experiment | undefined> {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
+    }
+    return this.experimentService.delete(id);
   }
 
   /**

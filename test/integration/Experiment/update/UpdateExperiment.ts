@@ -38,20 +38,20 @@ export default async function UpdateExperiment(): Promise<void> {
   // delete one condition
   editedConditions.pop();
 
-  // edit segments
-  const editedSegments = experiments[0].segments.map((segment, index) => {
+  // edit partitions
+  const editedPartitions = experiments[0].partitions.map((partition, index) => {
     return {
-      ...segment,
-      description: `Segment on Workspace ${index}`,
+      ...partition,
+      description: `Partition on Workspace ${index}`,
     };
   });
 
-  // delete one segment
-  editedSegments.pop();
+  // delete one partition
+  editedPartitions.pop();
 
-  editedSegments[0].name = 'T1';
-  editedSegments[0].point = 'Test';
-  editedSegments[0].id = 'T1_Test';
+  editedPartitions[0].name = 'T1';
+  editedPartitions[0].point = 'Test';
+  editedPartitions[0].id = 'T1_Test';
 
   // adding new condition
   const newExperimentDoc = {
@@ -65,12 +65,12 @@ export default async function UpdateExperiment(): Promise<void> {
         assignmentWeight: '0.5',
       },
     ],
-    segments: [
-      ...editedSegments,
+    partitions: [
+      ...editedPartitions,
       {
         point: 'CurriculumSequence ',
         name: 'W3',
-        description: 'Segment on Workspace 3',
+        description: 'Partition on Workspace 3',
       },
     ],
   };
@@ -99,26 +99,26 @@ export default async function UpdateExperiment(): Promise<void> {
   const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id);
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
 
-  // check the segments
-  expect(updatedExperimentDoc.segments).toEqual(
+  // check the partitions
+  expect(updatedExperimentDoc.partitions).toEqual(
     expect.arrayContaining([
-      ...editedSegments.map(segment => {
+      ...editedPartitions.map(partition => {
         return expect.objectContaining({
-          id: segment.id,
-          point: segment.point,
-          name: segment.name,
-          description: segment.description,
+          id: partition.id,
+          point: partition.point,
+          name: partition.name,
+          description: partition.description,
         });
       }),
       expect.objectContaining({
         point: 'CurriculumSequence ',
         name: 'W3',
-        description: 'Segment on Workspace 3',
+        description: 'Partition on Workspace 3',
       }),
     ])
   );
 
-  // get all experimental segments
-  const experimentSegment = await experimentService.getExperimentSegments(updatedExperimentDoc.id);
-  expect(experimentSegment.length).toEqual(updatedExperimentDoc.segments.length);
+  // get all experimental partitions
+  const experimentPartition = await experimentService.getExperimentPartitions(updatedExperimentDoc.id);
+  expect(experimentPartition.length).toEqual(updatedExperimentDoc.partitions.length);
 }

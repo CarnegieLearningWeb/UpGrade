@@ -15,7 +15,7 @@ define(Experiment, (faker: typeof Faker, settings: {}) => {
   const description = faker.name.jobTitle();
   const state = faker.random.arrayElement([
     EXPERIMENT_STATE.CANCELLED,
-    EXPERIMENT_STATE.DEMO,
+    EXPERIMENT_STATE.PREVIEW,
     EXPERIMENT_STATE.ENROLLING,
     EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
     EXPERIMENT_STATE.INACTIVE,

@@ -38,6 +38,17 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
   //   return result.raw[0];
   // }
 
+  public async deleteByIds(ids: string[], entityManager: EntityManager): Promise<ExperimentCondition[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(ExperimentCondition)
+      .where('id IN (:...ids)', { ids })
+      .execute();
+
+    return result.raw;
+  }
+
   public async insertConditions(
     conditionDocs: Array<Partial<ExperimentCondition>>,
     entityManager: EntityManager

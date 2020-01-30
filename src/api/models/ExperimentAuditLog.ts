@@ -9,7 +9,10 @@ export class ExperimentAuditLog extends BaseModel {
   public id: string;
 
   @IsNotEmpty()
-  @Column()
+  @Column({
+    type: 'enum',
+    enum: EXPERIMENT_LOG_TYPE,
+  })
   public type: EXPERIMENT_LOG_TYPE;
 
   @Column({ type: 'json' })

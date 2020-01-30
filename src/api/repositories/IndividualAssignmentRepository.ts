@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 
 type IndividualAssignmentInput = Omit<IndividualAssignment, 'createdAt' | 'updatedAt' | 'versionNumber'>;
@@ -20,6 +20,20 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       .into(IndividualAssignment)
       .values(rawData)
       .returning('*')
+      .execute();
+
+    return result.raw;
+  }
+
+  public async deleteByExperimentId(
+    experimentId: string,
+    entityManager: EntityManager
+  ): Promise<IndividualAssignment[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .delete()
+      .from(IndividualAssignment)
+      .where('experimentId = :experimentId', { experimentId })
       .execute();
 
     return result.raw;

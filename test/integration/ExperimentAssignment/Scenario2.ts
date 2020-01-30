@@ -17,8 +17,8 @@ export default async function testCase(): Promise<void> {
   // experiment object
   const experimentObject = individualAssignmentExperimentConsistencyRuleExperiemnt;
 
-  const experimentName = experimentObject.segments[0].name;
-  const experimentPoint = experimentObject.segments[0].point;
+  const experimentName = experimentObject.partitions[0].name;
+  const experimentPoint = experimentObject.partitions[0].point;
 
   // create experiment
   await experimentService.create(experimentObject as any);

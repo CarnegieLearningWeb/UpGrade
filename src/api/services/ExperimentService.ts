@@ -5,22 +5,35 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Experiment, SearchParams, SEARCH_KEY, SortParams } from '../models/Experiment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
-import { ExperimentSegmentRepository } from '../repositories/ExperimentSegmentRepository';
+import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { ExperimentSegment } from '../models/ExperimentSegment';
+import { ExperimentPartition } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
+import { GroupAssignmentRepository } from '../repositories/GroupAssignmentRepository';
+import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
+import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
+import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 
 @Service()
 export class ExperimentService {
   constructor(
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @OrmRepository() private experimentSegmentRepository: ExperimentSegmentRepository,
+    @OrmRepository() private experimentPartitionRepository: ExperimentPartitionRepository,
     @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @OrmRepository() private individualAssignmentRepository: IndividualAssignmentRepository,
+    @OrmRepository() private groupAssignmentRepository: GroupAssignmentRepository,
+    @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
+    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
+    @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
+
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -30,7 +43,7 @@ export class ExperimentService {
     return this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.segments', 'segments')
+      .innerJoinAndSelect('experiment.partitions', 'partitions')
       .getMany();
   }
 
@@ -45,7 +58,7 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.segments', 'segments');
+      .innerJoinAndSelect('experiment.partitions', 'partitions');
 
     if (searchParams) {
       // add search query
@@ -72,7 +85,7 @@ export class ExperimentService {
     return this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.segments', 'segments')
+      .innerJoinAndSelect('experiment.partitions', 'partitions')
       .where({ id })
       .getOne();
   }
@@ -87,6 +100,46 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment);
   }
 
+  public async delete(experimentId: string): Promise<Experiment | undefined> {
+    this.log.info('Delete experiment => ', experimentId);
+
+    return getConnection().transaction(async transactionalEntityManager => {
+      const experiment = await this.findOne(experimentId);
+
+      if (experiment) {
+        // delete conditions and partitions
+        const conditionIds = experiment.conditions.map(condition => condition.id);
+        const partitionIds = experiment.partitions.map(partition => partition.id);
+
+        // monitoredIds
+        const monitoredIds = experiment.partitions.map(partition => {
+          return partition.id;
+        });
+
+        // deleting data related to experiment
+        await Promise.all([
+          this.groupAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.groupExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.individualAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.individualExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.monitoredExperimentPointRepository.deleteById(monitoredIds, transactionalEntityManager),
+          this.scheduledJobRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+        ]);
+
+        // deleting partitions and conditions
+        await Promise.all([
+          this.experimentConditionRepository.deleteByIds(conditionIds, transactionalEntityManager),
+          this.experimentPartitionRepository.deleteByIds(partitionIds, transactionalEntityManager),
+        ]);
+
+        const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
+        return deletedExperiment;
+      }
+
+      return undefined;
+    });
+  }
+
   public update(id: string, experiment: Experiment): Promise<Experiment> {
     this.log.info('Update an experiment => ', experiment.toString());
     // TODO add entry in audit log of updating experiment
@@ -98,16 +151,16 @@ export class ExperimentService {
     return experiment.conditions;
   }
 
-  public async getExperimentSegments(experimentId: string): Promise<ExperimentSegment[]> {
+  public async getExperimentPartitions(experimentId: string): Promise<ExperimentPartition[]> {
     const experiment: Experiment = await this.findOne(experimentId);
-    return experiment.segments;
+    return experiment.partitions;
   }
 
   private async updateExperimentInDB(experiment: Experiment): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
     const oldConditions = oldExperiment.conditions;
-    const oldSegments = oldExperiment.segments;
+    const oldPartitions = oldExperiment.partitions;
 
     // create schedules to start experiment and end experiment
     this.scheduledJobService.updateExperimentSchedules(experiment);
@@ -120,7 +173,7 @@ export class ExperimentService {
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog);
 
     return getConnection().transaction(async transactionalEntityManager => {
-      const { conditions, segments, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+      const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
       let experimentDoc: Experiment;
       try {
         experimentDoc = (await this.experimentRepository.updateExperiment(expDoc, transactionalEntityManager))[0];
@@ -141,13 +194,13 @@ export class ExperimentService {
           })) ||
         [];
 
-      // creating segment docs
-      const segmentDocToSave =
-        (segments &&
-          segments.length > 0 &&
-          segments.map(segment => {
+      // creating partition docs
+      const partitionDocToSave =
+        (partitions &&
+          partitions.length > 0 &&
+          partitions.map(partition => {
             // tslint:disable-next-line:no-shadowed-variable
-            const { createdAt, updatedAt, versionNumber, ...rest } = segment;
+            const { createdAt, updatedAt, versionNumber, ...rest } = partition;
             if (rest.id && rest.id === `${rest.name}_${rest.point}`) {
               rest.id = rest.id;
             } else {
@@ -158,11 +211,11 @@ export class ExperimentService {
           })) ||
         [];
 
-      // saving conditions and saving segments
+      // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
-      let segmentDocs: ExperimentSegment[];
+      let partitionDocs: ExperimentPartition[];
       try {
-        [conditionDocs, segmentDocs] = await Promise.all([
+        [conditionDocs, partitionDocs] = await Promise.all([
           Promise.all(
             conditionDocToSave.map(async conditionDoc => {
               return this.experimentConditionRepository.upsertExperimentCondition(
@@ -172,13 +225,16 @@ export class ExperimentService {
             })
           ) as any,
           Promise.all(
-            segmentDocToSave.map(async segmentDoc => {
-              return this.experimentSegmentRepository.upsertExperimentSegment(segmentDoc, transactionalEntityManager);
+            partitionDocToSave.map(async partitionDoc => {
+              return this.experimentPartitionRepository.upsertExperimentPartition(
+                partitionDoc,
+                transactionalEntityManager
+              );
             })
           ) as any,
         ]);
       } catch (error) {
-        throw new Error(`Error in creating conditions and segments "updateExperimentInDB" ${error}`);
+        throw new Error(`Error in creating conditions and partitions "updateExperimentInDB" ${error}`);
       }
 
       // delete conditions which don't exist in new experiment document
@@ -193,30 +249,30 @@ export class ExperimentService {
         }
       });
 
-      // delete segments which don't exist in new experiment document
-      const toDeleteSegments = [];
-      oldSegments.forEach(({ id, point, name }) => {
+      // delete partitions which don't exist in new experiment document
+      const toDeletePartitions = [];
+      oldPartitions.forEach(({ id, point, name }) => {
         if (
-          !segmentDocs.find(doc => {
+          !partitionDocs.find(doc => {
             return doc.id === id && doc.point === point && doc.name === name;
           })
         ) {
-          toDeleteSegments.push(this.experimentSegmentRepository.deleteSegment(id, transactionalEntityManager));
+          toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
         }
       });
 
-      // delete old segments and conditions
-      await Promise.all([...toDeleteConditions, ...toDeleteSegments]);
+      // delete old partitions and conditions
+      await Promise.all([...toDeleteConditions, ...toDeletePartitions]);
 
       const conditionDocToReturn = conditionDocs.map(conditionDoc => {
         return { ...conditionDoc, experiment: conditionDoc.experiment };
       });
 
-      const segmentDocToReturn = segmentDocs.map(segmentDoc => {
-        return { ...segmentDoc, experiment: segmentDoc.experiment };
+      const partitionDocToReturn = partitionDocs.map(partitionDoc => {
+        return { ...partitionDoc, experiment: partitionDoc.experiment };
       });
 
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, segments: segmentDocToReturn as any };
+      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
     });
   }
 
@@ -226,7 +282,7 @@ export class ExperimentService {
 
     const createdExperiment = await getConnection().transaction(async transactionalEntityManager => {
       experiment.id = experiment.id || uuid();
-      const { conditions, segments, ...expDoc } = experiment;
+      const { conditions, partitions, ...expDoc } = experiment;
       // saving experiment doc
       let experimentDoc: Experiment;
       try {
@@ -247,26 +303,26 @@ export class ExperimentService {
           return condition;
         });
 
-      // creating segment docs
-      const segmentDocsToSave =
-        segments &&
-        segments.length > 0 &&
-        segments.map(segment => {
-          segment.id = `${segment.name}_${segment.point}`;
-          segment.experiment = experimentDoc;
-          return segment;
+      // creating partition docs
+      const partitionDocsToSave =
+        partitions &&
+        partitions.length > 0 &&
+        partitions.map(partition => {
+          partition.id = `${partition.name}_${partition.point}`;
+          partition.experiment = experimentDoc;
+          return partition;
         });
 
-      // saving conditions and saving segments
+      // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
-      let segmentDocs: ExperimentSegment[];
+      let partitionDocs: ExperimentPartition[];
       try {
-        [conditionDocs, segmentDocs] = await Promise.all([
+        [conditionDocs, partitionDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.experimentSegmentRepository.insertSegments(segmentDocsToSave, transactionalEntityManager),
+          this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
         ]);
       } catch (error) {
-        throw new Error(`Error in creating conditions and segments "addExperimentInDB" ${error}`);
+        throw new Error(`Error in creating conditions and partitions "addExperimentInDB" ${error}`);
       }
 
       const conditionDocToReturn = conditionDocs.map(conditionDoc => {
@@ -274,12 +330,12 @@ export class ExperimentService {
         return rest;
       });
 
-      const segmentDocToReturn = segmentDocs.map(segmentDoc => {
-        const { experimentId, ...rest } = segmentDoc as any;
+      const partitionDocToReturn = partitionDocs.map(partitionDoc => {
+        const { experimentId, ...rest } = partitionDoc as any;
         return rest;
       });
 
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, segments: segmentDocToReturn as any };
+      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
     });
 
     // add auditLog here
@@ -296,7 +352,7 @@ export class ExperimentService {
     switch (type) {
       case SEARCH_KEY.NAME:
         searchString.push("coalesce(experiment.name::TEXT,'')");
-        searchString.push("coalesce(segments.name::TEXT,'')");
+        searchString.push("coalesce(partitions.name::TEXT,'')");
         break;
       case SEARCH_KEY.STATUS:
         searchString.push("coalesce(experiment.state::TEXT,'')");
@@ -306,7 +362,7 @@ export class ExperimentService {
         break;
       default:
         searchString.push("coalesce(experiment.name::TEXT,'')");
-        searchString.push("coalesce(segments.name::TEXT,'')");
+        searchString.push("coalesce(partitions.name::TEXT,'')");
         searchString.push("coalesce(experiment.state::TEXT,'')");
         searchString.push("coalesce(experiment.tags::TEXT,'')");
         break;

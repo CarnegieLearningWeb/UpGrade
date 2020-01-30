@@ -3,9 +3,8 @@ import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { AuditService } from '../../../../src/api/services/AuditService';
-import { EXPERIMENT_LOG_TYPE } from '../../../../src/api/models/ExperimentAuditLog';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'ees_types';
 
 export default async function UpdateExperimentState(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
