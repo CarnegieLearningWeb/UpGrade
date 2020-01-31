@@ -9,7 +9,7 @@ phases:
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
       - REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
-      - IMAGE_TAG=development
+      - IMAGE_TAG=$(CODEBUILD_SOURCE_VERSION)
   build:
     commands:
       - echo Build started on `date`
@@ -20,5 +20,4 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG

@@ -10,5 +10,7 @@ RUN yarn
 # Bundle app source
 COPY . .
 
+RUN ["npm", "run", "build"]
+
 EXPOSE 3030
-CMD ["npm", "run", "docker" ]
+CMD ["npm", "run", "production" ]
