@@ -9,7 +9,7 @@ phases:
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
       - REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
-      - IMAGE_TAG=$(CODEBUILD_SOURCE_VERSION)
+      - IMAGE_TAG=development
   build:
     commands:
       - echo Build started on `date`
