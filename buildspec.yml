@@ -16,11 +16,11 @@ phases:
       - echo Building the Docker image...
       - docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
 
-      - DOCKER_ID=$(docker images -aq)
-      - echo docker image is $DOCKER_ID
-      - CONTAINER_ID=$(docker create $DOCKER_ID)
+      - docker run -d $REPOSITORY_URI:latest
+      - CONTAINER_ID=$(docker ps -alq)
       - echo container id is $CONTAINER_ID
       - docker cp $CONTAINER_ID:/usr/src/app/Dockerrun.aws.json .
+      - docker stop $CONTAINER_ID
       - docker rm -v $CONTAINER_ID
 
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
