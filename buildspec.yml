@@ -21,3 +21,7 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:development
+artifacts:
+  files:
+    - Dockerrun.aws.json
+  discard-paths: yes
