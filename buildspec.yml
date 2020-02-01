@@ -16,7 +16,7 @@ phases:
       - echo Building the Docker image...
       - docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
 
-      - DOCKER_ID=$(docker ps -alq)
+      - DOCKER_ID=$(docker images -aq)
       - echo docker image is $DOCKER_ID
       - CONTAINER_ID=$(docker create $DOCKER_ID)
       - echo container id is $CONTAINER_ID
