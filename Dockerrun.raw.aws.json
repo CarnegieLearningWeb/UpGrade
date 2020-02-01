@@ -1,7 +1,7 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend:development",
+    "Name": "656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend:",
     "Update": "true"
   },
   "Ports": [

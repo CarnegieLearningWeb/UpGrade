@@ -38,3 +38,4 @@ coverage/
 mydb.sql
 
 .ebextensions
+Dockerrun.aws.json

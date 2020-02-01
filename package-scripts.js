@@ -58,6 +58,24 @@ module.exports = {
       description: 'Serves the current app and watches for changes to restart it',
     },
     /**
+     * Creates the dockerrun configuration files
+     */
+    dockerConfig: {
+      default: {
+        script: series(`nps dockerConfig.development`),
+        hiddenFromHelp: true,
+      },
+      development: {
+        script: series(runFast('./commands/dockerrun.ts development')),
+        hiddenFromHelp: true,
+      },
+      production: {
+        script: series(runFast('./commands/dockerrun.ts production')),
+        hiddenFromHelp: true,
+      },
+    },
+
+    /**
      * Creates the needed configuration files
      */
     config: {
