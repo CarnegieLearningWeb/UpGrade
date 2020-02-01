@@ -17,7 +17,7 @@ phases:
       - docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
 
       - DOCKER_ID=$(docker ps -alq)
-      - CONTAINER_ID=$(docker create DOCKER_ID)
+      - CONTAINER_ID=$(docker create $DOCKER_ID)
       - docker cp $CONTAINER_ID:/usr/src/app/Dockerrun.aws.json .
       - docker rm -v $CONTAINER_ID
 
