@@ -10,6 +10,7 @@ RUN yarn
 # Bundle app source
 COPY . .
 
+RUN ["npm", "start", "dockerConfig.$ENVIRONMENT"]
 RUN ["npm", "run", "build"]
 
 

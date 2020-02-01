@@ -14,14 +14,19 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - npm start dockerConfig.$ENVIRONMENT
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$ENVIRONMENT
+      - docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
+
+      - DOCKER_ID=$(docker ps -alq)
+      - CONTAINER_ID=$(docker create DOCKER_ID)
+      - docker cp $CONTAINER_ID:/usr/src/app/Dockerrun.aws.json .
+      - docker rm -v $CONTAINER_ID
+
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:$ENVIRONMENT
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
 artifacts:
   files:
     - Dockerrun.aws.json
