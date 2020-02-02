@@ -1,13 +1,35 @@
 version: 0.2
 phases:
   install:
-    nodejs: 8
+    runtime-versions:
+      docker: 18
   pre_build:
     commands:
-      - yarn
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
+      - IMAGE_TAG=$ENVIRONMENT
   build:
     commands:
-      - npm run build
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
+
+      - docker run -d $REPOSITORY_URI:latest
+      - CONTAINER_ID=$(docker ps -alq)
+      - echo container id is $CONTAINER_ID
+      - docker cp $CONTAINER_ID:/usr/src/app/Dockerrun.aws.json .
+      - docker stop $CONTAINER_ID
+      - docker rm -v $CONTAINER_ID
+
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
 artifacts:
   files:
-    - dist/**/*
+    - Dockerrun.aws.json
+  discard-paths: yes

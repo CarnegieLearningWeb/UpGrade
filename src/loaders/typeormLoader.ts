@@ -1,15 +1,13 @@
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
-import { createConnection, getConnectionOptions } from 'typeorm';
+import { createConnection, getConnectionOptions, ConnectionOptions } from 'typeorm';
 
 import { env } from '../env';
 import { SERVER_ERROR } from 'ees_types';
 
-export const typeormLoader: MicroframeworkLoader = async (
-  settings: MicroframeworkSettings | undefined
-) => {
+export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   const loadedConnectionOptions = await getConnectionOptions();
 
-  const connectionOptions = Object.assign(loadedConnectionOptions, {
+  const connectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, {
     type: env.db.type, // See createConnection options for valid types
     host: env.db.host,
     port: env.db.port,
@@ -30,7 +28,8 @@ export const typeormLoader: MicroframeworkLoader = async (
       settings.onShutdown(() => connection.close());
     }
   } catch (error) {
-    if ( error.code === 'ECONNREFUSED') {
+    console.log('error', error);
+    if (error.code === 'ECONNREFUSED') {
       throw new Error(SERVER_ERROR.DB_UNREACHABLE);
     } else {
       throw new Error(SERVER_ERROR.DB_AUTH_FAIL);

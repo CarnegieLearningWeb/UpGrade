@@ -3,23 +3,14 @@ import * as path from 'path';
 
 import * as pkg from '../package.json';
 
-import {
-  getOsEnv,
-  getOsPath,
-  getOsPaths,
-  normalizePort,
-  toBool,
-} from './lib/env';
+import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
 import { getOsEnvOptional, toNumber } from './lib/env/utils';
 
 /**
  * Load .env file or for tests the .env.test file.
  */
 dotenv.config({
-  path: path.join(
-    process.cwd(),
-    `.env${process.env.NODE_ENV === 'test' ? '.test' : ''}`
-  ),
+  path: path.join(process.cwd(), `.env${process.env.NODE_ENV === 'test' ? '.test' : ''}`),
 });
 
 /**
@@ -56,11 +47,11 @@ export const env = {
   },
   db: {
     type: getOsEnv('TYPEORM_CONNECTION'),
-    host: getOsEnvOptional('TYPEORM_HOST'),
-    port: toNumber(getOsEnvOptional('TYPEORM_PORT')),
-    username: getOsEnvOptional('TYPEORM_USERNAME'),
-    password: getOsEnvOptional('TYPEORM_PASSWORD'),
-    database: getOsEnv('TYPEORM_DATABASE'),
+    host: getOsEnvOptional('TYPEORM_HOST') || getOsEnvOptional('RDS_HOSTNAME'),
+    port: toNumber(getOsEnvOptional('TYPEORM_PORT') || getOsEnvOptional('RDS_PORT')),
+    username: getOsEnvOptional('TYPEORM_USERNAME') || getOsEnvOptional('RDS_USERNAME'),
+    password: getOsEnvOptional('TYPEORM_PASSWORD') || getOsEnvOptional('RDS_PASSWORD'),
+    database: getOsEnvOptional('TYPEORM_DATABASE') || getOsEnvOptional('RDS_DB_NAME'),
     synchronize: toBool(getOsEnvOptional('TYPEORM_SYNCHRONIZE')),
     logging: getOsEnv('TYPEORM_LOGGING'),
   },

@@ -35,7 +35,5 @@ test/**/*.js
 test/**/*.js.map
 coverage/
 !test/preprocessor.js
-mydb.sql
-
-.ebextensions
 Dockerrun.aws.json
+mydb.sql

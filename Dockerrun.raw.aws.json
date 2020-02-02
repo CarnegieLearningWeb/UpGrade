@@ -1,0 +1,14 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "3030"
+    }
+  ],
+  "Volumes": [],
+  "Logging": "/var/log/eb-activity.log"
+}
