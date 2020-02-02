@@ -1,7 +1,6 @@
 const packageJson = require('../../../../package.json');
 
-const endpointApi =
-  process.env.API_END_POINT || 'https://ees-backend.herokuapp.com/api';
+const endpointApi = 'https://ees-backend.herokuapp.com/api';
 
 export const environment = {
   appName: 'EES Client',
