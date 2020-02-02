@@ -9,11 +9,11 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
   const connectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, {
     type: env.db.type, // See createConnection options for valid types
-    host: process.env.RDS_HOSTNAME,
-    port: process.env.RDS_PORT,
-    username: process.env.RDS_USERNAME,
-    password: process.env.RDS_PASSWORD,
-    database: process.env.RDS_DB_NAME,
+    host: env.db.host,
+    port: env.db.port,
+    username: env.db.username,
+    password: env.db.password,
+    database: env.db.database,
     synchronize: env.db.synchronize,
     logging: env.db.logging,
     entities: env.app.dirs.entities,
