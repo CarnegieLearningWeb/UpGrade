@@ -11,5 +11,5 @@ phases:
       - npm run build:prod
 artifacts:
   files:
-    - dist/abtesting/*
+    - dist/abtesting/**/*
   discard-paths: yes
