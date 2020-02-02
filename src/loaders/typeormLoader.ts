@@ -9,12 +9,11 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
   const connectionOptions = Object.assign(loadedConnectionOptions, {
     type: env.db.type, // See createConnection options for valid types
-    url: 'postgres://wcxepoml:aQXZRAalTVKbQR3douYDzwAGps_XUGeM@rajje.db.elephantsql.com:5432/wcxepoml',
-    // host: 'ec2-174-129-227-80.compute-1.amazonaws.com',
-    // port: '5432',
-    // username: 'hmtgkxmqgnhhmz',
-    // password: '8be3a3bd55291196dd5b59ce814cbafa008ea5dcf4031b3e891864064c1a7630',
-    // database: 'd6br7c5rtnf93t',
+    host: env.db.host,
+    port: env.db.port,
+    username: env.db.username,
+    password: env.db.password,
+    database: env.db.database,
     synchronize: env.db.synchronize,
     logging: env.db.logging,
     entities: env.app.dirs.entities,
