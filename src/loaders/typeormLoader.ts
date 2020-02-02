@@ -11,9 +11,9 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     type: env.db.type, // See createConnection options for valid types
     host: env.db.host,
     port: env.db.port,
-    username: env.db.username,
-    password: env.db.password,
-    database: env.db.database,
+    username: process.env.RDS_USERNAME,
+    password: process.env.RDS_PASSWORD,
+    database: process.env.RDS_DB_NAME,
     synchronize: env.db.synchronize,
     logging: env.db.logging,
     entities: env.app.dirs.entities,
