@@ -15,6 +15,10 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
       port: process.env.RDS_USERNAME,
       username: process.env.RDS_PASSWORD,
       password: process.env.RDS_PORT,
+      synchronize: env.db.synchronize,
+      logging: env.db.logging,
+      entities: env.app.dirs.entities,
+      migrations: env.app.dirs.migrations,
     });
   } else {
     connectionOptions = Object.assign(loadedConnectionOptions, {
