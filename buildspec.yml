@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+  pre_build:
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run build:prod
+artifacts:
+  files:
+    - dist/abtesting/*
