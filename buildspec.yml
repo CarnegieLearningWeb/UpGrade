@@ -12,3 +12,4 @@ phases:
 artifacts:
   files:
     - dist/abtesting/*
+  discard-paths: yes
