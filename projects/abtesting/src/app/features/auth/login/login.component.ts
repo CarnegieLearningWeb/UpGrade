@@ -1,4 +1,4 @@
-import { Component, ElementRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -9,8 +9,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class LoginComponent implements AfterViewInit {
 
+  @ViewChild('googleBtn', { static: false }) googleSignInBtn: ElementRef;
   constructor(
-    private element: ElementRef,
     private authService: AuthService,
   ) {}
 
@@ -19,6 +19,6 @@ export class LoginComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.authService.attachSignIn(this.element.nativeElement);
+    this.authService.attachSignIn(this.googleSignInBtn.nativeElement);
   }
 }
