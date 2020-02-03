@@ -1,0 +1,61 @@
+<mat-drawer-container [class]="theme$ | async">
+  <mat-drawer mode="side" opened>
+    <div class="drawer-container">
+      <div class="logo">
+        <!-- TODO: Replace with actual logo -->
+        <a class="logo-link" [routerLink]="['/home']">EES</a>
+      </div>
+      <div class="list-item-container">
+        <mat-list class="list">
+          <mat-list-item>
+            <a
+              class="nav-item"
+              routerLinkActive="selected"
+              [routerLink]="['/home']"
+              #linkInfo="routerLinkActive"
+            >
+              <app-shared-icons
+                [ngClass]="linkInfo.isActive ? 'icon--activated' : 'icon'"
+                [iconType]="'files'"
+              ></app-shared-icons>
+              {{ 'global.experiment.title' | translate }}
+            </a>
+          </mat-list-item>
+          <mat-list-item>
+            <a
+              class="nav-item"
+              routerLinkActive="selected"
+              [routerLink]="['/audit']"
+              #linkInfo2="routerLinkActive"
+            >
+              <app-shared-icons
+                [ngClass]="linkInfo2.isActive ? 'icon--activated' : 'icon'"
+                [iconType]="'list'"
+              ></app-shared-icons>
+              {{ 'global.audit-logs.title' | translate }}
+            </a></mat-list-item
+          >
+        </mat-list>
+        <div class="user">
+          <ng-container *ngIf="currentUser$ | async as user">
+            <img [src]="user.imageUrl" class="user-pic" />
+            <span>{{ user.name }}</span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </mat-drawer>
+  <mat-drawer-content class="drawer__main-content">
+    <div class="drawer__main-content-header">
+      <mat-form-field class="theme-selector">
+        <mat-select [ngModel]="theme$ | async" (ngModelChange)="changeTheme($event)">
+          <mat-option *ngFor="let theme of themeOptions" [value]="theme.value">
+            {{ theme.viewValue }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+    <router-outlet></router-outlet>
+  </mat-drawer-content>
+</mat-drawer-container>
