@@ -1,5 +1,5 @@
 import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExperimentPoint';
-import { User } from '../../../src/api/models/User';
+import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
@@ -48,7 +48,7 @@ export function checkMarkExperimentPointForUser(
   );
 }
 
-export async function getAllExperimentCondition(user: Partial<User>): Promise<any> {
+export async function getAllExperimentCondition(user: Partial<ExperimentUser>): Promise<any> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   // getAllExperimentCondition and MarkExperimentPoint before experiment creation
   const { id, group } = user;
@@ -58,7 +58,7 @@ export async function getAllExperimentCondition(user: Partial<User>): Promise<an
 }
 
 export async function markExperimentPoint(
-  user: Partial<User>,
+  user: Partial<ExperimentUser>,
   experimentName: string,
   experimentPoint: string
 ): Promise<MonitoredExperimentPoint[]> {

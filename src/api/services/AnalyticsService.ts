@@ -10,7 +10,7 @@ import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { UserRepository } from '../repositories/UserRepository';
-import { User } from '../models/User';
+import { ExperimentUser } from '../models/ExperimentUser';
 import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'ees_types';
 
 @Service()
@@ -87,7 +87,7 @@ export class AnalyticsService {
 
     // making map of primary keys
     const mappedMonitoredExperimentPoint = new Map<string, MonitoredExperimentPoint>();
-    const mappedUserDefinition = new Map<string, User>();
+    const mappedUserDefinition = new Map<string, ExperimentUser>();
     const mappedIndividualAssignment = new Map<string, IndividualAssignment>();
 
     // mappedMonitoredExperimentPoint
