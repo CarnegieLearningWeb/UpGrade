@@ -61,4 +61,7 @@ export const env = {
     api: getOsEnv('SWAGGER_API'),
   },
   monitor: {},
+  google: {
+    clientId: getOsEnv('GOOGLE_CLIENT_ID'),
+  },
 };

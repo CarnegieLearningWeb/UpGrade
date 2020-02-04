@@ -1,4 +1,4 @@
-import { JsonController, BodyParam, Get, Put, Delete, Param } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized } from 'routing-controllers';
 import { ExcludeService } from '../services/ExcludeService';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
@@ -10,6 +10,7 @@ import { SERVER_ERROR } from 'ees_types';
  *   - name: Exclude
  *     description: To Exclude Users and Groups from experiments
  */
+@Authorized()
 @JsonController('/exclude')
 export class ExcludeController {
   constructor(public exclude: ExcludeService) {}

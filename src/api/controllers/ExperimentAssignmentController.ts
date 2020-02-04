@@ -1,4 +1,4 @@
-import { JsonController, Post, Put, Body } from 'routing-controllers';
+import { JsonController, Post, Put, Body, Authorized } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -11,6 +11,7 @@ import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpda
  *   - name: Experiment Point
  *     description: CRUD operations related to experiments points
  */
+@Authorized()
 @JsonController('/')
 export class ExperimentConditionController {
   constructor(

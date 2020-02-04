@@ -1,4 +1,4 @@
-import { Body, Get, JsonController, OnUndefined, Param, Post, Put, Delete } from 'routing-controllers';
+import { Body, Get, JsonController, OnUndefined, Param, Post, Put, Delete, Authorized } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
@@ -100,6 +100,7 @@ interface ExperimentPaginationInfo {
  *   - name: Experiments
  *     description: CRUD operations related to experiments
  */
+@Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
   constructor(public experimentService: ExperimentService) {}

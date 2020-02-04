@@ -67,6 +67,7 @@
     "ees_types": "CarnegieLearningWeb/educational-experiment-types#master",
     "express": "^4.17.1",
     "figlet": "^1.2.4",
+    "google-auth-library": "^5.9.2",
     "helmet": "^3.21.2",
     "jest": "^24.9.0",
     "json-diff": "^0.5.4",

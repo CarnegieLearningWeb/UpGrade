@@ -1,4 +1,4 @@
-import { JsonController, Get, OnUndefined, Param, Post, Put, Body } from 'routing-controllers';
+import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
@@ -25,6 +25,7 @@ import { SERVER_ERROR } from 'ees_types';
  *     description: CRUD operations related to users
  */
 
+@Authorized()
 @JsonController('/experimentusers')
 export class UserController {
   constructor(public userService: ExperimentUserService) {}

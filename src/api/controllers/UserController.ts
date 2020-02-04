@@ -7,11 +7,11 @@ import { UserService } from '../services/UserService';
  * definitions:
  *   User:
  *     required:
+ *       - id
  *       - email
- *       - firstName
- *       - lastName
- *       - imageUrl
  *     properties:
+ *       id:
+ *         type: string
  *       email:
  *         type: string
  *       firstName:

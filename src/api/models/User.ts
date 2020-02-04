@@ -5,6 +5,9 @@ import { IsUrl, IsString } from 'class-validator';
 @Entity()
 export class User extends BaseModel {
   @PrimaryColumn()
+  public id: string;
+
+  @PrimaryColumn()
   public email: string;
 
   @Column({ nullable: true })

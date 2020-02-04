@@ -1,4 +1,4 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, Authorized } from 'routing-controllers';
 import { AuditService } from '../services/AuditService';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 
@@ -20,6 +20,7 @@ interface IAuditParams {
  *   - name: Audit Logs
  *     description: Get audit logs for experiment
  */
+@Authorized()
 @JsonController('/audit')
 export class AuditLogController {
   constructor(public auditService: AuditService) {}

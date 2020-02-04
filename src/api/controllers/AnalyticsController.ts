@@ -1,4 +1,4 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, Authorized } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { IExperimentEnrollmentStats } from 'ees_types';
 
@@ -12,6 +12,7 @@ interface IExperimentParams {
  *   - name: Analytics
  *     description: Get Experiment Analytics Information
  */
+@Authorized()
 @JsonController('/stats')
 export class AnalyticsController {
   constructor(public auditService: AnalyticsService) {}
