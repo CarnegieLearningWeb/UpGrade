@@ -5,7 +5,8 @@
 
 const packageJson = require('../../../../package.json');
 
-const endpointApi = 'https://ees-backend.herokuapp.com/api';
+const endpointApi =
+  'http://upgrade-development.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
   appName: 'EES Client',
