@@ -1,5 +1,5 @@
-import { User } from '../../../../src/api/models/User';
-export const multipleUsers: Array<Partial<User>> = [
+import { ExperimentUser } from '../../../../src/api/models/ExperimentUser';
+export const multipleUsers: Array<Partial<ExperimentUser>> = [
   {
     id: 'student1',
     group: {

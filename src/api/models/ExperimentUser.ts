@@ -3,8 +3,7 @@ import { BaseModel } from './base/BaseModel';
 import { IsNotEmpty, IsObject, IsDefined } from 'class-validator';
 
 @Entity()
-export class User extends BaseModel {
-
+export class ExperimentUser extends BaseModel {
   @PrimaryColumn()
   @IsNotEmpty()
   @IsDefined()

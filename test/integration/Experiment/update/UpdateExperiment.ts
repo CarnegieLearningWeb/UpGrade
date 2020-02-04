@@ -62,7 +62,7 @@ export default async function UpdateExperiment(): Promise<void> {
         name: 'Condition C',
         description: 'Condition C',
         conditionCode: 'Condition C',
-        assignmentWeight: '0.5',
+        assignmentWeight: 50,
       },
     ],
     partitions: [
@@ -90,7 +90,7 @@ export default async function UpdateExperiment(): Promise<void> {
         name: 'Condition C',
         description: 'Condition C',
         conditionCode: 'Condition C',
-        assignmentWeight: '0.5',
+        assignmentWeight: 50,
       }),
     ])
   );

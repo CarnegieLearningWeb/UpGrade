@@ -1,14 +1,14 @@
 import { Repository, EntityRepository } from 'typeorm';
-import { User } from '../models/User';
+import { ExperimentUser } from '../models/ExperimentUser';
 
-type UserInput = Omit<User, 'createdAt' | 'updatedAt' | 'versionNumber'>;
+type UserInput = Omit<ExperimentUser, 'createdAt' | 'updatedAt' | 'versionNumber'>;
 
-@EntityRepository(User)
-export class UserRepository extends Repository<User> {
-  public async saveRawJson(rawData: UserInput): Promise<User> {
-    const result = await this.createQueryBuilder('user')
+@EntityRepository(ExperimentUser)
+export class UserRepository extends Repository<ExperimentUser> {
+  public async saveRawJson(rawData: UserInput): Promise<ExperimentUser> {
+    const result = await this.createQueryBuilder('experimentUser')
       .insert()
-      .into(User)
+      .into(ExperimentUser)
       .values(rawData)
       .onConflict(`("id") DO UPDATE SET "group" = :group`)
       .setParameter('group', rawData.group)
