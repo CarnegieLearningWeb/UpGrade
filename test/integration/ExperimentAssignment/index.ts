@@ -1,6 +1,6 @@
 import { Container } from 'typedi';
 import { multipleUsers } from '../mockData/users';
-import { UserService } from '../../../src/api/services/UserService';
+import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import TestCase1 from './Scenario1';
 import TestCase2 from './Scenario2';
 import TestCase3 from './Scenario3';
@@ -12,7 +12,7 @@ import RevertToConditionTestCase from './RevertToCondition';
 import { CheckService } from '../../../src/api/services/CheckService';
 
 const initialChecks = async () => {
-  const userService = Container.get<UserService>(UserService);
+  const userService = Container.get<ExperimentUserService>(ExperimentUserService);
   const checkService = Container.get<CheckService>(CheckService);
 
   // check all the tables are empty

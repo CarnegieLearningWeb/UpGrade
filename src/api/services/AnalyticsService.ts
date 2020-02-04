@@ -9,7 +9,7 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { UserRepository } from '../repositories/UserRepository';
+import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'ees_types';
 
@@ -29,7 +29,7 @@ export class AnalyticsService {
     @OrmRepository()
     private groupAssignmentRepository: GroupAssignmentRepository,
     @OrmRepository()
-    private userRepository: UserRepository
+    private experimentUserRepository: ExperimentUserRepository
   ) {}
 
   public async getStats(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
@@ -97,8 +97,9 @@ export class AnalyticsService {
 
     // get user definition
     const userDefinition =
-      (await this.userRepository.findByIds(monitoredExperimentPoints.map(monitoredPoint => monitoredPoint.userId))) ||
-      [];
+      (await this.experimentUserRepository.findByIds(
+        monitoredExperimentPoints.map(monitoredPoint => monitoredPoint.userId)
+      )) || [];
 
     // mappedUserDefinition
     userDefinition.forEach(user => {

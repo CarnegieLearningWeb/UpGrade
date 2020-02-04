@@ -19,7 +19,7 @@ import { IndividualAssignment } from '../models/IndividualAssignment';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
-import { UserRepository } from '../repositories/UserRepository';
+import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { Experiment } from '../models/Experiment';
 import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
@@ -44,7 +44,7 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
-    private userRepository: UserRepository,
+    private userRepository: ExperimentUserRepository,
     @OrmRepository()
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
