@@ -1,28 +1,32 @@
-import { JsonController, Get, OnUndefined, Param, Post, Put, Body } from 'routing-controllers';
+import { JsonController, Post, Body } from 'routing-controllers';
+import { User } from '../models/User';
 import { UserService } from '../services/UserService';
-import { ExperimentUser } from '../models/ExperimentUser';
-import { UserNotFoundError } from '../errors/UserNotFoundError';
-import { SERVER_ERROR } from 'ees_types';
 
 /**
  * @swagger
  * definitions:
  *   User:
  *     required:
- *       - id
- *       - group
+ *       - email
+ *       - firstName
+ *       - lastName
+ *       - imageUrl
  *     properties:
- *       id:
+ *       email:
  *         type: string
- *       group:
- *         type: object
+ *       firstName:
+ *         type: string
+ *       lastName:
+ *         type: string
+ *       imageUrl:
+ *         type: string
  */
 
 /**
  * @swagger
  * tags:
  *   - name: Users
- *     description: CRUD operations related to users
+ *     description: System Users
  */
 
 @JsonController('/users')
@@ -32,55 +36,8 @@ export class UserController {
   /**
    * @swagger
    * /users:
-   *    get:
-   *       description: Get all the users
-   *       tags:
-   *         - Users
-   *       responses:
-   *          '200':
-   *            description: Successful
-   */
-  @Get()
-  public find(): Promise<ExperimentUser[]> {
-    return this.userService.find();
-  }
-
-  /**
-   * @swagger
-   * /users/{id}:
-   *    get:
-   *       description: Get user by id
-   *       parameters:
-   *         - in: path
-   *           name: id
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: user Id
-   *       tags:
-   *         - Users
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Get user By Id
-   *          '404':
-   *            description: user not found
-   */
-  @Get('/:id')
-  @OnUndefined(UserNotFoundError)
-  public one(@Param('id') id: string): Promise<ExperimentUser> {
-    if (!validator.isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
-    }
-    return this.userService.findOne(id);
-  }
-
-  /**
-   * @swagger
-   * /users:
    *    post:
-   *       description: Create New User
+   *       description: Create New System User
    *       consumes:
    *         - application/json
    *       parameters:
@@ -100,44 +57,7 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(@Body() users: ExperimentUser[]): Promise<ExperimentUser[]> {
-    return this.userService.create(users);
-  }
-
-  /**
-   * @swagger
-   * /users/{id}:
-   *    put:
-   *       description: Update User
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: path
-   *           name: id
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: User ID
-   *         - in: body
-   *           name: user
-   *           required: true
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/User'
-   *           description: User Structure
-   *       tags:
-   *         - Users
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: User is updated
-   */
-  @Put('/:id')
-  public update(
-    @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false } } }) user: ExperimentUser
-  ): Promise<ExperimentUser> {
-    return this.userService.update(id, user);
+  public create(@Body() user: User): Promise<User> {
+    return this.userService.create(user);
   }
 }

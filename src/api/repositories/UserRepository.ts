@@ -1,20 +1,21 @@
 import { Repository, EntityRepository } from 'typeorm';
-import { ExperimentUser } from '../models/ExperimentUser';
+import { User } from '../models/User';
 
-type UserInput = Omit<ExperimentUser, 'createdAt' | 'updatedAt' | 'versionNumber'>;
-
-@EntityRepository(ExperimentUser)
-export class UserRepository extends Repository<ExperimentUser> {
-  public async saveRawJson(rawData: UserInput): Promise<ExperimentUser> {
-    const result = await this.createQueryBuilder('experimentUser')
-      .insert()
-      .into(ExperimentUser)
-      .values(rawData)
-      .onConflict(`("id") DO UPDATE SET "group" = :group`)
-      .setParameter('group', rawData.group)
-      .returning('*')
-      .execute();
-
-    return result.raw;
-  }
+@EntityRepository(User)
+export class UserRepository extends Repository<User> {
+  // public async saveRawJson(rawData: User): Promise<User> {
+  //   const result = await this.createQueryBuilder('experimentUser')
+  //     .insert()
+  //     .into(User)
+  //     .values(rawData)
+  //     .onConflict(
+  //       `("email") DO UPDATE SET "firstName" = :firstName, "lastName" = :lastName, "imageUrl" = :imageUrl, "assignmentWeight" = :assignmentWeight`
+  //     )
+  //     .setParameter('firstName', rawData.firstName)
+  //     .setParameter('lastName', rawData.lastName)
+  //     .setParameter('imageUrl', rawData.imageUrl)
+  //     .returning('*')
+  //     .execute();
+  //   return result.raw;
+  // }
 }

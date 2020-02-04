@@ -1,12 +1,12 @@
 import IndExclude from './IndividualExclude';
 import GrpExclude from './GroupExclude';
 import { Container } from 'typedi';
-import { UserService } from '../../../src/api/services/UserService';
+import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { multipleUsers } from '../mockData/users/index';
 
 const initialCheck = async () => {
-  const userService = Container.get<UserService>(UserService);
+  const userService = Container.get<ExperimentUserService>(ExperimentUserService);
   const checkService = Container.get<CheckService>(CheckService);
 
   // check all the tables are empty
