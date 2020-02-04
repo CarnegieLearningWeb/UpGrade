@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { Observable, combineLatest } from 'rxjs';
 import { AuthService } from './auth.service';
 import { map, filter } from 'rxjs/operators';
@@ -8,13 +8,13 @@ import { map, filter } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard implements CanActivate {
+export class NegateAuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
 
-  canActivate(_: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
+  canActivate(): Observable<boolean> {
     return combineLatest(
       this.authService.isLoggedIn$,
       this.authService.isAuthenticating$
@@ -22,11 +22,10 @@ export class AuthGuard implements CanActivate {
       filter(([, isAuthenticating]) => !isAuthenticating),
       map(([isLoggedIn]) => {
         if (isLoggedIn) {
-          return true;
-        } else {
-          this.authService.setRedirectionUrl(state.url);
-          this.router.navigate(['/login']);
+          this.router.navigate(['/home']);
           return false;
+        } else {
+          return true;
         }
       })
     );

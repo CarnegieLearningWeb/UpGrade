@@ -98,12 +98,17 @@ mat-drawer {
     .theme-selector {
       display: flex;
       justify-content: flex-end;
-      padding-right: 4.375rem;
+      padding-right: 2rem;
     }
 
     .logout-btn {
-      margin-right: 20px;
+      margin-right: 4.375rem;
+      width: 30px;
       height: 30px;
+
+      &:hover {
+        cursor: pointer;
+      }
     }
   }
 

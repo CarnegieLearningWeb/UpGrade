@@ -3,38 +3,24 @@
     <div class="drawer-container">
       <div class="logo">
         <!-- TODO: Replace with actual logo -->
-        <a class="logo-link" [routerLink]="['/home']">EES</a>
+        <a class="logo-link" [routerLink]="['/home']">UpGrade</a>
       </div>
       <div class="list-item-container">
         <mat-list class="list">
-          <mat-list-item>
+          <mat-list-item *ngFor="let link of routeLinks">
             <a
               class="nav-item"
               routerLinkActive="selected"
-              [routerLink]="['/home']"
+              [routerLink]="link.path"
               #linkInfo="routerLinkActive"
             >
               <app-shared-icons
                 [ngClass]="linkInfo.isActive ? 'icon--activated' : 'icon'"
-                [iconType]="'files'"
+                [iconType]="link.iconType"
               ></app-shared-icons>
-              {{ 'global.experiment.title' | translate }}
+              {{ link.text | translate }}
             </a>
           </mat-list-item>
-          <mat-list-item>
-            <a
-              class="nav-item"
-              routerLinkActive="selected"
-              [routerLink]="['/audit']"
-              #linkInfo2="routerLinkActive"
-            >
-              <app-shared-icons
-                [ngClass]="linkInfo2.isActive ? 'icon--activated' : 'icon'"
-                [iconType]="'list'"
-              ></app-shared-icons>
-              {{ 'global.audit-logs.title' | translate }}
-            </a></mat-list-item
-          >
         </mat-list>
         <div class="user">
           <ng-container *ngIf="currentUser$ | async as user">
@@ -54,7 +40,7 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <button class="logout-btn" (click)="logout()">Logout</button>
+      <app-shared-icons class="logout-btn" (click)="logout()" [iconType]="'logout'"></app-shared-icons>
     </div>
     <router-outlet></router-outlet>
   </mat-drawer-content>

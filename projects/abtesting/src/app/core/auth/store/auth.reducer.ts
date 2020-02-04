@@ -40,7 +40,11 @@ const reducer = createReducer(
   ),
   on(
     authActions.actionLogoutSuccess,
-    (state => ({ ...state, user: null }))
+    (state => ({ ...state, user: null, isLoggedIn: false }))
+  ),
+  on(
+    authActions.actionSetRedirectUrl,
+    ((state, { redirectUrl }) => ({ ...state, redirectUrl }))
   )
 );
 

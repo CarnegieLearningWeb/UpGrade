@@ -34,3 +34,8 @@ export const actionLogoutStart = createAction('[Auth] Logout Start');
 export const actionLogoutSuccess = createAction('[Auth] Logout Success');
 
 export const actionLogoutFailure = createAction('[Auth] Logout Failure');
+
+export const actionSetRedirectUrl = createAction(
+  '[Auth] Set Redirect Url',
+  props<{ redirectUrl: string }>()
+);

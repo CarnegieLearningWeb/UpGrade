@@ -28,4 +28,8 @@ export class AuthService {
   attachSignIn(element) {
     this.store$.dispatch(AuthActions.actionBindAttachHandlerWithButton({ element }));
   }
+
+  setRedirectionUrl(redirectUrl: string) {
+    this.store$.dispatch(AuthActions.actionSetRedirectUrl({ redirectUrl }));
+  }
 }

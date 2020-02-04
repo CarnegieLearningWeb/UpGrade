@@ -25,3 +25,8 @@ export const selectCurrentUser = createSelector(
   selectAuthState,
   (state: AuthState) => state.user
 );
+
+export const selectRedirectUrl = createSelector(
+  selectAuthState,
+  (state: AuthState) => state.redirectUrl ? state.redirectUrl : null
+);

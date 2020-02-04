@@ -9,6 +9,7 @@ export interface User {
 export interface AuthState {
   isLoggedIn: boolean;
   isAuthenticating: boolean;
+  redirectUrl?: string;
   user: User
 }
 

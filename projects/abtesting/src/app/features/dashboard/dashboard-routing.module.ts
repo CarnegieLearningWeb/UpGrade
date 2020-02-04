@@ -8,6 +8,11 @@ const routes: Routes = [
     component: DashboardRootComponent,
     children: [
       {
+        path: '',
+        redirectTo: '/home',
+        pathMatch: 'full'
+      },
+      {
         path: 'home',
         loadChildren: () =>
           import('./home/home.module').then(m => m.HomeModule)
@@ -16,7 +21,11 @@ const routes: Routes = [
         path: 'audit',
         loadChildren: () =>
           import('./audit/audit.module').then(m => m.AuditModule)
-      }
+      },
+      {
+        path: '**',
+        redirectTo: '/home',
+      },
     ]
   }
 ];

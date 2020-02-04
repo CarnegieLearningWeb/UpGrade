@@ -1,5 +1,5 @@
 import browser from 'browser-detect';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { ExperimentService } from '../../../core/experiments/experiments.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
@@ -10,8 +10,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 @Component({
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
-  styleUrls: ['./dashboard-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./dashboard-root.component.scss']
 })
 export class DashboardRootComponent implements OnInit {
 
@@ -25,6 +24,18 @@ export class DashboardRootComponent implements OnInit {
   theme$ = this.settingsService.theme$;
   isLoggedIn$ = this.authService.isLoggedIn$;
   currentUser$ = this.authService.currentUser$;
+  routeLinks = [
+    {
+      path: ['/home'],
+      text: 'global.experiment.title',
+      iconType: 'files'
+    },
+    {
+      path: ['/audit'],
+      text: 'global.audit-logs.title',
+      iconType: 'list'
+    }
+  ];
 
   constructor(
     private settingsService: SettingsService,
@@ -38,7 +49,6 @@ export class DashboardRootComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authService.initializeGapi();
     this.experimentService.loadExperiments();
     this.auditService.loadAudits();
     if (DashboardRootComponent.isIEorEdgeOrSafari()) {
