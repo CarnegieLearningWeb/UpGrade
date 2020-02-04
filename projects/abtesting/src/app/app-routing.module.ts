@@ -1,25 +1,26 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
+import { AuthGuard } from './core/auth/auth.guard.';
+import { NegateAuthGuard } from './core/auth/negate.auth.guard';
 
 const routes: Routes = [
   {
+    path: 'login',
+    canActivate: [NegateAuthGuard],
+    loadChildren: () =>
+      import('./features/auth/auth.module').then(m => m.AuthModule)
+  },
+  {
     path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
-  },
-  {
-    path: 'home',
+    canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./features/home/home.module').then(m => m.HomeModule)
-  },
-  {
-    path: 'audit',
-    loadChildren: () =>
-      import('./features/audit/audit.module').then(m => m.AuditModule)
+      import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
   },
   {
     path: '**',
-    redirectTo: 'home'
+    canActivate: [AuthGuard],
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
   }
 ];
 

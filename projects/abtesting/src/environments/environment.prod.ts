@@ -9,6 +9,7 @@ export const environment = {
   production: true,
   test: false,
   i18nPrefix: '',
+  gapiClientId: '347071716460-budh5le9mkf03ahp89hs8n096phq8dv3.apps.googleusercontent.com',
   versions: {
     app: packageJson.version,
     angular: packageJson.dependencies['@angular/core'],

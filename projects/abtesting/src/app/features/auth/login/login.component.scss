@@ -1,0 +1,71 @@
+$white-background: #f0f2f9;
+$app-title-font-size: 2.25rem;
+$login-info-text-color: #8f9bb3;
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $white-background;
+  height: 100%;
+
+  .login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 6px;
+    background-color: var(--white);
+    width: 720px;
+    height: 640px;
+
+    &-info-container {
+      display: flex;
+      position: relative;
+      justify-content: center;
+      height: 458px;
+
+      .login-info {
+        position: absolute;
+        top: 10%;
+        text-align: center;
+
+        &__title {
+          display: block;
+          color: var(--black-2);
+          font-family: OpenSans-Bold;
+          font-size: $app-title-font-size;
+        }
+
+        &__description {
+          display: block;
+          color: var(--black-2);
+          font-family: OpenSans-SemiBold;
+          font-size: var(--text-size-normal);
+        }
+      }
+    }
+
+    .google-sign-in-btn {
+      margin: 54px 0 24px;
+      border: solid 1px var(--blue);
+      border-radius: 4px;
+      background-color: var(--blue);
+      padding: 10px 30px;
+      width: 400px;
+      color: var(--white);
+      font-family: OpenSans-SemiBold;
+      font-size: var(--text-size-normal);
+      font-weight: 600;
+    }
+
+    .info {
+      color: $login-info-text-color;
+      font-family: OpenSans-SemiBold;
+      font-size: var(--text-size-small);
+
+      &--terms {
+        color: var(--blue);
+      }
+    }
+  }
+}

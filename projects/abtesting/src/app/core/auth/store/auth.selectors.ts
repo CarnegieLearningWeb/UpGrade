@@ -11,7 +11,22 @@ export const selectAuth = createSelector(
   (state: AuthState) => state
 );
 
-export const selectIsAuthenticated = createSelector(
+export const selectIsLoggedIn = createSelector(
   selectAuthState,
-  (state: AuthState) => state.isAuthenticated
+  (state: AuthState) => state.isLoggedIn
+);
+
+export const selectIsAuthenticating = createSelector(
+  selectAuthState,
+  (state: AuthState) => state.isAuthenticating
+);
+
+export const selectCurrentUser = createSelector(
+  selectAuthState,
+  (state: AuthState) => state.user
+);
+
+export const selectRedirectUrl = createSelector(
+  selectAuthState,
+  (state: AuthState) => state.redirectUrl ? state.redirectUrl : null
 );

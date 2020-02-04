@@ -1,0 +1,20 @@
+<div class="login-container">
+  <div class="login">
+    <div class="login-info-container">
+      <app-shared-icons [iconType]="'login-img'"></app-shared-icons>
+      <div class="login-info">
+        <span class="login-info__title">{{ 'global.app.name' | translate }}</span>
+        <span class="login-info__description">{{ 'global.app.description' | translate }}</span>
+      </div>
+    </div>
+    <button #googleBtn class="google-sign-in-btn" (click)="login()">
+      <app-shared-icons [iconType]="'google'"></app-shared-icons>
+      {{ 'login.sign-in-btn.text' | translate }}
+    </button>
+    <span class="info">
+      {{ 'login.description-1.text' | translate }}
+      <span class="info--terms">{{ 'login.description-2.text' | translate }}</span>
+      {{ 'login.description-3.text' | translate }}
+    </span>
+  </div>
+</div>
