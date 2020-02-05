@@ -39,5 +39,6 @@ var EXPERIMENT_LOG_TYPE;
     EXPERIMENT_LOG_TYPE["EXPERIMENT_CREATED"] = "experimentCreated";
     EXPERIMENT_LOG_TYPE["EXPERIMENT_UPDATED"] = "experimentUpdated";
     EXPERIMENT_LOG_TYPE["EXPERIMENT_STATE_CHANGED"] = "experimentStateChanged";
+    EXPERIMENT_LOG_TYPE["EXPERIMENT_DELETED"] = "experimentDeleted";
 })(EXPERIMENT_LOG_TYPE = exports.EXPERIMENT_LOG_TYPE || (exports.EXPERIMENT_LOG_TYPE = {}));
 //# sourceMappingURL=enums.js.map

@@ -36,4 +36,5 @@ export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_CREATED = 'experimentCreated',
   EXPERIMENT_UPDATED = 'experimentUpdated',
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
+  EXPERIMENT_DELETED = 'experimentDeleted',
 }
