@@ -1,7 +1,8 @@
 import { AppState } from '../../core.module';
 
 export interface User {
-  name: string;
+  firstName: string;
+  lastName: string;
   imageUrl: string;
   email: string;
   token: string;

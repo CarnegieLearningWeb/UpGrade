@@ -1,12 +1,13 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
-import { tap, map, filter, withLatestFrom } from 'rxjs/operators';
+import { tap, map, filter, withLatestFrom, catchError } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
 import { environment as env } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import { selectRedirectUrl } from './auth.selectors';
+import { AuthDataService } from '../auth.data.service';
 
 declare const gapi: any;
 
@@ -23,7 +24,8 @@ export class AuthEffects {
     private actions$: Actions,
     private store$: Store<AppState>,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private authDataService: AuthDataService
   ) {}
 
   initializeGapi$ = createEffect(
@@ -50,7 +52,8 @@ export class AuthEffects {
                 this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: false }));
                 if (!!profile && isCurrentUserSignedIn) {
                   const user = {
-                    name: profile.getName(),
+                    firstName: profile.getGivenName(),
+                    lastName: profile.getFamilyName(),
                     email: profile.getEmail(),
                     imageUrl: profile.getImageUrl(),
                     token: currentUser.getAuthResponse().id_token
@@ -78,13 +81,20 @@ export class AuthEffects {
               this.ngZone.run(() => {
                 const profile = googleUser.getBasicProfile();
                 const user = {
-                  name: profile.getName(),
+                  firstName: profile.getGivenName(),
+                  lastName: profile.getFamilyName(),
                   email: profile.getEmail(),
                   imageUrl: profile.getImageUrl(),
                   token: googleUser.getAuthResponse().id_token
                 };
-                this.store$.dispatch(authActions.actionSetUserInfo({ user }));
-                this.store$.dispatch(authActions.actionLoginSuccess());
+                const id = profile.getId();
+                this.authDataService.createUser({ ...user, id }).pipe(
+                  tap(() => {
+                    this.store$.dispatch(authActions.actionSetUserInfo({ user }));
+                    this.store$.dispatch(authActions.actionLoginSuccess());
+                  }),
+                  catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
+                ).subscribe();
               });
             }, (error) => {
               console.log(JSON.stringify(error, undefined, 2));

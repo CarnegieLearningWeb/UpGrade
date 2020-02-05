@@ -25,7 +25,7 @@
         <div class="user">
           <ng-container *ngIf="currentUser$ | async as user">
             <img [src]="user.imageUrl" class="user-pic" />
-            <span>{{ user.name }}</span>
+            <span>{{ user.firstName + ' ' + user.lastName }}</span>
           </ng-container>
         </div>
       </div>
