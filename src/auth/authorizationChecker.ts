@@ -18,7 +18,6 @@ export function authorizationChecker(
     // checker must return either boolean (true or false)
     // either promise that resolves a boolean value
     const token = authService.parseBasicAuthFromRequest(action.request);
-
     if (token === undefined) {
       log.warn('No token provided');
       return false;

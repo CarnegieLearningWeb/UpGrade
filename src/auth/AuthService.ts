@@ -16,10 +16,10 @@ export class AuthService {
   ) {}
 
   public parseBasicAuthFromRequest(req: express.Request): string {
-    const authorization = req.header('authorization');
-    this.log.info('authorization', authorization);
+    this.log.info('Inside parseBasicAuthFromRequest');
 
-    return authorization;
+    const authorization = req.header('authorization');
+    return authorization.replace('Bearer ', '').trim();
   }
 
   public async validateUser(token: string): Promise<User> {
@@ -37,7 +37,7 @@ export class AuthService {
     const userId = payload.sub;
 
     // add local cache for validating user for each request
-    const document = await this.userRepository.findByIds([userId]);
+    const document = await this.userRepository.find({ id: userId });
     if (document.length === 0) {
       throw Error('User Not found');
     } else {
