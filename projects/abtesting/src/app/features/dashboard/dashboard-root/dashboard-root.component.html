@@ -23,10 +23,18 @@
           </mat-list-item>
         </mat-list>
         <div class="user">
-          <ng-container *ngIf="currentUser$ | async as user">
-            <img [src]="user.imageUrl" class="user-pic" />
-            <span>{{ user.name }}</span>
-          </ng-container>
+          <mat-list class="user-list">
+            <mat-list-item class="user-list--item" *ngIf="currentUser$ | async as user">
+              <img [src]="user.imageUrl" class="user-pic" />
+              <span>{{ user.name }}</span>
+            </mat-list-item>
+            <mat-list-item class="user-list--item">
+              <a role="presentation" class="logout-link" (click)="logout()">
+                <app-shared-icons [iconType]="'logout'"></app-shared-icons>
+                <span>{{ 'home-global.sign-out.text' | translate }}</span>
+              </a>
+            </mat-list-item>
+          </mat-list>
         </div>
       </div>
     </div>
@@ -40,7 +48,6 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <app-shared-icons class="logout-btn" (click)="logout()" [iconType]="'logout'"></app-shared-icons>
     </div>
     <router-outlet></router-outlet>
   </mat-drawer-content>
