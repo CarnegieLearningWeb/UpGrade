@@ -7,8 +7,11 @@ export class AuditDataService {
 
   constructor(private http: HttpClient) {}
 
-  getAllAudits() {
+  getAllAudits(idToken: string) {
     const url = environment.api.getAllAudits;
-    return this.http.post(url, { skip: 0, take: 0 });
+    const headers = {
+      Authorization: `Bearer ${idToken}`,
+    };
+    return this.http.post(url, { skip: 0, take: 0 }, { headers });
   }
 }

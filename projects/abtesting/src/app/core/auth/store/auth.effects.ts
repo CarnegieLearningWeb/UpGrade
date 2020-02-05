@@ -52,7 +52,8 @@ export class AuthEffects {
                   const user = {
                     name: profile.getName(),
                     email: profile.getEmail(),
-                    imageUrl: profile.getImageUrl()
+                    imageUrl: profile.getImageUrl(),
+                    token: currentUser.getAuthResponse().id_token
                   };
                   this.store$.dispatch(authActions.actionSetUserInfo({ user }));
                 }
@@ -79,7 +80,8 @@ export class AuthEffects {
                 const user = {
                   name: profile.getName(),
                   email: profile.getEmail(),
-                  imageUrl: profile.getImageUrl()
+                  imageUrl: profile.getImageUrl(),
+                  token: googleUser.getAuthResponse().id_token
                 };
                 this.store$.dispatch(authActions.actionSetUserInfo({ user }));
                 this.store$.dispatch(authActions.actionLoginSuccess());

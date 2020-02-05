@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
 import { selectExperimentStats } from './experiments.selectors';
+import { selectCurrentUser } from '../../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentEffects {
@@ -22,11 +23,15 @@ export class ExperimentEffects {
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionGetAllExperiment),
-        mergeMap(() =>
-          this.experimentDataService.getAllExperiment().pipe(
+        withLatestFrom(
+          this.store$.pipe(select(selectCurrentUser))
+        ),
+        filter(([, currentUser]) => !!currentUser),
+        mergeMap(([, { token }]) =>
+          this.experimentDataService.getAllExperiment(token).pipe(
             switchMap((experiments: any) => {
               const experimentIds = experiments.map(experiment => experiment.id);
-              return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
+              return this.experimentDataService.getAllExperimentsStats(experimentIds, token).pipe(
                 switchMap((stats: any) => {
                   const experimentStats = stats.reduce((acc, stat: IExperimentEnrollmentStats) =>
                     ({ ...acc, [stat.id]: stat })
@@ -51,15 +56,17 @@ export class ExperimentEffects {
       map(action => ({ experiment: action.experiment, actionType: action.actionType })),
       filter(({ experiment, actionType }) => !!experiment && !!actionType),
       withLatestFrom(
-        this.store$.pipe(select(selectExperimentStats))
+        this.store$.pipe(select(selectExperimentStats)),
+        this.store$.pipe(select(selectCurrentUser))
       ),
-      switchMap(([{ experiment, actionType }, experimentStats]) => {
+      filter(([, _, currentUser]) => !!currentUser),
+      switchMap(([{ experiment, actionType }, experimentStats,  { token }]) => {
         const experimentMethod =
           actionType === UpsertExperimentType.CREATE_NEW_EXPERIMENT
-            ? this.experimentDataService.createNewExperiment(experiment)
-            : this.experimentDataService.updateExperiment(experiment);
+            ? this.experimentDataService.createNewExperiment(experiment, token)
+            : this.experimentDataService.updateExperiment(experiment, token);
         return experimentMethod.pipe(
-          switchMap((data: Experiment) => this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
+          switchMap((data: Experiment) => this.experimentDataService.getAllExperimentsStats([data.id], token).pipe(
             switchMap((experimentStat: IExperimentEnrollmentStats) => {
               const stats = { ...experimentStats, [data.id]: experimentStat[0] };
               return [
@@ -78,9 +85,12 @@ export class ExperimentEffects {
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
       map(action => action.experimentId),
-      filter(experimentId => !!experimentId),
-      switchMap(experimentId => {
-        return this.experimentDataService.deleteExperiment(experimentId).pipe(
+      withLatestFrom(
+        this.store$.pipe(select(selectCurrentUser))
+      ),
+      filter(([experimentId, currentUser]) => !!experimentId && !!currentUser),
+      switchMap(([experimentId, { token }]) => {
+        return this.experimentDataService.deleteExperiment(experimentId, token).pipe(
           map(_ => experimentAction.actionDeleteExperimentSuccess({ experimentId })),
           catchError(error => [experimentAction.actionDeleteExperimentFailure()])
         )

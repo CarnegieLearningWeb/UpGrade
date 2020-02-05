@@ -7,28 +7,43 @@ import { Experiment } from './store/experiments.model';
 export class ExperimentDataService {
   constructor(private http: HttpClient) {}
 
-  getAllExperiment() {
+  getAllExperiment(idToken: string) {
     const url = environment.api.getAllExperiments;
-    return this.http.get(url);
+    const headers = {
+      Authorization: `Bearer ${idToken}`,
+    };
+    return this.http.get(url, { headers });
   }
 
-  getAllExperimentsStats(experimentIds: string[]) {
+  getAllExperimentsStats(experimentIds: string[], idToken: string) {
     const url = environment.api.experimentsStats;
-    return this.http.post(url, { 'experimentIds': experimentIds });
+    const headers = {
+      Authorization: `Bearer ${idToken}`,
+    };
+    return this.http.post(url, { experimentIds: experimentIds }, { headers });
   }
 
-  createNewExperiment(experiment: Experiment) {
+  createNewExperiment(experiment: Experiment, idToken: string) {
+    const headers = {
+      Authorization: `Bearer ${idToken}`,
+    };
     const url = environment.api.createNewExperiments;
-    return this.http.post(url, { ...experiment });
+    return this.http.post(url, { ...experiment }, { headers });
   }
 
-  updateExperiment(experiment: Experiment) {
+  updateExperiment(experiment: Experiment, idToken: string) {
     const url = `${environment.api.updateExperiments}/${experiment.id}`;
-    return this.http.put(url, { ...experiment });
+    const headers = {
+      Authorization: `Bearer ${idToken}`,
+    };
+    return this.http.put(url, { ...experiment }, { headers });
   }
 
-  deleteExperiment(experimentId: string) {
+  deleteExperiment(experimentId: string, idToken: string) {
     const url = `${environment.api.updateExperiments}/${experimentId}`;
-    return this.http.delete(url);
+    const headers = {
+      Authorization: `Bearer ${idToken}`,
+    };
+    return this.http.delete(url, { headers });
   }
 }
