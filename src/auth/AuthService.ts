@@ -19,7 +19,7 @@ export class AuthService {
     this.log.info('Inside parseBasicAuthFromRequest');
 
     const authorization = req.header('authorization');
-    return authorization.replace('Bearer ', '').trim();
+    return authorization && authorization.replace('Bearer ', '').trim();
   }
 
   public async validateUser(token: string): Promise<User> {
@@ -48,7 +48,6 @@ export class AuthService {
 
     // If request specified a G Suite domain:
     // const domain = payload['hd'];
-
     return document[0];
   }
 }

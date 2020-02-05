@@ -1,6 +1,8 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { IsUrl, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ExperimentAuditLog } from './ExperimentAuditLog';
 
 @Entity()
 export class User extends BaseModel {
@@ -21,4 +23,11 @@ export class User extends BaseModel {
   @Column({ nullable: true })
   @IsUrl()
   public imageUrl: string;
+
+  @OneToMany(
+    type => ExperimentAuditLog,
+    auditLog => auditLog.user
+  )
+  @Type(() => ExperimentAuditLog)
+  public auditLogs: ExperimentAuditLog[];
 }

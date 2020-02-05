@@ -19,6 +19,7 @@ import { IndividualExclusionRepository } from '../repositories/IndividualExclusi
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
+import { User } from '../models/User';
 
 @Service()
 export class ExperimentService {
@@ -94,13 +95,13 @@ export class ExperimentService {
     return this.experimentRepository.count();
   }
 
-  public create(experiment: Experiment): Promise<Experiment> {
+  public create(experiment: Experiment, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
-    return this.addExperimentInDB(experiment);
+    return this.addExperimentInDB(experiment, currentUser);
   }
 
-  public async delete(experimentId: string): Promise<Experiment | undefined> {
+  public async delete(experimentId: string, currentUser: User): Promise<Experiment | undefined> {
     this.log.info('Delete experiment => ', experimentId);
 
     return getConnection().transaction(async transactionalEntityManager => {
@@ -133,6 +134,17 @@ export class ExperimentService {
         ]);
 
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
+
+        // adding entry in audit log
+        const createAuditLogData = {
+          experimentId,
+        };
+        await this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
+          createAuditLogData,
+          currentUser
+        );
+
         return deletedExperiment;
       }
 
@@ -140,10 +152,10 @@ export class ExperimentService {
     });
   }
 
-  public update(id: string, experiment: Experiment): Promise<Experiment> {
+  public update(id: string, experiment: Experiment, currentUser: User): Promise<Experiment> {
     this.log.info('Update an experiment => ', experiment.toString());
     // TODO add entry in audit log of updating experiment
-    return this.updateExperimentInDB(experiment);
+    return this.updateExperimentInDB(experiment, currentUser);
   }
 
   public async getExperimentalConditions(experimentId: string): Promise<ExperimentCondition[]> {
@@ -156,7 +168,7 @@ export class ExperimentService {
     return experiment.partitions;
   }
 
-  private async updateExperimentInDB(experiment: Experiment): Promise<Experiment> {
+  private async updateExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
     const oldConditions = oldExperiment.conditions;
@@ -170,7 +182,7 @@ export class ExperimentService {
       diff: diffString(experiment, oldExperiment),
     };
 
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog);
+    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
 
     return getConnection().transaction(async transactionalEntityManager => {
       const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
@@ -276,7 +288,7 @@ export class ExperimentService {
     });
   }
 
-  private async addExperimentInDB(experiment: Experiment): Promise<Experiment> {
+  private async addExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     // create schedules to start experiment and end experiment
     this.scheduledJobService.updateExperimentSchedules(experiment);
 
@@ -342,7 +354,7 @@ export class ExperimentService {
     const createAuditLogData = {
       experimentId: createdExperiment.id,
     };
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData);
+    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
 
     return createdExperiment;
   }

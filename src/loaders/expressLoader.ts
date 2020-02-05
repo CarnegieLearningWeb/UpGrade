@@ -4,6 +4,7 @@ import { createExpressServer } from 'routing-controllers';
 
 import { env } from '../env';
 import { authorizationChecker } from '../auth/authorizationChecker';
+import { currentUserChecker } from '../auth/currentUserChecker';
 
 export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSettings | undefined) => {
   if (settings) {
@@ -21,6 +22,7 @@ export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSett
        * Authorization features
        */
       authorizationChecker: authorizationChecker(connection),
+      currentUserChecker,
     });
 
     // Run application to listen on given port

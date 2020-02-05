@@ -27,6 +27,7 @@ import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupE
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
+import { User } from '../models/User';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -186,20 +187,22 @@ export class ExperimentAssignmentService {
     }, []);
   }
 
-  public async updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
+  public async updateState(experimentId: string, state: EXPERIMENT_STATE, user: User): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       await this.populateExclusionTable(experimentId);
     }
 
     // add experiment audit logs
-    this.experimentAuditLogRepository.save({
-      type: EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
-      data: {
+    this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
+      {
         id: experimentId,
         state,
       },
-    });
+      user
+    );
 
+    // update experiment
     const updatedState = await this.experimentRepository.updateState(experimentId, state);
 
     // updating experiment schedules here

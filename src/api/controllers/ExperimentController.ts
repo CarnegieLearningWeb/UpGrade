@@ -1,4 +1,15 @@
-import { Body, Get, JsonController, OnUndefined, Param, Post, Put, Delete, Authorized } from 'routing-controllers';
+import {
+  Body,
+  Get,
+  JsonController,
+  OnUndefined,
+  Param,
+  Post,
+  Put,
+  Delete,
+  Authorized,
+  CurrentUser,
+} from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
@@ -6,6 +17,7 @@ import { SERVER_ERROR } from 'ees_types';
 import { Validator } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
+import { User } from '../models/User';
 const validator = new Validator();
 
 interface ExperimentPaginationInfo {
@@ -278,9 +290,10 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment,
+    @CurrentUser() currentUser: User
   ): Promise<Experiment> {
-    return this.experimentService.create(experiment);
+    return this.experimentService.create(experiment, currentUser);
   }
 
   /**
@@ -305,11 +318,11 @@ export class ExperimentController {
    */
 
   @Delete('/:id')
-  public delete(@Param('id') id: string): Promise<Experiment | undefined> {
+  public delete(@Param('id') id: string, @CurrentUser() currentUser: User): Promise<Experiment | undefined> {
     if (!validator.isUUID(id)) {
       return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
     }
-    return this.experimentService.delete(id);
+    return this.experimentService.delete(id, currentUser);
   }
 
   /**
@@ -345,8 +358,9 @@ export class ExperimentController {
   public update(
     @Param('id') id: string,
     @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
-    experiment: Experiment
+    experiment: Experiment,
+    @CurrentUser() currentUser: User
   ): Promise<Experiment> {
-    return this.experimentService.update(id, experiment);
+    return this.experimentService.update(id, experiment, currentUser);
   }
 }

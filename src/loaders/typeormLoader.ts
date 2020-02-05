@@ -28,7 +28,6 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
       settings.onShutdown(() => connection.close());
     }
   } catch (error) {
-    console.log('error', error);
     if (error.code === 'ECONNREFUSED') {
       throw new Error(SERVER_ERROR.DB_UNREACHABLE);
     } else {

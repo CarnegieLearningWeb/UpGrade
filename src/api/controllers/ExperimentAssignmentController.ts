@@ -1,9 +1,10 @@
-import { JsonController, Post, Put, Body, Authorized } from 'routing-controllers';
+import { JsonController, Post, Put, Body, Authorized, CurrentUser } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
 import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
+import { User } from '../models/User';
 
 /**
  * @swagger
@@ -141,8 +142,9 @@ export class ExperimentConditionController {
   @Put('state')
   public updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    experiment: AssignmentStateUpdateValidator
+    experiment: AssignmentStateUpdateValidator,
+    @CurrentUser() currentUser: User
   ): any {
-    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state);
+    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, currentUser);
   }
 }
