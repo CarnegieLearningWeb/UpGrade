@@ -25,7 +25,9 @@ export declare enum SERVER_ERROR {
     ASSIGNMENT_ERROR = "Error in the assignment algorithm",
     MISSING_PARAMS = "Parameter missing in the client request",
     INCORRECT_PARAM_FORMAT = "Parameter not in the correct format",
-    USER_NOT_FOUND = "User ID not found"
+    USER_NOT_FOUND = "User ID not found",
+    QUERY_FAILED = "Query Failed",
+    REPORTED_ERROR = "Error reported from client"
 }
 export declare enum EXPERIMENT_LOG_TYPE {
     EXPERIMENT_CREATED = "experimentCreated",

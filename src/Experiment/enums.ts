@@ -30,6 +30,8 @@ export enum SERVER_ERROR {
   MISSING_PARAMS = 'Parameter missing in the client request',
   INCORRECT_PARAM_FORMAT = 'Parameter not in the correct format',
   USER_NOT_FOUND = 'User ID not found',
+  QUERY_FAILED = 'Query Failed',
+  REPORTED_ERROR = 'Error reported from client',
 }
 
 export enum EXPERIMENT_LOG_TYPE {
