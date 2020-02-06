@@ -41,7 +41,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   constructor(private _formBuilder: FormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.animationCompleteStepperIndex && changes.animationCompleteStepperIndex.currentValue === 1) {
+    if (changes.animationCompleteStepperIndex && changes.animationCompleteStepperIndex.currentValue === 1 && this.conditionCode) {
       this.conditionCode.nativeElement.focus();
     }
   }
