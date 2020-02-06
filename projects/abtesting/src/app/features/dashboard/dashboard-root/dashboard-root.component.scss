@@ -72,17 +72,37 @@ mat-drawer {
 
   .user {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-    padding: 1.5rem 1.8125rem;
-    font-family: OpenSans-SemiBold;
+    padding: 1rem;
+
+    &-list {
+      &--item {
+        font-family: OpenSans-SemiBold;
+      }
+    }
 
     &-pic {
       margin-right: 10px;
+      border: 1px solid var(--blue);
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 26px;
+      height: 26px;
+    }
+
+    .logout-link {
+      margin-top: 10px;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      ::ng-deep svg {
+        transform: rotate(180deg);
+        margin-right: 10px;
+        width: 26px;
+        height: 20px;
+      }
     }
   }
 }
@@ -98,18 +118,7 @@ mat-drawer {
     .theme-selector {
       display: flex;
       justify-content: flex-end;
-      padding-right: 2rem;
-    }
-
-    .logout-btn {
-      margin-right: 4.375rem;
-      width: 30px;
-      height: 30px;
-
-      &:hover {
-        cursor: pointer;
-      }
+      padding-right: 4.375rem;
     }
   }
-
 }
