@@ -3,12 +3,12 @@ import { environment } from '../../../environments/environment';
 import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
-export class AuditDataService {
-
+export class AuthDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllAudits() {
-    const url = environment.api.getAllAudits;
-    return this.http.post(url, { skip: 0, take: 0 });
+  createUser(userInfo: any) {
+    const url = environment.api.users;
+    delete userInfo['token'];
+    return this.http.post(url, userInfo);
   }
 }

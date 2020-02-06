@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Experiment } from './store/experiments.model';
+import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
 export class ExperimentDataService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClientService) {}
 
   getAllExperiment() {
     const url = environment.api.getAllExperiments;

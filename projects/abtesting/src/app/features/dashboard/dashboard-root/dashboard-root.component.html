@@ -24,9 +24,12 @@
         </mat-list>
         <div class="user">
           <mat-list class="user-list">
-            <mat-list-item class="user-list--item" *ngIf="currentUser$ | async as user">
+            <mat-list-item
+              class="user-list--item"
+              *ngIf="currentUser$ | async as user"
+            >
               <img [src]="user.imageUrl" class="user-pic" />
-              <span>{{ user.name }}</span>
+              <span>{{ user.firstName + ' ' + user.lastName }}</span>
             </mat-list-item>
             <mat-list-item class="user-list--item">
               <a role="presentation" class="logout-link" (click)="logout()">
@@ -42,7 +45,10 @@
   <mat-drawer-content class="drawer__main-content">
     <div class="drawer__main-content-header">
       <mat-form-field class="theme-selector">
-        <mat-select [ngModel]="theme$ | async" (ngModelChange)="changeTheme($event)">
+        <mat-select
+          [ngModel]="theme$ | async"
+          (ngModelChange)="changeTheme($event)"
+        >
           <mat-option *ngFor="let theme of themeOptions" [value]="theme.value">
             {{ theme.viewValue }}
           </mat-option>

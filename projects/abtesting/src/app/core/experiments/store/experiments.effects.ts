@@ -78,11 +78,11 @@ export class ExperimentEffects {
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
       map(action => action.experimentId),
-      filter(experimentId => !!experimentId),
-      switchMap(experimentId => {
+      filter((experimentId) => !!experimentId),
+      switchMap((experimentId) => {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
           map(_ => experimentAction.actionDeleteExperimentSuccess({ experimentId })),
-          catchError(error => [experimentAction.actionDeleteExperimentFailure()])
+          catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )
       })
     )
