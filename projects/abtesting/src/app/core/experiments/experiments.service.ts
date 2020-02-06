@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Experiment, UpsertExperimentType, ExperimentVM } from './store/experiments.model';
+import { Experiment, UpsertExperimentType, ExperimentVM, EXPERIMENT_STATE } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import { selectAllExperiment, selectIsLoadingExperiment, selectSelectedExperiment } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
@@ -37,5 +37,9 @@ export class ExperimentService {
 
   deleteExperiment(experimentId) {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
+  }
+
+  updateExperimentState(experimentId: string, experimentState: EXPERIMENT_STATE) {
+    this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentState }));
   }
 }
