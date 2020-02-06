@@ -14,7 +14,7 @@ export class ExperimentDataService {
 
   getAllExperimentsStats(experimentIds: string[]) {
     const url = environment.api.experimentsStats;
-    return this.http.post(url, { experimentIds: experimentIds });
+    return this.http.post(url, { 'experimentIds': experimentIds });
   }
 
   createNewExperiment(experiment: Experiment) {

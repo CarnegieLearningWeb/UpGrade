@@ -8,7 +8,6 @@ import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
 import { selectExperimentStats } from './experiments.selectors';
-import { selectCurrentUser } from '../../auth/store/auth.selectors';
 
 @Injectable()
 export class ExperimentEffects {
@@ -80,10 +79,10 @@ export class ExperimentEffects {
       ofType(experimentAction.actionDeleteExperiment),
       map(action => action.experimentId),
       filter((experimentId) => !!experimentId),
-      switchMap(([experimentId]) => {
+      switchMap((experimentId) => {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
           map(_ => experimentAction.actionDeleteExperimentSuccess({ experimentId })),
-          catchError(error => [experimentAction.actionDeleteExperimentFailure()])
+          catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )
       })
     )

@@ -2,17 +2,13 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { AuditDataService } from '../audit.data.service';
 import * as auditActions from './audit.actions';
-import { mergeMap, map, filter, withLatestFrom } from 'rxjs/operators';
-import { AppState } from '../../core.module';
-import { Store, select } from '@ngrx/store';
-import { selectCurrentUser } from '../../auth/store/auth.selectors';
+import { mergeMap, map } from 'rxjs/operators';
 
 @Injectable()
 export class AuditEffects {
   constructor(
     private actions$: Actions,
-    private auditDataService: AuditDataService,
-    private store$: Store<AppState>
+    private auditDataService: AuditDataService
   ) {}
 
   getAllAudits$ = createEffect(() =>
