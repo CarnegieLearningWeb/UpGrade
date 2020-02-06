@@ -1,5 +1,5 @@
 import { Container } from 'typedi';
-import { multipleUsers } from '../mockData/users';
+import { multipleUsers } from '../mockData/experimentUsers';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import TestCase1 from './Scenario1';
 import TestCase2 from './Scenario2';

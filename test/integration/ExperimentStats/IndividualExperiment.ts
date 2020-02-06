@@ -2,13 +2,15 @@ import { Container } from 'typedi';
 // import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { individualExperimentStats } from '../mockData/experiment/index';
-import { multipleUsers } from '../mockData/users';
+import { multipleUsers } from '../mockData/experimentUsers';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
+import { UserService } from '../../../src/api/services/UserService';
+import { systemUser } from '../mockData/user/index';
 
 export default async function testCase(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -16,11 +18,15 @@ export default async function testCase(): Promise<void> {
   const analyticsService = Container.get<AnalyticsService>(AnalyticsService);
   const checkService = Container.get<CheckService>(CheckService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
   // experiment object
   const experimentObject = individualExperimentStats;
 
   // create experiment
-  await experimentService.create(experimentObject as any);
+  await experimentService.create(experimentObject as any, user);
   const experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -87,7 +93,7 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], customStats);
 
   // change experiment state to scheduled
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user);
 
   // user 1 logs in experiment
   // get all experiment condition for user 1
@@ -112,7 +118,7 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], customStats);
 
   // change experiment state to enrolling
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   // check state
   stats = await analyticsService.getStats([experimentId]);
@@ -226,7 +232,7 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], { ...customStats });
 
   // change experiment state to enrolling
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(multipleUsers[3], experimentName1, experimentPoint1);

@@ -179,6 +179,7 @@ export class ExperimentService {
 
     // add AuditLogs here
     const updateAuditLog = {
+      experimentId: experiment.id,
       diff: diffString(experiment, oldExperiment),
     };
 

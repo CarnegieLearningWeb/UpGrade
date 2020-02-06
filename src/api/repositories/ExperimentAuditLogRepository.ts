@@ -2,6 +2,7 @@ import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { EntityRepository, Repository } from 'typeorm';
 import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 import { User } from '../models/User';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {
@@ -11,7 +12,11 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .take(limit)
       .leftJoinAndSelect('audit.user', 'user')
       .orderBy('audit.createdAt', 'DESC')
-      .getMany();
+      .getMany()
+      .catch((error: any) => {
+        const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
+        throw new Error(errorMsg);
+      });
   }
 
   public async saveRawJson(type: EXPERIMENT_LOG_TYPE, data: any, user: User): Promise<ExperimentAuditLog> {
@@ -19,7 +24,11 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .insert()
       .values({ type, data, user })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((error: any) => {
+        const errorMsg = repositoryError('ExperimentAuditLogRepository', 'saveRawJson', { type, data, user }, error);
+        throw new Error(errorMsg);
+      });
 
     return result.raw;
   }

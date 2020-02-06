@@ -1,24 +1,29 @@
 import { Container } from 'typedi';
 import { revertToCondition } from '../mockData/experiment';
-import { multipleUsers } from '../mockData/users';
+import { multipleUsers } from '../mockData/experimentUsers';
+import { systemUser } from '../mockData/user';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
+import { UserService } from '../../../src/api/services/UserService';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-  // const checkService = Container.get<CheckService>(CheckService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
 
   // experiment object
   const experimentObject = revertToCondition;
 
   // create experiment
-  await experimentService.create(experimentObject as any);
+  await experimentService.create(experimentObject as any, user);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -45,7 +50,7 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   // fetch experiment
   experiments = await experimentService.find();
@@ -86,7 +91,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
 
   // fetch experiment
   experiments = await experimentService.find();

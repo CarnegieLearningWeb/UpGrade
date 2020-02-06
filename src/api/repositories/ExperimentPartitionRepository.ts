@@ -1,5 +1,6 @@
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentPartition)
 export class ExperimentPartitionRepository extends Repository<ExperimentPartition> {
@@ -16,7 +17,16 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .setParameter('name', partitionDoc.name)
       .setParameter('description', partitionDoc.description)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentPartitionRepository',
+          'upsertExperimentPartition',
+          { partitionDoc },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw[0];
   }
@@ -27,7 +37,16 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .delete()
       .from(ExperimentPartition)
       .where('id IN (:...ids)', { ids })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentPartitionRepository',
+          'deleteByIds',
+          { ids },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -42,7 +61,16 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .into(ExperimentPartition)
       .values(partitionsDocs)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentPartitionRepository',
+          'insertPartitions',
+          { partitionsDocs },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -53,6 +81,15 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .delete()
       .from(ExperimentPartition)
       .where('id = :id', { id })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentPartitionRepository',
+          'deletePartition',
+          { id },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 }

@@ -4,20 +4,26 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { multipleUsers } from '../mockData/users/index';
+import { multipleUsers } from '../mockData/experimentUsers/index';
 import { ExcludeService } from '../../../src/api/services/ExcludeService';
+import { UserService } from '../../../src/api/services/UserService';
+import { systemUser } from '../mockData/user/index';
 
 export default async function GroupExclude(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const excludeService = Container.get<ExcludeService>(ExcludeService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const userIn = await userService.create(systemUser as any);
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any);
+  await experimentService.create(individualAssignmentExperiment as any, userIn);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -33,7 +39,7 @@ export default async function GroupExclude(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn);
 
   // fetch experiment
   experiments = await experimentService.find();

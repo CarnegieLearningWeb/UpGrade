@@ -3,7 +3,7 @@ import GrpExclude from './GroupExclude';
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { multipleUsers } from '../mockData/users/index';
+import { multipleUsers } from '../mockData/experimentUsers/index';
 
 const initialCheck = async () => {
   const userService = Container.get<ExperimentUserService>(ExperimentUserService);

@@ -1,5 +1,6 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { IndividualExclusion } from '../models/IndividualExclusion';
+import repositoryError from './utils/repositoryError';
 
 type IndividualExclusionInput = Omit<IndividualExclusion, 'createdAt' | 'updatedAt' | 'versionNumber'>;
 @EntityRepository(IndividualExclusion)
@@ -11,7 +12,11 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       .values(rawData)
       .onConflict(`DO NOTHING`)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('IndividualExclusionRepository', 'saveRawJson', { rawData }, errorMsg);
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -22,7 +27,16 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
         userId,
         experimentIds,
       })
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'IndividualExclusionRepository',
+          'findExcluded',
+          { userId, experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 
   public async deleteByExperimentId(
@@ -34,7 +48,16 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       .delete()
       .from(IndividualExclusion)
       .where('experimentId = :experimentId', { experimentId })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'IndividualExclusionRepository',
+          'deleteByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }

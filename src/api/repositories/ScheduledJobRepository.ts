@@ -1,5 +1,6 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { ScheduledJob } from '../models/ScheduledJob';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ScheduledJob)
 export class ScheduledJobRepository extends Repository<ScheduledJob> {
@@ -10,7 +11,16 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .onConflict(`("id") DO UPDATE SET "timeStamp" = :timeStamp`)
       .setParameter('timeStamp', scheduledJob.timeStamp)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ScheduledJobRepository',
+          'upsertScheduledJob',
+          { scheduledJob },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw[0];
   }
@@ -21,7 +31,16 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .delete()
       .from(ScheduledJob)
       .where('experimentId = :experimentId', { experimentId })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ScheduledJobRepository',
+          'deleteByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }

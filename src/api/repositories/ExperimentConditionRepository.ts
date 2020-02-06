@@ -1,5 +1,6 @@
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentCondition)
 export class ExperimentConditionRepository extends Repository<ExperimentCondition> {
@@ -20,23 +21,19 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .setParameter('conditionCode', conditionDoc.conditionCode)
       .setParameter('assignmentWeight', conditionDoc.assignmentWeight)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentConditionRepository',
+          'upsertExperimentCondition',
+          { conditionDoc },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw[0];
   }
-
-  // public async updateExperimentCondition(
-  //   conditionId: string,
-  //   conditionDoc: Partial<ExperimentCondition>
-  // ): Promise<ExperimentCondition> {
-  //   const result = await this.createQueryBuilder('condition')
-  //     .update()
-  //     .set(conditionDoc)
-  //     .where('id = :id', { id: conditionId })
-  //     .returning('*')
-  //     .execute();
-  //   return result.raw[0];
-  // }
 
   public async deleteByIds(ids: string[], entityManager: EntityManager): Promise<ExperimentCondition[]> {
     const result = await entityManager
@@ -44,7 +41,11 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .delete()
       .from(ExperimentCondition)
       .where('id IN (:...ids)', { ids })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ExperimentConditionRepository', 'deleteByIds', { ids }, errorMsg);
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -59,7 +60,16 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .into(ExperimentCondition)
       .values(conditionDocs)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentConditionRepository',
+          'insertConditions',
+          { conditionDocs },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -70,6 +80,10 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .delete()
       .from(ExperimentCondition)
       .where('id=:id', { id })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ExperimentConditionRepository', 'deleteCondition', { id }, errorMsg);
+        throw new Error(errorMsgString);
+      });
   }
 }

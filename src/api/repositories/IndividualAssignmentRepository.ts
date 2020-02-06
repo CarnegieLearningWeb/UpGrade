@@ -1,5 +1,6 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { IndividualAssignment } from '../models/IndividualAssignment';
+import repositoryError from './utils/repositoryError';
 
 type IndividualAssignmentInput = Omit<IndividualAssignment, 'createdAt' | 'updatedAt' | 'versionNumber'>;
 @EntityRepository(IndividualAssignment)
@@ -11,7 +12,16 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
         userId,
         experimentIds,
       })
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'IndividualAssignmentRepository',
+          'findAssignment',
+          { userId, experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 
   public async saveRawJson(rawData: IndividualAssignmentInput): Promise<IndividualAssignment> {
@@ -20,7 +30,11 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       .into(IndividualAssignment)
       .values(rawData)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('IndividualAssignmentRepository', 'saveRawJson', { rawData }, errorMsg);
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -34,7 +48,16 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       .delete()
       .from(IndividualAssignment)
       .where('experimentId = :experimentId', { experimentId })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'IndividualAssignmentRepository',
+          'deleteByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }

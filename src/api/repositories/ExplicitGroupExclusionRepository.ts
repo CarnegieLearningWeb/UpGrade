@@ -1,5 +1,6 @@
 import { Repository, EntityRepository } from 'typeorm';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExplicitGroupExclusion)
 export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupExclusion> {
@@ -10,7 +11,16 @@ export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupEx
       .values(rawData)
       .onConflict(`DO NOTHING`)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitGroupExclusionRepository',
+          'saveRawJson',
+          { rawData },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -21,7 +31,16 @@ export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupEx
       .from(ExplicitGroupExclusion)
       .where('groupId=:groupId AND type=:type', { groupId, type })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitGroupExclusionRepository',
+          'deleteGroup',
+          { groupId, type },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }

@@ -1,5 +1,6 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { GroupAssignment } from '../models/GroupAssignment';
+import repositoryError from './utils/repositoryError';
 
 type GroupAssignmentInput = Omit<GroupAssignment, 'createdAt' | 'updatedAt' | 'versionNumber'>;
 @EntityRepository(GroupAssignment)
@@ -11,7 +12,16 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
         groupIds,
         experimentIds,
       })
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'GroupAssignmentRepository',
+          'findExperiment',
+          { groupIds, experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 
   public async deleteByExperimentId(experimentId: string, entityManager: EntityManager): Promise<GroupAssignment[]> {
@@ -20,7 +30,16 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       .delete()
       .from(GroupAssignment)
       .where('experimentId = :experimentId', { experimentId })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'GroupAssignmentRepository',
+          'deleteByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -31,7 +50,11 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       .into(GroupAssignment)
       .values(rawData)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('GroupAssignmentRepository', 'saveRawJson', { rawData }, errorMsg);
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }

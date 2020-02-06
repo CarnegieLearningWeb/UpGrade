@@ -1,5 +1,6 @@
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { GroupExclusion } from '../models/GroupExclusion';
+import repositoryError from './utils/repositoryError';
 
 type GroupExclusionInput = Omit<GroupExclusion, 'createdAt' | 'updatedAt' | 'versionNumber'>;
 @EntityRepository(GroupExclusion)
@@ -11,7 +12,11 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       .values(rawData)
       .onConflict(`DO NOTHING`)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('GroupExclusionRepository', 'saveRawJson', { rawData }, errorMsg);
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -22,7 +27,16 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       .delete()
       .from(GroupExclusion)
       .where('experimentId = :experimentId', { experimentId })
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'GroupExclusionRepository',
+          'deleteByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -33,6 +47,15 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
         groupIds,
         experimentIds,
       })
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'GroupExclusionRepository',
+          'findExcluded',
+          { groupIds, experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 }

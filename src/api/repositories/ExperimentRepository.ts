@@ -1,6 +1,7 @@
 import { EXPERIMENT_STATE } from 'ees_types';
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import { Experiment } from '../models/Experiment';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
@@ -12,7 +13,16 @@ export class ExperimentRepository extends Repository<Experiment> {
         enrolling: 'enrolling',
         enrollmentComplete: 'enrollmentComplete',
       })
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getEnrollingAndEnrollmentComplete',
+          {},
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 
   public async updateState(experimentId: string, state: EXPERIMENT_STATE): Promise<Experiment> {
@@ -21,7 +31,16 @@ export class ExperimentRepository extends Repository<Experiment> {
       .set({ state })
       .where({ id: experimentId })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'updateState',
+          { experimentId, state },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -33,7 +52,16 @@ export class ExperimentRepository extends Repository<Experiment> {
       .set(experimentDoc)
       .where({ id: experimentDoc.id })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'updateExperiment',
+          { experimentDoc },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -45,7 +73,16 @@ export class ExperimentRepository extends Repository<Experiment> {
       .into(Experiment)
       .values(experimentDoc)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'insertExperiment',
+          { experimentDoc },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -57,7 +94,16 @@ export class ExperimentRepository extends Repository<Experiment> {
       .from(Experiment)
       .where('id = :id', { id })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'insertExperiment',
+          { id },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }

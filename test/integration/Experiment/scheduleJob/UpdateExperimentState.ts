@@ -6,18 +6,24 @@ import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobSe
 import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
+import { UserService } from '../../../../src/api/services/UserService';
+import { systemUser } from '../../mockData/user/index';
 
 export default async function UpdateExperimentState(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
 
   // experiment object
   const experimentObject = scheduleJobUpdateExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any);
+  await experimentService.create(experimentObject as any, user);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -57,7 +63,7 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   await new Promise(r => setTimeout(r, 1000));
 
@@ -93,7 +99,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   );
 
   // change experiment status to Enrollment Complete
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
 
   await new Promise(r => setTimeout(r, 1000));
   // fetch experiment

@@ -1,5 +1,6 @@
 import { Repository, EntityRepository } from 'typeorm';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
+import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExplicitIndividualExclusion)
 export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIndividualExclusion> {
@@ -10,7 +11,16 @@ export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIn
       .values(rawData)
       .onConflict(`DO NOTHING`)
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitIndividualExclusionRepository',
+          'saveRawJson',
+          { rawData },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
@@ -21,7 +31,16 @@ export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIn
       .from(ExplicitIndividualExclusion)
       .where('userId=:userId', { userId })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitIndividualExclusionRepository',
+          'deleteById',
+          { userId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
 
     return result.raw;
   }
