@@ -1,18 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
 export class AuthDataService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClientService) {}
 
   createUser(userInfo: any) {
     const url = environment.api.users;
-    const { token: idToken } = userInfo;
     delete userInfo['token'];
-    const headers = {
-      Authorization: `Bearer ${idToken}`,
-    };
-    return this.http.post(url, userInfo, { headers });
+    return this.http.post(url, userInfo);
   }
 }

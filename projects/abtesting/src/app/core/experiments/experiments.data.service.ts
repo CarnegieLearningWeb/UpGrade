@@ -1,49 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Experiment } from './store/experiments.model';
+import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
 export class ExperimentDataService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClientService) {}
 
-  getAllExperiment(idToken: string) {
+  getAllExperiment() {
     const url = environment.api.getAllExperiments;
-    const headers = {
-      Authorization: `Bearer ${idToken}`,
-    };
-    return this.http.get(url, { headers });
+    return this.http.get(url);
   }
 
-  getAllExperimentsStats(experimentIds: string[], idToken: string) {
+  getAllExperimentsStats(experimentIds: string[]) {
     const url = environment.api.experimentsStats;
-    const headers = {
-      Authorization: `Bearer ${idToken}`,
-    };
-    return this.http.post(url, { experimentIds: experimentIds }, { headers });
+    return this.http.post(url, { experimentIds: experimentIds });
   }
 
-  createNewExperiment(experiment: Experiment, idToken: string) {
-    const headers = {
-      Authorization: `Bearer ${idToken}`,
-    };
+  createNewExperiment(experiment: Experiment) {
     const url = environment.api.createNewExperiments;
-    return this.http.post(url, { ...experiment }, { headers });
+    return this.http.post(url, { ...experiment });
   }
 
-  updateExperiment(experiment: Experiment, idToken: string) {
+  updateExperiment(experiment: Experiment) {
     const url = `${environment.api.updateExperiments}/${experiment.id}`;
-    const headers = {
-      Authorization: `Bearer ${idToken}`,
-    };
-    return this.http.put(url, { ...experiment }, { headers });
+    return this.http.put(url, { ...experiment });
   }
 
-  deleteExperiment(experimentId: string, idToken: string) {
+  deleteExperiment(experimentId: string) {
     const url = `${environment.api.updateExperiments}/${experimentId}`;
-    const headers = {
-      Authorization: `Bearer ${idToken}`,
-    };
-    return this.http.delete(url, { headers });
+    return this.http.delete(url);
   }
 }

@@ -18,12 +18,8 @@ export class AuditEffects {
   getAllAudits$ = createEffect(() =>
     this.actions$.pipe(
       ofType(auditActions.actionGetAllAudit),
-      withLatestFrom(
-        this.store$.pipe(select(selectCurrentUser))
-      ),
-      filter(([, currentUser]) => !!currentUser),
-      mergeMap(([, { token }]) =>
-        this.auditDataService.getAllAudits(token).pipe(
+      mergeMap(() =>
+        this.auditDataService.getAllAudits().pipe(
           map((data: any) =>
             auditActions.actionStoreAudits({
               audits: data.nodes
