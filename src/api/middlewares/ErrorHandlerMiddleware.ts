@@ -6,20 +6,37 @@ import { env } from '../../env';
 import { formatBadReqErrorMessage } from '../../lib/env/utils';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
+import { SERVER_ERROR } from 'ees_types';
 
 @Middleware({ type: 'after' })
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   public isProduction = env.isProduction;
 
-  constructor(
-    @Logger(__filename) private log: LoggerInterface,
-    public errorService: ErrorService
-  ) { }
+  constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) {}
 
-  public error(error: HttpError, req: express.Request, res: express.Response, next: express.NextFunction): void {
+  public async error(
+    error: HttpError,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
 
-    const message = error.httpCode === 400 ? formatBadReqErrorMessage(error[`errors`]) : error.message;
+    let message: string;
+    let type: SERVER_ERROR;
+    switch (error.httpCode) {
+      case 400:
+        message = formatBadReqErrorMessage(error[`errors`]);
+        type = SERVER_ERROR.INCORRECT_PARAM_FORMAT;
+        break;
+      case 401:
+        message = error.message;
+        type = SERVER_ERROR.USER_NOT_FOUND;
+        break;
+      default:
+        message = error.message;
+        break;
+    }
 
     const experimentError = new ExperimentError();
 
@@ -27,8 +44,9 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.message = message;
     experimentError.endPoint = req.originalUrl;
     experimentError.errorCode = error.httpCode;
+    experimentError.type = type;
 
-    this.errorService.create(experimentError);
+    await this.errorService.create(experimentError);
 
     if (!res.headersSent) {
       res.status(error.httpCode || 500);

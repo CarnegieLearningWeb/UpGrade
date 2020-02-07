@@ -28,6 +28,7 @@ import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { User } from '../models/User';
+import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -192,15 +193,14 @@ export class ExperimentAssignmentService {
       await this.populateExclusionTable(experimentId);
     }
 
+    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state'] });
+    const data: AuditLogData = {
+      experimentId,
+      previousState: oldExperiment.state,
+      newState: state,
+    };
     // add experiment audit logs
-    this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
-      {
-        id: experimentId,
-        state,
-      },
-      user
-    );
+    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
     // update experiment
     const updatedState = await this.experimentRepository.updateState(experimentId, state);

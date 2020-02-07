@@ -20,6 +20,7 @@ import { GroupExclusionRepository } from '../repositories/GroupExclusionReposito
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { User } from '../models/User';
+import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 
 @Service()
 export class ExperimentService {
@@ -136,12 +137,12 @@ export class ExperimentService {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
         // adding entry in audit log
-        const createAuditLogData = {
-          experimentId,
+        const deleteAuditLogData = {
+          experimentName: experiment.name,
         };
         await this.experimentAuditLogRepository.saveRawJson(
           EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
-          createAuditLogData,
+          deleteAuditLogData,
           currentUser
         );
 
@@ -178,7 +179,7 @@ export class ExperimentService {
     this.scheduledJobService.updateExperimentSchedules(experiment);
 
     // add AuditLogs here
-    const updateAuditLog = {
+    const updateAuditLog: AuditLogData = {
       experimentId: experiment.id,
       diff: diffString(experiment, oldExperiment),
     };
@@ -352,7 +353,7 @@ export class ExperimentService {
     });
 
     // add auditLog here
-    const createAuditLogData = {
+    const createAuditLogData: AuditLogData = {
       experimentId: createdExperiment.id,
     };
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
