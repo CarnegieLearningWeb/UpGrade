@@ -53,6 +53,16 @@ const reducer = createReducer(
     (state, { experimentId }) => {
       return adapter.removeOne(experimentId, state);
     }
+  ),
+  on(
+    experimentsAction.actionUpdateExperimentState,
+    (state) => ({ ...state, isLoadingExperiment: true })
+  ),
+  on(
+    experimentsAction.actionUpdateExperimentStateSuccess,
+    (state, { experiment }) => {
+      return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
+    }
   )
 );
 

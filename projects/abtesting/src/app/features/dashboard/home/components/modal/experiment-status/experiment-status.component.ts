@@ -56,7 +56,7 @@ export class ExperimentStatusComponent implements OnInit {
 
   changeStatus() {
     const { newStatus } = this.statusForm.value;
-    this.experimentService.updateExperiment({ ...this.experimentInfo, state: newStatus.value });
+    this.experimentService.updateExperimentState(this.experimentInfo.id, newStatus.value);
     this.onCancelClick();
   }
 }
