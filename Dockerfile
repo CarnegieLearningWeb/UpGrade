@@ -14,6 +14,5 @@ RUN ["npm", "start", "dockerConfig.$ENVIRONMENT"]
 RUN ["npm", "run", "build"]
 
 
-
 EXPOSE 3030
-CMD ["npm", "run", "production" ]
+CMD ["npm", "start", "serve.$ENVIRONMENT" ]

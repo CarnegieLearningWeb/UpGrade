@@ -55,6 +55,9 @@ module.exports = {
       production: {
         script: 'cross-env NODE_ENV=production node dist/src/app.js',
       },
+      development: {
+        script: 'cross-env NODE_ENV=development node dist/src/app.js',
+      },
       description: 'Serves the current app and watches for changes to restart it',
     },
     /**

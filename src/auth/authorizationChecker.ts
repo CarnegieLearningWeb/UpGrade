@@ -4,6 +4,7 @@ import { Connection } from 'typeorm';
 
 import { Logger } from '../lib/logger';
 import { AuthService } from './AuthService';
+import { env } from '../env';
 
 export function authorizationChecker(
   connection: Connection
@@ -20,14 +21,14 @@ export function authorizationChecker(
     const token = authService.parseBasicAuthFromRequest(action.request);
     if (token === undefined) {
       log.warn('No token provided');
-      return false;
+      return env.isProduction ? false : true;
     }
     try {
       const userDoc = await authService.validateUser(token);
       action.request.user = userDoc;
       return true;
     } catch (error) {
-      return false;
+      return env.isProduction ? false : true;
     }
   };
 }
