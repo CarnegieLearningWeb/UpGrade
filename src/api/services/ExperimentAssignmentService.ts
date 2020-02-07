@@ -196,6 +196,7 @@ export class ExperimentAssignmentService {
     const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state'] });
     const data: AuditLogData = {
       experimentId,
+      experimentName: oldExperiment.name,
       previousState: oldExperiment.state,
       newState: state,
     };

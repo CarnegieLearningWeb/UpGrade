@@ -181,6 +181,7 @@ export class ExperimentService {
     // add AuditLogs here
     const updateAuditLog: AuditLogData = {
       experimentId: experiment.id,
+      experimentName: experiment.name,
       diff: diffString(experiment, oldExperiment),
     };
 
@@ -355,6 +356,7 @@ export class ExperimentService {
     // add auditLog here
     const createAuditLogData: AuditLogData = {
       experimentId: createdExperiment.id,
+      experimentName: createdExperiment.name,
     };
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
 
