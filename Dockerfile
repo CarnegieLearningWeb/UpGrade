@@ -15,4 +15,4 @@ RUN ["npm", "run", "build"]
 
 
 EXPOSE 3030
-CMD ["npm", "start", "serve.$ENVIRONMENT" ]
+CMD ["npm", "run", "production" ]
