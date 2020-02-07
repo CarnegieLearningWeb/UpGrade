@@ -29,15 +29,18 @@ export interface IExperimentEnrollmentStats {
 
 interface ExperimentCreatedData {
   experimentId: string;
+  experimentName: string;
 }
 
 interface ExperimentUpdatedData {
   experimentId: string;
+  experimentName: string;
   diff: string;
 }
 
 interface ExperimentStateChangedData {
   experimentId: string;
+  experimentName: string;
   previousState: EXPERIMENT_STATE;
   newState: EXPERIMENT_STATE;
 }
