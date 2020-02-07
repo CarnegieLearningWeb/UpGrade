@@ -76,6 +76,20 @@ export class ExperimentEffects {
     )
   );
 
+  updateExperimentState$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionUpdateExperimentState),
+      map(action => ({ experimentId: action.experimentId, experimentState: action.experimentState })),
+      filter(({ experimentId, experimentState }) => !!experimentId && !!experimentState),
+      switchMap(({ experimentId, experimentState }) =>
+        this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
+          map((result: Experiment) => experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] })),
+          catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
+        )
+      )
+    )
+  );
+
   deleteExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
