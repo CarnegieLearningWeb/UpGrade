@@ -1,3 +1,4 @@
+import { EXPERIMENT_STATE } from './enums';
 export interface IEnrollmentCompleteCondition {
   userCount: number;
   groupCount: number;
@@ -25,3 +26,28 @@ export interface IExperimentEnrollmentStats {
   conditions: IConditionEnrollmentStats[];
   partitions: IPartitionEnrollmentStats[];
 }
+
+interface ExperimentCreatedData {
+  experimentId: string;
+}
+
+interface ExperimentUpdatedData {
+  experimentId: string;
+  diff: string;
+}
+
+interface ExperimentStateChangedData {
+  experimentId: string;
+  previousState: EXPERIMENT_STATE;
+  newState: EXPERIMENT_STATE;
+}
+
+interface ExperimentDeletedData {
+  experimentName: string;
+}
+
+export type AuditLogData =
+  | ExperimentCreatedData
+  | ExperimentUpdatedData
+  | ExperimentStateChangedData
+  | ExperimentDeletedData;
