@@ -193,7 +193,7 @@ export class ExperimentAssignmentService {
       await this.populateExclusionTable(experimentId);
     }
 
-    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state'] });
+    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
     const data: AuditLogData = {
       experimentId,
       experimentName: oldExperiment.name,
