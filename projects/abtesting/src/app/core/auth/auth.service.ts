@@ -3,7 +3,7 @@ import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
 import { selectIsLoggedIn, selectIsAuthenticating, selectCurrentUser } from './store/auth.selectors';
-import { filter, map, first } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 
 @Injectable()
 export class AuthService {
@@ -16,8 +16,7 @@ export class AuthService {
   getIdToken$ = this.store$.pipe(
     select(selectCurrentUser),
     filter(currentUser => !!currentUser),
-    map(currentUser => currentUser['token']),
-    first()
+    map(currentUser => currentUser['token'])
   )
 
   authLoginStart() {

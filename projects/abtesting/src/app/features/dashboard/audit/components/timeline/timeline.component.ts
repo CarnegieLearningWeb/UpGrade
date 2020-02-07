@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { LogType } from '../../../../../core/audit/store/audit.model';
+import { LogType, EXPERIMENT_LOG_TYPE } from '../../../../../core/audit/store/audit.model';
 
 @Component({
   selector: 'audit-timeline',
@@ -10,9 +10,13 @@ import { LogType } from '../../../../../core/audit/store/audit.model';
 export class TimelineComponent {
 
   @Input() logData;
-  @Input() logType;
+  @Input() logType: LogType;
 
   get LogType() {
     return LogType;
+  }
+
+  get ExperimentLogType() {
+    return EXPERIMENT_LOG_TYPE;
   }
 }

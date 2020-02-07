@@ -9,6 +9,8 @@ import { ErrorLogsComponent } from './components/error-logs/error-logs.component
 import { AuditLogsComponent } from './components/audit-logs/audit-logs.component';
 import { TimelineComponent } from './components/timeline/timeline.component';
 import { ErrorLogPipe } from './pipes/error-log.pipe';
+import { LogDateFormatPipe } from './pipes/logs-date-format.pipe';
+import { ExperimentActionMessage } from './pipes/experiment-action-message.pipe';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,9 @@ import { ErrorLogPipe } from './pipes/error-log.pipe';
     ErrorLogsComponent,
     AuditLogsComponent,
     TimelineComponent,
-    ErrorLogPipe
+    ErrorLogPipe,
+    LogDateFormatPipe,
+    ExperimentActionMessage
   ],
   imports: [CommonModule, SharedModule, AuditRoutingModule]
 })

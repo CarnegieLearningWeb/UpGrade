@@ -64,6 +64,7 @@
     "ees_types": "github:CarnegieLearningWeb/educational-experiment-types#master",
     "hammerjs": "^2.0.8",
     "lodash.find": "^4.6.0",
+    "lodash.groupby": "^4.6.0",
     "rxjs": "~6.5.0",
     "saturn-datepicker": "^8.0.1",
     "tslib": "^1.9.0",

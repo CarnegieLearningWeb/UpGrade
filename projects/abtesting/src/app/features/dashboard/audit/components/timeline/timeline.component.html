@@ -1,24 +1,40 @@
 <div class="timeline">
-  <ng-container *ngFor="let data of logData">
+  <ng-container *ngFor="let log of logData; let index = index">
     <div class="timeline-container">
-      <app-shared-icons
-        *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate"
-        class="icon icon--yellow"
-        [iconType]="'user-2'"
-      ></app-shared-icons>
+      <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else errorLogIconTemplate"/>
 
       <ng-template #errorLogIconTemplate>
         <app-shared-icons
-          class="{{ 'icon icon--' + (data.value | errorLog: 'class') }}"
-          [iconType]="data.value | errorLog: 'icon'"
+          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
+          [iconType]="log.value | errorLog: 'icon'"
         ></app-shared-icons>
       </ng-template>
 
-      <div class="content">
-        <span class="error-type"><u>{{ data.value }}</u></span>
-        <span *ngIf="logType === LogType.ERROR_LOG"> :</span>
-        <span class="error-message">{{ ' ' + data.message }}</span>
+      <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
+        <span class="user-name"><u>{{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}</u></span>
+
+        <span
+          *ngIf="!log.data.isExperimentExist; else experimentExistTemplate"
+          matTooltipClass="experiment-tooltip"
+          [matTooltip]="'audit.log-experiment-deleted-tooltip.text' | translate: { experimentName: log.data.experimentName }"
+          matTooltipPosition="above"
+        > {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }} </span>
+
+        <ng-template #experimentExistTemplate>
+          <span> {{ log.type | experimentActionMessage | translate }} </span>
+          <a
+            class="link"
+            [routerLink]="['/home', 'detail', log.data.experimentId]"
+          >{{ log.data.experimentName }}</a>
+        </ng-template>
       </div>
+
+      <ng-template #errorLogTemplate>
+        <span class="error-type"><u>{{ log.value }}</u></span>
+        <span> :</span>
+        <span class="error-message">{{ log.message }}</span>
+      </ng-template>
+
     </div>
   </ng-container>
 </div>

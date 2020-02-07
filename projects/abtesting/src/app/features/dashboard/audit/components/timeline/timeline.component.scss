@@ -62,14 +62,29 @@ $timeline-background-color: #eaf0f8;
     .content {
       position: relative;
 
-      .error-type {
+      .error-type,
+      .user-name {
         padding-bottom: 3px;
         font-family: OpenSans-Semibold;
       }
 
-      .error-message {
+      .error-message,
+      .user-action {
         font-family: OpenSans-Regular;
       }
+
+      .link {
+        text-decoration: underline;
+      }
     }
+  }
+}
+
+::ng-deep .experiment-tooltip {
+  font-family: OpenSans-SemiBold;
+  font-size: var(--text-size-small);
+
+  &:hover {
+    cursor: pointer;
   }
 }
