@@ -96,8 +96,9 @@ $timeline-background-color: #eaf0f8;
       }
 
       .view-diff {
-        margin-left: 5px;
+        margin-left: 15px;
         color: var(--blue);
+        font-size: 12px;
       }
 
       .accordion {
@@ -134,6 +135,10 @@ $timeline-background-color: #eaf0f8;
   &:hover {
     background-color: unset !important;
   }
+}
+
+::ng-deep .mat-expansion-panel-header-title {
+  align-items: center !important;
 }
 
 ::ng-deep .mat-expansion-panel-header:not([aria-disabled=true]) {

@@ -42,7 +42,8 @@
                       *ngIf="log.data.isExperimentExist; else experimentNotExist"
                       [routerLink]="['/home', 'detail', log.data.experimentId]"
                     >{{ log.data.experimentName }}</a>
-                    <span class="view-diff">View</span>
+                    <!-- TODO: Add en.json for view -->
+                    <span class="view-diff">view</span>
                   </mat-panel-title>
                   <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
