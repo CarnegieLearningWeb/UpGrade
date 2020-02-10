@@ -263,7 +263,11 @@ export class ExperimentController {
   @OnUndefined(ExperimentNotFoundError)
   public getCondition(@Param('id') id: string): Promise<ExperimentCondition[]> {
     if (!validator.isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
     }
     return this.experimentService.getExperimentalConditions(id);
   }

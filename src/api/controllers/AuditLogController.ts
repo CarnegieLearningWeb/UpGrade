@@ -64,7 +64,7 @@ export class AuditLogController {
    *          '200':
    *            description: List of Audit Logs
    */
-  @Post('/audit')
+  @Post('audit')
   public async getAuditLogService(@Body() logParams: ILogParams): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
       this.auditService.getAuditLogs(logParams.take, logParams.skip),
@@ -107,7 +107,7 @@ export class AuditLogController {
    *          '200':
    *            description: List of Error Logs
    */
-  @Post('/error')
+  @Post('error')
   public async getErrorLogService(@Body() logParams: ILogParams): Promise<ExperimentErrorPaginatedInfo> {
     const [nodes, total] = await Promise.all([
       this.errorService.getErrorLogs(logParams.take, logParams.skip),
