@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { LogType, EXPERIMENT_LOG_TYPE } from '../../../../../core/audit/store/audit.model';
+import * as Convert from 'ansi-to-html';
 
 @Component({
   selector: 'audit-timeline',
@@ -18,5 +19,16 @@ export class TimelineComponent {
 
   get ExperimentLogType() {
     return EXPERIMENT_LOG_TYPE;
+  }
+
+  getHtmlFormedLogData(index: number, diff) {
+    const convert = new Convert();
+    let convertedToHtml = convert.toHtml(diff);
+    convertedToHtml = convertedToHtml.split('color:#FFF').join('color: grey');
+    const diffNode = document.getElementById('diff' + index)
+    const html = new DOMParser().parseFromString(convertedToHtml, 'text/html');
+    if (diffNode) {
+      diffNode.innerHTML = html.body.innerHTML;
+    }
   }
 }

@@ -60,6 +60,7 @@ $timeline-background-color: #eaf0f8;
     }
 
     .content {
+      display: flex;
       position: relative;
 
       .error-type,
@@ -75,6 +76,23 @@ $timeline-background-color: #eaf0f8;
 
       .link {
         text-decoration: underline;
+        color: var(--blue);
+      }
+
+      .action {
+        padding-left: 24px;
+
+        &-msg {
+          margin-right: 5px;
+        }
+      }
+
+      .view-diff {
+        color: var(--blue)
+      }
+
+      .accordion {
+        flex-grow: 1;
       }
     }
   }
@@ -90,4 +108,18 @@ $timeline-background-color: #eaf0f8;
   &:hover {
     cursor: pointer;
   }
+}
+
+::ng-deep .mat-expansion-panel:not([class*=mat-elevation-z]) {
+  box-shadow: none !important;
+}
+
+::ng-deep .mat-expansion-panel-header {
+  &:hover {
+    background-color: unset !important;
+  }
+}
+
+::ng-deep .mat-expansion-panel-header:not([aria-disabled=true]) {
+  height: 25px !important;
 }

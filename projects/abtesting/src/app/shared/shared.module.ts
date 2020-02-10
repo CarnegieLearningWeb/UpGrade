@@ -30,6 +30,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -130,6 +131,7 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
     MatDialogModule,
     MatStepperModule,
     MatRadioModule,
+    MatExpansionModule,
 
     FontAwesomeModule
   ],
@@ -167,6 +169,7 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
     MatDialogModule,
     MatStepperModule,
     MatRadioModule,
+    MatExpansionModule,
 
     FontAwesomeModule,
 

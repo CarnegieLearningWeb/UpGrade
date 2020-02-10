@@ -109,8 +109,6 @@
   "audit.log-experiment-created.text": "successfully created",
   "audit.log-experiment-updated.text": "successfully updated",
   "audit.log-experiment-deleted.text": "successfully deleted",
-  "audit.log-experiment-state-changed.text": "successfully changed state ",
-  "audit.log-experiment-deleted-tooltip.text": "{{ experimentName }} is deleted",
-  "audit.log-experiment-state-tooltip.text": "{{ experimentName }}'s state is changed from {{ previousState }} to {{ newState }}",
+  "audit.log-experiment-state-changed.text": "successfully changed state from {{ previousState }} to {{ newState }} in ",
   "audit.log-zero-state.text": "No Logs available"
 }
