@@ -26,9 +26,17 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     let message: string;
     let type: SERVER_ERROR;
 
-    const errorObject = error.message && typeof error.message === 'string' ? error.message : JSON.parse(error.message);
-    const errorType: SERVER_ERROR = errorObject && typeof errorObject === 'string' ? undefined : errorObject.type;
-    const errorMessage = errorObject && typeof errorObject === 'string' ? undefined : errorObject.message;
+    let errorObject;
+    let errorType;
+    let errorMessage;
+    try {
+      errorObject = error.message && JSON.parse(error.message);
+      errorType = errorObject && errorObject.type;
+      errorMessage = errorObject && errorObject.message;
+    } catch {
+      errorType = undefined;
+    }
+
     // switch case according to error type
     switch (errorType) {
       case SERVER_ERROR.INCORRECT_PARAM_FORMAT:

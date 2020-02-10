@@ -3,6 +3,7 @@ import { AuditService } from '../services/AuditService';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from '../services/ErrorService';
+import { LogParamsValidator } from './validators/LogParamsValidator';
 
 interface ExperimentAuditPaginationInfo {
   total: number;
@@ -16,11 +17,6 @@ interface ExperimentErrorPaginatedInfo {
   skip: number;
   take: number;
   nodes: ExperimentError[];
-}
-
-interface ILogParams {
-  skip: number;
-  take: number;
 }
 
 /**
@@ -65,7 +61,9 @@ export class AuditLogController {
    *            description: List of Audit Logs
    */
   @Post('audit')
-  public async getAuditLogService(@Body() logParams: ILogParams): Promise<ExperimentAuditPaginationInfo> {
+  public async getAuditLogService(
+    @Body({ validate: { validationError: { target: true, value: true } } }) logParams: LogParamsValidator
+  ): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
       this.auditService.getAuditLogs(logParams.take, logParams.skip),
       this.auditService.getTotalLogs(),
@@ -108,7 +106,9 @@ export class AuditLogController {
    *            description: List of Error Logs
    */
   @Post('error')
-  public async getErrorLogService(@Body() logParams: ILogParams): Promise<ExperimentErrorPaginatedInfo> {
+  public async getErrorLogService(
+    @Body({ validate: { validationError: { target: true, value: true } } }) logParams: LogParamsValidator
+  ): Promise<ExperimentErrorPaginatedInfo> {
     const [nodes, total] = await Promise.all([
       this.errorService.getErrorLogs(logParams.take, logParams.skip),
       this.errorService.getTotalLogs(),

@@ -5,6 +5,10 @@ import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
 import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { User } from '../models/User';
+// import { validate } from 'class-validator';
+import { SERVER_ERROR } from 'ees_types';
+import { validate } from 'class-validator';
+// import { validate } from 'class-validator';
 
 /**
  * @swagger
@@ -65,7 +69,6 @@ export class ExperimentConditionController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: MarkExperimentValidator
   ): any {
-    // TODO add entry in audit log of updating experiment state
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.experimentId,
       experiment.experimentPoint,
@@ -140,11 +143,21 @@ export class ExperimentConditionController {
    *            description: Experiment State is updated
    */
   @Put('state')
-  public updateState(
+  public async updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: AssignmentStateUpdateValidator,
     @CurrentUser() currentUser: User
-  ): any {
+  ): Promise<any> {
+    if (!currentUser) {
+      return Promise.reject(
+        new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
+      );
+    }
+
+    await validate(currentUser).catch(error => {
+      return Promise.reject(new Error(error));
+    });
+
     return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, currentUser);
   }
 }
