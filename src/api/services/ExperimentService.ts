@@ -53,7 +53,7 @@ export class ExperimentService {
     skip: number,
     take: number,
     searchParams?: SearchParams,
-    sortParams?: SortParams[]
+    sortParams?: SortParams
   ): Promise<Experiment[]> {
     this.log.info(`Find paginated experiments`);
 
@@ -71,10 +71,8 @@ export class ExperimentService {
         .setParameter('query', `${searchParams.string}:*`);
     }
 
-    if (sortParams && sortParams.length > 0) {
-      sortParams.map(({ key, sortAs }) => {
-        queryBuilder = queryBuilder.orderBy(`experiment.${key}`, sortAs);
-      });
+    if (sortParams) {
+      queryBuilder = queryBuilder.orderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
     }
 
     queryBuilder = queryBuilder.skip(skip).take(take);
@@ -178,27 +176,6 @@ export class ExperimentService {
     // create schedules to start experiment and end experiment
     this.scheduledJobService.updateExperimentSchedules(experiment);
 
-    // removing unwanted params for diff
-    const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
-    delete oldExperimentClone.versionNumber;
-    delete oldExperimentClone.updatedAt;
-    delete oldExperimentClone.createdAt;
-
-    // removing unwanted params for diff
-    const newExperimentClone = JSON.parse(JSON.stringify(experiment));
-    delete newExperimentClone.versionNumber;
-    delete newExperimentClone.updatedAt;
-    delete newExperimentClone.createdAt;
-
-    // add AuditLogs here
-    const updateAuditLog: AuditLogData = {
-      experimentId: experiment.id,
-      experimentName: experiment.name,
-      diff: diffString(oldExperimentClone, newExperimentClone),
-    };
-
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
-
     return getConnection().transaction(async transactionalEntityManager => {
       const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
       let experimentDoc: Experiment;
@@ -299,7 +276,57 @@ export class ExperimentService {
         return { ...partitionDoc, experiment: partitionDoc.experiment };
       });
 
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
+      const newExperiment = {
+        ...experimentDoc,
+        conditions: conditionDocToReturn as any,
+        partitions: partitionDocToReturn as any,
+      };
+
+      // removing unwanted params for diff
+      const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
+      delete oldExperimentClone.versionNumber;
+      delete oldExperimentClone.updatedAt;
+      delete oldExperimentClone.createdAt;
+      oldExperimentClone.partitions.map(partition => {
+        delete partition.versionNumber;
+        delete partition.updatedAt;
+        delete partition.createdAt;
+        delete (partition as any).experimentId;
+      });
+      oldExperimentClone.conditions.map(condition => {
+        delete condition.versionNumber;
+        delete condition.updatedAt;
+        delete condition.createdAt;
+        delete (condition as any).experimentId;
+      });
+
+      // removing unwanted params for diff
+      const newExperimentClone = JSON.parse(JSON.stringify(newExperiment));
+      delete newExperimentClone.versionNumber;
+      delete newExperimentClone.updatedAt;
+      delete newExperimentClone.createdAt;
+      newExperimentClone.partitions.map(partition => {
+        delete partition.versionNumber;
+        delete partition.updatedAt;
+        delete partition.createdAt;
+        delete (partition as any).experimentId;
+      });
+      newExperimentClone.conditions.map(condition => {
+        delete condition.versionNumber;
+        delete condition.updatedAt;
+        delete condition.createdAt;
+        delete (condition as any).experimentId;
+      });
+
+      // add AuditLogs here
+      const updateAuditLog: AuditLogData = {
+        experimentId: experiment.id,
+        experimentName: experiment.name,
+        diff: diffString(oldExperimentClone, newExperimentClone),
+      };
+
+      await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
+      return newExperiment;
     });
   }
 

@@ -164,8 +164,6 @@ export class ExperimentController {
    *                  string:
    *                    type: string
    *               sortParams:
-   *                type: array
-   *                items:
    *                  type: object
    *                  properties:
    *                    key:
@@ -184,8 +182,16 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: false, value: false } } }) paginatedParams: PaginatedParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: PaginatedParamsValidator
   ): Promise<ExperimentPaginationInfo> {
+    if (!paginatedParams) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
+        )
+      );
+    }
+
     const [experiments, count] = await Promise.all([
       this.experimentService.findPaginated(
         paginatedParams.skip,
@@ -328,7 +334,11 @@ export class ExperimentController {
   @Delete('/:id')
   public delete(@Param('id') id: string, @CurrentUser() currentUser: User): Promise<Experiment | undefined> {
     if (!validator.isUUID(id)) {
-      return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
     }
     return this.experimentService.delete(id, currentUser);
   }
@@ -369,6 +379,13 @@ export class ExperimentController {
     experiment: Experiment,
     @CurrentUser() currentUser: User
   ): Promise<Experiment> {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
     return this.experimentService.update(id, experiment, currentUser);
   }
 }

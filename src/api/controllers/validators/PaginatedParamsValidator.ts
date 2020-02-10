@@ -17,5 +17,5 @@ export class PaginatedParamsValidator {
   public searchParams: SearchParams;
 
   @Column({ nullable: true })
-  public sortParams: SortParams[];
+  public sortParams: SortParams;
 }

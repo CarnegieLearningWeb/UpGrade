@@ -21,18 +21,22 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
-    this.log.info('Insert Error in database');
+    this.log.info('Insert Error in database', error);
 
     let message: string;
     let type: SERVER_ERROR;
 
-    const errorObject = error.message && JSON.parse(error.message);
-    const errorType: SERVER_ERROR = errorObject && errorObject.type;
-    const errorMessage = errorObject && errorObject.message;
+    const errorObject = error.message && typeof error.message === 'string' ? error.message : JSON.parse(error.message);
+    const errorType: SERVER_ERROR = errorObject && typeof errorObject === 'string' ? undefined : errorObject.type;
+    const errorMessage = errorObject && typeof errorObject === 'string' ? undefined : errorObject.message;
     // switch case according to error type
     switch (errorType) {
       case SERVER_ERROR.INCORRECT_PARAM_FORMAT:
         type = SERVER_ERROR.INCORRECT_PARAM_FORMAT;
+        message = errorMessage;
+        break;
+      case SERVER_ERROR.MISSING_PARAMS:
+        type = SERVER_ERROR.MISSING_PARAMS;
         message = errorMessage;
         break;
       default:
