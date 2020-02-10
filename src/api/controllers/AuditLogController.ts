@@ -1,6 +1,8 @@
 import { JsonController, Post, Body, Authorized } from 'routing-controllers';
 import { AuditService } from '../services/AuditService';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
+import { ExperimentError } from '../models/ExperimentError';
+import { ErrorService } from '../services/ErrorService';
 
 interface ExperimentAuditPaginationInfo {
   total: number;
@@ -9,7 +11,14 @@ interface ExperimentAuditPaginationInfo {
   nodes: ExperimentAuditLog[];
 }
 
-interface IAuditParams {
+interface ExperimentErrorPaginatedInfo {
+  total: number;
+  skip: number;
+  take: number;
+  nodes: ExperimentError[];
+}
+
+interface ILogParams {
   skip: number;
   take: number;
 }
@@ -17,13 +26,13 @@ interface IAuditParams {
 /**
  * @swagger
  * tags:
- *   - name: Audit Logs
- *     description: Get audit logs for experiment
+ *   - name: Logs
+ *     description: Get logs for experiment
  */
 @Authorized()
-@JsonController('/audit')
+@JsonController('/')
 export class AuditLogController {
-  constructor(public auditService: AuditService) {}
+  constructor(public auditService: AuditService, public errorService: ErrorService) {}
 
   /**
    * @swagger
@@ -48,23 +57,67 @@ export class AuditLogController {
    *                type: integer
    *           description: number of audit logs to requests
    *       tags:
-   *         - Audit Logs
+   *         - Logs
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: List of Audit Logs
    */
-  @Post('/')
-  public async getAuditLogService(@Body() auditParams: IAuditParams): Promise<ExperimentAuditPaginationInfo> {
+  @Post('/audit')
+  public async getAuditLogService(@Body() logParams: ILogParams): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
-      this.auditService.getAuditLogs(auditParams.take, auditParams.skip),
+      this.auditService.getAuditLogs(logParams.take, logParams.skip),
       this.auditService.getTotalLogs(),
     ]);
     return {
       total,
       nodes,
-      ...auditParams,
+      ...logParams,
+    };
+  }
+
+  /**
+   * @swagger
+   * /error:
+   *    post:
+   *       description: Get error-logs
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
+   *           description: number of error logs to requests
+   *       tags:
+   *         - Logs
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: List of Error Logs
+   */
+  @Post('/error')
+  public async getErrorLogService(@Body() logParams: ILogParams): Promise<ExperimentErrorPaginatedInfo> {
+    const [nodes, total] = await Promise.all([
+      this.errorService.getErrorLogs(logParams.take, logParams.skip),
+      this.errorService.getTotalLogs(),
+    ]);
+
+    return {
+      total,
+      nodes,
+      ...logParams,
     };
   }
 }

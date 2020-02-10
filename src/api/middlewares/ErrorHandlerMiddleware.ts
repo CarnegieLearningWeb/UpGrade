@@ -21,47 +21,50 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
+    this.log.info('Insert Error in database');
 
     let message: string;
     let type: SERVER_ERROR;
-    switch (error.httpCode) {
-      case 400:
-        message = formatBadReqErrorMessage(error[`errors`]);
+
+    const errorObject = error.message && JSON.parse(error.message);
+    const errorType: SERVER_ERROR = errorObject && errorObject.type;
+    const errorMessage = errorObject && errorObject.message;
+    // switch case according to error type
+    switch (errorType) {
+      case SERVER_ERROR.INCORRECT_PARAM_FORMAT:
         type = SERVER_ERROR.INCORRECT_PARAM_FORMAT;
-        break;
-      case 401:
-        message = error.message;
-        type = SERVER_ERROR.USER_NOT_FOUND;
+        message = errorMessage;
         break;
       default:
-        message = error.message;
+        switch (error.httpCode) {
+          case 400:
+            message = formatBadReqErrorMessage(error[`errors`]);
+            type = SERVER_ERROR.INCORRECT_PARAM_FORMAT;
+            break;
+          case 401:
+            message = error.message;
+            type = SERVER_ERROR.USER_NOT_FOUND;
+            break;
+          default:
+            message = error.message;
+            break;
+        }
         break;
     }
 
+    // making error document
     const experimentError = new ExperimentError();
-
     experimentError.name = error.name;
     experimentError.message = message;
     experimentError.endPoint = req.originalUrl;
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
 
-    await this.errorService.create(experimentError);
+    const errorDocument = await this.errorService.create(experimentError);
 
     if (!res.headersSent) {
       res.status(error.httpCode || 500);
-
-      res.json({
-        name: error.name,
-        message: `${message}`,
-        errors: error[`errors`] || [],
-      });
-    }
-
-    if (this.isProduction) {
-      this.log.error(error.name, error.message);
-    } else {
-      this.log.error(error.name, error.stack);
+      res.json(errorDocument);
     }
   }
 }

@@ -1,27 +1,22 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { SERVER_ERROR } from 'ees_types';
 
 @Entity()
 export class ExperimentError extends BaseModel {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   public id: string;
 
-  @IsNotEmpty()
-  @Column()
+  @Column({ nullable: true })
   public endPoint: string;
 
-  @IsNotEmpty()
-  @Column()
+  @Column({ nullable: true })
   public errorCode: number;
 
-  @IsNotEmpty()
-  @Column()
+  @Column({ nullable: true })
   public message: string;
 
-  @IsNotEmpty()
-  @Column()
+  @Column({ nullable: true })
   public name: string;
 
   @Column({ type: 'enum', enum: SERVER_ERROR })

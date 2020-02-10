@@ -17,4 +17,16 @@ export class ErrorRepository extends Repository<ExperimentError> {
 
     return result.raw;
   }
+
+  public async paginatedFind(limit: number, offset: number): Promise<ExperimentError[]> {
+    return this.createQueryBuilder('error')
+      .skip(offset)
+      .take(limit)
+      .orderBy('error.createdAt', 'DESC')
+      .getMany()
+      .catch((error: any) => {
+        const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { limit, offset }, error);
+        throw new Error(errorMsg);
+      });
+  }
 }
