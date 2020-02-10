@@ -194,7 +194,7 @@ export class ExperimentService {
     const updateAuditLog: AuditLogData = {
       experimentId: experiment.id,
       experimentName: experiment.name,
-      diff: diffString(newExperimentClone, oldExperimentClone),
+      diff: diffString(oldExperimentClone, newExperimentClone),
     };
 
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
