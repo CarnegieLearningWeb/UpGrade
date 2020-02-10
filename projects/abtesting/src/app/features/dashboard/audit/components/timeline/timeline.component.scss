@@ -63,8 +63,15 @@ $timeline-background-color: #eaf0f8;
       display: flex;
       position: relative;
 
+      .log-text {
+        display: flex;
+        flex-grow: 1;
+        justify-content: space-between;
+      }
+
       .error-type,
       .user-name {
+        flex-shrink: 0;
         padding-bottom: 3px;
         font-family: OpenSans-Semibold;
       }
@@ -80,6 +87,7 @@ $timeline-background-color: #eaf0f8;
       }
 
       .action {
+        flex-grow: 1;
         padding-left: 24px;
 
         &-msg {
@@ -88,11 +96,18 @@ $timeline-background-color: #eaf0f8;
       }
 
       .view-diff {
-        color: var(--blue)
+        margin-left: 5px;
+        color: var(--blue);
       }
 
       .accordion {
         flex-grow: 1;
+      }
+
+      .log-time {
+        flex-shrink: 0;
+        width: 150px;
+        text-align: right;
       }
     }
   }
@@ -115,6 +130,8 @@ $timeline-background-color: #eaf0f8;
 }
 
 ::ng-deep .mat-expansion-panel-header {
+  padding-right: 0 !important;
+
   &:hover {
     background-color: unset !important;
   }

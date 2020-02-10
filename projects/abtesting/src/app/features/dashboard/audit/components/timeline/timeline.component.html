@@ -14,20 +14,24 @@
         <span class="user-name"><u>{{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}</u></span>
 
         <ng-container [ngSwitch]="log.type">
-          <ng-container *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED">
-            <span class="action action-msg"> {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }} </span>
-          </ng-container>
+          <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
+              <span class="action action-msg">
+                {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+              </span>
+              <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
 
-          <ng-container *ngSwitchCase="log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED || log.type === ExperimentLogType.EXPERIMENT_CREATED ? log.type : ''">
-            <span class="action action-msg"> {{ (log.type | experimentActionMessage | translate: { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) + ' ' }} </span>
+          <div class="log-text" *ngSwitchCase="log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED || log.type === ExperimentLogType.EXPERIMENT_CREATED ? log.type : ''">
+            <span class="action action-msg"> {{ (log.type | experimentActionMessage | translate: { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) + ' ' }}
             <a
               class="link"
               *ngIf="log.data.isExperimentExist; else experimentNotExist"
               [routerLink]="['/home', 'detail', log.data.experimentId]"
-            >{{ log.data.experimentName }}</a>
-          </ng-container>
+            >{{ log.data.experimentName }}</a></span>
+            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
 
-          <ng-container *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
+          <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header>
@@ -38,14 +42,15 @@
                       *ngIf="log.data.isExperimentExist; else experimentNotExist"
                       [routerLink]="['/home', 'detail', log.data.experimentId]"
                     >{{ log.data.experimentName }}</a>
+                    <span class="view-diff">View</span>
                   </mat-panel-title>
-                  <span class="view-diff">View</span>
+                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
                 <pre><div [id]="'diff' + index">{{ getHtmlFormedLogData(index, log.data.diff) }}</div></pre>
               </mat-expansion-panel>
             </mat-accordion>
-          </ng-container>
+          </div>
         </ng-container>
 
         <ng-template #experimentNotExist>
