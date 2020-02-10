@@ -32,7 +32,7 @@ export class DashboardRootComponent implements OnInit {
     },
     {
       path: ['/audit'],
-      text: 'global.audit-logs.title',
+      text: 'global.logs.title',
       iconType: 'list'
     }
   ];

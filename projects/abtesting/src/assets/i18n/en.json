@@ -2,7 +2,7 @@
   "global.app.name": "UpGrade",
   "global.app.description": "New testing tool for all purpose!",
   "global.experiment.title": "Experiments",
-  "global.audit-logs.title": "Audit Logs",
+  "global.logs.title": "Logs",
   "global.username.title": "User Name",
   "global.back.text": "BACK",
   "global.next.text": "NEXT",
@@ -105,5 +105,10 @@
   "audit.error-logs-tab.text": "Error Logs",
   "audit.audit-logs-tab.text": "Audit Logs",
   "audit.error-logs-search.text": "Search Error Logs...",
-  "audit.audit-logs-search.text": "Search Audit Logs..."
+  "audit.audit-logs-search.text": "Search Audit Logs...",
+  "audit.log-experiment-created.text": "successfully created",
+  "audit.log-experiment-updated.text": "successfully updated",
+  "audit.log-experiment-deleted.text": "successfully deleted",
+  "audit.log-experiment-state-changed.text": "successfully changed state from {{ previousState }} to {{ newState }} in ",
+  "audit.log-zero-state.text": "No Logs available"
 }

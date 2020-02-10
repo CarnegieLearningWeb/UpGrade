@@ -60,16 +60,66 @@ $timeline-background-color: #eaf0f8;
     }
 
     .content {
+      display: flex;
       position: relative;
 
-      .error-type {
+      .error-type,
+      .user-name {
         padding-bottom: 3px;
         font-family: OpenSans-Semibold;
       }
 
-      .error-message {
+      .error-message,
+      .user-action {
         font-family: OpenSans-Regular;
+      }
+
+      .link {
+        text-decoration: underline;
+        color: var(--blue);
+      }
+
+      .action {
+        padding-left: 24px;
+
+        &-msg {
+          margin-right: 5px;
+        }
+      }
+
+      .view-diff {
+        color: var(--blue)
+      }
+
+      .accordion {
+        flex-grow: 1;
       }
     }
   }
+}
+
+::ng-deep .experiment-tooltip {
+  min-width: 150px !important;
+  max-width: 500px !important;
+  white-space: pre-line !important;
+  font-family: OpenSans-SemiBold;
+  font-size: var(--text-size-small);
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+::ng-deep .mat-expansion-panel:not([class*=mat-elevation-z]) {
+  box-shadow: none !important;
+}
+
+::ng-deep .mat-expansion-panel-header {
+  &:hover {
+    background-color: unset !important;
+  }
+}
+
+::ng-deep .mat-expansion-panel-header:not([aria-disabled=true]) {
+  height: 25px !important;
 }

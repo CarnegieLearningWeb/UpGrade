@@ -1,24 +1,64 @@
 <div class="timeline">
-  <ng-container *ngFor="let data of logData">
+  <ng-container *ngFor="let log of logData; let index = index">
     <div class="timeline-container">
-      <app-shared-icons
-        *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate"
-        class="icon icon--yellow"
-        [iconType]="'user-2'"
-      ></app-shared-icons>
+      <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else errorLogIconTemplate"/>
 
       <ng-template #errorLogIconTemplate>
         <app-shared-icons
-          class="{{ 'icon icon--' + (data.value | errorLog: 'class') }}"
-          [iconType]="data.value | errorLog: 'icon'"
+          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
+          [iconType]="log.value | errorLog: 'icon'"
         ></app-shared-icons>
       </ng-template>
 
-      <div class="content">
-        <span class="error-type"><u>{{ data.value }}</u></span>
-        <span *ngIf="logType === LogType.ERROR_LOG"> :</span>
-        <span class="error-message">{{ ' ' + data.message }}</span>
+      <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
+        <span class="user-name"><u>{{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}</u></span>
+
+        <ng-container [ngSwitch]="log.type">
+          <ng-container *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED">
+            <span class="action action-msg"> {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }} </span>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED || log.type === ExperimentLogType.EXPERIMENT_CREATED ? log.type : ''">
+            <span class="action action-msg"> {{ (log.type | experimentActionMessage | translate: { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) + ' ' }} </span>
+            <a
+              class="link"
+              *ngIf="log.data.isExperimentExist; else experimentNotExist"
+              [routerLink]="['/home', 'detail', log.data.experimentId]"
+            >{{ log.data.experimentName }}</a>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
+            <mat-accordion class="accordion">
+              <mat-expansion-panel hideToggle="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    <span class="action-msg"> {{ (log.type | experimentActionMessage | translate) + ' ' }}</span>
+                    <a
+                      class="link"
+                      *ngIf="log.data.isExperimentExist; else experimentNotExist"
+                      [routerLink]="['/home', 'detail', log.data.experimentId]"
+                    >{{ log.data.experimentName }}</a>
+                  </mat-panel-title>
+                  <span class="view-diff">View</span>
+                </mat-expansion-panel-header>
+
+                <pre><div [id]="'diff' + index">{{ getHtmlFormedLogData(index, log.data.diff) }}</div></pre>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </ng-container>
+        </ng-container>
+
+        <ng-template #experimentNotExist>
+          <span class="action-msg">{{ ' ' + log.data.experimentName }}</span>
+        </ng-template>
       </div>
+
+      <ng-template #errorLogTemplate>
+        <span class="error-type"><u>{{ log.value }}</u></span>
+        <span> :</span>
+        <span class="error-message">{{ log.message }}</span>
+      </ng-template>
+
     </div>
   </ng-container>
 </div>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
+import * as auditAction from '../../audit/store/audit.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { mergeMap, map, filter, switchMap, catchError, tap, withLatestFrom } from 'rxjs/operators';
 import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment } from './experiments.model';
@@ -64,7 +65,8 @@ export class ExperimentEffects {
               const stats = { ...experimentStats, [data.id]: experimentStat[0] };
               return [
                 experimentAction.actionStoreExperimentStats({ stats }),
-                experimentAction.actionUpsertExperimentSuccess({ experiment: data })
+                experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
+                auditAction.actionGetAllAudit()
               ];
             }),
           )),
@@ -81,7 +83,10 @@ export class ExperimentEffects {
       filter(({ experimentId, experimentState }) => !!experimentId && !!experimentState),
       switchMap(({ experimentId, experimentState }) =>
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
-          map((result: Experiment) => experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] })),
+          switchMap((result: Experiment) => [
+            experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] }),
+            auditAction.actionGetAllAudit()
+          ]),
           catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
         )
       )
@@ -95,7 +100,10 @@ export class ExperimentEffects {
       filter((experimentId) => !!experimentId),
       switchMap((experimentId) => {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
-          map(_ => experimentAction.actionDeleteExperimentSuccess({ experimentId })),
+          switchMap(_ => [
+            experimentAction.actionDeleteExperimentSuccess({ experimentId }),
+            auditAction.actionGetAllAudit()
+          ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )
       })

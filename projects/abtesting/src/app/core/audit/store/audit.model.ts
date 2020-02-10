@@ -1,15 +1,20 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
+import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 
-export enum EXPERIMENT_LOG_TYPE {
-  EXPERIMENT_CREATED = 'experimentCreated',
-  EXPERIMENT_UPDATED = 'experimentUpdated',
-  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
-}
+export {
+  EXPERIMENT_LOG_TYPE
+};
+
 
 export enum LogType {
   ERROR_LOG = 'Error log',
   AUDIT_LOG = 'Audit log'
+}
+
+export enum LogDateFormatType {
+  DATE_MONTH = 'dateMonth',
+  YEAR_DAY = 'yearDay'
 }
 
 // TODO: Will be removed after verifying available error log types
