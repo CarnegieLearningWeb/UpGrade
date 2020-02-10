@@ -18,15 +18,21 @@
     </mat-form-field>
   </div>
 
-  <div class="timeline-container" *ngFor="let logData of auditLogData | keyvalue: valueDescOrder">
-    <div class="error-date">
-      <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
-      <span class="day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
+  <ng-container *ngIf="(auditLogData | json) != '{}'; else zeroStateAudit">
+    <div class="timeline-container" *ngFor="let logData of auditLogData | keyvalue: valueDescOrder">
+      <div class="error-date">
+        <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
+        <span class="day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
+      </div>
+      <audit-timeline
+        class="timeline"
+        [logData]="logData.value"
+        [logType]="LogType.AUDIT_LOG"
+      ></audit-timeline>
     </div>
-    <audit-timeline
-      class="timeline"
-      [logData]="logData.value"
-      [logType]="LogType.AUDIT_LOG"
-    ></audit-timeline>
-  </div>
+  </ng-container>
+
+  <ng-template #zeroStateAudit>
+    <span class="zero-state" [innerHTML]="'audit.log-zero-state.text' | translate"></span>
+  </ng-template>
 </div>

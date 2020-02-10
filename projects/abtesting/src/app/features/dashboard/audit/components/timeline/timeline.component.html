@@ -13,19 +13,45 @@
       <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
         <span class="user-name"><u>{{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}</u></span>
 
-        <span
-          *ngIf="!log.data.isExperimentExist; else experimentExistTemplate"
-          matTooltipClass="experiment-tooltip"
-          [matTooltip]="'audit.log-experiment-deleted-tooltip.text' | translate: { experimentName: log.data.experimentName }"
-          matTooltipPosition="above"
-        > {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }} </span>
+        <ng-container [ngSwitch]="log.type">
+          <ng-container *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED">
+            <span
+              matTooltipClass="experiment-tooltip"
+              [matTooltip]="'audit.log-experiment-deleted-tooltip.text' | translate: { experimentName: log.data.experimentName }"
+              matTooltipPosition="above"
+            > {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }} </span>
+          </ng-container>
 
-        <ng-template #experimentExistTemplate>
-          <span> {{ log.type | experimentActionMessage | translate }} </span>
-          <a
-            class="link"
-            [routerLink]="['/home', 'detail', log.data.experimentId]"
-          >{{ log.data.experimentName }}</a>
+          <ng-container *ngSwitchCase="ExperimentLogType.EXPERIMENT_STATE_CHANGED">
+            <span
+              matTooltipClass="experiment-tooltip"
+              [matTooltip]="'audit.log-experiment-state-tooltip.text' | translate:
+              { experimentName: log.data.experimentName || 'Experiment', previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }"
+              matTooltipPosition="above"
+            > {{ (log.type | experimentActionMessage | translate) + ' ' }} </span>
+            <a
+              class="link"
+              *ngIf="log.data.isExperimentExist; else experimentNotExist"
+              [routerLink]="['/home', 'detail', log.data.experimentId]"
+            >{{ log.data.experimentName }}</a>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="log.type === ExperimentLogType.EXPERIMENT_UPDATED || log.type === ExperimentLogType.EXPERIMENT_CREATED ? log.type : ''">
+            <span
+              matTooltipClass="experiment-tooltip"
+              [matTooltip]="log.data?.diff"
+              matTooltipPosition="right"
+            > {{ (log.type | experimentActionMessage | translate) + ' ' }}</span>
+            <a
+              class="link"
+              *ngIf="log.data.isExperimentExist; else experimentNotExist"
+              [routerLink]="['/home', 'detail', log.data.experimentId]"
+            >{{ log.data.experimentName }}</a>
+          </ng-container>
+        </ng-container>
+
+        <ng-template #experimentNotExist>
+          <span>{{ log.data.experimentName }}</span>
         </ng-template>
       </div>
 

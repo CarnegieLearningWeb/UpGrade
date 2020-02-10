@@ -83,7 +83,10 @@ export class ExperimentEffects {
       filter(({ experimentId, experimentState }) => !!experimentId && !!experimentState),
       switchMap(({ experimentId, experimentState }) =>
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
-          map((result: Experiment) => experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] })),
+          switchMap((result: Experiment) => [
+            experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] }),
+            auditAction.actionGetAllAudit()
+          ]),
           catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
         )
       )

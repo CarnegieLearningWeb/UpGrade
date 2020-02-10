@@ -81,6 +81,9 @@ $timeline-background-color: #eaf0f8;
 }
 
 ::ng-deep .experiment-tooltip {
+  min-width: 150px !important;
+  max-width: 500px !important;
+  white-space: pre-line !important;
   font-family: OpenSans-SemiBold;
   font-size: var(--text-size-small);
 
