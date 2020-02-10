@@ -178,11 +178,23 @@ export class ExperimentService {
     // create schedules to start experiment and end experiment
     this.scheduledJobService.updateExperimentSchedules(experiment);
 
+    // removing unwanted params for diff
+    const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
+    delete oldExperimentClone.versionNumber;
+    delete oldExperimentClone.updatedAt;
+    delete oldExperimentClone.createdAt;
+
+    // removing unwanted params for diff
+    const newExperimentClone = JSON.parse(JSON.stringify(experiment));
+    delete newExperimentClone.versionNumber;
+    delete newExperimentClone.updatedAt;
+    delete newExperimentClone.createdAt;
+
     // add AuditLogs here
     const updateAuditLog: AuditLogData = {
       experimentId: experiment.id,
       experimentName: experiment.name,
-      diff: diffString(experiment, oldExperiment),
+      diff: diffString(newExperimentClone, oldExperimentClone),
     };
 
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
