@@ -34,7 +34,7 @@
           <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
-                <mat-expansion-panel-header>
+                <mat-expansion-panel-header expandedHeight="25px" collapsedHeight="25px">
                   <mat-panel-title>
                     <span class="action-msg"> {{ (log.type | experimentActionMessage | translate) + ' ' }}</span>
                     <a
@@ -42,13 +42,12 @@
                       *ngIf="log.data.isExperimentExist; else experimentNotExist"
                       [routerLink]="['/home', 'detail', log.data.experimentId]"
                     >{{ log.data.experimentName }}</a>
-                    <!-- TODO: Add en.json for view -->
-                    <span class="view-diff">view</span>
+                    <span class="view-diff" [innerHTML]="'audit.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
                   <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
-                <pre><div [id]="'diff' + index">{{ getHtmlFormedLogData(index, log.data.diff) }}</div></pre>
+                <pre><div class="diff-container" [id]="'diff' + index">{{ getHtmlFormedLogData(index, log.data.diff) }}</div></pre>
               </mat-expansion-panel>
             </mat-accordion>
           </div>

@@ -95,14 +95,18 @@ $timeline-background-color: #eaf0f8;
         }
       }
 
-      .view-diff {
-        margin-left: 15px;
-        color: var(--blue);
-        font-size: 12px;
-      }
-
       .accordion {
         flex-grow: 1;
+
+        .view-diff {
+          margin-left: 15px;
+          color: var(--blue);
+          font-size: var(--text-size-x-small);
+        }
+
+        .diff-container {
+          color: var(--grey);
+        }
       }
 
       .log-time {
@@ -139,8 +143,4 @@ $timeline-background-color: #eaf0f8;
 
 ::ng-deep .mat-expansion-panel-header-title {
   align-items: center !important;
-}
-
-::ng-deep .mat-expansion-panel-header:not([aria-disabled=true]) {
-  height: 25px !important;
 }
