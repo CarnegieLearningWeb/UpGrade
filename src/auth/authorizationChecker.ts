@@ -21,14 +21,14 @@ export function authorizationChecker(
     const token = authService.parseBasicAuthFromRequest(action.request);
     if (token === undefined) {
       log.warn('No token provided');
-      return env.isProduction ? false : true;
+      return env.auth.authCheck ? false : true;
     }
     try {
       const userDoc = await authService.validateUser(token);
       action.request.user = userDoc;
       return true;
     } catch (error) {
-      return env.isProduction ? false : true;
+      return env.auth.authCheck ? false : true;
     }
   };
 }

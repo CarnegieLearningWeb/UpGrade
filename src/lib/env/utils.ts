@@ -66,10 +66,12 @@ export function formatBadReqErrorMessage(validationError: ValidationError[]): st
       const nestedElemError = error[`children`] as ValidationError[];
       nestedElemError.forEach((innerError: ValidationError) => {
         const keyPorperty = 'property';
-        formatErrors.push(`in ${error[keyPorperty]} - ${innerError[keyPorperty]} inner object: ` +
-          Object.values(innerError[`children`][0][`constraints`]).join(' or '));
+        formatErrors.push(
+          `in ${error[keyPorperty]} - ${innerError[keyPorperty]} inner object: ` +
+            Object.values(innerError[`children`][0][`constraints`]).join(' or ')
+        );
       });
     }
   });
-  return (SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' ===>  ' + formatErrors.join(', '));
+  return SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' ===>  ' + formatErrors.join(', ');
 }

@@ -5,10 +5,9 @@ import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
 import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { User } from '../models/User';
-// import { validate } from 'class-validator';
-import { SERVER_ERROR } from 'ees_types';
 import { validate } from 'class-validator';
-// import { validate } from 'class-validator';
+import { env } from '../../env';
+import { SERVER_ERROR } from 'ees_types';
 
 /**
  * @swagger
@@ -148,15 +147,17 @@ export class ExperimentConditionController {
     experiment: AssignmentStateUpdateValidator,
     @CurrentUser() currentUser: User
   ): Promise<any> {
-    if (!currentUser) {
-      return Promise.reject(
-        new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
-      );
-    }
+    if (env.auth.authCheck) {
+      if (!currentUser) {
+        return Promise.reject(
+          new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
+        );
+      }
 
-    await validate(currentUser).catch(error => {
-      return Promise.reject(new Error(error));
-    });
+      await validate(currentUser).catch(error => {
+        return Promise.reject(new Error(error));
+      });
+    }
 
     return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, currentUser);
   }

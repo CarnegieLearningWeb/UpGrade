@@ -64,4 +64,7 @@ export const env = {
   google: {
     clientId: getOsEnv('GOOGLE_CLIENT_ID'),
   },
+  auth: {
+    authCheck: toBool(getOsEnvOptional('AUTH_CHECK')),
+  },
 };
