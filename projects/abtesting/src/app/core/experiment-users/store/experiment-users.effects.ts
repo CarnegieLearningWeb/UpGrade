@@ -38,10 +38,10 @@ export class ExperimentUsersEffects {
       map(action => action.id),
       filter(id => !!id),
       switchMap((id: string) => this.experimentUsersDataService.excludeUser(id).pipe(
-        filter((data: ExcludeEntity[]) => !!data.length),
-        map(data => experimentUsersActions.actionExcludeUserSuccess({ data: data[0] })),
-        catchError(() => [experimentUsersActions.actionExcludedUserFailure()])
-      ))
+          map(data => experimentUsersActions.actionExcludeUserSuccess({ data })),
+          catchError(() => [experimentUsersActions.actionExcludedUserFailure()])
+        )
+      )
     )
   );
 
@@ -51,10 +51,12 @@ export class ExperimentUsersEffects {
       map(action => ({ id: action.id, type: action.groupType })),
       filter(({ id, type }) => !!id && !!type),
       switchMap(({ id, type }) => this.experimentUsersDataService.excludeGroup(id, type).pipe(
-        filter((data: ExcludeEntity[]) => !!data.length),
-        map(data => experimentUsersActions.actionExcludeGroupSuccess({ data: data[0] })),
-        catchError(() => [experimentUsersActions.actionExcludedGroupFailure()])
-      ))
+          map(data => experimentUsersActions.actionExcludeGroupSuccess({ data })),
+          catchError(() => [
+            experimentUsersActions.actionExcludedGroupFailure()
+          ])
+        )
+      )
     )
   );
 }

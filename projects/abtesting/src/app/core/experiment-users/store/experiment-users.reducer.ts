@@ -38,7 +38,11 @@ const reducer = createReducer(
     experimentUsersActions.actionExcludeUserSuccess,
     experimentUsersActions.actionExcludeGroupSuccess,
     (state, { data }) => {
-      return adapter.upsertOne(data, { ...state, isLoading: false })
+      if (data.length) {
+        return adapter.upsertOne(data[0], { ...state, isLoading: false });
+      } else {
+        return { ...state, isLoading: false };
+      }
     }
   ),
   on(
