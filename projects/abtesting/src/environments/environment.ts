@@ -9,7 +9,7 @@ const endpointApi =
   'http://upgrade-development.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
-  appName: 'EES Client',
+  appName: 'UpGrade',
   envName: 'DEV',
   production: false,
   test: false,

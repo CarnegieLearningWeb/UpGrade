@@ -1,7 +1,7 @@
 const packageJson = require('../../../../package.json');
 
 export const environment = {
-  appName: 'EES Client',
+  appName: 'UpGrade',
   envName: 'TEST',
   production: false,
   test: true,
