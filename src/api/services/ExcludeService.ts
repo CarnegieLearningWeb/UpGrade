@@ -32,7 +32,8 @@ export class ExcludeService {
   }
 
   public excludeGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion> {
-    return this.explicitGroupExclusionRepository.saveRawJson({ groupId, type });
+    const id = `${type}_${groupId}`;
+    return this.explicitGroupExclusionRepository.saveRawJson({ id, groupId, type });
   }
 
   public deleteGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion | undefined> {

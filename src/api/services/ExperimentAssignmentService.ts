@@ -29,6 +29,7 @@ import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLog
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
+import { In } from 'typeorm';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -63,7 +64,7 @@ export class ExperimentAssignmentService {
     userEnvironment: any
   ): Promise<any> {
     this.log.info(
-      `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
+      `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}, userEnvironment: ${userEnvironment}`
     );
 
     // query root experiment details
@@ -107,14 +108,11 @@ export class ExperimentAssignmentService {
 
     // ============= check if user or group is excluded
     const userGroup = Object.keys(userEnvironment).map((type: string) => {
-      return {
-        groupId: userEnvironment[type] as string,
-        type,
-      };
+      return `${type}_${userEnvironment[type]}`;
     });
     const [individualExcluded, groupExcluded] = await Promise.all([
       this.explicitIndividualExclusionRepository.find({ userId }),
-      this.explicitGroupExclusionRepository.find(userGroup as any),
+      this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }),
     ]);
 
     this.log.info('individualExcluded', individualExcluded);
