@@ -1,9 +1,7 @@
 import browser from 'browser-detect';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
-import { ExperimentService } from '../../../core/experiments/experiments.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
-import { AuditService } from '../../../core/audit/audit.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 
@@ -31,6 +29,11 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'files'
     },
     {
+      path: ['/users'],
+      text: 'global.experiment-user.title',
+      iconType: 'user-group'
+    },
+    {
       path: ['/audit'],
       text: 'global.logs.title',
       iconType: 'list'
@@ -39,8 +42,6 @@ export class DashboardRootComponent implements OnInit {
 
   constructor(
     private settingsService: SettingsService,
-    private experimentService: ExperimentService,
-    private auditService: AuditService,
     private authService: AuthService
   ) {}
 
@@ -49,8 +50,6 @@ export class DashboardRootComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.experimentService.loadExperiments();
-    this.auditService.loadAudits();
     if (DashboardRootComponent.isIEorEdgeOrSafari()) {
       this.settingsService.changeAnimationsPageDisabled(true);
     }
