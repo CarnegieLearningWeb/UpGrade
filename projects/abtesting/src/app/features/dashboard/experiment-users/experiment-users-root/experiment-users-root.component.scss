@@ -34,6 +34,10 @@
         table {
           width: 75%;
 
+          .mat-cell {
+            width: 50%;
+          }
+
           .mat-header-cell {
             color: var(--grey-2);
             font-family: OpenSans-Bold;
