@@ -110,5 +110,6 @@
   "audit.log-experiment-updated.text": "successfully updated",
   "audit.log-experiment-deleted.text": "successfully deleted",
   "audit.log-experiment-state-changed.text": "successfully changed state from {{ previousState }} to {{ newState }} in ",
-  "audit.log-zero-state.text": "No Logs available"
+  "audit.log-zero-state.text": "No Logs available",
+  "audit.log-view-diff.text": "view"
 }
