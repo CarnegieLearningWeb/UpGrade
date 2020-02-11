@@ -7,3 +7,7 @@ export const actionStoreAudits = createAction(
   '[Audit] Store Audits',
   props<{ audits: Audit[] }>()
 );
+
+export const actionGetAllAuditFailure = createAction(
+  '[Audit] Get All Audits Failure'
+);
