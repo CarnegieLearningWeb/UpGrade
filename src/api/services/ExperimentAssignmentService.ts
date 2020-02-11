@@ -7,6 +7,7 @@ import {
   POST_EXPERIMENT_RULE,
   ASSIGNMENT_UNIT,
   EXPERIMENT_LOG_TYPE,
+  SERVER_ERROR,
 } from 'ees_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -89,101 +90,107 @@ export class ExperimentAssignmentService {
   }
 
   public async getAllExperimentConditions(userId: string, userEnvironment: any): Promise<any> {
-    this.log.info(`Get all experiment for User Id ${userId} and User Environment ${JSON.stringify(userEnvironment)}`);
-    // store userId and userEnvironment
-    this.userRepository.saveRawJson({
-      id: userId,
-      group: userEnvironment,
-    });
-
-    // query all experiment and sub experiment
-    const experiments = await this.experimentRepository.getEnrollingAndEnrollmentComplete();
-
-    const experimentIds = experiments.map(experiment => experiment.id);
-
-    // return if no experiment
-    if (experimentIds.length === 0) {
-      return [];
-    }
-
-    // ============= check if user or group is excluded
-    const userGroup = Object.keys(userEnvironment).map((type: string) => {
-      return `${type}_${userEnvironment[type]}`;
-    });
-    const [individualExcluded, groupExcluded] = await Promise.all([
-      this.explicitIndividualExclusionRepository.find({ userId }),
-      this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }),
-    ]);
-
-    this.log.info('individualExcluded', individualExcluded);
-    this.log.info('groupExcluded', groupExcluded);
-    if (individualExcluded.length > 0 || groupExcluded.length > 0) {
-      return [];
-    }
-
-    // ============ query assignment/exclusion for user
-    const allGroupIds: string[] = Object.values(userEnvironment);
-    const promiseAssignmentExclusion: any[] = [
-      this.individualAssignmentRepository.findAssignment(userId, experimentIds),
-      this.groupAssignmentRepository.findExperiment(allGroupIds, experimentIds),
-      this.individualExclusionRepository.findExcluded(userId, experimentIds),
-      this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds),
-    ];
-
-    const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
-      promiseAssignmentExclusion
-    );
-    this.log.info('individualAssignments', individualAssignments);
-    this.log.info('groupAssignment', groupAssignments);
-    this.log.info('individualExclusion', individualExclusions);
-    this.log.info('groupExclusion', groupExclusions);
-
-    // assign remaining experiment
-    const experimentAssignment = await Promise.all(
-      experiments.map(experiment => {
-        const individualAssignment = individualAssignments.find(assignment => {
-          return assignment.experimentId === experiment.id;
-        });
-
-        const groupAssignment = groupAssignments.find(assignment => {
-          return assignment.experimentId === experiment.id && assignment.groupId === userEnvironment[experiment.group];
-        });
-
-        const individualExclusion = individualExclusions.find(exclusion => {
-          return exclusion.experimentId === experiment.id;
-        });
-
-        const groupExclusion = groupExclusions.find(exclusion => {
-          return exclusion.experimentId === experiment.id && exclusion.groupId === userEnvironment[experiment.group];
-        });
-
-        return this.assignExperiment(
-          userId,
-          userEnvironment,
-          experiment,
-          individualAssignment,
-          groupAssignment,
-          individualExclusion,
-          groupExclusion
-        );
-      })
-    );
-
-    return experiments.reduce((accumulator, experiment, index) => {
-      const assignment = experimentAssignment[index];
-      const partitions = experiment.partitions.map(partition => {
-        const { name, point } = partition;
-        const conditionAssigned = assignment;
-        return {
-          name,
-          point,
-          assignedCondition: conditionAssigned || {
-            conditionCode: 'default',
-          },
-        };
+    try {
+      this.log.info(`Get all experiment for User Id ${userId} and User Environment ${JSON.stringify(userEnvironment)}`);
+      // store userId and userEnvironment
+      this.userRepository.saveRawJson({
+        id: userId,
+        group: userEnvironment,
       });
-      return [...accumulator, ...partitions];
-    }, []);
+
+      // query all experiment and sub experiment
+      const experiments = await this.experimentRepository.getEnrollingAndEnrollmentComplete();
+
+      const experimentIds = experiments.map(experiment => experiment.id);
+
+      // return if no experiment
+      if (experimentIds.length === 0) {
+        return [];
+      }
+
+      // ============= check if user or group is excluded
+      const userGroup = Object.keys(userEnvironment).map((type: string) => {
+        return `${type}_${userEnvironment[type]}`;
+      });
+      const [individualExcluded, groupExcluded] = await Promise.all([
+        this.explicitIndividualExclusionRepository.find({ userId }),
+        this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }),
+      ]);
+
+      this.log.info('individualExcluded', individualExcluded);
+      this.log.info('groupExcluded', groupExcluded);
+      if (individualExcluded.length > 0 || groupExcluded.length > 0) {
+        return [];
+      }
+
+      // ============ query assignment/exclusion for user
+      const allGroupIds: string[] = Object.values(userEnvironment);
+      const promiseAssignmentExclusion: any[] = [
+        this.individualAssignmentRepository.findAssignment(userId, experimentIds),
+        this.groupAssignmentRepository.findExperiment(allGroupIds, experimentIds),
+        this.individualExclusionRepository.findExcluded(userId, experimentIds),
+        this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds),
+      ];
+
+      const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
+        promiseAssignmentExclusion
+      );
+      this.log.info('individualAssignments', individualAssignments);
+      this.log.info('groupAssignment', groupAssignments);
+      this.log.info('individualExclusion', individualExclusions);
+      this.log.info('groupExclusion', groupExclusions);
+
+      // assign remaining experiment
+      const experimentAssignment = await Promise.all(
+        experiments.map(experiment => {
+          const individualAssignment = individualAssignments.find(assignment => {
+            return assignment.experimentId === experiment.id;
+          });
+
+          const groupAssignment = groupAssignments.find(assignment => {
+            return (
+              assignment.experimentId === experiment.id && assignment.groupId === userEnvironment[experiment.group]
+            );
+          });
+
+          const individualExclusion = individualExclusions.find(exclusion => {
+            return exclusion.experimentId === experiment.id;
+          });
+
+          const groupExclusion = groupExclusions.find(exclusion => {
+            return exclusion.experimentId === experiment.id && exclusion.groupId === userEnvironment[experiment.group];
+          });
+
+          return this.assignExperiment(
+            userId,
+            userEnvironment,
+            experiment,
+            individualAssignment,
+            groupAssignment,
+            individualExclusion,
+            groupExclusion
+          );
+        })
+      );
+
+      return experiments.reduce((accumulator, experiment, index) => {
+        const assignment = experimentAssignment[index];
+        const partitions = experiment.partitions.map(partition => {
+          const { name, point } = partition;
+          const conditionAssigned = assignment;
+          return {
+            name,
+            point,
+            assignedCondition: conditionAssigned || {
+              conditionCode: 'default',
+            },
+          };
+        });
+        return [...accumulator, ...partitions];
+      }, []);
+    } catch (error) {
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));
+    }
   }
 
   public async updateState(experimentId: string, state: EXPERIMENT_STATE, user: User): Promise<Experiment> {

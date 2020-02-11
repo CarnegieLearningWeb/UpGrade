@@ -47,6 +47,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.MISSING_PARAMS;
         message = errorMessage;
         break;
+      case SERVER_ERROR.QUERY_FAILED:
+        type = SERVER_ERROR.QUERY_FAILED;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:

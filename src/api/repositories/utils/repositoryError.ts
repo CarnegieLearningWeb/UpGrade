@@ -1,3 +1,5 @@
+import { SERVER_ERROR } from 'ees_types';
+
 export default function repositoryError(className: string, functionName: string, parameters: any, error: any): string {
   const errorMessage = {
     ['Class Name']: className,
@@ -6,5 +8,8 @@ export default function repositoryError(className: string, functionName: string,
     ['Error']: error,
   };
 
-  return JSON.stringify(errorMessage, undefined, 2);
+  const message = JSON.stringify(errorMessage, undefined, 2);
+
+  // send error message
+  throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message }));
 }

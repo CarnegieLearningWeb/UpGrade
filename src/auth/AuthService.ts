@@ -7,6 +7,7 @@ import { UserRepository } from '../api/repositories/UserRepository';
 import { Logger, LoggerInterface } from '../decorators/Logger';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../env';
+import { SERVER_ERROR } from 'ees_types';
 
 @Service()
 export class AuthService {
@@ -39,10 +40,10 @@ export class AuthService {
     // add local cache for validating user for each request
     const document = await this.userRepository.find({ id: userId });
     if (document.length === 0) {
-      throw Error('User Not found');
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
     } else {
       if (document[0].email !== payload.email) {
-        throw Error('User Not found');
+        throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
       }
     }
 
