@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { AuditDataService } from '../audit.data.service';
 import * as auditActions from './audit.actions';
-import { mergeMap, map } from 'rxjs/operators';
+import { mergeMap, map, catchError } from 'rxjs/operators';
 
 @Injectable()
 export class AuditEffects {
@@ -20,7 +20,8 @@ export class AuditEffects {
             auditActions.actionStoreAudits({
               audits: data.nodes
             })
-          )
+          ),
+          catchError(() => [auditActions.actionGetAllAuditFailure()])
         )
       )
     )

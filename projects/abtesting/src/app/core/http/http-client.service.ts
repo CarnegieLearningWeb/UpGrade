@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -26,27 +27,43 @@ export class HttpClientService {
     const headers = this.createAuthorizationHeader();
     return this.http.get(url, {
       headers
-    });
+    }).pipe(
+      catchError(e => {
+        return e.status === 401 ? [this.authService.authLogout()] : [];
+      })
+    );
   }
 
   post(url: string, data: any) {
     const headers = this.createAuthorizationHeader();
     return this.http.post(url, data, {
       headers
-    });
+    }).pipe(
+      catchError(e => {
+        return e.status === 401 ? [this.authService.authLogout()] : [];
+      })
+    );
   }
 
   put(url: string, data: any) {
     const headers = this.createAuthorizationHeader();
     return this.http.put(url, data, {
       headers
-    });
+    }).pipe(
+      catchError(e => {
+        return e.status === 401 ? [this.authService.authLogout()] : [];
+      })
+    );
   }
 
   delete(url: string) {
     const headers = this.createAuthorizationHeader();
     return this.http.delete(url, {
       headers
-    });
+    }).pipe(
+      catchError(e => {
+        return e.status === 401 ? [this.authService.authLogout()] : [];
+      })
+    );
   }
 }
