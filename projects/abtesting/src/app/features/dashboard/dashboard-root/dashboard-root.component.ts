@@ -6,14 +6,12 @@ import { ThemeOptions } from '../../../core/settings/store/settings.model';
 import { AuditService } from '../../../core/audit/audit.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
-
 @Component({
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
   styleUrls: ['./dashboard-root.component.scss']
 })
 export class DashboardRootComponent implements OnInit {
-
   themeOptions = [
     { value: ThemeOptions.DEFAULT_THEME, viewValue: 'Default' },
     { value: ThemeOptions.DARK_THEME, viewValue: 'Dark' },
@@ -31,7 +29,7 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'files'
     },
     {
-      path: ['/audit'],
+      path: ['/logs'],
       text: 'global.logs.title',
       iconType: 'list'
     }
@@ -63,5 +61,4 @@ export class DashboardRootComponent implements OnInit {
   logout() {
     this.authService.authLogout();
   }
-
 }

@@ -67,12 +67,15 @@ $timeline-background-color: #eaf0f8;
         display: flex;
         flex-grow: 1;
         justify-content: space-between;
+        max-width: calc(100% - 125px);
       }
 
       .error-type,
       .user-name {
         flex-shrink: 0;
         padding-bottom: 3px;
+        width: 125px;
+        word-wrap: break-word;
         font-family: OpenSans-Semibold;
       }
 
@@ -88,7 +91,7 @@ $timeline-background-color: #eaf0f8;
 
       .action {
         flex-grow: 1;
-        padding-left: 24px;
+        padding-left: 12px;
 
         &-msg {
           margin-right: 5px;
@@ -97,6 +100,11 @@ $timeline-background-color: #eaf0f8;
 
       .accordion {
         flex-grow: 1;
+        max-width: 100%;
+
+        .expansion-header {
+          height: unset !important;
+        }
 
         .view-diff {
           margin-left: 15px;
@@ -111,6 +119,7 @@ $timeline-background-color: #eaf0f8;
 
       .log-time {
         flex-shrink: 0;
+        margin-left: 5px;
         text-align: right;
       }
     }
@@ -129,12 +138,12 @@ $timeline-background-color: #eaf0f8;
   }
 }
 
-::ng-deep .mat-expansion-panel:not([class*=mat-elevation-z]) {
+::ng-deep .mat-expansion-panel:not([class*='mat-elevation-z']) {
   box-shadow: none !important;
 }
 
 ::ng-deep .mat-expansion-panel-header {
-  padding-right: 0 !important;
+  padding: 0 0 0 12px !important;
 
   &:hover {
     background-color: unset !important;

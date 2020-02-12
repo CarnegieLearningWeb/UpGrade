@@ -41,29 +41,58 @@
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="'home.experiments-table.name-tooltip.text' | translate"
+            [matTooltip]="
+              'home.experiments-table.name-tooltip.text' | translate
+            "
             matTooltipPosition="above"
           >
             {{ 'home.experiments-table.text.name' | translate }}
           </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
-          <span class="experiment-name">{{ experiment.name }}</span>
-          <br>
+          <span
+            *ngIf="experiment.name?.length < 30; else experimentNameEllipsis"
+            class="experiment-name"
+          >
+            {{ experiment.name }}
+          </span>
+          <ng-template #experimentNameEllipsis>
+            <span
+              [matTooltip]="experiment.name"
+              class="experiment-name"
+              matTooltipPosition="above"
+            >
+              {{ experiment.name | truncate: 30 }}
+            </span>
+          </ng-template>
+          <br />
           <span
             class="experiment-description"
-            [matTooltip]="experiment.description"
-            matTooltipPosition="above"
+            *ngIf="
+              experiment.description?.length < 30;
+              else experimentDescription
+            "
           >
             {{ experiment.description }}
-        </span>
+          </span>
+          <ng-template #experimentDescription>
+            <span
+              class="experiment-description"
+              [matTooltip]="experiment.description"
+              matTooltipPosition="above"
+            >
+              {{ experiment.description | truncate: 35 }}
+            </span>
+          </ng-template>
         </td>
       </ng-container>
 
       <ng-container matColumnDef="state">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="'home.experiments-table.status-tooltip.text' | translate"
+            [matTooltip]="
+              'home.experiments-table.status-tooltip.text' | translate
+            "
             matTooltipPosition="above"
           >
             {{ 'home-global.status.text' | translate }}
@@ -72,7 +101,10 @@
         <td
           mat-cell
           *matCellDef="let experiment"
-          [ngStyle]="{ color: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"
+          [ngStyle]="{
+            color:
+              experiment.state | experimentState: ExperimentStatePipeTypes.COLOR
+          }"
         >
           {{ experiment.state | experimentState }}
         </td>
@@ -81,10 +113,13 @@
       <ng-container matColumnDef="createdAt">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="'home.experiments-table.start-date-tooltip.text' | translate"
+            [matTooltip]="
+              'home.experiments-table.start-date-tooltip.text' | translate
+            "
             matTooltipPosition="above"
           >
-          {{ 'home.experiments-table.text.created-date' | translate }}</span>
+            {{ 'home.experiments-table.text.created-date' | translate }}</span
+          >
         </th>
         <td mat-cell *matCellDef="let experiment">
           {{ experiment.createdAt | formatDate }}
@@ -94,7 +129,9 @@
       <ng-container matColumnDef="tags">
         <th mat-header-cell *matHeaderCellDef>
           <span
-            [matTooltip]="'home.experiments-table.tags-tooltip.text' | translate"
+            [matTooltip]="
+              'home.experiments-table.tags-tooltip.text' | translate
+            "
             matTooltipPosition="above"
           >
             {{ 'home.experiments-table.text.tags' | translate }}
@@ -102,7 +139,9 @@
         </th>
         <td mat-cell *matCellDef="let experiment">
           <mat-chip-list>
-            <ng-container *ngFor="let tag of experiment.tags; let tagIndex = index;">
+            <ng-container
+              *ngFor="let tag of experiment.tags; let tagIndex = index"
+            >
               <mat-chip
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 class="tags"
@@ -122,7 +161,9 @@
               </ng-template>
             </ng-container>
             <mat-chip
-              *ngIf="experiment.tags.length > 2 && !isAllTagVisible(experiment.id)"
+              *ngIf="
+                experiment.tags.length > 2 && !isAllTagVisible(experiment.id)
+              "
               class="tags tags--clicked"
               (click)="setTagsVisible(experiment.id)"
             >
@@ -135,7 +176,9 @@
       <ng-container matColumnDef="enrollment">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="'home.experiments-table.enrollments-tooltip.text' | translate"
+            [matTooltip]="
+              'home.experiments-table.enrollments-tooltip.text' | translate
+            "
             matTooltipPosition="above"
           >
             {{ 'home.experiments-table.text.enrollment' | translate }}
@@ -145,17 +188,26 @@
           <span
             class="enrollment-info"
             *ngIf="experiment.stat?.users"
-            [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
+            [innerHTML]="
+              'home.experiments-table.students.text'
+                | translate: { noOfStudents: experiment.stat?.users }
+            "
           ></span>
           <span
             class="enrollment-info"
             *ngIf="experiment.stat?.group"
-            [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.group }"
+            [innerHTML]="
+              'home.experiments-table.classes.text'
+                | translate: { noOfClasses: experiment.stat?.group }
+            "
           ></span>
           <span
             class="enrollment-info"
             *ngIf="!experiment.stat?.group && !experiment.stat?.users"
-            [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: 0 }"
+            [innerHTML]="
+              'home.experiments-table.students.text'
+                | translate: { noOfStudents: 0 }
+            "
           ></span>
         </td>
       </ng-container>
@@ -163,7 +215,9 @@
       <ng-container matColumnDef="view">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let experiment">
-          <a [routerLink]="['/home','detail', experiment.id]" class="link">{{ 'home.experiments-table.text.view' | translate }}</a>
+          <a [routerLink]="['/home', 'detail', experiment.id]" class="link">{{
+            'home.experiments-table.text.view' | translate
+          }}</a>
         </td>
       </ng-container>
 

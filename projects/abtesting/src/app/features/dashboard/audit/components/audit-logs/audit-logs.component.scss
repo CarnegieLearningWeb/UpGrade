@@ -9,3 +9,10 @@
   font-family: OpenSans-Bold;
   font-size: var(--text-size-xxx-large);
 }
+
+.audit-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 250px;
+}
