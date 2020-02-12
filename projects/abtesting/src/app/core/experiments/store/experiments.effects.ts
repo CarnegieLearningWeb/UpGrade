@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
-import * as auditAction from '../../audit/store/audit.actions';
+import * as logsAction from '../../logs/store/logs.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { mergeMap, map, filter, switchMap, catchError, tap, withLatestFrom } from 'rxjs/operators';
 import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment } from './experiments.model';
@@ -66,7 +66,7 @@ export class ExperimentEffects {
               return [
                 experimentAction.actionStoreExperimentStats({ stats }),
                 experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
-                auditAction.actionGetAllAudit()
+                logsAction.actionGetAllAudit()
               ];
             }),
           )),
@@ -85,7 +85,7 @@ export class ExperimentEffects {
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
           switchMap((result: Experiment) => [
             experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] }),
-            auditAction.actionGetAllAudit()
+            logsAction.actionGetAllAudit()
           ]),
           catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
         )
@@ -102,7 +102,7 @@ export class ExperimentEffects {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(_ => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
-            auditAction.actionGetAllAudit()
+            logsAction.actionGetAllAudit()
           ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         )

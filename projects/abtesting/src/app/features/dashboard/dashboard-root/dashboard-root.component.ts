@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { ExperimentService } from '../../../core/experiments/experiments.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
-import { AuditService } from '../../../core/audit/audit.service';
+import { LogsService } from '../../../core/logs/logs.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -38,7 +38,7 @@ export class DashboardRootComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private experimentService: ExperimentService,
-    private auditService: AuditService,
+    private logsService: LogsService,
     private authService: AuthService
   ) {}
 
@@ -48,7 +48,7 @@ export class DashboardRootComponent implements OnInit {
 
   ngOnInit(): void {
     this.experimentService.loadExperiments();
-    this.auditService.loadAudits();
+    this.logsService.loadAudits();
     if (DashboardRootComponent.isIEorEdgeOrSafari()) {
       this.settingsService.changeAnimationsPageDisabled(true);
     }
