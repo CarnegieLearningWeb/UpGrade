@@ -61,6 +61,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
             message = error.message;
             type = SERVER_ERROR.USER_NOT_FOUND;
             break;
+          case 404:
+            message = error.message;
+            type = SERVER_ERROR.QUERY_FAILED;
+            break;
           default:
             message = error.message;
             break;
