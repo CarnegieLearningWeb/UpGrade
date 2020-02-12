@@ -19,7 +19,7 @@ const routes: Routes = [
       {
         path: 'logs',
         loadChildren: () =>
-          import('./audit/audit.module').then(m => m.AuditModule)
+          import('./logs/logs.module').then(m => m.LogsModule)
       },
       {
         path: '**',
