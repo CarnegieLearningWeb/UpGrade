@@ -53,10 +53,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
   changeLogOption(value: string) {}
 
   // Used for keyvalue pipe to sort data by key
-  valueDescOrder = (
-    a: KeyValue<string, Audit>,
-    b: KeyValue<string, Audit>
-  ): number => {
+  valueDescOrder = (a: KeyValue<string, Audit>, b: KeyValue<string, Audit>): number => {
     return new Date(a.key).getTime() > new Date(b.key).getTime() ? 1 : 0;
   };
 

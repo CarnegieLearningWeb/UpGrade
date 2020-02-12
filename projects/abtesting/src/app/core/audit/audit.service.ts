@@ -24,9 +24,7 @@ export class AuditService {
       map(([auditLogs, experiments]) =>
         auditLogs.map(log => {
           if (log.data.experimentId) {
-            const result = experiments.find(
-              experiment => experiment.id === log.data.experimentId
-            );
+            const result = experiments.find(experiment => experiment.id === log.data.experimentId);
             log.data = result
               ? {
                   ...log.data,

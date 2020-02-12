@@ -68,10 +68,7 @@
           <br />
           <span
             class="experiment-description"
-            *ngIf="
-              experiment.description?.length < 30;
-              else experimentDescription
-            "
+            *ngIf="experiment.description?.length < 30; else experimentDescription"
           >
             {{ experiment.description }}
           </span>
@@ -90,9 +87,7 @@
       <ng-container matColumnDef="state">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="
-              'home.experiments-table.status-tooltip.text' | translate
-            "
+            [matTooltip]="'home.experiments-table.status-tooltip.text' | translate"
             matTooltipPosition="above"
           >
             {{ 'home-global.status.text' | translate }}
@@ -101,10 +96,7 @@
         <td
           mat-cell
           *matCellDef="let experiment"
-          [ngStyle]="{
-            color:
-              experiment.state | experimentState: ExperimentStatePipeTypes.COLOR
-          }"
+          [ngStyle]="{color: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR}"
         >
           {{ experiment.state | experimentState }}
         </td>
@@ -113,9 +105,7 @@
       <ng-container matColumnDef="createdAt">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="
-              'home.experiments-table.start-date-tooltip.text' | translate
-            "
+            [matTooltip]="'home.experiments-table.start-date-tooltip.text' | translate"
             matTooltipPosition="above"
           >
             {{ 'home.experiments-table.text.created-date' | translate }}</span
@@ -129,9 +119,7 @@
       <ng-container matColumnDef="tags">
         <th mat-header-cell *matHeaderCellDef>
           <span
-            [matTooltip]="
-              'home.experiments-table.tags-tooltip.text' | translate
-            "
+            [matTooltip]="'home.experiments-table.tags-tooltip.text' | translate"
             matTooltipPosition="above"
           >
             {{ 'home.experiments-table.text.tags' | translate }}
@@ -139,9 +127,7 @@
         </th>
         <td mat-cell *matCellDef="let experiment">
           <mat-chip-list>
-            <ng-container
-              *ngFor="let tag of experiment.tags; let tagIndex = index"
-            >
+            <ng-container *ngFor="let tag of experiment.tags; let tagIndex = index">
               <mat-chip
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 class="tags"
@@ -161,9 +147,7 @@
               </ng-template>
             </ng-container>
             <mat-chip
-              *ngIf="
-                experiment.tags.length > 2 && !isAllTagVisible(experiment.id)
-              "
+              *ngIf="experiment.tags.length > 2 && !isAllTagVisible(experiment.id)"
               class="tags tags--clicked"
               (click)="setTagsVisible(experiment.id)"
             >
@@ -176,9 +160,7 @@
       <ng-container matColumnDef="enrollment">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span
-            [matTooltip]="
-              'home.experiments-table.enrollments-tooltip.text' | translate
-            "
+            [matTooltip]="'home.experiments-table.enrollments-tooltip.text' | translate"
             matTooltipPosition="above"
           >
             {{ 'home.experiments-table.text.enrollment' | translate }}
@@ -188,26 +170,17 @@
           <span
             class="enrollment-info"
             *ngIf="experiment.stat?.users"
-            [innerHTML]="
-              'home.experiments-table.students.text'
-                | translate: { noOfStudents: experiment.stat?.users }
-            "
+            [innerHTML]="'home.experiments-table.students.text'| translate: { noOfStudents: experiment.stat?.users }"
           ></span>
           <span
             class="enrollment-info"
             *ngIf="experiment.stat?.group"
-            [innerHTML]="
-              'home.experiments-table.classes.text'
-                | translate: { noOfClasses: experiment.stat?.group }
-            "
+            [innerHTML]="'home.experiments-table.classes.text'| translate: { noOfClasses: experiment.stat?.group }"
           ></span>
           <span
             class="enrollment-info"
             *ngIf="!experiment.stat?.group && !experiment.stat?.users"
-            [innerHTML]="
-              'home.experiments-table.students.text'
-                | translate: { noOfStudents: 0 }
-            "
+            [innerHTML]="'home.experiments-table.students.text'| translate: { noOfStudents: 0 }"
           ></span>
         </td>
       </ng-container>
