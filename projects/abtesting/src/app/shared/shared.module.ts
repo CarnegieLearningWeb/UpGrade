@@ -100,6 +100,7 @@ library.add(
 
 import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
+import { TruncatePipe } from './pipes/truncate.pipe';
 
 @NgModule({
   imports: [
@@ -135,7 +136,7 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
 
     FontAwesomeModule
   ],
-  declarations: [RtlSupportDirective, SharedIconsComponent],
+  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe],
   exports: [
     CommonModule,
     FormsModule,
@@ -175,7 +176,8 @@ import { SharedIconsComponent } from './components/shared-icons/shared-icons.com
 
     RtlSupportDirective,
 
-    SharedIconsComponent
+    SharedIconsComponent,
+    TruncatePipe
   ]
 })
 export class SharedModule {}

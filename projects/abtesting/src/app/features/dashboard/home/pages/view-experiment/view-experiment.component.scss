@@ -1,5 +1,5 @@
 $white-background: #f0f2f9;
-$dark-grey-text-color: #707A85;
+$dark-grey-text-color: #707a85;
 
 .experiment-container {
   background-color: $white-background;
@@ -42,17 +42,23 @@ $dark-grey-text-color: #707A85;
         font-size: var(--text-size-large);
       }
 
-      .edit-button,
-      .experiment-design-button {
-        margin-left: 15px !important;
-        border: 1px solid var(--blue);
-        background: $white-background;
-        color: var(--blue);
-        font-size: var(--text-size-small);
+      .action-buttons {
+        flex-shrink: 0;
+        align-self: flex-start;
+        width: 400px;
 
-        .icon {
-          margin-right: 3px;
-          vertical-align: unset;
+        .edit-button,
+        .experiment-design-button {
+          margin-left: 15px !important;
+          border: 1px solid var(--blue);
+          background: $white-background;
+          color: var(--blue);
+          font-size: var(--text-size-small);
+
+          .icon {
+            margin-right: 3px;
+            vertical-align: unset;
+          }
         }
       }
     }

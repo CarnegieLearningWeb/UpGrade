@@ -14,18 +14,17 @@ const routes: Routes = [
       },
       {
         path: 'home',
-        loadChildren: () =>
-          import('./home/home.module').then(m => m.HomeModule)
+        loadChildren: () => import('./home/home.module').then(m => m.HomeModule)
       },
       {
-        path: 'audit',
+        path: 'logs',
         loadChildren: () =>
           import('./audit/audit.module').then(m => m.AuditModule)
       },
       {
         path: '**',
-        redirectTo: '/home',
-      },
+        redirectTo: '/home'
+      }
     ]
   }
 ];
@@ -34,4 +33,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class DashboardRoutingModule { }
+export class DashboardRoutingModule {}

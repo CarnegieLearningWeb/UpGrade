@@ -18,7 +18,7 @@
     </mat-form-field>
   </div>
 
-  <ng-container *ngIf="(auditLogData | json) != '{}'; else zeroStateAudit">
+  <ng-container *ngIf="(auditLogData | json) !== '{}'; else zeroStateAudit">
     <div class="timeline-container" *ngFor="let logData of auditLogData | keyvalue: valueDescOrder">
       <div class="error-date">
         <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
@@ -32,7 +32,19 @@
     </div>
   </ng-container>
 
-  <ng-template #zeroStateAudit>
-    <span class="zero-state" [innerHTML]="'audit.log-zero-state.text' | translate"></span>
+  <ng-template
+    #zeroStateAudit
+    *ngIf="!(isAuditLoading$ | async); else auditSpinner"
+  >
+    <span
+      class="zero-state"
+      [innerHTML]="'audit.log-zero-state.text' | translate"
+    ></span>
+  </ng-template>
+
+  <ng-template #auditSpinner>
+    <div class="audit-spinner">
+      <mat-spinner diameter="60" value="60"></mat-spinner>
+    </div>
   </ng-template>
 </div>

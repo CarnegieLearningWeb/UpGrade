@@ -95,16 +95,9 @@
       }
 
       &-description {
-        display: -webkit-box;
-        overflow: hidden;
-        text-overflow: ellipsis;
         color: var(--grey-3);
         font-family: OpenSans-Regular;
         font-size: var(--text-size-x-small);
-        -webkit-line-clamp: 2;
-
-        /* autoprefixer: ignore next */
-        -webkit-box-orient: vertical;
       }
     }
 
