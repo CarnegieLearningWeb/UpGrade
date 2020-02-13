@@ -1,14 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule, Optional, SkipSelf, ErrorHandler } from '@angular/core';
-import {
-  HttpClientModule,
-  HttpClient,
-  HTTP_INTERCEPTORS
-} from '@angular/common/http';
-import {
-  StoreRouterConnectingModule,
-  RouterStateSerializer
-} from '@ngrx/router-store';
+import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { StoreRouterConnectingModule, RouterStateSerializer } from '@ngrx/router-store';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
@@ -17,17 +10,9 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { environment } from '../../environments/environment';
 
-import {
-  AppState,
-  reducers,
-  metaReducers,
-  selectRouterState
-} from './core.state';
+import { AppState, reducers, metaReducers, selectRouterState } from './core.state';
 import { TitleService } from './title/title.service';
-import {
-  ROUTE_ANIMATIONS_ELEMENTS,
-  routeAnimations
-} from './animations/route.animations';
+import { ROUTE_ANIMATIONS_ELEMENTS, routeAnimations } from './animations/route.animations';
 import { AnimationsService } from './animations/animations.service';
 import { AppErrorHandler } from './error-handler/app-error-handler.service';
 import { CustomSerializer } from './router/custom-serializer';
@@ -38,7 +23,7 @@ import { NotificationService } from './notifications/notification.service';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { SettingsModule } from './settings/settings.module';
 import { AuthModule } from './auth/auth.module';
-import { AuditModule } from './audit/audit.module';
+import { LogsModule } from './logs/logs.module';
 import { ExperimentUsersModule } from './experiment-users/experiment-users.module';
 
 export {
@@ -53,11 +38,7 @@ export {
 };
 
 export function HttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(
-    http,
-    `${environment.i18nPrefix}/assets/i18n/`,
-    '.json'
-  );
+  return new TranslateHttpLoader(http, `${environment.i18nPrefix}/assets/i18n/`, '.json');
 }
 
 @NgModule({
@@ -70,15 +51,13 @@ export function HttpLoaderFactory(http: HttpClient) {
     AuthModule,
     SettingsModule,
     ExperimentsModule,
-    AuditModule,
+    LogsModule,
     ExperimentUsersModule,
 
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
     StoreRouterConnectingModule.forRoot(),
-    EffectsModule.forRoot([
-      GoogleAnalyticsEffects
-    ]),
+    EffectsModule.forRoot([GoogleAnalyticsEffects]),
     environment.production
       ? []
       : StoreDevtoolsModule.instrument({

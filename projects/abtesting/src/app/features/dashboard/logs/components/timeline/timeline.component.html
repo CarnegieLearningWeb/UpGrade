@@ -1,0 +1,111 @@
+<div class="timeline">
+  <ng-container *ngFor="let log of logData; let index = index">
+    <div class="timeline-container">
+      <ng-container *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate">
+        <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else noUserLogTemplate" />
+      </ng-container>
+
+      <!-- If user is null or Action is performed via CLI -->
+      <ng-template #noUserLogTemplate>
+        <app-shared-icons
+          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
+          [iconType]="'user-2'"
+        ></app-shared-icons>
+      </ng-template>
+
+      <ng-template #errorLogIconTemplate>
+        <app-shared-icons
+          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
+          [iconType]="log.value | errorLog: 'icon'"
+        ></app-shared-icons>
+      </ng-template>
+
+      <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
+        <span class="user-name">
+          <ng-container *ngIf="log.user">
+            <u *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
+              {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
+            </u>
+            <ng-template #userNameEllipsis>
+              <u [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
+                {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate: 30 }}
+              </u>
+            </ng-template>
+          </ng-container>
+        </span>
+
+        <ng-container [ngSwitch]="log.type">
+          <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
+            <span class="action action-msg">
+              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+            </span>
+            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
+          <div
+            class="log-text"
+            *ngSwitchCase="
+              log.type === ExperimentLogType.EXPERIMENT_STATE_CHANGED ||
+              log.type === ExperimentLogType.EXPERIMENT_CREATED
+                ? log.type
+                : ''
+            "
+          >
+            <span class="action action-msg">
+              {{
+                (log.type
+                  | experimentActionMessage
+                  | translate
+                    : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) +
+                  ' '
+              }}
+              <a
+                class="link"
+                *ngIf="log.data.isExperimentExist; else experimentNotExist"
+                [routerLink]="['/home', 'detail', log.data.experimentId]"
+                >{{ log.data.experimentName }}</a
+              ></span
+            >
+            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
+          <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
+            <mat-accordion class="accordion">
+              <mat-expansion-panel hideToggle="true">
+                <mat-expansion-panel-header class="expansion-header">
+                  <mat-panel-title>
+                    <span class="action-msg">
+                      {{ (log.type | experimentActionMessage | translate) + ' ' }}
+                      <a
+                        class="link"
+                        *ngIf="log.data.isExperimentExist; else experimentNotExist"
+                        [routerLink]="['/home', 'detail', log.data.experimentId]"
+                        >{{ log.data.experimentName }}</a
+                      ></span
+                    >
+                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                  </mat-panel-title>
+                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                </mat-expansion-panel-header>
+
+                <pre><div class="diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </div>
+        </ng-container>
+
+        <ng-template #experimentNotExist>
+          <span class="action-msg">{{ ' ' + log.data.experimentName }}</span>
+        </ng-template>
+      </div>
+
+      <ng-template #errorLogTemplate>
+        <span class="error-type"
+          ><u>{{ log.value }}</u></span
+        >
+        <span> :</span>
+        <span class="error-message">{{ log.message }}</span>
+      </ng-template>
+    </div>
+  </ng-container>
+</div>

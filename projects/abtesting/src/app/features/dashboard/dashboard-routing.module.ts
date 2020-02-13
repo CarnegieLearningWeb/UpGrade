@@ -14,23 +14,20 @@ const routes: Routes = [
       },
       {
         path: 'home',
-        loadChildren: () =>
-          import('./home/home.module').then(m => m.HomeModule)
+        loadChildren: () => import('./home/home.module').then(m => m.HomeModule)
       },
       {
         path: 'users',
-        loadChildren: () =>
-          import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule)
+        loadChildren: () => import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule)
       },
       {
-        path: 'audit',
-        loadChildren: () =>
-          import('./audit/audit.module').then(m => m.AuditModule)
+        path: 'logs',
+        loadChildren: () => import('./logs/logs.module').then(m => m.LogsModule)
       },
       {
         path: '**',
-        redirectTo: '/home',
-      },
+        redirectTo: '/home'
+      }
     ]
   }
 ];
@@ -39,4 +36,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class DashboardRoutingModule { }
+export class DashboardRoutingModule {}

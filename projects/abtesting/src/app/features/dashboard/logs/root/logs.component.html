@@ -1,0 +1,15 @@
+<div class="logs-container">
+  <h1 class="title">{{ 'logs.main-heading.text' | translate }}</h1>
+  <span class="subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
+
+  <div class="logs-wrapper">
+    <mat-tab-group class="logs-tabs" disableRipple="true">
+      <mat-tab [label]="'logs.audit-logs-tab.text' | translate">
+        <audit-logs></audit-logs>
+      </mat-tab>
+      <mat-tab [label]="'logs.error-logs-tab.text' | translate">
+        <error-logs></error-logs>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

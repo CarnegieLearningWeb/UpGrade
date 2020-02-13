@@ -4,14 +4,12 @@ import { SettingsService } from '../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
 import { AuthService } from '../../../core/auth/auth.service';
 
-
 @Component({
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
   styleUrls: ['./dashboard-root.component.scss']
 })
 export class DashboardRootComponent implements OnInit {
-
   themeOptions = [
     { value: ThemeOptions.DEFAULT_THEME, viewValue: 'Default' },
     { value: ThemeOptions.DARK_THEME, viewValue: 'Dark' },
@@ -34,16 +32,13 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'user-group'
     },
     {
-      path: ['/audit'],
+      path: ['/logs'],
       text: 'global.logs.title',
       iconType: 'list'
     }
   ];
 
-  constructor(
-    private settingsService: SettingsService,
-    private authService: AuthService
-  ) {}
+  constructor(private settingsService: SettingsService, private authService: AuthService) {}
 
   private static isIEorEdgeOrSafari() {
     return ['ie', 'edge', 'safari'].includes(browser().name);
@@ -62,5 +57,4 @@ export class DashboardRootComponent implements OnInit {
   logout() {
     this.authService.authLogout();
   }
-
 }

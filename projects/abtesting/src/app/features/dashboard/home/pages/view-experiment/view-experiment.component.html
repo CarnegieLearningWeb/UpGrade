@@ -1,8 +1,6 @@
 <div class="experiment-container" *ngIf="experiment">
   <span class="experiment-title">
-    <a [routerLink]="['/home']" class="experiment-link"
-      >{{ 'home.view-experiment.experiments.text' | translate }}
-    </a>
+    <a [routerLink]="['/home']" class="experiment-link">{{ 'home.view-experiment.experiments.text' | translate }} </a>
     > <b> {{ experiment?.name }} </b>
   </span>
   <div class="experiment">
@@ -10,34 +8,25 @@
       <span class="experiment-overview-title">
         {{ experiment?.name }}
         <span class="experiment-overview-partitions">
-          ({{ experiment.partitions?.length +
-              ' ' +
-              ('home.view-experiment.experiments-partitions.text' | translate)
-          }})
+          ({{ experiment.partitions?.length + ' ' + ('home.view-experiment.experiments-partitions.text' | translate) }})
         </span>
       </span>
 
-      <div>
-        <button
-          mat-flat-button
-          class="experiment-design-button"
-          (click)="openDialog(DialogType.EDIT_EXPERIMENT, 1)"
-        >
+      <div class="action-buttons">
+        <button mat-flat-button class="experiment-design-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT, 1)">
           {{ 'home.view-experiment.view-experiment-button.text' | translate }}
         </button>
         <button
           mat-flat-button
           class="edit-button"
           (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
-          *ngIf="experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE"
+          *ngIf="
+            experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
+          "
         >
           {{ 'home.view-experiment.edit-button.text' | translate }}
         </button>
-        <button
-          mat-flat-button
-          class="experiment-design-button"
-          (click)="deleteExperiment(experiment.id)"
-        >
+        <button mat-flat-button class="experiment-design-button" (click)="deleteExperiment(experiment.id)">
           {{ 'home.view-experiment.delete-button.text' | translate }}
         </button>
       </div>
@@ -49,45 +38,30 @@
 
     <span class="experiment-create-date">
       <b>{{
-        ('home.view-experiment.created-on.text' | translate) +
-          (experiment.createdAt | formatDate: 'medium date')
+        ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate: 'medium date')
       }}</b>
     </span>
     <div class="experiment-state">
       <div class="experiment-state-container">
         <div class="state-data state-data--fixed">
           <span>{{ 'home-global.status.text' | translate }}</span>
-          <button
-            mat-flat-button
-            (click)="openDialog(DialogType.CHANGE_STATUS)"
-          >
+          <button mat-flat-button (click)="openDialog(DialogType.CHANGE_STATUS)">
             {{ experiment.state | experimentState }}
-            <app-shared-icons
-              class="icon"
-              [iconType]="'edit'"
-            ></app-shared-icons>
+            <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           </button>
         </div>
         <div class="state-data">
           <span>{{ 'home-global.post-experiment-rule.text' | translate }}</span>
-          <button
-            mat-flat-button
-            (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
-          >
+          <button mat-flat-button (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)">
             {{ experiment.postExperimentRule | titlecase }}
-            <app-shared-icons
-              class="icon"
-              [iconType]="'edit'"
-            ></app-shared-icons>
+            <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           </button>
         </div>
       </div>
 
       <div class="experiment-state-container">
         <div class="state-data state-data--fixed">
-          <span
-            >{{ 'home-global.unit-of-assignment.text' | translate | uppercase }}
-          </span>
+          <span>{{ 'home-global.unit-of-assignment.text' | translate | uppercase }} </span>
           <span class="state-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
         </div>
         <div class="state-data">
@@ -99,15 +73,8 @@
       <div class="experiment-state-container">
         <div class="state-data end-criteria-container">
           <span>{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
-          <ng-container
-            *ngIf="
-              experiment.endOn || experiment.enrollmentCompleteCondition;
-              else noCriteriaTemplate
-            "
-          >
-            <ng-container
-              *ngIf="experiment.enrollmentCompleteCondition as endCondition"
-            >
+          <ng-container *ngIf="experiment.endOn || experiment.enrollmentCompleteCondition; else noCriteriaTemplate">
+            <ng-container *ngIf="experiment.enrollmentCompleteCondition as endCondition">
               <span class="end-criteria end-criteria--text">
                 {{ 'home.view-experiment.ending-criteria.reaches.text' | translate }}
               </span>
@@ -115,16 +82,9 @@
                 class="end-criteria end-criteria--data end-criteria--text"
                 *ngIf="endCondition?.userCount as studentCount"
               >
-                {{
-                  studentCount +
-                    ('home.view-experiment.ending-criteria.students.text'
-                      | translate)
-                }}
+                {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
               </span>
-              <span
-                class="end-criteria end-criteria--text"
-                *ngIf="endCondition?.userCount && endCondition.groupCount"
-              >
+              <span class="end-criteria end-criteria--text" *ngIf="endCondition?.userCount && endCondition.groupCount">
                 {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
               </span>
               <span
@@ -132,9 +92,9 @@
                 *ngIf="endCondition?.groupCount as groupCount"
               >
                 {{
-                  groupCount + ' ' +
-                    ('home-global.enrollments-per-custom.text'
-                      | translate: { groupType: experiment.group } | lowercase)
+                  groupCount +
+                    ' ' +
+                    ('home-global.enrollments-per-custom.text' | translate: { groupType: experiment.group } | lowercase)
                 }}
               </span>
               <span class="end-criteria end-criteria--text">
@@ -157,18 +117,12 @@
     </div>
 
     <!-- Enrollment over time section -->
-    <home-enrollment-over-time
-      [experiment]="experiment"
-    ></home-enrollment-over-time>
+    <home-enrollment-over-time [experiment]="experiment"></home-enrollment-over-time>
 
     <!-- Enrollment by condition table -->
-    <home-enrollment-condition-table
-      [experiment]="experiment"
-    ></home-enrollment-condition-table>
+    <home-enrollment-condition-table [experiment]="experiment"></home-enrollment-condition-table>
 
     <!-- Enrollment by experiment Point and Partition table -->
-    <home-enrollment-point-partition-table
-      [experiment]="experiment"
-    ></home-enrollment-point-partition-table>
+    <home-enrollment-point-partition-table [experiment]="experiment"></home-enrollment-point-partition-table>
   </div>
 </div>
