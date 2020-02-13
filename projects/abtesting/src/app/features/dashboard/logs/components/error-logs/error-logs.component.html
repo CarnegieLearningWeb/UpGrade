@@ -18,16 +18,27 @@
     </mat-form-field>
   </div>
 
-  <!-- Use ngFor on timeline-container -->
-  <div class="timeline-container">
-    <div class="error-date">
-      <span class="date-info">21st July</span>
-      <span class="day-info">2019, Monday</span>
+  <ng-container *ngIf="!(isErrorLogLoading$ | async); else errorLogSpinner">
+    <ng-container *ngIf="(errorLogData | json) != '{}'; else zeroStateAudit">
+      <div class="timeline-container" *ngFor="let logData of errorLogData | keyvalue: valueDescOrder">
+        <div class="error-date">
+          <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
+          <span class="day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
+        </div>
+
+        <logs-timeline class="timeline" [logData]="logData.value" [logType]="LogType.ERROR_LOG"></logs-timeline>
+      </div>
+
+      <ng-template #zeroStateAudit>
+        <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
+      </ng-template>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #errorLogSpinner>
+    <div class="spinner">
+      <mat-spinner diameter="60" value="60"></mat-spinner>
     </div>
-    <logs-timeline
-      class="timeline"
-      [logData]="errorLogData"
-      [logType]="LogType.ERROR_LOG"
-    ></logs-timeline>
-  </div>
+  </ng-template>
+
 </div>

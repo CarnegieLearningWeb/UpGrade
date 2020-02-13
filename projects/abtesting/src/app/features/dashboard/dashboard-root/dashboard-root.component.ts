@@ -48,7 +48,8 @@ export class DashboardRootComponent implements OnInit {
 
   ngOnInit(): void {
     this.experimentService.loadExperiments();
-    this.logsService.loadAudits();
+    this.logsService.loadAuditLogs();
+    this.logsService.loadErrorLogs();
     if (DashboardRootComponent.isIEorEdgeOrSafari()) {
       this.settingsService.changeAnimationsPageDisabled(true);
     }

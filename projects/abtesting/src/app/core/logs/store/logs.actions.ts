@@ -1,13 +1,24 @@
 import { createAction, props } from '@ngrx/store';
-import { Audit } from './logs.model';
+import { AuditLogs, ErrorLogs } from './logs.model';
 
-export const actionGetAllAudit = createAction('[Logs] Get All Audits');
+export const actionGetAllAuditLogs = createAction('[Logs] Get All Audit Logs');
 
-export const actionStoreAudits = createAction(
-  '[Logs] Store Audits',
-  props<{ audits: Audit[] }>()
+export const actionGetAllAuditLogsSuccess = createAction(
+  '[Logs] Get All Audit Logs Success',
+  props<{ auditLogs: AuditLogs[] }>()
 );
 
-export const actionGetAllAuditFailure = createAction(
-  '[Logs] Get All Audits Failure'
+export const actionGetAllAuditLogsFailure = createAction(
+  '[Logs] Get All Audit Logs Failure'
+);
+
+export const actionGetAllErrorLogs = createAction('[Logs] Get All Error Logs');
+
+export const actionGetAllErrorLogsSuccess = createAction(
+  '[Logs] Get All Error Logs Success',
+  props<{ errorLogs: ErrorLogs[] }>()
+);
+
+export const actionGetAllErrorLogsFailure = createAction(
+  '[Logs] Get All Error Logs Failure'
 );

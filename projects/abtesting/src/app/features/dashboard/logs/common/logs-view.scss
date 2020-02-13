@@ -43,4 +43,22 @@ $text-color: #8f9bb3;
       width: calc(100% - 150px);
     }
   }
+
+  .zero-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    color: var(--grey);
+    font-family: OpenSans-Bold;
+    font-size: var(--text-size-xxx-large);
+  }
+
+  .spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 250px;
+  }
+
 }

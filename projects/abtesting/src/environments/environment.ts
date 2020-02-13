@@ -11,6 +11,7 @@ const endpointApi =
 export const environment = {
   appName: 'UpGrade',
   envName: 'DEV',
+  endpointApi,
   production: false,
   test: false,
   i18nPrefix: '',
@@ -32,7 +33,8 @@ export const environment = {
     getAllExperiments: `${endpointApi}/experiments`,
     createNewExperiments: `${endpointApi}/experiments`,
     updateExperiments: `${endpointApi}/experiments`,
-    getAllAudits: `${endpointApi}/audit`,
+    getAllAuditLogs: `${endpointApi}/audit`,
+    getAllErrorLogs: `${endpointApi}/error`,
     experimentsStats: `${endpointApi}/stats`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/state`,
