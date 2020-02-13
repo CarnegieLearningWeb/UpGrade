@@ -52,6 +52,8 @@ const reducer = createReducer(
     experimentUsersActions.actionFetchExcludedGroupsFailure,
     experimentUsersActions.actionExcludedUserFailure,
     experimentUsersActions.actionExcludedGroupFailure,
+    experimentUsersActions.actionDeleteExcludedUserFailure,
+    experimentUsersActions.actionDeleteExcludedGroupFailure,
     (state) => ({ ...state, isLoading: false })
   ),
   on(
