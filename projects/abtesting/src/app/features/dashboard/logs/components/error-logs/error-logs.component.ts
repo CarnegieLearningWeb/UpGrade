@@ -12,31 +12,20 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ErrorLogsComponent implements OnInit, OnDestroy {
-
   errorLogData: any;
   errorLogSubscription: Subscription;
   searchValue: string;
-  logsOptions = [
-    { value: 'Showing all Activities', viewValue: 'Showing all Activities' },
-  ];
+  logsOptions = [{ value: 'Showing all Activities', viewValue: 'Showing all Activities' }];
   selectedLogOption = this.logsOptions[0].value;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
   constructor(private logsService: LogsService) {}
 
   ngOnInit() {
     this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe(errorLogs => {
-      errorLogs.sort((a, b) =>
-        a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0
-      );
+      errorLogs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
       this.errorLogData = groupBy(errorLogs, log => {
         const date = new Date(log.createdAt);
-        return (
-          date.getFullYear() +
-          '-' +
-          (date.getMonth() + 1) +
-          '-' +
-          date.getDate()
-        );
+        return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
       });
     });
   }

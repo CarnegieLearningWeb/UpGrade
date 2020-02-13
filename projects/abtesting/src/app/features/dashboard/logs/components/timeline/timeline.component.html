@@ -2,7 +2,7 @@
   <ng-container *ngFor="let log of logData; let index = index">
     <div class="timeline-container">
       <ng-container *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate">
-        <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else noUserLogTemplate"/>
+        <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else noUserLogTemplate" />
       </ng-container>
 
       <!-- If user is null or Action is performed via CLI -->
@@ -27,10 +27,7 @@
               {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
             </u>
             <ng-template #userNameEllipsis>
-              <u
-                [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']"
-                matTooltipPosition="above"
-              >
+              <u [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
                 {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate: 30 }}
               </u>
             </ng-template>
@@ -55,7 +52,13 @@
             "
           >
             <span class="action action-msg">
-              {{ (log.type | experimentActionMessage | translate : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) + ' ' }}
+              {{
+                (log.type
+                  | experimentActionMessage
+                  | translate
+                    : { previousState: log.data.previousState | titlecase, newState: log.data.newState | titlecase }) +
+                  ' '
+              }}
               <a
                 class="link"
                 *ngIf="log.data.isExperimentExist; else experimentNotExist"
@@ -66,10 +69,7 @@
             <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
-          <div
-            class="log-text"
-            *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED"
-          >
+          <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header">
@@ -79,14 +79,11 @@
                       <a
                         class="link"
                         *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                        [routerLink]="['/home','detail',log.data.experimentId]"
-                      >{{ log.data.experimentName }}</a
+                        [routerLink]="['/home', 'detail', log.data.experimentId]"
+                        >{{ log.data.experimentName }}</a
                       ></span
                     >
-                    <span
-                      class="view-diff"
-                      [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                    ></span>
+                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
                   <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
@@ -104,22 +101,22 @@
 
       <ng-template #errorLogTemplate>
         <div class="content">
-        <span class="error-type"
-          ><u>{{ log.type }}</u></span
-        >
-        <span> :</span>
-        <div class="log-text">
+          <span class="error-type"
+            ><u>{{ log.type }}</u></span
+          >
+          <span> :</span>
+          <div class="log-text">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header">
                   <mat-panel-title>
                     <span class="action-msg-error">
-                      {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
+                      {{
+                        'logs.error-logs-message.text'
+                          | translate: { errorName: log.name, endPoint: endPoint + log.endPoint }
+                      }}
                     </span>
-                    <span
-                      class="view-diff"
-                      [innerHTML]="'logs-global.log-view-diff.text' | translate"
-                    ></span>
+                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
                   <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>

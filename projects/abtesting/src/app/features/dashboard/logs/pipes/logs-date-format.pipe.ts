@@ -22,29 +22,15 @@ export class LogDateFormatPipe implements PipeTransform {
         'November',
         'December'
       ];
-      const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-      ];
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const dateNumber = logDate.getDate();
       const dateYear = logDate.getFullYear();
 
-      if ( type === LogDateFormatType.DATE_MONTH) {
-        return (
-          dateNumber + this.getSuffix(dateNumber) +
-          ' ' +
-          months[logDate.getMonth()]
-        );
+      if (type === LogDateFormatType.DATE_MONTH) {
+        return dateNumber + this.getSuffix(dateNumber) + ' ' + months[logDate.getMonth()];
       } else {
         const dayIndex = logDate.getDay();
-        return (
-          dateYear + ', ' + days[dayIndex]
-        );
+        return dateYear + ', ' + days[dayIndex];
       }
     } else {
       return '';

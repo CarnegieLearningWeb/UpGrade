@@ -1,6 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
+import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
+import * as logsActions from '../../logs/store/logs.actions';
+import * as experimentActions from '../../experiments/store/experiments.actions';
 import { tap, map, filter, withLatestFrom, catchError } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
@@ -13,12 +16,8 @@ declare const gapi: any;
 
 @Injectable()
 export class AuthEffects {
-
   auth2: any;
-  scope = [
-    'profile',
-    'email',
-  ].join(' ');
+  scope = ['profile', 'email'].join(' ');
 
   constructor(
     private actions$: Actions,
@@ -40,7 +39,7 @@ export class AuthEffects {
               cookiepolicy: 'single_host_origin',
               scope: this.scope
             });
-            this.auth2.currentUser.listen((currentUser) => {
+            this.auth2.currentUser.listen(currentUser => {
               this.ngZone.run(() => {
                 const profile = currentUser.getBasicProfile();
                 const isCurrentUserSignedIn = this.auth2.isSignedIn.get();
@@ -61,10 +60,10 @@ export class AuthEffects {
                   this.store$.dispatch(authActions.actionSetUserInfo({ user }));
                 }
               });
-            })
+            });
           });
         })
-      )
+      );
     },
     { dispatch: false }
   );
@@ -75,9 +74,11 @@ export class AuthEffects {
         ofType(authActions.actionBindAttachHandlerWithButton),
         map(action => action.element),
         filter(element => !!element),
-        tap((element) => {
-          this.auth2.attachClickHandler(element, {},
-            (googleUser) => {
+        tap(element => {
+          this.auth2.attachClickHandler(
+            element,
+            {},
+            googleUser => {
               this.ngZone.run(() => {
                 const profile = googleUser.getBasicProfile();
                 const user = {
@@ -88,20 +89,40 @@ export class AuthEffects {
                   token: googleUser.getAuthResponse().id_token
                 };
                 const id = profile.getId();
-                this.authDataService.createUser({ ...user, id }).pipe(
-                  tap(() => {
-                    this.store$.dispatch(authActions.actionSetUserInfo({ user }));
-                    this.store$.dispatch(authActions.actionLoginSuccess());
-                  }),
-                  catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
-                ).subscribe();
+                this.authDataService
+                  .createUser({ ...user, id })
+                  .pipe(
+                    tap(() => {
+                      this.store$.dispatch(authActions.actionSetUserInfo({ user }));
+                      this.store$.dispatch(authActions.actionLoginSuccess());
+                    }),
+                    catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
+                  )
+                  .subscribe();
               });
-            }, (error) => {
+            },
+            error => {
               console.log(JSON.stringify(error, undefined, 2));
               this.store$.dispatch(authActions.actionLoginFailure());
-            });
+            }
+          );
         })
-      )
+      );
+    },
+    { dispatch: false }
+  );
+
+  setUserInfoInStore$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(authActions.actionSetUserInfo),
+        tap(() => {
+          this.store$.dispatch(experimentActions.actionGetAllExperiment());
+          this.store$.dispatch(logsActions.actionGetAllAudit());
+          this.store$.dispatch(experimentUserActions.actionFetchExcludedUsers());
+          this.store$.dispatch(experimentUserActions.actionFetchExcludedGroups());
+        })
+      );
     },
     { dispatch: false }
   );
@@ -111,15 +132,18 @@ export class AuthEffects {
       return this.actions$.pipe(
         ofType(authActions.actionLogoutStart),
         tap(() => {
-          this.auth2.signOut().then(() => {
-            this.ngZone.run(() => {
-              this.store$.dispatch(authActions.actionLogoutSuccess());
+          this.auth2
+            .signOut()
+            .then(() => {
+              this.ngZone.run(() => {
+                this.store$.dispatch(authActions.actionLogoutSuccess());
+              });
+            })
+            .catch(() => {
+              this.store$.dispatch(authActions.actionLogoutFailure());
             });
-          }).catch(() => {
-            this.store$.dispatch(authActions.actionLogoutFailure());
-          });
         })
-      )
+      );
     },
     { dispatch: false }
   );
@@ -128,14 +152,12 @@ export class AuthEffects {
     () => {
       return this.actions$.pipe(
         ofType(authActions.actionLoginSuccess),
-        withLatestFrom(
-          this.store$.pipe(select(selectRedirectUrl))
-        ),
+        withLatestFrom(this.store$.pipe(select(selectRedirectUrl))),
         tap(([, redirectUrl]) => {
-          const path = redirectUrl || '/home'
+          const path = redirectUrl || '/home';
           this.router.navigate([path]);
         })
-      )
+      );
     },
     { dispatch: false }
   );
@@ -147,9 +169,8 @@ export class AuthEffects {
         tap(() => {
           this.router.navigateByUrl('/login');
         })
-      )
+      );
     },
     { dispatch: false }
   );
-
 }

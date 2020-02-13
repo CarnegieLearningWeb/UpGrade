@@ -1,7 +1,6 @@
 const packageJson = require('../../../../package.json');
 
-const endpointApi =
-  'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
   appName: 'UpGrade',
@@ -19,8 +18,7 @@ export const environment = {
     bootstrap: packageJson.dependencies.bootstrap,
     rxjs: packageJson.dependencies.rxjs,
     ngxtranslate: packageJson.dependencies['@ngx-translate/core'],
-    fontAwesome:
-      packageJson.dependencies['@fortawesome/fontawesome-free-webfonts'],
+    fontAwesome: packageJson.dependencies['@fortawesome/fontawesome-free-webfonts'],
     angularCli: packageJson.devDependencies['@angular/cli'],
     typescript: packageJson.devDependencies['typescript'],
     cypress: packageJson.devDependencies['cypress']
@@ -34,6 +32,8 @@ export const environment = {
     experimentsStats: `${endpointApi}/stats`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/state`,
-    users: `${endpointApi}/users`
+    users: `${endpointApi}/users`, // Used to create a new user after login
+    excludeUsers: `${endpointApi}/exclude/user`,
+    excludeGroups: `${endpointApi}/exclude/group`
   }
 };

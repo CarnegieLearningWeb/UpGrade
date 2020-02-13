@@ -5,8 +5,7 @@
 
 const packageJson = require('../../../../package.json');
 
-const endpointApi =
-  'http://upgrade-development.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'http://upgrade-development.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
   appName: 'UpGrade',
@@ -38,6 +37,8 @@ export const environment = {
     experimentsStats: `${endpointApi}/stats`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/state`,
-    users: `${endpointApi}/users`
+    users: `${endpointApi}/users`, // Used to create a new user after login
+    excludeUsers: `${endpointApi}/exclude/user`,
+    excludeGroups: `${endpointApi}/exclude/group`
   }
 };

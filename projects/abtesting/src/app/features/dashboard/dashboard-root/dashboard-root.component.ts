@@ -1,9 +1,7 @@
 import browser from 'browser-detect';
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
-import { ExperimentService } from '../../../core/experiments/experiments.service';
 import { ThemeOptions } from '../../../core/settings/store/settings.model';
-import { LogsService } from '../../../core/logs/logs.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -29,27 +27,24 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'files'
     },
     {
+      path: ['/users'],
+      text: 'global.experiment-user.title',
+      iconType: 'user-group'
+    },
+    {
       path: ['/logs'],
       text: 'global.logs.title',
       iconType: 'list'
     }
   ];
 
-  constructor(
-    private settingsService: SettingsService,
-    private experimentService: ExperimentService,
-    private logsService: LogsService,
-    private authService: AuthService
-  ) {}
+  constructor(private settingsService: SettingsService, private authService: AuthService) {}
 
   private static isIEorEdgeOrSafari() {
     return ['ie', 'edge', 'safari'].includes(browser().name);
   }
 
   ngOnInit(): void {
-    this.experimentService.loadExperiments();
-    this.logsService.loadAuditLogs();
-    this.logsService.loadErrorLogs();
     if (DashboardRootComponent.isIEorEdgeOrSafari()) {
       this.settingsService.changeAnimationsPageDisabled(true);
     }

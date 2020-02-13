@@ -1,9 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {
-  LogType,
-  LogDateFormatType,
-  AuditLogs
-} from '../../../../../core/logs/store/logs.model';
+import { LogType, LogDateFormatType, AuditLogs } from '../../../../../core/logs/store/logs.model';
 import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
@@ -18,9 +14,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
   auditLogData: any;
   auditLogsSubscription: Subscription;
   searchValue: string;
-  logsOptions = [
-    { value: 'Showing all Activities', viewValue: 'Showing all Activities' }
-  ];
+  logsOptions = [{ value: 'Showing all Activities', viewValue: 'Showing all Activities' }];
   selectedLogOption = this.logsOptions[0].value;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
 
@@ -28,18 +22,10 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe(logs => {
-      logs.sort((a, b) =>
-        a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0
-      );
+      logs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
       this.auditLogData = groupBy(logs, log => {
         const date = new Date(log.createdAt);
-        return (
-          date.getFullYear() +
-          '-' +
-          (date.getMonth() + 1) +
-          '-' +
-          date.getDate()
-        );
+        return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
       });
     });
   }
