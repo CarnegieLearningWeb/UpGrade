@@ -3,14 +3,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { GroupTypes } from '../../../../core/experiments/store/experiments.model';
 import { ExperimentUsersService } from '../../../../core/experiment-users/experiment-users.service';
 import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
-import { ExcludeEntity } from '../../../../core/experiment-users/store/experiment-users.model';
+import { ExcludeEntity, EntityTypes } from '../../../../core/experiment-users/store/experiment-users.model';
 import { ExperimentUserValidators } from '../validator/experiment-users-validators';
 import { Subscription } from 'rxjs';
-
-enum EntityTypes {
-  GROUP_ID = 'Group ID',
-  USER_ID = 'User ID'
-}
 
 @Component({
   selector: 'app-user-root',
@@ -19,7 +14,7 @@ enum EntityTypes {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentUsersRootComponent implements OnInit, OnDestroy {
-  displayedColumns = ['type', 'id'];
+  displayedColumns = ['type', 'id', 'removeEntity'];
   allExcludedEntities: MatTableDataSource<ExcludeEntity>;
   allExcludedEntitiesSub: Subscription;
 
@@ -88,12 +83,18 @@ export class ExperimentUsersRootComponent implements OnInit, OnDestroy {
     }
   }
 
+  removeExcludedEntity(entity: ExcludeEntity) {
+    entity.groupId
+      ? this.experimentUserService.deleteExcludedGroup(entity.groupId, entity.type)
+      : this.experimentUserService.deleteExcludedUser(entity.userId);
+  }
+
   get entityTypeValue() {
     return this.excludeEntitiesForm.get('entityType').value === EntityTypes.GROUP_ID;
   }
 
   get groupTypeValue() {
-    return this.excludeEntitiesForm.get('groupType').value === GroupTypes.OTHER;
+    return this.excludeEntitiesForm.get('groupType').value === GroupTypes.OTHER && this.entityTypeValue;
   }
 
   ngOnDestroy() {

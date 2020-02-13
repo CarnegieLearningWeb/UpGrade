@@ -16,7 +16,7 @@ export class ExperimentUsersEffects {
     this.actions$.pipe(
       ofType(experimentUsersActions.actionFetchExcludedUsers),
       switchMap(() => this.experimentUsersDataService.fetchExcludedUsers().pipe(
-        map(data => experimentUsersActions.actionFetchExcludedUsersSuccess({ data })),
+        map((data: ExcludeEntity[]) => experimentUsersActions.actionFetchExcludedUsersSuccess({ data })),
         catchError(() => [experimentUsersActions.actionFetchExcludedUsersFailure()])
       ))
     )
@@ -26,7 +26,7 @@ export class ExperimentUsersEffects {
     this.actions$.pipe(
       ofType(experimentUsersActions.actionFetchExcludedGroups),
       switchMap(() => this.experimentUsersDataService.fetchExcludedGroups().pipe(
-        map(data => experimentUsersActions.actionFetchExcludedGroupsSuccess({ data })),
+        map((data: ExcludeEntity[]) => experimentUsersActions.actionFetchExcludedGroupsSuccess({ data })),
         catchError(() => [experimentUsersActions.actionFetchExcludedGroupsFailure()])
       ))
     )
@@ -38,7 +38,7 @@ export class ExperimentUsersEffects {
       map(action => action.id),
       filter(id => !!id),
       switchMap((id: string) => this.experimentUsersDataService.excludeUser(id).pipe(
-          map(data => experimentUsersActions.actionExcludeUserSuccess({ data })),
+          map((data: ExcludeEntity[]) => experimentUsersActions.actionExcludeUserSuccess({ data })),
           catchError(() => [experimentUsersActions.actionExcludedUserFailure()])
         )
       )
@@ -51,10 +51,36 @@ export class ExperimentUsersEffects {
       map(action => ({ id: action.id, type: action.groupType })),
       filter(({ id, type }) => !!id && !!type),
       switchMap(({ id, type }) => this.experimentUsersDataService.excludeGroup(id, type).pipe(
-          map(data => experimentUsersActions.actionExcludeGroupSuccess({ data })),
+          map((data: ExcludeEntity[]) => experimentUsersActions.actionExcludeGroupSuccess({ data })),
           catchError(() => [
             experimentUsersActions.actionExcludedGroupFailure()
           ])
+        )
+      )
+    )
+  );
+
+  deleteExcludedUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentUsersActions.actionDeleteExcludedUser),
+      map(action => action.id),
+      filter(id => !!id),
+      switchMap((id: string) => this.experimentUsersDataService.deleteExcludedUser(id).pipe(
+          map((data: ExcludeEntity[]) => experimentUsersActions.actionDeleteExcludedUserSuccess({ data })),
+          catchError(() => [experimentUsersActions.actionDeleteExcludedUserFailure()])
+        )
+      )
+    )
+  );
+
+  deleteExcludedGroup$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentUsersActions.actionDeleteExcludedGroup),
+      map(action => ({ id: action.id, type: action.groupType })),
+      filter(({ id, type }) => !!id && !!type),
+      switchMap(({ id, type }) => this.experimentUsersDataService.deleteExcludedGroup(id, type).pipe(
+          map((data: ExcludeEntity[]) => experimentUsersActions.actionDeleteExcludedGroupSuccess({ data })),
+          catchError(() => [experimentUsersActions.actionDeleteExcludedGroupFailure()])
         )
       )
     )

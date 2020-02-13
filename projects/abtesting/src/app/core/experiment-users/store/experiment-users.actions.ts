@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { ExcludeEntity } from './experiment-users.model';
 
 export const actionFetchExcludedUsers = createAction(
   '[Experiment Users] Fetch Excluded Users'
@@ -6,7 +7,7 @@ export const actionFetchExcludedUsers = createAction(
 
 export const actionFetchExcludedUsersSuccess = createAction(
   '[Experiment Users] Fetch Excluded Users Success',
-  props<{ data: any }>()
+  props<{ data: ExcludeEntity[] }>()
 );
 
 export const actionFetchExcludedUsersFailure = createAction(
@@ -19,7 +20,7 @@ export const actionFetchExcludedGroups = createAction(
 
 export const actionFetchExcludedGroupsSuccess = createAction(
   '[Experiment Users] Fetch Excluded Groups Success',
-  props<{ data: any }>()
+  props<{ data: ExcludeEntity[] }>()
 );
 
 export const actionFetchExcludedGroupsFailure = createAction(
@@ -33,7 +34,7 @@ export const actionExcludeUser = createAction(
 
 export const actionExcludeUserSuccess = createAction(
   '[Experiment Users] Exclude User Success',
-  props<{ data: any }>()
+  props<{ data: ExcludeEntity[] }>()
 );
 
 export const actionExcludedUserFailure = createAction(
@@ -47,10 +48,38 @@ export const actionExcludeGroup = createAction(
 
 export const actionExcludeGroupSuccess = createAction(
   '[Experiment Users] Exclude Group Success',
-  props<{ data: any }>()
+  props<{ data: ExcludeEntity[] }>()
 );
 
 export const actionExcludedGroupFailure = createAction(
   '[Experiment Users] Exclude Group Failure',
+);
+
+export const actionDeleteExcludedUser = createAction(
+  '[Experiment User] Delete Excluded User',
+  props<{ id: string }>()
+);
+
+export const actionDeleteExcludedUserSuccess = createAction(
+  '[Experiment Users] Delete Excluded User Success',
+  props<{ data: ExcludeEntity[] }>()
+);
+
+export const actionDeleteExcludedUserFailure = createAction(
+  '[Experiment Users] Delete Excluded User Failure'
+);
+
+export const actionDeleteExcludedGroup = createAction(
+  '[Experiment User] Delete Excluded Group',
+  props<{ id: string, groupType: string }>()
+);
+
+export const actionDeleteExcludedGroupSuccess = createAction(
+  '[Experiment Users] Delete Excluded Group Success',
+  props<{ data: ExcludeEntity[] }>()
+);
+
+export const actionDeleteExcludedGroupFailure = createAction(
+  '[Experiment Users] Delete Excluded Group Failure'
 );
 

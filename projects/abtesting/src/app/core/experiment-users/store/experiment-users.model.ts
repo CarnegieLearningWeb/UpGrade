@@ -1,6 +1,11 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 
+export enum EntityTypes {
+  GROUP_ID = 'Group ID',
+  USER_ID = 'User ID'
+}
+
 export interface ExcludeEntity {
   createdAt: string;
   updatedAt: string;

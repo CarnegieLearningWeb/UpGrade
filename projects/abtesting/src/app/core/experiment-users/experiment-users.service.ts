@@ -36,4 +36,12 @@ export class ExperimentUsersService {
   excludeGroup(id: string, groupType: string) {
     this.store$.dispatch(experimentUsersActions.actionExcludeGroup({ id, groupType }));
   }
+
+  deleteExcludedUser(id: string) {
+    this.store$.dispatch(experimentUsersActions.actionDeleteExcludedUser({ id }));
+  }
+
+  deleteExcludedGroup(id: string, groupType: string) {
+    this.store$.dispatch(experimentUsersActions.actionDeleteExcludedGroup({ id, groupType }));
+  }
 }

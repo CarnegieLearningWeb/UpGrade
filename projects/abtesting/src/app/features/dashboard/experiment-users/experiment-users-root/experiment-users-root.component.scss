@@ -27,14 +27,28 @@
       }
 
       .entities-container {
+        position: relative;
+
+        .spin {
+          display: flex;
+          position: absolute;
+          top: 0;
+          align-items: center;
+          justify-content: center;
+          z-index: 111;
+          width: 690px;
+          height: 100%;
+        }
+
         .paginator {
-          width: 75%;
+          width: 690px;
         }
 
         table {
-          width: 75%;
+          width: 690px;
 
           .mat-cell {
+            padding: 5px;
             width: 50%;
           }
 
@@ -46,6 +60,12 @@
 
           .mat-cell {
             font-family: OpenSans-SemiBold;
+          }
+
+          .remove-icon {
+            &:hover {
+              cursor: pointer;
+            }
           }
         }
       }

@@ -25,6 +25,8 @@ const reducer = createReducer(
     experimentUsersActions.actionFetchExcludedGroups,
     experimentUsersActions.actionExcludeUser,
     experimentUsersActions.actionExcludeGroup,
+    experimentUsersActions.actionDeleteExcludedUser,
+    experimentUsersActions.actionDeleteExcludedGroup,
     (state) => ({ ...state, isLoading: true })
   ),
   on(
@@ -52,6 +54,17 @@ const reducer = createReducer(
     experimentUsersActions.actionExcludedGroupFailure,
     (state) => ({ ...state, isLoading: false })
   ),
+  on(
+    experimentUsersActions.actionDeleteExcludedUserSuccess,
+    experimentUsersActions.actionDeleteExcludedGroupSuccess,
+    (state, { data }) => {
+      if (data.length) {
+        const [deletedEntity] = data;
+        const id = deletedEntity.type ? (deletedEntity.type + deletedEntity.groupId) : ('user' + deletedEntity.userId);
+        return adapter.removeOne(id, { ...state, isLoading: false });
+      }
+    }
+  )
 );
 
 export function experimentUsersReducer(

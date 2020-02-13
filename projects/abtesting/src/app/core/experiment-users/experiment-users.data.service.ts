@@ -27,4 +27,14 @@ export class ExperimentUsersDataService {
     const url = environment.api.excludeGroups;
     return this.http.put(url, { id, type } );
   }
+
+  deleteExcludedUser(id: string) {
+    const url = `${environment.api.excludeUsers}/${id}`;
+    return this.http.delete(url);
+  }
+
+  deleteExcludedGroup(id: string, type: string) {
+    const url = `${environment.api.excludeGroups}/${type}/${id}`;
+    return this.http.delete(url);
+  }
 }
