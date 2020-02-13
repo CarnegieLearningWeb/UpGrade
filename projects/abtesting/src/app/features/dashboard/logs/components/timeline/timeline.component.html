@@ -72,7 +72,7 @@
           <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
-                <mat-expansion-panel-header class="expansion-header">
+                <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
                     <span class="action-msg">
                       {{ (log.type | experimentActionMessage | translate) + ' ' }}
