@@ -1,8 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import {
-  LogType,
-  EXPERIMENT_LOG_TYPE
-} from '../../../../../core/logs/store/logs.model';
+import { LogType, EXPERIMENT_LOG_TYPE } from '../../../../../core/logs/store/logs.model';
 import * as Convert from 'ansi-to-html';
 
 @Component({

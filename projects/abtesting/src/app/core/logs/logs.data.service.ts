@@ -4,7 +4,6 @@ import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
 export class LogsDataService {
-
   constructor(private http: HttpClientService) {}
 
   getAllAudits() {

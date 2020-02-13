@@ -1,6 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
+import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
+import * as logsActions from '../../logs/store/logs.actions';
+import * as experimentActions from '../../experiments/store/experiments.actions';
 import { tap, map, filter, withLatestFrom, catchError } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
@@ -100,6 +103,21 @@ export class AuthEffects {
               console.log(JSON.stringify(error, undefined, 2));
               this.store$.dispatch(authActions.actionLoginFailure());
             });
+        })
+      )
+    },
+    { dispatch: false }
+  );
+
+  setUserInfoInStore$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(authActions.actionSetUserInfo),
+        tap(() => {
+          this.store$.dispatch(experimentActions.actionGetAllExperiment());
+          this.store$.dispatch(logsActions.actionGetAllAudit());
+          this.store$.dispatch(experimentUserActions.actionFetchExcludedUsers());
+          this.store$.dispatch(experimentUserActions.actionFetchExcludedGroups());
         })
       )
     },

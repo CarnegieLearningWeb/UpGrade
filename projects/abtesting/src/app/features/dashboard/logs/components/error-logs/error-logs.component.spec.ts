@@ -8,9 +8,8 @@ describe('ErrorLogsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ErrorLogsComponent ]
-    })
-    .compileComponents();
+      declarations: [ErrorLogsComponent]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

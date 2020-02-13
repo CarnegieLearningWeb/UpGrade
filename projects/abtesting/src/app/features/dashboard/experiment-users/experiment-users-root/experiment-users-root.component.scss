@@ -1,0 +1,74 @@
+.users-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4.375rem 2rem;
+
+  .user-wrapper {
+    margin-top: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
+    background-color: var(--white);
+    padding: 2rem;
+
+    .exclude-entities {
+      &--title {
+        font-family: OpenSans-Bold;
+        font-size: var(--text-size-xxx-large);
+      }
+
+      .exclude-form {
+        .form-control {
+          margin-right: 20px;
+
+          ::ng-deep .mat-spinner circle {
+            stroke: var(--white);
+          }
+        }
+      }
+
+      .entities-container {
+        position: relative;
+
+        .spin {
+          display: flex;
+          position: absolute;
+          top: 0;
+          align-items: center;
+          justify-content: center;
+          z-index: 111;
+          width: 690px;
+          height: 100%;
+        }
+
+        .paginator {
+          width: 690px;
+        }
+
+        table {
+          width: 690px;
+
+          .mat-cell {
+            padding: 5px;
+            width: 50%;
+          }
+
+          .mat-header-cell {
+            color: var(--grey-2);
+            font-family: OpenSans-Bold;
+            font-size: var(--text-size-x-small);
+          }
+
+          .mat-cell {
+            font-family: OpenSans-SemiBold;
+          }
+
+          .remove-icon {
+            &:hover {
+              cursor: pointer;
+            }
+          }
+        }
+      }
+    }
+  }
+}

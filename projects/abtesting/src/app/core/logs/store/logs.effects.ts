@@ -6,10 +6,7 @@ import { mergeMap, map, catchError } from 'rxjs/operators';
 
 @Injectable()
 export class LogsEffects {
-  constructor(
-    private actions$: Actions,
-    private logsDataService: LogsDataService
-  ) {}
+  constructor(private actions$: Actions, private logsDataService: LogsDataService) {}
 
   getAllAudits$ = createEffect(() =>
     this.actions$.pipe(

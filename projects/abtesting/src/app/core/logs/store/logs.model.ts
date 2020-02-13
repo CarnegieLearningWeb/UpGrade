@@ -2,10 +2,7 @@ import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
 import { EXPERIMENT_LOG_TYPE } from 'ees_types';
 
-export {
-  EXPERIMENT_LOG_TYPE
-};
-
+export { EXPERIMENT_LOG_TYPE };
 
 export enum LogType {
   ERROR_LOG = 'Error log',
@@ -40,8 +37,8 @@ export interface Audit {
   createdAt: string;
   updatedAt: string;
   versionNUmber: number;
-  type: EXPERIMENT_LOG_TYPE
-  data: any
+  type: EXPERIMENT_LOG_TYPE;
+  data: any;
 }
 
 export interface AuditState extends EntityState<Audit> {

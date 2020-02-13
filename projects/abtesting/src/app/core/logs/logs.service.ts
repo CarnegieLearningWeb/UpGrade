@@ -17,10 +17,7 @@ export class LogsService {
   }
 
   getAuditLogs() {
-    return combineLatest(
-      this.store$.pipe(select(selectAllAudit)),
-      this.store$.pipe(select(selectAllExperiment))
-    ).pipe(
+    return combineLatest(this.store$.pipe(select(selectAllAudit)), this.store$.pipe(select(selectAllExperiment))).pipe(
       map(([auditLogs, experiments]) =>
         auditLogs.map(log => {
           if (log.data.experimentId) {

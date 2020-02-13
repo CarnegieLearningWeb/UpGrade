@@ -19,31 +19,31 @@ export class ExperimentEffects {
     private router: Router
   ) {}
 
-  getAllExperiment$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(experimentAction.actionGetAllExperiment),
-        mergeMap(() =>
-          this.experimentDataService.getAllExperiment().pipe(
-            switchMap((experiments: any) => {
-              const experimentIds = experiments.map(experiment => experiment.id);
-              return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
-                switchMap((stats: any) => {
-                  const experimentStats = stats.reduce((acc, stat: IExperimentEnrollmentStats) =>
-                    ({ ...acc, [stat.id]: stat })
-                    , {});
-                  return [
-                    experimentAction.actionStoreExperiment({ experiments }),
-                    experimentAction.actionStoreExperimentStats({ stats: experimentStats })
-                  ];
-                }),
-                catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
-              );
-            }),
-            catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
-          )
+  getAllExperiment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionGetAllExperiment),
+      mergeMap(() =>
+        this.experimentDataService.getAllExperiment().pipe(
+          switchMap((experiments: any) => {
+            const experimentIds = experiments.map(experiment => experiment.id);
+            return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
+              switchMap((stats: any) => {
+                const experimentStats = stats.reduce(
+                  (acc, stat: IExperimentEnrollmentStats) => ({ ...acc, [stat.id]: stat }),
+                  {}
+                );
+                return [
+                  experimentAction.actionStoreExperiment({ experiments }),
+                  experimentAction.actionStoreExperimentStats({ stats: experimentStats })
+                ];
+              }),
+              catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
+            );
+          }),
+          catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
         )
       )
+    )
   );
 
   UpsertExperiment$ = createEffect(() =>
@@ -51,25 +51,25 @@ export class ExperimentEffects {
       ofType(experimentAction.actionUpsertExperiment),
       map(action => ({ experiment: action.experiment, actionType: action.actionType })),
       filter(({ experiment, actionType }) => !!experiment && !!actionType),
-      withLatestFrom(
-        this.store$.pipe(select(selectExperimentStats))
-      ),
+      withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
       switchMap(([{ experiment, actionType }, experimentStats]) => {
         const experimentMethod =
           actionType === UpsertExperimentType.CREATE_NEW_EXPERIMENT
             ? this.experimentDataService.createNewExperiment(experiment)
             : this.experimentDataService.updateExperiment(experiment);
         return experimentMethod.pipe(
-          switchMap((data: Experiment) => this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
-            switchMap((experimentStat: IExperimentEnrollmentStats) => {
-              const stats = { ...experimentStats, [data.id]: experimentStat[0] };
-              return [
-                experimentAction.actionStoreExperimentStats({ stats }),
-                experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
-                logsAction.actionGetAllAudit()
-              ];
-            }),
-          )),
+          switchMap((data: Experiment) =>
+            this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
+              switchMap((experimentStat: IExperimentEnrollmentStats) => {
+                const stats = { ...experimentStats, [data.id]: experimentStat[0] };
+                return [
+                  experimentAction.actionStoreExperimentStats({ stats }),
+                  experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
+                  logsAction.actionGetAllAudit()
+                ];
+              })
+            )
+          ),
           catchError(() => [experimentAction.actionUpsertExperimentFailure()])
         );
       })
@@ -97,29 +97,30 @@ export class ExperimentEffects {
     this.actions$.pipe(
       ofType(experimentAction.actionDeleteExperiment),
       map(action => action.experimentId),
-      filter((experimentId) => !!experimentId),
-      switchMap((experimentId) => {
+      filter(experimentId => !!experimentId),
+      switchMap(experimentId => {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(_ => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
             logsAction.actionGetAllAudit()
           ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
-        )
+        );
       })
     )
   );
 
-  navigateOnDeleteExperiment$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(experimentAction.actionDeleteExperimentSuccess),
-      map(action => action.experimentId),
-      filter(experimentStatId => !!experimentStatId),
-      tap((experimentStatId) => {
-        this.store$.dispatch(experimentAction.actionRemoveExperimentStat({ experimentStatId }));
-        this.router.navigate(['/home']);
-      })
-    ),
+  navigateOnDeleteExperiment$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionDeleteExperimentSuccess),
+        map(action => action.experimentId),
+        filter(experimentStatId => !!experimentStatId),
+        tap(experimentStatId => {
+          this.store$.dispatch(experimentAction.actionRemoveExperimentStat({ experimentStatId }));
+          this.router.navigate(['/home']);
+        })
+      ),
     { dispatch: false }
-  )
+  );
 }

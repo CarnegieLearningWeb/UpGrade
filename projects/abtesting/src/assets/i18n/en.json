@@ -3,6 +3,7 @@
   "global.app.description": "New testing tool for all purpose!",
   "global.experiment.title": "Experiments",
   "global.logs.title": "Logs",
+  "global.experiment-user.title": "Users",
   "global.username.title": "User Name",
   "global.back.text": "BACK",
   "global.next.text": "NEXT",
@@ -111,5 +112,11 @@
   "logs.audit-log-experiment-created.text": "successfully created",
   "logs.audit-log-experiment-updated.text": "successfully updated",
   "logs.audit-log-experiment-deleted.text": "successfully deleted",
-  "logs.audit-log-experiment-state-changed.text": "successfully changed status from {{ previousState }} to {{ newState }} in "
+  "logs.audit-log-experiment-state-changed.text": "successfully changed status from {{ previousState }} to {{ newState }} in ",
+  "users-global.text": "User",
+  "users.excluded-entity.text": "Excluded Entities",
+  "users.exclude-btn.text": "EXCLUDE",
+  "users.exclude-entity-form.id-placeholder.text": "Enter ID",
+  "users.excluded-entities-table.type.text": "TYPE",
+  "users.excluded-entities-table.id.text": "ID"
 }

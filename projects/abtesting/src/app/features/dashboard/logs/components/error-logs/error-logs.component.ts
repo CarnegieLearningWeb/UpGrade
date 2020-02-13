@@ -8,11 +8,8 @@ import { LogType, ErrorLogTypes, ErrorLogMessages } from '../../../../../core/lo
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ErrorLogsComponent {
-
   searchValue: string;
-  logsOptions = [
-    { value: 'Showing all Activities', viewValue: 'Showing all Activities' },
-  ];
+  logsOptions = [{ value: 'Showing all Activities', viewValue: 'Showing all Activities' }];
   selectedLogOption = this.logsOptions[0].value;
   errorLogData = [
     {
@@ -39,7 +36,7 @@ export class ErrorLogsComponent {
       createdAt: new Date().toISOString(),
       value: ErrorLogTypes.ERROR_IN_ASSIGNMENT_ALGORITHM,
       message: ErrorLogMessages.ERROR_IN_ASSIGNMENT_ALGORITHM
-    },
+    }
   ];
 
   searchLogs(value: string) {}
