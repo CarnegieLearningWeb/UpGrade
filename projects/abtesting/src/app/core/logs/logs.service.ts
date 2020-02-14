@@ -16,14 +16,6 @@ export class LogsService {
   isErrorLogLoading$ = this.store$.pipe(select(selectIsErrorLogLoading));
   getAllErrorLogs$ = this.store$.pipe(select(selectAllErrorLogs));
 
-  loadAuditLogs() {
-    return this.store$.dispatch(logsActions.actionGetAllAuditLogs());
-  }
-
-  loadErrorLogs() {
-    return this.store$.dispatch(logsActions.actionGetAllErrorLogs());
-  }
-
   getAuditLogs() {
     return combineLatest(
       this.store$.pipe(select(selectAllAuditLogs)),

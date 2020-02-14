@@ -75,9 +75,7 @@ export class AuthEffects {
         map(action => action.element),
         filter(element => !!element),
         tap(element => {
-          this.auth2.attachClickHandler(
-            element,
-            {},
+          this.auth2.attachClickHandler(element, {},
             googleUser => {
               this.ngZone.run(() => {
                 const profile = googleUser.getBasicProfile();
@@ -89,9 +87,7 @@ export class AuthEffects {
                   token: googleUser.getAuthResponse().id_token
                 };
                 const id = profile.getId();
-                this.authDataService
-                  .createUser({ ...user, id })
-                  .pipe(
+                this.authDataService.createUser({ ...user, id }).pipe(
                     tap(() => {
                       this.store$.dispatch(authActions.actionSetUserInfo({ user }));
                       this.store$.dispatch(authActions.actionLoginSuccess());
@@ -133,9 +129,7 @@ export class AuthEffects {
       return this.actions$.pipe(
         ofType(authActions.actionLogoutStart),
         tap(() => {
-          this.auth2
-            .signOut()
-            .then(() => {
+          this.auth2.signOut().then(() => {
               this.ngZone.run(() => {
                 this.store$.dispatch(authActions.actionLogoutSuccess());
               });
