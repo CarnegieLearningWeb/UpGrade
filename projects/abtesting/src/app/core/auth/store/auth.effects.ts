@@ -118,7 +118,8 @@ export class AuthEffects {
         ofType(authActions.actionSetUserInfo),
         tap(() => {
           this.store$.dispatch(experimentActions.actionGetAllExperiment());
-          this.store$.dispatch(logsActions.actionGetAllAudit());
+          this.store$.dispatch(logsActions.actionGetAllAuditLogs());
+          this.store$.dispatch(logsActions.actionGetAllErrorLogs());
           this.store$.dispatch(experimentUserActions.actionFetchExcludedUsers());
           this.store$.dispatch(experimentUserActions.actionFetchExcludedGroups());
         })
