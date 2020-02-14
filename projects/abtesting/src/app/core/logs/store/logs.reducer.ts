@@ -14,16 +14,34 @@ export const initialState: LogState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(logsActions.actionGetAllAuditLogs, state => ({ ...state, isAuditLogLoading: true })),
+  on(logsActions.actionGetAllAuditLogs, state => ({
+    ...state,
+    isAuditLogLoading: true
+  })),
   on(logsActions.actionGetAllAuditLogsSuccess, (state, { auditLogs }) => {
-    return adapter.upsertMany(auditLogs, { ...state, isAuditLogLoading: false });
+    return adapter.upsertMany(auditLogs, {
+      ...state,
+      isAuditLogLoading: false
+    });
   }),
-  on(logsActions.actionGetAllAuditLogsFailure, state => ({ ...state, isAuditLogLoading: false })),
-  on(logsActions.actionGetAllErrorLogs, state => ({ ...state, isErrorLogLoading: true })),
+  on(logsActions.actionGetAllAuditLogsFailure, state => ({
+    ...state,
+    isAuditLogLoading: false
+  })),
+  on(logsActions.actionGetAllErrorLogs, state => ({
+    ...state,
+    isErrorLogLoading: true
+  })),
   on(logsActions.actionGetAllErrorLogsSuccess, (state, { errorLogs }) => {
-    return adapter.upsertMany(errorLogs, { ...state, isErrorLogLoading: false });
+    return adapter.upsertMany(errorLogs, {
+      ...state,
+      isErrorLogLoading: false
+    });
   }),
-  on(logsActions.actionGetAllErrorLogsFailure, state => ({ ...state, isErrorLogLoading: false }))
+  on(logsActions.actionGetAllErrorLogsFailure, state => ({
+    ...state,
+    isErrorLogLoading: false
+  }))
 );
 
 export function logsReducer(state: LogState | undefined, action: Action) {

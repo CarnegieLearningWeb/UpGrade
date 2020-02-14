@@ -108,13 +108,10 @@
           <div class="log-text">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
-                <mat-expansion-panel-header class="expansion-header">
+                <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
                     <span class="action-msg-error">
-                      {{
-                        'logs.error-logs-message.text'
-                          | translate: { errorName: log.name, endPoint: endPoint + log.endPoint }
-                      }}
+                      {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
                     </span>
                     <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
