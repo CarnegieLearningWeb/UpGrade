@@ -5,17 +5,23 @@ import { Container } from 'typedi';
 import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobService';
 import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
 import { EXPERIMENT_STATE } from 'ees_types';
+import { UserService } from '../../../../src/api/services/UserService';
+import { systemUser } from '../../mockData/user/index';
 
 export default async function DeleteStartExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
 
   // experiment object
   const experimentObject = scheduleJobStartExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any);
+  await experimentService.create(experimentObject as any, user);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -47,7 +53,7 @@ export default async function DeleteStartExperiment(): Promise<void> {
     state: EXPERIMENT_STATE.ENROLLING,
   };
 
-  await experimentService.update(updatedExperiment.id, updatedExperiment);
+  await experimentService.update(updatedExperiment.id, updatedExperiment, user);
   experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([

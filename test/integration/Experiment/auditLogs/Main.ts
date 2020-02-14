@@ -5,18 +5,24 @@ import { Container } from 'typedi';
 import { AuditService } from '../../../../src/api/services/AuditService';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { UserService } from '../../../../src/api/services/UserService';
+import { systemUser } from '../../mockData/user/index';
 
 export default async function UpdateExperimentState(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const auditLogService = Container.get<AuditService>(AuditService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
 
   // experiment object
   const experimentObject = scheduleJobUpdateExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any);
+  await experimentService.create(experimentObject as any, user);
   const experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -45,7 +51,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ...experimentObject,
     name: 'Updated Experiment',
   };
-  const updateExperiment = await experimentService.update(updatedExperiment.id, updatedExperiment as any);
+  const updateExperiment = await experimentService.update(updatedExperiment.id, updatedExperiment as any, user);
 
   expect(updateExperiment).toEqual(
     // expect.arrayContaining([
@@ -72,7 +78,7 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING);
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   await new Promise(r => setTimeout(r, 1000));
 

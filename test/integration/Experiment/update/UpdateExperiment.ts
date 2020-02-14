@@ -2,15 +2,21 @@ import { Container } from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 // import { Logger as WinstonLogger } from '../../../../src/lib/logger';
+import { UserService } from '../../../../src/api/services/UserService';
+import { systemUser } from '../../mockData/user/index';
 
 export default async function UpdateExperiment(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any);
+  await experimentService.create(individualAssignmentExperiment as any, user);
   const experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -75,7 +81,7 @@ export default async function UpdateExperiment(): Promise<void> {
     ],
   };
 
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any);
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([

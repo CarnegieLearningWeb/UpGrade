@@ -4,17 +4,23 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { Container } from 'typedi';
 import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobService';
 import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
+import { UserService } from '../../../../src/api/services/UserService';
+import { systemUser } from '../../mockData/user/index';
 
 export default async function EndExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
+  const userService = Container.get<UserService>(UserService);
+
+  // creating new user
+  const user = await userService.create(systemUser as any);
 
   // experiment object
   const experimentObject = scheduleJobEndExperiment;
 
   // create experiment
-  await experimentService.create(scheduleJobEndExperiment as any);
+  await experimentService.create(scheduleJobEndExperiment as any, user);
   const experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([

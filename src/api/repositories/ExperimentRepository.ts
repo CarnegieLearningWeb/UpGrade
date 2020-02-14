@@ -5,13 +5,14 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
-  public getEnrollingAndEnrollmentComplete(): Promise<Experiment[]> {
+  public async getValidExperiments(): Promise<Experiment[]> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete', {
+      .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview', {
         enrolling: 'enrolling',
         enrollmentComplete: 'enrollmentComplete',
+        preview: 'preview',
       })
       .getMany()
       .catch((errorMsg: any) => {
@@ -54,12 +55,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'updateExperiment',
-          { experimentDoc },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('ExperimentRepository', 'updateExperiment', { experimentDoc }, errorMsg);
         throw new Error(errorMsgString);
       });
 
@@ -75,12 +71,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'insertExperiment',
-          { experimentDoc },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('ExperimentRepository', 'insertExperiment', { experimentDoc }, errorMsg);
         throw new Error(errorMsgString);
       });
 
@@ -96,12 +87,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'insertExperiment',
-          { id },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('ExperimentRepository', 'insertExperiment', { id }, errorMsg);
         throw new Error(errorMsgString);
       });
 

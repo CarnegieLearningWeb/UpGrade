@@ -31,6 +31,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 import { In } from 'typeorm';
+import { PreviewUserService } from './PreviewUserService';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -55,6 +56,7 @@ export class ExperimentAssignmentService {
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
     @OrmRepository()
     private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -99,7 +101,7 @@ export class ExperimentAssignmentService {
       });
 
       // query all experiment and sub experiment
-      const experiments = await this.experimentRepository.getEnrollingAndEnrollmentComplete();
+      const experiments = await this.experimentRepository.getValidExperiments();
 
       const experimentIds = experiments.map(experiment => experiment.id);
 
@@ -112,15 +114,37 @@ export class ExperimentAssignmentService {
       const userGroup = Object.keys(userEnvironment).map((type: string) => {
         return `${type}_${userEnvironment[type]}`;
       });
-      const [individualExcluded, groupExcluded] = await Promise.all([
+      const [userExcluded, groupExcluded, previewUser] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId }),
         this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }),
+        this.previewUserService.findOne(userId),
       ]);
 
-      this.log.info('individualExcluded', individualExcluded);
-      this.log.info('groupExcluded', groupExcluded);
-      if (individualExcluded.length > 0 || groupExcluded.length > 0) {
+      this.log.info('userExcluded', userExcluded);
+
+      if (userExcluded.length > 0) {
+        // return null if the user is excluded from the experiment
         return [];
+      }
+
+      // filter group experiment according to group excluded
+      let filteredExperiments: Experiment[] = [...experiments];
+      this.log.info('groupExcluded', groupExcluded);
+      if (groupExcluded.length > 0) {
+        const groupNameArray = groupExcluded.map(group => group.type);
+        filteredExperiments = experiments.filter(experiment => {
+          if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
+            return !groupNameArray.includes(experiment.group);
+          }
+          return true;
+        });
+      }
+
+      // filter preview experiment is user is not a PreviewUser
+      if (!previewUser) {
+        filteredExperiments = filteredExperiments.filter(experiment => {
+          return experiment.state !== EXPERIMENT_STATE.PREVIEW;
+        });
       }
 
       // ============ query assignment/exclusion for user
@@ -142,7 +166,7 @@ export class ExperimentAssignmentService {
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
-        experiments.map(experiment => {
+        filteredExperiments.map(experiment => {
           const individualAssignment = individualAssignments.find(assignment => {
             return assignment.experimentId === experiment.id;
           });
@@ -173,7 +197,7 @@ export class ExperimentAssignmentService {
         })
       );
 
-      return experiments.reduce((accumulator, experiment, index) => {
+      return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         const partitions = experiment.partitions.map(partition => {
           const { name, point } = partition;

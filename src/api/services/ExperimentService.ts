@@ -325,8 +325,6 @@ export class ExperimentService {
         diff: diffString(oldExperimentClone, newExperimentClone),
       };
 
-      console.log('diff', updateAuditLog.diff);
-
       await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
       return newExperiment;
     });
