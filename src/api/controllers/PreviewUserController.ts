@@ -108,7 +108,7 @@ export class UserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: PreviewUser[]): Promise<PreviewUser[]> {
+  public create(@Body() users: PreviewUser): Promise<PreviewUser> {
     return this.previewUserService.create(users);
   }
 

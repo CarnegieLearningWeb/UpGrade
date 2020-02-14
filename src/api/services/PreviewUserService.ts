@@ -22,13 +22,11 @@ export class PreviewUserService {
     return this.userRepository.findOneById(id);
   }
 
-  public create(users: PreviewUser[]): Promise<PreviewUser[]> {
-    this.log.info('Create a new user => ', users.toString());
-    const multipleUsers = users.map(user => {
-      user.id = user.id || uuid();
-      return user;
-    });
-    return this.userRepository.save(multipleUsers);
+  public create(user: PreviewUser): Promise<PreviewUser> {
+    this.log.info('Create a new user => ', user);
+    user.id = user.id || uuid();
+
+    return this.userRepository.save(user);
   }
 
   public update(id: string, user: PreviewUser): Promise<PreviewUser> {
