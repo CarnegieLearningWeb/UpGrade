@@ -1,6 +1,6 @@
 {
   "global.app.name": "UpGrade",
-  "global.app.description": "New testing tool for all purpose!",
+  "global.app.description": "Open Source A/B Testing Platform for Education Software",
   "global.experiment.title": "Experiments",
   "global.logs.title": "Logs",
   "global.experiment-user.title": "Users",
