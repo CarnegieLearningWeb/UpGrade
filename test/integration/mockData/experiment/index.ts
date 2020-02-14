@@ -76,4 +76,14 @@ export const individualExperimentStats = {
 export const groupExperimentStats = {
   ...groupAssignmentWithGroupConsistencyExperiment,
   state: EXPERIMENT_STATE.INACTIVE,
-}
+};
+
+export const previewIndividualAssignmentExperiment = {
+  ...individualAssignmentExperiment,
+  state: EXPERIMENT_STATE.PREVIEW,
+};
+
+export const previewGroupExperiment = {
+  ...groupAssignmentWithGroupConsistencyExperiment,
+  state: EXPERIMENT_STATE.PREVIEW,
+};

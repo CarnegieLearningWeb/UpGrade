@@ -1,4 +1,4 @@
-import { individualAssignmentExperiment } from '../mockData/experiment/index';
+import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment/index';
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
@@ -20,10 +20,10 @@ export default async function GroupExclude(): Promise<void> {
   const userIn = await userService.create(systemUser as any);
 
   // experiment object
-  const experimentObject = individualAssignmentExperiment;
+  const experimentObject = groupAssignmentWithGroupConsistencyExperiment;
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any, userIn);
+  await experimentService.create(experimentObject as any, userIn);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
