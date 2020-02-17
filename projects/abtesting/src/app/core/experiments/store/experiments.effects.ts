@@ -65,7 +65,8 @@ export class ExperimentEffects {
                 return [
                   experimentAction.actionStoreExperimentStats({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
-                  logsAction.actionGetAllAudit()
+                  logsAction.actionGetAllAuditLogs(),
+                  logsAction.actionGetAllErrorLogs()
                 ];
               })
             )
@@ -85,7 +86,8 @@ export class ExperimentEffects {
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
           switchMap((result: Experiment) => [
             experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] }),
-            logsAction.actionGetAllAudit()
+            logsAction.actionGetAllAuditLogs(),
+            logsAction.actionGetAllErrorLogs()
           ]),
           catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
         )
@@ -102,7 +104,8 @@ export class ExperimentEffects {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(_ => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
-            logsAction.actionGetAllAudit()
+            logsAction.actionGetAllAuditLogs(),
+            logsAction.actionGetAllErrorLogs()
           ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         );

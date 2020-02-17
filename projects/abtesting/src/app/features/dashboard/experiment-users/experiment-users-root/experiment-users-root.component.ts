@@ -19,10 +19,7 @@ export class ExperimentUsersRootComponent implements OnInit, OnDestroy {
   allExcludedEntitiesSub: Subscription;
 
   excludeEntitiesForm: FormGroup;
-  entityTypes = [
-    { value: EntityTypes.USER_ID },
-    { value: EntityTypes.GROUP_ID }
-  ];
+  entityTypes = [{ value: EntityTypes.USER_ID }, { value: EntityTypes.GROUP_ID }];
   groupTypes = [
     { value: GroupTypes.CLASS },
     { value: GroupTypes.DISTRICT },
@@ -31,13 +28,10 @@ export class ExperimentUsersRootComponent implements OnInit, OnDestroy {
   ];
   isEntityLoading$ = this.experimentUserService.isExcludedEntityLoading$;
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
-  constructor(
-    private _formBuilder: FormBuilder,
-    private experimentUserService: ExperimentUsersService
-  ) {
+  constructor(private _formBuilder: FormBuilder, private experimentUserService: ExperimentUsersService) {
     this.allExcludedEntitiesSub = this.experimentUserService.allExcludedEntities$.subscribe(entities => {
       this.allExcludedEntities = new MatTableDataSource();
       this.allExcludedEntities.data = entities;
@@ -59,12 +53,15 @@ export class ExperimentUsersRootComponent implements OnInit, OnDestroy {
     this.allExcludedEntities.paginator = this.paginator;
     this.allExcludedEntities.sort = this.sort;
 
-    this.excludeEntitiesForm = this._formBuilder.group({
-      entityType: [ EntityTypes.GROUP_ID , Validators.required],
-      groupType: [GroupTypes.CLASS],
-      id: [null, Validators.required],
-      customGroupName: [null]
-    }, { validators: ExperimentUserValidators.validateExcludedEntityForm });
+    this.excludeEntitiesForm = this._formBuilder.group(
+      {
+        entityType: [EntityTypes.GROUP_ID, Validators.required],
+        groupType: [GroupTypes.CLASS],
+        id: [null, Validators.required],
+        customGroupName: [null]
+      },
+      { validators: ExperimentUserValidators.validateExcludedEntityForm }
+    );
   }
 
   excludeEntity() {
@@ -76,7 +73,7 @@ export class ExperimentUsersRootComponent implements OnInit, OnDestroy {
         this.experimentUserService.excludeUser(id);
         break;
       case EntityTypes.GROUP_ID:
-        (groupType === GroupTypes.OTHER)
+        groupType === GroupTypes.OTHER
           ? this.experimentUserService.excludeGroup(id, customGroupName)
           : this.experimentUserService.excludeGroup(id, groupType);
         break;

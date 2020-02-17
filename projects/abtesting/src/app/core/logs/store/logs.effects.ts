@@ -8,17 +8,33 @@ import { mergeMap, map, catchError } from 'rxjs/operators';
 export class LogsEffects {
   constructor(private actions$: Actions, private logsDataService: LogsDataService) {}
 
-  getAllAudits$ = createEffect(() =>
+  getAllAuditLogs$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(logsActions.actionGetAllAudit),
+      ofType(logsActions.actionGetAllAuditLogs),
       mergeMap(() =>
-        this.logsDataService.getAllAudits().pipe(
+        this.logsDataService.getAllAuditLogs().pipe(
           map((data: any) =>
-            logsActions.actionStoreAudits({
-              audits: data.nodes
+            logsActions.actionGetAllAuditLogsSuccess({
+              auditLogs: data.nodes
             })
           ),
-          catchError(() => [logsActions.actionGetAllAuditFailure()])
+          catchError(() => [logsActions.actionGetAllAuditLogsFailure()])
+        )
+      )
+    )
+  );
+
+  getAllErrorLogs$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(logsActions.actionGetAllErrorLogs),
+      mergeMap(() =>
+        this.logsDataService.getAllErrorLogs().pipe(
+          map((data: any) =>
+            logsActions.actionGetAllErrorLogsSuccess({
+              errorLogs: data.nodes
+            })
+          ),
+          catchError(() => [logsActions.actionGetAllErrorLogsFailure()])
         )
       )
     )

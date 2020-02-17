@@ -6,8 +6,13 @@ import { HttpClientService } from '../http/http-client.service';
 export class LogsDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllAudits() {
-    const url = environment.api.getAllAudits;
+  getAllAuditLogs() {
+    const url = environment.api.getAllAuditLogs;
+    return this.http.post(url, { skip: 0, take: 0 });
+  }
+
+  getAllErrorLogs() {
+    const url = environment.api.getAllErrorLogs;
     return this.http.post(url, { skip: 0, take: 0 });
   }
 }

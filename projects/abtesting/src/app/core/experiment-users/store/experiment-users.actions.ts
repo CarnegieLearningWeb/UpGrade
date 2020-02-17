@@ -11,7 +11,7 @@ export const actionFetchExcludedUsersSuccess = createAction(
 );
 
 export const actionFetchExcludedUsersFailure = createAction(
-  '[Experiment Users] Fetch Excluded Users Failure',
+  '[Experiment Users] Fetch Excluded Users Failure'
 );
 
 export const actionFetchExcludedGroups = createAction(
@@ -24,7 +24,7 @@ export const actionFetchExcludedGroupsSuccess = createAction(
 );
 
 export const actionFetchExcludedGroupsFailure = createAction(
-  '[Experiment Users] Fetch Excluded Groups Failure',
+  '[Experiment Users] Fetch Excluded Groups Failure'
 );
 
 export const actionExcludeUser = createAction(
@@ -38,7 +38,7 @@ export const actionExcludeUserSuccess = createAction(
 );
 
 export const actionExcludedUserFailure = createAction(
-  '[Experiment Users] Exclude User Failure',
+  '[Experiment Users] Exclude User Failure'
 );
 
 export const actionExcludeGroup = createAction(
@@ -52,13 +52,13 @@ export const actionExcludeGroupSuccess = createAction(
 );
 
 export const actionExcludedGroupFailure = createAction(
-  '[Experiment Users] Exclude Group Failure',
+  '[Experiment Users] Exclude Group Failure'
 );
 
 export const actionDeleteExcludedUser = createAction(
   '[Experiment User] Delete Excluded User',
-  props<{ id: string }>()
-);
+  props<{ id: string }>())
+;
 
 export const actionDeleteExcludedUserSuccess = createAction(
   '[Experiment Users] Delete Excluded User Success',
@@ -71,7 +71,7 @@ export const actionDeleteExcludedUserFailure = createAction(
 
 export const actionDeleteExcludedGroup = createAction(
   '[Experiment User] Delete Excluded Group',
-  props<{ id: string, groupType: string }>()
+  props<{ id: string; groupType: string }>()
 );
 
 export const actionDeleteExcludedGroupSuccess = createAction(
@@ -82,4 +82,3 @@ export const actionDeleteExcludedGroupSuccess = createAction(
 export const actionDeleteExcludedGroupFailure = createAction(
   '[Experiment Users] Delete Excluded Group Failure'
 );
-

@@ -20,5 +20,5 @@ export interface ExperimentUsersState extends EntityState<ExcludeEntity> {
 }
 
 export interface State extends AppState {
-  experimentUsers: ExperimentUsersState
+  experimentUsers: ExperimentUsersState;
 }

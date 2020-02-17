@@ -79,11 +79,6 @@ $timeline-background-color: #eaf0f8;
         font-family: OpenSans-Semibold;
       }
 
-      .error-message,
-      .user-action {
-        font-family: OpenSans-Regular;
-      }
-
       .link {
         text-decoration: underline;
         color: var(--blue);
@@ -95,6 +90,10 @@ $timeline-background-color: #eaf0f8;
 
         &-msg {
           margin-right: 5px;
+
+          &-error {
+            word-break: break-all;
+          }
         }
       }
 
@@ -120,6 +119,7 @@ $timeline-background-color: #eaf0f8;
 
       .log-time {
         flex-shrink: 0;
+        align-self: center;
         margin-left: 5px;
         text-align: right;
       }

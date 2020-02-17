@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { LogType, LogDateFormatType, Audit } from '../../../../../core/logs/store/logs.model';
+import { LogType, LogDateFormatType, AuditLogs } from '../../../../../core/logs/store/logs.model';
 import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
@@ -12,16 +12,16 @@ import * as groupBy from 'lodash.groupby';
 })
 export class AuditLogsComponent implements OnInit, OnDestroy {
   auditLogData: any;
-  logsSubscription: Subscription;
+  auditLogsSubscription: Subscription;
   searchValue: string;
   logsOptions = [{ value: 'Showing all Activities', viewValue: 'Showing all Activities' }];
   selectedLogOption = this.logsOptions[0].value;
-  isAuditLoading$ = this.logsService.isAuditLoading$;
+  isAuditLoading$ = this.logsService.isAuditLogLoading$;
 
   constructor(private logsService: LogsService) {}
 
   ngOnInit() {
-    this.logsSubscription = this.logsService.getAuditLogs().subscribe(logs => {
+    this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe(logs => {
       logs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
       this.auditLogData = groupBy(logs, log => {
         const date = new Date(log.createdAt);
@@ -31,7 +31,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.logsSubscription.unsubscribe();
+    this.auditLogsSubscription.unsubscribe();
   }
 
   searchLogs(value: string) {}
@@ -39,7 +39,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
   changeLogOption(value: string) {}
 
   // Used for keyvalue pipe to sort data by key
-  valueDescOrder = (a: KeyValue<string, Audit>, b: KeyValue<string, Audit>): number => {
+  valueDescOrder = (a: KeyValue<string, AuditLogs>, b: KeyValue<string, AuditLogs>): number => {
     return new Date(a.key).getTime() > new Date(b.key).getTime() ? 1 : 0;
   };
 

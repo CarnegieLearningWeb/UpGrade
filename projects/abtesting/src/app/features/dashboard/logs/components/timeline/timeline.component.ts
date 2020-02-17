@@ -1,5 +1,9 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { LogType, EXPERIMENT_LOG_TYPE } from '../../../../../core/logs/store/logs.model';
+import * as env from '../../../../../../environments/environment';
+import {
+  LogType,
+  EXPERIMENT_LOG_TYPE
+} from '../../../../../core/logs/store/logs.model';
 import * as Convert from 'ansi-to-html';
 
 @Component({
@@ -11,6 +15,7 @@ import * as Convert from 'ansi-to-html';
 export class TimelineComponent {
   @Input() logData;
   @Input() logType: LogType;
+  endPoint = env.environment.endpointApi.substring(0, env.environment.endpointApi.lastIndexOf('/'));
 
   get LogType() {
     return LogType;

@@ -7,10 +7,6 @@ import { ExperimentUsersRootComponent } from './experiment-users-root/experiment
 
 @NgModule({
   declarations: [ExperimentUsersRootComponent],
-  imports: [
-    CommonModule,
-    SharedModule,
-    UserRoutingModule
-  ]
+  imports: [CommonModule, SharedModule, UserRoutingModule]
 })
-export class ExperimentUsersModule { }
+export class ExperimentUsersModule {}

@@ -1,11 +1,11 @@
 const packageJson = require('../../../../package.json');
 
-const endpointApi =
-  'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
   appName: 'UpGrade',
   envName: 'PROD',
+  endpointApi,
   production: true,
   test: false,
   i18nPrefix: '',
@@ -18,8 +18,7 @@ export const environment = {
     bootstrap: packageJson.dependencies.bootstrap,
     rxjs: packageJson.dependencies.rxjs,
     ngxtranslate: packageJson.dependencies['@ngx-translate/core'],
-    fontAwesome:
-      packageJson.dependencies['@fortawesome/fontawesome-free-webfonts'],
+    fontAwesome: packageJson.dependencies['@fortawesome/fontawesome-free-webfonts'],
     angularCli: packageJson.devDependencies['@angular/cli'],
     typescript: packageJson.devDependencies['typescript'],
     cypress: packageJson.devDependencies['cypress']
@@ -28,7 +27,8 @@ export const environment = {
     getAllExperiments: `${endpointApi}/experiments`,
     createNewExperiments: `${endpointApi}/experiments`,
     updateExperiments: `${endpointApi}/experiments`,
-    getAllAudits: `${endpointApi}/audit`,
+    getAllAuditLogs: `${endpointApi}/audit`,
+    getAllErrorLogs: `${endpointApi}/error`,
     experimentsStats: `${endpointApi}/stats`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/state`,

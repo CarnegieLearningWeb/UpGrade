@@ -2,24 +2,27 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.module';
 import * as logsActions from './store/logs.actions';
-import { selectAllAudit, selectIsAuditLoading } from './store/logs.selectors';
+import { selectIsAuditLogLoading, selectAllAuditLogs, selectIsErrorLogLoading, selectAllErrorLogs } from './store/logs.selectors';
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
+import { AuditLogs } from './store/logs.model';
 
 @Injectable()
 export class LogsService {
   constructor(private store$: Store<AppState>) {}
 
-  isAuditLoading$ = this.store$.pipe(select(selectIsAuditLoading));
-  loadAudits() {
-    return this.store$.dispatch(logsActions.actionGetAllAudit());
-  }
+  isAuditLogLoading$ = this.store$.pipe(select(selectIsAuditLogLoading));
+  isErrorLogLoading$ = this.store$.pipe(select(selectIsErrorLogLoading));
+  getAllErrorLogs$ = this.store$.pipe(select(selectAllErrorLogs));
 
   getAuditLogs() {
-    return combineLatest(this.store$.pipe(select(selectAllAudit)), this.store$.pipe(select(selectAllExperiment))).pipe(
+    return combineLatest(
+      this.store$.pipe(select(selectAllAuditLogs)),
+      this.store$.pipe(select(selectAllExperiment))
+    ).pipe(
       map(([auditLogs, experiments]) =>
-        auditLogs.map(log => {
+      auditLogs.map((log: AuditLogs) => {
           if (log.data.experimentId) {
             const result = experiments.find(experiment => experiment.id === log.data.experimentId);
             log.data = result

@@ -4,9 +4,7 @@ import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class ExperimentUsersDataService {
-  constructor(
-    private http: HttpClientService
-  ) {}
+  constructor(private http: HttpClientService) {}
 
   fetchExcludedUsers() {
     const url = environment.api.excludeUsers;
@@ -25,7 +23,7 @@ export class ExperimentUsersDataService {
 
   excludeGroup(id: string, type: string) {
     const url = environment.api.excludeGroups;
-    return this.http.put(url, { id, type } );
+    return this.http.put(url, { id, type });
   }
 
   deleteExcludedUser(id: string) {

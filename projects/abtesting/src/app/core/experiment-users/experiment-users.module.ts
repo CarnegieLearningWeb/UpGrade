@@ -12,8 +12,8 @@ import { ExperimentUsersDataService } from './experiment-users.data.service';
   imports: [
     CommonModule,
     EffectsModule.forFeature([ExperimentUsersEffects]),
-    StoreModule.forFeature('experimentUsers', experimentUsersReducer),
+    StoreModule.forFeature('experimentUsers', experimentUsersReducer)
   ],
   providers: [ExperimentUsersService, ExperimentUsersDataService]
 })
-export class ExperimentUsersModule { }
+export class ExperimentUsersModule {}

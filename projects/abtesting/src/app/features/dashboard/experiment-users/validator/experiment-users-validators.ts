@@ -3,7 +3,6 @@ import { GroupTypes } from '../../../../core/experiments/store/experiments.model
 import { EntityTypes } from '../../../../core/experiment-users/store/experiment-users.model';
 
 export class ExperimentUserValidators {
-
   static validateExcludedEntityForm(controls: AbstractControl): { [key: string]: any } | null {
     const entityValue = controls.get('entityType').value;
     const groupValue = controls.get('groupType').value;

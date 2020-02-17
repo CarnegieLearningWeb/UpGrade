@@ -100,11 +100,29 @@
       </div>
 
       <ng-template #errorLogTemplate>
-        <span class="error-type"
-          ><u>{{ log.value }}</u></span
-        >
-        <span> :</span>
-        <span class="error-message">{{ log.message }}</span>
+        <div class="content">
+          <span class="error-type"
+            ><u>{{ log.type }}</u></span
+          >
+          <span> :</span>
+          <div class="log-text">
+            <mat-accordion class="accordion">
+              <mat-expansion-panel hideToggle="true">
+                <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
+                  <mat-panel-title>
+                    <span class="action-msg-error">
+                      {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
+                    </span>
+                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                  </mat-panel-title>
+                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                </mat-expansion-panel-header>
+
+                <pre>{{ log.message }}</pre>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </div>
+        </div>
       </ng-template>
     </div>
   </ng-container>
