@@ -25,6 +25,7 @@ import { SettingsModule } from './settings/settings.module';
 import { AuthModule } from './auth/auth.module';
 import { LogsModule } from './logs/logs.module';
 import { ExperimentUsersModule } from './experiment-users/experiment-users.module';
+import { PreviewUsersModule } from './preview-users/preview-users.module';
 
 export {
   TitleService,
@@ -53,6 +54,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     ExperimentsModule,
     LogsModule,
     ExperimentUsersModule,
+    PreviewUsersModule,
 
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),

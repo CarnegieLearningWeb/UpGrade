@@ -1,0 +1,119 @@
+<div class="preview-users">
+  <h3 class="preview-users--title">{{ 'users.preview-users-title.text' | translate }}</h3>
+
+  <form class="preview-user-form" [formGroup]="previewUsersForm">
+
+    <mat-form-field class="form-control">
+      <input
+        matInput
+        [placeholder]="'users-global.form-id-placeholder.text' | translate"
+        formControlName="id"
+      />
+    </mat-form-field>
+
+    <div formArrayName="userGroups">
+      <div *ngFor="let group of userGroups.controls; let index = index">
+        <ng-container [formGroupName]="index">
+          <mat-form-field class="form-control">
+            <mat-select formControlName="groupType">
+              <mat-option
+                *ngFor="let groupType of groupTypes"
+                [value]="groupType.value"
+              >
+                {{ groupType.value | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field
+            class="form-control"
+            *ngIf="groupTypeValue(index)"
+          >
+            <input
+              matInput
+              [placeholder]="'global.group-custom-type.placeHolder' | translate"
+              formControlName="customGroupName"
+            />
+          </mat-form-field>
+
+          <mat-form-field class="form-control">
+            <input
+              matInput
+              [placeholder]="'users.preview-users.group-id.placeholder.text' | translate"
+              formControlName="groupId"
+            />
+          </mat-form-field>
+
+          <app-shared-icons
+            [iconType]="'delete'"
+            class="remove-icon"
+            *ngIf="index !== 0"
+            (click)="removeUserGroup(index)"
+          ></app-shared-icons>
+
+        </ng-container>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="add-user-group"
+      (click)="addNewUserGroup()"
+    >
+      {{ 'users.preview-users.add-new-group.text' | translate }}
+    </button>
+
+    <button
+      mat-raised-button
+      class="default-button form-control"
+      [ngClass]="{'default-button--disabled': !this.previewUsersForm.valid}"
+      [disabled]="!this.previewUsersForm.valid"
+      (click)="addPreviewUser()"
+    >
+      {{ 'users.preview-users.add-user-btn.text' | translate }}
+    </button>
+
+  </form>
+
+  <div class="preview-user-container">
+    <table mat-table [dataSource]="allPreviewUsers" matSort>
+
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="table table-heading">
+          {{ 'users.table.id.text' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element"> {{ element.id }} </td>
+      </ng-container>
+
+      <!-- TYPE Column -->
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="table table-heading">
+          {{ 'users.table.type.text' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element"> {{ element.group | json }} </td>
+      </ng-container>
+
+
+      <!-- Delete Column -->
+      <ng-container matColumnDef="removeEntity">
+        <th mat-header-cell *matHeaderCellDef class="table table-heading"></th>
+        <td mat-cell *matCellDef="let element">
+          <app-shared-icons
+            [iconType]="'delete'"
+            class="remove-icon"
+            (click)="removePreviewUser(element)"
+          ></app-shared-icons>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+    <div class="spin" *ngIf="isPreviewUserLoading$ | async">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+    <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="7"></mat-paginator>
+  </div>
+
+</div>
