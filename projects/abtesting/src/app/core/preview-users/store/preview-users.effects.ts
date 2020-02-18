@@ -3,6 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as previewUserActions from './preview-users.actions';
 import { filter, map, switchMap, catchError } from 'rxjs/operators';
 import { PreviewUsersDataService } from '../preview-users.data.service';
+import { PreviewUsers } from './preview-users.model';
 
 @Injectable()
 export class PreviewUsersEffects {
@@ -15,7 +16,7 @@ export class PreviewUsersEffects {
     this.actions$.pipe(
       ofType(previewUserActions.actionFetchPreviewUsers),
       switchMap(() => this.previewUserDataService.fetchPreviewUsers().pipe(
-        map((data: any) => previewUserActions.actionFetchPreviewUsersSuccess({ data })),
+        map((data: PreviewUsers[]) => previewUserActions.actionFetchPreviewUsersSuccess({ data })),
         catchError(() => [previewUserActions.actionFetchPreviewUsersFailure()])
       ))
     )
@@ -27,7 +28,7 @@ export class PreviewUsersEffects {
       map(action => ({ id: action.id, groupType: action.groupType })),
       filter(({ id, groupType }) => !!id && !!groupType),
       switchMap(({ id, groupType }) => this.previewUserDataService.addPreviewUser(id, groupType).pipe(
-        map(data => previewUserActions.actionAddPreviewUserSuccess({ data })),
+        map((data: PreviewUsers) => previewUserActions.actionAddPreviewUserSuccess({ data })),
         catchError(error => [previewUserActions.actionAddPreviewUserFailure()])
       ))
     ),
@@ -39,7 +40,7 @@ export class PreviewUsersEffects {
       map(action =>  action.id),
       filter((id) => !!id),
       switchMap((id) => this.previewUserDataService.deletePreviewUser(id).pipe(
-        map(data => previewUserActions.actionDeletePreviewUserSuccess({ data: data[0] })),
+        map((data: PreviewUsers[]) => previewUserActions.actionDeletePreviewUserSuccess({ data: data[0] })),
         catchError(error => [previewUserActions.actionDeletePreviewUserFailure()])
       ))
     ),
