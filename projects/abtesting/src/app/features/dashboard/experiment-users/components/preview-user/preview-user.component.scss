@@ -17,3 +17,17 @@
     cursor: pointer;
   }
 }
+
+.group-name {
+  display: block;
+}
+
+.preview-users {
+  .preview-user-container {
+    table {
+      .mat-cell {
+        width: 33%;
+      }
+    }
+  }
+}

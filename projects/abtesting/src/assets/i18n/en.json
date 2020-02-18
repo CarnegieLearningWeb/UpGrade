@@ -123,5 +123,7 @@
   "users.preview-users-title.text": "Preview Users",
   "users.preview-users.add-user-btn.text": "ADD USER",
   "users.preview-users.group-id.placeholder.text": "Enter Group ID",
-  "users.preview-users.add-new-group.text": "+ Add New Group"
+  "users.preview-users.add-new-group.text": "+ Add New Group",
+  "users.preview-users.group-type.text": "Group Type",
+  "users.preview-users.group-id.text": "Group ID"
 }

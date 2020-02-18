@@ -1,19 +1,19 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { GroupTypes } from '../../../../../core/experiments/store/experiments.model';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
 import { Subscription } from 'rxjs';
 import { ExperimentUserValidators } from '../../validator/experiment-users-validators';
+import { startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'users-preview-user',
   templateUrl: './preview-user.component.html',
-  styleUrls: ['./preview-user.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./preview-user.component.scss']
 })
 export class PreviewUserComponent implements OnInit, OnDestroy {
-  displayedColumns = ['id', 'type', 'removeEntity'];
+  displayedColumns = ['id', 'groupType', 'groupId', 'removeEntity'];
   allPreviewUsers: any;
   allPreviewUsersSub: Subscription;
   isPreviewUserLoading$ = this.previewUserService.isPreviewUserLoading$;
@@ -25,6 +25,8 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     { value: GroupTypes.SCHOOL },
     { value: GroupTypes.OTHER }
   ];
+  // Used to maintain selected groups
+  groupList = [];
 
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
   @ViewChild(MatSort, {static: true}) sort: MatSort;
@@ -35,10 +37,19 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.groupList[0] = this.groupTypes; // To set all group types to first control
     this.previewUsersForm = this._formBuilder.group({
       id: [null, Validators.required],
       userGroups: this._formBuilder.array([this.getNewUserGroup()])
     });
+
+    this.previewUsersForm.get('userGroups').valueChanges.pipe(startWith(null)).subscribe((value) => {
+      if (value) {
+        for (let i = 0; i < value.length; i++) {
+           this.groupList[i] = this.getGroupsForFormArray(i, this.groupTypes);
+        }
+      }
+    })
 
     this.allPreviewUsersSub = this.previewUserService.allPreviewUsers$.subscribe(previewUsers => {
       this.allPreviewUsers = new MatTableDataSource();
@@ -48,9 +59,17 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     });
   }
 
+  getGroupsForFormArray(i, groupList) {
+    let groupValue;
+    if (this.previewUsersForm.get('userGroups').value[i - 1]) {
+      groupValue = this.previewUsersForm.get('userGroups').value[i - 1].groupType;
+    }
+    return i === 0 ? groupList : this.groupList[i - 1].filter(group => group.value !== groupValue || group.value === GroupTypes.OTHER);
+  }
+
   getNewUserGroup() {
     return this._formBuilder.group({
-      groupType: [GroupTypes.CLASS],
+      groupType: [null, Validators.required],
       customGroupName: [null],
       groupId: [null, Validators.required]
     }, { validators: ExperimentUserValidators.validatePreviewUserForm });
@@ -61,7 +80,7 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
   }
 
   addNewUserGroup() {
-      this.userGroups.push(this.getNewUserGroup());
+    this.userGroups.push(this.getNewUserGroup());
   }
 
   removeUserGroup(index: number) {
