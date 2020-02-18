@@ -56,6 +56,10 @@
       </div>
     </div>
 
+    <span class="validation-message" *ngIf="previewUsersForm.hasError('customGroupNameError')">
+      {{ 'users.preview-users.error-message.text' | translate }}
+    </span>
+
     <button
       type="button"
       class="add-user-group"

@@ -41,7 +41,7 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     this.previewUsersForm = this._formBuilder.group({
       id: [null, Validators.required],
       userGroups: this._formBuilder.array([this.getNewUserGroup()])
-    });
+    }, { validators: ExperimentUserValidators.validatePreviewUserForm });
 
     this.previewUsersForm.get('userGroups').valueChanges.pipe(startWith(null)).subscribe((value) => {
       if (value) {
@@ -72,7 +72,7 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
       groupType: [null, Validators.required],
       customGroupName: [null],
       groupId: [null, Validators.required]
-    }, { validators: ExperimentUserValidators.validatePreviewUserForm });
+    }, { validators: ExperimentUserValidators.validatePreviewUserGroupForm });
   }
 
   get userGroups(): FormArray {

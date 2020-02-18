@@ -125,5 +125,6 @@
   "users.preview-users.group-id.placeholder.text": "Enter Group ID",
   "users.preview-users.add-new-group.text": "+ Add New Group",
   "users.preview-users.group-type.text": "Group Type",
-  "users.preview-users.group-id.text": "Group ID"
+  "users.preview-users.group-id.text": "Group ID",
+  "users.preview-users.error-message.text": "Custom Group Names should not same."
 }
