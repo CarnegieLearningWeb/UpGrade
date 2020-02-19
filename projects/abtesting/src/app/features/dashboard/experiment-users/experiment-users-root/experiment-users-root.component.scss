@@ -1,15 +1,2 @@
 @import '../common/table-view.scss';
-
-.users-container {
-  display: flex;
-  flex-direction: column;
-  padding: 0 4.375rem 2rem;
-
-  .user-wrapper {
-    margin-top: 40px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-    background-color: var(--white);
-    padding: 2rem;
-  }
-}
+@import '../../common/tabs-view.scss';
