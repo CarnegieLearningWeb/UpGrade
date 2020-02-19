@@ -4,6 +4,7 @@ import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
 import * as logsActions from '../../logs/store/logs.actions';
 import * as experimentActions from '../../experiments/store/experiments.actions';
+import * as previewUsersActions from '../../preview-users/store/preview-users.actions';
 import { tap, map, filter, withLatestFrom, catchError } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
@@ -116,6 +117,7 @@ export class AuthEffects {
           this.store$.dispatch(experimentActions.actionGetAllExperiment());
           this.store$.dispatch(logsActions.actionGetAllAuditLogs());
           this.store$.dispatch(logsActions.actionGetAllErrorLogs());
+          this.store$.dispatch(previewUsersActions.actionFetchPreviewUsers());
           this.store$.dispatch(experimentUserActions.actionFetchExcludedUsers());
           this.store$.dispatch(experimentUserActions.actionFetchExcludedGroups());
         })

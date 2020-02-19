@@ -1,0 +1,40 @@
+@import '../../common/table-view.scss';
+
+.add-user-group {
+  display: block;
+  margin-bottom: 10px;
+  outline: 0;
+  border: 0;
+  background-color: transparent;
+  padding: 0;
+  color: var(--blue);
+  font-family: OpenSans-Bold;
+  font-size: var(--text-size-x-small);
+}
+
+.remove-icon {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.group-name {
+  display: block;
+}
+
+.preview-users {
+  .preview-user-container {
+    table {
+      .mat-cell {
+        width: 33%;
+      }
+    }
+  }
+
+  .validation-message {
+    display: block;
+    padding: 5px 0;
+    color: var(--red);
+    font-size: var(--text-size-small);
+  }
+}
