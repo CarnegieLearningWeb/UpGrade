@@ -1,10 +1,24 @@
 import { Connection } from 'typeorm';
 import { configureLogger } from '../utils/logger';
 import { synchronizeDatabase, createDatabaseConnection, closeDatabase } from '../utils/database';
-import { Scenario1, Scenario2, Scenario3, Scenario4, Scenario5, Scenario6 } from './ExperimentAssignment';
+import {
+  Scenario1,
+  Scenario2,
+  Scenario3,
+  Scenario4,
+  Scenario5,
+  Scenario6,
+  PreviewScenario1,
+} from './ExperimentAssignment';
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
 import { UpdateExperiment } from './Experiment/update';
-import { RevertToDefault, RevertToCondition } from './ExperimentAssignment/index';
+import {
+  RevertToDefault,
+  RevertToCondition,
+  PreviewScenario2,
+  PreviewScenario3,
+  PreviewScenario4,
+} from './ExperimentAssignment/index';
 import {
   EndExperiment,
   StartExperiment,
@@ -14,7 +28,8 @@ import {
 } from './Experiment/scheduleJob';
 import { MainAuditLog } from './Experiment/auditLogs';
 import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
-import { NoPreviewExperiment, NoPreviewUser } from './PreviewExperiment/index';
+import { NoPreviewExperiment, NoPreviewUser, PreviewExperimentWithPreviewUser } from './PreviewExperiment/index';
+import { PreviewScenario5, PreviewScenario6 } from './ExperimentAssignment/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -40,108 +55,145 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
-  // test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async done => {
-  //   await Scenario1();
-  //   done();
-  // });
+  test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async done => {
+    await Scenario1();
+    done();
+  });
 
-  // test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async done => {
-  //   await Scenario2();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async done => {
+    await PreviewScenario1();
+    done();
+  });
 
-  // test('Experiment Scenario 3 - Group Assignment With Group Consistency', async done => {
-  //   await Scenario3();
-  //   done();
-  // });
+  test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async done => {
+    await Scenario2();
+    done();
+  });
 
-  // test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async done => {
-  //   await Scenario4();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async done => {
+    await PreviewScenario2();
+    done();
+  });
 
-  // test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async done => {
-  //   await Scenario5();
-  //   done();
-  // });
-  // test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async done => {
-  //   await Scenario6();
-  //   done();
-  // });
-  // test('Revert to Default', async done => {
-  //   await RevertToDefault();
-  //   done();
-  // });
-  // test('Revert to Condition', async done => {
-  //   await RevertToCondition();
-  //   done();
-  // });
+  test('Experiment Scenario 3 - Group Assignment With Group Consistency', async done => {
+    await Scenario3();
+    done();
+  });
 
-  // // testing exclusion over here
-  // test('Individual Exclude', async done => {
-  //   await IndividualExclude();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async done => {
+    await PreviewScenario3();
+    done();
+  });
 
-  // test('Group Exclude', async done => {
-  //   await GroupExclude();
-  //   done();
-  // });
+  test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async done => {
+    await Scenario4();
+    done();
+  });
 
-  // // testing experiment update over here
-  // test('Update Experiment', async done => {
-  //   await UpdateExperiment();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async done => {
+    await PreviewScenario4();
+    done();
+  });
 
-  // // testing ScheduleJob
-  // test('Create Scheduled Job in database to start experiment', async done => {
-  //   await StartExperiment();
-  //   done();
-  // });
+  test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async done => {
+    await Scenario5();
+    done();
+  });
 
-  // test('End Experiment after some timestamp', async done => {
-  //   await EndExperiment();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async done => {
+    await PreviewScenario5();
+    done();
+  });
 
-  // test('Update Experiment state some timestamp', async done => {
-  //   await UpdateExperimentState();
-  //   done();
-  // });
+  test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async done => {
+    await Scenario6();
+    done();
+  });
 
-  // test('Delete Start Experiment', async done => {
-  //   await DeleteStartExperiment();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency for Preview', async done => {
+    await PreviewScenario6();
+    done();
+  });
 
-  // test('Delete End Experiment', async done => {
-  //   await DeleteEndExperiment();
-  //   done();
-  // });
+  test('Revert to Default', async done => {
+    await RevertToDefault();
+    done();
+  });
+  test('Revert to Condition', async done => {
+    await RevertToCondition();
+    done();
+  });
 
-  // test('Check audit log', async done => {
-  //   await MainAuditLog();
-  //   done();
-  // });
+  // testing exclusion over here
+  test('Individual Exclude', async done => {
+    await IndividualExclude();
+    done();
+  });
 
-  // test('Stats for Group Experiment', async done => {
-  //   await StatsGroupExperiment();
-  //   done();
-  // });
+  test('Group Exclude', async done => {
+    await GroupExclude();
+    done();
+  });
 
-  // test('Stats for Individual Experiment', async done => {
-  //   await StatsIndividualExperiment();
-  //   done();
-  // });
+  // testing experiment update over here
+  test('Update Experiment', async done => {
+    await UpdateExperiment();
+    done();
+  });
 
-  // test('No preview user', async done => {
-  //   await NoPreviewUser();
-  //   done();
-  // });
+  // testing ScheduleJob
+  test('Create Scheduled Job in database to start experiment', async done => {
+    await StartExperiment();
+    done();
+  });
+
+  test('End Experiment after some timestamp', async done => {
+    await EndExperiment();
+    done();
+  });
+
+  test('Update Experiment state some timestamp', async done => {
+    await UpdateExperimentState();
+    done();
+  });
+
+  test('Delete Start Experiment', async done => {
+    await DeleteStartExperiment();
+    done();
+  });
+
+  test('Delete End Experiment', async done => {
+    await DeleteEndExperiment();
+    done();
+  });
+
+  test('Check audit log', async done => {
+    await MainAuditLog();
+    done();
+  });
+
+  test('Stats for Group Experiment', async done => {
+    await StatsGroupExperiment();
+    done();
+  });
+
+  test('Stats for Individual Experiment', async done => {
+    await StatsIndividualExperiment();
+    done();
+  });
 
   test('No preview user', async done => {
+    await NoPreviewUser();
+    done();
+  });
+
+  test('No preview experiment', async done => {
     await NoPreviewExperiment();
+    done();
+  });
+
+  test('Preview experiment with preview user', async done => {
+    await PreviewExperimentWithPreviewUser();
     done();
   });
 });
