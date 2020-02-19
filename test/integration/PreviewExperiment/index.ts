@@ -3,6 +3,7 @@ import { multipleUsers } from '../mockData/experimentUsers';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import TestCase1 from './NoPreviewUser';
 import TestCase2 from './NoPreviewExperiment';
+import TestCase3 from './PreviewExperimentWithPreviewUser';
 import { CheckService } from '../../../src/api/services/CheckService';
 
 const initialChecks = async () => {
@@ -47,4 +48,9 @@ export const NoPreviewUser = async () => {
 export const NoPreviewExperiment = async () => {
   await initialChecks();
   await TestCase2();
+};
+
+export const PreviewExperimentWithPreviewUser = async () => {
+  await initialChecks();
+  await TestCase3();
 };

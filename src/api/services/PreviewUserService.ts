@@ -22,7 +22,7 @@ export class PreviewUserService {
     return this.userRepository.findOneById(id);
   }
 
-  public create(user: PreviewUser): Promise<PreviewUser> {
+  public create(user: Partial<PreviewUser>): Promise<PreviewUser> {
     this.log.info('Create a new user => ', user);
     user.id = user.id || uuid();
 

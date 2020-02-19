@@ -14,7 +14,7 @@ export function checkExperimentAssignedIsDefault(
       expect.objectContaining({
         name: experimentName,
         point: experimentPoint,
-        assignedCondition: 'default',
+        assignedCondition: { conditionCode: 'default' },
       }),
     ])
   );
@@ -29,7 +29,7 @@ export function checkExperimentAssignedIsNotDefault(
   const experimentObject = experimentConditionAssignments.find(experiment => {
     return experiment.name === experimentName && experiment.point === experimentPoint;
   });
-  expect(experimentObject.assignedCondition).not.toEqual('default');
+  expect(experimentObject.assignedCondition.conditionCode).not.toEqual('default');
 }
 
 export function checkMarkExperimentPointForUser(
