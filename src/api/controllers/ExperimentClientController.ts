@@ -8,6 +8,9 @@ import { User } from '../models/User';
 import { validate } from 'class-validator';
 import { env } from '../../env';
 import { SERVER_ERROR } from 'ees_types';
+import { ExperimentUser } from '../models/ExperimentUser';
+import { ExperimentUserService } from '../services/ExperimentUserService';
+import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 
 /**
  * @swagger
@@ -17,11 +20,80 @@ import { SERVER_ERROR } from 'ees_types';
  */
 @Authorized()
 @JsonController('/')
-export class ExperimentConditionController {
+export class ExperimentClientController {
   constructor(
     public experimentService: ExperimentService,
-    public experimentAssignmentService: ExperimentAssignmentService
+    public experimentAssignmentService: ExperimentAssignmentService,
+    public experimentUserService: ExperimentUserService
   ) {}
+
+  /**
+   * @swagger
+   * /groupmembership:
+   *    post:
+   *       description: Set group membership for a user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experimentUser
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *                  type: string
+   *                  $ref: '#/definitions/ExperimentUser'
+   *           description: ExperimentUser
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Set Group Membership
+   */
+  @Post('groupmembership')
+  public setGroupMemberShip(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    experimentUsers: ExperimentUser[]
+  ): Promise<ExperimentUser[]> {
+    return this.experimentUserService.create(experimentUsers);
+  }
+
+  /**
+   * @swagger
+   * /workinggroup:
+   *    post:
+   *       description: Set working group for a user
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               id:
+   *                 type: string
+   *               workingGroup:
+   *                 type: object
+   *           description: ExperimentUser
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Set Group Membership
+   */
+  @Post('workinggroup')
+  public setWorkingGroup(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    workingGroupParams: UpdateWorkingGroupValidator
+  ): Promise<ExperimentUser> {
+    return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup);
+  }
 
   /**
    * @swagger

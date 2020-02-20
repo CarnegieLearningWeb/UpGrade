@@ -2,7 +2,7 @@ import { Repository, EntityRepository } from 'typeorm';
 import { ExperimentUser } from '../models/ExperimentUser';
 import repositoryError from './utils/repositoryError';
 
-type UserInput = Omit<ExperimentUser, 'createdAt' | 'updatedAt' | 'versionNumber'>;
+type UserInput = Omit<ExperimentUser, 'createdAt' | 'updatedAt' | 'versionNumber' | 'workingGroup'>;
 
 @EntityRepository(ExperimentUser)
 export class ExperimentUserRepository extends Repository<ExperimentUser> {
@@ -21,5 +21,18 @@ export class ExperimentUserRepository extends Repository<ExperimentUser> {
       });
 
     return result.raw;
+  }
+
+  public async updateWorkingGroup(userId: string, workingGroup: any): Promise<ExperimentUser> {
+    const result = await this.createQueryBuilder()
+      .update(ExperimentUser)
+      .set({
+        workingGroup,
+      })
+      .where('id = :id', { id: userId })
+      .returning('*')
+      .execute();
+
+    return result.raw[0];
   }
 }
