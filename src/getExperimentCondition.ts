@@ -6,13 +6,8 @@ export default function getExperimentCondition(experimentName: string, experimen
   try {
     const experimentConditionData = DataService.getData('experimentConditionData');
     if (experimentConditionData) {
-      const interestedExperimentPoints = DataService.getData('interestedExperimentPoints');
       const result = experimentConditionData.filter(data =>
-        interestedExperimentPoints.length
-          ? data.name === experimentName &&
-            data.point === experimentPoint &&
-            interestedExperimentPoints.indexOf(data.point) !== -1
-          : data.name === experimentName && data.point === experimentPoint
+        data.name === experimentName && data.point === experimentPoint
       );
       
       return {
