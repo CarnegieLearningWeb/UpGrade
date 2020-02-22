@@ -1,11 +1,5 @@
-import { Entity, PrimaryColumn } from 'typeorm';
-import { BaseModel } from './base/BaseModel';
+import { Entity } from 'typeorm';
+import { BaseIndividualExclusion } from './base/BaseIndividualExclusion';
 
 @Entity()
-export class PreviewIndividualExclusion extends BaseModel {
-  @PrimaryColumn()
-  public experimentId: string;
-
-  @PrimaryColumn()
-  public userId: string;
-}
+export class PreviewIndividualExclusion extends BaseIndividualExclusion {}

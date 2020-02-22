@@ -1,15 +1,5 @@
-import { Entity, PrimaryColumn, ManyToOne } from 'typeorm';
-import { ExperimentCondition } from './ExperimentCondition';
-import { BaseModel } from './base/BaseModel';
+import { Entity } from 'typeorm';
+import { BaseIndividualAssignment } from './base/BaseIndividualAssignment';
 
 @Entity()
-export class PreviewIndividualAssignment extends BaseModel {
-  @PrimaryColumn()
-  public experimentId: string;
-
-  @PrimaryColumn()
-  public userId: string;
-
-  @ManyToOne(type => ExperimentCondition)
-  public condition: ExperimentCondition;
-}
+export class PreviewIndividualAssignment extends BaseIndividualAssignment {}
