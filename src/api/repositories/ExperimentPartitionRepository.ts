@@ -20,7 +20,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
-          'ExperimentPartitionRepository',
+          this.constructor.name,
           'upsertExperimentPartition',
           { partitionDoc },
           errorMsg
@@ -39,12 +39,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .where('id IN (:...ids)', { ids })
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentPartitionRepository',
-          'deleteByIds',
-          { ids },
-          errorMsg
-        );
+        const errorMsgString = repositoryError(this.constructor.name, 'deleteByIds', { ids }, errorMsg);
         throw new Error(errorMsgString);
       });
 
@@ -63,12 +58,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentPartitionRepository',
-          'insertPartitions',
-          { partitionsDocs },
-          errorMsg
-        );
+        const errorMsgString = repositoryError(this.constructor.name, 'insertPartitions', { partitionsDocs }, errorMsg);
         throw new Error(errorMsgString);
       });
 
@@ -83,12 +73,17 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .where('id = :id', { id })
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentPartitionRepository',
-          'deletePartition',
-          { id },
-          errorMsg
-        );
+        const errorMsgString = repositoryError(this.constructor.name, 'deletePartition', { id }, errorMsg);
+        throw new Error(errorMsgString);
+      });
+  }
+
+  public async partitionPointAndName(): Promise<Array<Pick<ExperimentPartition, 'name' | 'point'>>> {
+    return this.createQueryBuilder('experimentPartition')
+      .select(['experimentPartition.point', 'experimentPartition.name'])
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);
         throw new Error(errorMsgString);
       });
   }

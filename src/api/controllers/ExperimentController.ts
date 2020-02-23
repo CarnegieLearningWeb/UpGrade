@@ -18,6 +18,7 @@ import { Validator } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { User } from '../models/User';
+import { ExperimentPartition } from '../models/ExperimentPartition';
 const validator = new Validator();
 
 interface ExperimentPaginationInfo {
@@ -206,6 +207,26 @@ export class ExperimentController {
       nodes: experiments,
       ...paginatedParams,
     };
+  }
+
+  /**
+   * @swagger
+   * /experiments/partitions:
+   *    get:
+   *       description: Get all experiment partitions
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get All Experiment Partitions
+   *          '404':
+   *            description: Experiment Partitions not found
+   */
+  @Get('/partitions')
+  public getAllExperimentPoints(): Promise<Array<Pick<ExperimentPartition, 'point' | 'name'>>> {
+    return this.experimentService.getAllExperimentPartitions();
   }
 
   /**

@@ -167,6 +167,10 @@ export class ExperimentService {
     return experiment.partitions;
   }
 
+  public async getAllExperimentPartitions(): Promise<Array<Pick<ExperimentPartition, 'name' | 'point'>>> {
+    return this.experimentPartitionRepository.partitionPointAndName();
+  }
+
   private async updateExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
