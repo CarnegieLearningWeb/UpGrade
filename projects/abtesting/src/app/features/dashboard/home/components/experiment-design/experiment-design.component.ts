@@ -80,7 +80,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   addPartitions(point = null, name = null, description = '') {
     return this._formBuilder.group({
       point: [point, Validators.required],
-      name: [name, Validators.required],
+      name: [name],
       description: [description]
     });
   }

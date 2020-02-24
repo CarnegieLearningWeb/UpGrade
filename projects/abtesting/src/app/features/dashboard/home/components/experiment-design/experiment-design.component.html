@@ -178,7 +178,7 @@
       <!-- PARTITION NAME Column -->
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.partition-name.text' | translate }}
+          {{ 'home.new-experiment.design.partition-id.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
@@ -188,7 +188,7 @@
             <input
               matInput
               [placeholder]="
-                'home.new-experiment.design.partition-name.placeholder.text'
+                'home.new-experiment.design.partition-id.placeholder.text'
                   | translate
               "
               formControlName="name"
