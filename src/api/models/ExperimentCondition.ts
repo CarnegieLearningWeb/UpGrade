@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
@@ -7,6 +7,11 @@ import { BaseModel } from './base/BaseModel';
 export class ExperimentCondition extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
+
+  @Column('char', { length: '2', unique: true })
+  @IsAlphanumeric()
+  @IsNotEmpty()
+  public twoCharacterId: string;
 
   @Column({
     nullable: true,

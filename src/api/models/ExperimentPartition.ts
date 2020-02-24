@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
@@ -7,6 +7,11 @@ import { BaseModel } from './base/BaseModel';
 export class ExperimentPartition extends BaseModel {
   @PrimaryColumn()
   public id: string;
+
+  @Column('char', { length: '2', unique: true })
+  @IsAlphanumeric()
+  @IsNotEmpty()
+  public twoCharacterId: string;
 
   @IsNotEmpty()
   @Column()

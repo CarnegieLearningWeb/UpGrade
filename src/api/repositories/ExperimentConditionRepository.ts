@@ -86,4 +86,12 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
         throw new Error(errorMsgString);
       });
   }
+
+  public async getAllUniqueIdentifier(): Promise<string[]> {
+    const experimentConditions = await this.createQueryBuilder('condition')
+      .select('condition.twoCharacterId')
+      .getMany();
+    const uniqueIdentifier = experimentConditions.map(experimentCondition => experimentCondition.twoCharacterId);
+    return uniqueIdentifier;
+  }
 }

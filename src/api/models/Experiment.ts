@@ -52,6 +52,9 @@ export class Experiment extends BaseModel {
   @Column()
   public description: string;
 
+  @Column({ nullable: true })
+  public context: string;
+
   @IsNotEmpty()
   @Column({
     type: 'enum',

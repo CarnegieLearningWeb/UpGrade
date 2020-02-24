@@ -8,6 +8,7 @@ export const experiment = {
   state: 'scheduled',
   startOn: new Date().toISOString(),
   group: 'teacher',
+  context: 'home',
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -15,6 +16,7 @@ export const experiment = {
       description: 'Condition A',
       assignmentWeight: 40,
       conditionCode: 'ConditionA',
+      twoCharacterId: 'CA',
     },
     {
       id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
@@ -22,6 +24,7 @@ export const experiment = {
       description: 'Condition B',
       assignmentWeight: 60,
       conditionCode: 'ConditionB',
+      twoCharacterId: 'CB',
     },
   ],
   partitions: [
@@ -29,11 +32,13 @@ export const experiment = {
       point: 'CurriculumSequence',
       name: 'W1',
       description: 'Partition on Workspace 1',
+      twoCharacterId: 'W1',
     },
     {
       point: 'CurriculumSequence',
       name: 'W2',
       description: 'Partition on Workspace 2',
+      twoCharacterId: 'W2',
     },
   ],
 };

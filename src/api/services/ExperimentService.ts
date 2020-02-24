@@ -21,6 +21,7 @@ import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExp
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
+import { IUniqueIds } from '../../types/index';
 
 @Service()
 export class ExperimentService {
@@ -171,6 +172,13 @@ export class ExperimentService {
     return this.experimentPartitionRepository.partitionPointAndName();
   }
 
+  public async getAllUniqueIdentifiers(): Promise<IUniqueIds> {
+    const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
+    const partitionsUniqueIdentifier = this.experimentPartitionRepository.getAllUniqueIdentifier();
+    const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
+    return { conditionIds, partitionsIds };
+  }
+
   private async updateExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
@@ -219,6 +227,33 @@ export class ExperimentService {
           })) ||
         [];
 
+      // delete conditions which don't exist in new experiment document
+      const toDeleteConditions = [];
+      oldConditions.forEach(({ id }) => {
+        if (
+          !conditionDocToSave.find(doc => {
+            return doc.id === id;
+          })
+        ) {
+          toDeleteConditions.push(this.experimentConditionRepository.deleteCondition(id, transactionalEntityManager));
+        }
+      });
+
+      // delete partitions which don't exist in new experiment document
+      const toDeletePartitions = [];
+      oldPartitions.forEach(({ id, point, name }) => {
+        if (
+          !partitionDocToSave.find(doc => {
+            return doc.id === id && doc.point === point && doc.name === name;
+          })
+        ) {
+          toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
+        }
+      });
+
+      // delete old partitions and conditions
+      await Promise.all([...toDeleteConditions, ...toDeletePartitions]);
+
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
       let partitionDocs: ExperimentPartition[];
@@ -244,33 +279,6 @@ export class ExperimentService {
       } catch (error) {
         throw new Error(`Error in creating conditions and partitions "updateExperimentInDB" ${error}`);
       }
-
-      // delete conditions which don't exist in new experiment document
-      const toDeleteConditions = [];
-      oldConditions.forEach(({ id }) => {
-        if (
-          !conditionDocs.find(doc => {
-            return doc.id === id;
-          })
-        ) {
-          toDeleteConditions.push(this.experimentConditionRepository.deleteCondition(id, transactionalEntityManager));
-        }
-      });
-
-      // delete partitions which don't exist in new experiment document
-      const toDeletePartitions = [];
-      oldPartitions.forEach(({ id, point, name }) => {
-        if (
-          !partitionDocs.find(doc => {
-            return doc.id === id && doc.point === point && doc.name === name;
-          })
-        ) {
-          toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
-        }
-      });
-
-      // delete old partitions and conditions
-      await Promise.all([...toDeleteConditions, ...toDeletePartitions]);
 
       const conditionDocToReturn = conditionDocs.map(conditionDoc => {
         return { ...conditionDoc, experiment: conditionDoc.experiment };

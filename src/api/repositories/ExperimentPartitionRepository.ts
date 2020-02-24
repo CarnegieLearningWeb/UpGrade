@@ -87,4 +87,12 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
         throw new Error(errorMsgString);
       });
   }
+
+  public async getAllUniqueIdentifier(): Promise<string[]> {
+    const experimentPartitions = await this.createQueryBuilder('experimentPartition')
+      .select('experimentPartition.twoCharacterId')
+      .getMany();
+    const uniqueIdentifier = experimentPartitions.map(experimentPartition => experimentPartition.twoCharacterId);
+    return uniqueIdentifier;
+  }
 }

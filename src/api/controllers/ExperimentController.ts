@@ -19,6 +19,7 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { User } from '../models/User';
 import { ExperimentPartition } from '../models/ExperimentPartition';
+import { IUniqueIds } from '../../types/index';
 const validator = new Validator();
 
 interface ExperimentPaginationInfo {
@@ -227,6 +228,26 @@ export class ExperimentController {
   @Get('/partitions')
   public getAllExperimentPoints(): Promise<Array<Pick<ExperimentPartition, 'point' | 'name'>>> {
     return this.experimentService.getAllExperimentPartitions();
+  }
+
+  /**
+   * @swagger
+   * /experiments/uniqueIdentifier:
+   *    get:
+   *       description: Get all unique identifier
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get All Unique Identifier
+   *          '404':
+   *            description: Unique Identifier not found
+   */
+  @Get('/uniqueIdentifier')
+  public getAllUniqueIdentifier(): Promise<IUniqueIds> {
+    return this.experimentService.getAllUniqueIdentifiers();
   }
 
   /**
