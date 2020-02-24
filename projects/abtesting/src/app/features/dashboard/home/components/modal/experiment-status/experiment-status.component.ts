@@ -31,7 +31,7 @@ export class ExperimentStatusComponent implements OnInit {
 
   ngOnInit() {
     this.statusForm = this._formBuilder.group({
-      newStatus: ['', Validators.required]
+      newStatus: [{ value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED }, Validators.required]
     });
     switch (this.experimentInfo.state) {
       case EXPERIMENT_STATE.ENROLLING:
@@ -58,9 +58,5 @@ export class ExperimentStatusComponent implements OnInit {
     const { newStatus } = this.statusForm.value;
     this.experimentService.updateExperimentState(this.experimentInfo.id, newStatus.value);
     this.onCancelClick();
-  }
-
-  get ExperimentState() {
-    return EXPERIMENT_STATE;
   }
 }
