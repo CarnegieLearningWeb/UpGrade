@@ -13,9 +13,6 @@
       </span>
 
       <div class="action-buttons">
-        <button mat-flat-button class="experiment-design-button" (click)="openDialog(DialogType.EDIT_EXPERIMENT, 1)">
-          {{ 'home.view-experiment.view-experiment-button.text' | translate }}
-        </button>
         <button
           mat-flat-button
           class="edit-button"
@@ -26,7 +23,7 @@
         >
           {{ 'home.view-experiment.edit-button.text' | translate }}
         </button>
-        <button mat-flat-button class="experiment-design-button" (click)="deleteExperiment(experiment.id)">
+        <button mat-flat-button class="delete-button" (click)="deleteExperiment(experiment.id)">
           {{ 'home.view-experiment.delete-button.text' | translate }}
         </button>
       </div>

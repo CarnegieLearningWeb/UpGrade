@@ -1,10 +1,13 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  Inject,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, POST_EXPERIMENT_RULE, EXPERIMENT_STATE, ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
+import {
+  NewExperimentDialogEvents,
+  NewExperimentDialogData,
+  NewExperimentPaths,
+  POST_EXPERIMENT_RULE,
+  EXPERIMENT_STATE,
+  ExperimentVM
+} from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 
 @Component({
@@ -14,9 +17,8 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewExperimentComponent {
-
   newExperimentData: any = {};
-  selectedStepperIndex = 0 ;
+  selectedStepperIndex = 0;
   experimentInfo: ExperimentVM;
   animationCompletedIndex: Number;
   constructor(
@@ -26,7 +28,6 @@ export class NewExperimentComponent {
   ) {
     if (this.data) {
       this.experimentInfo = this.data.experiment;
-      this.selectedStepperIndex = this.data.stepperIndex;
     }
   }
 
@@ -43,12 +44,12 @@ export class NewExperimentComponent {
       case NewExperimentDialogEvents.SEND_FORM_DATA:
         this.newExperimentData = {
           ...this.newExperimentData,
-          ...formData,
+          ...formData
         };
         if (path === NewExperimentPaths.EXPERIMENT_SCHEDULE) {
-          this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE,
-          this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE,
-          this.experimentService.createNewExperiment(this.newExperimentData);
+          (this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE),
+            (this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE),
+            this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }
         break;
@@ -56,7 +57,7 @@ export class NewExperimentComponent {
         this.newExperimentData = {
           ...this.experimentInfo,
           ...this.newExperimentData,
-          ...formData,
+          ...formData
         };
         this.experimentService.updateExperiment(this.newExperimentData);
         this.onNoClick();

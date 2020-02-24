@@ -45,10 +45,9 @@ $dark-grey-text-color: #707a85;
       .action-buttons {
         flex-shrink: 0;
         align-self: flex-start;
-        width: 400px;
 
         .edit-button,
-        .experiment-design-button {
+        .delete-button {
           margin-left: 15px !important;
           border: 1px solid var(--blue);
           background: $white-background;
