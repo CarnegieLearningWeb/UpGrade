@@ -1,8 +1,10 @@
 .exclude-entities,
 .preview-users {
+  margin-top: 20px;
+
   &--title {
     font-family: OpenSans-Bold;
-    font-size: var(--text-size-xxx-large);
+    font-size: var(--text-size-xx-large);
   }
 
   .exclude-form,

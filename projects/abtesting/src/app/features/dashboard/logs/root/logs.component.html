@@ -1,9 +1,9 @@
-<div class="logs-container">
+<div class="tabs-container">
   <h1 class="title">{{ 'logs.main-heading.text' | translate }}</h1>
   <span class="subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
 
-  <div class="logs-wrapper">
-    <mat-tab-group class="logs-tabs" disableRipple="true">
+  <div class="tabs-wrapper">
+    <mat-tab-group class="tabs-tabs" disableRipple="true">
       <mat-tab [label]="'logs.audit-logs-tab.text' | translate">
         <audit-logs></audit-logs>
       </mat-tab>
