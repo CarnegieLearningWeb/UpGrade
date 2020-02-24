@@ -59,4 +59,8 @@ export class ExperimentStatusComponent implements OnInit {
     this.experimentService.updateExperimentState(this.experimentInfo.id, newStatus.value);
     this.onCancelClick();
   }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
+  }
 }

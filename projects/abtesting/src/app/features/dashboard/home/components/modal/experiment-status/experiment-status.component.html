@@ -15,7 +15,7 @@
 
       <mat-form-field>
         <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
-        <mat-select formControlName="newStatus">
+        <mat-select [disabled]="experimentInfo.state === ExperimentState.CANCELLED" formControlName="newStatus">
           <mat-option
             *ngFor="let status of experimentStatus"
             [value]="status"
