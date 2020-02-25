@@ -16,7 +16,9 @@ export const {
 
 export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperiment: false,
-  stats: {}
+  stats: {},
+  uniqueIdentifiers: null,
+  allPartitions: null
 });
 
 const reducer = createReducer(
@@ -62,6 +64,18 @@ const reducer = createReducer(
     experimentsAction.actionUpdateExperimentStateSuccess,
     (state, { experiment }) => {
       return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
+    }
+  ),
+  on(
+    experimentsAction.actionFetchAllPartitionSuccess,
+    (state, { partitions }) => {
+      return ({ ...state, allPartitions: partitions })
+    }
+  ),
+  on(
+    experimentsAction.actionFetchAllUniqueIdentifiersSuccess,
+    (state, { uniqueIdentifiers }) => {
+      return ({ ...state, uniqueIdentifiers })
     }
   )
 );

@@ -40,6 +40,8 @@ export const environment = {
     users: `${endpointApi}/users`, // Used to create a new user after login
     excludeUsers: `${endpointApi}/exclude/user`,
     excludeGroups: `${endpointApi}/exclude/group`,
-    previewUsers: `${endpointApi}/previewUsers`
+    previewUsers: `${endpointApi}/previewUsers`,
+    uniqueIdentifier: `${endpointApi}/experiments/uniqueIdentifier`,
+    allPartitions: `${endpointApi}/experiments/partitions`
   }
 };

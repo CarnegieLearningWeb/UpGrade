@@ -36,4 +36,14 @@ export class ExperimentDataService {
     const url = `${environment.api.updateExperiments}/${experimentId}`;
     return this.http.delete(url);
   }
+
+  fetchAllPartitions() {
+    const url = environment.api.allPartitions;
+    return this.http.get(url);
+  }
+
+  fetchAllUniqueIdentifiers() {
+    const url = environment.api.uniqueIdentifier;
+    return this.http.get(url);
+  }
 }

@@ -47,9 +47,9 @@ export class NewExperimentComponent {
           ...formData
         };
         if (path === NewExperimentPaths.EXPERIMENT_SCHEDULE) {
-          (this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE),
-            (this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE),
-            this.experimentService.createNewExperiment(this.newExperimentData);
+          this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE;
+          this.newExperimentData.postExperimentRule = POST_EXPERIMENT_RULE.CONTINUE;
+          this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }
         break;

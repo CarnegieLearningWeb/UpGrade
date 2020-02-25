@@ -120,6 +120,8 @@ export class AuthEffects {
           this.store$.dispatch(previewUsersActions.actionFetchPreviewUsers());
           this.store$.dispatch(experimentUserActions.actionFetchExcludedUsers());
           this.store$.dispatch(experimentUserActions.actionFetchExcludedGroups());
+          this.store$.dispatch(experimentActions.actionFetchAllPartitions());
+          this.store$.dispatch(experimentActions.actionFetchAllUniqueIdentifiers());
         })
       );
     },

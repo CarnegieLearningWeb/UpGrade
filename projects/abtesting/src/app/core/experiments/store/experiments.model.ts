@@ -113,7 +113,9 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   stats: {
     [key: string]: IExperimentEnrollmentStats
-  }
+  },
+  uniqueIdentifiers: {},
+  allPartitions: {}
 }
 
 export interface State extends AppState {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Experiment, UpsertExperimentType, ExperimentVM, EXPERIMENT_STATE } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
-import { selectAllExperiment, selectIsLoadingExperiment, selectSelectedExperiment } from './store/experiments.selectors';
+import { selectAllExperiment, selectIsLoadingExperiment, selectSelectedExperiment, selectAllPartitions, selectAllUniqueIdentifiers } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map } from 'rxjs/operators';
@@ -21,6 +21,8 @@ export class ExperimentService {
   );
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
+  allPartitions$ = this.store$.pipe(select(selectAllPartitions));
+  uniqueIdentifiers$ = this.store$.pipe(select(selectAllUniqueIdentifiers));
 
   loadExperiments() {
     return this.store$.dispatch(experimentAction.actionGetAllExperiment());
