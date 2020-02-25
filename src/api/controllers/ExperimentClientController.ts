@@ -57,7 +57,7 @@ export class ExperimentClientController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     experimentUsers: ExperimentUser[]
   ): Promise<ExperimentUser[]> {
-    return this.experimentUserService.create(experimentUsers);
+    return this.experimentUserService.setGroupMembership(experimentUsers);
   }
 
   /**

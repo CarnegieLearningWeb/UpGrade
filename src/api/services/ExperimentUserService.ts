@@ -31,9 +31,47 @@ export class ExperimentUserService {
     return this.userRepository.save(multipleUsers);
   }
 
-  public updateWorkingGroup(userId: string, workingGroup: any): Promise<any> {
+  public async setGroupMembership(users: ExperimentUser[]): Promise<ExperimentUser[]> {
+    this.log.info('Set Group Membership => ', users);
+    const userIds = users.map(user => user.id);
+    const oldDocuments = await this.userRepository.findByIds(userIds);
+    const oldDocumentMap: Map<string, ExperimentUser> = new Map<string, ExperimentUser>();
+    oldDocuments.forEach(document => {
+      oldDocumentMap.set(document.id, document);
+    });
+    const newDocumentsToSave = users.map(user => {
+      const oldDocument = oldDocumentMap.has(user.id) ? oldDocumentMap.get(user.id) : undefined;
+      const oldWorkingGroup = oldDocument && oldDocument.workingGroup;
+      if (oldWorkingGroup) {
+        user.workingGroup = {};
+        Object.keys(user.group).map(key => {
+          const oldValue = oldWorkingGroup[key];
+          user.workingGroup[key] = oldValue && user.group[key].includes(oldValue) ? oldValue : user.group[key][0];
+        });
+      } else {
+        user.workingGroup = Object.keys(user.group).reduce((accumulator, value) => {
+          accumulator[value] = user.group[value][0];
+          return accumulator;
+        }, {});
+      }
+      return user;
+    });
+
+    // TODO adding group change scenario logic
+
+    return this.userRepository.save(newDocumentsToSave);
+  }
+
+  public async updateWorkingGroup(userId: string, workingGroup: any): Promise<any> {
     this.log.info('Update working group => ', userId, workingGroup);
-    return this.userRepository.updateWorkingGroup(userId, workingGroup);
+    const oldDocument = await this.userRepository.findOne({ id: userId });
+    Object.keys(workingGroup).forEach(value => {
+      oldDocument.group[value] = oldDocument.group[value] || [];
+      const groupValue = new Set([...oldDocument.group[value], workingGroup[value]]);
+      oldDocument.group[value] = Array.from(groupValue);
+    });
+    oldDocument.workingGroup = workingGroup;
+    return this.userRepository.save(oldDocument);
   }
 
   public update(id: string, user: ExperimentUser): Promise<ExperimentUser> {
