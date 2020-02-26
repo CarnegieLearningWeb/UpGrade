@@ -22,6 +22,7 @@ import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/e
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 import { EnrollmentPointPartitionTableComponent } from './components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,9 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     SatDatepickerModule,
     SatNativeDateModule,
     MatDatepickerModule,
-    NgxChartsModule
+    NgxChartsModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule
   ],
   providers: [],
   entryComponents: [

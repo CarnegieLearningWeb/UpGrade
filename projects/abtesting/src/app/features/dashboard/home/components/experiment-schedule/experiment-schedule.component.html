@@ -13,12 +13,11 @@
           <input
             matInput
             [min]="minDate"
-            [matDatepicker]="picker"
+            [owlDateTimeTrigger]="dateTime" [owlDateTime]="dateTime"
             [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
             formControlName="dateOfExperimentEnd"
           >
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
+          <owl-date-time #dateTime></owl-date-time>
       </mat-form-field>
     </div>
 

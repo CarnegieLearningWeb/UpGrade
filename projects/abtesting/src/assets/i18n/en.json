@@ -68,7 +68,7 @@
   "home.new-experiment.schedule.end-automatically.text": "End Automatically",
   "home.new-experiment.schedule.end-on.text": "Ends on",
   "home.new-experiment.schedule.end-criteria.text": "End when experiment reaches",
-  "home.new-experiment.schedule.date-picker.placeholder.text": "Choose a date",
+  "home.new-experiment.schedule.date-picker.placeholder.text": "Choose a date and time",
   "home.new-experiment.schedule.user-count.placeholder.text": "Number of students",
   "home.new-experiment.schedule.user-count.title.text": "Students",
   "home.new-experiment.schedule.group-count.placeholder.text": "Number of enrollments",

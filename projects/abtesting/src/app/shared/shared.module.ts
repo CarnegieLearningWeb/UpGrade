@@ -22,8 +22,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSliderModule } from '@angular/material/';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
@@ -94,8 +92,6 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatSlideToggleModule,
     MatDividerModule,
     MatSliderModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,

@@ -2,6 +2,7 @@
 @import '~@angular/material/theming';
 @import '~bootstrap/scss/bootstrap-reboot';
 @import '~bootstrap/scss/bootstrap-grid';
+@import "~ng-pick-datetime/assets/style/picker.min.css";
 
 @import '~saturn-datepicker/theming';
 @include mat-core();
