@@ -27,7 +27,6 @@
     </ng-template>
     <home-experiment-design
       [experimentInfo]="experimentInfo"
-      [disableControls]="data?.stepperIndex === 1"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>

@@ -15,6 +15,8 @@ import { BehaviorSubject } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'home-experiment-design',
@@ -24,7 +26,6 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 })
 export class ExperimentDesignComponent implements OnInit, OnChanges {
   @Input() experimentInfo: ExperimentVM;
-  @Input() disableControls = false;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -35,10 +36,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
+  allUniqueIdentifiers = [];
 
-  conditionDisplayedColumns = [ 'conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['partitionNumber', 'point', 'name', 'removePartition'];
-  constructor(private _formBuilder: FormBuilder) {}
+  conditionDisplayedColumns = [ 'conditionNumber', 'uniqueIdentifier', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
+  partitionDisplayedColumns = ['partitionNumber', 'uniqueIdentifier', 'point', 'name', 'removePartition'];
+  constructor(
+    private _formBuilder: FormBuilder,
+    private experimentService: ExperimentService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.animationCompleteStepperIndex && changes.animationCompleteStepperIndex.currentValue === 1 && this.conditionCode) {
@@ -47,6 +52,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
+    this.experimentService.uniqueIdentifiers$.pipe(first()).subscribe((identifiers: any) => {
+      this.allUniqueIdentifiers = [...identifiers.conditionIds, ...identifiers.partitionsIds];
+    });
     this.experimentDesignForm = this._formBuilder.group(
       {
         conditions: this._formBuilder.array([this.addConditions(), this.addConditions()]),
@@ -60,28 +68,30 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
       this.condition.removeAt(0);
       this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach(condition => {
-        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description));
+        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description, condition.twoCharacterId));
       });
       this.experimentInfo.partitions.forEach(partition => {
-        this.partition.push(this.addPartitions(partition.point, partition.name, partition.description));
+        this.partition.push(this.addPartitions(partition.point, partition.name, partition.description, partition.twoCharacterId));
       });
     }
     this.updateView();
   }
 
-  addConditions(conditionCode = null, assignmentWeight = null, description = null) {
+  addConditions(conditionCode = null, assignmentWeight = null, description = null, twoCharacterId = null) {
     return this._formBuilder.group({
       conditionCode: [conditionCode, Validators.required],
       assignmentWeight: [assignmentWeight, Validators.required],
-      description: [description]
+      description: [description],
+      twoCharacterId: [twoCharacterId ? twoCharacterId : this.getUniqueCharacterId()]
     });
   }
 
-  addPartitions(point = null, name = null, description = '') {
+  addPartitions(point = null, name = null, description = '', twoCharacterId = null) {
     return this._formBuilder.group({
       point: [point, Validators.required],
       name: [name],
-      description: [description]
+      description: [description],
+      twoCharacterId: [twoCharacterId ? twoCharacterId : this.getUniqueCharacterId()]
     });
   }
 
@@ -100,9 +110,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
     this.updateView(scrollTableType);
   }
 
-  removeConditionOrPartition(type: string, groupIndex: number) {
+  removeConditionOrPartition(type: string, groupIndex: number, twoCharacterId: string) {
     this[type].removeAt(groupIndex);
     this.updateView();
+    this.allUniqueIdentifiers.splice(this.allUniqueIdentifiers.indexOf(twoCharacterId), 1);
   }
 
   updateView(type?: string) {
@@ -152,5 +163,17 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
       );
     }
     return false;
+  }
+
+  getUniqueCharacterId() {
+    let identifier;
+    while (true) {
+      identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
+      if (this.allUniqueIdentifiers.indexOf(identifier) === -1) {
+        break;
+      }
+    }
+    this.allUniqueIdentifiers = [ ...this.allUniqueIdentifiers, identifier ];
+    return identifier;
   }
 }

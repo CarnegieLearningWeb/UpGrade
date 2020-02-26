@@ -76,6 +76,7 @@ export interface ExperimentCondition {
   description: string;
   conditionCode: string;
   assignmentWeight: number;
+  twoCharacterId: string;
 }
 
 export interface ExperimentPartition {
@@ -83,6 +84,7 @@ export interface ExperimentPartition {
   point: string;
   name: string;
   description: string;
+  twoCharacterId: string;
 }
 
 export interface Experiment {
