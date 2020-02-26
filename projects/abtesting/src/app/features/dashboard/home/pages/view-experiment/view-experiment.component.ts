@@ -46,7 +46,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         ? ExperimentStatusComponent
         : (dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE ?  PostExperimentRuleComponent : NewExperimentComponent);
     const dialogRef = this.dialog.open(dialogComponent as any, {
-      width: '50%',
+      width: '55%',
       data: { experiment: this.experiment }
     });
 

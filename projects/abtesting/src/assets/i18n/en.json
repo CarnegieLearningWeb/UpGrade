@@ -46,6 +46,7 @@
   "home.new-experiment.overview.text": "Overview",
   "home.new-experiment.experiment-design.text": "Experiment Design",
   "home.new-experiment.schedule.text": "Schedule",
+  "home.new-experiment.post-condition-rule.text": "Post Experiment Rule",
   "home.new-experiment.overview.name.placeHolder": "Name of the Experiment",
   "home.new-experiment.overview.description.placeHolder": "Description of Experiment (optional)",
   "home.new-experiment.overview.group-type.placeHolder": "Group Type",

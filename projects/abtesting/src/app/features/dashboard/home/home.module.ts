@@ -22,6 +22,7 @@ import { EnrollmentConditionTableComponent } from './components/enrollment-condi
 import { EnrollmentPointPartitionTableComponent } from './components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
     PostExperimentRuleComponent,
     EnrollmentOverTimeComponent,
     EnrollmentConditionTableComponent,
-    EnrollmentPointPartitionTableComponent
+    EnrollmentPointPartitionTableComponent,
+    ExperimentPostConditionComponent
   ],
   imports: [
     CommonModule,

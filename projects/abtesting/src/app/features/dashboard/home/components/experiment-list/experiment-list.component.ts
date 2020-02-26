@@ -127,7 +127,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
-      width: '50%'
+      width: '55%'
     });
 
     dialogRef.afterClosed().subscribe(result => {

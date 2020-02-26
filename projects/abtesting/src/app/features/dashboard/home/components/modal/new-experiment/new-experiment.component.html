@@ -44,4 +44,17 @@
       [groupType]="newExperimentData?.group"
     ></home-experiment-schedule>
   </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label">
+        {{ 'home.new-experiment.post-condition-rule.text' | translate }}
+      </span>
+    </ng-template>
+    <home-experiment-post-condition
+      [newExperimentData]="newExperimentData"
+      [experimentInfo]="experimentInfo"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-experiment-post-condition>
+  </mat-step>
 </mat-horizontal-stepper>
