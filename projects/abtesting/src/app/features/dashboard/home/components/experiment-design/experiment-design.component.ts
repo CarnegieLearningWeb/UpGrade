@@ -8,15 +8,15 @@ import {
   ViewChild,
   ElementRef,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'home-experiment-design',
@@ -24,7 +24,7 @@ import { first } from 'rxjs/operators';
   styleUrls: ['./experiment-design.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExperimentDesignComponent implements OnInit, OnChanges {
+export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
@@ -37,6 +37,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allUniqueIdentifiers = [];
+  uniqueIdentifiersSub: Subscription;
 
   conditionDisplayedColumns = [ 'conditionNumber', 'uniqueIdentifier', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
   partitionDisplayedColumns = ['partitionNumber', 'uniqueIdentifier', 'point', 'name', 'removePartition'];
@@ -52,8 +53,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.experimentService.uniqueIdentifiers$.pipe(first()).subscribe((identifiers: any) => {
-      this.allUniqueIdentifiers = [...identifiers.conditionIds, ...identifiers.partitionsIds];
+    this.uniqueIdentifiersSub = this.experimentService.uniqueIdentifiers$.subscribe((identifiers: any) => {
+      this.allUniqueIdentifiers = !!identifiers ? [...identifiers.conditionIds, ...identifiers.partitionsIds] : [];
     });
     this.experimentDesignForm = this._formBuilder.group(
       {
@@ -175,5 +176,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
     }
     this.allUniqueIdentifiers = [ ...this.allUniqueIdentifiers, identifier ];
     return identifier;
+  }
+
+  ngOnDestroy() {
+    this.uniqueIdentifiersSub.unsubscribe();
   }
 }

@@ -4,7 +4,6 @@
 @import '~bootstrap/scss/bootstrap-grid';
 @import "~ng-pick-datetime/assets/style/picker.min.css";
 
-@import '~saturn-datepicker/theming';
 @include mat-core();
 
 @import './styles/styles-variables';
@@ -18,7 +17,6 @@
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
-  @include sat-datepicker-theme($theme);
 }
 
 .default-theme {
