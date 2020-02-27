@@ -1,10 +1,9 @@
-import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
-  POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE,
   ExperimentVM
 } from '../../../../../../core/experiments/store/experiments.model';
@@ -21,6 +20,7 @@ export class NewExperimentComponent {
   selectedStepperIndex = 0;
   experimentInfo: ExperimentVM;
   animationCompletedIndex: Number;
+  @ViewChild('stepper', { static: false }) stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
@@ -46,7 +46,9 @@ export class NewExperimentComponent {
           ...this.newExperimentData,
           ...formData
         };
-        if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
+        if (path === NewExperimentPaths.EXPERIMENT_DESIGN) {
+          this.stepper.next();
+        } else if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
           this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE;
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();

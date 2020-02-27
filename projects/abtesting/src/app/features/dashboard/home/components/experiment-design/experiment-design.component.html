@@ -246,6 +246,11 @@
     </button>
   </ng-container>
 
+  <span
+    class="validation-message"
+    *ngFor="let error of partitionPointErrors"
+  >{{ error }} </span>
+
   <div class="button-container">
     <button
       matStepperPrevious
@@ -262,7 +267,6 @@
         {{ 'global.cancel.text' | translate }}
       </button>
       <button
-        matStepperNext
         mat-raised-button
         class="default-button"
         [ngClass]="{
