@@ -177,13 +177,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
-    this.validatePartitionNames();
-    if (!this.partitionPointErrors.length) {
-      switch (eventType) {
-        case NewExperimentDialogEvents.CLOSE_DIALOG:
-          this.emitExperimentDialogEvent.emit({ type: eventType });
-          break;
-        case NewExperimentDialogEvents.SEND_FORM_DATA:
+    switch (eventType) {
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.emitExperimentDialogEvent.emit({ type: eventType });
+        break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.validatePartitionNames();
+        if (!this.partitionPointErrors.length) {
           const experimentDesignFormData = {
             ...this.experimentDesignForm.value
           };
@@ -199,9 +199,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             formData: experimentDesignFormData,
             path: NewExperimentPaths.EXPERIMENT_DESIGN
           });
-          break;
+        }
+        break;
       }
-    }
   }
 
 
