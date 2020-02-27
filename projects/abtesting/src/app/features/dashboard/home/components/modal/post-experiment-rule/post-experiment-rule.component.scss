@@ -1,8 +1,9 @@
 .experiment-rule {
   .title {
     color: var(--black-2);
-    font-family: OpenSans-SemiBold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-x-large);
+    font-weight: 600;
   }
 
   &-form {

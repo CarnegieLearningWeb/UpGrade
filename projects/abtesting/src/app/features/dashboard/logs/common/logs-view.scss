@@ -8,7 +8,8 @@ $text-color: #8f9bb3;
     .search-input {
       width: 250px;
       line-height: 20px;
-      font-family: OpenSans-Regular;
+      font-family: 'Open Sans';
+      font-weight: 400;
     }
 
     ::ng-deep .mat-form-field-suffix {
@@ -27,14 +28,16 @@ $text-color: #8f9bb3;
       .date-info {
         display: block;
         color: var(--black-2);
-        font-family: OpenSans-Semibold;
+        font-family: 'Open Sans';
         font-size: 24px;
+        font-weight: 600;
       }
 
       .day-info {
         color: $text-color;
-        font-family: OpenSans-Regular;
+        font-family: 'Open Sans';
         font-size: 14px;
+        font-weight: 400;
       }
     }
 
@@ -50,8 +53,9 @@ $text-color: #8f9bb3;
     justify-content: center;
     height: 50px;
     color: var(--grey);
-    font-family: OpenSans-Bold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xxx-large);
+    font-weight: 700;
   }
 
   .spinner {
