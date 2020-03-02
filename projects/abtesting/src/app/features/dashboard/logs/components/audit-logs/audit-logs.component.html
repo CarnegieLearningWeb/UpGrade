@@ -1,6 +1,7 @@
-<div class="logs">
+<div class="logs" #auditLogContainer>
   <div class="logs__searching">
-    <mat-form-field class="search-input">
+    <!-- TODO: Add search audit log -->
+    <!-- <mat-form-field class="search-input">
       <input
         matInput
         [(ngModel)]="searchValue"
@@ -8,7 +9,7 @@
         [placeholder]="'logs.audit-logs-search.text' | translate"
       />
       <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
+    </mat-form-field> -->
     <mat-form-field class="theme-selector">
       <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
         <mat-option *ngFor="let option of logsOptions" [value]="option.value">
@@ -18,26 +19,23 @@
     </mat-form-field>
   </div>
 
-  <ng-container *ngIf="!(isAuditLoading$ | async); else auditSpinner">
-    <ng-container *ngIf="(auditLogData | json) != '{}'; else zeroStateAudit">
-      <div class="timeline-container" *ngFor="let logData of auditLogData | keyvalue: valueDescOrder">
-        <div class="error-date">
-          <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
-          <span class="day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
-        </div>
-
-        <logs-timeline class="timeline" [logData]="logData.value" [logType]="LogType.AUDIT_LOG"></logs-timeline>
+  <ng-container *ngIf="(auditLogData | json) != '{}'; else zeroStateAudit">
+    <div class="timeline-container" *ngFor="let logData of auditLogData | keyvalue: valueDescOrder">
+      <div class="error-date">
+        <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
+        <span class="day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
       </div>
 
-      <ng-template #zeroStateAudit>
-        <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
-      </ng-template>
-    </ng-container>
+      <logs-timeline class="timeline" [logData]="logData.value" [logType]="LogType.AUDIT_LOG"></logs-timeline>
+    </div>
+
+    <ng-template #zeroStateAudit>
+      <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
+    </ng-template>
   </ng-container>
 
-  <ng-template #auditSpinner>
-    <div class="spinner">
-      <mat-spinner diameter="60" value="60"></mat-spinner>
-    </div>
-  </ng-template>
-</div>
+  <div class="spinner" *ngIf="isAuditLoading$ | async">
+    <mat-spinner diameter="60" value="60"></mat-spinner>
+  </div>
+
+  </div>

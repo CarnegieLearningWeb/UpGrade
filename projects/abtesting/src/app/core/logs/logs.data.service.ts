@@ -1,18 +1,21 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClientService } from '../http/http-client.service';
+import { LogsPagination } from './logs-pagination';
 
 @Injectable()
 export class LogsDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllAuditLogs() {
+  getAllAuditLogs(skip: number, fromStart: boolean) {
     const url = environment.api.getAllAuditLogs;
-    return this.http.post(url, { skip: 0, take: 0 });
+    const args = LogsPagination.getLogParameters(skip, fromStart);
+    return this.http.post(url, args);
   }
 
-  getAllErrorLogs() {
+  getAllErrorLogs(skip: number, fromStart: boolean) {
     const url = environment.api.getAllErrorLogs;
-    return this.http.post(url, { skip: 0, take: 0 });
+    const args = LogsPagination.getLogParameters(skip, fromStart);
+    return this.http.post(url, args);
   }
 }

@@ -1,22 +1,24 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { LogType, LogDateFormatType, AuditLogs } from '../../../../../core/logs/store/logs.model';
 import { KeyValue } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subscription, fromEvent } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'audit-logs',
   templateUrl: './audit-logs.component.html',
   styleUrls: ['./audit-logs.component.scss']
 })
-export class AuditLogsComponent implements OnInit, OnDestroy {
+export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   auditLogData: any;
   auditLogsSubscription: Subscription;
   searchValue: string;
   logsOptions = [{ value: 'Showing all Activities', viewValue: 'Showing all Activities' }];
   selectedLogOption = this.logsOptions[0].value;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
+  @ViewChild('auditLogContainer', { static: false }) auditLogContainer: ElementRef;
 
   constructor(private logsService: LogsService) {}
 
@@ -49,5 +51,20 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
 
   get LogDateFormatTypes() {
     return LogDateFormatType;
+  }
+
+  ngAfterViewInit() {
+    // subtract other component's height
+    const screenHeight = window.screen.height;
+    this.auditLogContainer.nativeElement.style.height = (screenHeight - 450) + 'px';
+    fromEvent(this.auditLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
+      const height = this.auditLogContainer.nativeElement.clientHeight;
+      const scrollHeight = this.auditLogContainer.nativeElement.scrollHeight - height;
+      const scrollTop = this.auditLogContainer.nativeElement.scrollTop;
+      const percent = Math.floor(scrollTop / scrollHeight * 100);
+      if (percent > 80) {
+        this.logsService.fetchAuditLogs();
+      }
+    });
   }
 }

@@ -39,4 +39,12 @@ export class LogsService {
       )
     );
   }
+
+  fetchAuditLogs(fromStart?: boolean) {
+    this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart }));
+  }
+
+  fetchErrorLogs(fromStart?: boolean) {
+    this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart }))
+  }
 }

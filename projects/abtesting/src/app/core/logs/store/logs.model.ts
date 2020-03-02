@@ -4,6 +4,8 @@ import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'ees_types';
 
 export { EXPERIMENT_LOG_TYPE, SERVER_ERROR };
 
+export const NUMBER_OF_LOGS  = 10;
+
 export enum LogType {
   ERROR_LOG = 'Error log',
   AUDIT_LOG = 'Audit log'
@@ -38,6 +40,10 @@ export interface ErrorLogs {
 export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   isAuditLogLoading: boolean;
   isErrorLogLoading: boolean;
+  skipAuditLog: number;
+  totalAuditLogs: number;
+  skipErrorLog: number;
+  totalErrorLogs: number;
 }
 
 export interface State extends AppState {
