@@ -32,15 +32,17 @@ $login-info-text-color: #8f9bb3;
         &__title {
           display: block;
           color: var(--black-2);
-          font-family: OpenSans-Bold;
+          font-family: 'Open Sans';
           font-size: $app-title-font-size;
+          font-weight: 700;
         }
 
         &__description {
           display: block;
           color: var(--black-2);
-          font-family: OpenSans-SemiBold;
+          font-family: 'Open Sans';
           font-size: var(--text-size-normal);
+          font-weight: 600;
         }
       }
     }
@@ -53,15 +55,16 @@ $login-info-text-color: #8f9bb3;
       padding: 10px 30px;
       width: 400px;
       color: var(--white);
-      font-family: OpenSans-SemiBold;
+      font-family: 'Open Sans';
       font-size: var(--text-size-normal);
       font-weight: 600;
     }
 
     .info {
       color: $login-info-text-color;
-      font-family: OpenSans-SemiBold;
+      font-family: 'Open Sans';
       font-size: var(--text-size-small);
+      font-weight: 600;
 
       &--terms {
         color: var(--blue);

@@ -8,16 +8,18 @@ $tab-text-color: #8f9bb3;
   .title {
     margin-bottom: 0;
     color: var(--black-2);
-    font-family: OpenSans-Bold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xxxxx-large);
+    font-weight: 700;
   }
 
   .subtitle {
     display: block;
     margin-bottom: 40px;
     color: var(--grey-3);
-    font-family: OpenSans-Regular;
+    font-family: 'Open Sans';
     font-size: var(--text-size-normal);
+    font-weight: 400;
   }
 
   .tabs-wrapper {
@@ -38,9 +40,9 @@ $tab-text-color: #8f9bb3;
 
   ::ng-deep .mat-tab-label-content {
     color: $tab-text-color;
-    font-family: OpenSans-Regular;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xx-large);
-    font-weight: bold;
+    font-weight: 400;
   }
 
   ::ng-deep .mat-tab-label-active {
