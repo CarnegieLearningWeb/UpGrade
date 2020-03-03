@@ -2,7 +2,6 @@ import { createReducer, on, Action } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
 import { AuditLogs, LogState, ErrorLogs } from './logs.model';
 import * as logsActions from './logs.actions';
-import * as pullallby from 'lodash.pullallby';
 
 export const adapter: EntityAdapter<AuditLogs | ErrorLogs> = createEntityAdapter<AuditLogs | ErrorLogs>();
 
@@ -23,12 +22,11 @@ const reducer = createReducer(
     ...state
   })),
   on(logsActions.actionGetAuditLogsSuccess, (state, { auditLogs, totalAuditLogs }) => {
-    const logs = pullallby(auditLogs, Object.values(state.entities), 'id');
     return adapter.upsertMany(auditLogs, {
       ...state,
       isAuditLogLoading: false,
       totalAuditLogs,
-      skipAuditLog: state.skipAuditLog + logs.length
+      skipAuditLog: state.skipAuditLog + auditLogs.length
     });
   }),
   on(logsActions.actionGetAuditLogsFailure, state => ({
@@ -39,12 +37,11 @@ const reducer = createReducer(
     ...state,
   })),
   on(logsActions.actionGetErrorLogsSuccess, (state, { errorLogs, totalErrorLogs }) => {
-    const logs = pullallby(errorLogs, Object.values(state.entities), 'id');
     return adapter.upsertMany(errorLogs, {
       ...state,
       isErrorLogLoading: false,
       totalErrorLogs,
-      skipErrorLog: state.skipErrorLog + logs.length
+      skipErrorLog: state.skipErrorLog + errorLogs.length
     });
   }),
   on(logsActions.actionGetErrorLogsFailure, state => ({
