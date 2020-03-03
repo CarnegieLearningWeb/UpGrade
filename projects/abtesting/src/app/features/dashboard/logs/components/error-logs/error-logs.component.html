@@ -10,7 +10,7 @@
       />
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field> -->
-    <mat-form-field class="theme-selector">
+    <mat-form-field class="error-log-filter">
       <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
         <mat-option *ngFor="let option of logsOptions" [value]="option.value">
           {{ option.viewValue }}

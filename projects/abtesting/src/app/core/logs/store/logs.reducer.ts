@@ -1,6 +1,6 @@
 import { createReducer, on, Action } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { AuditLogs, LogState, ErrorLogs } from './logs.model';
+import { AuditLogs, LogState, ErrorLogs, AuditLogFilters, ErrorLogFilters } from './logs.model';
 import * as logsActions from './logs.actions';
 
 export const adapter: EntityAdapter<AuditLogs | ErrorLogs> = createEntityAdapter<AuditLogs | ErrorLogs>();
@@ -13,7 +13,9 @@ export const initialState: LogState = adapter.getInitialState({
   skipAuditLog: 0,
   totalAuditLogs: null,
   skipErrorLog: 0,
-  totalErrorLogs: null
+  totalErrorLogs: null,
+  auditLogFilter: AuditLogFilters.ALL,
+  errorLogFilter: ErrorLogFilters.ALL
 });
 
 const reducer = createReducer(
@@ -48,11 +50,23 @@ const reducer = createReducer(
     ...state,
     isErrorLogLoading: false
   })),
+  on(logsActions.actionSetSkipAuditLog,  (state, { skipAuditLog }) => {
+    return ({ ...state, skipAuditLog });
+  }),
+  on(logsActions.actionSetSkipErrorLog,  (state, { skipErrorLog }) => {
+    return ({ ...state, skipErrorLog });
+  }),
   on(logsActions.actionSetIsAuditLogLoading, (state, { isAuditLogLoading }) => {
     return ({ ...state, isAuditLogLoading })
   }),
   on(logsActions.actionSetIsErrorLogLoading, (state, { isErrorLogLoading }) => {
     return ({ ...state, isErrorLogLoading })
+  }),
+  on(logsActions.actionSetAuditLogFilter, (state, { filterType }) => {
+    return ({ ...state, auditLogFilter: filterType })
+  }),
+  on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => {
+    return ({ ...state, errorLogFilter: filterType })
   })
 );
 

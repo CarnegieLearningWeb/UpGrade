@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LogType, ErrorLogs, LogDateFormatType } from '../../../../../core/logs/store/logs.model';
+import { LogType, ErrorLogs, LogDateFormatType, ErrorLogFilters } from '../../../../../core/logs/store/logs.model';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
@@ -16,7 +16,14 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   errorLogSubscription: Subscription;
   searchValue: string;
   logsOptions = [
-    { value: 'Showing all Activities', viewValue: 'Showing all Activities' },
+    { value: ErrorLogFilters.ALL, viewValue: 'All' },
+    { value: ErrorLogFilters.DB_AUTH_FAIL, viewValue: 'Database authentication fail' },
+    { value: ErrorLogFilters.ASSIGNMENT_ERROR, viewValue: 'Error in the assignment algorithm' },
+    { value: ErrorLogFilters.MISSING_PARAMS, viewValue: 'Parameter missing' },
+    { value: ErrorLogFilters.INCORRECT_PARAM_FORMAT, viewValue: 'Parameter not in the correct format' },
+    { value: ErrorLogFilters.USER_NOT_FOUND, viewValue: 'User ID not found' },
+    { value: ErrorLogFilters.QUERY_FAILED, viewValue: 'Query Failed' },
+    { value: ErrorLogFilters.REPORTED_ERROR, viewValue: 'Error reported from client' },
 
   ];
   selectedLogOption = this.logsOptions[0].value;
@@ -39,14 +46,14 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.errorLogSubscription.unsubscribe();
   }
 
-  searchLogs(value: string) {}
-
   // Used for keyvalue pipe to sort data by key
   valueDescOrder = (a: KeyValue<string, ErrorLogs>, b: KeyValue<string, ErrorLogs>): number => {
     return new Date(a.key).getTime() > new Date(b.key).getTime() ? 1 : 0;
   };
 
-  changeLogOption(value: string) {}
+  changeLogOption(value: ErrorLogFilters) {
+    this.logsService.setErrorLogFilter(value);
+  }
 
   get LogType() {
     return LogType;

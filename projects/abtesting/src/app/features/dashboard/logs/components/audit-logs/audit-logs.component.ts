@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LogType, LogDateFormatType, AuditLogs } from '../../../../../core/logs/store/logs.model';
+import { LogType, LogDateFormatType, AuditLogs, AuditLogFilters } from '../../../../../core/logs/store/logs.model';
 import { KeyValue } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
@@ -15,7 +15,13 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   auditLogData: any;
   auditLogsSubscription: Subscription;
   searchValue: string;
-  logsOptions = [{ value: 'Showing all Activities', viewValue: 'Showing all Activities' }];
+  logsOptions = [
+    { value: AuditLogFilters.ALL, viewValue: 'All' },
+    { value: AuditLogFilters.EXPERIMENT_CREATED, viewValue: 'Created' },
+    { value: AuditLogFilters.EXPERIMENT_UPDATED, viewValue: 'Updated' },
+    { value: AuditLogFilters.EXPERIMENT_STATE_CHANGED, viewValue: 'State changed' },
+    { value: AuditLogFilters.EXPERIMENT_DELETED, viewValue: 'Deleted' }
+  ];
   selectedLogOption = this.logsOptions[0].value;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
   @ViewChild('auditLogContainer', { static: false }) auditLogContainer: ElementRef;
@@ -36,9 +42,9 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.auditLogsSubscription.unsubscribe();
   }
 
-  searchLogs(value: string) {}
-
-  changeLogOption(value: string) {}
+  changeLogOption(value: AuditLogFilters) {
+    this.logsService.setAuditLogFilter(value);
+  }
 
   // Used for keyvalue pipe to sort data by key
   valueDescOrder = (a: KeyValue<string, AuditLogs>, b: KeyValue<string, AuditLogs>): number => {

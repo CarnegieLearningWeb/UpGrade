@@ -16,6 +16,25 @@ export enum LogDateFormatType {
   YEAR_DAY = 'yearDay'
 }
 
+export enum AuditLogFilters {
+  ALL = 'all',
+  EXPERIMENT_CREATED = 'experimentCreated',
+  EXPERIMENT_UPDATED = 'experimentUpdated',
+  EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
+  EXPERIMENT_DELETED = 'experimentDeleted'
+}
+
+export enum ErrorLogFilters {
+  ALL = 'all',
+  DB_AUTH_FAIL = 'Database auth fail',
+  ASSIGNMENT_ERROR = 'Error in the assignment algorithm',
+  MISSING_PARAMS = 'Parameter missing in the client request',
+  INCORRECT_PARAM_FORMAT = 'Parameter not in the correct format',
+  USER_NOT_FOUND = 'User ID not found',
+  QUERY_FAILED = 'Query Failed',
+  REPORTED_ERROR = 'Error reported from client'
+}
+
 export interface AuditLogs {
   id: string;
   createdAt: string;
@@ -44,6 +63,8 @@ export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   totalAuditLogs: number;
   skipErrorLog: number;
   totalErrorLogs: number;
+  auditLogFilter: AuditLogFilters;
+  errorLogFilter: ErrorLogFilters;
 }
 
 export interface State extends AppState {

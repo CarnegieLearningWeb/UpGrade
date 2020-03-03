@@ -1,5 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { State, LogState, EXPERIMENT_LOG_TYPE, AuditLogs, ErrorLogs, SERVER_ERROR } from './logs.model';
+import { State, LogState, EXPERIMENT_LOG_TYPE, AuditLogs, ErrorLogs, SERVER_ERROR, AuditLogFilters, ErrorLogFilters } from './logs.model';
 import { selectAll } from './logs.reducer';
 
 export const selectLogState = createFeatureSelector<State, LogState>(
@@ -19,13 +19,21 @@ export const selectIsErrorLogLoading = createSelector(
 );
 
 export const selectAllAuditLogs = createSelector(
+  selectLogState,
   selectAllLogs,
-  (logs) => logs.filter((log: AuditLogs | ErrorLogs) => (Object.values(EXPERIMENT_LOG_TYPE).includes((log as any ).type)))
+  (state, logs) => logs.filter((log: AuditLogs | ErrorLogs) => {
+    return (Object.values(EXPERIMENT_LOG_TYPE).includes((log as any ).type) &&
+      ((log.type as any) === state.auditLogFilter || state.auditLogFilter === AuditLogFilters.ALL ))
+  })
 );
 
 export const selectAllErrorLogs = createSelector(
+  selectLogState,
   selectAllLogs,
-  (logs) => logs.filter((log: AuditLogs | ErrorLogs) => (Object.values(SERVER_ERROR).includes((log as any ).type)))
+  (state, logs) => logs.filter((log: AuditLogs | ErrorLogs) => {
+    return (Object.values(SERVER_ERROR).includes((log as any ).type) &&
+      ((log.type as any) === state.errorLogFilter || state.errorLogFilter === ErrorLogFilters.ALL ))
+  })
 );
 
 export const selectSkipAuditLog = createSelector(
@@ -46,4 +54,14 @@ export const selectSkipErrorLog = createSelector(
 export const selectTotalErrorLogs = createSelector(
   selectLogState,
   (state) => state.totalErrorLogs
+);
+
+export const selectAuditFilterType = createSelector(
+  selectLogState,
+  (state) => state.auditLogFilter
+);
+
+export const selectErrorFilterType = createSelector(
+  selectLogState,
+  (state) => state.errorLogFilter
 );
