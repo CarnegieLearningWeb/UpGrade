@@ -28,12 +28,12 @@
 
         <logs-timeline class="timeline" [logData]="logData.value" [logType]="LogType.AUDIT_LOG"></logs-timeline>
       </div>
-
-      <ng-template #zeroStateAudit>
-        <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
-      </ng-template>
     </ng-container>
   </ng-container>
+
+  <ng-template #zeroStateAudit>
+    <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
+  </ng-template>
 
   <ng-template #auditSpinner>
     <div class="spinner">
