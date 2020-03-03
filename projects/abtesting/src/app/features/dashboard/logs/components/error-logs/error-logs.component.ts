@@ -25,7 +25,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy {
       errorLogs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
       this.errorLogData = groupBy(errorLogs, log => {
         const date = new Date(log.createdAt);
-        return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+        return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
   }
