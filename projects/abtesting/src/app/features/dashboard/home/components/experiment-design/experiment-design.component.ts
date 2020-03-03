@@ -154,6 +154,16 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     const alreadyExistedPartitions = [];
     const duplicatePartitions = [];
 
+    // Used for updating existing experiment
+    if (this.experimentInfo) {
+        this.experimentInfo.partitions.forEach(partition => {
+          const partitionPointIndex = this.allPartitions.indexOf(partition.point);
+          if (partitionPointIndex !== -1) {
+            this.allPartitions.splice(partitionPointIndex, 1);
+          }
+        });
+    }
+
     partitions.forEach((partition, index) => {
       if (this.allPartitions.indexOf(partition.point) !== -1 && alreadyExistedPartitions.indexOf(partition.point) === -1) {
         alreadyExistedPartitions.push(partition.point);
