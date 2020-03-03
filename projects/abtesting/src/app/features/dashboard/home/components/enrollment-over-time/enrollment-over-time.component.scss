@@ -1,4 +1,5 @@
 $text-size-largest: 50px;
+$selected-range-color: #c2d1ff;
 
 .enrollment-over-time {
   margin-top: 20px;
@@ -89,5 +90,18 @@ $text-size-largest: 50px;
       }
     }
   }
+
 }
 
+::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
+  background-color: var(--blue);
+}
+
+::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-in-range {
+  background-color: $selected-range-color;
+}
+
+::ng-deep .owl-dt-container-info .owl-dt-container-info-active,
+::ng-deep .owl-dt-container-info .owl-dt-container-range:last-child {
+  color: var(--blue);
+}

@@ -45,10 +45,9 @@ $dark-grey-text-color: #707a85;
       .action-buttons {
         flex-shrink: 0;
         align-self: flex-start;
-        width: 400px;
 
         .edit-button,
-        .experiment-design-button {
+        .delete-button {
           margin-left: 15px !important;
           border: 1px solid var(--blue);
           background: $white-background;
@@ -146,4 +145,32 @@ $dark-grey-text-color: #707a85;
       }
     }
   }
+
+  .table-container {
+    margin-top: 30px;
+
+    .title {
+      color: var(--black-2);
+      font-family: OpenSans-SemiBold;
+      font-size: var(--text-size-xxx-large);
+    }
+
+    .table {
+      mat-cell,
+      mat-header-cell {
+        display: flex;
+        justify-content: center;
+        padding: 10px;
+        word-break: break-word;
+      }
+
+      mat-header-cell {
+        border-color: var(--light-grey);
+        color: var(--grey-2);
+        font-family: OpenSans-Bold;
+        font-size: var(--text-size-x-small);
+      }
+    }
+  }
 }
+

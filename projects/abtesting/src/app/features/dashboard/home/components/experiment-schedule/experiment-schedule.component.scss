@@ -13,6 +13,7 @@
 
     mat-form-field {
       margin-left: 30px;
+      width: 200px;
     }
   }
 
@@ -57,4 +58,12 @@
 
 ::ng-deep .mat-radio-button.mat-primary .mat-radio-inner-circle {
   background-color: var(--blue) !important;
+}
+
+::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
+  background-color: var(--blue);
+}
+
+::ng-deep .owl-dt-control .owl-dt-control-content {
+  color: var(--blue);
 }

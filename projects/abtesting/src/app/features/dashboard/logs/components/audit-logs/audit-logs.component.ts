@@ -25,7 +25,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
       logs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
       this.auditLogData = groupBy(logs, log => {
         const date = new Date(log.createdAt);
-        return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+        return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
   }

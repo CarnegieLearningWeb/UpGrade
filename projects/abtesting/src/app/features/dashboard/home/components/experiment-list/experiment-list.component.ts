@@ -8,7 +8,7 @@ import {
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { Experiment } from '../../../../../core/experiments/store/experiments.model';
+import { Experiment, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material';
@@ -32,6 +32,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'name',
     'state',
+    'postExperiment',
     'createdAt',
     'tags',
     'enrollment',
@@ -74,6 +75,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     this.allExperiments.sortingDataAccessor = (data: any, property) => {
       if (property === 'enrollment') {
         return data.stat.users ? data.stat.users : data.stat.group;
+      } else if (property === 'postExperiment') {
+        return data.postExperimentRule;
       } else {
         return data[property];
       }
@@ -124,7 +127,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
 
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
-      width: '50%'
+      width: '55%'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -156,11 +159,20 @@ export class ExperimentListComponent implements OnInit, OnDestroy {
     return index !== -1 ? this.tagsVisibility[index].visibility : false;
   }
 
+  getConditionCode(conditionId: string, experimentId: string) {
+    const experimentFound = this.allExperiments.data.find(experiment => experiment.id === experimentId);
+    return !!experimentFound ? '(' + experimentFound.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
+  }
+
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
   }
 
   get ExperimentStatePipeTypes() {
     return ExperimentStatePipeType;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
   }
 }

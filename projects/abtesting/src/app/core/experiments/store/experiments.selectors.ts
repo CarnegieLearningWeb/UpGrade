@@ -40,3 +40,13 @@ export const selectExperimentStats = createSelector(
   selectExperimentState,
   (state) => state.stats
 );
+
+export const selectAllPartitions = createSelector(
+  selectExperimentState,
+  (state) => state.allPartitions
+);
+
+export const selectAllUniqueIdentifiers = createSelector(
+  selectExperimentState,
+  (state) => state.uniqueIdentifiers
+);

@@ -32,7 +32,8 @@ export enum NewExperimentDialogEvents {
 export enum NewExperimentPaths {
   EXPERIMENT_OVERVIEW = 'Experiment Overview',
   EXPERIMENT_DESIGN = 'Experiment Design',
-  EXPERIMENT_SCHEDULE = 'Experiment Schedule'
+  EXPERIMENT_SCHEDULE = 'Experiment Schedule',
+  POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
 
 export interface NewExperimentDialogData {
@@ -76,6 +77,7 @@ export interface ExperimentCondition {
   description: string;
   conditionCode: string;
   assignmentWeight: number;
+  twoCharacterId: string;
 }
 
 export interface ExperimentPartition {
@@ -83,6 +85,7 @@ export interface ExperimentPartition {
   point: string;
   name: string;
   description: string;
+  twoCharacterId: string;
 }
 
 export interface Experiment {
@@ -113,7 +116,9 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   stats: {
     [key: string]: IExperimentEnrollmentStats
-  }
+  },
+  uniqueIdentifiers: {},
+  allPartitions: {}
 }
 
 export interface State extends AppState {

@@ -55,12 +55,6 @@
     color: var(--blue);
     font-family: OpenSans-Bold;
     font-size: var(--text-size-x-small);
-
-    &--disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
   }
 
   .validation-message {

@@ -65,6 +65,8 @@ export class ExperimentEffects {
                 return [
                   experimentAction.actionStoreExperimentStats({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
+                  experimentAction.actionFetchAllPartitions(),
+                  experimentAction.actionFetchAllUniqueIdentifiers(),
                   logsAction.actionGetAllAuditLogs(),
                   logsAction.actionGetAllErrorLogs()
                 ];
@@ -111,6 +113,26 @@ export class ExperimentEffects {
         );
       })
     )
+  );
+
+  fetchAllPartitions = createEffect(() =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionFetchAllPartitions),
+        switchMap(() => this.experimentDataService.fetchAllPartitions().pipe(
+          map(allPartitions => experimentAction.actionFetchAllPartitionSuccess({ partitions: allPartitions })),
+          catchError(() => [experimentAction.actionFetchAllPartitionFailure()])
+        ))
+      )
+  );
+
+  fetchAllUniqueIdentifiers = createEffect(() =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionFetchAllUniqueIdentifiers),
+        switchMap(() => this.experimentDataService.fetchAllUniqueIdentifiers().pipe(
+          map(uniqueIdentifiers => experimentAction.actionFetchAllUniqueIdentifiersSuccess({ uniqueIdentifiers })),
+          catchError(() => [experimentAction.actionFetchAllUniqueIdentifiersFailure()])
+        ))
+      )
   );
 
   navigateOnDeleteExperiment$ = createEffect(

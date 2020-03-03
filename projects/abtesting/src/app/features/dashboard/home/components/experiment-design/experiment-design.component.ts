@@ -8,13 +8,16 @@ import {
   ViewChild,
   ElementRef,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'home-experiment-design',
@@ -22,9 +25,8 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
   styleUrls: ['./experiment-design.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExperimentDesignComponent implements OnInit, OnChanges {
+export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() disableControls = false;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -35,10 +37,37 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
+  allUniqueIdentifiers = [];
+  uniqueIdentifiersSub: Subscription;
+  allPartitions = [];
+  allPartitionsSub: Subscription;
 
-  conditionDisplayedColumns = [ 'conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['partitionNumber', 'point', 'name', 'removePartition'];
-  constructor(private _formBuilder: FormBuilder) {}
+  // Partition Errors
+  partitionPointErrors = [];
+  partitionErrorMessages = [];
+  partitionErrorMessagesSub: Subscription;
+
+  conditionDisplayedColumns = [ 'conditionNumber', 'uniqueIdentifier', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
+  partitionDisplayedColumns = ['partitionNumber', 'uniqueIdentifier', 'point', 'name', 'removePartition'];
+  constructor(
+    private _formBuilder: FormBuilder,
+    private experimentService: ExperimentService,
+    private translate: TranslateService
+  ) {
+    this.partitionErrorMessagesSub = this.translate.get([
+      'home.new-experiment.design.assignment-partition-error-1.text',
+      'home.new-experiment.design.assignment-partition-error-2.text',
+      'home.new-experiment.design.assignment-partition-error-3.text',
+      'home.new-experiment.design.assignment-partition-error-4.text'
+    ]).subscribe(arrayValues => {
+      this.partitionErrorMessages = [
+        arrayValues['home.new-experiment.design.assignment-partition-error-1.text'],
+        arrayValues['home.new-experiment.design.assignment-partition-error-2.text'],
+        arrayValues['home.new-experiment.design.assignment-partition-error-3.text'],
+        arrayValues['home.new-experiment.design.assignment-partition-error-4.text'],
+      ];
+    })
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.animationCompleteStepperIndex && changes.animationCompleteStepperIndex.currentValue === 1 && this.conditionCode) {
@@ -47,6 +76,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
+    this.allPartitionsSub = this.experimentService.allPartitions$.subscribe((partitions: any) => {
+      this.allPartitions = partitions.map(partition => partition.point);
+    });
+    this.uniqueIdentifiersSub = this.experimentService.uniqueIdentifiers$.subscribe((identifiers: any) => {
+      this.allUniqueIdentifiers = !!identifiers ? [...identifiers.conditionIds, ...identifiers.partitionsIds] : [];
+    });
     this.experimentDesignForm = this._formBuilder.group(
       {
         conditions: this._formBuilder.array([this.addConditions(), this.addConditions()]),
@@ -60,37 +95,31 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
       this.condition.removeAt(0);
       this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach(condition => {
-        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description));
+        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description, condition.twoCharacterId));
       });
       this.experimentInfo.partitions.forEach(partition => {
-        this.partition.push(this.addPartitions(partition.point, partition.name, partition.description));
+        this.partition.push(this.addPartitions(partition.point, partition.name, partition.description, partition.twoCharacterId));
       });
     }
     this.updateView();
   }
 
-  addConditions(conditionCode = null, assignmentWeight = null, description = null) {
+  addConditions(conditionCode = null, assignmentWeight = null, description = null, twoCharacterId = null) {
     return this._formBuilder.group({
       conditionCode: [conditionCode, Validators.required],
       assignmentWeight: [assignmentWeight, Validators.required],
-      description: [description]
+      description: [description],
+      twoCharacterId: [twoCharacterId ? twoCharacterId : this.getUniqueCharacterId()]
     });
   }
 
-  addPartitions(point = null, name = null, description = '') {
+  addPartitions(point = null, name = null, description = '', twoCharacterId = null) {
     return this._formBuilder.group({
       point: [point, Validators.required],
-      name: [name, Validators.required],
-      description: [description]
+      name: [name],
+      description: [description],
+      twoCharacterId: [twoCharacterId ? twoCharacterId : this.getUniqueCharacterId()]
     });
-  }
-
-  get condition(): FormArray {
-    return this.experimentDesignForm.get('conditions') as FormArray;
-  }
-
-  get partition(): FormArray {
-    return this.experimentDesignForm.get('partitions') as FormArray;
   }
 
   addConditionOrPartition(type: string) {
@@ -100,9 +129,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
     this.updateView(scrollTableType);
   }
 
-  removeConditionOrPartition(type: string, groupIndex: number) {
+  removeConditionOrPartition(type: string, groupIndex: number, twoCharacterId: string) {
     this[type].removeAt(groupIndex);
     this.updateView();
+    this.allUniqueIdentifiers.splice(this.allUniqueIdentifiers.indexOf(twoCharacterId), 1);
   }
 
   updateView(type?: string) {
@@ -116,29 +146,81 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
     }
   }
 
+  validatePartitionNames() {
+    this.partitionPointErrors = [];
+    const { partitions } = this.experimentDesignForm.value;
+
+    // Used to differentiate errors
+    const alreadyExistedPartitions = [];
+    const duplicatePartitions = [];
+
+    // Used for updating existing experiment
+    if (this.experimentInfo) {
+        this.experimentInfo.partitions.forEach(partition => {
+          const partitionPointIndex = this.allPartitions.indexOf(partition.point);
+          if (partitionPointIndex !== -1) {
+            this.allPartitions.splice(partitionPointIndex, 1);
+          }
+        });
+    }
+
+    partitions.forEach((partition, index) => {
+      if (this.allPartitions.indexOf(partition.point) !== -1 && alreadyExistedPartitions.indexOf(partition.point) === -1) {
+        alreadyExistedPartitions.push(partition.point);
+      }
+      if (partitions.find((value, partitionIndex) => value.point === partition.point && partitionIndex !== index && duplicatePartitions.indexOf(partition.point) === -1)) {
+        duplicatePartitions.push(partition.point);
+      }
+    });
+
+    // Partition Points error messages
+    if (alreadyExistedPartitions.length === 1) {
+      this.partitionPointErrors.push(alreadyExistedPartitions[0] + this.partitionErrorMessages[0]);
+    } else if (alreadyExistedPartitions.length > 1) {
+      this.partitionPointErrors.push(alreadyExistedPartitions.join(', ') + this.partitionErrorMessages[1]);
+    }
+    if (duplicatePartitions.length === 1) {
+      this.partitionPointErrors.push(duplicatePartitions[0] + this.partitionErrorMessages[2]);
+    } else if (duplicatePartitions.length > 1) {
+      this.partitionPointErrors.push(duplicatePartitions.join(', ') + this.partitionErrorMessages[3]);
+    }
+  }
+
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        const experimentDesignFormData = {
-          ...this.experimentDesignForm.value
-        };
-        experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
-          (condition, index) => {
-            return this.experimentInfo
-              ? ({ ...this.experimentInfo.conditions[index], ...condition })
-              : ({ id: uuid(), ...condition, name: ''});
-          }
-        );
-        this.emitExperimentDialogEvent.emit({
-          type: eventType,
-          formData: experimentDesignFormData,
-          path: NewExperimentPaths.EXPERIMENT_DESIGN
-        });
+        this.validatePartitionNames();
+        if (!this.partitionPointErrors.length) {
+          const experimentDesignFormData = {
+            ...this.experimentDesignForm.value
+          };
+          experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
+            (condition, index) => {
+              return this.experimentInfo
+                ? ({ ...this.experimentInfo.conditions[index], ...condition })
+                : ({ id: uuid(), ...condition, name: ''});
+            }
+          );
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: experimentDesignFormData,
+            path: NewExperimentPaths.EXPERIMENT_DESIGN
+          });
+        }
         break;
-    }
+      }
+  }
+
+
+  get condition(): FormArray {
+    return this.experimentDesignForm.get('conditions') as FormArray;
+  }
+
+  get partition(): FormArray {
+    return this.experimentDesignForm.get('partitions') as FormArray;
   }
 
   get NewExperimentDialogEvents() {
@@ -152,5 +234,24 @@ export class ExperimentDesignComponent implements OnInit, OnChanges {
       );
     }
     return false;
+  }
+
+  // Used to generate twoCharacterId for condition and partition
+  getUniqueCharacterId() {
+    let identifier;
+    while (true) {
+      identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
+      if (this.allUniqueIdentifiers.indexOf(identifier) === -1) {
+        break;
+      }
+    }
+    this.allUniqueIdentifiers = [ ...this.allUniqueIdentifiers, identifier ];
+    return identifier;
+  }
+
+  ngOnDestroy() {
+    this.uniqueIdentifiersSub.unsubscribe();
+    this.allPartitionsSub.unsubscribe();
+    this.partitionErrorMessagesSub.unsubscribe();
   }
 }

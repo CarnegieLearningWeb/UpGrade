@@ -10,10 +10,26 @@
       <!-- CONDITION NUMBER Column -->
       <ng-container matColumnDef="conditionNumber">
         <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.number.text' | translate }}
+          {{ 'global.number.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let element; let groupIndex = index">
           <span>{{ groupIndex + 1 }}</span>
+        </mat-cell>
+      </ng-container>
+
+      <!-- UNIQUE IDENTIFIER Column -->
+      <ng-container matColumnDef="uniqueIdentifier">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'home.new-experiment.design.unique-identifier.text' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+          <mat-form-field floatLabel="never">
+            <input
+              matInput
+              formControlName="twoCharacterId"
+              readonly
+            />
+          </mat-form-field>
         </mat-cell>
       </ng-container>
 
@@ -26,7 +42,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else conditionCodeTemplate">
+          <mat-form-field floatLabel="never">
             <input
               matInput
               [placeholder]="
@@ -37,22 +53,19 @@
               #conditionCode
             />
           </mat-form-field>
-          <ng-template #conditionCodeTemplate>
-            <span> {{ experimentInfo.conditions[groupIndex].conditionCode }} </span>
-          </ng-template>
         </mat-cell>
       </ng-container>
 
       <!-- ASSIGNMENT WEIGHT Column -->
       <ng-container matColumnDef="assignmentWeight">
         <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.assignment-weight.text' | translate }}
+          {{ 'home-global.assignment-weight.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else assignmentWeightTemplate">
+          <mat-form-field floatLabel="never">
             <input
               type="number"
               matInput
@@ -63,9 +76,6 @@
               formControlName="assignmentWeight"
             />
           </mat-form-field>
-          <ng-template #assignmentWeightTemplate>
-            <span> {{ experimentInfo.conditions[groupIndex].assignmentWeight }} </span>
-          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -78,7 +88,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else conditionDescriptionTemplate">
+          <mat-form-field floatLabel="never">
             <input
               matInput
               [placeholder]="
@@ -88,9 +98,6 @@
               formControlName="description"
             />
           </mat-form-field>
-          <ng-template #conditionDescriptionTemplate>
-            <span class="condition-description"> {{ experimentInfo.conditions[groupIndex].description }} </span>
-          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -103,8 +110,8 @@
           <app-shared-icons
             [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="groupIndex !== 0 && groupIndex !== 1 && !disableControls"
-            (click)="removeConditionOrPartition('condition', groupIndex)"
+            *ngIf="groupIndex !== 0 && groupIndex !== 1"
+            (click)="removeConditionOrPartition('condition', groupIndex, element.controls.twoCharacterId.value)"
           ></app-shared-icons>
         </mat-cell>
       </ng-container>
@@ -125,7 +132,6 @@
       type="button"
       class="add-condition"
       (click)="addConditionOrPartition('condition')"
-      [ngClass]="{'add-condition--disabled': disableControls}"
     >
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
     </button>
@@ -143,10 +149,26 @@
      <!-- PARTITION NUMBER Column -->
      <ng-container matColumnDef="partitionNumber">
       <mat-header-cell *matHeaderCellDef>
-        {{ 'home.new-experiment.design.number.text' | translate }}
+        {{ 'global.number.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index">
         <span>{{ groupIndex + 1 }}</span>
+      </mat-cell>
+    </ng-container>
+
+    <!-- UNIQUE IDENTIFIER Column -->
+    <ng-container matColumnDef="uniqueIdentifier">
+      <mat-header-cell *matHeaderCellDef>
+        {{ 'home.new-experiment.design.unique-identifier.text' | translate }}
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+        <mat-form-field floatLabel="never">
+          <input
+            matInput
+            formControlName="twoCharacterId"
+            readonly
+          />
+        </mat-form-field>
       </mat-cell>
     </ng-container>
 
@@ -159,7 +181,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else partitionPointTemplate">
+          <mat-form-field floatLabel="never">
             <input
               matInput
               [placeholder]="
@@ -169,34 +191,28 @@
               formControlName="point"
             />
           </mat-form-field>
-          <ng-template #partitionPointTemplate>
-            <span> {{ experimentInfo.partitions[groupIndex].point }} </span>
-          </ng-template>
         </mat-cell>
       </ng-container>
 
       <!-- PARTITION NAME Column -->
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.partition-name.text' | translate }}
+          {{ 'home.new-experiment.design.partition-id.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <mat-form-field floatLabel="never" *ngIf="!disableControls; else partitionNameTemplate">
+          <mat-form-field floatLabel="never">
             <input
               matInput
               [placeholder]="
-                'home.new-experiment.design.partition-name.placeholder.text'
+                'home.new-experiment.design.partition-id.placeholder.text'
                   | translate
               "
               formControlName="name"
             />
           </mat-form-field>
-          <ng-template #partitionNameTemplate>
-            <span> {{ experimentInfo.partitions[groupIndex].name }} </span>
-          </ng-template>
         </mat-cell>
       </ng-container>
 
@@ -209,8 +225,8 @@
           <app-shared-icons
             [iconType]="'delete'"
             class="remove-icon"
-            *ngIf="groupIndex !== 0 && !disableControls"
-            (click)="removeConditionOrPartition('partition', groupIndex)"
+            *ngIf="groupIndex !== 0"
+            (click)="removeConditionOrPartition('partition', groupIndex, element.controls.twoCharacterId.value)"
           ></app-shared-icons>
         </mat-cell>
       </ng-container>
@@ -224,21 +240,22 @@
       type="button"
       class="add-partition"
       (click)="addConditionOrPartition('partition')"
-      [ngClass]="{'add-partition--disabled': disableControls}"
     >
       +
       {{ 'home.new-experiment.design.add-point-and-partition.text' | translate }}
     </button>
   </ng-container>
 
+  <span
+    class="validation-message"
+    *ngFor="let error of partitionPointErrors"
+  >{{ error }} </span>
+
   <div class="button-container">
     <button
       matStepperPrevious
       mat-raised-button
       class="default-button"
-      [ngClass]="{
-        'default-button--disabled': disableControls
-      }"
     >
       {{ 'global.back.text' | translate }}
     </button>
@@ -250,13 +267,12 @@
         {{ 'global.cancel.text' | translate }}
       </button>
       <button
-        matStepperNext
         mat-raised-button
         class="default-button"
         [ngClass]="{
-          'default-button--disabled': (!this.experimentDesignForm.valid || disableControls)
+          'default-button--disabled': !this.experimentDesignForm.valid
         }"
-        [disabled]="!this.experimentDesignForm.valid || disableControls"
+        [disabled]="!this.experimentDesignForm.valid"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
       >
         {{ 'global.next.text' | translate }}

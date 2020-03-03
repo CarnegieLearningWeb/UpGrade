@@ -2,7 +2,6 @@
   labelPosition="bottom"
   #stepper
   (selectionChange)="stepChanged($event)"
-  [selectedIndex]="selectedStepperIndex"
   (animationDone)="animationDone()"
 >
   <ng-template matStepperIcon="edit">
@@ -10,10 +9,7 @@
   </ng-template>
   <mat-step>
     <ng-template matStepLabel>
-      <span
-        class="step-label"
-        [ngClass]="{'step-label--selected': selectedStepperIndex === 0}"
-      >
+      <span class="step-label">
         {{ 'home.new-experiment.overview.text' | translate }}
       </span>
     </ng-template>
@@ -25,16 +21,12 @@
 
   <mat-step>
     <ng-template matStepLabel>
-      <span
-        class="step-label"
-        [ngClass]="{'step-label--selected': selectedStepperIndex === 1}"
-      >
+      <span class="step-label">
         {{ 'home.new-experiment.experiment-design.text' | translate }}
       </span>
     </ng-template>
     <home-experiment-design
       [experimentInfo]="experimentInfo"
-      [disableControls]="data?.stepperIndex === 1"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
@@ -42,10 +34,7 @@
 
   <mat-step>
     <ng-template matStepLabel>
-      <span
-        class="step-label"
-        [ngClass]="{'step-label--selected': selectedStepperIndex === 2}"
-      >
+      <span class="step-label">
         {{ 'home.new-experiment.schedule.text' | translate }}
       </span>
     </ng-template>
@@ -54,5 +43,18 @@
       [experimentInfo]="experimentInfo"
       [groupType]="newExperimentData?.group"
     ></home-experiment-schedule>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label">
+        {{ 'home.new-experiment.post-condition-rule.text' | translate }}
+      </span>
+    </ng-template>
+    <home-experiment-post-condition
+      [newExperimentData]="newExperimentData"
+      [experimentInfo]="experimentInfo"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-experiment-post-condition>
   </mat-step>
 </mat-horizontal-stepper>

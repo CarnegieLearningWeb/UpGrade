@@ -22,8 +22,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSliderModule } from '@angular/material/';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
@@ -31,66 +29,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatExpansionModule } from '@angular/material/expansion';
-
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import {
-  faBars,
-  faUserCircle,
-  faPowerOff,
-  faCog,
-  faPlayCircle,
-  faRocket,
-  faPlus,
-  faEdit,
-  faTrash,
-  faTimes,
-  faCaretUp,
-  faCaretDown,
-  faExclamationTriangle,
-  faFilter,
-  faTasks,
-  faCheck,
-  faSquare,
-  faLanguage,
-  faPaintBrush,
-  faLightbulb,
-  faWindowMaximize,
-  faStream,
-  faBook
-} from '@fortawesome/free-solid-svg-icons';
-import { faGithub, faMediumM, faTwitter, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
-
-library.add(
-  faBars,
-  faUserCircle,
-  faPowerOff,
-  faCog,
-  faRocket,
-  faPlayCircle,
-  faGithub,
-  faMediumM,
-  faTwitter,
-  faInstagram,
-  faYoutube,
-  faPlus,
-  faEdit,
-  faTrash,
-  faTimes,
-  faCaretUp,
-  faCaretDown,
-  faExclamationTriangle,
-  faFilter,
-  faTasks,
-  faCheck,
-  faSquare,
-  faLanguage,
-  faPaintBrush,
-  faLightbulb,
-  faWindowMaximize,
-  faStream,
-  faBook
-);
 
 import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
@@ -127,8 +65,6 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatStepperModule,
     MatRadioModule,
     MatExpansionModule,
-
-    FontAwesomeModule
   ],
   declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe],
   exports: [
@@ -156,8 +92,6 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatSlideToggleModule,
     MatDividerModule,
     MatSliderModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -165,9 +99,6 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatStepperModule,
     MatRadioModule,
     MatExpansionModule,
-
-    FontAwesomeModule,
-
     RtlSupportDirective,
 
     SharedIconsComponent,

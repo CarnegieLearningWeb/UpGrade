@@ -109,7 +109,7 @@ export class ExperimentScheduleComponent implements OnInit {
         }
       }
       this.emitExperimentDialogEvent.emit({
-        type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
+        type: eventType,
         formData: scheduleData,
         path: NewExperimentPaths.EXPERIMENT_SCHEDULE
       });

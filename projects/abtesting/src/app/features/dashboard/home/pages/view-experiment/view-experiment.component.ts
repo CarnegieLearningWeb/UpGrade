@@ -24,6 +24,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   experiment: ExperimentVM;
   experimentSub: Subscription;
+  displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
+  displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
 
   constructor(
     private experimentService: ExperimentService,
@@ -38,14 +40,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
-  openDialog(dialogType: DialogType, stepperIndex?: number) {
+  openDialog(dialogType: DialogType) {
     const dialogComponent =
       dialogType === DialogType.CHANGE_STATUS
         ? ExperimentStatusComponent
         : (dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE ?  PostExperimentRuleComponent : NewExperimentComponent);
     const dialogRef = this.dialog.open(dialogComponent as any, {
-      width: '50%',
-      data: { experiment: this.experiment, stepperIndex: stepperIndex || 0 }
+      width: '55%',
+      data: { experiment: this.experiment }
     });
 
     dialogRef.afterClosed().subscribe(() => {

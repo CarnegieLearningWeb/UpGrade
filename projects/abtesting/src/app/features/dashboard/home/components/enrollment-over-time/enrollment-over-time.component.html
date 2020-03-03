@@ -37,13 +37,16 @@
       <mat-form-field *ngIf="selectedDateFilter === ExperimentDateFilterOptions.CUSTOM">
         <input
           matInput
+          readonly
           [placeholder]="'home.view-experiment.enrollment-over-time.choose-date-range.text' | translate"
-          [satDatepicker]="dateRangePicker"
+          [owlDateTimeTrigger]="dateTimePicker"
+          [owlDateTime]="dateTimePicker"
+          [rangeSeparator]="'-'"
+          [selectMode]="'range'"
           [ngModel]="selectedDateRange"
           (ngModelChange)="selectedDateRange = $event;applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
         >
-        <sat-datepicker #dateRangePicker [rangeMode]="true"></sat-datepicker>
-        <sat-datepicker-toggle matSuffix [for]="dateRangePicker"></sat-datepicker-toggle>
+        <owl-date-time #dateTimePicker panelClass="date-time-picker" pickerType="calendar"></owl-date-time>
       </mat-form-field>
 
       <mat-form-field>

@@ -12,13 +12,13 @@
       <mat-form-field>
           <input
             matInput
+            readonly
             [min]="minDate"
-            [matDatepicker]="picker"
+            [owlDateTimeTrigger]="dateTime" [owlDateTime]="dateTime"
             [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
             formControlName="dateOfExperimentEnd"
           >
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
+          <owl-date-time #dateTime></owl-date-time>
       </mat-form-field>
     </div>
 
@@ -84,7 +84,7 @@
       [disabled]="!this.experimentScheduleForm.valid"
       (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
     >
-      {{ experimentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
+      {{ 'global.next.text' | translate }}
     </button>
   </div>
 </div>

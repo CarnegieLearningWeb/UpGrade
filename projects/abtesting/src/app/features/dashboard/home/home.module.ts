@@ -16,12 +16,13 @@ import { ExperimentScheduleComponent } from './components/experiment-schedule/ex
 import { ViewExperimentComponent } from './pages/view-experiment/view-experiment.component';
 import { ExperimentStatusComponent } from './components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from './components/modal/post-experiment-rule/post-experiment-rule.component';
-import { SatDatepickerModule, SatNativeDateModule } from 'saturn-datepicker'
 import { MatDatepickerModule } from '@angular/material';
 import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 import { EnrollmentPointPartitionTableComponent } from './components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 
 @NgModule({
   declarations: [
@@ -38,17 +39,18 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     PostExperimentRuleComponent,
     EnrollmentOverTimeComponent,
     EnrollmentConditionTableComponent,
-    EnrollmentPointPartitionTableComponent
+    EnrollmentPointPartitionTableComponent,
+    ExperimentPostConditionComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
     SharedModule,
     HomeRoutingModule,
-    SatDatepickerModule,
-    SatNativeDateModule,
     MatDatepickerModule,
-    NgxChartsModule
+    NgxChartsModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule
   ],
   providers: [],
   entryComponents: [

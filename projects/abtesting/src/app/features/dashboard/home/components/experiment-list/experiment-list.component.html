@@ -65,7 +65,29 @@
           *matCellDef="let experiment"
           [ngStyle]="{ color: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"
         >
-          {{ experiment.state | experimentState }}
+          <span>{{ experiment.state | experimentState }}</span>
+          <br />
+          <span class="experiment-schedule" *ngIf="experiment.state === ExperimentState.SCHEDULED">
+            {{ '(' + (experiment.endOn | date) + ')' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="postExperiment">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'Post Experiment Rule'" matTooltipPosition="above">
+            {{ 'home-global.post-experiment-rule.text' | translate }}
+          </span>
+        </th>
+        <td
+          mat-cell
+          *matCellDef="let experiment"
+        >
+          <span>{{ experiment.postExperimentRule | titlecase }}</span>
+          <br />
+          <span class="experiment-revertTo" *ngIf="experiment.revertTo">
+            {{ getConditionCode(experiment.revertTo, experiment.id) }}
+          </span>
         </td>
       </ng-container>
 
