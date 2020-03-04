@@ -8,6 +8,7 @@
     "start:prod": "npm run build:prod && npm run server",
     "build": "ng build",
     "build:prod": "ng build --prod",
+    "build:dev": "ng build -c=development",
     "lint": "ng lint",
     "test": "ng lint && ng test --configuration=test",
     "watch": "ng test --configuration=test --browsers ChromeHeadless --watch",
@@ -17,7 +18,7 @@
     "release": "standard-version && git push --follow-tags origin master",
     "analyze": "npm run build:prod -- --stats-json && webpack-bundle-analyzer ./dist/abtesting/stats-es2015.json",
     "server": "node ./projects/server/server.js",
-    "build:development": "npm run build",
+    "build:development": "npm run build:dev",
     "build:production": "npm run build:prod"
   },
   "husky": {
