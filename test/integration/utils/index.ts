@@ -48,25 +48,22 @@ export function checkMarkExperimentPointForUser(
   );
 }
 
-export async function getAllExperimentCondition(user: Partial<ExperimentUser>): Promise<any> {
+export async function getAllExperimentCondition(userId: string): Promise<any> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-  // getAllExperimentCondition and MarkExperimentPoint before experiment creation
-  const { id, group } = user;
 
   // getAllExperimentConditions
-  return experimentAssignmentService.getAllExperimentConditions(id, group);
+  return experimentAssignmentService.getAllExperimentConditions(userId);
 }
 
 export async function markExperimentPoint(
-  user: Partial<ExperimentUser>,
+  userId: string,
   experimentName: string,
   experimentPoint: string
 ): Promise<MonitoredExperimentPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const checkService = Container.get<CheckService>(CheckService);
 
-  const { id, group } = user;
   // mark experiment point
-  await experimentAssignmentService.markExperimentPoint(experimentName, experimentPoint, id, group);
+  await experimentAssignmentService.markExperimentPoint(experimentName, experimentPoint, userId);
   return checkService.getAllMarkedExperimentPoints();
 }

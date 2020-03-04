@@ -58,4 +58,27 @@ export class BaseIndividualAssignmentRepository<T> extends Repository<T> {
 
     return result.raw;
   }
+
+  public async deleteExperimentsForUserId(userId: string, experimentIds: string[]): Promise<T[]> {
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(this.className)
+      .where('userId = :userId AND experimentId IN (:...experimentIds)', {
+        userId,
+        experimentIds,
+      })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'deleteExperimentsForUserId',
+          { userId, experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+
+    return result.raw;
+  }
 }

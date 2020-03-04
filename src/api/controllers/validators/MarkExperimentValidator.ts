@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsObject, IsDefined, IsString } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsString } from 'class-validator';
 
 export class MarkExperimentValidator {
   @IsNotEmpty()
@@ -13,8 +13,4 @@ export class MarkExperimentValidator {
   @IsNotEmpty()
   @IsDefined()
   public userId: string;
-
-  @IsObject()
-  @IsDefined()
-  public userEnvironment: object;
 }

@@ -1,5 +1,4 @@
 import { Container } from 'typedi';
-import { multipleUsers } from '../mockData/experimentUsers';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { getAllExperimentCondition } from '../utils';
@@ -11,6 +10,7 @@ import { PreviewGroupAssignmentRepository } from '../../../src/api/repositories/
 import { PreviewGroupExclusionRepository } from '../../../src/api/repositories/PreviewGroupExclusionRepository';
 import { PreviewIndividualAssignmentRepository } from '../../../src/api/repositories/PreviewIndividualAssignmentRepository';
 import { PreviewIndividualExclusionRepository } from '../../../src/api/repositories/PreviewIndividualExclusionRepository';
+import { experimentUsers } from '../mockData/experimentUsers/index';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -43,7 +43,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  const experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
+  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // no entry in normal assignment and exclusion

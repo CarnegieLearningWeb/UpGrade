@@ -55,9 +55,9 @@ export class ExperimentClientController {
   @Post('groupmembership')
   public setGroupMemberShip(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    experimentUsers: ExperimentUser[]
-  ): Promise<ExperimentUser[]> {
-    return this.experimentUserService.setGroupMembership(experimentUsers);
+    experimentUser: ExperimentUser
+  ): Promise<ExperimentUser> {
+    return this.experimentUserService.setGroupMembership(experimentUser.id, experimentUser.group);
   }
 
   /**
@@ -143,8 +143,7 @@ export class ExperimentClientController {
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.experimentId,
       experiment.experimentPoint,
-      experiment.userId,
-      experiment.userEnvironment
+      experiment.userId
     );
   }
 
@@ -181,7 +180,7 @@ export class ExperimentClientController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: ExperimentAssignmentValidator
   ): any {
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.userEnvironment);
+    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId);
   }
 
   /**

@@ -59,4 +59,24 @@ export class BaseGroupExclusionRepository<T> extends Repository<T> {
         throw new Error(errorMsgString);
       });
   }
+
+  public async deleteByExperimentIds(experimentIds: string[]): Promise<T[]> {
+    const result = await this.createQueryBuilder('groupExclusion')
+      .delete()
+      .from(this.className)
+      .where('groupExclusion.experimentId IN (:...experimentIds)')
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'deleteByExperimentIds',
+          { experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+
+    return result.raw;
+  }
 }

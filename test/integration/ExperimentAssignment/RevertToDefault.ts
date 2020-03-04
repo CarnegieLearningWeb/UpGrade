@@ -1,6 +1,5 @@
 import { Container } from 'typedi';
 import { revertToDefault } from '../mockData/experiment';
-import { multipleUsers } from '../mockData/experimentUsers';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { EXPERIMENT_STATE } from 'ees_types';
@@ -8,6 +7,7 @@ import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
+import { experimentUsers } from '../mockData/experimentUsers/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
@@ -45,12 +45,12 @@ export default async function testCase(): Promise<void> {
   const experimentPoint = experimentObject.partitions[0].point;
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(multipleUsers[0], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[0].id, experimentName, experimentPoint);
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
@@ -71,28 +71,28 @@ export default async function testCase(): Promise<void> {
   );
 
   //   get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[1]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[1], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[1].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[0], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[0].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[2]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[2], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[2].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
   await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
@@ -112,34 +112,34 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[0], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[0].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[1]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[1], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[1].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[2]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 3
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[2], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[2].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[3]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 4
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[3], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[3].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 }

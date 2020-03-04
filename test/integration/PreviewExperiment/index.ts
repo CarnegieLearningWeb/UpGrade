@@ -1,10 +1,10 @@
 import { Container } from 'typedi';
-import { multipleUsers } from '../mockData/experimentUsers';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import TestCase1 from './NoPreviewUser';
 import TestCase2 from './NoPreviewExperiment';
 import TestCase3 from './PreviewExperimentWithPreviewUser';
 import { CheckService } from '../../../src/api/services/CheckService';
+import { experimentUsers } from '../mockData/experimentUsers/index';
 
 const initialChecks = async () => {
   const userService = Container.get<ExperimentUserService>(ExperimentUserService);
@@ -30,12 +30,12 @@ const initialChecks = async () => {
   expect(individualExclusions.length).toEqual(0);
 
   // create users over here
-  await userService.create(multipleUsers as any);
+  await userService.create(experimentUsers as any);
 
   // get all user here
   const userList = await userService.find();
-  expect(userList.length).toBe(multipleUsers.length);
-  multipleUsers.map(user => {
+  expect(userList.length).toBe(experimentUsers.length);
+  experimentUsers.map(user => {
     expect(userList).toContainEqual(user);
   });
 };

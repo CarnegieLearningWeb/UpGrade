@@ -48,7 +48,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  const experimentConditionAssignments = await getAllExperimentCondition(previewUser);
+  const experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // no entry in normal assignment and exclusion

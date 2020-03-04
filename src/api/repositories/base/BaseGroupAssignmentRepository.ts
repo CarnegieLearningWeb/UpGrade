@@ -59,4 +59,24 @@ export class BaseGroupAssignmentRepository<T> extends Repository<T> {
 
     return result.raw;
   }
+
+  public async deleteByExperimentIds(experimentIds: string[]): Promise<T> {
+    const result = await this.createQueryBuilder('groupAssignment')
+      .delete()
+      .from(this.className)
+      .where('groupAssignment.experimentId IN (:...experimentIds)')
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'deleteByExperimentIds',
+          { experimentIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+
+    return result.raw;
+  }
 }

@@ -2,7 +2,6 @@ import { Container } from 'typedi';
 // import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { groupExperimentStats } from '../mockData/experiment/index';
-import { multipleUsers } from '../mockData/experimentUsers';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
@@ -11,6 +10,7 @@ import { ExperimentAssignmentService } from '../../../src/api/services/Experimen
 import { CheckService } from '../../../src/api/services/CheckService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
+import { experimentUsers } from '../mockData/experimentUsers/index';
 
 export default async function testCase(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -81,12 +81,12 @@ export default async function testCase(): Promise<void> {
   const experimentPoint2 = experimentObject.partitions[1].point;
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(multipleUsers[0], experimentName1, experimentPoint1);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[0].id, experimentName1, experimentPoint1);
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   // check stats
   stats = await analyticsService.getStats([experimentId]);
@@ -97,21 +97,21 @@ export default async function testCase(): Promise<void> {
 
   // user 1 logs in experiment
   // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[0]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[0], experimentName1, experimentPoint1);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[0].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   // user 2 logs in experiment
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[1]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[1], experimentName1, experimentPoint1);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[1].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
 
   // check stats
   stats = await analyticsService.getStats([experimentId]);
@@ -126,13 +126,13 @@ export default async function testCase(): Promise<void> {
 
   // user 3 logs in experiment
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[2]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[2], experimentName2, experimentPoint2);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[2].id, experimentName2, experimentPoint2);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName2, experimentPoint2);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
 
   // Check Service
   let individualAssignment = await checkService.getAllIndividualAssignment();
@@ -182,8 +182,8 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], { ...customStats });
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[2], experimentName1, experimentPoint1);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[2].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName1, experimentPoint1);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
   individualAssignment = await checkService.getAllIndividualAssignment();
   monitoredExperimentPoints = await checkService.getAllMarkedExperimentPoints();
@@ -238,13 +238,13 @@ export default async function testCase(): Promise<void> {
 
   // user 3 logs in experiment
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(multipleUsers[3]);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[3], experimentName1, experimentPoint1);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[3].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
   individualAssignment = await checkService.getAllIndividualAssignment();
   monitoredExperimentPoints = await checkService.getAllMarkedExperimentPoints();
@@ -293,8 +293,8 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], { ...customStats });
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(multipleUsers[3], experimentName2, experimentPoint2);
-  checkMarkExperimentPointForUser(markedExperimentPoint, multipleUsers[3].id, experimentName2, experimentPoint2);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName2, experimentPoint2);
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName2, experimentPoint2);
 
   individualAssignment = await checkService.getAllIndividualAssignment();
   monitoredExperimentPoints = await checkService.getAllMarkedExperimentPoints();

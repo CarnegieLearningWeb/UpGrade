@@ -4,10 +4,10 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { multipleUsers } from '../mockData/experimentUsers/index';
 import { ExcludeService } from '../../../src/api/services/ExcludeService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
+import { experimentUsers } from '../mockData/experimentUsers/index';
 
 export default async function GroupExclude(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -56,12 +56,12 @@ export default async function GroupExclude(): Promise<void> {
   );
 
   // store individual user over here
-  const user = multipleUsers[0];
+  const user = experimentUsers[0];
 
   const groupType: string = Object.keys(user.group)[0];
   const groupId: string = user.group[groupType].toString();
 
-  let experimentCondition = await experimentAssignmentService.getAllExperimentConditions(user.id, user.group);
+  let experimentCondition = await experimentAssignmentService.getAllExperimentConditions(user.id);
   expect(experimentCondition.length).not.toEqual(0);
 
   // add user in group exclude
@@ -75,6 +75,6 @@ export default async function GroupExclude(): Promise<void> {
     ])
   );
 
-  experimentCondition = await experimentAssignmentService.getAllExperimentConditions(user.id, user.group);
+  experimentCondition = await experimentAssignmentService.getAllExperimentConditions(user.id);
   expect(experimentCondition.length).toEqual(0);
 }

@@ -50,6 +50,30 @@ export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
+export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment = {
+  ...experiment,
+  consistencyRule: CONSISTENCY_RULE.GROUP,
+  assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
+export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssignment = {
+  ...experiment,
+  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+  assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
+export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssignment = {
+  ...experiment,
+  consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
+  assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+};
+
 export const scheduleJobStartExperiment = experiment;
 
 export const scheduleJobEndExperiment = {

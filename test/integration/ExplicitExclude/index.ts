@@ -3,7 +3,7 @@ import GrpExclude from './GroupExclude';
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { multipleUsers } from '../mockData/experimentUsers/index';
+import { experimentUsers } from '../mockData/experimentUsers/index';
 
 const initialCheck = async () => {
   const userService = Container.get<ExperimentUserService>(ExperimentUserService);
@@ -29,12 +29,12 @@ const initialCheck = async () => {
   expect(individualExclusions.length).toEqual(0);
 
   // create users over here
-  await userService.create(multipleUsers as any);
+  await userService.create(experimentUsers as any);
 
   // get all user here
   const userList = await userService.find();
-  expect(userList.length).toBe(multipleUsers.length);
-  multipleUsers.map(user => {
+  expect(userList.length).toBe(experimentUsers.length);
+  experimentUsers.map(user => {
     expect(userList).toContainEqual(user);
   });
 };

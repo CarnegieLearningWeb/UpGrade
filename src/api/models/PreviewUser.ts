@@ -13,4 +13,7 @@ export class PreviewUser extends BaseModel {
   @IsDefined()
   @IsObject()
   public group: object;
+
+  @Column({ type: 'json', nullable: true })
+  public workingGroup: object | undefined;
 }
