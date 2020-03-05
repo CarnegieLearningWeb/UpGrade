@@ -71,13 +71,23 @@ export class ExperimentOverviewComponent implements OnInit {
     }, { validators: ExperimentFormValidators.validateExperimentOverviewForm });
 
     this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
+      this.overviewForm.get('consistencyRule').reset();
       switch (assignmentUnit) {
         case ASSIGNMENT_UNIT.INDIVIDUAL:
           this.overviewForm.get('groupType').disable();
           this.overviewForm.get('groupType').reset();
+          this.consistencyRules = [
+            { value: CONSISTENCY_RULE.INDIVIDUAL },
+            { value: CONSISTENCY_RULE.EXPERIMENT }
+          ];
           break;
         case ASSIGNMENT_UNIT.GROUP:
           this.overviewForm.get('groupType').enable();
+          this.consistencyRules = [
+            { value: CONSISTENCY_RULE.INDIVIDUAL },
+            { value: CONSISTENCY_RULE.GROUP },
+            { value: CONSISTENCY_RULE.EXPERIMENT }
+          ];
           break;
       }
     });
