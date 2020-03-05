@@ -29,6 +29,18 @@
           {{ 'home.change-experiment-status.new-status.error.text' | translate }}
         </mat-error>
       </mat-form-field>
+
+      <mat-form-field *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED">
+        <input
+          matInput
+          readonly
+          [min]="minDate"
+          [owlDateTimeTrigger]="dateTime" [owlDateTime]="dateTime"
+          [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
+          formControlName="scheduleDate"
+        >
+        <owl-date-time #dateTime></owl-date-time>
+    </mat-form-field>
   </form>
 
   <div class="button-container">
