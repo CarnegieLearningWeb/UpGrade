@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,8 @@ export class HttpClientService {
       headers
     }).pipe(
       catchError(e => {
-        return e.status === 401 ? [this.authService.authLogout()] : [];
+        if (e.status === 401) { this.authService.authLogout() };
+        return throwError(e);
       })
     );
   }
@@ -40,7 +42,8 @@ export class HttpClientService {
       headers
     }).pipe(
       catchError(e => {
-        return e.status === 401 ? [this.authService.authLogout()] : [];
+        if (e.status === 401) { this.authService.authLogout() };
+        return throwError(e);
       })
     );
   }
@@ -51,7 +54,8 @@ export class HttpClientService {
       headers
     }).pipe(
       catchError(e => {
-        return e.status === 401 ? [this.authService.authLogout()] : [];
+        if (e.status === 401) { this.authService.authLogout() };
+        return throwError(e);
       })
     );
   }
@@ -62,7 +66,8 @@ export class HttpClientService {
       headers
     }).pipe(
       catchError(e => {
-        return e.status === 401 ? [this.authService.authLogout()] : [];
+        if (e.status === 401) { this.authService.authLogout() };
+        return throwError(e);
       })
     );
   }
