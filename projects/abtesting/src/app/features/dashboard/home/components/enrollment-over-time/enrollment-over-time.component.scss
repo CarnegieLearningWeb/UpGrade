@@ -8,7 +8,7 @@ $selected-range-color: #c2d1ff;
     color: var(--black-2);
     font-family: 'Open Sans';
     font-size: var(--text-size-xxx-large);
-    font-weight: 600
+    font-weight: 600;
   }
 
   .enrollment-filters {
@@ -94,7 +94,6 @@ $selected-range-color: #c2d1ff;
       }
     }
   }
-
 }
 
 ::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {

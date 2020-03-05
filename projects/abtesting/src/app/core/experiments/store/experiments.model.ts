@@ -8,13 +8,7 @@ import {
   IExperimentEnrollmentStats
 } from 'ees_types';
 
-export {
-  CONSISTENCY_RULE,
-  ASSIGNMENT_UNIT,
-  POST_EXPERIMENT_RULE,
-  EXPERIMENT_STATE,
-  IExperimentEnrollmentStats
-};
+export { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE, IExperimentEnrollmentStats };
 
 export enum GroupTypes {
   CLASS = 'class',
@@ -58,8 +52,8 @@ export enum EndExperimentCondition {
 }
 
 export interface ExperimentStateInfo {
-  newStatus: EXPERIMENT_STATE,
-  scheduleDate?: string
+  newStatus: EXPERIMENT_STATE;
+  scheduleDate?: string;
 }
 
 export interface EnrollmentCompleteCondition {
@@ -114,16 +108,16 @@ export interface Experiment {
 }
 
 export interface ExperimentVM extends Experiment {
-  stat: IExperimentEnrollmentStats
+  stat: IExperimentEnrollmentStats;
 }
 
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
   stats: {
-    [key: string]: IExperimentEnrollmentStats
-  },
-  uniqueIdentifiers: {},
-  allPartitions: {}
+    [key: string]: IExperimentEnrollmentStats;
+  };
+  uniqueIdentifiers: {};
+  allPartitions: {};
 }
 
 export interface State extends AppState {

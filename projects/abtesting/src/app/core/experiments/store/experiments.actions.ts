@@ -10,10 +10,7 @@ export const actionStoreExperiment = createAction(
   props<{ experiments: Experiment[] }>()
 );
 
-export const actionStoreExperimentStats = createAction(
-  '[Experiment] Store Experiment Stats',
-  props<{ stats: any }>()
-);
+export const actionStoreExperimentStats = createAction('[Experiment] Store Experiment Stats', props<{ stats: any }>());
 
 export const actionRemoveExperimentStat = createAction(
   '[Experiment] Remove Experiment stat',
@@ -27,7 +24,7 @@ export const actionGetAllExperimentFailure = createAction(
 
 export const actionUpsertExperiment = createAction(
   '[Experiment] Upsert Experiment',
-  props<{ experiment: Experiment, actionType: UpsertExperimentType }>()
+  props<{ experiment: Experiment; actionType: UpsertExperimentType }>()
 );
 
 export const actionUpsertExperimentSuccess = createAction(
@@ -35,27 +32,20 @@ export const actionUpsertExperimentSuccess = createAction(
   props<{ experiment: Experiment }>()
 );
 
-export const actionUpsertExperimentFailure = createAction(
-  '[Experiment] Upsert Experiment Failure'
-);
+export const actionUpsertExperimentFailure = createAction('[Experiment] Upsert Experiment Failure');
 
-export const actionDeleteExperiment = createAction(
-  '[Experiment] Delete Experiment',
-  props<{ experimentId: string }>()
-);
+export const actionDeleteExperiment = createAction('[Experiment] Delete Experiment', props<{ experimentId: string }>());
 
 export const actionDeleteExperimentSuccess = createAction(
   '[Experiment] Delete Experiment Success',
   props<{ experimentId: string }>()
 );
 
-export const actionDeleteExperimentFailure = createAction(
-  '[Experiment] Delete Experiment Failure'
-);
+export const actionDeleteExperimentFailure = createAction('[Experiment] Delete Experiment Failure');
 
 export const actionUpdateExperimentState = createAction(
   '[Experiment] Update Experiment State',
-  props<{ experimentId: string, experimentStateInfo: ExperimentStateInfo }>()
+  props<{ experimentId: string; experimentStateInfo: ExperimentStateInfo }>()
 );
 
 export const actionUpdateExperimentStateSuccess = createAction(
@@ -63,32 +53,22 @@ export const actionUpdateExperimentStateSuccess = createAction(
   props<{ experiment: Experiment }>()
 );
 
-export const actionUpdateExperimentStateFailure = createAction(
-  '[Experiment] Update Experiment State Failure'
-);
+export const actionUpdateExperimentStateFailure = createAction('[Experiment] Update Experiment State Failure');
 
-export const actionFetchAllPartitions = createAction(
-  '[Experiment] Fetch All Partitions'
-);
+export const actionFetchAllPartitions = createAction('[Experiment] Fetch All Partitions');
 
 export const actionFetchAllPartitionSuccess = createAction(
   '[Experiment] Fetch All Partitions Success',
   props<{ partitions: any }>()
 );
 
-export const actionFetchAllPartitionFailure = createAction(
-  '[Experiment] Fetch All Partitions Failure'
-);
+export const actionFetchAllPartitionFailure = createAction('[Experiment] Fetch All Partitions Failure');
 
-export const actionFetchAllUniqueIdentifiers = createAction(
-  '[Experiment] Fetch All Unique Identifiers'
-);
+export const actionFetchAllUniqueIdentifiers = createAction('[Experiment] Fetch All Unique Identifiers');
 
 export const actionFetchAllUniqueIdentifiersSuccess = createAction(
   '[Experiment] Fetch All Unique Identifiers Success',
   props<{ uniqueIdentifiers: any }>()
 );
 
-export const actionFetchAllUniqueIdentifiersFailure = createAction(
-  '[Experiment] Fetch All Unique Identifiers Failure'
-);
+export const actionFetchAllUniqueIdentifiersFailure = createAction('[Experiment] Fetch All Unique Identifiers Failure');

@@ -12,7 +12,6 @@ import { ExperimentFormValidators } from '../../../validators/experiment-form.va
   styleUrls: ['./experiment-status.component.scss']
 })
 export class ExperimentStatusComponent implements OnInit {
-
   experimentInfo: ExperimentVM;
   statusForm: FormGroup;
   experimentStatus = [];
@@ -24,17 +23,23 @@ export class ExperimentStatusComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {
     this.experimentInfo = this.data.experiment;
-   }
+  }
 
   onCancelClick(): void {
     this.dialogRef.close();
   }
 
   ngOnInit() {
-    this.statusForm = this._formBuilder.group({
-      newStatus: [{ value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED }, Validators.required],
-      scheduleDate: [null],
-    }, { validators: ExperimentFormValidators.validateExperimentStatusForm });
+    this.statusForm = this._formBuilder.group(
+      {
+        newStatus: [
+          { value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED },
+          Validators.required
+        ],
+        scheduleDate: [null]
+      },
+      { validators: ExperimentFormValidators.validateExperimentStatusForm }
+    );
     switch (this.experimentInfo.state) {
       case EXPERIMENT_STATE.ENROLLING:
       case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
@@ -70,7 +75,7 @@ export class ExperimentStatusComponent implements OnInit {
       newStatus: newStatus.value
     };
     if (newStatus.value === EXPERIMENT_STATE.SCHEDULED) {
-      data = { ...data, scheduleDate }
+      data = { ...data, scheduleDate };
     }
     this.experimentService.updateExperimentState(this.experimentInfo.id, data);
     this.onCancelClick();

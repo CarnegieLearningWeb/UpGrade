@@ -1,9 +1,11 @@
 $text-color: #8f9bb3;
 
 .logs {
+  overflow: auto;
+
   &__searching {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
 
     .search-input {
       width: 250px;
@@ -62,7 +64,6 @@ $text-color: #8f9bb3;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 250px;
+    height: 150px;
   }
-
 }

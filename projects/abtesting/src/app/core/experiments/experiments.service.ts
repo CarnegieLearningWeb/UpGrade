@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Experiment, UpsertExperimentType, ExperimentVM, ExperimentStateInfo } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
-import { selectAllExperiment, selectIsLoadingExperiment, selectSelectedExperiment, selectAllPartitions, selectAllUniqueIdentifiers } from './store/experiments.selectors';
+import {
+  selectAllExperiment,
+  selectIsLoadingExperiment,
+  selectSelectedExperiment,
+  selectAllPartitions,
+  selectAllUniqueIdentifiers
+} from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map } from 'rxjs/operators';
@@ -13,11 +19,13 @@ export class ExperimentService {
 
   experiments$: Observable<Experiment[]> = this.store$.pipe(
     select(selectAllExperiment),
-    map(experiments => experiments.sort((a, b) => {
-      const d1 = new Date(a.createdAt);
-      const d2 = new Date(b.createdAt);
-      return d1 < d2 ? 1 : (d1 > d2) ? -1 : 0;
-    }))
+    map(experiments =>
+      experiments.sort((a, b) => {
+        const d1 = new Date(a.createdAt);
+        const d2 = new Date(b.createdAt);
+        return d1 < d2 ? 1 : d1 > d2 ? -1 : 0;
+      })
+    )
   );
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
@@ -29,12 +37,16 @@ export class ExperimentService {
   }
 
   createNewExperiment(experiment: Experiment) {
-    this.store$.dispatch(experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT }));
+    this.store$.dispatch(
+      experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT })
+    );
   }
 
   updateExperiment(experiment: ExperimentVM) {
     delete experiment.stat;
-    this.store$.dispatch(experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.UPDATE_EXPERIMENT }));
+    this.store$.dispatch(
+      experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.UPDATE_EXPERIMENT })
+    );
   }
 
   deleteExperiment(experimentId) {

@@ -27,3 +27,23 @@ export const selectAllErrorLogs = createSelector(
   selectAllLogs,
   (logs) => logs.filter((log: AuditLogs | ErrorLogs) => (Object.values(SERVER_ERROR).includes((log as any ).type)))
 );
+
+export const selectSkipAuditLog = createSelector(
+  selectLogState,
+  (state) => state.skipAuditLog
+);
+
+export const selectTotalAuditLogs = createSelector(
+  selectLogState,
+  (state) => state.totalAuditLogs
+);
+
+export const selectSkipErrorLog = createSelector(
+  selectLogState,
+  (state) => state.skipErrorLog
+);
+
+export const selectTotalErrorLogs = createSelector(
+  selectLogState,
+  (state) => state.totalErrorLogs
+);

@@ -9,39 +9,51 @@ export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.get
 
 export const initialState: LogState = adapter.getInitialState({
   isAuditLogLoading: false,
-  isErrorLogLoading: false
+  isErrorLogLoading: false,
+  skipAuditLog: 0,
+  totalAuditLogs: null,
+  skipErrorLog: 0,
+  totalErrorLogs: null
 });
 
 const reducer = createReducer(
   initialState,
-  on(logsActions.actionGetAllAuditLogs, state => ({
-    ...state,
-    isAuditLogLoading: true
+  on(logsActions.actionGetAuditLogs, state => ({
+    ...state
   })),
-  on(logsActions.actionGetAllAuditLogsSuccess, (state, { auditLogs }) => {
+  on(logsActions.actionGetAuditLogsSuccess, (state, { auditLogs, totalAuditLogs }) => {
     return adapter.upsertMany(auditLogs, {
       ...state,
-      isAuditLogLoading: false
+      isAuditLogLoading: false,
+      totalAuditLogs,
+      skipAuditLog: state.skipAuditLog + auditLogs.length
     });
   }),
-  on(logsActions.actionGetAllAuditLogsFailure, state => ({
+  on(logsActions.actionGetAuditLogsFailure, state => ({
     ...state,
     isAuditLogLoading: false
   })),
-  on(logsActions.actionGetAllErrorLogs, state => ({
+  on(logsActions.actionGetErrorLogs, state => ({
     ...state,
-    isErrorLogLoading: true
   })),
-  on(logsActions.actionGetAllErrorLogsSuccess, (state, { errorLogs }) => {
+  on(logsActions.actionGetErrorLogsSuccess, (state, { errorLogs, totalErrorLogs }) => {
     return adapter.upsertMany(errorLogs, {
       ...state,
-      isErrorLogLoading: false
+      isErrorLogLoading: false,
+      totalErrorLogs,
+      skipErrorLog: state.skipErrorLog + errorLogs.length
     });
   }),
-  on(logsActions.actionGetAllErrorLogsFailure, state => ({
+  on(logsActions.actionGetErrorLogsFailure, state => ({
     ...state,
     isErrorLogLoading: false
-  }))
+  })),
+  on(logsActions.actionSetIsAuditLogLoading, (state, { isAuditLogLoading }) => {
+    return ({ ...state, isAuditLogLoading })
+  }),
+  on(logsActions.actionSetIsErrorLogLoading, (state, { isErrorLogLoading }) => {
+    return ({ ...state, isErrorLogLoading })
+  })
 );
 
 export function logsReducer(state: LogState | undefined, action: Action) {
