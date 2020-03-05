@@ -44,7 +44,7 @@
     </button>
   </form>
 
-  <div class="entities-container">
+  <div class="entities-container" *ngIf="allExcludedEntities.data.length">
     <table mat-table [dataSource]="allExcludedEntities" matSort>
       <!-- TYPE Column -->
       <ng-container matColumnDef="type">

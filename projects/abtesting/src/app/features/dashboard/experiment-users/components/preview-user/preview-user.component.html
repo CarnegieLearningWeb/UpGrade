@@ -80,7 +80,7 @@
 
   </form>
 
-  <div class="preview-user-container">
+  <div class="preview-user-container" *ngIf="allPreviewUsers.data.length">
     <table mat-table [dataSource]="allPreviewUsers" matSort>
 
       <!-- ID Column -->
