@@ -1,5 +1,5 @@
 import { AbstractControl } from '@angular/forms';
-import { EndExperimentCondition, GroupTypes, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE } from '../../../../core/experiments/store/experiments.model';
+import { EndExperimentCondition, GroupTypes, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from '../../../../core/experiments/store/experiments.model';
 
 export class ExperimentFormValidators {
 
@@ -51,6 +51,15 @@ export class ExperimentFormValidators {
     const revertTo = controls.get('revertTo').value;
     if (postExperimentRule === POST_EXPERIMENT_RULE.REVERT && !revertTo) {
       return { conditionSelectionError: true };
+    }
+    return null;
+  }
+
+  static validateExperimentStatusForm(controls: AbstractControl): { [key: string]: any } | null {
+    const newStatusValue = controls.get('newStatus').value;
+    const scheduleDate = controls.get('scheduleDate').value;
+    if (newStatusValue.value === EXPERIMENT_STATE.SCHEDULED && !scheduleDate) {
+      return { scheduleDateError: true };
     }
     return null;
   }

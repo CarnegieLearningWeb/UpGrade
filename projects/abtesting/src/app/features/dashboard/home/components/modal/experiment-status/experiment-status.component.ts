@@ -1,21 +1,22 @@
-import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentVM, ExperimentStateInfo } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { ExperimentFormValidators } from '../../../validators/experiment-form.validators';
 
 @Component({
   selector: 'home-experiment-status',
   templateUrl: './experiment-status.component.html',
-  styleUrls: ['./experiment-status.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./experiment-status.component.scss']
 })
 export class ExperimentStatusComponent implements OnInit {
 
   experimentInfo: ExperimentVM;
   statusForm: FormGroup;
   experimentStatus = [];
+  minDate = new Date();
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -31,8 +32,9 @@ export class ExperimentStatusComponent implements OnInit {
 
   ngOnInit() {
     this.statusForm = this._formBuilder.group({
-      newStatus: [{ value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED }, Validators.required]
-    });
+      newStatus: [{ value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED }, Validators.required],
+      scheduleDate: [null],
+    }, { validators: ExperimentFormValidators.validateExperimentStatusForm });
     switch (this.experimentInfo.state) {
       case EXPERIMENT_STATE.ENROLLING:
       case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
@@ -54,9 +56,23 @@ export class ExperimentStatusComponent implements OnInit {
     }
   }
 
+  get ExperimentStatus() {
+    return EXPERIMENT_STATE;
+  }
+
+  get newStatusValue() {
+    return this.statusForm.get('newStatus').value;
+  }
+
   changeStatus() {
-    const { newStatus } = this.statusForm.value;
-    this.experimentService.updateExperimentState(this.experimentInfo.id, newStatus.value);
+    const { newStatus, scheduleDate } = this.statusForm.value;
+    let data: ExperimentStateInfo = {
+      newStatus: newStatus.value
+    };
+    if (newStatus.value === EXPERIMENT_STATE.SCHEDULED) {
+      data = { ...data, scheduleDate }
+    }
+    this.experimentService.updateExperimentState(this.experimentInfo.id, data);
     this.onCancelClick();
   }
 }

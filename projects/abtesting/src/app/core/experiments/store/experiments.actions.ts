@@ -1,6 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Experiment, UpsertExperimentType } from './experiments.model';
-import { EXPERIMENT_STATE } from './experiments.model';
+import { Experiment, UpsertExperimentType, ExperimentStateInfo } from './experiments.model';
 
 export const actionGetAllExperiment = createAction('[Experiment] Get All');
 
@@ -56,7 +55,7 @@ export const actionDeleteExperimentFailure = createAction(
 
 export const actionUpdateExperimentState = createAction(
   '[Experiment] Update Experiment State',
-  props<{ experimentId: string, experimentState: EXPERIMENT_STATE }>()
+  props<{ experimentId: string, experimentStateInfo: ExperimentStateInfo }>()
 );
 
 export const actionUpdateExperimentStateSuccess = createAction(

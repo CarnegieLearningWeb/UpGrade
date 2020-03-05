@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Experiment, EXPERIMENT_STATE } from './store/experiments.model';
+import { Experiment, ExperimentStateInfo } from './store/experiments.model';
 import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
@@ -27,9 +27,9 @@ export class ExperimentDataService {
     return this.http.put(url, { ...experiment });
   }
 
-  updateExperimentState(experimentId: string, experimentState: EXPERIMENT_STATE) {
+  updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     const url = environment.api.updateExperimentState;
-    return this.http.put(url, { experimentId, state: experimentState });
+    return this.http.put(url, { experimentId, state: experimentStateInfo.newStatus, scheduleDate: experimentStateInfo.scheduleDate });
   }
 
   deleteExperiment(experimentId: string) {
