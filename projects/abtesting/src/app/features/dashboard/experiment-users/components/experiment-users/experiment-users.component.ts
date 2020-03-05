@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { MatTableDataSource, MatPaginator, MatSort } from '@angular/material';
 import { ExcludeEntity, EntityTypes } from '../../../../../core/experiment-users/store/experiment-users.model';
 import { Subscription } from 'rxjs';
@@ -10,8 +10,7 @@ import { ExperimentUserValidators } from '../../validator/experiment-users-valid
 @Component({
   selector: 'users-experiment-users',
   templateUrl: './experiment-users.component.html',
-  styleUrls: ['./experiment-users.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./experiment-users.component.scss']
 })
 export class ExperimentUsersComponent implements OnInit, OnDestroy {
   displayedColumns = ['type', 'id', 'removeEntity'];

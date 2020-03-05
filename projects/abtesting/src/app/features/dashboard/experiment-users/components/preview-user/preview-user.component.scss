@@ -8,8 +8,9 @@
   background-color: transparent;
   padding: 0;
   color: var(--blue);
-  font-family: OpenSans-Bold;
+  font-family: 'Open Sans';
   font-size: var(--text-size-x-small);
+  font-weight: 700;
 }
 
 .remove-icon {
@@ -24,6 +25,8 @@
 
 .preview-users {
   .preview-user-container {
+    margin-top: 30px;
+
     table {
       .mat-cell {
         width: 33%;

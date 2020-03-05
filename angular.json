@@ -29,10 +29,7 @@
               "projects/abtesting/src/assets",
               "projects/abtesting/src/_redirects"
             ],
-            "styles": [
-              "projects/abtesting/src/styles/styles-app-loading.scss",
-              "projects/abtesting/src/styles.scss"
-            ],
+            "styles": ["projects/abtesting/src/styles/styles-app-loading.scss", "projects/abtesting/src/styles.scss"],
             "scripts": []
           },
           "configurations": {
@@ -41,6 +38,46 @@
                 {
                   "replace": "projects/abtesting/src/environments/environment.ts",
                   "with": "projects/abtesting/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "bundle",
+                  "name": "polyfills",
+                  "baseline": "150kb",
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "styles",
+                  "baseline": "1mb",
+                  "maximumWarning": "2mb",
+                  "maximumError": "100kb"
+                },
+                {
+                  "type": "bundle",
+                  "name": "main",
+                  "baseline": "2mb",
+                  "maximumWarning": "3mb",
+                  "maximumError": "200kb"
+                }
+              ]
+            },
+            "development": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/abtesting/src/environments/environment.ts",
+                  "with": "projects/abtesting/src/environments/environment.ts"
                 }
               ],
               "optimization": true,
@@ -102,14 +139,8 @@
             "polyfills": "projects/abtesting/src/polyfills.ts",
             "tsConfig": "projects/abtesting/tsconfig.spec.json",
             "karmaConfig": "projects/abtesting/karma.conf.js",
-            "assets": [
-              "projects/abtesting/src/favicon.ico",
-              "projects/abtesting/src/assets"
-            ],
-            "styles": [
-              "projects/abtesting/src/styles/styles-app-loading.scss",
-              "projects/abtesting/src/styles.scss"
-            ],
+            "assets": ["projects/abtesting/src/favicon.ico", "projects/abtesting/src/assets"],
+            "styles": ["projects/abtesting/src/styles/styles-app-loading.scss", "projects/abtesting/src/styles.scss"],
             "scripts": []
           },
           "configurations": {

@@ -6,8 +6,9 @@ $selected-range-color: #c2d1ff;
 
   &__title {
     color: var(--black-2);
-    font-family: OpenSans-SemiBold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xxx-large);
+    font-weight: 600;
   }
 
   .enrollment-filters {
@@ -73,24 +74,26 @@ $selected-range-color: #c2d1ff;
         display: block;
         margin-bottom: 10px;
         color: var(--grey-4);
-        font-family: OpenSans-SemiBold;
+        font-family: 'Open Sans';
         font-size: var(--text-size-normal);
+        font-weight: 600;
       }
 
       .numbers {
         color: var(--blue);
-        font-family: OpenSans-SemiBold;
+        font-family: 'Open Sans';
         font-size: $text-size-largest;
+        font-weight: 600;
 
         &--excluded {
           color: var(--grey-4);
-          font-family: OpenSans-Regular;
+          font-family: 'Open Sans';
           font-size: var(--text-size-normal);
+          font-weight: 400;
         }
       }
     }
   }
-
 }
 
 ::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {

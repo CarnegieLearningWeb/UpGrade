@@ -3,8 +3,9 @@
 
   .title {
     color: var(--black-2);
-    font-family: OpenSans-SemiBold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xxx-large);
+    font-weight: 600;
   }
 
   .enrollment-point-partition-table {
@@ -25,8 +26,9 @@
     mat-header-cell {
       border-color: var(--light-grey);
       color: var(--grey-2);
-      font-family: OpenSans-Bold;
+      font-family: 'Open Sans';
       font-size: var(--text-size-x-small);
+      font-weight: 700;
     }
   }
 }

@@ -3,8 +3,9 @@
   margin-top: 20px;
 
   &--title {
-    font-family: OpenSans-Bold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xx-large);
+    font-weight: 700;
   }
 
   .exclude-form,
@@ -48,12 +49,14 @@
       .mat-header-cell {
         padding: 5px;
         color: var(--grey-2);
-        font-family: OpenSans-Bold;
+        font-family: 'Open Sans';
         font-size: var(--text-size-x-small);
+        font-weight: 700;
       }
 
       .mat-cell {
-        font-family: OpenSans-SemiBold;
+        font-family: 'Open Sans';
+        font-weight: 600;
       }
 
       .remove-icon {

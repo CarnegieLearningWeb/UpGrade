@@ -4,8 +4,9 @@
   mat-checkbox,
   mat-radio-button,
   mat-form-field {
-    font-family: OpenSans-SemiBold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-normal);
+    font-weight: 600;
   }
 
   .date-picker-container {
