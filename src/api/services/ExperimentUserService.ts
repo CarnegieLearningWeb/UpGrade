@@ -62,7 +62,7 @@ export class ExperimentUserService {
 
     // check the groups removed from setGroupMembership
     const oldDocument = await this.userRepository.findOne({ id: userId });
-    if (oldDocument) {
+    if (oldDocument && oldDocument.group) {
       Object.keys(oldDocument.group).map(key => {
         const oldGroupArray: string[] = oldDocument.group[key];
         const newGroupArray: string[] = groupMembership[key];

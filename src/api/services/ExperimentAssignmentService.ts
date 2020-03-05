@@ -180,7 +180,7 @@ export class ExperimentAssignmentService {
 
       let previewAssignmentExclusion = [];
       // fetch assignment if preview user and experiment list has preview experiment
-      if (hasPreviewExperiment) {
+      if (hasPreviewExperiment && previewUser) {
         previewWorkingGroup = previewUser.workingGroup;
         const allPreviewGroupIds: string[] = Object.values(previewWorkingGroup);
 
