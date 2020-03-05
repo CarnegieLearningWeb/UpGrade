@@ -82,7 +82,7 @@ export class ExperimentEffects {
   updateExperimentState$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionUpdateExperimentState),
-      map(action => ({ experimentId: action.experimentId, experimentState: action.experimentState })),
+      map(action => ({ experimentId: action.experimentId, experimentState: action.experimentStateInfo })),
       filter(({ experimentId, experimentState }) => !!experimentId && !!experimentState),
       switchMap(({ experimentId, experimentState }) =>
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(

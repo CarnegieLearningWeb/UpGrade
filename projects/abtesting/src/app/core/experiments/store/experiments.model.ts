@@ -57,6 +57,11 @@ export enum EndExperimentCondition {
   END_CRITERIA = 'End Criteria'
 }
 
+export interface ExperimentStateInfo {
+  newStatus: EXPERIMENT_STATE,
+  scheduleDate?: string
+}
+
 export interface EnrollmentCompleteCondition {
   userCount: number;
   groupCount: number;

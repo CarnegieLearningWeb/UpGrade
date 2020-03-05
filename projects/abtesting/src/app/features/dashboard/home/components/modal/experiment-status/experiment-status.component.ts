@@ -1,8 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentVM, ExperimentStateInfo } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentFormValidators } from '../../../validators/experiment-form.validators';
 
@@ -66,15 +66,13 @@ export class ExperimentStatusComponent implements OnInit {
 
   changeStatus() {
     const { newStatus, scheduleDate } = this.statusForm.value;
-    // TODO:  Add schedule date in request
-
-    // let data = {
-    //   newStatus: newStatus.value
-    // };
-    // if (newStatus.value === EXPERIMENT_STATE.SCHEDULED) {
-    //   data = { ...data, scheduleDate }
-    // }
-    this.experimentService.updateExperimentState(this.experimentInfo.id, newStatus.value);
+    let data: ExperimentStateInfo = {
+      newStatus: newStatus.value
+    };
+    if (newStatus.value === EXPERIMENT_STATE.SCHEDULED) {
+      data = { ...data, scheduleDate }
+    }
+    this.experimentService.updateExperimentState(this.experimentInfo.id, data);
     this.onCancelClick();
   }
 }
