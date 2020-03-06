@@ -129,24 +129,32 @@ export class ExperimentUserService {
       return;
     }
 
+    const experimentAssignmentRemovalArray = [];
     // ============       Experiment with Group Consistency
     const filteredGroupExperiment = groupExperiments.filter(experiment => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.GROUP;
     });
 
-    await this.groupExperimentsWithGroupConsistency(filteredGroupExperiment, userId);
+    experimentAssignmentRemovalArray.push(this.groupExperimentsWithGroupConsistency(filteredGroupExperiment, userId));
 
     const filteredIndividualExperiment = groupExperiments.filter(experiment => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL;
     });
 
-    await this.groupExperimentsWithIndividualConsistency(filteredIndividualExperiment, userId);
+    experimentAssignmentRemovalArray.push(
+      this.groupExperimentsWithIndividualConsistency(filteredIndividualExperiment, userId)
+    );
 
     const filteredExperimentExperiment = groupExperiments.filter(experiment => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT;
     });
 
-    await this.groupExperimentsWithExperimentConsistency(filteredExperimentExperiment, userId);
+    experimentAssignmentRemovalArray.push(
+      this.groupExperimentsWithExperimentConsistency(filteredExperimentExperiment, userId)
+    );
+
+    await Promise.all(experimentAssignmentRemovalArray);
+    return;
   }
 
   private async groupExperimentsWithGroupConsistency(filteredExperiment: Experiment[], userId: string): Promise<void> {
