@@ -22,7 +22,6 @@ export class ErrorService {
   public create(error: ExperimentError): Promise<ExperimentError> {
     this.log.info('Inserting an error => ');
     return this.errorRepository.save(error).catch(errorMsg => {
-      console.log('Error in saving', errorMsg);
       throw new Error(errorMsg);
     });
   }

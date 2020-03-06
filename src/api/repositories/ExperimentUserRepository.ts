@@ -35,17 +35,4 @@ export class ExperimentUserRepository extends Repository<ExperimentUser> {
 
     return result.raw[0];
   }
-
-  public async updateGroupMembership(userId: string, group: any): Promise<ExperimentUser> {
-    const result = await this.createQueryBuilder()
-      .update(ExperimentUser)
-      .set({
-        group,
-      })
-      .where('id = :id', { id: userId })
-      .returning('*')
-      .execute();
-
-    return result.raw[0];
-  }
 }

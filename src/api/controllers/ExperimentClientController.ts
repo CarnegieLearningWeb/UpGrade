@@ -29,6 +29,44 @@ export class ExperimentClientController {
 
   /**
    * @swagger
+   * /init:
+   *    post:
+   *       description: Create/Update Experiment User
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experimentUser
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               id:
+   *                 type: string
+   *               group:
+   *                 type: object
+   *               workingGroup:
+   *                 type: object
+   *           description: ExperimentUser
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Set Group Membership
+   */
+  @Post('init')
+  public async init(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    experimentUser: ExperimentUser
+  ): Promise<ExperimentUser> {
+    const document = await this.experimentUserService.create([experimentUser]);
+    return document[0];
+  }
+
+  /**
+   * @swagger
    * /groupmembership:
    *    post:
    *       description: Set group membership for a user
@@ -39,10 +77,12 @@ export class ExperimentClientController {
    *           name: experimentUser
    *           required: true
    *           schema:
-   *             type: array
-   *             items:
-   *                  type: string
-   *                  $ref: '#/definitions/ExperimentUser'
+   *             type: object
+   *             properties:
+   *               id:
+   *                 type: string
+   *               group:
+   *                 type: object
    *           description: ExperimentUser
    *       tags:
    *         - Experiment Point
@@ -57,7 +97,7 @@ export class ExperimentClientController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     experimentUser: ExperimentUser
   ): Promise<ExperimentUser> {
-    return this.experimentUserService.setGroupMembership(experimentUser.id, experimentUser.group);
+    return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group);
   }
 
   /**

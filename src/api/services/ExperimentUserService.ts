@@ -33,18 +33,35 @@ export class ExperimentUserService {
     return this.userRepository.findOne({ id });
   }
 
-  public create(users: Array<Partial<ExperimentUser>>): Promise<ExperimentUser[]> {
+  public async create(users: Array<Partial<ExperimentUser>>): Promise<ExperimentUser[]> {
     this.log.info('Create a new user => ', users.toString());
     const multipleUsers = users.map(user => {
       user.id = user.id || uuid();
       return user;
     });
-    return this.userRepository.save(multipleUsers);
+    // insert or update in the database
+    const updatedUsers = await this.userRepository.save(multipleUsers);
+
+    // update assignment if user group is changed
+    const assignmentUpdated = updatedUsers.map((user: ExperimentUser, index: number) => {
+      if (user.group && users[index].group) {
+        return this.removeAssignments(user.id, users[index].group, user.group);
+      }
+      return Promise.resolve();
+    });
+
+    // wait for all assignment update to get complete
+    await Promise.all(assignmentUpdated);
+    return updatedUsers;
   }
 
-  public async updateWorkingGroup(userId: string, workingGroup: any): Promise<any> {
+  public async updateWorkingGroup(userId: string, workingGroup: any): Promise<ExperimentUser> {
     this.log.info('Update working group => ', userId, workingGroup);
-    return this.userRepository.updateWorkingGroup(userId, workingGroup);
+    const userExist = await this.userRepository.findOne({ id: userId });
+
+    // TODO check if workingGroup is the subset of group membership
+    const newDocument = userExist ? { ...userExist, id: userId, workingGroup } : { id: userId, workingGroup };
+    return this.userRepository.save(newDocument);
   }
 
   public update(id: string, user: ExperimentUser): Promise<ExperimentUser> {
@@ -53,31 +70,45 @@ export class ExperimentUserService {
     return this.userRepository.save(user);
   }
 
-  public async setGroupMembership(userId: string, groupMembership: any): Promise<ExperimentUser> {
+  // TODO should we check for workingGroup as a subset over here?
+  public async updateGroupMembership(userId: string, groupMembership: any): Promise<ExperimentUser> {
     this.log.info(
       `Set Group Membership => userId ${userId} and Group membership ${JSON.stringify(groupMembership, undefined, 2)}`
     );
 
+    const userExist = await this.userRepository.findOne({ id: userId });
+
+    // update assignments
+    if (userExist && userExist.group) {
+      await this.removeAssignments(userId, groupMembership, userExist.group);
+    }
+
+    const newDocument = userExist
+      ? { ...userExist, id: userId, group: groupMembership }
+      : { id: userId, group: groupMembership };
+
+    // update group membership
+    return this.userRepository.save(newDocument);
+  }
+
+  private async removeAssignments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {
     const userGroupRemovedMap: Map<string, string[]> = new Map();
 
     // check the groups removed from setGroupMembership
-    const oldDocument = await this.userRepository.findOne({ id: userId });
-    if (oldDocument && oldDocument.group) {
-      Object.keys(oldDocument.group).map(key => {
-        const oldGroupArray: string[] = oldDocument.group[key];
-        const newGroupArray: string[] = groupMembership[key];
-        oldGroupArray.map(groupId => {
-          if (!(newGroupArray && newGroupArray.includes(groupId))) {
-            const groupNames = userGroupRemovedMap.has(key) ? userGroupRemovedMap.get(key) : [];
-            if (!newGroupArray) {
-              userGroupRemovedMap.set(key, [...groupNames, ...newGroupArray]);
-            } else {
-              userGroupRemovedMap.set(key, [...groupNames, groupId]);
-            }
+    Object.keys(oldGroupMembership).map(key => {
+      const oldGroupArray: string[] = oldGroupMembership[key];
+      const newGroupArray: string[] = groupMembership[key];
+      oldGroupArray.map(groupId => {
+        if (!(newGroupArray && newGroupArray.includes(groupId))) {
+          const groupNames = userGroupRemovedMap.has(key) ? userGroupRemovedMap.get(key) : [];
+          if (!newGroupArray) {
+            userGroupRemovedMap.set(key, [...groupNames, ...newGroupArray]);
+          } else {
+            userGroupRemovedMap.set(key, [...groupNames, groupId]);
           }
-        });
+        }
       });
-    }
+    });
 
     // get all group experiments
     const groupExperiments = await this.experimentRepository.find({
@@ -88,11 +119,16 @@ export class ExperimentUserService {
     });
 
     if (groupExperiments.length === 0) {
-      return this.userRepository.updateGroupMembership(userId, groupMembership);
+      return;
     }
 
     // filter experiment for those groups
     const groupKeys = Array.from(userGroupRemovedMap.keys());
+
+    if (groupKeys.length === 0) {
+      return;
+    }
+
     // ============       Experiment with Group Consistency
     const filteredGroupExperiment = groupExperiments.filter(experiment => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.GROUP;
@@ -111,8 +147,6 @@ export class ExperimentUserService {
     });
 
     await this.groupExperimentsWithExperimentConsistency(filteredExperimentExperiment, userId);
-
-    return this.userRepository.updateGroupMembership(userId, groupMembership);
   }
 
   private async groupExperimentsWithGroupConsistency(filteredExperiment: Experiment[], userId: string): Promise<void> {
