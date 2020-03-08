@@ -1,3 +1,4 @@
+
 import { ExperimentUser } from '../../../../src/api/models/ExperimentUser';
 export const multipleUsers: Array<Partial<ExperimentUser>> = [
   {

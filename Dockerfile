@@ -4,15 +4,11 @@ FROM node:12.7.0-alpine
 WORKDIR /usr/src/app
 
 # Install app dependencies
-COPY package.json yarn.lock ./
-RUN yarn
-
-# Bundle app source
 COPY . .
+RUN cd packages/Upgrade && yarn
 
-RUN ["npm", "start", "dockerConfig.$ENVIRONMENT"]
-RUN ["npm", "run", "build"]
+RUN ["npm", "run", "build:upgrade"]
 
 
 EXPOSE 3030
-CMD ["npm", "run", "production" ]
+CMD ["npm", "run", "production:upgrade"]
