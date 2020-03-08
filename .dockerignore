@@ -4,10 +4,10 @@
 *.log*
 
 # Node files #
-node_modules/
-npm-debug.log
-yarn-error.log
-.env
+*/**/node_modules/
+*/**/npm-debug.log
+*/**/yarn-error.log
+*/**/.env
 
 # OS generated files #
 .DS_Store
@@ -16,11 +16,11 @@ Thumbs.db
 src/api/schema.gql
 
 # Typing #
-typings/
+*/**/typings/
 
 # Dist #
-dist/
-tsconfig.build.json
+*/**/dist/
+*/**/tsconfig.build.json
 
 # IDE #
 .idea/
@@ -28,12 +28,12 @@ tsconfig.build.json
 .awcache
 
 # Generated source-code #
-src/**/*.js
-src/**/*.js.map
-!src/public/**/*
-test/**/*.js
-test/**/*.js.map
-coverage/
-!test/preprocessor.js
-Dockerrun.aws.json
-mydb.sql
+*/**/src/**/*.js
+*/**/src/**/*.js.map
+*/**/!src/public/**/*
+*/**/test/**/*.js
+*/**/test/**/*.js.map
+*/**/coverage/
+*/**/!test/preprocessor.js
+*/**/Dockerrun.aws.json
+*/**/mydb.sql

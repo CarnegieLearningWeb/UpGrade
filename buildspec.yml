@@ -3,6 +3,7 @@ phases:
   install:
     runtime-versions:
       docker: 18
+      nodejs: 10
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
@@ -13,15 +14,10 @@ phases:
   build:
     commands:
       - echo Build started on `date`
+      - echo Building docker config
+      - npm run dockerConfig:$IMAGE_TAG
       - echo Building the Docker image...
       - docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
-
-      - docker run -d $REPOSITORY_URI:latest
-      - CONTAINER_ID=$(docker ps -alq)
-      - echo container id is $CONTAINER_ID
-      - docker cp $CONTAINER_ID:/usr/src/app/Dockerrun.aws.json .
-      - docker stop $CONTAINER_ID
-      - docker rm -v $CONTAINER_ID
 
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
