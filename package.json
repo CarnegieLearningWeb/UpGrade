@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "Backend for A/B Testing Project",
   "scripts": {
+    "install:all": "yarn && cd packages/Schedular && yarn",
     "production:upgrade": "cd packages/Upgrade && npm run production",
     "build:upgrade": "cd packages/Upgrade && npm run build",
     "dockerConfig:development": "ts-node --transpile-only ./commands/dockerrun.ts development",
-    "dockerConfig:production": "ts-node --transpile-only ./commands/dockerrun.ts production"
+    "dockerConfig:production": "ts-node --transpile-only ./commands/dockerrun.ts production",
+    "deploy:schedule": "cd packages/Schedular && sls deploy"
   },
   "license": "ISC",
   "dependencies": {
