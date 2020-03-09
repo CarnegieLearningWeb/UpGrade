@@ -7,11 +7,7 @@ phases:
   pre_build:
     commands:
       - echo installing node packages
-<<<<<<< HEAD
-      - yarn
-=======
       - npm run install:all
->>>>>>> develop
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
@@ -20,11 +16,8 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-<<<<<<< HEAD
-=======
       - echo deploying serverless functions
       - npm run deploy:schedule -- -- --stage=$IMAGE_TAG
->>>>>>> develop
       - echo Building docker config
       - npm run dockerConfig:$IMAGE_TAG
       - echo Building the Docker image...
