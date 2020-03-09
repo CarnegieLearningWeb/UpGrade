@@ -8,7 +8,7 @@
     "build:upgrade": "cd packages/Upgrade && npm run build",
     "dockerConfig:development": "ts-node --transpile-only ./commands/dockerrun.ts development",
     "dockerConfig:production": "ts-node --transpile-only ./commands/dockerrun.ts production",
-    "deploy:schedule": "cd packages/Schedular && sls deploy"
+    "deploy:schedule": "cd packages/Schedular && npm run deploy"
   },
   "license": "ISC",
   "dependencies": {
