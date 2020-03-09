@@ -96,8 +96,8 @@ export class ExperimentUserService {
 
     // check the groups removed from setGroupMembership
     Object.keys(oldGroupMembership).map(key => {
-      const oldGroupArray: string[] = oldGroupMembership[key];
-      const newGroupArray: string[] = groupMembership[key];
+      const oldGroupArray: string[] = oldGroupMembership[key] || [];
+      const newGroupArray: string[] = groupMembership[key] || [];
       oldGroupArray.map(groupId => {
         if (!(newGroupArray && newGroupArray.includes(groupId))) {
           const groupNames = userGroupRemovedMap.has(key) ? userGroupRemovedMap.get(key) : [];
