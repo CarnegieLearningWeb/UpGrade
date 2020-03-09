@@ -35,6 +35,8 @@ var SERVER_ERROR;
     SERVER_ERROR["USER_NOT_FOUND"] = "User ID not found";
     SERVER_ERROR["QUERY_FAILED"] = "Query Failed";
     SERVER_ERROR["REPORTED_ERROR"] = "Error reported from client";
+    SERVER_ERROR["EXPERIMENT_USER_NOT_DEFINED"] = "Experiment user not defined";
+    SERVER_ERROR["EXPERIMENT_USER_GROUP_NOT_DEFINED"] = "Experiment user group not defined";
 })(SERVER_ERROR = exports.SERVER_ERROR || (exports.SERVER_ERROR = {}));
 var EXPERIMENT_LOG_TYPE;
 (function (EXPERIMENT_LOG_TYPE) {

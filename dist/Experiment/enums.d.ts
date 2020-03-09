@@ -27,7 +27,9 @@ export declare enum SERVER_ERROR {
     INCORRECT_PARAM_FORMAT = "Parameter not in the correct format",
     USER_NOT_FOUND = "User ID not found",
     QUERY_FAILED = "Query Failed",
-    REPORTED_ERROR = "Error reported from client"
+    REPORTED_ERROR = "Error reported from client",
+    EXPERIMENT_USER_NOT_DEFINED = "Experiment user not defined",
+    EXPERIMENT_USER_GROUP_NOT_DEFINED = "Experiment user group not defined"
 }
 export declare enum EXPERIMENT_LOG_TYPE {
     EXPERIMENT_CREATED = "experimentCreated",

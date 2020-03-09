@@ -32,6 +32,8 @@ export enum SERVER_ERROR {
   USER_NOT_FOUND = 'User ID not found',
   QUERY_FAILED = 'Query Failed',
   REPORTED_ERROR = 'Error reported from client',
+  EXPERIMENT_USER_NOT_DEFINED = 'Experiment user not defined',
+  EXPERIMENT_USER_GROUP_NOT_DEFINED = 'Experiment user group not defined',
 }
 
 export enum EXPERIMENT_LOG_TYPE {
