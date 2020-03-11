@@ -10,14 +10,14 @@ import validateWorkingGroup from './common/validateWorkingGroup';
 export default async function init(userId: string, hostUrl: string, context?: any): Promise<Interfaces.IResponse> {
   try {
     let isGetAllExperimentConditionsDone = false;
-    let hasGroupMemberShipCorrect = true;
-    let hasWorkingGroupCorrect = true;
+    let isGroupMemberShipCorrect = true;
+    let isWorkingGroupCorrect = true;
 
     DataService.setConfigData(userId, hostUrl);
     
     if (context && context.group) {
       const res = validateGroupMembership(context.group);
-      hasGroupMemberShipCorrect = res.status;
+      isGroupMemberShipCorrect = res.status;
       if (!res.status) {
         return res;
       }
@@ -25,13 +25,13 @@ export default async function init(userId: string, hostUrl: string, context?: an
 
     if (context && context.workingGroup) {
       const res = validateWorkingGroup(context.workingGroup);
-      hasWorkingGroupCorrect = res.status;
+      isWorkingGroupCorrect = res.status;
       if (!res.status) {
         return res;
       }
     }
 
-    if (hasWorkingGroupCorrect && hasGroupMemberShipCorrect) {
+    if (isWorkingGroupCorrect && isGroupMemberShipCorrect) {
       if (context && context.group) {
         isGetAllExperimentConditionsDone = true;
         const res = await setGroupMembership(context.group);
