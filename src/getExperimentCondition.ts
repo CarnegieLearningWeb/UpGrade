@@ -7,7 +7,7 @@ export default function getExperimentCondition(experimentPoint: string, partitio
     const experimentConditionData = DataService.getData('experimentConditionData');
     if (experimentConditionData) {
       const result = experimentConditionData.filter(data =>
-        partitionId ? (data.name === partitionId && data.point === experimentPoint) : data.point === experimentPoint
+        partitionId ? (data.name === partitionId && data.point === experimentPoint) : (data.point === experimentPoint && !data.name)
       );
       
       return {
