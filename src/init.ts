@@ -1,49 +1,68 @@
-import * as fetch from 'isomorphic-fetch';
 import * as responseError from './common/responseError';
 import DataService from './common/dataService';
 import { Interfaces, Types } from './identifiers';
+import getAllExperimentConditions from './getAllExperimentConditions';
+import setGroupMembership from './setGroupMembership';
+import setWorkingGroup from './setWorkingGroup';
+import validateGroupMembership from './common/validateGroupMembership';
+import validateWorkingGroup from './common/validateWorkingGroup';
 
-export default async function init(host: string, user: any, sessionId?: string): Promise<Interfaces.IResponse> {
-  let experimentConditionData = null; // Used to store result of getAllExperimentConditions
-  const requestCount = 0;
-  const requestThreshold = 5;
-  let getAllExperimentConditionsUrl = null;
+interface UserGroup {
+  group?: any;
+  workingGroup?: any;
+}
 
+export default async function init(userId: string, hostUrl: string, groupInfo?: UserGroup): Promise<Interfaces.IResponse> {
   try {
-    DataService.setConfigData(host, user);
-    getAllExperimentConditionsUrl = DataService.getData('commonConfig').api.getAllExperimentConditions;
-    experimentConditionData = await getExperimentConditions(getAllExperimentConditionsUrl, user, requestCount, requestThreshold);
-    DataService.setData('experimentConditionData', experimentConditionData);
-    return {
-        status: true,
-        message: Types.ResponseMessages.SUCCESS
+    let isGetAllExperimentConditionsDone = false;
+    let isGroupMemberShipCorrect = true;
+    let isWorkingGroupCorrect = true;
+
+    DataService.setConfigData(userId, hostUrl);
+    
+    if (groupInfo && groupInfo.group) {
+      const res = validateGroupMembership(groupInfo.group);
+      isGroupMemberShipCorrect = res.status;
+      if (!res.status) {
+        return res;
+      }
+    }
+
+    if (groupInfo && groupInfo.workingGroup) {
+      const res = validateWorkingGroup(groupInfo.workingGroup);
+      isWorkingGroupCorrect = res.status;
+      if (!res.status) {
+        return res;
+      }
+    }
+
+    if (isWorkingGroupCorrect && isGroupMemberShipCorrect) {
+      if (groupInfo && groupInfo.group) {
+        isGetAllExperimentConditionsDone = true;
+        const res = await setGroupMembership(groupInfo.group);
+        if (!res.status) {
+          return res;
+        }
+      }
+      if (groupInfo && groupInfo.workingGroup) {
+        isGetAllExperimentConditionsDone = true;
+        const res = await setWorkingGroup(groupInfo.workingGroup);
+        if (!res.status) {
+          return res;
+        }
+      }
+      if (!isGetAllExperimentConditionsDone) {
+        await getAllExperimentConditions();
+      }
+      return {
+          status: true,
+          message: Types.ResponseMessages.SUCCESS
+      }
     }
   } catch (e) {
     throw new responseError.HttpsError(
       responseError.FunctionsErrorCode.unknown,
       e.message
     );
-  }
-}
-
-async function getExperimentConditions(url: string, user: any, requestCount: number, requestThreshold: number) {
-  try {
-    const response = await fetch(url, {
-      body: JSON.stringify(user),
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return response.json();
-  } catch (e) {
-    requestCount++;
-    if (requestCount === requestThreshold) {
-      return {
-        status: false,
-        message: Types.ResponseMessages.FAILED
-      };
-    }
-    await getExperimentConditions(url, user, requestCount, requestThreshold);
   }
 }

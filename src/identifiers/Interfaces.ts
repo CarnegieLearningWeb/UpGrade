@@ -1,12 +1,7 @@
-import { Types } from './Types';
-
 export namespace Interfaces {
   export interface IConfig {
     hostURL: string;
-    user: {
-      userId: string;
-      userEnvironment: any;
-    };
+    userId: string;
     api: any;
   }
 

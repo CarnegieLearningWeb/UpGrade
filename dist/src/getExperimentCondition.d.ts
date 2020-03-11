@@ -1,2 +1,2 @@
 import { Interfaces } from './identifiers';
-export default function getExperimentCondition(experimentName: string, experimentPoint: string): Interfaces.IResponse;
+export default function getExperimentCondition(experimentPoint: string, partitionId?: string): Interfaces.IResponse;
