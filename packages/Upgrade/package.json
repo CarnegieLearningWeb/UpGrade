@@ -19,9 +19,9 @@
   "author": "",
   "jest": {
     "transform": {
-      ".(ts|tsx)": "<rootDir>/test/preprocessor.js"
+      ".(ts|tsx)": "../../preprocessor.js"
     },
-    "testRegex": "./*.test.(ts|tsx|js)$",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
