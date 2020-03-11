@@ -3,23 +3,29 @@ import { Interfaces } from 'identifiers';
 export default class DataService {
   private static commonConfig: Interfaces.IConfig = {
     hostURL: null,
-    user: null,
+    userId: null,
     api: {
       getAllExperimentConditions: null,
-      markExperimentPoint: null
+      markExperimentPoint: null,
+      setGroupMemberShip: null,
+      setWorkingGroup: null
     }
   };
   private static experimentConditionData = null;
   private static interestedExperimentPoints = null;
+  private static userGroups = null;
+  private static workingGroup = null;
 
   // Used to set common configuration
-  public static setConfigData(hostURL: string, user: any) {
+  public static setConfigData(userId: string, hostURL: any) {
     DataService.commonConfig = {
       hostURL,
-      user,
+      userId,
       api: {
         getAllExperimentConditions: `${hostURL}/api/assign`,
-        markExperimentPoint: `${hostURL}/api/mark`
+        markExperimentPoint: `${hostURL}/api/mark`,
+        setGroupMemberShip: `${hostURL}/api/groupmembership`,
+        setWorkingGroup: `${hostURL}/api/workinggroup`
       }
     };
   }
