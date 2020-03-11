@@ -7,7 +7,12 @@ import setWorkingGroup from './setWorkingGroup';
 import validateGroupMembership from './common/validateGroupMembership';
 import validateWorkingGroup from './common/validateWorkingGroup';
 
-export default async function init(userId: string, hostUrl: string, context?: any): Promise<Interfaces.IResponse> {
+interface UserGroup {
+  group?: any;
+  workingGroup?: any;
+}
+
+export default async function init(userId: string, hostUrl: string, groupInfo?: UserGroup): Promise<Interfaces.IResponse> {
   try {
     let isGetAllExperimentConditionsDone = false;
     let isGroupMemberShipCorrect = true;
@@ -15,16 +20,16 @@ export default async function init(userId: string, hostUrl: string, context?: an
 
     DataService.setConfigData(userId, hostUrl);
     
-    if (context && context.group) {
-      const res = validateGroupMembership(context.group);
+    if (groupInfo && groupInfo.group) {
+      const res = validateGroupMembership(groupInfo.group);
       isGroupMemberShipCorrect = res.status;
       if (!res.status) {
         return res;
       }
     }
 
-    if (context && context.workingGroup) {
-      const res = validateWorkingGroup(context.workingGroup);
+    if (groupInfo && groupInfo.workingGroup) {
+      const res = validateWorkingGroup(groupInfo.workingGroup);
       isWorkingGroupCorrect = res.status;
       if (!res.status) {
         return res;
@@ -32,16 +37,16 @@ export default async function init(userId: string, hostUrl: string, context?: an
     }
 
     if (isWorkingGroupCorrect && isGroupMemberShipCorrect) {
-      if (context && context.group) {
+      if (groupInfo && groupInfo.group) {
         isGetAllExperimentConditionsDone = true;
-        const res = await setGroupMembership(context.group);
+        const res = await setGroupMembership(groupInfo.group);
         if (!res.status) {
           return res;
         }
       }
-      if (context && context.workingGroup) {
+      if (groupInfo && groupInfo.workingGroup) {
         isGetAllExperimentConditionsDone = true;
-        const res = await setWorkingGroup(context.workingGroup);
+        const res = await setWorkingGroup(groupInfo.workingGroup);
         if (!res.status) {
           return res;
         }
