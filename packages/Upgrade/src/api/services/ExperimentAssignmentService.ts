@@ -104,15 +104,51 @@ export class ExperimentAssignmentService {
   }
 
   public async getAllExperimentConditions(userId: string): Promise<any> {
+    this.log.info(`Get all experiment for User Id ${userId}`);
+    const [experimentUser, previewUser] = await Promise.all([
+      this.userRepository.findOne({ id: userId }),
+      this.previewUserService.findOne(userId),
+    ]);
+    const workingGroup = (experimentUser && experimentUser.workingGroup) || {};
+    let previewWorkingGroup = (previewUser && previewUser.workingGroup) || {};
+
+    // query all experiment and sub experiment
+    const experiments = await this.experimentRepository.getValidExperiments();
+    console.log('experimentUser', experimentUser);
+    console.log('previewUser', previewUser);
+    // Experiment has assignment type as GROUP_ASSIGNMENT
+    const groupExperiment = experiments.find(experiment => experiment.group);
+    if (groupExperiment && (experimentUser || previewUser)) {
+      if (experimentUser && experimentUser.group && experimentUser.workingGroup) {
+        // throw error user group not defined
+        throw new Error(
+          JSON.stringify({
+            type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+            message: `User not defined: ${userId}`,
+          })
+        );
+      }
+
+      if (previewUser && previewUser.group && previewUser.workingGroup) {
+        // throw error user group not defined
+        throw new Error(
+          JSON.stringify({
+            type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
+            message: `Group not defined for previewUser: ${JSON.stringify(previewUser, undefined, 2)}`,
+          })
+        );
+      }
+    } else {
+      // throw Error User not defined
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
+          message: `Group not defined for user: ${JSON.stringify(experimentUser, undefined, 2)}`,
+        })
+      );
+    }
+
     try {
-      this.log.info(`Get all experiment for User Id ${userId}`);
-      const experimentUser = await this.userRepository.findOne({ id: userId });
-      const workingGroup = (experimentUser && experimentUser.workingGroup) || {};
-      let previewWorkingGroup = {};
-
-      // query all experiment and sub experiment
-      const experiments = await this.experimentRepository.getValidExperiments();
-
       // return if no experiment
       if (experiments.length === 0) {
         return [];
@@ -123,10 +159,9 @@ export class ExperimentAssignmentService {
         return `${type}_${workingGroup[type]}`;
       });
 
-      const [userExcluded, groupExcluded, previewUser] = await Promise.all([
+      const [userExcluded, groupExcluded] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId }),
         userGroup.length > 0 ? this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }) : [],
-        this.previewUserService.findOne(userId),
       ]);
 
       if (userExcluded.length > 0) {

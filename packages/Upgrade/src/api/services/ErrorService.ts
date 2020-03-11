@@ -20,7 +20,7 @@ export class ErrorService {
   }
 
   public create(error: ExperimentError): Promise<ExperimentError> {
-    this.log.info('Inserting an error => ');
+    this.log.info(`Inserting an error => ${JSON.stringify(error)}`);
     return this.errorRepository.save(error).catch(errorMsg => {
       throw new Error(errorMsg);
     });
