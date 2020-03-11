@@ -51,6 +51,18 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.QUERY_FAILED;
         message = errorMessage;
         break;
+      case SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED:
+        type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+        message = errorMessage;
+        break;
+      case SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED:
+        type = SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED;
+        message = errorMessage;
+        break;
+      case SERVER_ERROR.ASSIGNMENT_ERROR:
+        type = SERVER_ERROR.ASSIGNMENT_ERROR;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:
