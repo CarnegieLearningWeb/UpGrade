@@ -1,10 +1,7 @@
-import { IsNotEmpty, IsDefined, IsString } from 'class-validator';
+import { IsNotEmpty, IsDefined } from 'class-validator';
 
 export class MarkExperimentValidator {
-  @IsNotEmpty()
-  @IsString()
-  @IsDefined()
-  public experimentId: string;
+  public partitionId: string | undefined;
 
   @IsNotEmpty()
   @IsDefined()

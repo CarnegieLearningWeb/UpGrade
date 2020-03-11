@@ -1,5 +1,4 @@
 import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExperimentPoint';
-import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
@@ -64,6 +63,6 @@ export async function markExperimentPoint(
   const checkService = Container.get<CheckService>(CheckService);
 
   // mark experiment point
-  await experimentAssignmentService.markExperimentPoint(experimentName, experimentPoint, userId);
+  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, experimentName);
   return checkService.getAllMarkedExperimentPoints();
 }

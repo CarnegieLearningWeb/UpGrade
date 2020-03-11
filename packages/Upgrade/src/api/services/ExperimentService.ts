@@ -217,10 +217,11 @@ export class ExperimentService {
           partitions.map(partition => {
             // tslint:disable-next-line:no-shadowed-variable
             const { createdAt, updatedAt, versionNumber, ...rest } = partition;
-            if (rest.id && rest.id === `${rest.name}_${rest.point}`) {
+            const joinedForId = rest.name ? `${rest.name}_${rest.point}` : `${rest.point}`;
+            if (rest.id && rest.id === joinedForId) {
               rest.id = rest.id;
             } else {
-              rest.id = `${rest.name}_${rest.point}`;
+              rest.id = rest.name ? `${rest.name}_${rest.point}` : `${rest.point}`;
             }
             rest.experiment = experimentDoc;
             return rest;
@@ -374,7 +375,7 @@ export class ExperimentService {
         partitions &&
         partitions.length > 0 &&
         partitions.map(partition => {
-          partition.id = `${partition.name}_${partition.point}`;
+          partition.id = partition.name ? `${partition.name}_${partition.point}` : `${partition.point}`;
           partition.experiment = experimentDoc;
           return partition;
         });
