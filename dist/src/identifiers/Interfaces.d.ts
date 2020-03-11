@@ -1,10 +1,7 @@
 export declare namespace Interfaces {
     interface IConfig {
         hostURL: string;
-        user: {
-            userId: string;
-            userEnvironment: any;
-        };
+        userId: string;
         api: any;
     }
     interface IResponse {
