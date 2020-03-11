@@ -75,7 +75,7 @@ export class ExperimentAssignmentService {
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
-  public async markExperimentPoint(experimentName: string, experimentPoint: string, userId: string): Promise<any> {
+  public async markExperimentPoint(userId: string, experimentPoint: string, experimentName?: string): Promise<any> {
     this.log.info(
       `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
     );
@@ -85,7 +85,7 @@ export class ExperimentAssignmentService {
     // query root experiment details
     const experimentPartition = await this.experimentPartitionRepository.findOne({
       where: {
-        id: `${experimentName}_${experimentPoint}`,
+        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
       },
       relations: ['experiment'],
     });

@@ -144,11 +144,11 @@ export class ExperimentClientController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: experimentId
+   *           name: userId
    *           required: true
    *           schema:
    *             type: string
-   *           description: Experiment ID
+   *           description: User ID
    *         - in: body
    *           name: experimentPoint
    *           required: true
@@ -156,17 +156,11 @@ export class ExperimentClientController {
    *             type: string
    *           description: Experiment Point
    *         - in: body
-   *           name: userId
+   *           name: partitionId
    *           required: true
    *           schema:
    *             type: string
-   *           description: User ID
-   *         - in: body
-   *           name: userEnvironment
-   *           required: true
-   *           schema:
-   *             type: object
-   *           description: User Environment
+   *           description: Partition ID
    *       tags:
    *         - Experiment Point
    *       produces:
@@ -181,9 +175,9 @@ export class ExperimentClientController {
     experiment: MarkExperimentValidator
   ): any {
     return this.experimentAssignmentService.markExperimentPoint(
-      experiment.experimentId,
+      experiment.userId,
       experiment.experimentPoint,
-      experiment.userId
+      experiment.partitionId
     );
   }
 

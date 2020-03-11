@@ -17,9 +17,8 @@ export class ExperimentPartition extends BaseModel {
   @Column()
   public point: string;
 
-  @IsNotEmpty()
-  @Column()
-  public name: string;
+  @Column({ nullable: true })
+  public name: string | undefined;
 
   @Column()
   public description: string;
