@@ -28,7 +28,7 @@ export default async function testCase(): Promise<void> {
   const experimentPoint = experimentObject.partitions[0].point;
 
   // ===================     set user groups for user 1
-  await experimentUserService.setGroupMembership(experimentUsers[0].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['1'],
     class: ['1'],
   });
@@ -55,7 +55,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentUser).toEqual(expect.arrayContaining([expect.objectContaining(objectToCheck)]));
 
   // ===================     set user groups for user 2
-  await experimentUserService.setGroupMembership(experimentUsers[1].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[1].id, {
     teacher: ['2'],
     class: ['2'],
   });
@@ -82,7 +82,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentUser).toEqual(expect.arrayContaining([expect.objectContaining(objectToCheck)]));
 
   // ===================     set user groups for user 3
-  await experimentUserService.setGroupMembership(experimentUsers[2].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[2].id, {
     teacher: ['2'],
     class: ['2'],
   });
@@ -109,7 +109,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentUser).toEqual(expect.arrayContaining([expect.objectContaining(objectToCheck)]));
 
   // ===================     set user groups for user 4
-  await experimentUserService.setGroupMembership(experimentUsers[3].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[3].id, {
     teacher: ['1'],
     class: ['1'],
   });
@@ -183,7 +183,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // update groupMembership for user1
-  await experimentUserService.setGroupMembership(experimentUsers[0].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['2'],
     class: ['2'],
   });

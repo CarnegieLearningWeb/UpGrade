@@ -30,7 +30,7 @@ export default async function testCase(): Promise<void> {
   const experimentObject = groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment;
 
   // change user group
-  await experimentUserService.setGroupMembership(experimentUsers[0].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['2'],
     class: ['2'],
   });
@@ -84,7 +84,7 @@ export default async function testCase(): Promise<void> {
 
   // change user group
   // experimentUsers[0].group['teacher'] = 1;
-  await experimentUserService.setGroupMembership(experimentUsers[0].id, {
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['1'],
     class: ['1'],
   });

@@ -114,36 +114,37 @@ export class ExperimentAssignmentService {
 
     // query all experiment and sub experiment
     const experiments = await this.experimentRepository.getValidExperiments();
-    console.log('experimentUser', experimentUser);
-    console.log('previewUser', previewUser);
+
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiment = experiments.find(experiment => experiment.group);
-    if (groupExperiment && (experimentUser || previewUser)) {
-      if (experimentUser && experimentUser.group && experimentUser.workingGroup) {
-        // throw error user group not defined
-        throw new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-            message: `User not defined: ${userId}`,
-          })
-        );
-      }
+    if (experimentUser || previewUser) {
+      if (groupExperiment) {
+        if (experimentUser && (!experimentUser.group || !experimentUser.workingGroup)) {
+          // throw error user group not defined
+          throw new Error(
+            JSON.stringify({
+              type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+              message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
+            })
+          );
+        }
 
-      if (previewUser && previewUser.group && previewUser.workingGroup) {
-        // throw error user group not defined
-        throw new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
-            message: `Group not defined for previewUser: ${JSON.stringify(previewUser, undefined, 2)}`,
-          })
-        );
+        if (previewUser && (!previewUser.group || !previewUser.workingGroup)) {
+          // throw error user group not defined
+          throw new Error(
+            JSON.stringify({
+              type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
+              message: `Group not defined for preview User: ${JSON.stringify(previewUser, undefined, 2)}`,
+            })
+          );
+        }
       }
     } else {
       // throw Error User not defined
       throw new Error(
         JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
-          message: `Group not defined for user: ${JSON.stringify(experimentUser, undefined, 2)}`,
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User not defined: ${userId}`,
         })
       );
     }
