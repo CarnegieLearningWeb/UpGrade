@@ -40,5 +40,10 @@ export const experiment = {
       description: 'Partition on Workspace 2',
       twoCharacterId: 'W2',
     },
+    {
+      point: 'CurriculumSequence',
+      description: 'No Partition',
+      twoCharacterId: 'NP',
+    },
   ],
 };

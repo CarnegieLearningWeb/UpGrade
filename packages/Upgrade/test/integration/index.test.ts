@@ -28,6 +28,7 @@ import {
   DeleteEndExperiment,
 } from './Experiment/scheduleJob';
 import { MainAuditLog } from './Experiment/auditLogs';
+import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
 import { NoPreviewExperiment, NoPreviewUser, PreviewExperimentWithPreviewUser } from './PreviewExperiment/index';
 import { Scenario9, Scenario10 } from './ExperimentAssignment/index';
@@ -210,6 +211,11 @@ describe('Integration Tests', () => {
 
   test('Preview experiment with preview user', async done => {
     await PreviewExperimentWithPreviewUser();
+    done();
+  });
+
+  test('Experiment without partition', async done => {
+    await NoPartitionPoint();
     done();
   });
 });
