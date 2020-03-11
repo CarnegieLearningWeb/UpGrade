@@ -4,15 +4,20 @@ import { Interfaces, Types } from './identifiers';
 import fetchDataService from './common/fetchDataService';
 
 // experimentName is equal to partitionId
-export default async function markExperimentPoint(experimentName: string, experimentPoint: string): Promise<Interfaces.IResponse> {
+export default async function markExperimentPoint(experimentPoint: string, experimentName?: string): Promise<Interfaces.IResponse> {
   try {
     const config = DataService.getData('commonConfig');
     const markExperimentPointUrl = config.api.markExperimentPoint;
     const userId = config.userId;
-    const data = {
-      experimentId: experimentName,
+    let data: any = {
       experimentPoint,
       userId
+    }
+    if (experimentName) {
+      data = {
+        ...data,
+        partitionId: experimentName
+      }
     }
     const response = await fetchDataService(markExperimentPointUrl, data);
     return response ? {
