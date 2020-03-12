@@ -1,13 +1,8 @@
-import { JsonController, Post, Put, Body, CurrentUser } from 'routing-controllers';
+import { JsonController, Post, Body } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
 import { ExperimentAssignmentValidator } from './validators/ExperimentAssignmentValidator';
-import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
-import { User } from '../models/User';
-import { validate } from 'class-validator';
-import { env } from '../../env';
-import { SERVER_ERROR } from 'ees_types';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
@@ -215,55 +210,5 @@ export class ExperimentClientController {
     experiment: ExperimentAssignmentValidator
   ): any {
     return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId);
-  }
-
-  /**
-   * @swagger
-   * /state:
-   *    put:
-   *       description: Update Experiment State
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: experimentId
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Experiment ID
-   *         - in: body
-   *           name: state
-   *           required: true
-   *           schema:
-   *             type: object
-   *             $ref: '#/definitions/Experiment/state'
-   *           description: Experiment State
-   *       tags:
-   *         - Experiment Point
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Experiment State is updated
-   */
-  @Put('state')
-  public async updateState(
-    @Body({ validate: { validationError: { target: false, value: false } } })
-    experiment: AssignmentStateUpdateValidator,
-    @CurrentUser() currentUser: User
-  ): Promise<any> {
-    if (env.auth.authCheck) {
-      if (!currentUser) {
-        return Promise.reject(
-          new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
-        );
-      }
-
-      await validate(currentUser).catch(error => {
-        return Promise.reject(new Error(error));
-      });
-    }
-
-    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, currentUser);
   }
 }
