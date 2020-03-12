@@ -40,6 +40,8 @@ import { PreviewIndividualAssignment } from '../models/PreviewIndividualAssignme
 import { PreviewGroupAssignment } from '../models/PreviewGroupAssignment';
 import { PreviewIndividualExclusion } from '../models/PreviewIndividualExclusion';
 import { PreviewGroupExclusion } from '../models/PreviewGroupExclusion';
+import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
+import { PreviewMonitoredExperimentPointRepository } from '../repositories/PreviewMonitoredExperimentPointRepository';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -64,7 +66,11 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
+    private previewMonitoredExperimentPointRepository: PreviewMonitoredExperimentPointRepository,
+    @OrmRepository()
     private userRepository: ExperimentUserRepository,
+    @OrmRepository()
+    private previewUserRepository: PreviewUserRepository,
     @OrmRepository()
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
@@ -80,7 +86,12 @@ export class ExperimentAssignmentService {
       `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
     );
 
-    const { workingGroup } = await this.userRepository.findOne({ id: userId });
+    const [experimentUser, previewUser] = await Promise.all([
+      this.userRepository.findOne({ id: userId }),
+      this.previewUserRepository.findOne({ id: userId }),
+    ]);
+    const workingGroup = experimentUser && experimentUser.workingGroup;
+    const previewWorkingGroup = previewUser && previewUser.workingGroup;
 
     // query root experiment details
     const experimentPartition = await this.experimentPartitionRepository.findOne({
@@ -90,17 +101,28 @@ export class ExperimentAssignmentService {
       relations: ['experiment'],
     });
 
-    if (experimentPartition) {
+    if (experimentPartition && workingGroup) {
       this.updateExclusionFromMarkExperimentPoint(userId, workingGroup, experimentPartition.experiment);
     }
 
-    // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
+    let data: any;
+    // save for preview users
+    if (previewWorkingGroup) {
+      data = await this.previewMonitoredExperimentPointRepository.saveRawJson({
+        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+        userId,
+      });
+    }
 
+    // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
     // adding in monitored experiment point table
-    return this.monitoredExperimentPointRepository.saveRawJson({
-      id: `${experimentName}_${experimentPoint}`,
-      userId,
-    });
+    if (workingGroup) {
+      data = await this.monitoredExperimentPointRepository.saveRawJson({
+        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+        userId,
+      });
+    }
+    return data;
   }
 
   public async getAllExperimentConditions(userId: string): Promise<any> {
@@ -109,6 +131,7 @@ export class ExperimentAssignmentService {
       this.userRepository.findOne({ id: userId }),
       this.previewUserService.findOne(userId),
     ]);
+
     const workingGroup = (experimentUser && experimentUser.workingGroup) || {};
     let previewWorkingGroup = (previewUser && previewUser.workingGroup) || {};
 
@@ -191,6 +214,10 @@ export class ExperimentAssignmentService {
       if (!previewUser) {
         filteredExperiments = filteredExperiments.filter(experiment => {
           return experiment.state !== EXPERIMENT_STATE.PREVIEW;
+        });
+      } else if (previewUser && !experimentUser) {
+        filteredExperiments = filteredExperiments.filter(experiment => {
+          return experiment.state === EXPERIMENT_STATE.PREVIEW;
         });
       }
 
@@ -296,7 +323,8 @@ export class ExperimentAssignmentService {
             });
 
           return this.assignExperiment(
-            userId,
+            experimentUser && experimentUser.id,
+            previewUser && previewUser.id,
             workingGroup,
             previewWorkingGroup,
             experiment,
@@ -431,7 +459,7 @@ export class ExperimentAssignmentService {
     });
 
     // query all monitored experiment point for this experiment Id
-    const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find(subExperiments as any);
+    const monitoredExperimentPoints = await this.previewMonitoredExperimentPointRepository.find(subExperiments as any);
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
     );
@@ -444,10 +472,11 @@ export class ExperimentAssignmentService {
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
       // query all user information
-      const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
+      const userDetails = await this.previewUserRepository.findByIds([...uniqueUserIds]);
+
       const groupsToExclude = new Set(
         userDetails.map(userDetail => {
-          return userDetail.group[group];
+          return userDetail.workingGroup[group];
         })
       );
 
@@ -458,7 +487,9 @@ export class ExperimentAssignmentService {
           groupId,
         };
       });
-      await this.previewGroupExclusionRepository.saveRawJson(groupExclusionDocs);
+      if (groupExclusionDocs.length > 0) {
+        await this.previewGroupExclusionRepository.saveRawJson(groupExclusionDocs);
+      }
     }
 
     if (consistencyRule === CONSISTENCY_RULE.INDIVIDUAL || consistencyRule === CONSISTENCY_RULE.GROUP) {
@@ -524,6 +555,7 @@ export class ExperimentAssignmentService {
 
   private async assignExperiment(
     userId: string,
+    previewUserId: string,
     userEnvironment: any,
     previewUserEnvironment: any,
     experiment: Experiment,
@@ -536,7 +568,7 @@ export class ExperimentAssignmentService {
     previewIndividualExclusion?: PreviewIndividualExclusion | undefined,
     previewGroupExclusion?: PreviewGroupExclusion | undefined
   ): Promise<ExperimentCondition | void> {
-    if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+    if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && userId) {
       if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
         if (individualAssignment) {
           return individualAssignment.condition;
@@ -557,7 +589,7 @@ export class ExperimentAssignmentService {
           return condition;
         }
       }
-    } else if (experiment.state === EXPERIMENT_STATE.ENROLLING) {
+    } else if (experiment.state === EXPERIMENT_STATE.ENROLLING && userId) {
       if (individualAssignment) {
         return individualAssignment.condition;
       } else if (individualExclusion) {
@@ -601,7 +633,7 @@ export class ExperimentAssignmentService {
           return experimentalCondition;
         }
       }
-    } else if (experiment.state === EXPERIMENT_STATE.PREVIEW) {
+    } else if (experiment.state === EXPERIMENT_STATE.PREVIEW && previewUserId) {
       if (previewIndividualAssignment) {
         return previewIndividualAssignment.condition;
       } else if (previewIndividualExclusion) {
@@ -612,7 +644,7 @@ export class ExperimentAssignmentService {
         // add entry in individual assignment
         this.previewIndividualAssignmentRepository.saveRawJson({
           experimentId: experiment.id,
-          userId,
+          userId: previewUserId,
           condition: previewGroupAssignment.condition,
         });
         return previewGroupAssignment.condition;
@@ -631,7 +663,7 @@ export class ExperimentAssignmentService {
             }),
             this.previewIndividualAssignmentRepository.saveRawJson({
               experimentId: experiment.id,
-              userId,
+              userId: previewUserId,
               condition: experimentalCondition,
             }),
           ]);
@@ -639,7 +671,7 @@ export class ExperimentAssignmentService {
         } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
           await this.previewIndividualAssignmentRepository.saveRawJson({
             experimentId: experiment.id,
-            userId,
+            userId: previewUserId,
             condition: experimentalCondition,
           });
           return experimentalCondition;

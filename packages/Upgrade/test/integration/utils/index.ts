@@ -2,6 +2,7 @@ import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExper
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
+import { PreviewMonitoredExperimentPoint } from '../../../src/api/models/PreviewMonitoredExperimentPoint';
 
 export function checkExperimentAssignedIsDefault(
   experimentConditionAssignments: any,
@@ -40,7 +41,23 @@ export function checkMarkExperimentPointForUser(
   expect(markedExperimentPoint).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: `${experimentName}_${experimentPoint}`,
+        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+        userId,
+      }),
+    ])
+  );
+}
+
+export function checkPreviewMarkExperimentPointForUser(
+  markedExperimentPoint: PreviewMonitoredExperimentPoint[],
+  userId: string,
+  experimentName: string,
+  experimentPoint: string
+): void {
+  expect(markedExperimentPoint).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
         userId,
       }),
     ])
@@ -65,4 +82,17 @@ export async function markExperimentPoint(
   // mark experiment point
   await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, experimentName);
   return checkService.getAllMarkedExperimentPoints();
+}
+
+export async function markExperimentPointPreview(
+  userId: string,
+  experimentName: string,
+  experimentPoint: string
+): Promise<PreviewMonitoredExperimentPoint[]> {
+  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const checkService = Container.get<CheckService>(CheckService);
+
+  // mark experiment point
+  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, experimentName);
+  return checkService.getAllPreviewMarkedExperimentPoint();
 }
