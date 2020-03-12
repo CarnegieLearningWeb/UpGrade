@@ -10,7 +10,6 @@ export default async function setGroupMembership(group: any): Promise<Interfaces
     if (!response.status) {
       return response;
     }
-    DataService.setData('userGroups', group);
     const commonConfig = DataService.getData('commonConfig')
     const setGroupMembershipUrl = commonConfig.api.setGroupMemberShip;
     const id = commonConfig.userId;

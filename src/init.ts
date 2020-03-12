@@ -50,6 +50,7 @@ export default async function init(userId: string, hostUrl: string, groupInfo?: 
         workingGroup: groupInfo.workingGroup
       } : data;
 
+      DataService.setData('experimentConditionData', null);
       const commonConfig = DataService.getData('commonConfig')
       const initUrl = commonConfig.api.init;
       const res = await fetchDataService(initUrl, data);

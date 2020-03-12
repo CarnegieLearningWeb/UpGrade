@@ -13,8 +13,6 @@ export default class DataService {
   };
   private static experimentConditionData = null;
   private static interestedExperimentPoints = null;
-  private static userGroups = null;
-  private static workingGroup = null;
 
   // Used to set common configuration
   public static setConfigData(userId: string, hostURL: any) {

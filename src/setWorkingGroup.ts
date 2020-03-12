@@ -10,7 +10,6 @@ export default async function setWorkingGroup(workingGroup: any): Promise<Interf
     if (!response.status) {
       return response;
     }
-    DataService.setData('workingGroup', workingGroup);
     const config = DataService.getData('commonConfig')
     const setWorkingGroupUrl = config.api.setWorkingGroup;
     const id = config.userId;
