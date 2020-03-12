@@ -394,7 +394,7 @@ export class ExperimentController {
   /**
    * @swagger
    * /experiments/state:
-   *    put:
+   *    post:
    *       description: Update Experiment State
    *       consumes:
    *         - application/json
@@ -420,7 +420,7 @@ export class ExperimentController {
    *          '200':
    *            description: Experiment State is updated
    */
-  @Put('/state')
+  @Post('/state')
   public async updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: AssignmentStateUpdateValidator,
