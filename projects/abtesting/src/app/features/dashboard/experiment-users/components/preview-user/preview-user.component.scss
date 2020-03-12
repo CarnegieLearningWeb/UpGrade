@@ -23,13 +23,19 @@
   display: block;
 }
 
+textarea {
+  height: 70px;
+}
+
 .preview-users {
   .preview-user-container {
     margin-top: 30px;
 
     table {
+      width: 750px;
+
       .mat-cell {
-        width: 33%;
+        width: 20%;
       }
     }
   }

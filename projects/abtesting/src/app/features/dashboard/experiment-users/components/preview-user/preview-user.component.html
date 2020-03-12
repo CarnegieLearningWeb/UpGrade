@@ -6,7 +6,18 @@
       <input matInput [placeholder]="'users-global.form-id-placeholder.text' | translate" formControlName="id" />
     </mat-form-field>
 
-    <div formArrayName="userGroups">
+    <mat-form-field class="form-control">
+      <mat-label>Set group</mat-label>
+      <textarea matInput formControlName="group"></textarea>
+    </mat-form-field>
+
+    <mat-form-field class="form-control">
+      <mat-label>Set working group</mat-label>
+      <textarea matInput formControlName="workingGroup"></textarea>
+    </mat-form-field>
+
+    <!-- TODO: Remove after verifying it -->
+    <!-- <div formArrayName="userGroups">
       <div *ngFor="let group of userGroups.controls; let index = index">
         <ng-container [formGroupName]="index">
           <mat-form-field class="form-control">
@@ -42,15 +53,15 @@
           ></app-shared-icons>
         </ng-container>
       </div>
-    </div>
+    </div> -->
 
-    <span class="validation-message" *ngIf="previewUsersForm.hasError('customGroupNameError')">
+    <!-- <span class="validation-message" *ngIf="previewUsersForm.hasError('customGroupNameError')">
       {{ 'users.preview-users.error-message.text' | translate }}
-    </span>
+    </span> -->
 
-    <button type="button" class="add-user-group" (click)="addNewUserGroup()">
+    <!-- <button type="button" class="add-user-group" (click)="addNewUserGroup()">
       {{ 'users.preview-users.add-new-group.text' | translate }}
-    </button>
+    </button> -->
 
     <button
       mat-raised-button
@@ -92,6 +103,30 @@
         </th>
         <td mat-cell *matCellDef="let element">
           <span class="group-name" *ngFor="let group of element.group | keyvalue">
+            {{ group.value }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- WORKING GROUP TYPE Column -->
+      <ng-container matColumnDef="workingGroupType">
+        <th mat-header-cell *matHeaderCellDef class="table table-heading">
+          {{ 'users.preview-users.working-group-type.text' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="group-name" *ngFor="let group of element.workingGroup | keyvalue">
+            {{ group.key }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Working GROUP ID Column -->
+      <ng-container matColumnDef="workingGroupId">
+        <th mat-header-cell *matHeaderCellDef class="table table-heading">
+          {{ 'users.preview-users.working-group-id.text' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="group-name" *ngFor="let group of element.workingGroup | keyvalue">
             {{ group.value }}
           </span>
         </td>

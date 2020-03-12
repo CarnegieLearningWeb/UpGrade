@@ -1,11 +1,9 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { GroupTypes } from '../../../../../core/experiments/store/experiments.model';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
 import { Subscription } from 'rxjs';
-import { ExperimentUserValidators } from '../../validator/experiment-users-validators';
-import { startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'users-preview-user',
@@ -13,7 +11,7 @@ import { startWith } from 'rxjs/operators';
   styleUrls: ['./preview-user.component.scss']
 })
 export class PreviewUserComponent implements OnInit, OnDestroy {
-  displayedColumns = ['id', 'groupType', 'groupId', 'removeEntity'];
+  displayedColumns = ['id', 'groupType', 'groupId', 'workingGroupType', 'workingGroupId', 'removeEntity'];
   allPreviewUsers: any;
   allPreviewUsersSub: Subscription;
   isPreviewUserLoading$ = this.previewUserService.isPreviewUserLoading$;
@@ -40,16 +38,19 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     this.groupList[0] = this.groupTypes; // To set all group types to first control
     this.previewUsersForm = this._formBuilder.group({
       id: [null, Validators.required],
-      userGroups: this._formBuilder.array([this.getNewUserGroup()])
-    }, { validators: ExperimentUserValidators.validatePreviewUserForm });
+      // userGroups: this._formBuilder.array([this.getNewUserGroup()])
+      group: [null, Validators.required],
+      workingGroup: [null]
+    });
 
-    this.previewUsersForm.get('userGroups').valueChanges.pipe(startWith(null)).subscribe((value) => {
-      if (value) {
-        for (let i = 0; i < value.length; i++) {
-           this.groupList[i] = this.getGroupsForFormArray(i, this.groupTypes);
-        }
-      }
-    })
+    // TODO: Remove the code after verification
+    // this.previewUsersForm.get('userGroups').valueChanges.pipe(startWith(null)).subscribe((value) => {
+    //   if (value) {
+    //     for (let i = 0; i < value.length; i++) {
+    //        this.groupList[i] = this.getGroupsForFormArray(i, this.groupTypes);
+    //     }
+    //   }
+    // })
 
     this.allPreviewUsersSub = this.previewUserService.allPreviewUsers$.subscribe(previewUsers => {
       this.allPreviewUsers = new MatTableDataSource();
@@ -59,43 +60,48 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  getGroupsForFormArray(i, groupList) {
-    let groupValue;
-    if (this.previewUsersForm.get('userGroups').value[i - 1]) {
-      groupValue = this.previewUsersForm.get('userGroups').value[i - 1].groupType;
-    }
-    return i === 0 ? groupList : this.groupList[i - 1].filter(group => group.value !== groupValue || group.value === GroupTypes.OTHER);
-  }
+  // TODO: Remove after verifying it
+  // getGroupsForFormArray(i, groupList) {
+  //   let groupValue;
+  //   if (this.previewUsersForm.get('userGroups').value[i - 1]) {
+  //     groupValue = this.previewUsersForm.get('userGroups').value[i - 1].groupType;
+  //   }
+  //   return i === 0 ? groupList : this.groupList[i - 1].filter(group => group.value !== groupValue || group.value === GroupTypes.OTHER);
+  // }
 
-  getNewUserGroup() {
-    return this._formBuilder.group({
-      groupType: [null, Validators.required],
-      customGroupName: [null],
-      groupId: [null, Validators.required]
-    }, { validators: ExperimentUserValidators.validatePreviewUserGroupForm });
-  }
+  // TODO: Remove after verifying it
+  // getNewUserGroup() {
+  //   return this._formBuilder.group({
+  //     groupType: [null, Validators.required],
+  //     customGroupName: [null],
+  //     groupId: [null, Validators.required]
+  //   }, { validators: ExperimentUserValidators.validatePreviewUserGroupForm });
+  // }
 
-  get userGroups(): FormArray {
-    return this.previewUsersForm.get('userGroups') as FormArray;
-  }
+  // TODO: Remove after verifying it
+  // get userGroups(): FormArray {
+  //   return this.previewUsersForm.get('userGroups') as FormArray;
+  // }
 
-  addNewUserGroup() {
-    this.userGroups.push(this.getNewUserGroup());
-  }
+  // addNewUserGroup() {
+  //   this.userGroups.push(this.getNewUserGroup());
+  // }
 
-  removeUserGroup(index: number) {
-    this.userGroups.removeAt(index);
-  }
+  // removeUserGroup(index: number) {
+  //   this.userGroups.removeAt(index);
+  // }
 
   addPreviewUser() {
-    const { id, userGroups } = this.previewUsersForm.value;
-    const group = userGroups.reduce((acc, value) => {
-      return value.groupType === GroupTypes.OTHER ? { ...acc, [value.customGroupName]: value.groupId } : { ...acc, [value.groupType]: value.groupId };
-    }, {});
-    this.previewUsersForm.get('id').reset();
-    this.userGroups.clear();
-    this.userGroups.push(this.getNewUserGroup());
-    this.previewUserService.addPreviewUser(id, group);
+    const { id, group, workingGroup } = this.previewUsersForm.value;
+    // const group = userGroups.reduce((acc, value) => {
+    //   return value.groupType === GroupTypes.OTHER ? { ...acc, [value.customGroupName]: value.groupId } : { ...acc, [value.groupType]: value.groupId };
+    // }, {});
+    // this.previewUsersForm.get('id').reset();
+    // this.userGroups.clear();
+    // this.userGroups.push(this.getNewUserGroup());
+    this.previewUsersForm.reset();
+    this.previewUserService.addPreviewUser(id, JSON.parse(group), JSON.parse(workingGroup));
+
   }
 
   removePreviewUser(previewUser: any) {

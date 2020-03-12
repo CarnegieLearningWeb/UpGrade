@@ -138,5 +138,7 @@
   "users.preview-users.add-new-group.text": "+ Add New Group",
   "users.preview-users.group-type.text": "Group Type",
   "users.preview-users.group-id.text": "Group ID",
+  "users.preview-users.working-group-type.text": "Working Group Type",
+  "users.preview-users.working-group-id.text": "Working Group ID",
   "users.preview-users.error-message.text": "Custom Group Names should not same."
 }
