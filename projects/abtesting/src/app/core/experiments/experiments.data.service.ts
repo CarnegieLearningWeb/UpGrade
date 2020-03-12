@@ -29,7 +29,7 @@ export class ExperimentDataService {
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     const url = environment.api.updateExperimentState;
-    return this.http.put(url, {
+    return this.http.post(url, {
       experimentId,
       state: experimentStateInfo.newStatus,
       scheduleDate: experimentStateInfo.scheduleDate
