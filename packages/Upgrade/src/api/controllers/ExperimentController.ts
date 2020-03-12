@@ -413,7 +413,7 @@ export class ExperimentController {
    *             $ref: '#/definitions/Experiment/state'
    *           description: Experiment State
    *       tags:
-   *         - Experiment Point
+   *         - Experiments
    *       produces:
    *         - application/json
    *       responses:
