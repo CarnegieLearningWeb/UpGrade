@@ -150,6 +150,31 @@ export class ExperimentAssignmentService {
               message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
             })
           );
+        } else {
+          const keys = Object.keys(experimentUser.workingGroup);
+          keys.forEach(key => {
+            if (!experimentUser.group[key]) {
+              throw new Error(
+                JSON.stringify({
+                  type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+                  message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
+                })
+              );
+            } else if (experimentUser) {
+              if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
+                throw new Error(
+                  JSON.stringify({
+                    type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+                    message: `Working group not a subset of user group: ${JSON.stringify(
+                      experimentUser,
+                      undefined,
+                      2
+                    )}`,
+                  })
+                );
+              }
+            }
+          });
         }
 
         if (previewUser && (!previewUser.group || !previewUser.workingGroup)) {
@@ -160,6 +185,27 @@ export class ExperimentAssignmentService {
               message: `Group not defined for preview User: ${JSON.stringify(previewUser, undefined, 2)}`,
             })
           );
+        } else if (previewUser) {
+          const keys = Object.keys(previewUser.workingGroup);
+          keys.forEach(key => {
+            if (!previewUser.group[key]) {
+              throw new Error(
+                JSON.stringify({
+                  type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+                  message: `Working group not a subset of user group: ${JSON.stringify(previewUser, undefined, 2)}`,
+                })
+              );
+            } else {
+              if (!previewUser.group[key].includes(previewUser.workingGroup[key])) {
+                throw new Error(
+                  JSON.stringify({
+                    type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+                    message: `Working group not a subset of user group: ${JSON.stringify(previewUser, undefined, 2)}`,
+                  })
+                );
+              }
+            }
+          });
         }
       }
     } else {
