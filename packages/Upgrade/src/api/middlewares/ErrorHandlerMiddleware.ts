@@ -63,6 +63,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.ASSIGNMENT_ERROR;
         message = errorMessage;
         break;
+      case SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP:
+        type = SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:
