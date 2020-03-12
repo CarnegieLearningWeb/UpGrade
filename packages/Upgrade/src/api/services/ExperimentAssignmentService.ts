@@ -138,8 +138,6 @@ export class ExperimentAssignmentService {
     // query all experiment and sub experiment
     const experiments = await this.experimentRepository.getValidExperiments();
 
-    console.log('experimentUser, previewUser', experimentUser, previewUser);
-
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiment = experiments.find(experiment => experiment.group);
     if (experimentUser || previewUser) {
@@ -225,7 +223,6 @@ export class ExperimentAssignmentService {
       if (experiments.length === 0) {
         return [];
       }
-      console.log('Reached Here');
 
       // ============= check if user or group is excluded
       let userGroup = [];
@@ -234,8 +231,6 @@ export class ExperimentAssignmentService {
           return `${type}_${workingGroup[type]}`;
         });
       }
-
-      console.log('Reached Here');
 
       const [userExcluded, groupExcluded] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId }),
