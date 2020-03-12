@@ -10,6 +10,8 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { PreviewMonitoredExperimentPoint } from '../models/PreviewMonitoredExperimentPoint';
+import { PreviewMonitoredExperimentPointRepository } from '../repositories/PreviewMonitoredExperimentPointRepository';
 
 @Service()
 export class CheckService {
@@ -22,7 +24,9 @@ export class CheckService {
     @OrmRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository()
-    private monitoredExperimentPointRepository: MonitoredExperimentPointRepository
+    private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
+    @OrmRepository()
+    private previewMonitoredExperimentPointRepository: PreviewMonitoredExperimentPointRepository
   ) {}
 
   public getAllGroupAssignments(): Promise<GroupAssignment[]> {
@@ -45,5 +49,9 @@ export class CheckService {
 
   public getAllMarkedExperimentPoints(): Promise<MonitoredExperimentPoint[]> {
     return this.monitoredExperimentPointRepository.find();
+  }
+
+  public getAllPreviewMarkedExperimentPoint(): Promise<PreviewMonitoredExperimentPoint[]> {
+    return this.previewMonitoredExperimentPointRepository.find();
   }
 }

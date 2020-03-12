@@ -4,8 +4,8 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
-import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
+import { getAllExperimentCondition, markExperimentPointPreview } from '../utils';
+import { checkPreviewMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
@@ -49,12 +49,12 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0]);
+  let experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(previewUsers[0], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
+  let markedExperimentPoint = await markExperimentPointPreview(previewUsers[0].id, experimentName, experimentPoint);
+  checkPreviewMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
@@ -75,28 +75,28 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[1]);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[1].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(previewUsers[1], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPointPreview(previewUsers[1].id, experimentName, experimentPoint);
+  checkPreviewMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0]);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[0], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPointPreview(previewUsers[0].id, experimentName, experimentPoint);
+  checkPreviewMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[2]);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[2].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[2], experimentName, experimentPoint);
-  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPointPreview(previewUsers[2].id, experimentName, experimentPoint);
+  checkPreviewMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
   await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
@@ -115,12 +115,12 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0]);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
+  expect(experimentConditionAssignments.length).toEqual(0);
 
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[1]);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[1].id);
+  expect(experimentConditionAssignments.length).toEqual(0);
 
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[2]);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[2].id);
+  expect(experimentConditionAssignments.length).toEqual(0);
 }

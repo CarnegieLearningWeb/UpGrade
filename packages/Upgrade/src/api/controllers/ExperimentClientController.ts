@@ -18,7 +18,7 @@ import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupVali
  *   - name: Experiment Point
  *     description: CRUD operations related to experiments points
  */
-@Authorized()
+
 @JsonController('/')
 export class ExperimentClientController {
   constructor(

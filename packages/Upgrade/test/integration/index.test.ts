@@ -62,50 +62,50 @@ describe('Integration Tests', () => {
     done();
   });
 
-  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async done => {
-  //   await PreviewScenario1();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async done => {
+    await PreviewScenario1();
+    done();
+  });
 
   test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async done => {
     await Scenario2();
     done();
   });
 
-  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async done => {
-  //   await PreviewScenario2();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async done => {
+    await PreviewScenario2();
+    done();
+  });
 
   test('Experiment Scenario 3 - Group Assignment With Group Consistency', async done => {
     await Scenario3();
     done();
   });
 
-  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async done => {
-  //   await PreviewScenario3();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async done => {
+    await PreviewScenario3();
+    done();
+  });
 
   test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async done => {
     await Scenario4();
     done();
   });
 
-  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async done => {
-  //   await PreviewScenario4();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async done => {
+    await PreviewScenario4();
+    done();
+  });
 
   test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async done => {
     await Scenario5();
     done();
   });
 
-  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async done => {
-  //   await PreviewScenario5();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async done => {
+    await PreviewScenario5();
+    done();
+  });
 
   test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async done => {
     await Scenario6();
