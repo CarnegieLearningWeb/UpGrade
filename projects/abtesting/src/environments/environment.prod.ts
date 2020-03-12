@@ -26,11 +26,11 @@ export const environment = {
   api: {
     getAllExperiments: `${endpointApi}/experiments`,
     createNewExperiments: `${endpointApi}/experiments`,
-    updateExperiments: `${endpointApi}/experiments`,
+    updateExperiments: `${endpointApi}/experiments/single`,
     getAllAuditLogs: `${endpointApi}/audit`,
     getAllErrorLogs: `${endpointApi}/error`,
     experimentsStats: `${endpointApi}/stats`,
-    deleteExperiment: `${endpointApi}/experiments`,
+    deleteExperiment: `${endpointApi}/experiments/single`,
     updateExperimentState: `${endpointApi}/experiments/state`,
     users: `${endpointApi}/users`, // Used to create a new user after login
     excludeUsers: `${endpointApi}/exclude/user`,
