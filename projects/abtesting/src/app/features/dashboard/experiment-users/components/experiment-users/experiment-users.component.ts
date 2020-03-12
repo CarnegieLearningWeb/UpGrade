@@ -27,8 +27,17 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   ];
   isEntityLoading$ = this.experimentUserService.isExcludedEntityLoading$;
 
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  private paginator: MatPaginator;
+  private sort: MatSort;
+
+  @ViewChild(MatPaginator, {static: false}) set matPaginator(mp: MatPaginator) {
+    this.paginator = mp;
+    this.allExcludedEntities.paginator = this.paginator;
+  }
+  @ViewChild(MatSort, {static: false}) set matSort(ms: MatSort) {
+    this.sort = ms;
+    this.allExcludedEntities.sort = this.sort;
+  }
 
   constructor(private _formBuilder: FormBuilder, private experimentUserService: ExperimentUsersService) {
     this.allExcludedEntitiesSub = this.experimentUserService.allExcludedEntities$.subscribe(entities => {
