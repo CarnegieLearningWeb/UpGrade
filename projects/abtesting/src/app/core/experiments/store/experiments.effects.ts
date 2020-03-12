@@ -100,7 +100,11 @@ export class ExperimentEffects {
       filter(experimentId => !!experimentId),
       switchMap(experimentId => {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
-          switchMap(_ => [experimentAction.actionDeleteExperimentSuccess({ experimentId })]),
+          switchMap(_ => [
+            experimentAction.actionDeleteExperimentSuccess({ experimentId }),
+            experimentAction.actionFetchAllPartitions(),
+            experimentAction.actionFetchAllUniqueIdentifiers()
+          ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         );
       })
