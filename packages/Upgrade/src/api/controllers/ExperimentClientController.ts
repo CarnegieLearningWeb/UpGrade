@@ -1,4 +1,4 @@
-import { JsonController, Post, Put, Body, Authorized, CurrentUser } from 'routing-controllers';
+import { JsonController, Post, Put, Body, CurrentUser } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
