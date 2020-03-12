@@ -14,12 +14,15 @@ import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { SERVER_ERROR } from 'ees_types';
-import { Validator } from 'class-validator';
+import { Validator, validate } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { User } from '../models/User';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { IUniqueIds } from '../../types/index';
+import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
+import { env } from '../../env';
+import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 const validator = new Validator();
 
 interface ExperimentPaginationInfo {
@@ -117,7 +120,10 @@ interface ExperimentPaginationInfo {
 @Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(public experimentService: ExperimentService) {}
+  constructor(
+    public experimentService: ExperimentService,
+    public experimentAssignmentService: ExperimentAssignmentService
+  ) {}
   /**
    * @swagger
    * /experiments:
@@ -383,6 +389,56 @@ export class ExperimentController {
       );
     }
     return this.experimentService.delete(id, currentUser);
+  }
+
+  /**
+   * @swagger
+   * /experiments/state:
+   *    put:
+   *       description: Update Experiment State
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experimentId
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment ID
+   *         - in: body
+   *           name: state
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/Experiment/state'
+   *           description: Experiment State
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment State is updated
+   */
+  @Put('/state')
+  public async updateState(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    experiment: AssignmentStateUpdateValidator,
+    @CurrentUser() currentUser: User
+  ): Promise<any> {
+    if (env.auth.authCheck) {
+      if (!currentUser) {
+        return Promise.reject(
+          new Error(JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : currentUser should not be null' }))
+        );
+      }
+
+      await validate(currentUser).catch(error => {
+        return Promise.reject(new Error(error));
+      });
+    }
+
+    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, currentUser);
   }
 
   /**
