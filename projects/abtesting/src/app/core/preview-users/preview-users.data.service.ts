@@ -13,9 +13,9 @@ export class PreviewUsersDataService {
     return this.http.get(url);
   }
 
-  addPreviewUser(id: string, group: any) {
+  addPreviewUser(id: string, group: any, workingGroup: any) {
     const url = environment.api.previewUsers;
-    return this.http.post(url, { id, group });
+    return workingGroup ? this.http.post(url, { id, group, workingGroup }) : this.http.post(url, { id, group }) ;
   }
 
   deletePreviewUser(id: string) {
