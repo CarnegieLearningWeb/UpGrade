@@ -45,8 +45,9 @@ export class AnalyticsService {
     const experimentIdAndPoint = [];
     experimentDefinition.forEach(experiment => {
       const partitions = experiment.partitions;
-      partitions.map(partition => {
-        experimentIdAndPoint.push(`${partition.name}_${partition.point}`);
+      partitions.forEach(partition => {
+        const experimentId = partition.name ? `${partition.name}_${partition.point}` : partition.point;
+        experimentIdAndPoint.push(experimentId);
       });
     });
 
@@ -149,7 +150,9 @@ export class AnalyticsService {
               Array.from(
                 new Set(
                   conditionAssignedUser.map(
-                    monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
+                    monitoredPoint =>
+                      mappedUserDefinition.has(monitoredPoint.userId) &&
+                      mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
                   )
                 )
               )) ||
