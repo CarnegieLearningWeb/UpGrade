@@ -138,6 +138,8 @@ export class ExperimentAssignmentService {
     // query all experiment and sub experiment
     const experiments = await this.experimentRepository.getValidExperiments();
 
+    console.log('experimentUser, previewUser', experimentUser, previewUser);
+
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiment = experiments.find(experiment => experiment.group);
     if (experimentUser || previewUser) {
@@ -150,7 +152,7 @@ export class ExperimentAssignmentService {
               message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
             })
           );
-        } else {
+        } else if (experimentUser) {
           const keys = Object.keys(experimentUser.workingGroup);
           keys.forEach(key => {
             if (!experimentUser.group[key]) {
@@ -223,11 +225,17 @@ export class ExperimentAssignmentService {
       if (experiments.length === 0) {
         return [];
       }
+      console.log('Reached Here');
 
       // ============= check if user or group is excluded
-      const userGroup = Object.keys(workingGroup).map((type: string) => {
-        return `${type}_${workingGroup[type]}`;
-      });
+      let userGroup = [];
+      if (experimentUser && workingGroup) {
+        userGroup = Object.keys(workingGroup).map((type: string) => {
+          return `${type}_${workingGroup[type]}`;
+        });
+      }
+
+      console.log('Reached Here');
 
       const [userExcluded, groupExcluded] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId }),
@@ -275,7 +283,7 @@ export class ExperimentAssignmentService {
       }
 
       // ============ query assignment/exclusion for user
-      const allGroupIds: string[] = Object.values(workingGroup);
+      const allGroupIds: string[] = (workingGroup && Object.values(workingGroup)) || [];
       const promiseAssignmentExclusion: any[] = [
         experimentIds.length > 0 ? this.individualAssignmentRepository.findAssignment(userId, experimentIds) : [],
         allGroupIds.length > 0 && experimentIds.length > 0
