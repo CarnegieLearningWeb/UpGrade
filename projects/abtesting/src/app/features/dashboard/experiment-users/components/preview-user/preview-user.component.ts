@@ -26,8 +26,17 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
   // Used to maintain selected groups
   groupList = [];
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
+  private paginator: MatPaginator;
+  private sort: MatSort;
+
+  @ViewChild(MatPaginator, {static: false}) set matPaginator(mp: MatPaginator) {
+    this.paginator = mp;
+    this.allPreviewUsers.paginator = this.paginator;
+  }
+  @ViewChild(MatSort, {static: false}) set matSort(ms: MatSort) {
+    this.sort = ms;
+    this.allPreviewUsers.sort = this.sort;
+  }
 
   constructor(
     private _formBuilder: FormBuilder,
