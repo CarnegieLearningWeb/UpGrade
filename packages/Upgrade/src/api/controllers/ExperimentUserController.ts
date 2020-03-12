@@ -10,11 +10,12 @@ import { SERVER_ERROR } from 'ees_types';
  *   ExperimentUser:
  *     required:
  *       - id
- *       - group
  *     properties:
  *       id:
  *         type: string
  *       group:
+ *         type: object
+ *       workingGroup:
  *         type: object
  */
 

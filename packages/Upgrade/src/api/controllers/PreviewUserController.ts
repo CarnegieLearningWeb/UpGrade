@@ -13,11 +13,12 @@ const validator = new Validator();
  *   PreviewUser:
  *     required:
  *       - id
- *       - group
  *     properties:
  *       id:
  *         type: string
  *       group:
+ *         type: object
+ *       workingGroup:
  *         type: object
  */
 
@@ -30,7 +31,7 @@ const validator = new Validator();
 
 @Authorized()
 @JsonController('/previewusers')
-export class UserController {
+export class PreviewUserController {
   constructor(public previewUserService: PreviewUserService) {}
 
   /**
