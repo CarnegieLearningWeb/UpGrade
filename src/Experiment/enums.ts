@@ -34,6 +34,7 @@ export enum SERVER_ERROR {
   REPORTED_ERROR = 'Error reported from client',
   EXPERIMENT_USER_NOT_DEFINED = 'Experiment user not defined',
   EXPERIMENT_USER_GROUP_NOT_DEFINED = 'Experiment user group not defined',
+  WORKING_GROUP_NOT_SUBSET_OF_GROUP = 'Working group is not a subset of user group',
 }
 
 export enum EXPERIMENT_LOG_TYPE {
