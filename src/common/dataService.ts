@@ -22,6 +22,7 @@ export default class DataService {
       hostURL,
       userId,
       api: {
+        init: `${hostURL}/api/init`,
         getAllExperimentConditions: `${hostURL}/api/assign`,
         markExperimentPoint: `${hostURL}/api/mark`,
         setGroupMemberShip: `${hostURL}/api/groupmembership`,
