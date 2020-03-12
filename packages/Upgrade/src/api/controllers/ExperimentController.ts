@@ -258,7 +258,7 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/{id}:
+   * /experiments/single/{id}:
    *    get:
    *       description: Get experiment by id
    *       parameters:
@@ -278,7 +278,7 @@ export class ExperimentController {
    *          '404':
    *            description: Experiment not found
    */
-  @Get('/:id')
+  @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
   public one(@Param('id') id: string): Promise<Experiment> | undefined {
     if (!validator.isUUID(id)) {
