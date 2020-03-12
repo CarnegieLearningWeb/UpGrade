@@ -22,6 +22,11 @@ import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 import { IUniqueIds } from '../../types/index';
+import { PreviewGroupAssignmentRepository } from '../repositories/PreviewGroupAssignmentRepository';
+import { PreviewIndividualExclusionRepository } from '../repositories/PreviewIndividualExclusionRepository';
+import { PreviewGroupExclusionRepository } from '../repositories/PreviewGroupExclusionRepository';
+import { PreviewMonitoredExperimentPointRepository } from '../repositories/PreviewMonitoredExperimentPointRepository';
+import { PreviewIndividualAssignmentRepository } from '../repositories/PreviewIndividualAssignmentRepository';
 
 @Service()
 export class ExperimentService {
@@ -35,6 +40,11 @@ export class ExperimentService {
     @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
+    @OrmRepository() private previewIndividualAssignmentRepository: PreviewIndividualAssignmentRepository,
+    @OrmRepository() private previewGroupAssignmentRepository: PreviewGroupAssignmentRepository,
+    @OrmRepository() private previewIndividualExclusionRepository: PreviewIndividualExclusionRepository,
+    @OrmRepository() private previewGroupExclusionRepository: PreviewGroupExclusionRepository,
+    @OrmRepository() private previewMonitoredExperimentPointRepository: PreviewMonitoredExperimentPointRepository,
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
 
     public scheduledJobService: ScheduledJobService,
@@ -124,8 +134,17 @@ export class ExperimentService {
           this.individualAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
           this.individualExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
           this.monitoredExperimentPointRepository.deleteById(monitoredIds, transactionalEntityManager),
+
+          this.previewGroupAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.previewGroupExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.previewIndividualAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+          this.previewIndividualExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
+
           this.scheduledJobRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
         ]);
+
+        // TODO check why it can't be included in promise
+        await this.previewMonitoredExperimentPointRepository.deleteById(monitoredIds, transactionalEntityManager);
 
         // deleting partitions and conditions
         await Promise.all([
