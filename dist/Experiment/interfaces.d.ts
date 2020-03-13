@@ -37,6 +37,7 @@ interface ExperimentStateChangedData {
     experimentName: string;
     previousState: EXPERIMENT_STATE;
     newState: EXPERIMENT_STATE;
+    startOn?: Date;
 }
 interface ExperimentDeletedData {
     experimentName: string;
