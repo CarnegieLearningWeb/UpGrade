@@ -93,7 +93,8 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], customStats);
 
   // change experiment state to scheduled
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user);
+  const date = new Date();
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, date);
 
   // user 1 logs in experiment
   // get all experiment condition for user 1

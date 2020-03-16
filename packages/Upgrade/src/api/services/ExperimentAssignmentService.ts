@@ -409,7 +409,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public async updateState(experimentId: string, state: EXPERIMENT_STATE, scheduleDate: Date, user: User): Promise<Experiment> {
+  public async updateState(experimentId: string, state: EXPERIMENT_STATE, user: User, scheduleDate?: Date): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       await this.populateExclusionTable(experimentId);
     } else if (state === EXPERIMENT_STATE.PREVIEW) {

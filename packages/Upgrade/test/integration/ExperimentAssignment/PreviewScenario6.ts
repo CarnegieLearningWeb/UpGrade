@@ -68,7 +68,8 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   let experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user);
+  const date = new Date();
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, date);
 
   // fetch experiment
   experiments = await experimentService.find();

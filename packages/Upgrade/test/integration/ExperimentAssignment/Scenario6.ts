@@ -1,4 +1,3 @@
-
 import { Container } from 'typedi';
 import { groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
@@ -112,7 +111,8 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to scheduled
   let experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user);
+  const date = new Date();
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, date);
 
   // fetch experiment
   experiments = await experimentService.find();
