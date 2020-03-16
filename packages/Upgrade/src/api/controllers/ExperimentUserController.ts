@@ -3,6 +3,9 @@ import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'ees_types';
+import { Validator } from 'class-validator';
+
+const validator = new Validator();
 // TODO delete this from experiment system
 /**
  * @swagger

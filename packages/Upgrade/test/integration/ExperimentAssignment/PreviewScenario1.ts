@@ -29,6 +29,7 @@ export default async function testCase(): Promise<void> {
   await previewService.create(previewUsers[0]);
   await previewService.create(previewUsers[1]);
   await previewService.create(previewUsers[2]);
+  await previewService.create(previewUsers[3]);
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
@@ -117,12 +118,27 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
-  expect(experimentConditionAssignments.length).toEqual(0);
-
+  // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(previewUsers[1].id);
-  expect(experimentConditionAssignments.length).toEqual(0);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
+  // mark experiment point for user 2
+  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
+
+  // get all experiment condition for user 1
+  experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
+  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
+
+  // mark experiment point for user 1
+  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
+
+  // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(previewUsers[2].id);
-  expect(experimentConditionAssignments.length).toEqual(0);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+
+  // mark experiment point for user 1
+  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint);
+  checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 }
