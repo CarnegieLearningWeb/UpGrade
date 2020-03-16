@@ -19,8 +19,8 @@ export class PreviewUsersService {
   );
   constructor(private store$: Store<AppState>) {}
 
-  addPreviewUser(id: string, group: any, workingGroup?: any) {
-    this.store$.dispatch(previewUsersActions.actionAddPreviewUser({ id, group, workingGroup }));
+  addPreviewUser(id: string) {
+    this.store$.dispatch(previewUsersActions.actionAddPreviewUser({ id }));
   }
 
   deletePreviewUser(id: string) {

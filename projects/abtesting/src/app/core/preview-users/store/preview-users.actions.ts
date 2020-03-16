@@ -16,7 +16,7 @@ export const actionFetchPreviewUsersFailure = createAction(
 
 export const actionAddPreviewUser = createAction(
   '[Preview Users] Add Preview User',
-  props<{ id: string, group: any, workingGroup?: any }>()
+  props<{ id: string }>()
 );
 
 export const actionAddPreviewUserSuccess = createAction(

@@ -1,49 +1,29 @@
 @import '../../common/table-view.scss';
 
-.add-user-group {
-  display: block;
-  margin-bottom: 10px;
-  outline: 0;
-  border: 0;
-  background-color: transparent;
-  padding: 0;
-  color: var(--blue);
-  font-family: 'Open Sans';
-  font-size: var(--text-size-x-small);
-  font-weight: 700;
-}
-
-.remove-icon {
-  &:hover {
-    cursor: pointer;
-  }
-}
-
-.group-name {
-  display: block;
-}
-
-textarea {
-  height: 70px;
-}
-
 .preview-users {
   .preview-user-container {
     margin-top: 30px;
 
     table {
-      width: 750px;
+      width: 350px;
 
       .mat-cell {
-        width: 20%;
+        width: 50%;
+
+        &.mat-column-id {
+          width: 75%;
+        }
+      }
+
+      .remove-icon {
+        &:hover {
+          cursor: pointer;
+        }
       }
     }
-  }
 
-  .validation-message {
-    display: block;
-    padding: 5px 0;
-    color: var(--red);
-    font-size: var(--text-size-small);
+    .paginator {
+      width: 350px;
+    }
   }
 }
