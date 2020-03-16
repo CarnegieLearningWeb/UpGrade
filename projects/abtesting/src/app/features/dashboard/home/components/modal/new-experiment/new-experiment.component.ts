@@ -46,9 +46,8 @@ export class NewExperimentComponent {
           ...this.newExperimentData,
           ...formData
         };
-        if (path === NewExperimentPaths.EXPERIMENT_DESIGN) {
-          this.stepper.next();
-        } else if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
+        this.stepper.next();
+        if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
           this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE;
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();

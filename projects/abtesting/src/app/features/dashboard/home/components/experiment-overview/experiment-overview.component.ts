@@ -133,27 +133,29 @@ export class ExperimentOverviewComponent implements OnInit {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        const {
-          experimentName,
-          description,
-          unitOfAssignment,
-          groupType,
-          customGroupName,
-          consistencyRule
-        } = this.overviewForm.value;
-        const overviewFormData = {
-          name: experimentName,
-          description: description || '',
-          consistencyRule: consistencyRule,
-          assignmentUnit: unitOfAssignment,
-          group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
-          tags: this.experimentTags
-        };
-        this.emitExperimentDialogEvent.emit({
-          type: eventType,
-          formData: overviewFormData,
-          path: NewExperimentPaths.EXPERIMENT_OVERVIEW
-        });
+        if (this.overviewForm.valid) {
+          const {
+            experimentName,
+            description,
+            unitOfAssignment,
+            groupType,
+            customGroupName,
+            consistencyRule
+          } = this.overviewForm.value;
+          const overviewFormData = {
+            name: experimentName,
+            description: description || '',
+            consistencyRule: consistencyRule,
+            assignmentUnit: unitOfAssignment,
+            group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
+            tags: this.experimentTags
+          };
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: overviewFormData,
+            path: NewExperimentPaths.EXPERIMENT_OVERVIEW
+          });
+        }
         break;
     }
   }

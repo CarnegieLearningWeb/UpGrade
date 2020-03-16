@@ -34,25 +34,6 @@ export class ExperimentFormValidators {
     return null;
   }
 
-  static validateScheduleForm(controls: AbstractControl): { [key: string]: any } | null {
-    const endExperimentAutomatically = controls.get('endExperimentAutomatically').value;
-    const endCondition = controls.get('endCondition').value;
-    const dateOfExperimentEnd = controls.get('dateOfExperimentEnd').value;
-    const userCount = controls.get('userCount').value;
-    const groupCount = controls.get('groupCount').value;
-    if (endExperimentAutomatically && !!endCondition) {
-      if (
-        (endCondition === EndExperimentCondition.END_ON_DATE && !!dateOfExperimentEnd) ||
-        (endCondition === EndExperimentCondition.END_CRITERIA && (!!userCount || !!groupCount))
-      ) {
-        return null;
-      } else {
-        return { formValidationError: true };
-      }
-    }
-    return null;
-  }
-
   static validatePostExperimentRuleForm(controls: AbstractControl): { [key: string]: any } | null {
     const postExperimentRule = controls.get('postExperimentRule').value;
     const revertTo = controls.get('revertTo').value;

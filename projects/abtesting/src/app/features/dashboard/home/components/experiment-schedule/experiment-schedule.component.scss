@@ -39,6 +39,13 @@
   }
 }
 
+.validation-message {
+  display: block;
+  padding: 5px 0 0 10px;
+  color: var(--red);
+  font-size: var(--text-size-small);
+}
+
 .button-container {
   display: flex;
   justify-content: space-between;
