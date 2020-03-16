@@ -12,7 +12,6 @@ export default class DataService {
     }
   };
   private static experimentConditionData = null;
-  private static interestedExperimentPoints = null;
 
   // Used to set common configuration
   public static setConfigData(userId: string, hostURL: any) {
