@@ -297,8 +297,8 @@ export class ExperimentAssignmentService {
     user: User,
     scheduleDate?: Date
   ): Promise<Experiment> {
-    if (state === EXPERIMENT_STATE.ENROLLING) {
-      await this.populateExclusionTable(experimentId);
+    if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
+      await this.populateExclusionTable(experimentId, state);
     }
 
     const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
@@ -330,7 +330,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private async populateExclusionTable(experimentId: string): Promise<void> {
+  private async populateExclusionTable(experimentId: string, state: EXPERIMENT_STATE): Promise<void> {
     // query all sub-experiment
     const experiment: Experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
@@ -338,12 +338,26 @@ export class ExperimentAssignmentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.partitions.map(({ id, point }) => {
-      return { experimentId: id, experimentPoint: point };
+    const subExperiments = experiment.partitions.map(({ id }) => {
+      return id;
     });
 
     // query all monitored experiment point for this experiment Id
-    const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find(subExperiments as any);
+    let monitoredExperimentPoints: MonitoredExperimentPoint[];
+    if (state === EXPERIMENT_STATE.ENROLLING) {
+      monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find({
+        where: { id: In(subExperiments) },
+      });
+    } else if (state === EXPERIMENT_STATE.PREVIEW) {
+      // get all preview usersData
+      const previewUsers = await this.previewUserService.find();
+
+      const previewUsersIds = previewUsers.map(user => user.id);
+      monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findForExperimentIdsUserIds(
+        subExperiments,
+        previewUsersIds
+      );
+    }
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
     );
