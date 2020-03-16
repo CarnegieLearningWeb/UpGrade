@@ -438,7 +438,7 @@ export class ExperimentController {
       });
     }
 
-    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, currentUser);
+    return this.experimentAssignmentService.updateState(experiment.experimentId, experiment.state, experiment.scheduleDate, currentUser);
   }
 
   /**

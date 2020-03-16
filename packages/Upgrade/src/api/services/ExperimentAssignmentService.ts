@@ -409,7 +409,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public async updateState(experimentId: string, state: EXPERIMENT_STATE, user: User): Promise<Experiment> {
+  public async updateState(experimentId: string, state: EXPERIMENT_STATE, scheduleDate: Date, user: User): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       await this.populateExclusionTable(experimentId);
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
@@ -417,17 +417,20 @@ export class ExperimentAssignmentService {
     }
 
     const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
-    const data: AuditLogData = {
+    let data: AuditLogData = {
       experimentId,
       experimentName: oldExperiment.name,
       previousState: oldExperiment.state,
       newState: state,
     };
+    if (scheduleDate) {
+      data = { ...data, startOn: scheduleDate };
+    }
     // add experiment audit logs
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
     // update experiment
-    const updatedState = await this.experimentRepository.updateState(experimentId, state);
+    const updatedState = await this.experimentRepository.updateState(experimentId, state, scheduleDate);
 
     // updating experiment schedules here
     this.updateExperimentSchedules(experimentId);
