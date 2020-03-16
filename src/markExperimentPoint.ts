@@ -26,29 +26,6 @@ export default async function markExperimentPoint(experimentPoint: string, parti
           status: false,
           message: Types.ResponseMessages.FAILED
         };
-
-    // TODO:  Uncomment code after verifying interested Experiment points
-
-    // const interestedExperimentPoints = DataService.getData('interestedExperimentPoints');
-    // if (user && !!experimentName && !!experimentPoint) {
-    //   if (interestedExperimentPoints && interestedExperimentPoints.length) {
-    //     if (interestedExperimentPoints.indexOf(experimentPoint) !== -1) {
-    //       return markExperimentPointForUser(markExperimentPointUrl, experimentName, experimentPoint, user);
-    //     } else {
-    //       return {
-    //         status: false,
-    //         message: Types.MARK_INTERESTED_EXPERIMENT_POINT_ERROR
-    //       };    
-    //     }
-    //   } else {
-    //     return markExperimentPointForUser(markExperimentPointUrl, experimentName, experimentPoint, user);
-    //   }
-    // } else {
-    //   return {
-    //     status: false,
-    //     message: Types.ResponseMessages.FAILED
-    //   };
-    // }
   } catch (e) {
     throw new responseError.HttpsError(
       responseError.FunctionsErrorCode.unknown,

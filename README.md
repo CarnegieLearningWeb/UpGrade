@@ -14,9 +14,6 @@ Updates/Set the working group of the user received from init
 ## getAllExperimentCondition()
 Get all the experiment assignments for the user received from init
 
-## interestedExperimentPoint (experimentPointAndPartitionId[])
-Use this functions to store initialized user's interested experiment points.
-
 ## getExperimentCondition (experimentPoint, partitionId?)
 Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the user received from init
 
