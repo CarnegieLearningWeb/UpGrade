@@ -9,6 +9,27 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete', {
+        enrolling: 'enrolling',
+        enrollmentComplete: 'enrollmentComplete',
+        preview: 'preview',
+      })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'getEnrollingAndEnrollmentComplete',
+          {},
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
+  public async getValidExperimentsWithPreview(): Promise<Experiment[]> {
+    return this.createQueryBuilder('experiment')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
       .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview', {
         enrolling: 'enrolling',
         enrollmentComplete: 'enrollmentComplete',

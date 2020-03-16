@@ -32,16 +32,9 @@ import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 import { In } from 'typeorm';
 import { PreviewUserService } from './PreviewUserService';
-import { PreviewIndividualExclusionRepository } from '../repositories/PreviewIndividualExclusionRepository';
-import { PreviewGroupExclusionRepository } from '../repositories/PreviewGroupExclusionRepository';
-import { PreviewGroupAssignmentRepository } from '../repositories/PreviewGroupAssignmentRepository';
-import { PreviewIndividualAssignmentRepository } from '../repositories/PreviewIndividualAssignmentRepository';
-import { PreviewIndividualAssignment } from '../models/PreviewIndividualAssignment';
-import { PreviewGroupAssignment } from '../models/PreviewGroupAssignment';
-import { PreviewIndividualExclusion } from '../models/PreviewIndividualExclusion';
-import { PreviewGroupExclusion } from '../models/PreviewGroupExclusion';
-import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
-import { PreviewMonitoredExperimentPointRepository } from '../repositories/PreviewMonitoredExperimentPointRepository';
+import { ExperimentUser } from '../models/ExperimentUser';
+import { PreviewUser } from '../models/PreviewUser';
+import { ExperimentUserService } from './ExperimentUserService';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -57,20 +50,9 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private individualAssignmentRepository: IndividualAssignmentRepository,
     @OrmRepository()
-    private previewIndividualExclusionRepository: PreviewIndividualExclusionRepository,
-    @OrmRepository() private previewGroupExclusionRepository: PreviewGroupExclusionRepository,
-    @OrmRepository()
-    private previewGroupAssignmentRepository: PreviewGroupAssignmentRepository,
-    @OrmRepository()
-    private previewIndividualAssignmentRepository: PreviewIndividualAssignmentRepository,
-    @OrmRepository()
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
-    private previewMonitoredExperimentPointRepository: PreviewMonitoredExperimentPointRepository,
-    @OrmRepository()
     private userRepository: ExperimentUserRepository,
-    @OrmRepository()
-    private previewUserRepository: PreviewUserRepository,
     @OrmRepository()
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
@@ -78,6 +60,7 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private experimentAuditLogRepository: ExperimentAuditLogRepository,
     public previewUserService: PreviewUserService,
+    public experimentUserService: ExperimentUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -86,12 +69,20 @@ export class ExperimentAssignmentService {
       `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
     );
 
-    const [experimentUser, previewUser] = await Promise.all([
-      this.userRepository.findOne({ id: userId }),
-      this.previewUserRepository.findOne({ id: userId }),
-    ]);
-    const workingGroup = experimentUser && experimentUser.workingGroup;
-    const previewWorkingGroup = previewUser && previewUser.workingGroup;
+    // find working group for user
+    const userDoc = await this.userRepository.findOne({ id: userId });
+
+    // adding experiment error when user is not defined
+    if (!userDoc || (!userDoc.group && !userDoc.workingGroup)) {
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User not defined: ${userId}`,
+        })
+      );
+    }
+
+    const { workingGroup } = userDoc;
 
     // query root experiment details
     const experimentPartition = await this.experimentPartitionRepository.findOne({
@@ -101,123 +92,86 @@ export class ExperimentAssignmentService {
       relations: ['experiment'],
     });
 
-    if (experimentPartition && workingGroup) {
+    if (experimentPartition) {
       this.updateExclusionFromMarkExperimentPoint(userId, workingGroup, experimentPartition.experiment);
     }
 
-    let data: any;
-    // save for preview users
-    if (previewWorkingGroup) {
-      data = await this.previewMonitoredExperimentPointRepository.saveRawJson({
-        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
-        userId,
-      });
-    }
-
     // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
+
     // adding in monitored experiment point table
-    if (workingGroup) {
-      data = await this.monitoredExperimentPointRepository.saveRawJson({
-        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
-        userId,
-      });
-    }
-    return data;
+    return this.monitoredExperimentPointRepository.saveRawJson({
+      id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+      userId,
+    });
   }
 
   public async getAllExperimentConditions(userId: string): Promise<any> {
     this.log.info(`Get all experiment for User Id ${userId}`);
-    const [experimentUser, previewUser] = await Promise.all([
-      this.userRepository.findOne({ id: userId }),
+    const usersData: any[] = await Promise.all([
+      this.experimentUserService.findOne(userId),
       this.previewUserService.findOne(userId),
     ]);
 
-    const workingGroup = (experimentUser && experimentUser.workingGroup) || {};
-    let previewWorkingGroup = (previewUser && previewUser.workingGroup) || {};
+    const experimentUser: ExperimentUser = usersData[0];
+    const previewUser: PreviewUser = usersData[1];
+
+    // check user validation
+    if (!experimentUser) {
+      // throw error user group not defined
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User is not defined: ${userId}}`,
+        })
+      );
+    }
 
     // query all experiment and sub experiment
-    const experiments = await this.experimentRepository.getValidExperiments();
+    let experiments: Experiment[] = [];
+    if (previewUser) {
+      experiments = await this.experimentRepository.getValidExperimentsWithPreview();
+    } else {
+      experiments = await this.experimentRepository.getValidExperiments();
+    }
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiment = experiments.find(experiment => experiment.group);
-    if (experimentUser || previewUser) {
-      if (groupExperiment) {
-        if (experimentUser && (!experimentUser.group || !experimentUser.workingGroup)) {
-          // throw error user group not defined
-          throw new Error(
-            JSON.stringify({
-              type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-              message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
-            })
-          );
-        } else if (experimentUser) {
-          const keys = Object.keys(experimentUser.workingGroup);
-          keys.forEach(key => {
-            if (!experimentUser.group[key]) {
+
+    // check for group and working group
+    if (groupExperiment) {
+      if (!experimentUser.group || !experimentUser.workingGroup) {
+        // throw error user group not defined
+        throw new Error(
+          JSON.stringify({
+            type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+            message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
+          })
+        );
+      } else {
+        const keys = Object.keys(experimentUser.workingGroup);
+        keys.forEach(key => {
+          if (!experimentUser.group[key]) {
+            throw new Error(
+              JSON.stringify({
+                type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+                message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
+              })
+            );
+          } else {
+            if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
               throw new Error(
                 JSON.stringify({
                   type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
                   message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
                 })
               );
-            } else if (experimentUser) {
-              if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
-                throw new Error(
-                  JSON.stringify({
-                    type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-                    message: `Working group not a subset of user group: ${JSON.stringify(
-                      experimentUser,
-                      undefined,
-                      2
-                    )}`,
-                  })
-                );
-              }
             }
-          });
-        }
-
-        if (previewUser && (!previewUser.group || !previewUser.workingGroup)) {
-          // throw error user group not defined
-          throw new Error(
-            JSON.stringify({
-              type: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
-              message: `Group not defined for preview User: ${JSON.stringify(previewUser, undefined, 2)}`,
-            })
-          );
-        } else if (previewUser) {
-          const keys = Object.keys(previewUser.workingGroup);
-          keys.forEach(key => {
-            if (!previewUser.group[key]) {
-              throw new Error(
-                JSON.stringify({
-                  type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-                  message: `Working group not a subset of user group: ${JSON.stringify(previewUser, undefined, 2)}`,
-                })
-              );
-            } else {
-              if (!previewUser.group[key].includes(previewUser.workingGroup[key])) {
-                throw new Error(
-                  JSON.stringify({
-                    type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-                    message: `Working group not a subset of user group: ${JSON.stringify(previewUser, undefined, 2)}`,
-                  })
-                );
-              }
-            }
-          });
-        }
+          }
+        });
       }
-    } else {
-      // throw Error User not defined
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
-        })
-      );
     }
 
+    // try catch block for experiment assignment error
     try {
       // return if no experiment
       if (experiments.length === 0) {
@@ -226,11 +180,9 @@ export class ExperimentAssignmentService {
 
       // ============= check if user or group is excluded
       let userGroup = [];
-      if (experimentUser && workingGroup) {
-        userGroup = Object.keys(workingGroup).map((type: string) => {
-          return `${type}_${workingGroup[type]}`;
-        });
-      }
+      userGroup = Object.keys(experimentUser.workingGroup).map((type: string) => {
+        return `${type}_${experimentUser.workingGroup[type]}`;
+      });
 
       const [userExcluded, groupExcluded] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId }),
@@ -241,11 +193,6 @@ export class ExperimentAssignmentService {
         // return null if the user is excluded from the experiment
         return [];
       }
-
-      const hasPreviewExperiment = experiments.reduce(
-        (accumulator, experiment) => experiment.state === EXPERIMENT_STATE.PREVIEW || accumulator,
-        false
-      );
 
       // filter group experiment according to group excluded
       let filteredExperiments: Experiment[] = [...experiments];
@@ -259,17 +206,6 @@ export class ExperimentAssignmentService {
         });
       }
 
-      // filter preview experiment is user is not a PreviewUser
-      if (!previewUser) {
-        filteredExperiments = filteredExperiments.filter(experiment => {
-          return experiment.state !== EXPERIMENT_STATE.PREVIEW;
-        });
-      } else if (previewUser && !experimentUser) {
-        filteredExperiments = filteredExperiments.filter(experiment => {
-          return experiment.state === EXPERIMENT_STATE.PREVIEW;
-        });
-      }
-
       const experimentIds = filteredExperiments.map(experiment => experiment.id);
 
       // return if no experiment
@@ -278,7 +214,7 @@ export class ExperimentAssignmentService {
       }
 
       // ============ query assignment/exclusion for user
-      const allGroupIds: string[] = (workingGroup && Object.values(workingGroup)) || [];
+      const allGroupIds: string[] = Object.values(experimentUser.workingGroup) || [];
       const promiseAssignmentExclusion: any[] = [
         experimentIds.length > 0 ? this.individualAssignmentRepository.findAssignment(userId, experimentIds) : [],
         allGroupIds.length > 0 && experimentIds.length > 0
@@ -290,38 +226,13 @@ export class ExperimentAssignmentService {
           : [],
       ];
 
-      let previewAssignmentExclusion = [];
-      // fetch assignment if preview user and experiment list has preview experiment
-      if (hasPreviewExperiment && previewUser) {
-        previewWorkingGroup = previewUser.workingGroup;
-        const allPreviewGroupIds: string[] = Object.values(previewWorkingGroup);
-
-        previewAssignmentExclusion = [
-          this.previewIndividualAssignmentRepository.findAssignment(userId, experimentIds),
-          this.previewGroupAssignmentRepository.findExperiment(allPreviewGroupIds, experimentIds),
-          this.previewIndividualExclusionRepository.findExcluded(userId, experimentIds),
-          this.previewGroupExclusionRepository.findExcluded(allPreviewGroupIds, experimentIds),
-        ];
-      }
-
-      const [
-        individualAssignments,
-        groupAssignments,
-        individualExclusions,
-        groupExclusions,
-        previewIndividualAssignments,
-        previewGroupAssignments,
-        previewIndividualExclusions,
-        previewGroupExclusions,
-      ] = await Promise.all([...promiseAssignmentExclusion, ...previewAssignmentExclusion]);
+      const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
+        promiseAssignmentExclusion
+      );
       this.log.info('individualAssignments', individualAssignments);
       this.log.info('groupAssignment', groupAssignments);
       this.log.info('individualExclusion', individualExclusions);
       this.log.info('groupExclusion', groupExclusions);
-      this.log.info('previewIndividualAssignments', previewIndividualAssignments);
-      this.log.info('previewGroupAssignments', previewGroupAssignments);
-      this.log.info('previewIndividualExclusions', previewIndividualExclusions);
-      this.log.info('previewGroupExclusions', previewGroupExclusions);
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
@@ -331,7 +242,10 @@ export class ExperimentAssignmentService {
           });
 
           const groupAssignment = groupAssignments.find(assignment => {
-            return assignment.experimentId === experiment.id && assignment.groupId === workingGroup[experiment.group];
+            return (
+              assignment.experimentId === experiment.id &&
+              assignment.groupId === experimentUser.workingGroup[experiment.group]
+            );
           });
 
           const individualExclusion = individualExclusions.find(exclusion => {
@@ -339,52 +253,20 @@ export class ExperimentAssignmentService {
           });
 
           const groupExclusion = groupExclusions.find(exclusion => {
-            return exclusion.experimentId === experiment.id && exclusion.groupId === workingGroup[experiment.group];
+            return (
+              exclusion.experimentId === experiment.id &&
+              exclusion.groupId === experimentUser.workingGroup[experiment.group]
+            );
           });
 
-          const previewIndividualAssignment =
-            previewIndividualAssignments &&
-            previewIndividualAssignments.find(assignment => {
-              return assignment.experimentId === experiment.id;
-            });
-
-          const previewGroupAssignment =
-            previewGroupAssignments &&
-            previewGroupAssignments.find(assignment => {
-              return (
-                assignment.experimentId === experiment.id &&
-                assignment.groupId === previewWorkingGroup[experiment.group]
-              );
-            });
-
-          const previewIndividualExclusion =
-            previewIndividualExclusions &&
-            previewIndividualExclusions.find(exclusion => {
-              return exclusion.experimentId === experiment.id;
-            });
-
-          const previewGroupExclusion =
-            previewGroupExclusions &&
-            previewGroupExclusions.find(exclusion => {
-              return (
-                exclusion.experimentId === experiment.id && exclusion.groupId === previewWorkingGroup[experiment.group]
-              );
-            });
-
           return this.assignExperiment(
-            experimentUser && experimentUser.id,
-            previewUser && previewUser.id,
-            workingGroup,
-            previewWorkingGroup,
+            experimentUser.id,
+            experimentUser.workingGroup,
             experiment,
             individualAssignment,
             groupAssignment,
             individualExclusion,
-            groupExclusion,
-            previewIndividualAssignment,
-            previewGroupAssignment,
-            previewIndividualExclusion,
-            previewGroupExclusion
+            groupExclusion
           );
         })
       );
@@ -409,11 +291,14 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public async updateState(experimentId: string, state: EXPERIMENT_STATE, user: User, scheduleDate?: Date): Promise<Experiment> {
+  public async updateState(
+    experimentId: string,
+    state: EXPERIMENT_STATE,
+    user: User,
+    scheduleDate?: Date
+  ): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       await this.populateExclusionTable(experimentId);
-    } else if (state === EXPERIMENT_STATE.PREVIEW) {
-      await this.populateExclusionTablePreview(experimentId);
     }
 
     const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
@@ -498,61 +383,6 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private async populateExclusionTablePreview(experimentId: string): Promise<void> {
-    // query all sub-experiment
-    const experiment: Experiment = await this.experimentRepository.findOne({
-      where: { id: experimentId },
-      relations: ['partitions'],
-    });
-
-    const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.partitions.map(({ id, point }) => {
-      return { experimentId: id, experimentPoint: point };
-    });
-
-    // query all monitored experiment point for this experiment Id
-    const monitoredExperimentPoints = await this.previewMonitoredExperimentPointRepository.find(subExperiments as any);
-    const uniqueUserIds = new Set(
-      monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
-    );
-
-    // end the loop if no users
-    if (uniqueUserIds.size === 0) {
-      return;
-    }
-
-    // populate Individual and Group Exclusion Table
-    if (consistencyRule === CONSISTENCY_RULE.GROUP) {
-      // query all user information
-      const userDetails = await this.previewUserRepository.findByIds([...uniqueUserIds]);
-
-      const groupsToExclude = new Set(
-        userDetails.map(userDetail => {
-          return userDetail.workingGroup[group];
-        })
-      );
-
-      // group exclusion documents
-      const groupExclusionDocs = [...groupsToExclude].map(groupId => {
-        return {
-          experimentId,
-          groupId,
-        };
-      });
-      if (groupExclusionDocs.length > 0) {
-        await this.previewGroupExclusionRepository.saveRawJson(groupExclusionDocs);
-      }
-    }
-
-    if (consistencyRule === CONSISTENCY_RULE.INDIVIDUAL || consistencyRule === CONSISTENCY_RULE.GROUP) {
-      // individual exclusion document
-      const individualExclusionDocs = [...uniqueUserIds].map(userId => {
-        return { userId, experimentId };
-      });
-      await this.previewIndividualExclusionRepository.saveRawJson(individualExclusionDocs);
-    }
-  }
-
   private async updateExclusionFromMarkExperimentPoint(
     userId: string,
     userEnvironment: any,
@@ -607,18 +437,12 @@ export class ExperimentAssignmentService {
 
   private async assignExperiment(
     userId: string,
-    previewUserId: string,
     userEnvironment: any,
-    previewUserEnvironment: any,
     experiment: Experiment,
     individualAssignment: IndividualAssignment | undefined,
     groupAssignment: GroupAssignment | undefined,
     individualExclusion: IndividualExclusion | undefined,
-    groupExclusion: GroupExclusion | undefined,
-    previewIndividualAssignment?: PreviewIndividualAssignment | undefined,
-    previewGroupAssignment?: PreviewGroupAssignment | undefined,
-    previewIndividualExclusion?: PreviewIndividualExclusion | undefined,
-    previewGroupExclusion?: PreviewGroupExclusion | undefined
+    groupExclusion: GroupExclusion | undefined
   ): Promise<ExperimentCondition | void> {
     if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && userId) {
       if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
@@ -641,7 +465,10 @@ export class ExperimentAssignmentService {
           return condition;
         }
       }
-    } else if (experiment.state === EXPERIMENT_STATE.ENROLLING && userId) {
+    } else if (
+      (experiment.state === EXPERIMENT_STATE.ENROLLING || experiment.state === EXPERIMENT_STATE.PREVIEW) &&
+      userId
+    ) {
       if (individualAssignment) {
         return individualAssignment.condition;
       } else if (individualExclusion) {
@@ -680,50 +507,6 @@ export class ExperimentAssignmentService {
           await this.individualAssignmentRepository.saveRawJson({
             experimentId: experiment.id,
             userId,
-            condition: experimentalCondition,
-          });
-          return experimentalCondition;
-        }
-      }
-    } else if (experiment.state === EXPERIMENT_STATE.PREVIEW && previewUserId) {
-      if (previewIndividualAssignment) {
-        return previewIndividualAssignment.condition;
-      } else if (previewIndividualExclusion) {
-        return;
-      } else if (previewGroupExclusion) {
-        return;
-      } else if (previewGroupAssignment) {
-        // add entry in individual assignment
-        this.previewIndividualAssignmentRepository.saveRawJson({
-          experimentId: experiment.id,
-          userId: previewUserId,
-          condition: previewGroupAssignment.condition,
-        });
-        return previewGroupAssignment.condition;
-      } else {
-        const randomConditions = this.weightedRandom(
-          experiment.conditions.map(condition => condition.assignmentWeight)
-        );
-        const experimentalCondition = experiment.conditions[randomConditions];
-        // assignment operations will happen here
-        if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
-          await Promise.all([
-            this.previewGroupAssignmentRepository.saveRawJson({
-              experimentId: experiment.id,
-              groupId: previewUserEnvironment[experiment.group],
-              condition: experimentalCondition,
-            }),
-            this.previewIndividualAssignmentRepository.saveRawJson({
-              experimentId: experiment.id,
-              userId: previewUserId,
-              condition: experimentalCondition,
-            }),
-          ]);
-          return experimentalCondition;
-        } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
-          await this.previewIndividualAssignmentRepository.saveRawJson({
-            experimentId: experiment.id,
-            userId: previewUserId,
             condition: experimentalCondition,
           });
           return experimentalCondition;
