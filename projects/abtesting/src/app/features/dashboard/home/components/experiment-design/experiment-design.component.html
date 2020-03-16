@@ -269,10 +269,6 @@
       <button
         mat-raised-button
         class="default-button"
-        [ngClass]="{
-          'default-button--disabled': !this.experimentDesignForm.valid
-        }"
-        [disabled]="!this.experimentDesignForm.valid"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
       >
         {{ 'global.next.text' | translate }}

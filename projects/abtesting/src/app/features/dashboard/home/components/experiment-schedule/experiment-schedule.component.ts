@@ -32,7 +32,7 @@ export class ExperimentScheduleComponent implements OnInit {
       dateOfExperimentEnd: [{ value: '', disabled: true }],
       userCount: [{ value: '', disabled: true }],
       groupCount: [{ value: '', disabled: true }]
-    }, { validators: ExperimentFormValidators.validateScheduleForm });
+    });
 
     this.experimentScheduleForm.get('endExperimentAutomatically').valueChanges.subscribe(
       (isExperimentEndAutomatically) => {
@@ -79,40 +79,64 @@ export class ExperimentScheduleComponent implements OnInit {
     }
   }
 
-  emitEvent(eventType: NewExperimentDialogEvents) {
-    if (eventType === NewExperimentDialogEvents.CLOSE_DIALOG) {
-      this.emitExperimentDialogEvent.emit({ type: eventType });
-    } else {
-      let scheduleData = {
-        endOn: null,
-        enrollmentCompleteCondition: null
-      };
-      const { endExperimentAutomatically, endCondition, dateOfExperimentEnd, userCount, groupCount } = this.experimentScheduleForm.value;
-      if (endExperimentAutomatically) {
-        switch (endCondition) {
-          case EndExperimentCondition.END_ON_DATE:
-            scheduleData = {
-              ...scheduleData,
-              endOn: dateOfExperimentEnd.toISOString()
-            };
-            break;
-
-          case EndExperimentCondition.END_CRITERIA:
-            scheduleData = {
-              ...scheduleData,
-              enrollmentCompleteCondition: {
-                userCount: userCount || 0,
-                groupCount: groupCount || 0
-              }
-            };
-            break;
-        }
+  validateScheduleForm() {
+    const endExperimentAutomatically = this.experimentScheduleForm.get('endExperimentAutomatically').value;
+    const endCondition = this.experimentScheduleForm.get('endCondition').value;
+    const dateOfExperimentEnd = this.experimentScheduleForm.get('dateOfExperimentEnd').value;
+    const userCount = this.experimentScheduleForm.get('userCount').value;
+    const groupCount = this.experimentScheduleForm.get('groupCount').value;
+    if (endExperimentAutomatically && !!endCondition) {
+      if (endCondition === EndExperimentCondition.END_ON_DATE && !dateOfExperimentEnd) {
+        this.experimentScheduleForm.setErrors({ dateOfExperimentEndError: true });
+      } else if (
+        endCondition === EndExperimentCondition.END_CRITERIA && !(userCount || groupCount)) {
+        this.experimentScheduleForm.setErrors({ endCriteriaError: true });
       }
-      this.emitExperimentDialogEvent.emit({
-        type: eventType,
-        formData: scheduleData,
-        path: NewExperimentPaths.EXPERIMENT_SCHEDULE
-      });
+    } else if (endExperimentAutomatically && !endCondition) {
+      this.experimentScheduleForm.setErrors({ selectionError: true });
+    }
+  }
+
+  emitEvent(eventType: NewExperimentDialogEvents) {
+    switch (eventType) {
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.emitExperimentDialogEvent.emit({ type: eventType });
+        break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.validateScheduleForm();
+        if (this.experimentScheduleForm.valid) {
+          let scheduleData = {
+            endOn: null,
+            enrollmentCompleteCondition: null
+          };
+          const { endExperimentAutomatically, endCondition, dateOfExperimentEnd, userCount, groupCount } = this.experimentScheduleForm.value;
+          if (endExperimentAutomatically) {
+            switch (endCondition) {
+              case EndExperimentCondition.END_ON_DATE:
+                scheduleData = {
+                  ...scheduleData,
+                  endOn: dateOfExperimentEnd.toISOString()
+                };
+                break;
+
+              case EndExperimentCondition.END_CRITERIA:
+                scheduleData = {
+                  ...scheduleData,
+                  enrollmentCompleteCondition: {
+                    userCount: userCount || 0,
+                    groupCount: groupCount || 0
+                  }
+                };
+                break;
+            }
+          }
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: scheduleData,
+            path: NewExperimentPaths.EXPERIMENT_SCHEDULE
+          });
+        }
+        break;
     }
   }
 
