@@ -104,6 +104,8 @@
   "home.view-experiment.enrollment-by-point-partition.title.text": "Enrollment by Experiment Point and Partition",
   "home.view-experiment.experiment-conditions-title.text": "Experiment Conditions",
   "home.view-experiment.experiment-partitions-title.text": "Experiment Partitions",
+  "home.delete-experiment.message.text": "Are you sure you want to delete {{ experimentName }} experiment ?",
+  "home.delete-experiment.button.text": "DELETE",
   "home.change-experiment-status.title.text": "Change Experiment status",
   "home.change-experiment-status.current-status.text": "CURRENT STATUS",
   "home.change-experiment-status.new-status.text": "NEW STATUS",
