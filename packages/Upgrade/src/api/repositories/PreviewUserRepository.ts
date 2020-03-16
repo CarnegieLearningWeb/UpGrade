@@ -11,8 +11,6 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .insert()
       .into(PreviewUser)
       .values(rawData)
-      .onConflict(`("id") DO UPDATE SET "group" = :group`)
-      .setParameter('group', rawData.group)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
