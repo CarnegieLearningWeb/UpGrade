@@ -104,6 +104,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       });
     }
     this.updateView();
+
+    this.experimentDesignForm.get('partitions').valueChanges.subscribe(newValues => {
+      this.validatePartitionNames(newValues);
+    });
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, twoCharacterId = null) {
@@ -148,10 +152,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  validatePartitionNames() {
+  validatePartitionNames(partitions: any) {
     this.partitionPointErrors = [];
-    const { partitions } = this.experimentDesignForm.value;
-
     // Used to differentiate errors
     const alreadyExistedPartitions = [];
     const duplicatePartitions = [];
@@ -201,8 +203,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.validatePartitionNames();
-        if (!this.partitionPointErrors.length) {
+        if (!this.partitionPointErrors.length && this.experimentDesignForm.valid) {
           this.experimentDesignForm.value.partitions = this.experimentDesignForm.value.partitions.map((partition =>
             partition.name ? partition : this.removePartitionName(partition)
           ))
