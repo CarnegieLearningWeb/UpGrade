@@ -343,7 +343,7 @@ export class ExperimentAssignmentService {
     });
 
     // query all monitored experiment point for this experiment Id
-    let monitoredExperimentPoints: MonitoredExperimentPoint[];
+    let monitoredExperimentPoints: MonitoredExperimentPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
       monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find({
         where: { id: In(subExperiments) },
@@ -353,10 +353,13 @@ export class ExperimentAssignmentService {
       const previewUsers = await this.previewUserService.find();
 
       const previewUsersIds = previewUsers.map(user => user.id);
-      monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findForExperimentIdsUserIds(
-        subExperiments,
-        previewUsersIds
-      );
+
+      if (previewUsersIds.length > 0) {
+        monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findForExperimentIdsUserIds(
+          subExperiments,
+          previewUsersIds
+        );
+      }
     }
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
