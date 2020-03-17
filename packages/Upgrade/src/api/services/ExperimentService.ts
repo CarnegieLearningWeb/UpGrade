@@ -300,6 +300,11 @@ export class ExperimentService {
       delete oldExperimentClone.versionNumber;
       delete oldExperimentClone.updatedAt;
       delete oldExperimentClone.createdAt;
+
+      // Sort based on createdAt to make correct diff
+      oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      oldExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
       oldExperimentClone.partitions.map(partition => {
         delete partition.versionNumber;
         delete partition.updatedAt;
@@ -318,6 +323,11 @@ export class ExperimentService {
       delete newExperimentClone.versionNumber;
       delete newExperimentClone.updatedAt;
       delete newExperimentClone.createdAt;
+
+      // Sort based on createdAt to make correct diff
+      newExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      newExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
       newExperimentClone.partitions.map(partition => {
         delete partition.versionNumber;
         delete partition.updatedAt;
