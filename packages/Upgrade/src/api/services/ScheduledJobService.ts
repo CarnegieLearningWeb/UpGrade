@@ -5,13 +5,37 @@ import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
 import { EXPERIMENT_STATE } from 'ees_types';
+import { ExperimentAssignmentService } from './ExperimentAssignmentService';
+import { ExperimentRepository } from '../repositories/ExperimentRepository';
 
 @Service()
 export class ScheduledJobService {
   constructor(
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
+    @OrmRepository() private experimentRepository: ExperimentRepository,
+    public experimentAssignmentService: ExperimentAssignmentService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
+
+  public async startExperiment(id: string): Promise<void> {
+    const scheduledJob = await this.scheduledJobRepository.findOne(id);
+    const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
+    if (scheduledJob && experiment) {
+      // TODO use system user to Update State
+      // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING);
+    }
+    return;
+  }
+
+  public async endExperiment(id: string): Promise<void> {
+    const scheduledJob = await this.scheduledJobRepository.findOne(id);
+    const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
+    if (scheduledJob && experiment) {
+      // TODO use system user to Update State
+      // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
+    }
+    return;
+  }
 
   public getAllStartExperiment(): Promise<ScheduledJob[]> {
     this.log.info('get all start experiment scheduled jobs');
