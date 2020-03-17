@@ -4,6 +4,27 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
+  public async findForExperimentIdsUserIds(
+    experimentIds: string[],
+    userIds: string[]
+  ): Promise<MonitoredExperimentPoint[]> {
+    return this.createQueryBuilder('monitoredPoint')
+      .where('monitoredPoint.id IN (:...experimentIds) AND monitoredPoint.userId IN (:...userIds)', {
+        experimentIds,
+        userIds,
+      })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findForUserIds',
+          { experimentIds, userIds },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async saveRawJson(
     rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber'>
   ): Promise<MonitoredExperimentPoint> {
