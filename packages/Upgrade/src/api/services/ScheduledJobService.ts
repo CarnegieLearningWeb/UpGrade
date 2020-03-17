@@ -5,7 +5,6 @@ import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { ExperimentAssignmentService } from './ExperimentAssignmentService';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 
 @Service()
@@ -13,7 +12,6 @@ export class ScheduledJobService {
   constructor(
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
     @OrmRepository() private experimentRepository: ExperimentRepository,
-    public experimentAssignmentService: ExperimentAssignmentService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -22,6 +20,7 @@ export class ScheduledJobService {
     const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
     if (scheduledJob && experiment) {
       // TODO use system user to Update State
+      // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
       // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING);
     }
     return;
@@ -32,6 +31,7 @@ export class ScheduledJobService {
     const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
     if (scheduledJob && experiment) {
       // TODO use system user to Update State
+      // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
       // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
     }
     return;

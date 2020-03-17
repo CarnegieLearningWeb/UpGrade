@@ -318,7 +318,7 @@ export class ExperimentAssignmentService {
     const updatedState = await this.experimentRepository.updateState(experimentId, state, scheduleDate);
 
     // updating experiment schedules here
-    this.updateExperimentSchedules(experimentId);
+    await this.updateExperimentSchedules(experimentId);
 
     return updatedState;
   }
