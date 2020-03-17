@@ -57,6 +57,7 @@
   "dependencies": {
     "@types/jest": "^24.0.21",
     "@types/uuid": "^3.4.5",
+    "aws-sdk": "^2.639.0",
     "body-parser": "^1.19.0",
     "chalk": "^2.4.2",
     "class-transformer": "^0.2.3",
