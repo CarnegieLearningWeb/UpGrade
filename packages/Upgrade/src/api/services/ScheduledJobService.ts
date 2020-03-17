@@ -10,7 +10,7 @@ import { env } from '../../env';
 
 const stepFunction = new AWS.StepFunctions(
   {
-    region: 'us-east-1',
+    region: env.aws.region,
   }
 );
 

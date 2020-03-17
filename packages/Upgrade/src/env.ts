@@ -70,4 +70,7 @@ export const env = {
   schedular: {
     stepFunctionArn: getOsEnv('SCHEDULER_STEP_FUNCTION'),
   },
+  aws: {
+    region: getOsEnv('AWS_REGION'),
+  },
 };
