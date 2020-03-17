@@ -19,4 +19,7 @@ export class ScheduledJob extends BaseModel {
 
   @Column()
   public timeStamp: Date;
+
+  @Column()
+  public executionArn: string;
 }

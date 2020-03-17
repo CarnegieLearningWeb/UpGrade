@@ -67,4 +67,7 @@ export const env = {
   auth: {
     authCheck: toBool(getOsEnvOptional('AUTH_CHECK')),
   },
+  schedular: {
+    stepFunctionArn: getOsEnv('SCHEDULER_STEP_FUNCTION'),
+  },
 };
