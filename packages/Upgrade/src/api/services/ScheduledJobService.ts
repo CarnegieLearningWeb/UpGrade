@@ -5,7 +5,13 @@ import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
 import { EXPERIMENT_STATE } from 'ees_types';
+import AWS from 'aws-sdk';
+import { env } from '../../env';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
+
+const stepFunction = new AWS.StepFunctions({
+  region: env.aws.region,
+});
 
 @Service()
 export class ScheduledJobService {
@@ -48,55 +54,96 @@ export class ScheduledJobService {
   }
 
   public async updateExperimentSchedules(experiment: Experiment): Promise<void> {
-    const { id, state, startOn, endOn } = experiment;
-    const experimentStartCondition = state === EXPERIMENT_STATE.SCHEDULED;
-    const experimentEndCondition =
-      !(state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE || state === EXPERIMENT_STATE.CANCELLED) && endOn;
-    // query experiment schedules
-    const scheduledJobs = await this.scheduledJobRepository.find({ experimentId: id });
-    const startExperimentDoc = scheduledJobs.find(({ type }) => {
-      return type === SCHEDULE_TYPE.START_EXPERIMENT;
-    });
+    try {
+      const { id, state, startOn, endOn } = experiment;
+      const experimentStartCondition = state === EXPERIMENT_STATE.SCHEDULED;
+      const experimentEndCondition =
+        !(state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE || state === EXPERIMENT_STATE.CANCELLED) && endOn;
+      // query experiment schedules
+      const scheduledJobs = await this.scheduledJobRepository.find({ experimentId: id });
+      const startExperimentDoc = scheduledJobs.find(({ type }) => {
+        return type === SCHEDULE_TYPE.START_EXPERIMENT;
+      });
 
-    // create start schedule if STATE is in scheduled and date changes
-    if (experimentStartCondition) {
-      if (!startExperimentDoc || (startOn && startExperimentDoc.timeStamp !== startOn)) {
-        const startDoc = startExperimentDoc || {
-          id: `${experiment.id}_${SCHEDULE_TYPE.START_EXPERIMENT}`,
-          experimentId: experiment.id,
-          type: SCHEDULE_TYPE.START_EXPERIMENT,
-          timeStamp: startOn,
-        };
-        // add or update document
-        await this.scheduledJobRepository.upsertScheduledJob({ ...startDoc, timeStamp: startOn });
-        // TODO create aws event here
-      }
-    } else if (startExperimentDoc) {
-      // delete event here
-      await this.scheduledJobRepository.delete({ id: startExperimentDoc.id });
-      // TODO delete scheduled event from aws
-    }
+      // create start schedule if STATE is in scheduled and date changes
+      if (experimentStartCondition) {
+        if (!startExperimentDoc || (startOn && startExperimentDoc.timeStamp !== startOn)) {
+          const startDoc = startExperimentDoc || {
+            id: `${experiment.id}_${SCHEDULE_TYPE.START_EXPERIMENT}`,
+            experimentId: experiment.id,
+            type: SCHEDULE_TYPE.START_EXPERIMENT,
+            timeStamp: startOn,
+          };
 
-    const endExperimentDoc = scheduledJobs.find(({ type }) => {
-      return type === SCHEDULE_TYPE.END_EXPERIMENT;
-    });
-    // create end schedule of STATE is not enrollmentComplete and date changes
-    if (experimentEndCondition) {
-      if (!endExperimentDoc || (endOn && endExperimentDoc.timeStamp !== endOn)) {
-        const endDoc = endExperimentDoc || {
-          id: `${experiment.id}_${SCHEDULE_TYPE.END_EXPERIMENT}`,
-          experimentId: experiment.id,
-          type: SCHEDULE_TYPE.END_EXPERIMENT,
-          timeStamp: endOn,
-        };
-        // add or update document
-        await this.scheduledJobRepository.upsertScheduledJob({ ...endDoc, timeStamp: endOn });
-        // TODO create aws event here
+          const response: any = await this.startExperimentSchedular(startOn, startDoc);
+
+          // If experiment is already scheduled with old date
+          if (startExperimentDoc && startExperimentDoc.executionArn) {
+            await this.stopExperimentSchedular(startExperimentDoc.executionArn);
+          }
+
+          // add or update document
+          await this.scheduledJobRepository.upsertScheduledJob({
+            ...startDoc,
+            timeStamp: startOn,
+            executionArn: response.executionArn,
+          });
+        }
+      } else if (startExperimentDoc) {
+        // delete event here
+        await this.scheduledJobRepository.delete({ id: startExperimentDoc.id });
+        await this.stopExperimentSchedular(startExperimentDoc.executionArn);
       }
-    } else if (endExperimentDoc) {
-      // delete event here
-      await this.scheduledJobRepository.delete({ id: endExperimentDoc.id });
-      // TODO delete scheduled event from aws
+
+      const endExperimentDoc = scheduledJobs.find(({ type }) => {
+        return type === SCHEDULE_TYPE.END_EXPERIMENT;
+      });
+      // create end schedule of STATE is not enrollmentComplete and date changes
+      if (experimentEndCondition) {
+        if (!endExperimentDoc || (endOn && endExperimentDoc.timeStamp !== endOn)) {
+          const endDoc = endExperimentDoc || {
+            id: `${experiment.id}_${SCHEDULE_TYPE.END_EXPERIMENT}`,
+            experimentId: experiment.id,
+            type: SCHEDULE_TYPE.END_EXPERIMENT,
+            timeStamp: endOn,
+          };
+
+          const response: any = await this.startExperimentSchedular(endOn, endDoc);
+
+          // If experiment is already scheduled with old date
+          if (endExperimentDoc && endExperimentDoc.executionArn) {
+            await this.stopExperimentSchedular(endExperimentDoc.executionArn);
+          }
+          // add or update document
+          await this.scheduledJobRepository.upsertScheduledJob({
+            ...endDoc,
+            timeStamp: endOn,
+            executionArn: response.executionArn,
+          });
+        }
+      } else if (endExperimentDoc) {
+        // delete event here
+        await this.scheduledJobRepository.delete({ id: endExperimentDoc.id });
+        await this.stopExperimentSchedular(endExperimentDoc.executionArn);
+      }
+    } catch (error) {
+      console.log('Error in experiment schedular ', error.message);
     }
+  }
+
+  // TODO:  Add url in input params
+  private async startExperimentSchedular(timeStamp: Date, body: any): Promise<any> {
+    const experimentSchedularStateMachine = {
+      stateMachineArn: env.schedular.stepFunctionArn,
+      input: JSON.stringify({
+        timeStamp,
+        body,
+      }),
+    };
+    return await stepFunction.startExecution(experimentSchedularStateMachine).promise();
+  }
+
+  private async stopExperimentSchedular(executionArn: string): Promise<any> {
+    return await stepFunction.stopExecution({ executionArn }).promise();
   }
 }
