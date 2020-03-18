@@ -27,6 +27,27 @@ module.exports = {
           },
         },
       },
+      unit: {
+        default: {
+          script: series('nps banner.testUnit', 'nps test.unit.pretest', 'nps test.unit.run'),
+          description: 'Runs the integration tests',
+        },
+        pretest: {
+          script: tslint(`./test/unit/**.ts`),
+          hiddenFromHelp: true,
+        },
+        run: {
+          default: {
+            // -i. Run all tests serially in the current process, rather than creating a worker pool of child processes that run tests. This can be useful for debugging.
+            script: 'cross-env NODE_ENV=test jest --runInBand --testPathPattern=unit -i',
+            hiddenFromHelp: true,
+          },
+          watch: {
+            script: 'cross-env NODE_ENV=test jest --runInBand --watch --testPathPattern=unit -i',
+            hiddenFromHelp: true,
+          },
+        },
+      },
       verbose: {
         script: 'nps test.verbose',
         hiddenFromHelp: true,
