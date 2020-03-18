@@ -8,8 +8,9 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
     const result = await this.createQueryBuilder('scheduled')
       .insert()
       .values(scheduledJob)
-      .onConflict(`("id") DO UPDATE SET "timeStamp" = :timeStamp`)
+      .onConflict(`("id") DO UPDATE SET "timeStamp" = :timeStamp, "executionArn" = :executionArn`)
       .setParameter('timeStamp', scheduledJob.timeStamp)
+      .setParameter('executionArn', scheduledJob.executionArn)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
