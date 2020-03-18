@@ -33,11 +33,11 @@ export class ScheduledJobsController {
    *          '200':
    *            description: Change Experiment Status to enrolling
    */
-  @Post('start')
+  @Post('/start')
   public async startExperiment(
     @Body({ validate: { validationError: { target: true, value: true } } })
     scheduledParams: ScheduledJobsParamsValidator
-  ): Promise<void> {
+  ): Promise<any> {
     return this.scheduledJobService.startExperiment(scheduledParams.id);
   }
 
@@ -68,11 +68,11 @@ export class ScheduledJobsController {
    *          '200':
    *            description: Change experiment state to EnrollmentComplete
    */
-  @Post('end')
+  @Post('/end')
   public async endExperiment(
     @Body({ validate: { validationError: { target: true, value: true } } })
     scheduledParams: ScheduledJobsParamsValidator
-  ): Promise<void> {
+  ): Promise<any> {
     return this.scheduledJobService.endExperiment(scheduledParams.id);
   }
 }

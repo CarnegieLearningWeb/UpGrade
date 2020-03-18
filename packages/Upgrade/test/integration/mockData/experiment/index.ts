@@ -74,7 +74,7 @@ export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssign
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
-export const scheduleJobStartExperiment = experiment;
+export const scheduleJobStartExperiment = { ...experiment, state: EXPERIMENT_STATE.INACTIVE };
 
 export const scheduleJobEndExperiment = {
   ...experiment,

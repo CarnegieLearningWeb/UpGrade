@@ -6,10 +6,13 @@ import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobSe
 import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
+import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
+import { EXPERIMENT_STATE } from 'ees_types';
 
 export default async function StartExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
+  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
   const userService = Container.get<UserService>(UserService);
 
@@ -21,12 +24,30 @@ export default async function StartExperiment(): Promise<void> {
 
   // create experiment
   await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
         state: experimentObject.state,
+        postExperimentRule: experimentObject.postExperimentRule,
+        assignmentUnit: experimentObject.assignmentUnit,
+        consistencyRule: experimentObject.consistencyRule,
+      }),
+    ])
+  );
+
+  // change experiment status to Enrolling
+  const experimentId = experiments[0].id;
+  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, experiments[0].startOn);
+
+  // fetch experiment
+  experiments = await experimentService.find();
+  expect(experiments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        name: experimentObject.name,
+        state: EXPERIMENT_STATE.SCHEDULED,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,

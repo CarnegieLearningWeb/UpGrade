@@ -21,18 +21,20 @@ export class ScheduledJobService {
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async startExperiment(id: string): Promise<void> {
+  public async startExperiment(id: string): Promise<any> {
     const scheduledJob = await this.scheduledJobRepository.findOne(id);
-    const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
-    if (scheduledJob && experiment) {
-      // TODO use system user to Update State
-      // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-      // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING);
+    if (scheduledJob && scheduledJob.experimentId) {
+      const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
+      if (scheduledJob && experiment) {
+        // TODO use system user to Update State
+        // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+        // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING);
+      }
     }
-    return;
+    return {};
   }
 
-  public async endExperiment(id: string): Promise<void> {
+  public async endExperiment(id: string): Promise<any> {
     const scheduledJob = await this.scheduledJobRepository.findOne(id);
     const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
     if (scheduledJob && experiment) {
@@ -40,7 +42,7 @@ export class ScheduledJobService {
       // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
       // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
     }
-    return;
+    return {};
   }
 
   public getAllStartExperiment(): Promise<ScheduledJob[]> {
