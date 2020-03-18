@@ -6,7 +6,6 @@ import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
 import { EXPERIMENT_STATE } from 'ees_types';
-import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
@@ -17,7 +16,6 @@ export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const analyticsService = Container.get<AnalyticsService>(AnalyticsService);
   const checkService = Container.get<CheckService>(CheckService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
@@ -94,7 +92,7 @@ export default async function testCase(): Promise<void> {
 
   // change experiment state to scheduled
   const date = new Date();
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, date);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, date);
 
   // user 1 logs in experiment
   // get all experiment condition for user 1
@@ -119,7 +117,7 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], customStats);
 
   // change experiment state to enrolling
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   // check state
   stats = await analyticsService.getStats([experimentId]);
@@ -233,7 +231,7 @@ export default async function testCase(): Promise<void> {
   checkStatsObject(stats[0], { ...customStats });
 
   // change experiment state to enrolling
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1);

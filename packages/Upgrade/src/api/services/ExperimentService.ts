@@ -9,10 +9,10 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection } from 'typeorm';
+import { getConnection, In } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE } from 'ees_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
 import { GroupAssignmentRepository } from '../repositories/GroupAssignmentRepository';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
@@ -22,6 +22,9 @@ import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 import { IUniqueIds } from '../../types/index';
+import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
+import { PreviewUserService } from './PreviewUserService';
 
 @Service()
 export class ExperimentService {
@@ -36,7 +39,8 @@ export class ExperimentService {
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
-
+    @OrmRepository() private userRepository: ExperimentUserRepository,
+    public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -177,6 +181,115 @@ export class ExperimentService {
     const partitionsUniqueIdentifier = this.experimentPartitionRepository.getAllUniqueIdentifier();
     const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
     return { conditionIds, partitionsIds };
+  }
+
+  public async updateState(
+    experimentId: string,
+    state: EXPERIMENT_STATE,
+    user: User,
+    scheduleDate?: Date
+  ): Promise<Experiment> {
+    if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
+      await this.populateExclusionTable(experimentId, state);
+    }
+
+    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
+    let data: AuditLogData = {
+      experimentId,
+      experimentName: oldExperiment.name,
+      previousState: oldExperiment.state,
+      newState: state,
+    };
+    if (scheduleDate) {
+      data = { ...data, startOn: scheduleDate };
+    }
+    // add experiment audit logs
+    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
+
+    // update experiment
+    const updatedState = await this.experimentRepository.updateState(experimentId, state, scheduleDate);
+
+    // updating experiment schedules here
+    await this.updateExperimentSchedules(experimentId);
+
+    return updatedState;
+  }
+
+  private async updateExperimentSchedules(experimentId: string): Promise<void> {
+    const experiment = await this.experimentRepository.findByIds([experimentId]);
+    if (experiment.length > 0) {
+      await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
+    }
+  }
+
+  private async populateExclusionTable(experimentId: string, state: EXPERIMENT_STATE): Promise<void> {
+    // query all sub-experiment
+    const experiment: Experiment = await this.experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['partitions'],
+    });
+
+    const { consistencyRule, group } = experiment;
+    const subExperiments = experiment.partitions.map(({ id }) => {
+      return id;
+    });
+
+    // query all monitored experiment point for this experiment Id
+    let monitoredExperimentPoints: MonitoredExperimentPoint[] = [];
+    if (state === EXPERIMENT_STATE.ENROLLING) {
+      monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find({
+        where: { id: In(subExperiments) },
+      });
+    } else if (state === EXPERIMENT_STATE.PREVIEW) {
+      // get all preview usersData
+      const previewUsers = await this.previewUserService.find();
+
+      const previewUsersIds = previewUsers.map(user => user.id);
+
+      if (previewUsersIds.length > 0) {
+        monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findForExperimentIdsUserIds(
+          subExperiments,
+          previewUsersIds
+        );
+      }
+    }
+    const uniqueUserIds = new Set(
+      monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.userId)
+    );
+
+    // end the loop if no users
+    if (uniqueUserIds.size === 0) {
+      return;
+    }
+
+    // populate Individual and Group Exclusion Table
+    if (consistencyRule === CONSISTENCY_RULE.GROUP) {
+      // query all user information
+      const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
+      const groupsToExclude = new Set(
+        userDetails.map(userDetail => {
+          return userDetail.workingGroup[group];
+        })
+      );
+
+      // group exclusion documents
+      const groupExclusionDocs = [...groupsToExclude].map(groupId => {
+        return {
+          experimentId,
+          groupId,
+        };
+      });
+
+      await this.groupExclusionRepository.saveRawJson(groupExclusionDocs);
+    }
+
+    if (consistencyRule === CONSISTENCY_RULE.INDIVIDUAL || consistencyRule === CONSISTENCY_RULE.GROUP) {
+      // individual exclusion document
+      const individualExclusionDocs = [...uniqueUserIds].map(userId => {
+        return { userId, experimentId };
+      });
+      await this.individualExclusionRepository.saveRawJson(individualExclusionDocs);
+    }
   }
 
   private async updateExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {

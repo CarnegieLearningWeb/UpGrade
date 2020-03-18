@@ -40,7 +40,7 @@ export default async function GroupExclude(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn);
 
   // fetch experiment
   experiments = await experimentService.find();

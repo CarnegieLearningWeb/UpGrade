@@ -22,7 +22,6 @@ import { ExperimentPartition } from '../models/ExperimentPartition';
 import { IUniqueIds } from '../../types/index';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
-import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 const validator = new Validator();
 
 interface ExperimentPaginationInfo {
@@ -120,10 +119,7 @@ interface ExperimentPaginationInfo {
 @Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(
-    public experimentService: ExperimentService,
-    public experimentAssignmentService: ExperimentAssignmentService
-  ) {}
+  constructor(public experimentService: ExperimentService) {}
   /**
    * @swagger
    * /experiments:
@@ -438,7 +434,7 @@ export class ExperimentController {
       });
     }
 
-    return this.experimentAssignmentService.updateState(
+    return this.experimentService.updateState(
       experiment.experimentId,
       experiment.state,
       currentUser,
