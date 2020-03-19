@@ -31,6 +31,9 @@ import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
 import { NoPreviewUser, PreviewExperimentWithPreviewUser } from './PreviewExperiment/index';
 import { Scenario9, Scenario10 } from './ExperimentAssignment/index';
+import Container from 'typedi';
+import { AWSService } from '../../src/api/services/AWSService';
+import AWSServiceMock from './mockData/AWSServiceMock';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -41,6 +44,7 @@ describe('Integration Tests', () => {
   beforeAll(async () => {
     configureLogger();
     connection = await createDatabaseConnection();
+    Container.set(AWSService, new AWSServiceMock());
   });
 
   beforeEach(async () => {

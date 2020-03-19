@@ -46,7 +46,7 @@ export class ExperimentAssignmentService {
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
-    @OrmRepository()
+
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
     public scheduledJobService: ScheduledJobService,
