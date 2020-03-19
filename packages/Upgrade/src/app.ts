@@ -10,6 +10,7 @@ import { publicLoader } from './loaders/publicLoader';
 import { iocLoader } from './loaders/iocLoader';
 import { typeormLoader } from './loaders/typeormLoader';
 import { swaggerLoader } from './loaders/swaggerLoader';
+import { CreateSystemUser } from './init/seed/systemUser';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
@@ -20,6 +21,10 @@ const log = new Logger(__filename);
 
 bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
-}).then(() => {
-  banner(log);
-});
+})
+  .then(() => {
+    return CreateSystemUser();
+  })
+  .then(() => {
+    banner(log);
+  });

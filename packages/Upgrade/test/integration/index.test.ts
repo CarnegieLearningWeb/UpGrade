@@ -34,6 +34,8 @@ import { Scenario9, Scenario10 } from './ExperimentAssignment/index';
 import Container from 'typedi';
 import { AWSService } from '../../src/api/services/AWSService';
 import AWSServiceMock from './mockData/AWSServiceMock';
+import { CreateSystemUser } from '../../src/init/seed/systemUser';
+import { SystemUserCreated } from './SystemUser/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -44,11 +46,16 @@ describe('Integration Tests', () => {
   beforeAll(async () => {
     configureLogger();
     connection = await createDatabaseConnection();
+
+    // Mocking AWS Service
     Container.set(AWSService, new AWSServiceMock());
   });
 
   beforeEach(async () => {
     await synchronizeDatabase(connection);
+
+    // create System Users
+    await CreateSystemUser();
   });
 
   // -------------------------------------------------------------------------
@@ -60,6 +67,11 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+  test('System User is created', async done => {
+    await SystemUserCreated();
+    done();
+  });
+
   test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async done => {
     await Scenario1();
     done();

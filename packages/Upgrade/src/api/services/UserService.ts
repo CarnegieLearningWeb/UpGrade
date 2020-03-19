@@ -15,4 +15,8 @@ export class UserService {
     this.log.info('Create a new user => ', user.toString());
     return this.userRepository.save(user);
   }
+
+  public findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
 }
