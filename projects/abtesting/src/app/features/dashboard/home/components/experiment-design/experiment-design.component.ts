@@ -77,7 +77,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     this.allPartitionsSub = this.experimentService.allPartitions$.subscribe((partitions: any) => {
-      this.allPartitions = partitions.map(partition => partition.point);
+      this.allPartitions = partitions.map(partition =>
+        partition.name ? partition.point + partition.name : partition.point
+      );
     });
     this.uniqueIdentifiersSub = this.experimentService.uniqueIdentifiers$.subscribe((identifiers: any) => {
       this.allUniqueIdentifiers = !!identifiers ? [...identifiers.conditionIds, ...identifiers.partitionsIds] : [];
@@ -102,6 +104,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       });
     }
     this.updateView();
+
+    this.experimentDesignForm.get('partitions').valueChanges.subscribe(newValues => {
+      this.validatePartitionNames(newValues);
+    });
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, twoCharacterId = null) {
@@ -146,10 +152,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  validatePartitionNames() {
+  validatePartitionNames(partitions: any) {
     this.partitionPointErrors = [];
-    const { partitions } = this.experimentDesignForm.value;
-
     // Used to differentiate errors
     const alreadyExistedPartitions = [];
     const duplicatePartitions = [];
@@ -157,7 +161,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     // Used for updating existing experiment
     if (this.experimentInfo) {
         this.experimentInfo.partitions.forEach(partition => {
-          const partitionPointIndex = this.allPartitions.indexOf(partition.point);
+          const partitionInfo = partition.name ? partition.point + partition.name : partition.point;
+          const partitionPointIndex = this.allPartitions.indexOf(partitionInfo);
           if (partitionPointIndex !== -1) {
             this.allPartitions.splice(partitionPointIndex, 1);
           }
@@ -165,11 +170,17 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     partitions.forEach((partition, index) => {
-      if (this.allPartitions.indexOf(partition.point) !== -1 && alreadyExistedPartitions.indexOf(partition.point) === -1) {
-        alreadyExistedPartitions.push(partition.point);
+      const partitionInfo = partition.name ? partition.point + partition.name : partition.point;
+      if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
+        alreadyExistedPartitions.indexOf(partition.name ? partition.point + ' and ' + partition.name : partition.point) === -1) {
+        alreadyExistedPartitions.push(partition.name ? partition.point + ' and ' + partition.name : partition.point);
       }
-      if (partitions.find((value, partitionIndex) => value.point === partition.point && partitionIndex !== index && duplicatePartitions.indexOf(partition.point) === -1)) {
-        duplicatePartitions.push(partition.point);
+      if (partitions.find((value, partitionIndex) =>
+        value.point === partition.point &&
+        value.name === partition.name &&
+        partitionIndex !== index &&
+        duplicatePartitions.indexOf(partition.name ? partition.point + ' and ' + partition.name : partition.point) === -1)) {
+        duplicatePartitions.push(partition.name ? partition.point + ' and ' + partition.name : partition.point);
       }
     });
 
@@ -192,8 +203,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.validatePartitionNames();
-        if (!this.partitionPointErrors.length) {
+        if (!this.partitionPointErrors.length && this.experimentDesignForm.valid) {
+          this.experimentDesignForm.value.partitions = this.experimentDesignForm.value.partitions.map((partition =>
+            partition.name ? partition : this.removePartitionName(partition)
+          ))
           const experimentDesignFormData = {
             ...this.experimentDesignForm.value
           };
@@ -212,6 +225,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
       }
+  }
+
+  removePartitionName(partition) {
+    delete partition.name;
+    return partition;
   }
 
 

@@ -28,11 +28,10 @@
 
       <logs-timeline class="timeline" [logData]="logData.value" [logType]="LogType.ERROR_LOG"></logs-timeline>
     </div>
-
-    <ng-template #zeroStateAudit>
-      <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
-    </ng-template>
   </ng-container>
+  <ng-template #zeroStateAudit>
+    <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
+  </ng-template>
 
   <div class="spinner" *ngIf="isErrorLogLoading$ | async">
     <mat-spinner diameter="60" value="60"></mat-spinner>

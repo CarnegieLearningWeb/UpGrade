@@ -1,11 +1,4 @@
-import {
-  Component,
-  ChangeDetectionStrategy,
-  Output,
-  EventEmitter,
-  OnInit,
-  Input
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'ees_types';
 import {
@@ -28,14 +21,9 @@ import * as find from 'lodash.find';
 })
 export class ExperimentOverviewComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;
-  @Output() emitExperimentDialogEvent = new EventEmitter<
-    NewExperimentDialogData
-  >();
+  @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   overviewForm: FormGroup;
-  unitOfAssignments = [
-    { value: ASSIGNMENT_UNIT.INDIVIDUAL },
-    { value: ASSIGNMENT_UNIT.GROUP }
-  ];
+  unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 
   groupTypes = [
     { value: GroupTypes.CLASS },
@@ -61,23 +49,33 @@ export class ExperimentOverviewComponent implements OnInit {
   constructor(private _formBuilder: FormBuilder) {}
 
   ngOnInit() {
-    this.overviewForm = this._formBuilder.group({
-      experimentName: [null, Validators.required],
-      description: [null],
-      unitOfAssignment: [null, Validators.required],
-      groupType: [null],
-      customGroupName: [null],
-      consistencyRule: [null, Validators.required]
-    }, { validators: ExperimentFormValidators.validateExperimentOverviewForm });
+    this.overviewForm = this._formBuilder.group(
+      {
+        experimentName: [null, Validators.required],
+        description: [null],
+        unitOfAssignment: [null, Validators.required],
+        groupType: [null],
+        customGroupName: [null],
+        consistencyRule: [null, Validators.required]
+      },
+      { validators: ExperimentFormValidators.validateExperimentOverviewForm }
+    );
 
     this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
+      this.overviewForm.get('consistencyRule').reset();
       switch (assignmentUnit) {
         case ASSIGNMENT_UNIT.INDIVIDUAL:
           this.overviewForm.get('groupType').disable();
           this.overviewForm.get('groupType').reset();
+          this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
           break;
         case ASSIGNMENT_UNIT.GROUP:
           this.overviewForm.get('groupType').enable();
+          this.consistencyRules = [
+            { value: CONSISTENCY_RULE.INDIVIDUAL },
+            { value: CONSISTENCY_RULE.GROUP },
+            { value: CONSISTENCY_RULE.EXPERIMENT }
+          ];
           break;
       }
     });
@@ -93,7 +91,7 @@ export class ExperimentOverviewComponent implements OnInit {
         customGroupName,
         consistencyRule: this.experimentInfo.consistencyRule
       });
-      this.experimentTags = this.experimentInfo.tags
+      this.experimentTags = this.experimentInfo.tags;
     }
   }
 
@@ -101,8 +99,10 @@ export class ExperimentOverviewComponent implements OnInit {
     if (!this.experimentInfo.group) {
       return { groupType: null, customGroupName: null };
     }
-    const result = find(this.groupTypes, (type) => type.value === this.experimentInfo.group);
-    return result ? { groupType: result.value } : { groupType: GroupTypes.OTHER, customGroupName: this.experimentInfo.group };
+    const result = find(this.groupTypes, type => type.value === this.experimentInfo.group);
+    return result
+      ? { groupType: result.value }
+      : { groupType: GroupTypes.OTHER, customGroupName: this.experimentInfo.group };
   }
 
   addTag(event: MatChipInputEvent): void {
@@ -130,23 +130,32 @@ export class ExperimentOverviewComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        this.emitExperimentDialogEvent.emit({ type: eventType })
+        this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        const { experimentName, description, unitOfAssignment, groupType, customGroupName, consistencyRule } = this.overviewForm.value;
-        const overviewFormData = {
-          name: experimentName,
-          description: description || '',
-          consistencyRule: consistencyRule,
-          assignmentUnit: unitOfAssignment,
-          group: groupType ?  groupType === GroupTypes.OTHER ? customGroupName : groupType : null,
-          tags: this.experimentTags
-        };
-        this.emitExperimentDialogEvent.emit({
-          type: eventType,
-          formData: overviewFormData,
-          path: NewExperimentPaths.EXPERIMENT_OVERVIEW
-        });
+        if (this.overviewForm.valid) {
+          const {
+            experimentName,
+            description,
+            unitOfAssignment,
+            groupType,
+            customGroupName,
+            consistencyRule
+          } = this.overviewForm.value;
+          const overviewFormData = {
+            name: experimentName,
+            description: description || '',
+            consistencyRule: consistencyRule,
+            assignmentUnit: unitOfAssignment,
+            group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
+            tags: this.experimentTags
+          };
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: overviewFormData,
+            path: NewExperimentPaths.EXPERIMENT_OVERVIEW
+          });
+        }
         break;
     }
   }

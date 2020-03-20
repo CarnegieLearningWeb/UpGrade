@@ -60,6 +60,21 @@
 
   </mat-radio-group>
 </form>
+<span
+  class="validation-message"
+  *ngIf="experimentScheduleForm.errors?.dateOfExperimentEndError"
+  [innerHTML]="'home.new-experiment.schedule-date-and-time-error.text' | translate"
+></span>
+<span
+  class="validation-message"
+  *ngIf="experimentScheduleForm.errors?.endCriteriaError"
+  [innerHTML]="'home.new-experiment.schedule-end-criteria-error.text' | translate"
+></span>
+<span
+  class="validation-message"
+  *ngIf="experimentScheduleForm.errors?.selectionError"
+  [innerHTML]="'home.new-experiment.schedule-selection-error.text' | translate"
+></span>
 
 <div class="button-container">
   <button
@@ -77,11 +92,8 @@
       {{ 'global.cancel.text' | translate }}
     </button>
     <button
-      matStepperNext
       mat-raised-button
       class="default-button"
-      [ngClass]="{'default-button--disabled': !this.experimentScheduleForm.valid}"
-      [disabled]="!this.experimentScheduleForm.valid"
       (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
     >
       {{ 'global.next.text' | translate }}

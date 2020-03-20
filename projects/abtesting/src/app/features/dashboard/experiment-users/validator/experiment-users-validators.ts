@@ -22,6 +22,7 @@ export class ExperimentUserValidators {
     return null;
   }
 
+  // TODO: Verify whether to keep or to remove
   static validatePreviewUserForm(controls: AbstractControl): { [key: string]: any } | null {
     const userGroups = controls.get('userGroups').value;
     if (userGroups.length) {

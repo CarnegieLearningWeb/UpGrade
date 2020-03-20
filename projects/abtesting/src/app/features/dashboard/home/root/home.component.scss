@@ -7,16 +7,18 @@
   .title {
     margin-bottom: 0;
     color: var(--black-2);
-    font-family: OpenSans-Bold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-xxxxx-large);
+    font-weight: 700;
   }
 
   .subtitle {
     display: block;
     margin-bottom: 40px;
     color: var(--grey-3);
-    font-family: OpenSans-Regular;
+    font-family: 'Open Sans';
     font-size: var(--text-size-normal);
+    font-weight: 400;
   }
 
   .no-experiment-container {
@@ -33,15 +35,17 @@
       text-align: center;
       line-height: 60px;
       color: var(--black-2);
-      font-family: OpenSans-SemiBold;
+      font-family: 'Open Sans';
       font-size: var(--text-size-xxx-large);
+      font-weight: 600;
     }
 
     button {
       margin-top: 30px;
       background-color: var(--blue);
       color: var(--white);
-      font-family: OpenSans-Bold;
+      font-family: 'Open Sans';
+      font-weight: 700;
 
       .icon {
         margin-right: 5px;

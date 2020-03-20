@@ -4,8 +4,9 @@
   mat-checkbox,
   mat-radio-button,
   mat-form-field {
-    font-family: OpenSans-SemiBold;
+    font-family: 'Open Sans';
     font-size: var(--text-size-normal);
+    font-weight: 600;
   }
 
   .date-picker-container {
@@ -36,6 +37,13 @@
       }
     }
   }
+}
+
+.validation-message {
+  display: block;
+  padding: 5px 0 0 10px;
+  color: var(--red);
+  font-size: var(--text-size-small);
 }
 
 .button-container {

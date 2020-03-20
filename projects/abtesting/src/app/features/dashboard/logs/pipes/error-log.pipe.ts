@@ -18,6 +18,9 @@ export class ErrorLogPipe implements PipeTransform {
         return type === 'icon' ? 'database' : 'red';
       case SERVER_ERROR.USER_NOT_FOUND:
       case SERVER_ERROR.REPORTED_ERROR:
+      case SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED:
+      case SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED:
+      case SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP:
         return type === 'icon' ? 'user-2' : 'yellow';
       default:
         return type === 'icon' ? 'database' : 'red';

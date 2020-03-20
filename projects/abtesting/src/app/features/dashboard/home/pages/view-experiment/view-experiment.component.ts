@@ -7,6 +7,7 @@ import { NewExperimentComponent } from '../../components/modal/new-experiment/ne
 import { EXPERIMENT_STATE, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -54,8 +55,15 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteExperiment(experimentId: string) {
-    this.experimentService.deleteExperiment(experimentId);
+  deleteExperiment() {
+    const dialogRef = this.dialog.open(DeleteExperimentComponent, {
+      width: '300px',
+      data: { experimentName: this.experiment.name, experimentId: this.experiment.id }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after deleting experiment
+    });
   }
 
   get DialogType() {

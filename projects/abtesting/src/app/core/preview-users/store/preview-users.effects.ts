@@ -25,9 +25,9 @@ export class PreviewUsersEffects {
   addPreviewUser$ = createEffect(
     () => this.actions$.pipe(
       ofType(previewUserActions.actionAddPreviewUser),
-      map(action => ({ id: action.id, groupType: action.groupType })),
-      filter(({ id, groupType }) => !!id && !!groupType),
-      switchMap(({ id, groupType }) => this.previewUserDataService.addPreviewUser(id, groupType).pipe(
+      map(action => ({ id: action.id })),
+      filter(({ id }) => !!id),
+      switchMap(({ id }) => this.previewUserDataService.addPreviewUser(id).pipe(
         map((data: PreviewUsers) => previewUserActions.actionAddPreviewUserSuccess({ data })),
         catchError(error => [previewUserActions.actionAddPreviewUserFailure()])
       ))
