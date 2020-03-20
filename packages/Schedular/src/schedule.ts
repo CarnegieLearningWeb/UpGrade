@@ -1,12 +1,12 @@
 import 'source-map-support/register';
-import request from 'request-promise';
+import fetch from 'node-fetch';
 
 export const schedule = async event => {
   try {
     console.log('Event data ', event);
     const scheduleId = event.body.id;
-    await request.post({
-      url: event.url,
+    await fetch(event.url, {
+      method: 'post',
       headers: {
         'Content-Type': 'application/json'
       },
