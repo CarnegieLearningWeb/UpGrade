@@ -6,7 +6,7 @@ export const individualAssignmentExperiment = {
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
-  state: EXPERIMENT_STATE.SCHEDULED,
+  state: EXPERIMENT_STATE.INACTIVE,
 };
 
 export const individualAssignmentExperimentConsistencyRuleExperiemnt = {
@@ -15,7 +15,7 @@ export const individualAssignmentExperimentConsistencyRuleExperiemnt = {
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.REVERT,
   revertTo: experiment.conditions[0].id,
-  state: EXPERIMENT_STATE.SCHEDULED,
+  state: EXPERIMENT_STATE.INACTIVE,
 };
 
 export const groupAssignmentWithGroupConsistencyExperiment = {
@@ -23,7 +23,7 @@ export const groupAssignmentWithGroupConsistencyExperiment = {
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
-  state: EXPERIMENT_STATE.SCHEDULED,
+  state: EXPERIMENT_STATE.INACTIVE,
 };
 
 export const groupAssignmentWithIndividulaConsistencyExperiment = {
@@ -31,7 +31,7 @@ export const groupAssignmentWithIndividulaConsistencyExperiment = {
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
-  state: EXPERIMENT_STATE.SCHEDULED,
+  state: EXPERIMENT_STATE.INACTIVE,
 };
 
 export const groupAssignmentWithExperimentConsistencyExperiment = {
@@ -39,7 +39,7 @@ export const groupAssignmentWithExperimentConsistencyExperiment = {
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
-  state: EXPERIMENT_STATE.SCHEDULED,
+  state: EXPERIMENT_STATE.INACTIVE,
 };
 
 export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment = {
@@ -74,7 +74,7 @@ export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssign
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
-export const scheduleJobStartExperiment = { ...experiment, state: EXPERIMENT_STATE.INACTIVE };
+export const scheduleJobStartExperiment = { ...experiment, state: EXPERIMENT_STATE.SCHEDULED };
 
 export const scheduleJobEndExperiment = {
   ...experiment,

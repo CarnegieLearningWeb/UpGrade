@@ -10,7 +10,5 @@ export const iocLoader: MicroframeworkLoader = (settings: MicroframeworkSettings
    */
   routingUseContainer(Container);
   ormUseContainer(Container);
-
-  // TODO why do we need class validator and not for class transformer
   classValidatorUseContainer(Container);
 };

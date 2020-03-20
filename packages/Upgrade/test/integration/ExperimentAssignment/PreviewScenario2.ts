@@ -1,7 +1,6 @@
 import { Container } from 'typedi';
 import { individualAssignmentExperimentConsistencyRuleExperiemnt } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
@@ -14,7 +13,6 @@ import { previewUsers } from '../mockData/previewUsers/index';
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const userService = Container.get<UserService>(UserService);
   const previewService = Container.get<PreviewUserService>(PreviewUserService);
 
@@ -57,7 +55,7 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Preview
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user);
 
   // fetch experiment
   experiments = await experimentService.find();
@@ -98,7 +96,7 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   // fetch experiment
   experiments = await experimentService.find();

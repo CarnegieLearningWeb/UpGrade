@@ -81,6 +81,7 @@
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.8.0",
     "serve-favicon": "^2.5.0",
+    "supertest": "^4.0.2",
     "swagger-jsdoc": "^3.4.0",
     "swagger-ui-express": "^4.1.2",
     "ts-jest": "^24.1.0",

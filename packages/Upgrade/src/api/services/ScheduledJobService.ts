@@ -5,19 +5,16 @@ import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
 import { EXPERIMENT_STATE } from 'ees_types';
-import AWS from 'aws-sdk';
 import { env } from '../../env';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-
-const stepFunction = new AWS.StepFunctions({
-  region: env.aws.region,
-});
+import { AWSService } from './AWSService';
 
 @Service()
 export class ScheduledJobService {
   constructor(
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
     @OrmRepository() private experimentRepository: ExperimentRepository,
+    private awsService: AWSService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -100,6 +97,7 @@ export class ScheduledJobService {
       const endExperimentDoc = scheduledJobs.find(({ type }) => {
         return type === SCHEDULE_TYPE.END_EXPERIMENT;
       });
+
       // create end schedule of STATE is not enrollmentComplete and date changes
       if (experimentEndCondition) {
         if (!endExperimentDoc || (endOn && endExperimentDoc.timeStamp !== endOn)) {
@@ -129,7 +127,7 @@ export class ScheduledJobService {
         await this.stopExperimentSchedular(endExperimentDoc.executionArn);
       }
     } catch (error) {
-      console.log('Error in experiment schedular ', error.message);
+      this.log.error('Error in experiment schedular ', error.message);
     }
   }
 
@@ -144,10 +142,10 @@ export class ScheduledJobService {
         url,
       }),
     };
-    return await stepFunction.startExecution(experimentSchedularStateMachine).promise();
+    return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
   }
 
   private async stopExperimentSchedular(executionArn: string): Promise<any> {
-    return await stepFunction.stopExecution({ executionArn }).promise();
+    return this.awsService.stepFunctionStopExecution({ executionArn });
   }
 }

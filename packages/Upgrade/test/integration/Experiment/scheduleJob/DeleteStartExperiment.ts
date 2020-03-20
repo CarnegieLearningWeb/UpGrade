@@ -48,26 +48,26 @@ export default async function DeleteStartExperiment(): Promise<void> {
     ])
   );
 
-  const updatedExperiment = {
-    ...experiments[0],
-    state: EXPERIMENT_STATE.ENROLLING,
-  };
+  // const updatedExperiment = {
+  //   ...experiments[0],
+  //   state: EXPERIMENT_STATE.ENROLLING,
+  // };
 
-  await experimentService.update(updatedExperiment.id, updatedExperiment, user);
-  experiments = await experimentService.find();
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-      }),
-    ])
-  );
+  // await experimentService.update(updatedExperiment.id, updatedExperiment, user);
+  // experiments = await experimentService.find();
+  // expect(experiments).toEqual(
+  //   expect.arrayContaining([
+  //     expect.objectContaining({
+  //       name: experimentObject.name,
+  //       state: EXPERIMENT_STATE.ENROLLING,
+  //       postExperimentRule: experimentObject.postExperimentRule,
+  //       assignmentUnit: experimentObject.assignmentUnit,
+  //       consistencyRule: experimentObject.consistencyRule,
+  //     }),
+  //   ])
+  // );
 
-  await new Promise(r => setTimeout(r, 1000));
-  startExperiment = await scheduledJobService.getAllStartExperiment();
-  expect(startExperiment.length).toEqual(0);
+  // await new Promise(r => setTimeout(r, 1000));
+  // startExperiment = await scheduledJobService.getAllStartExperiment();
+  // expect(startExperiment.length).toEqual(0);
 }

@@ -6,14 +6,12 @@ import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { AuditService } from '../../../../src/api/services/AuditService';
-import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'ees_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 
 export default async function UpdateExperimentState(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const auditLogService = Container.get<AuditService>(AuditService);
   const userService = Container.get<UserService>(UserService);
@@ -81,7 +79,7 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentAssignmentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
   await new Promise(r => setTimeout(r, 1000));
 

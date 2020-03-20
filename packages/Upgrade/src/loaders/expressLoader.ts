@@ -1,29 +1,11 @@
 import { Application } from 'express';
 import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
-import { createExpressServer } from 'routing-controllers';
-
 import { env } from '../env';
-import { authorizationChecker } from '../auth/authorizationChecker';
-import { currentUserChecker } from '../auth/currentUserChecker';
+import app from './app';
 
 export const expressLoader: MicroframeworkLoader = (settings: MicroframeworkSettings | undefined) => {
   if (settings) {
-    const connection = settings.getData('connection');
-    const expressApp: Application = createExpressServer({
-      cors: true,
-      classTransformer: true,
-      defaultErrorHandler: false,
-      routePrefix: env.app.routePrefix,
-      controllers: env.app.dirs.controllers,
-      middlewares: env.app.dirs.middlewares,
-      interceptors: env.app.dirs.interceptors,
-
-      /**
-       * Authorization features
-       */
-      authorizationChecker: authorizationChecker(connection),
-      currentUserChecker,
-    });
+    const expressApp: Application = app;
 
     // Run application to listen on given port
     if (!env.isTest) {
