@@ -10,4 +10,20 @@ export namespace Interfaces {
     data?: any;
     message?: any;
   }
+
+  export interface IUser {
+    id: string;
+    group: Map<string, Array<string>>;
+    workingGroup: Map<string, string>;
+  }
+
+  export interface IMarkExperimentPoint {
+    experimentId: string;
+    experimentPoint: string;
+    userId: string;
+  }
+
+  export interface IGetExperimentCondition {
+    condition: string;
+  }
 }
