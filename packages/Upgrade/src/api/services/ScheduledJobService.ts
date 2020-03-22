@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import Container, { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
@@ -8,12 +8,16 @@ import { EXPERIMENT_STATE } from 'ees_types';
 import { env } from '../../env';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
+import { UserRepository } from '../repositories/UserRepository';
+import { systemUserDoc } from '../../init/seed/systemUser';
+import { ExperimentService } from './ExperimentService';
 
 @Service()
 export class ScheduledJobService {
   constructor(
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
     @OrmRepository() private experimentRepository: ExperimentRepository,
+    @OrmRepository() private userRepository: UserRepository,
     private awsService: AWSService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -23,9 +27,9 @@ export class ScheduledJobService {
     if (scheduledJob && scheduledJob.experimentId) {
       const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
       if (scheduledJob && experiment) {
-        // TODO use system user to Update State
-        // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-        // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING);
+        const systemUser = await this.userRepository.findOne({ id: systemUserDoc.id });
+        const experimentService = Container.get<ExperimentService>(ExperimentService);
+        return experimentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING, systemUser);
       }
     }
     return {};
@@ -35,9 +39,10 @@ export class ScheduledJobService {
     const scheduledJob = await this.scheduledJobRepository.findOne(id);
     const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
     if (scheduledJob && experiment) {
-      // TODO use system user to Update State
-      // const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-      // this.experimentAssignmentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE);
+      // get system user
+      const systemUser = await this.userRepository.findOne({ id: systemUserDoc.id });
+      const experimentService = Container.get<ExperimentService>(ExperimentService);
+      return experimentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, systemUser);
     }
     return {};
   }
