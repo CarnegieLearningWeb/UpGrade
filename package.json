@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "es6-promise": "^4.2.8",
-    "isomorphic-fetch": "^2.2.1"
+    "isomorphic-fetch": "^2.2.1",
+    "ees_types": "github:CarnegieLearningWeb/educational-experiment-types#master"
   }
 }

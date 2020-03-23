@@ -1,30 +1,19 @@
 import DataService from './common/dataService';
-import * as responseError from './common/responseError';
-import { Interfaces, Types } from './identifiers';
+import { Interfaces } from './identifiers';
 
-export default function getExperimentCondition(experimentPoint: string, partitionId?: string): Interfaces.IResponse {
+export default function getExperimentCondition(experimentPoint: string, partitionId?: string): Interfaces.IGetExperimentCondition {
   try {
     const experimentConditionData = DataService.getData('experimentConditionData');
     if (experimentConditionData) {
       const result = experimentConditionData.filter(data =>
         partitionId ? (data.name === partitionId && data.point === experimentPoint) : (data.point === experimentPoint && !data.name)
       );
-      
-      return {
-        status: true,
-        data: result,
-        message: Types.ResponseMessages.SUCCESS
-      };
+
+      return result.length ? result[0] : null;
     } else {
-        return {
-          status: false,
-          message: Types.ResponseMessages.FAILED
-        };
+      return null;
     }
-  } catch (e) {
-    throw new responseError.HttpsError(
-      responseError.FunctionsErrorCode.unknown,
-      e.message
-    );
+  } catch (error) {
+    throw new Error(error);
   }
 }

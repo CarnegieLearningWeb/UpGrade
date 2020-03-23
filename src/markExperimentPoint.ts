@@ -1,9 +1,8 @@
-import * as responseError from './common/responseError';
 import DataService from './common/dataService';
-import { Interfaces, Types } from './identifiers';
+import { Interfaces } from './identifiers';
 import fetchDataService from './common/fetchDataService';
 
-export default async function markExperimentPoint(experimentPoint: string, partitionId?: string): Promise<Interfaces.IResponse> {
+export default async function markExperimentPoint(experimentPoint: string, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
   try {
     const config = DataService.getData('commonConfig');
     const markExperimentPointUrl = config.api.markExperimentPoint;
@@ -19,17 +18,16 @@ export default async function markExperimentPoint(experimentPoint: string, parti
       }
     }
     const response = await fetchDataService(markExperimentPointUrl, data);
-    return response ? {
-          status: true,
-          message: Types.ResponseMessages.SUCCESS
-        } : {
-          status: false,
-          message: Types.ResponseMessages.FAILED
-        };
-  } catch (e) {
-    throw new responseError.HttpsError(
-      responseError.FunctionsErrorCode.unknown,
-      e.message
-    );
+    if (response.status) {
+      return {
+        userId,
+        experimentId: partitionId,
+        experimentPoint
+      }
+    } else {
+      throw new Error(response.message);
+    }
+  } catch (error) {
+    throw new Error(error);
   }
 }

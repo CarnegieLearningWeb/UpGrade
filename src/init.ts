@@ -1,16 +1,9 @@
-import * as responseError from './common/responseError';
 import DataService from './common/dataService';
-import { Interfaces, Types } from './identifiers';
-import validateGroupMembership from './common/validateGroupMembership';
-import validateWorkingGroup from './common/validateWorkingGroup';
+import { Interfaces } from './identifiers';
 import fetchDataService from './common/fetchDataService';
+import convertMapToObj from './common/convertMapToObj';
 
-interface UserGroup {
-  group?: any;
-  workingGroup?: any;
-}
-
-export default async function init(userId: string, hostUrl: string, groupInfo?: UserGroup): Promise<Interfaces.IResponse> {
+export default async function init(userId: string, hostUrl: string, groupInfo?: Interfaces.IUserGroup): Promise<Interfaces.IUser> {
   try {
     let isGroupMemberShipCorrect = true;
     let isWorkingGroupCorrect = true;
@@ -18,18 +11,16 @@ export default async function init(userId: string, hostUrl: string, groupInfo?: 
     DataService.setConfigData(userId, hostUrl);
 
     if (groupInfo && groupInfo.group) {
-      const res = validateGroupMembership(groupInfo.group);
-      isGroupMemberShipCorrect = res.status;
-      if (!res.status) {
-        return res;
+      isGroupMemberShipCorrect = groupInfo.group instanceof Map;
+      if (!isGroupMemberShipCorrect) {
+        throw new Error('Group type should be Map<string, Array<string>>');
       }
     }
 
     if (groupInfo && groupInfo.workingGroup) {
-      const res = validateWorkingGroup(groupInfo.workingGroup);
-      isWorkingGroupCorrect = res.status;
-      if (!res.status) {
-        return res;
+      isWorkingGroupCorrect = groupInfo.workingGroup instanceof Map;
+      if (!isWorkingGroupCorrect) {
+        throw new Error('Working group type should be Map<string, string>');
       }
     }
 
@@ -39,33 +30,40 @@ export default async function init(userId: string, hostUrl: string, groupInfo?: 
       };
 
       // Set group membership if group is passed
-      data = (groupInfo && groupInfo.group) ? {
-        ...data,
-        group: groupInfo.group
-      } : data;
+      if (groupInfo && groupInfo.group) {
+        const group = convertMapToObj(groupInfo.group);
+        data = {
+          ...data,
+          group
+        };
+        DataService.setData('group', groupInfo.group);
+      }
 
       // Set working group if working group is passed
-      data = (groupInfo && groupInfo.workingGroup) ? {
-        ...data,
-        workingGroup: groupInfo.workingGroup
-      } : data;
+      if (groupInfo && groupInfo.workingGroup) {
+        const workingGroup = convertMapToObj(groupInfo.group);
+        data = {
+          ...data,
+          workingGroup
+        };
+        DataService.setData('workingGroup', groupInfo.workingGroup);
+      }
 
       DataService.setData('experimentConditionData', null);
       const commonConfig = DataService.getData('commonConfig')
       const initUrl = commonConfig.api.init;
       const res = await fetchDataService(initUrl, data);
-      return res.status ? {
-        status: true,
-        message: Types.ResponseMessages.SUCCESS
-      } : {
-          status: false,
-          message: Types.ResponseMessages.FAILED
+      if (res.status) {
+        return {
+          id: userId,
+          group: groupInfo.group,
+          workingGroup: groupInfo.workingGroup
         }
+      } else {
+        throw new Error(res.message);
+      }
     }
-  } catch (e) {
-    throw new responseError.HttpsError(
-      responseError.FunctionsErrorCode.unknown,
-      e.message
-    );
+  } catch (error) {
+    throw new Error(error);
   }
 }
