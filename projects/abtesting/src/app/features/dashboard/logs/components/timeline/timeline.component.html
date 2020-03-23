@@ -16,7 +16,7 @@
       <ng-template #errorLogIconTemplate>
         <app-shared-icons
           class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
-          [iconType]="log.value | errorLog: 'icon'"
+          [iconType]="log.type | errorLog: 'icon'"
         ></app-shared-icons>
       </ng-template>
 
@@ -110,9 +110,12 @@
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
-                    <span class="action-msg-error">
+                    <span *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient" class="action-msg-error">
                       {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
                     </span>
+                    <ng-template #errorFromClient>
+                      {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
+                    </ng-template>
                     <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
                   <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
