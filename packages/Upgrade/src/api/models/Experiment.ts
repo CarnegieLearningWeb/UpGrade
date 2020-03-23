@@ -21,8 +21,9 @@ export enum SEARCH_KEY {
 
 export enum SORT_KEY {
   NAME = 'name',
-  STATUS = 'status',
+  STATUS = 'state',
   CREATED_AT = 'createdAt',
+  POST_EXPERIMENT_RULE = 'postExperimentRule',
 }
 
 export enum SORT_AS {

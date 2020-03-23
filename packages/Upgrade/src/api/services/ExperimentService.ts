@@ -75,7 +75,6 @@ export class ExperimentService {
         .orderBy('rank', 'DESC')
         .setParameter('query', `${searchParams.string}:*`);
     }
-
     if (sortParams) {
       queryBuilder = queryBuilder.orderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
     }
