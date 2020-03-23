@@ -25,7 +25,8 @@ export default class DataService {
         getAllExperimentConditions: `${hostURL}/api/assign`,
         markExperimentPoint: `${hostURL}/api/mark`,
         setGroupMemberShip: `${hostURL}/api/groupmembership`,
-        setWorkingGroup: `${hostURL}/api/workinggroup`
+        setWorkingGroup: `${hostURL}/api/workinggroup`,
+        failedExperimentPoint: `${hostURL}/api/failed`
       }
     };
   }

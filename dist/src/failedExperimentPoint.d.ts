@@ -1,2 +1,2 @@
 import { Interfaces } from './identifiers';
-export default function failedExperimentPoint(experimentName: string, experimentPoint: string, reason: string): Interfaces.IResponse;
+export default function failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint>;
