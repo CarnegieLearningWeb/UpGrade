@@ -8,8 +8,17 @@ export default async function getAllExperimentConditions(): Promise<IExperimentA
     const getAllExperimentConditionsUrl = commonConfig.api.getAllExperimentConditions;
     const userId = commonConfig.userId;
     const experimentConditionResponse = await fetchDataService(getAllExperimentConditionsUrl, { userId });
-    DataService.setData('experimentConditionData', experimentConditionResponse.data ? experimentConditionResponse.data : []);
     if (experimentConditionResponse.status) {
+      experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
+        return {
+          ...data,
+          assignedCondition: {
+            conditionCode: data.assignedCondition.conditionCode,
+            twoCharacterId: data.assignedCondition.twoCharacterId
+          }
+        }
+      });
+      DataService.setData('experimentConditionData', experimentConditionResponse.data ? experimentConditionResponse.data : []);
       return experimentConditionResponse.data;
     } else {
       throw new Error(experimentConditionResponse.message);
