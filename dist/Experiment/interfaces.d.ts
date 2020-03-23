@@ -23,6 +23,15 @@ export interface IExperimentEnrollmentStats {
     conditions: IConditionEnrollmentStats[];
     partitions: IPartitionEnrollmentStats[];
 }
+export interface IExperimentAssignment {
+    name: string;
+    point: string;
+    twoCharacterId: string;
+    assignedCondition: {
+        conditionCode: string;
+        twoCharacterId: string;
+    };
+}
 interface ExperimentCreatedData {
     experimentId: string;
     experimentName: string;
