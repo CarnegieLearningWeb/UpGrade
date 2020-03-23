@@ -9,17 +9,21 @@ export default async function getAllExperimentConditions(): Promise<IExperimentA
     const userId = commonConfig.userId;
     const experimentConditionResponse = await fetchDataService(getAllExperimentConditionsUrl, { userId });
     if (experimentConditionResponse.status) {
-      experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
-        return {
-          ...data,
-          assignedCondition: {
-            conditionCode: data.assignedCondition.conditionCode,
-            twoCharacterId: data.assignedCondition.twoCharacterId
+      if (Array.isArray(experimentConditionResponse.data)) {
+        experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
+          return {
+            ...data,
+            assignedCondition: {
+              conditionCode: data.assignedCondition.conditionCode,
+              twoCharacterId: data.assignedCondition.twoCharacterId
+            }
           }
-        }
-      });
-      DataService.setData('experimentConditionData', experimentConditionResponse.data ? experimentConditionResponse.data : []);
-      return experimentConditionResponse.data;
+        });
+        DataService.setData('experimentConditionData', experimentConditionResponse.data);
+        return experimentConditionResponse.data;
+      }
+      // If type is not array then it is an error
+      throw new Error(experimentConditionResponse.data);
     } else {
       throw new Error(experimentConditionResponse.message);
     }
