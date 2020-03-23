@@ -37,10 +37,12 @@ export function checkMarkExperimentPointForUser(
   experimentName: string,
   experimentPoint: string
 ): void {
+  const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
   expect(markedExperimentPoint).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+        id: `${experimentId}_${userId}`,
+        experimentId,
         userId,
       }),
     ])

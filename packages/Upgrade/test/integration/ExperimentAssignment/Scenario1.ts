@@ -1,4 +1,3 @@
-
 import { Container } from 'typedi';
 import { individualAssignmentExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';

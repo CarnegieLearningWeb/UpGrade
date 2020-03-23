@@ -6,6 +6,8 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
+import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { IExperimentAssignment } from 'ees_types';
 
 /**
  * @swagger
@@ -168,7 +170,7 @@ export class ExperimentClientController {
   public markExperimentPoint(
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: MarkExperimentValidator
-  ): any {
+  ): Promise<MonitoredExperimentPoint> {
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.experimentPoint,
@@ -208,7 +210,7 @@ export class ExperimentClientController {
   public getAllExperimentConditions(
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: ExperimentAssignmentValidator
-  ): any {
+  ): Promise<IExperimentAssignment[]> {
     return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId);
   }
 }

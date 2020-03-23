@@ -4,27 +4,6 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
-  public async findForExperimentIdsUserIds(
-    experimentIds: string[],
-    userIds: string[]
-  ): Promise<MonitoredExperimentPoint[]> {
-    return this.createQueryBuilder('monitoredPoint')
-      .where('monitoredPoint.id IN (:...experimentIds) AND monitoredPoint.userId IN (:...userIds)', {
-        experimentIds,
-        userIds,
-      })
-      .getMany()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          this.constructor.name,
-          'findForUserIds',
-          { experimentIds, userIds },
-          errorMsg
-        );
-        throw new Error(errorMsgString);
-      });
-  }
-
   public async saveRawJson(
     rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber'>
   ): Promise<MonitoredExperimentPoint> {
@@ -32,7 +11,8 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .insert()
       .into(MonitoredExperimentPoint)
       .values(rawData)
-      .onConflict(`DO NOTHING`)
+      .onConflict(`("id") DO UPDATE SET "experimentId" = :experimentId`)
+      .setParameter('experimentId', rawData.experimentId)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
@@ -40,7 +20,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         throw new Error(errorMsgString);
       });
 
-    return result.raw;
+    return result.raw.length > 0 ? result.raw[0] : {};
   }
 
   public async deleteById(ids: string[], entityManager: EntityManager): Promise<MonitoredExperimentPoint[]> {

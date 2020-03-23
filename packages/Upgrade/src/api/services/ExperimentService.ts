@@ -118,7 +118,7 @@ export class ExperimentService {
 
         // monitoredIds
         const monitoredIds = experiment.partitions.map(partition => {
-          return partition.id;
+          return `${partition.id}_${currentUser.id}`;
         });
 
         // deleting data related to experiment
@@ -238,7 +238,7 @@ export class ExperimentService {
     let monitoredExperimentPoints: MonitoredExperimentPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
       monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find({
-        where: { id: In(subExperiments) },
+        where: { experimentId: In(subExperiments) },
       });
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       // get all preview usersData
@@ -247,10 +247,13 @@ export class ExperimentService {
       const previewUsersIds = previewUsers.map(user => user.id);
 
       if (previewUsersIds.length > 0) {
-        monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findForExperimentIdsUserIds(
-          subExperiments,
-          previewUsersIds
-        );
+        const monitoredPointsToSearch = previewUsersIds.reduce((acc, userId) => {
+          const monitoredIds = subExperiments.map(id => {
+            return `${id}_${userId}`;
+          });
+          return [...acc, ...monitoredIds];
+        }, []);
+        monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findByIds(monitoredPointsToSearch);
       }
     }
     const uniqueUserIds = new Set(

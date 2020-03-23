@@ -1,7 +1,14 @@
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
-import { EXPERIMENT_STATE, CONSISTENCY_RULE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT, SERVER_ERROR } from 'ees_types';
+import {
+  EXPERIMENT_STATE,
+  CONSISTENCY_RULE,
+  POST_EXPERIMENT_RULE,
+  ASSIGNMENT_UNIT,
+  SERVER_ERROR,
+  IExperimentAssignment,
+} from 'ees_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -24,6 +31,7 @@ import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
+import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -52,7 +60,11 @@ export class ExperimentAssignmentService {
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
-  public async markExperimentPoint(userId: string, experimentPoint: string, experimentName?: string): Promise<any> {
+  public async markExperimentPoint(
+    userId: string,
+    experimentPoint: string,
+    experimentName?: string
+  ): Promise<MonitoredExperimentPoint> {
     this.log.info(
       `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
     );
@@ -85,15 +97,16 @@ export class ExperimentAssignmentService {
     }
 
     // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
-
+    const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
     // adding in monitored experiment point table
     return this.monitoredExperimentPointRepository.saveRawJson({
-      id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+      id: `${experimentId}_${userId}`,
       userId,
+      experimentId,
     });
   }
 
-  public async getAllExperimentConditions(userId: string): Promise<any> {
+  public async getAllExperimentConditions(userId: string): Promise<IExperimentAssignment[]> {
     this.log.info(`Get all experiment for User Id ${userId}`);
     const usersData: any[] = await Promise.all([
       this.experimentUserService.findOne(userId),
@@ -262,11 +275,12 @@ export class ExperimentAssignmentService {
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         const partitions = experiment.partitions.map(partition => {
-          const { name, point } = partition;
+          const { name, point, twoCharacterId } = partition;
           const conditionAssigned = assignment;
           return {
             name,
             point,
+            twoCharacterId,
             assignedCondition: conditionAssigned || {
               conditionCode: 'default',
             },

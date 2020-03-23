@@ -12,6 +12,9 @@ import { IndividualAssignment } from '../models/IndividualAssignment';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'ees_types';
+import { IndividualExclusion } from '../models/IndividualExclusion';
+import { GroupAssignment } from '../models/GroupAssignment';
+import { GroupExclusion } from '../models/GroupExclusion';
 
 @Service()
 export class AnalyticsService {
@@ -52,13 +55,7 @@ export class AnalyticsService {
     });
 
     // data for all
-    const [
-      monitoredExperimentPoints,
-      individualAssignments,
-      individualExclusions,
-      groupAssignments,
-      groupExclusions,
-    ] = await Promise.all([
+    const promiseData = await Promise.all([
       this.monitoredExperimentPointRepository.find({
         where: { id: In(experimentIdAndPoint) },
       }),
@@ -77,14 +74,11 @@ export class AnalyticsService {
       }),
     ]);
 
-    // console.log(
-    //   'All data logged',
-    //   monitoredExperimentPoints,
-    //   individualAssignments,
-    //   individualExclusions,
-    //   groupAssignments,
-    //   groupExclusions
-    // );
+    const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
+    const individualAssignments: IndividualAssignment[] = promiseData[1] as any;
+    const individualExclusions: IndividualExclusion[] = promiseData[2] as any;
+    const groupAssignments: GroupAssignment[] = promiseData[3] as any;
+    const groupExclusions: GroupExclusion[] = promiseData[4] as any;
 
     // making map of primary keys
     const mappedMonitoredExperimentPoint = new Map<string, MonitoredExperimentPoint>();
@@ -93,7 +87,7 @@ export class AnalyticsService {
 
     // mappedMonitoredExperimentPoint
     monitoredExperimentPoints.forEach(monitoredPoint => {
-      mappedMonitoredExperimentPoint.set(`${monitoredPoint.id}_${monitoredPoint.userId}`, monitoredPoint);
+      mappedMonitoredExperimentPoint.set(monitoredPoint.id, monitoredPoint);
     });
 
     // get user definition
@@ -170,7 +164,7 @@ export class AnalyticsService {
 
           const usersPartitionIncluded = monitoredExperimentPoints.filter(monitoredPoint => {
             return (
-              monitoredPoint.id === partitionId &&
+              monitoredPoint.experimentId === partitionId &&
               mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.userId}`)
             );
           });
