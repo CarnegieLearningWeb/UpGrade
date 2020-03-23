@@ -2,7 +2,8 @@ import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import * as env from '../../../../../../environments/environment';
 import {
   LogType,
-  EXPERIMENT_LOG_TYPE
+  EXPERIMENT_LOG_TYPE,
+  SERVER_ERROR
 } from '../../../../../core/logs/store/logs.model';
 import * as Convert from 'ansi-to-html';
 
@@ -23,6 +24,10 @@ export class TimelineComponent {
 
   get ExperimentLogType() {
     return EXPERIMENT_LOG_TYPE;
+  }
+
+  get ServerErrors() {
+    return SERVER_ERROR;
   }
 
   getHtmlFormedLogData(id: string, diff) {
