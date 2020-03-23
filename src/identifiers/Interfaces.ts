@@ -24,6 +24,12 @@ export namespace Interfaces {
   }
 
   export interface IGetExperimentCondition {
-    condition: string;
+    experimentId: string;
+    experimentPoint: string;
+    uniqueIdentifier: string;
+    assignedCondition: {
+      condition: string;
+      uniqueIdentifier: string;
+    };
   }
 }
