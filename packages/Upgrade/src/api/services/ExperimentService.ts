@@ -72,11 +72,11 @@ export class ExperimentService {
       const postgresSearchString = this.postgresSearchString(searchParams.key);
       queryBuilder = queryBuilder
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
-        .orderBy('rank', 'DESC')
+        .addOrderBy('rank', 'DESC')
         .setParameter('query', `${searchParams.string}:*`);
     }
     if (sortParams) {
-      queryBuilder = queryBuilder.orderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
+      queryBuilder = queryBuilder.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
     }
 
     queryBuilder = queryBuilder.skip(skip).take(take);
