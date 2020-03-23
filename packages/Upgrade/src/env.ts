@@ -73,4 +73,5 @@ export const env = {
   aws: {
     region: getOsEnv('AWS_REGION'),
   },
+  hostUrl: getOsEnv('HOST_URL'),
 };

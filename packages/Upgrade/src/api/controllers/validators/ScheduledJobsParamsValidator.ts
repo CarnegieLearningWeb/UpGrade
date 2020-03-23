@@ -1,8 +1,7 @@
-import { IsNotEmpty, IsDefined, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsDefined } from 'class-validator';
 
 export class ScheduledJobsParamsValidator {
   @IsNotEmpty()
-  @IsUUID()
   @IsDefined()
   public id: string;
 }

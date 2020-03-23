@@ -79,7 +79,8 @@ export class ScheduledJobService {
             timeStamp: startOn,
           };
 
-          const response: any = await this.startExperimentSchedular(startOn, startDoc);
+          const response: any = await this.startExperimentSchedular(startOn, { id: startDoc.id }, SCHEDULE_TYPE.START_EXPERIMENT);
+
           // If experiment is already scheduled with old date
           if (startExperimentDoc && startExperimentDoc.executionArn) {
             await this.stopExperimentSchedular(startExperimentDoc.executionArn);
@@ -112,7 +113,7 @@ export class ScheduledJobService {
             timeStamp: endOn,
           };
 
-          const response: any = await this.startExperimentSchedular(endOn, endDoc);
+          const response: any = await this.startExperimentSchedular(endOn, { id: endDoc.id }, SCHEDULE_TYPE.END_EXPERIMENT);
 
           // If experiment is already scheduled with old date
           if (endExperimentDoc && endExperimentDoc.executionArn) {
@@ -136,12 +137,14 @@ export class ScheduledJobService {
   }
 
   // TODO:  Add url in input params
-  private async startExperimentSchedular(timeStamp: Date, body: any): Promise<any> {
+  private async startExperimentSchedular(timeStamp: Date, body: any, type: SCHEDULE_TYPE): Promise<any> {
+    const url =   type === SCHEDULE_TYPE.START_EXPERIMENT ? env.hostUrl + '/scheduledJobs/start' : env.hostUrl + '/scheduledJobs/end';
     const experimentSchedularStateMachine = {
       stateMachineArn: env.schedular.stepFunctionArn,
       input: JSON.stringify({
         timeStamp,
         body,
+        url,
       }),
     };
     return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
