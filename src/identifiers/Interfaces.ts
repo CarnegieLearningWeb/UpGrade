@@ -1,3 +1,5 @@
+import { SERVER_ERROR } from 'ees_types';
+
 export namespace Interfaces {
   export interface IConfig {
     hostURL: string;
@@ -36,5 +38,10 @@ export namespace Interfaces {
       condition: string;
       uniqueIdentifier: string;
     };
+  }
+
+  export interface IFailedExperimentPoint {
+    type: SERVER_ERROR,
+    message: string;
   }
 }
