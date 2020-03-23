@@ -9,4 +9,27 @@ export declare namespace Interfaces {
         data?: any;
         message?: any;
     }
+    interface IUserGroup {
+        group?: Map<string, Array<string>>;
+        workingGroup?: Map<string, string>;
+    }
+    interface IUser {
+        id: string;
+        group: Map<string, Array<string>>;
+        workingGroup: Map<string, string>;
+    }
+    interface IMarkExperimentPoint {
+        experimentId: string;
+        experimentPoint: string;
+        userId: string;
+    }
+    interface IGetExperimentCondition {
+        experimentId: string;
+        experimentPoint: string;
+        uniqueIdentifier: string;
+        assignedCondition: {
+            condition: string;
+            uniqueIdentifier: string;
+        };
+    }
 }

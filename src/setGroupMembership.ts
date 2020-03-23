@@ -1,27 +1,29 @@
 import DataService from './common/dataService';
-import * as responseError from './common/responseError';
-import { Interfaces, Types } from './identifiers';
+import { Interfaces } from './identifiers';
 import fetchDataService from './common/fetchDataService';
-import validateGroupMembership from './common/validateGroupMembership';
+import convertMapToObj from './common/convertMapToObj';
 
-export default async function setGroupMembership(group: any): Promise<Interfaces.IResponse> {
+export default async function setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser> {
   try {
-    const response = validateGroupMembership(group);
-    if (!response.status) {
-      return response;
+    if (!(group instanceof Map)) {
+      throw new Error('Group type should be Map<string, Array<string>>');
     }
     const commonConfig = DataService.getData('commonConfig')
     const setGroupMembershipUrl = commonConfig.api.setGroupMemberShip;
     const id = commonConfig.userId;
-    await fetchDataService(setGroupMembershipUrl, { id, group });
-    return {
-        status: true,
-        message: Types.ResponseMessages.SUCCESS
+    const groupObj = convertMapToObj(group);
+    const response = await fetchDataService(setGroupMembershipUrl, { id, group: groupObj });
+    if (response.status) {
+      const workingGroup = DataService.getData('workingGroup');
+      return {
+        id,
+        group,
+        workingGroup
+      };
+    } else {
+      throw new Error(response.message);
     }
-  } catch (e) {
-    throw new responseError.HttpsError(
-      responseError.FunctionsErrorCode.unknown,
-      e.message
-    );
+  } catch (error) {
+    throw new Error(error);
   }
 }

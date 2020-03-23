@@ -11,6 +11,11 @@ export namespace Interfaces {
     message?: any;
   }
 
+  export interface IUserGroup {
+    group?: Map<string, Array<string>>;
+    workingGroup?: Map<string, string>;
+  }
+
   export interface IUser {
     id: string;
     group: Map<string, Array<string>>;

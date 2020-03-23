@@ -1,27 +1,29 @@
 import DataService from './common/dataService';
-import * as responseError from './common/responseError';
-import { Interfaces, Types } from './identifiers';
+import { Interfaces } from './identifiers';
 import fetchDataService from './common/fetchDataService';
-import validateWorkingGroup from './common/validateWorkingGroup';
+import convertMapToObj from './common/convertMapToObj';
 
-export default async function setWorkingGroup(workingGroup: any): Promise<Interfaces.IResponse> {
+export default async function setWorkingGroup(workingGroup: Map<string, string>): Promise<Interfaces.IUser> {
   try {
-    const response = validateWorkingGroup(workingGroup);
-    if (!response.status) {
-      return response;
+    if (!(workingGroup instanceof Map)) {
+      throw new Error('Working group type should be Map<string, string>');
     }
     const config = DataService.getData('commonConfig')
     const setWorkingGroupUrl = config.api.setWorkingGroup;
     const id = config.userId;
-    await fetchDataService(setWorkingGroupUrl, { id, workingGroup });
-    return {
-        status: true,
-        message: Types.ResponseMessages.SUCCESS
+    const workingGroupObj = convertMapToObj(workingGroup);
+    const response = await fetchDataService(setWorkingGroupUrl, { id, workingGroup: workingGroupObj });
+    if (response.status) {
+      const group = DataService.getData('group');
+      return {
+        id,
+        group,
+        workingGroup
+      };
+    } else {
+      throw new Error(response.message);
     }
-  } catch (e) {
-    throw new responseError.HttpsError(
-      responseError.FunctionsErrorCode.unknown,
-      e.message
-    );
+  } catch (error) {
+    throw new Error(error);
   }
 }

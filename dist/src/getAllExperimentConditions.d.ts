@@ -1,5 +1,2 @@
-import { Types } from './identifiers';
-export default function getAllExperimentConditions(): Promise<{
-    status: boolean;
-    message: Types.ResponseMessages;
-}>;
+import { IExperimentAssignment } from 'ees_types';
+export default function getAllExperimentConditions(): Promise<IExperimentAssignment[]>;
