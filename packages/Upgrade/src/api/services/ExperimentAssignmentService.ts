@@ -32,6 +32,8 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { ErrorRepository } from '../repositories/ErrorRepository';
+import { ExperimentError } from '../models/ExperimentError';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -54,6 +56,8 @@ export class ExperimentAssignmentService {
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
+    @OrmRepository()
+    private errorRepository: ErrorRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -291,6 +295,21 @@ export class ExperimentAssignmentService {
     } catch (error) {
       throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));
     }
+  }
+
+  public clientFailedExperimentPoint(
+    reason: string,
+    experimentPoint: string,
+    experimentId: string
+  ): Promise<ExperimentError> {
+    const error = new ExperimentError();
+    error.type = SERVER_ERROR.REPORTED_ERROR;
+    error.message = JSON.stringify({
+      experimentPoint,
+      experimentId,
+      reason,
+    });
+    return this.errorRepository.saveRawJson(error);
   }
 
   private async updateExclusionFromMarkExperimentPoint(

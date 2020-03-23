@@ -15,7 +15,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
         throw new Error(errorMsgString);
       });
 
-    return result.raw;
+    return result.raw && result.raw[0];
   }
 
   public async paginatedFind(limit: number, offset: number): Promise<ExperimentError[]> {

@@ -8,6 +8,8 @@ import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IExperimentAssignment } from 'ees_types';
+import { FailedParamsValidator } from './validators/FailedParamsValidator';
+import { ExperimentError } from '../models/ExperimentError';
 
 /**
  * @swagger
@@ -212,5 +214,76 @@ export class ExperimentClientController {
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
     return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId);
+  }
+
+  /**
+   * @swagger
+   * /failed:
+   *    post:
+   *       description: Add error from client end
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experimentUser
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               id:
+   *                 type: string
+   *               group:
+   *                 type: object
+   *               workingGroup:
+   *                 type: object
+   *           description: ExperimentUser
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Set Group Membership
+   */
+
+  /**
+   * @swagger
+   * /failed:
+   *    post:
+   *       description: Add error from client end
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: experimentError
+   *            required: false
+   *            schema:
+   *             type: object
+   *             properties:
+   *              reason:
+   *                type: string
+   *              experimentPoint:
+   *                type: string
+   *              experimentId:
+   *                type: string
+   *            description: Experiment Error from client
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Client side reported error
+   */
+  @Post('failed')
+  public failedExperimentPoint(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    errorBody: FailedParamsValidator
+  ): Promise<ExperimentError> {
+    return this.experimentAssignmentService.clientFailedExperimentPoint(
+      errorBody.reason,
+      errorBody.experimentPoint,
+      errorBody.experimentId
+    );
   }
 }
