@@ -43,3 +43,22 @@ export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
   EXPERIMENT_DELETED = 'experimentDeleted',
 }
+
+export enum SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  STATUS = 'status',
+  TAG = 'tag',
+}
+
+export enum SORT_KEY {
+  NAME = 'name',
+  STATUS = 'state',
+  CREATED_AT = 'createdAt',
+  POST_EXPERIMENT_RULE = 'postExperimentRule',
+}
+
+export enum SORT_AS {
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC',
+}
