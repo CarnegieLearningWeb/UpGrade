@@ -145,25 +145,28 @@ export class ScheduledJobService {
   }
 
   private async startExperimentSchedular(timeStamp: Date, body: any, type: SCHEDULE_TYPE): Promise<any> {
-    try {
-      const url =
-        type === SCHEDULE_TYPE.START_EXPERIMENT
-          ? env.hostUrl + '/scheduledJobs/start'
-          : env.hostUrl + '/scheduledJobs/end';
-      const experimentSchedularStateMachine = {
-        stateMachineArn: env.schedular.stepFunctionArn,
-        input: JSON.stringify({
-          timeStamp,
-          body,
-          url,
-        }),
-      };
-      return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
-    } catch (err) {
-      throw Error(
-        JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: ` Error in calling step function ${err}` })
-      );
-    }
+    const url =
+      type === SCHEDULE_TYPE.START_EXPERIMENT
+        ? env.hostUrl + '/scheduledJobs/start'
+        : env.hostUrl + '/scheduledJobs/end';
+    const experimentSchedularStateMachine = {
+      stateMachineArn: env.schedular.stepFunctionArn,
+      input: JSON.stringify({
+        timeStamp,
+        body,
+        url,
+      }),
+    };
+
+    const returnData = await this.awsService
+      .stepFunctionStartExecution(experimentSchedularStateMachine)
+      .catch(reason => {
+        throw Error(
+          JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: ` Error in calling step function ${reason}` })
+        );
+      });
+    throw Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: ` Logs of step function ${returnData}` }));
+    return returnData;
   }
 
   private async stopExperimentSchedular(executionArn: string): Promise<any> {
