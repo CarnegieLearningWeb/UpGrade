@@ -469,9 +469,6 @@ export class ExperimentService {
   }
 
   private async addExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
-    // create schedules to start experiment and end experiment
-    this.scheduledJobService.updateExperimentSchedules(experiment);
-
     const createdExperiment = await getConnection().transaction(async transactionalEntityManager => {
       experiment.id = experiment.id || uuid();
       const { conditions, partitions, ...expDoc } = experiment;
@@ -529,6 +526,9 @@ export class ExperimentService {
 
       return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
     });
+
+    // create schedules to start experiment and end experiment
+    this.scheduledJobService.updateExperimentSchedules(createdExperiment);
 
     // add auditLog here
     const createAuditLogData: AuditLogData = {
