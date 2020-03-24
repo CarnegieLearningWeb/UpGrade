@@ -4,7 +4,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
-import { EXPERIMENT_STATE, SERVER_ERROR } from 'ees_types';
+import { EXPERIMENT_STATE } from 'ees_types';
 import { env } from '../../env';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
@@ -158,15 +158,7 @@ export class ScheduledJobService {
       }),
     };
 
-    const returnData = await this.awsService
-      .stepFunctionStartExecution(experimentSchedularStateMachine)
-      .catch(reason => {
-        throw Error(
-          JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: ` Error in calling step function ${reason}` })
-        );
-      });
-    throw Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: ` Logs of step function ${returnData}` }));
-    return returnData;
+    return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
   }
 
   private async stopExperimentSchedular(executionArn: string): Promise<any> {
