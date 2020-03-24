@@ -23,15 +23,15 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     return result.raw.length > 0 ? result.raw[0] : {};
   }
 
-  public async deleteById(ids: string[], entityManager: EntityManager): Promise<MonitoredExperimentPoint[]> {
+  public async deleteByExperimentId(ids: string[], entityManager: EntityManager): Promise<MonitoredExperimentPoint[]> {
     const result = await entityManager
       .createQueryBuilder()
       .delete()
       .from(MonitoredExperimentPoint)
-      .where('id IN (:...ids)', { ids })
+      .where('experimentId IN (:...ids)', { ids })
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'deleteById', { ids }, errorMsg);
+        const errorMsgString = repositoryError(this.constructor.name, 'deleteByExperimentId', { ids }, errorMsg);
         throw new Error(errorMsgString);
       });
 

@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
-import { IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentPartition } from './ExperimentPartition';
 import { BaseModel } from './base/BaseModel';
@@ -66,6 +66,8 @@ export class Experiment extends BaseModel {
 
   // TODO add conditional validity here ie EXPERIMENT_STATE is scheduled
   @Column({ nullable: true })
+  @ValidateIf(o => o.state === EXPERIMENT_STATE.SCHEDULED)
+  @IsNotEmpty()
   public startOn: Date;
 
   @IsNotEmpty()

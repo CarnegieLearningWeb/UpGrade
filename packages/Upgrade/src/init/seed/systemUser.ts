@@ -5,8 +5,8 @@ import { UserService } from '../../api/services/UserService';
 export const systemUserDoc = {
   id: 'systemUser',
   email: 'system@gmail.com',
-  firstName: 'system',
-  lastName: 'system',
+  firstName: 'System',
+  lastName: '',
   imageUrl: 'https://cdn1.iconfinder.com/data/icons/business-set-18/32/2.business-icons-final-19-512.png',
 };
 

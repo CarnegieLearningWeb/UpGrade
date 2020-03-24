@@ -117,7 +117,7 @@ export class ExperimentService {
 
         // monitoredIds
         const monitoredIds = experiment.partitions.map(partition => {
-          return `${partition.id}_${currentUser.id}`;
+          return partition.name ? `${partition.name}_${partition.point}` : partition.point;
         });
 
         // deleting data related to experiment
@@ -126,7 +126,7 @@ export class ExperimentService {
           this.groupExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
           this.individualAssignmentRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
           this.individualExclusionRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
-          this.monitoredExperimentPointRepository.deleteById(monitoredIds, transactionalEntityManager),
+          this.monitoredExperimentPointRepository.deleteByExperimentId(monitoredIds, transactionalEntityManager),
           this.scheduledJobRepository.deleteByExperimentId(experimentId, transactionalEntityManager),
         ]);
 
