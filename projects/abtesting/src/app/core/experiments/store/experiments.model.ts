@@ -107,12 +107,37 @@ export interface Experiment {
   partitions: ExperimentPartition[];
 }
 
+// TODO: Add SEARCH_KEY, SORT_KEY, SORT_AS in ees_types
+export enum SEARCH_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  STATUS = 'status',
+  TAG = 'tag',
+}
+
+export enum SORT_KEY {
+  NAME = 'name',
+  STATUS = 'state',
+  CREATED_AT = 'createdAt',
+}
+
+export enum SORT_AS {
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC',
+}
+
 export interface ExperimentVM extends Experiment {
   stat: IExperimentEnrollmentStats;
 }
 
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
+  skipExperiment: number;
+  totalExperiments: number;
+  searchKey: SEARCH_KEY;
+  searchString: string;
+  sortKey: SORT_KEY;
+  sortAs: SORT_AS;
   stats: {
     [key: string]: IExperimentEnrollmentStats;
   };

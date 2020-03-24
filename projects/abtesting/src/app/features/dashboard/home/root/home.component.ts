@@ -13,7 +13,7 @@ import { NewExperimentComponent } from '../components/modal/new-experiment/new-e
 })
 export class HomeComponent {
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
-  isLoadingExperiments$ = this.experimentService.isLoadingExperiment$;
+  isLoadingExperiments$ = this.experimentService.isInitialExperimentsLoading();
 
   constructor(
     private experimentService: ExperimentService,

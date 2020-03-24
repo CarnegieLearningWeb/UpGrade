@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
-import * as logsAction from '../../logs/store/logs.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { mergeMap, map, filter, switchMap, catchError, tap, withLatestFrom } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first } from 'rxjs/operators';
 import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
-import { selectExperimentStats } from './experiments.selectors';
+import { selectExperimentStats, selectSkipExperiment, selectSearchKey, selectSortAs, selectSortKey, selectTotalExperiment, selectSearchString } from './experiments.selectors';
+import { combineLatest } from 'rxjs';
 
 @Injectable()
 export class ExperimentEffects {
@@ -21,10 +21,48 @@ export class ExperimentEffects {
 
   getAllExperiment$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(experimentAction.actionGetAllExperiment),
-      mergeMap(() =>
-        this.experimentDataService.getAllExperiment().pipe(
-          switchMap((experiments: any) => {
+      ofType(experimentAction.actionGetExperiments),
+      map(action => action.fromStarting),
+      withLatestFrom(
+        this.store$.pipe(select(selectSkipExperiment)),
+        this.store$.pipe(select(selectTotalExperiment)),
+        this.store$.pipe(select(selectSearchKey)),
+        this.store$.pipe(select(selectSortKey)),
+        this.store$.pipe(select(selectSortAs))
+      ),
+      filter(([_, skip, total]) => skip < total || total === null),
+      tap(() => {
+        this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
+      }),
+      switchMap(([fromStarting, skip, _, searchKey, sortKey, sortAs]) => {
+        let searchString = null;
+        // As withLatestFrom does not support more than 5 arguments
+        // TODO: Find alternative
+        this.getSearchString$().subscribe(searchInput => {
+          searchString = searchInput;
+        });
+        let params: any = {};
+        if (sortKey) {
+          params = {
+            sortParams: {
+              key: sortKey,
+              sortAs
+            }
+          }
+        }
+        if (searchString) {
+          params = {
+            ...params,
+            searchParams: {
+              key: searchKey,
+              string: searchString
+            }
+          }
+        }
+        return this.experimentDataService.getAllExperiment(skip, fromStarting, params).pipe(
+          switchMap((data: any) => {
+            const experiments = data.nodes;
+            // TODO: add pullBy
             const experimentIds = experiments.map(experiment => experiment.id);
             return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
               switchMap((stats: any) => {
@@ -32,17 +70,24 @@ export class ExperimentEffects {
                   (acc, stat: IExperimentEnrollmentStats) => ({ ...acc, [stat.id]: stat }),
                   {}
                 );
-                return [
-                  experimentAction.actionStoreExperiment({ experiments }),
+
+                // TODO: Update logic
+                const actions = fromStarting ? [
+                  experimentAction.actionSetSkipExperiment({ skipExperiment: 0 }),
+                  experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
+                  experimentAction.actionStoreExperimentStats({ stats: experimentStats })
+                ] : [
+                  experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
                   experimentAction.actionStoreExperimentStats({ stats: experimentStats })
                 ];
+                return actions;
               }),
-              catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
+              catchError(error => [experimentAction.actionGetExperimentsFailure(error)])
             );
           }),
-          catchError(error => [experimentAction.actionGetAllExperimentFailure(error)])
+          catchError(error => [experimentAction.actionGetExperimentsFailure(error)])
         )
-      )
+      })
     )
   );
 
@@ -147,5 +192,41 @@ export class ExperimentEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  fetchExperimentOnSearchString$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionSetSearchString),
+        map(action => action.searchString),
+        tap(() => {
+          this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }))
+        })
+      ),
+      { dispatch: false }
+  );
+
+  fetchExperimentOnSearchKeyChange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionSetSearchKey),
+        withLatestFrom(
+          this.store$.pipe(select(selectSearchString))
+        ),
+        tap(([_, searchString]) => {
+          if (searchString) {
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }))
+          }
+        })
+      ),
+      { dispatch: false }
+  );
+
+
+  private getSearchString$ = () => combineLatest(
+    this.store$.pipe(select(selectSearchString))
+  ).pipe(
+    map(([searchString]) => searchString),
+    first()
   );
 }

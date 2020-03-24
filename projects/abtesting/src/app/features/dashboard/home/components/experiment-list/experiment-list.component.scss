@@ -42,8 +42,18 @@
     top: 5px;
   }
 
+  .experiment-list-table-container {
+    position: relative;
+    overflow: auto;
+
+    .spinner {
+      position: sticky;
+      top: 0;
+      z-index: 1111;
+    }
+  }
+
   .experiment-list {
-    margin-top: 25px;
     width: 100%;
 
     th {

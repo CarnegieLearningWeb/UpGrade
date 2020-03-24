@@ -2,9 +2,9 @@
   <div class="header">
     <div>
       <mat-form-field class="filter-options">
-        <mat-select [(ngModel)]="selectedExperimentFilterOption" (selectionChange)="applyFilter(searchValue)">
+        <mat-select [(ngModel)]="selectedExperimentFilterOption" (selectionChange)="applyFilter(searchValue);setSearchKey()">
           <mat-option *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
-            {{ filterOption }}
+            {{ filterOption | titlecase }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -12,6 +12,7 @@
         <input
           class="search-input"
           matInput
+          #searchInput
           [(ngModel)]="searchValue"
           (keyup)="applyFilter($event.target.value)"
           [placeholder]="'home.experiments-table.search.text' | translate"
@@ -25,8 +26,9 @@
     </button>
   </div>
 
-  <ng-container>
-    <table class="experiment-list" mat-table [dataSource]="allExperiments" matSort>
+  <div class="experiment-list-table-container" #tableContainer>
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
+    <table class="experiment-list" mat-table [dataSource]="allExperiments" matSort (matSortChange)="changeSorting($event)">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'home.experiments-table.name-tooltip.text' | translate" matTooltipPosition="above">
@@ -137,7 +139,7 @@
       </ng-container>
 
       <ng-container matColumnDef="enrollment">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        <th mat-header-cell *matHeaderCellDef>
           <span [matTooltip]="'home.experiments-table.enrollments-tooltip.text' | translate" matTooltipPosition="above">
             {{ 'home.experiments-table.text.enrollment' | translate }}
           </span>
@@ -170,10 +172,9 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
+  </div>
 
-    <mat-paginator [hidePageSize]="true" [pageSize]="5"></mat-paginator>
-  </ng-container>
 </div>

@@ -7,9 +7,14 @@ import { HttpClientService } from '../http/http-client.service';
 export class ExperimentDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllExperiment() {
+  getAllExperiment(skip: number, fromStarting: boolean, params: any) {
     const url = environment.api.getAllExperiments;
-    return this.http.get(url);
+    const data: any = {
+      skip: fromStarting ? 0 : skip,
+      take: 10,
+      ...params
+    };
+    return this.http.post(url, data);
   }
 
   getAllExperimentsStats(experimentIds: string[]) {

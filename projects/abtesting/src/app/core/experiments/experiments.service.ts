@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Experiment, UpsertExperimentType, ExperimentVM, ExperimentStateInfo } from './store/experiments.model';
+import { Observable, combineLatest } from 'rxjs';
+import { Experiment, UpsertExperimentType, ExperimentVM, ExperimentStateInfo, SEARCH_KEY, SORT_KEY, SORT_AS } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
@@ -32,8 +32,19 @@ export class ExperimentService {
   allPartitions$ = this.store$.pipe(select(selectAllPartitions));
   uniqueIdentifiers$ = this.store$.pipe(select(selectAllUniqueIdentifiers));
 
-  loadExperiments() {
-    return this.store$.dispatch(experimentAction.actionGetAllExperiment());
+  isInitialExperimentsLoading() {
+    return combineLatest(
+      this.store$.pipe(select(selectIsLoadingExperiment)),
+      this.experiments$
+    ).pipe(
+      map(([isLoading, experiments]) => {
+        return !isLoading || experiments.length
+      })
+    )
+  }
+
+  loadExperiments(fromStarting?: boolean) {
+    return this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting }));
   }
 
   createNewExperiment(experiment: Experiment) {
@@ -55,5 +66,21 @@ export class ExperimentService {
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
+  }
+
+  setSearchKey(searchKey: SEARCH_KEY) {
+    this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
+  }
+
+  setSearchString(searchString: string) {
+    this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
+  }
+
+  setSortKey(sortKey: SORT_KEY) {
+    this.store$.dispatch(experimentAction.actionSetSortKey({ sortKey }));
+  }
+
+  setSortingType(sortingType: SORT_AS) {
+    this.store$.dispatch(experimentAction.actionSetSortingType({ sortingType }));
   }
 }
