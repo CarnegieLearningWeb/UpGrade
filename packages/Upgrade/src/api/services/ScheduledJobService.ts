@@ -4,7 +4,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'ees_types';
 import { env } from '../../env';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
@@ -79,7 +79,11 @@ export class ScheduledJobService {
             timeStamp: startOn,
           };
 
-          const response: any = await this.startExperimentSchedular(startOn, { id: startDoc.id }, SCHEDULE_TYPE.START_EXPERIMENT);
+          const response: any = await this.startExperimentSchedular(
+            startOn,
+            { id: startDoc.id },
+            SCHEDULE_TYPE.START_EXPERIMENT
+          );
 
           // If experiment is already scheduled with old date
           if (startExperimentDoc && startExperimentDoc.executionArn) {
@@ -113,7 +117,11 @@ export class ScheduledJobService {
             timeStamp: endOn,
           };
 
-          const response: any = await this.startExperimentSchedular(endOn, { id: endDoc.id }, SCHEDULE_TYPE.END_EXPERIMENT);
+          const response: any = await this.startExperimentSchedular(
+            endOn,
+            { id: endDoc.id },
+            SCHEDULE_TYPE.END_EXPERIMENT
+          );
 
           // If experiment is already scheduled with old date
           if (endExperimentDoc && endExperimentDoc.executionArn) {
@@ -136,18 +144,26 @@ export class ScheduledJobService {
     }
   }
 
-  // TODO:  Add url in input params
   private async startExperimentSchedular(timeStamp: Date, body: any, type: SCHEDULE_TYPE): Promise<any> {
-    const url =   type === SCHEDULE_TYPE.START_EXPERIMENT ? env.hostUrl + '/scheduledJobs/start' : env.hostUrl + '/scheduledJobs/end';
-    const experimentSchedularStateMachine = {
-      stateMachineArn: env.schedular.stepFunctionArn,
-      input: JSON.stringify({
-        timeStamp,
-        body,
-        url,
-      }),
-    };
-    return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
+    try {
+      const url =
+        type === SCHEDULE_TYPE.START_EXPERIMENT
+          ? env.hostUrl + '/scheduledJobs/start'
+          : env.hostUrl + '/scheduledJobs/end';
+      const experimentSchedularStateMachine = {
+        stateMachineArn: env.schedular.stepFunctionArn,
+        input: JSON.stringify({
+          timeStamp,
+          body,
+          url,
+        }),
+      };
+      return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
+    } catch (err) {
+      throw Error(
+        JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: ` Error in calling step function ${err}` })
+      );
+    }
   }
 
   private async stopExperimentSchedular(executionArn: string): Promise<any> {
