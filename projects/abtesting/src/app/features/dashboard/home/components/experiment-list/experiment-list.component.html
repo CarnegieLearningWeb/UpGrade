@@ -68,7 +68,7 @@
           <span>{{ experiment.state | experimentState }}</span>
           <br />
           <span class="experiment-schedule" *ngIf="experiment.state === ExperimentState.SCHEDULED">
-            {{ '(' + (experiment.endOn | date) + ')' }}
+            {{ '(' + (experiment.startOn | date: 'medium') + ')' }}
           </span>
         </td>
       </ng-container>

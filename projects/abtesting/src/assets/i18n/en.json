@@ -121,6 +121,7 @@
   "logs.error-logs-tab.text": "Error Logs",
   "logs.error-logs-search.text": "Search Error Logs...",
   "logs.error-logs-message.text": "{{ errorName }} occurred in accessing {{ endPoint }}",
+  "logs.error-logs-failed-experimentPoint.text": "Error is reported from client",
   "logs.audit-logs-tab.text": "Audit Logs",
   "logs.audit-logs-search.text": "Search Audit Logs...",
   "logs.audit-log-experiment-created.text": "successfully created",
