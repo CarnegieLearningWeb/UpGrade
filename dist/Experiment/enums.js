@@ -46,23 +46,23 @@ var EXPERIMENT_LOG_TYPE;
     EXPERIMENT_LOG_TYPE["EXPERIMENT_STATE_CHANGED"] = "experimentStateChanged";
     EXPERIMENT_LOG_TYPE["EXPERIMENT_DELETED"] = "experimentDeleted";
 })(EXPERIMENT_LOG_TYPE = exports.EXPERIMENT_LOG_TYPE || (exports.EXPERIMENT_LOG_TYPE = {}));
-var SEARCH_KEY;
-(function (SEARCH_KEY) {
-    SEARCH_KEY["ALL"] = "all";
-    SEARCH_KEY["NAME"] = "name";
-    SEARCH_KEY["STATUS"] = "status";
-    SEARCH_KEY["TAG"] = "tag";
-})(SEARCH_KEY = exports.SEARCH_KEY || (exports.SEARCH_KEY = {}));
-var SORT_KEY;
-(function (SORT_KEY) {
-    SORT_KEY["NAME"] = "name";
-    SORT_KEY["STATUS"] = "state";
-    SORT_KEY["CREATED_AT"] = "createdAt";
-    SORT_KEY["POST_EXPERIMENT_RULE"] = "postExperimentRule";
-})(SORT_KEY = exports.SORT_KEY || (exports.SORT_KEY = {}));
-var SORT_AS;
-(function (SORT_AS) {
-    SORT_AS["ASCENDING"] = "ASC";
-    SORT_AS["DESCENDING"] = "DESC";
-})(SORT_AS = exports.SORT_AS || (exports.SORT_AS = {}));
+var EXPERIMENT_SEARCH_KEY;
+(function (EXPERIMENT_SEARCH_KEY) {
+    EXPERIMENT_SEARCH_KEY["ALL"] = "all";
+    EXPERIMENT_SEARCH_KEY["NAME"] = "name";
+    EXPERIMENT_SEARCH_KEY["STATUS"] = "status";
+    EXPERIMENT_SEARCH_KEY["TAG"] = "tag";
+})(EXPERIMENT_SEARCH_KEY = exports.EXPERIMENT_SEARCH_KEY || (exports.EXPERIMENT_SEARCH_KEY = {}));
+var EXPERIMENT_SORT_KEY;
+(function (EXPERIMENT_SORT_KEY) {
+    EXPERIMENT_SORT_KEY["NAME"] = "name";
+    EXPERIMENT_SORT_KEY["STATUS"] = "state";
+    EXPERIMENT_SORT_KEY["CREATED_AT"] = "createdAt";
+    EXPERIMENT_SORT_KEY["POST_EXPERIMENT_RULE"] = "postExperimentRule";
+})(EXPERIMENT_SORT_KEY = exports.EXPERIMENT_SORT_KEY || (exports.EXPERIMENT_SORT_KEY = {}));
+var EXPERIMENT_SORT_AS;
+(function (EXPERIMENT_SORT_AS) {
+    EXPERIMENT_SORT_AS["ASCENDING"] = "ASC";
+    EXPERIMENT_SORT_AS["DESCENDING"] = "DESC";
+})(EXPERIMENT_SORT_AS = exports.EXPERIMENT_SORT_AS || (exports.EXPERIMENT_SORT_AS = {}));
 //# sourceMappingURL=enums.js.map

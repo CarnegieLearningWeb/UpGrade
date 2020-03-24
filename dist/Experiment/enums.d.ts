@@ -38,19 +38,19 @@ export declare enum EXPERIMENT_LOG_TYPE {
     EXPERIMENT_STATE_CHANGED = "experimentStateChanged",
     EXPERIMENT_DELETED = "experimentDeleted"
 }
-export declare enum SEARCH_KEY {
+export declare enum EXPERIMENT_SEARCH_KEY {
     ALL = "all",
     NAME = "name",
     STATUS = "status",
     TAG = "tag"
 }
-export declare enum SORT_KEY {
+export declare enum EXPERIMENT_SORT_KEY {
     NAME = "name",
     STATUS = "state",
     CREATED_AT = "createdAt",
     POST_EXPERIMENT_RULE = "postExperimentRule"
 }
-export declare enum SORT_AS {
+export declare enum EXPERIMENT_SORT_AS {
     ASCENDING = "ASC",
     DESCENDING = "DESC"
 }
