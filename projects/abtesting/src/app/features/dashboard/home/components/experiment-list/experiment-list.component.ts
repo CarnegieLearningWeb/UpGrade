@@ -126,6 +126,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   changeSorting(event) {
     this.experimentService.setSortingType(event.direction ? event.direction.toUpperCase() : null);
     this.experimentService.setSortKey(event.direction ? event.active : null);
+    this.experimentTableContainer.nativeElement.scroll({
+      top: 0,
+      behavior: 'smooth'
+    });
     this.experimentService.loadExperiments(true);
   }
 
