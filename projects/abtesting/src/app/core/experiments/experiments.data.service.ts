@@ -3,6 +3,7 @@ import { environment } from '../../../environments/environment';
 import { Experiment, ExperimentStateInfo } from './store/experiments.model';
 import { HttpClientService } from '../http/http-client.service';
 
+const NUMBER_OF_EXPERIMENTS = 10;
 @Injectable()
 export class ExperimentDataService {
   constructor(private http: HttpClientService) {}
@@ -11,7 +12,7 @@ export class ExperimentDataService {
     const url = environment.api.getAllExperiments;
     const data: any = {
       skip: fromStarting ? 0 : skip,
-      take: 10,
+      take: NUMBER_OF_EXPERIMENTS,
       ...params
     };
     return this.http.post(url, data);

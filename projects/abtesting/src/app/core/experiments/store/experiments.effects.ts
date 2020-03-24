@@ -62,7 +62,6 @@ export class ExperimentEffects {
         return this.experimentDataService.getAllExperiment(skip, fromStarting, params).pipe(
           switchMap((data: any) => {
             const experiments = data.nodes;
-            // TODO: add pullBy
             const experimentIds = experiments.map(experiment => experiment.id);
             return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
               switchMap((stats: any) => {
@@ -71,16 +70,12 @@ export class ExperimentEffects {
                   {}
                 );
 
-                // TODO: Update logic
-                const actions = fromStarting ? [
-                  experimentAction.actionSetSkipExperiment({ skipExperiment: 0 }),
-                  experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
-                  experimentAction.actionStoreExperimentStats({ stats: experimentStats })
-                ] : [
+                const actions = fromStarting ? [ experimentAction.actionSetSkipExperiment({ skipExperiment: 0 }) ] : [];
+                return [
+                  ...actions,
                   experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
                   experimentAction.actionStoreExperimentStats({ stats: experimentStats })
                 ];
-                return actions;
               }),
               catchError(error => [experimentAction.actionGetExperimentsFailure(error)])
             );
