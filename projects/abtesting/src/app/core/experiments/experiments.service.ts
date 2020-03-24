@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, combineLatest } from 'rxjs';
-import { Experiment, UpsertExperimentType, ExperimentVM, ExperimentStateInfo, SEARCH_KEY, SORT_KEY, SORT_AS } from './store/experiments.model';
+import { Experiment, UpsertExperimentType, ExperimentVM, ExperimentStateInfo, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
@@ -68,7 +68,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
   }
 
-  setSearchKey(searchKey: SEARCH_KEY) {
+  setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
     this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
   }
 
@@ -76,11 +76,11 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
   }
 
-  setSortKey(sortKey: SORT_KEY) {
+  setSortKey(sortKey: EXPERIMENT_SORT_KEY) {
     this.store$.dispatch(experimentAction.actionSetSortKey({ sortKey }));
   }
 
-  setSortingType(sortingType: SORT_AS) {
+  setSortingType(sortingType: EXPERIMENT_SORT_AS) {
     this.store$.dispatch(experimentAction.actionSetSortingType({ sortingType }));
   }
 }

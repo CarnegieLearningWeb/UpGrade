@@ -1,21 +1,15 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Experiment, ExperimentStateInfo } from './store/experiments.model';
+import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
 import { HttpClientService } from '../http/http-client.service';
 
-const NUMBER_OF_EXPERIMENTS = 10;
 @Injectable()
 export class ExperimentDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllExperiment(skip: number, fromStarting: boolean, params: any) {
+  getAllExperiment(params: ExperimentPaginationParams) {
     const url = environment.api.getAllExperiments;
-    const data: any = {
-      skip: fromStarting ? 0 : skip,
-      take: NUMBER_OF_EXPERIMENTS,
-      ...params
-    };
-    return this.http.post(url, data);
+    return this.http.post(url, params);
   }
 
   getAllExperimentsStats(experimentIds: string[]) {

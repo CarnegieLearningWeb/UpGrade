@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { Experiment, EXPERIMENT_STATE, SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
+import { Experiment, EXPERIMENT_STATE, EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription, fromEvent } from 'rxjs';
 import { MatDialog } from '@angular/material';
@@ -25,7 +25,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   displayedColumns: string[] = [
     'name',
     'state',
-    'postExperiment',
+    'postExperimentRule',
     'createdAt',
     'tags',
     'enrollment',
@@ -34,12 +34,12 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   allExperiments: MatTableDataSource<Experiment>;
   allExperimentsSub: Subscription;
   experimentFilterOptions = [
-    SEARCH_KEY.ALL,
-    SEARCH_KEY.NAME,
-    SEARCH_KEY.STATUS,
-    SEARCH_KEY.TAG
+    EXPERIMENT_SEARCH_KEY.ALL,
+    EXPERIMENT_SEARCH_KEY.NAME,
+    EXPERIMENT_SEARCH_KEY.STATUS,
+    EXPERIMENT_SEARCH_KEY.TAG
   ];
-  selectedExperimentFilterOption = SEARCH_KEY.ALL;
+  selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
   searchValue: string;
   tagsVisibility = [];
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
@@ -51,7 +51,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog
-  ) {
+  ) { }
+
+  ngOnInit() {
     this.allExperimentsSub = this.experimentService.experiments$.subscribe(
       allExperiments => {
         this.allExperiments = new MatTableDataSource();
@@ -62,24 +64,11 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     );
   }
 
-  ngOnInit() {
-    this.allExperiments.sort = this.sort;
-
-    // Update angular material table's default sort
-    this.allExperiments.sortingDataAccessor = (data: any, property) => {
-      if (property === 'postExperiment') {
-        return data.postExperimentRule;
-      } else {
-        return data[property];
-      }
-    };
-  }
-
   // Modify angular material's table's default search behavior
-  filterExperimentPredicate(type: SEARCH_KEY) {
+  filterExperimentPredicate(type: EXPERIMENT_SEARCH_KEY) {
     this.allExperiments.filterPredicate = (data, filter: string): boolean => {
       switch (type) {
-        case SEARCH_KEY.ALL:
+        case EXPERIMENT_SEARCH_KEY.ALL:
           return (
             data.name.toLocaleLowerCase().includes(filter) ||
             data.state.toLocaleLowerCase().includes(filter) ||
@@ -87,11 +76,11 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
               tags.toLocaleLowerCase().includes(filter)
             ).length || this.isPartitionFound(data, filter)
           );
-        case SEARCH_KEY.NAME:
+        case EXPERIMENT_SEARCH_KEY.NAME:
           return data.name.toLowerCase().includes(filter) || this.isPartitionFound(data, filter);
-        case SEARCH_KEY.STATUS:
+        case EXPERIMENT_SEARCH_KEY.STATUS:
           return data.state.toLowerCase().includes(filter);
-        case SEARCH_KEY.TAG:
+        case EXPERIMENT_SEARCH_KEY.TAG:
           return !!data.tags.filter(tags =>
             tags.toLocaleLowerCase().includes(filter)
           ).length;
@@ -135,7 +124,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   filterExperimentByTags(tagValue: string) {
     this.searchValue = tagValue;
-    this.selectedExperimentFilterOption = SEARCH_KEY.TAG;
+    this.selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.TAG;
     this.applyFilter(tagValue);
     this.setSearchKey();
     this.setSearchString(this.searchValue);
@@ -183,7 +172,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     // TODO: should implement persist search
-    this.experimentService.setSearchKey(SEARCH_KEY.ALL);
+    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
     this.experimentService.setSearchString(null);
     this.experimentService.setSortKey(null);
     this.experimentService.setSortingType(null);

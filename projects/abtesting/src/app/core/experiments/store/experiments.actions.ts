@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Experiment, UpsertExperimentType, ExperimentStateInfo, SEARCH_KEY, SORT_KEY, SORT_AS } from './experiments.model';
+import { Experiment, UpsertExperimentType, ExperimentStateInfo, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './experiments.model';
 
 export const actionGetExperiments = createAction(
   '[Experiment] Get Experiments',
@@ -86,7 +86,7 @@ export const actionSetSkipExperiment = createAction(
 
 export const actionSetSearchKey = createAction(
   '[Experiment] Set Search key value',
-  props<{ searchKey: SEARCH_KEY }>()
+  props<{ searchKey: EXPERIMENT_SEARCH_KEY }>()
 );
 
 export const actionSetSearchString = createAction(
@@ -96,10 +96,10 @@ export const actionSetSearchString = createAction(
 
 export const actionSetSortKey = createAction(
   '[Experiment] Set Sort key value',
-  props<{ sortKey: SORT_KEY }>()
+  props<{ sortKey: EXPERIMENT_SORT_KEY }>()
 );
 
 export const actionSetSortingType = createAction(
   '[Experiment] Set Sorting type',
-  props<{ sortingType: SORT_AS }>()
+  props<{ sortingType: EXPERIMENT_SORT_AS }>()
 );

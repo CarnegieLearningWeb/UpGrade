@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { map, filter, switchMap, catchError, tap, withLatestFrom, first } from 'rxjs/operators';
-import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment } from './experiments.model';
+import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment, NUMBER_OF_EXPERIMENTS, ExperimentPaginationParams } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
@@ -41,9 +41,13 @@ export class ExperimentEffects {
         this.getSearchString$().subscribe(searchInput => {
           searchString = searchInput;
         });
-        let params: any = {};
+        let params: ExperimentPaginationParams = {
+          skip: fromStarting ? 0 : skip,
+          take: NUMBER_OF_EXPERIMENTS,
+        };
         if (sortKey) {
           params = {
+            ...params,
             sortParams: {
               key: sortKey,
               sortAs
@@ -59,7 +63,7 @@ export class ExperimentEffects {
             }
           }
         }
-        return this.experimentDataService.getAllExperiment(skip, fromStarting, params).pipe(
+        return this.experimentDataService.getAllExperiment(params).pipe(
           switchMap((data: any) => {
             const experiments = data.nodes;
             const experimentIds = experiments.map(experiment => experiment.id);
