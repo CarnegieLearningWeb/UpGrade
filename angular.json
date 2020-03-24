@@ -29,7 +29,7 @@
               "projects/abtesting/src/assets",
               "projects/abtesting/src/_redirects"
             ],
-            "styles": ["projects/abtesting/src/styles/styles-app-loading.scss", "projects/abtesting/src/styles.scss"],
+            "styles": ["projects/abtesting/src/styles.scss"],
             "scripts": []
           },
           "configurations": {
@@ -140,7 +140,7 @@
             "tsConfig": "projects/abtesting/tsconfig.spec.json",
             "karmaConfig": "projects/abtesting/karma.conf.js",
             "assets": ["projects/abtesting/src/favicon.ico", "projects/abtesting/src/assets"],
-            "styles": ["projects/abtesting/src/styles/styles-app-loading.scss", "projects/abtesting/src/styles.scss"],
+            "styles": ["projects/abtesting/src/styles.scss"],
             "scripts": []
           },
           "configurations": {
