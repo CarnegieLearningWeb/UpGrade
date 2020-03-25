@@ -50,3 +50,33 @@ export const selectAllUniqueIdentifiers = createSelector(
   selectExperimentState,
   (state) => state.uniqueIdentifiers
 );
+
+export const selectSkipExperiment = createSelector(
+  selectExperimentState,
+  (state) => state.skipExperiment
+);
+
+export const selectTotalExperiment = createSelector(
+  selectExperimentState,
+  (state) => state.totalExperiments
+);
+
+export const selectSearchKey = createSelector(
+  selectExperimentState,
+  (state) => state.searchKey
+);
+
+export const selectSearchString = createSelector(
+  selectExperimentState,
+  (state) => state.searchString
+);
+
+export const selectSortKey = createSelector(
+  selectExperimentState,
+  (state) => state.sortKey
+);
+
+export const selectSortAs = createSelector(
+  selectExperimentState,
+  (state) => state.sortAs
+);

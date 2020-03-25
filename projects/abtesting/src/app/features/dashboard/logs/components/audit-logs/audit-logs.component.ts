@@ -61,8 +61,8 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     // subtract other component's height
-    const screenHeight = window.screen.height;
-    this.auditLogContainer.nativeElement.style.height = (screenHeight - 450) + 'px';
+    const windowHeight = window.innerHeight;
+    this.auditLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
     fromEvent(this.auditLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
       const height = this.auditLogContainer.nativeElement.clientHeight;
       const scrollHeight = this.auditLogContainer.nativeElement.scrollHeight - height;
