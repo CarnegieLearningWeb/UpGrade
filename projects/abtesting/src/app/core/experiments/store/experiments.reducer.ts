@@ -1,4 +1,4 @@
-import { ExperimentState, Experiment } from './experiments.model';
+import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
@@ -16,6 +16,12 @@ export const {
 
 export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperiment: false,
+  skipExperiment: 0,
+  totalExperiments: null,
+  searchKey: EXPERIMENT_SEARCH_KEY.ALL,
+  searchString: null,
+  sortKey: null,
+  sortAs: null,
   stats: {},
   uniqueIdentifiers: null,
   allPartitions: null
@@ -23,13 +29,22 @@ export const initialState: ExperimentState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(experimentsAction.actionGetAllExperiment, state => ({
-    ...state,
-    isLoadingExperiment: true
+  on(experimentsAction.actionGetExperiments, state => ({
+    ...state
   })),
-  on(experimentsAction.actionStoreExperiment, (state, { experiments }) => {
-    return adapter.addMany(experiments, { ...state });
+  on(
+    experimentsAction.actionGetExperimentsSuccess, (state, { experiments, totalExperiments }) => {
+    const newState = {
+      ...state,
+      totalExperiments,
+      skipExperiment: state.skipExperiment + experiments.length
+    };
+    return adapter.addMany(experiments, { ...newState });
   }),
+  on(
+    experimentsAction.actionGetExperimentsFailure, (state) =>
+      ({ ...state, isLoadingExperiment: false })
+  ),
   on(
     experimentsAction.actionUpsertExperimentSuccess,
     (state, { experiment }) => {
@@ -39,7 +54,7 @@ const reducer = createReducer(
   on(
     experimentsAction.actionStoreExperimentStats,
     (state, { stats }) => {
-      return { ...state, stats, isLoadingExperiment: false };
+      return { ...state, stats: { ...state.stats, ...stats }, isLoadingExperiment: false };
     }
   ),
   on(
@@ -77,6 +92,30 @@ const reducer = createReducer(
     (state, { uniqueIdentifiers }) => {
       return ({ ...state, uniqueIdentifiers })
     }
+  ),
+  on(
+    experimentsAction.actionSetIsLoadingExperiment,
+    (state, { isLoadingExperiment }) => ({ ...state, isLoadingExperiment })
+  ),
+  on(
+    experimentsAction.actionSetSearchKey,
+    (state, { searchKey }) => ({ ...state, searchKey })
+  ),
+  on(
+    experimentsAction.actionSetSearchString,
+    (state, { searchString }) => ({ ...state, searchString })
+  ),
+  on(
+    experimentsAction.actionSetSortKey,
+    (state, { sortKey }) => ({ ...state, sortKey })
+  ),
+  on(
+    experimentsAction.actionSetSortingType,
+    (state, { sortingType }) => ({ ...state, sortAs: sortingType })
+  ),
+  on(
+    experimentsAction.actionSetSkipExperiment,
+    (state, { skipExperiment }) => ({ ...state, skipExperiment })
   )
 );
 

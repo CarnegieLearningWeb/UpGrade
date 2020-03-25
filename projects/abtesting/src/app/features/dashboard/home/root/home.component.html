@@ -5,7 +5,7 @@
     [innerHTML]="'home.experiment.text.subtitle' | translate"
   ></span>
 
-  <ng-container *ngIf="!(isLoadingExperiments$ | async); else loadingExperimentState">
+  <ng-container *ngIf="isLoadingExperiments$ | async; else loadingExperimentState">
     <div *ngIf="(experiments$ | async).length; else noExperimentTemplate">
       <home-experiment-list></home-experiment-list>
     </div>

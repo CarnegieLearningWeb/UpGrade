@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Experiment, ExperimentStateInfo } from './store/experiments.model';
+import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
 import { HttpClientService } from '../http/http-client.service';
 
 @Injectable()
 export class ExperimentDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllExperiment() {
+  getAllExperiment(params: ExperimentPaginationParams) {
     const url = environment.api.getAllExperiments;
-    return this.http.get(url);
+    return this.http.post(url, params);
   }
 
   getAllExperimentsStats(experimentIds: string[]) {

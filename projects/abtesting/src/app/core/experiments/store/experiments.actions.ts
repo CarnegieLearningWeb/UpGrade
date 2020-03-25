@@ -1,13 +1,19 @@
 import { createAction, props } from '@ngrx/store';
-import { Experiment, UpsertExperimentType, ExperimentStateInfo } from './experiments.model';
+import { Experiment, UpsertExperimentType, ExperimentStateInfo, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './experiments.model';
 
-export const actionGetAllExperiment = createAction('[Experiment] Get All');
+export const actionGetExperiments = createAction(
+  '[Experiment] Get Experiments',
+  props<{ fromStarting?: boolean }>()
+);
 
-export const actionGetExperimentById = createAction('[Experiment] Get By Id');
+export const actionGetExperimentsSuccess = createAction(
+  '[Experiment] Get Experiments Success',
+  props<{ experiments: Experiment[], totalExperiments: number }>()
+);
 
-export const actionStoreExperiment = createAction(
-  '[Experiment] Store Experiment',
-  props<{ experiments: Experiment[] }>()
+export const actionGetExperimentsFailure = createAction(
+  '[Experiment] Get Experiment Failure',
+  props<{ error: any }>()
 );
 
 export const actionStoreExperimentStats = createAction('[Experiment] Store Experiment Stats', props<{ stats: any }>());
@@ -15,11 +21,6 @@ export const actionStoreExperimentStats = createAction('[Experiment] Store Exper
 export const actionRemoveExperimentStat = createAction(
   '[Experiment] Remove Experiment stat',
   props<{ experimentStatId: string }>()
-);
-
-export const actionGetAllExperimentFailure = createAction(
-  '[Experiment] Get All Experiment Failure',
-  props<{ error: any }>()
 );
 
 export const actionUpsertExperiment = createAction(
@@ -72,3 +73,33 @@ export const actionFetchAllUniqueIdentifiersSuccess = createAction(
 );
 
 export const actionFetchAllUniqueIdentifiersFailure = createAction('[Experiment] Fetch All Unique Identifiers Failure');
+
+export const actionSetIsLoadingExperiment = createAction(
+  '[Experiment] Set Is Loading Experiment',
+  props<{ isLoadingExperiment: boolean }>()
+);
+
+export const actionSetSkipExperiment = createAction(
+  '[Experiment] Set Skip Experiment Value',
+  props<{ skipExperiment: number }>()
+);
+
+export const actionSetSearchKey = createAction(
+  '[Experiment] Set Search key value',
+  props<{ searchKey: EXPERIMENT_SEARCH_KEY }>()
+);
+
+export const actionSetSearchString = createAction(
+  '[Experiment] Set Search String',
+  props<{ searchString: string }>()
+);
+
+export const actionSetSortKey = createAction(
+  '[Experiment] Set Sort key value',
+  props<{ sortKey: EXPERIMENT_SORT_KEY }>()
+);
+
+export const actionSetSortingType = createAction(
+  '[Experiment] Set Sorting type',
+  props<{ sortingType: EXPERIMENT_SORT_AS }>()
+);
