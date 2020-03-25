@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsDefined, IsNumber } from 'class-validator';
-import { SearchParams, SortParams } from '../../models/Experiment';
+import { IExperimentSearchParams, IExperimentSortParams } from '../../models/Experiment';
 import { Column } from 'typeorm';
 
 export class PaginatedParamsValidator {
@@ -14,8 +14,8 @@ export class PaginatedParamsValidator {
   public take: number;
 
   @Column({ nullable: true })
-  public searchParams: SearchParams;
+  public searchParams: IExperimentSearchParams;
 
   @Column({ nullable: true })
-  public sortParams: SortParams;
+  public sortParams: IExperimentSortParams;
 }

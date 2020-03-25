@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
-import { Experiment, SearchParams, SEARCH_KEY, SortParams } from '../models/Experiment';
+import { Experiment, IExperimentSearchParams, EXPERIMENT_SEARCH_KEY, IExperimentSortParams } from '../models/Experiment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
@@ -57,8 +57,8 @@ export class ExperimentService {
   public findPaginated(
     skip: number,
     take: number,
-    searchParams?: SearchParams,
-    sortParams?: SortParams
+    searchParams?: IExperimentSearchParams,
+    sortParams?: IExperimentSortParams
   ): Promise<Experiment[]> {
     this.log.info(`Find paginated experiments`);
 
@@ -543,14 +543,14 @@ export class ExperimentService {
   private postgresSearchString(type: string): string {
     const searchString: string[] = [];
     switch (type) {
-      case SEARCH_KEY.NAME:
+      case EXPERIMENT_SEARCH_KEY.NAME:
         searchString.push("coalesce(experiment.name::TEXT,'')");
         searchString.push("coalesce(partitions.name::TEXT,'')");
         break;
-      case SEARCH_KEY.STATUS:
+      case EXPERIMENT_SEARCH_KEY.STATUS:
         searchString.push("coalesce(experiment.state::TEXT,'')");
         break;
-      case SEARCH_KEY.TAG:
+      case EXPERIMENT_SEARCH_KEY.TAG:
         searchString.push("coalesce(experiment.tags::TEXT,'')");
         break;
       default:
