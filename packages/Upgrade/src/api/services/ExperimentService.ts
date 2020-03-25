@@ -72,11 +72,10 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.partitions', 'partitions');
-    const customSearchString = searchParams.string.split(' ').join(`:*&`);
     if (searchParams) {
+      const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
       const postgresSearchString = this.postgresSearchString(searchParams.key);
-      console.log('postgresSearchString', postgresSearchString);
       queryBuilder = queryBuilder
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
         .addOrderBy('rank', 'DESC')
