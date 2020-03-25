@@ -528,7 +528,7 @@ export class ExperimentService {
     });
 
     // create schedules to start experiment and end experiment
-    this.scheduledJobService.updateExperimentSchedules(createdExperiment);
+    await this.scheduledJobService.updateExperimentSchedules(createdExperiment);
 
     // add auditLog here
     const createAuditLogData: AuditLogData = {
