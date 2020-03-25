@@ -52,11 +52,12 @@ export class ExperimentService {
 
   public find(): Promise<Experiment[]> {
     this.log.info(`Find all experiments`);
-    return this.experimentRepository
-      .createQueryBuilder('experiment')
-      .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.partitions', 'partitions')
-      .getMany();
+    return this.experimentRepository.findAllExperiments();
+  }
+
+  public findAllName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+    this.log.info(`Find all names`);
+    return this.experimentRepository.findAllName();
   }
 
   public findPaginated(

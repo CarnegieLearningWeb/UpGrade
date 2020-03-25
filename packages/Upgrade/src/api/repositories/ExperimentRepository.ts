@@ -5,6 +5,27 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
+  public async findAllExperiments(): Promise<Experiment[]> {
+    return this.createQueryBuilder('experiment')
+      .innerJoinAndSelect('experiment.conditions', 'conditions')
+      .innerJoinAndSelect('experiment.partitions', 'partitions')
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
+        throw new Error(errorMsgString);
+      });
+  }
+
+  public async findAllName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+    return this.createQueryBuilder('experiment')
+      .select(['experiment.id', 'experiment.name'])
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async getValidExperiments(): Promise<Experiment[]> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
