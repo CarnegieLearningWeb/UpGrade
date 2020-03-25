@@ -2,7 +2,12 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
-import { Experiment, IExperimentSearchParams, EXPERIMENT_SEARCH_KEY, IExperimentSortParams } from '../models/Experiment';
+import {
+  Experiment,
+  IExperimentSearchParams,
+  EXPERIMENT_SEARCH_KEY,
+  IExperimentSortParams,
+} from '../models/Experiment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
@@ -66,14 +71,15 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.partitions', 'partitions');
-
+    const customSearchString = searchParams.string.split(' ').join(`:*&`);
     if (searchParams) {
       // add search query
       const postgresSearchString = this.postgresSearchString(searchParams.key);
+      console.log('postgresSearchString', postgresSearchString);
       queryBuilder = queryBuilder
         .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
         .addOrderBy('rank', 'DESC')
-        .setParameter('query', `${searchParams.string}:*`);
+        .setParameter('query', `${customSearchString}:*`);
     }
     if (sortParams) {
       queryBuilder = queryBuilder.addOrderBy(`experiment.${sortParams.key}`, sortParams.sortAs);
