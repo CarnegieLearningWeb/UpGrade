@@ -120,6 +120,25 @@ interface ExperimentPaginationInfo {
 @JsonController('/experiments')
 export class ExperimentController {
   constructor(public experimentService: ExperimentService) {}
+
+  /**
+   * @swagger
+   * /experiments/names:
+   *    get:
+   *       description: Get all the experiment names
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment Name List
+   */
+  @Get('/names')
+  public findName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+    return this.experimentService.findAllName();
+  }
+
   /**
    * @swagger
    * /experiments:
