@@ -6,7 +6,7 @@ import { selectIsAuditLogLoading, selectAllAuditLogs, selectIsErrorLogLoading, s
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
-import { AuditLogs, AuditLogFilters, ErrorLogFilters } from './store/logs.model';
+import { AuditLogs, SERVER_ERROR, EXPERIMENT_LOG_TYPE } from './store/logs.model';
 
 @Injectable()
 export class LogsService {
@@ -48,11 +48,11 @@ export class LogsService {
     this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart }))
   }
 
-  setAuditLogFilter(filterType: AuditLogFilters) {
+  setAuditLogFilter(filterType: EXPERIMENT_LOG_TYPE) {
     this.store$.dispatch(logsActions.actionSetAuditLogFilter({ filterType }));
   }
 
-  setErrorLogFilter(filterType: ErrorLogFilters) {
+  setErrorLogFilter(filterType: SERVER_ERROR) {
     this.store$.dispatch(logsActions.actionSetErrorLogFilter({ filterType }));
   }
 }

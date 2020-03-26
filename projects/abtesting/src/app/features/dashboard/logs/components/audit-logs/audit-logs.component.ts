@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LogType, LogDateFormatType, AuditLogs, AuditLogFilters } from '../../../../../core/logs/store/logs.model';
+import { LogType, LogDateFormatType, AuditLogs, EXPERIMENT_LOG_TYPE } from '../../../../../core/logs/store/logs.model';
 import { KeyValue } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
@@ -16,11 +16,11 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   auditLogsSubscription: Subscription;
   searchValue: string;
   logsOptions = [
-    { value: AuditLogFilters.ALL, viewValue: 'All' },
-    { value: AuditLogFilters.EXPERIMENT_CREATED, viewValue: 'Created' },
-    { value: AuditLogFilters.EXPERIMENT_UPDATED, viewValue: 'Updated' },
-    { value: AuditLogFilters.EXPERIMENT_STATE_CHANGED, viewValue: 'State changed' },
-    { value: AuditLogFilters.EXPERIMENT_DELETED, viewValue: 'Deleted' }
+    { value: 'all', viewValue: 'All' },
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, viewValue: 'Experiment Created' },
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, viewValue: 'Experiment Updated' },
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, viewValue: 'Experiment State Changed' },
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED, viewValue: 'Experiment Deleted' }
   ];
   selectedLogOption = this.logsOptions[0].value;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
@@ -42,7 +42,8 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.auditLogsSubscription.unsubscribe();
   }
 
-  changeLogOption(value: AuditLogFilters) {
+  changeLogOption(value: any) {
+    value = value === 'all' ? null : value;
     this.logsService.setAuditLogFilter(value);
   }
 

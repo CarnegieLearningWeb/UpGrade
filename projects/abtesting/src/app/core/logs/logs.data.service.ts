@@ -1,24 +1,19 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { HttpClientService } from '../http/http-client.service';
-import { LogsPagination } from './logs-pagination';
-import { AuditLogFilters, ErrorLogFilters } from './store/logs.model';
+import { AuditLogParams, ErrorLogParams } from './store/logs.model';
 
 @Injectable()
 export class LogsDataService {
   constructor(private http: HttpClientService) {}
 
-  getAllAuditLogs(skip: number, fromStart: boolean, filterType: AuditLogFilters) {
+  getAllAuditLogs(params: AuditLogParams) {
     const url = environment.api.getAllAuditLogs;
-    const args = LogsPagination.getLogParameters(skip, fromStart);
-    console.log('Filter type data service ', filterType);
-    return this.http.post(url, args);
+    return this.http.post(url, params);
   }
 
-  getAllErrorLogs(skip: number, fromStart: boolean, filterType: ErrorLogFilters) {
+  getAllErrorLogs(params: ErrorLogParams) {
     const url = environment.api.getAllErrorLogs;
-    const args = LogsPagination.getLogParameters(skip, fromStart);
-    console.log('Filter type data service for Error', filterType);
-    return this.http.post(url, args);
+    return this.http.post(url, params);
   }
 }

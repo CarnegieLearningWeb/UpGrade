@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
-import { AuditLogs, ErrorLogs, AuditLogFilters, ErrorLogFilters } from './logs.model';
+import { AuditLogs, ErrorLogs } from './logs.model';
+import { SERVER_ERROR, EXPERIMENT_LOG_TYPE } from 'ees_types';
 
 export const actionGetAuditLogs = createAction(
   '[Logs] Get Audit Logs',
@@ -51,10 +52,10 @@ export const actionSetSkipErrorLog = createAction(
 
 export const actionSetAuditLogFilter = createAction(
   '[Logs] Set Audit Log Filter',
-  props<{ filterType: AuditLogFilters }>()
+  props<{ filterType: EXPERIMENT_LOG_TYPE }>()
 );
 
 export const actionSetErrorLogFilter = createAction(
   '[Logs] Set Error Log Filter',
-  props<{ filterType: ErrorLogFilters }>()
+  props<{ filterType: SERVER_ERROR }>()
 );

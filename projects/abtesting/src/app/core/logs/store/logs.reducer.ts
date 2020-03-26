@@ -1,6 +1,6 @@
 import { createReducer, on, Action } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { AuditLogs, LogState, ErrorLogs, AuditLogFilters, ErrorLogFilters } from './logs.model';
+import { AuditLogs, LogState, ErrorLogs } from './logs.model';
 import * as logsActions from './logs.actions';
 
 export const adapter: EntityAdapter<AuditLogs | ErrorLogs> = createEntityAdapter<AuditLogs | ErrorLogs>();
@@ -14,8 +14,8 @@ export const initialState: LogState = adapter.getInitialState({
   totalAuditLogs: null,
   skipErrorLog: 0,
   totalErrorLogs: null,
-  auditLogFilter: AuditLogFilters.ALL,
-  errorLogFilter: ErrorLogFilters.ALL
+  auditLogFilter: null,
+  errorLogFilter: null
 });
 
 const reducer = createReducer(

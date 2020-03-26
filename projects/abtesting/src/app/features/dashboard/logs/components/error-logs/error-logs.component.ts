@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LogType, ErrorLogs, LogDateFormatType, ErrorLogFilters } from '../../../../../core/logs/store/logs.model';
+import { LogType, ErrorLogs, LogDateFormatType, SERVER_ERROR } from '../../../../../core/logs/store/logs.model';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
@@ -16,15 +16,17 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   errorLogSubscription: Subscription;
   searchValue: string;
   logsOptions = [
-    { value: ErrorLogFilters.ALL, viewValue: 'All' },
-    { value: ErrorLogFilters.DB_AUTH_FAIL, viewValue: 'Database authentication fail' },
-    { value: ErrorLogFilters.ASSIGNMENT_ERROR, viewValue: 'Error in the assignment algorithm' },
-    { value: ErrorLogFilters.MISSING_PARAMS, viewValue: 'Parameter missing' },
-    { value: ErrorLogFilters.INCORRECT_PARAM_FORMAT, viewValue: 'Parameter not in the correct format' },
-    { value: ErrorLogFilters.USER_NOT_FOUND, viewValue: 'User ID not found' },
-    { value: ErrorLogFilters.QUERY_FAILED, viewValue: 'Query Failed' },
-    { value: ErrorLogFilters.REPORTED_ERROR, viewValue: 'Error reported from client' },
-
+    { value: 'all', viewValue: 'All' },
+    { value: SERVER_ERROR.DB_AUTH_FAIL, viewValue: SERVER_ERROR.DB_AUTH_FAIL },
+    { value: SERVER_ERROR.ASSIGNMENT_ERROR, viewValue: SERVER_ERROR.ASSIGNMENT_ERROR },
+    { value: SERVER_ERROR.MISSING_PARAMS, viewValue: SERVER_ERROR.MISSING_PARAMS },
+    { value: SERVER_ERROR.INCORRECT_PARAM_FORMAT, viewValue: SERVER_ERROR.INCORRECT_PARAM_FORMAT },
+    { value: SERVER_ERROR.USER_NOT_FOUND, viewValue: SERVER_ERROR.USER_NOT_FOUND },
+    { value: SERVER_ERROR.QUERY_FAILED, viewValue: SERVER_ERROR.QUERY_FAILED },
+    { value: SERVER_ERROR.REPORTED_ERROR, viewValue: SERVER_ERROR.REPORTED_ERROR },
+    { value: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED },
+    { value: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED },
+    { value: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP, viewValue: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP },
   ];
   selectedLogOption = this.logsOptions[0].value;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
@@ -51,7 +53,8 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     return new Date(a.key).getTime() > new Date(b.key).getTime() ? 1 : 0;
   };
 
-  changeLogOption(value: ErrorLogFilters) {
+  changeLogOption(value: any) {
+    value = value === 'all' ? null : value
     this.logsService.setErrorLogFilter(value);
   }
 

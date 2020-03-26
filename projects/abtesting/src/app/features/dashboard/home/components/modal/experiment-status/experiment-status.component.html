@@ -14,7 +14,7 @@
       <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
       <mat-select formControlName="newStatus">
         <mat-option *ngFor="let status of experimentStatus" [value]="status">
-          {{ status.value | titlecase }}
+          {{ status.value | experimentState }}
         </mat-option>
       </mat-select>
       <mat-error *ngIf="statusForm.controls.newStatus.hasError('required')">
