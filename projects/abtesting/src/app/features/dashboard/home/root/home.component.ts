@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Experiment } from '../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
@@ -11,7 +11,7 @@ import { NewExperimentComponent } from '../components/modal/new-experiment/new-e
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   experiments$: Observable<Experiment[]> = this.experimentService.experiments$;
   isLoadingExperiments$ = this.experimentService.isInitialExperimentsLoading();
 
@@ -19,6 +19,10 @@ export class HomeComponent {
     private experimentService: ExperimentService,
     public dialog: MatDialog
   ) {}
+
+  ngOnInit() {
+    this.experimentService.loadExperiments(true);
+  }
 
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
