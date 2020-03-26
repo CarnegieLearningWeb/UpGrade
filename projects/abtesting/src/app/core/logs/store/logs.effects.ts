@@ -38,11 +38,14 @@ export class LogsEffects {
       filter(([fromStart, skipAuditLog, __, isAuditLogLoading, totalAuditLogs]) => {
         return !isAuditLogLoading && (skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart);
       }),
-      tap(() => {
+      tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsAuditLogLoading({ isAuditLogLoading: true }));
+        if (fromStart) {
+          this.store$.dispatch(logsActions.actionSetSkipAuditLog({ skipAuditLog: 0 }));
+        }
       }),
-      mergeMap(([_, skipAuditLog, filterType]) => {
-        let params: AuditLogParams = { skip: skipAuditLog, take: NUMBER_OF_LOGS }
+      mergeMap(([fromStart, skipAuditLog, filterType]) => {
+        let params: AuditLogParams = { skip: fromStart ? 0 : skipAuditLog, take: NUMBER_OF_LOGS }
         if (filterType) {
           params = {
             ...params,
@@ -75,11 +78,14 @@ export class LogsEffects {
       filter(([fromStart, skipErrorLog, __, isErrorLogLoading, totalErrorLogs]) => {
         return !isErrorLogLoading && (skipErrorLog < totalErrorLogs || totalErrorLogs === null || fromStart);
       }),
-      tap(() => {
+      tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsErrorLogLoading({ isErrorLogLoading: true }));
+        if (fromStart) {
+          this.store$.dispatch(logsActions.actionSetSkipErrorLog({ skipErrorLog: 0 }));
+        }
       }),
-      mergeMap(([_, skipErrorLog, filterType]) => {
-        let params: ErrorLogParams = { skip: skipErrorLog, take: NUMBER_OF_LOGS }
+      mergeMap(([fromStart, skipErrorLog, filterType]) => {
+        let params: ErrorLogParams = { skip: fromStart ? 0 : skipErrorLog, take: NUMBER_OF_LOGS }
         if (filterType) {
           params = {
             ...params,
@@ -105,7 +111,6 @@ export class LogsEffects {
       ofType(logsActions.actionSetAuditLogFilter),
       map(action => action.filterType),
       tap(() => {
-        this.store$.dispatch(logsActions.actionSetSkipAuditLog({ skipAuditLog: 0 }));
         this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart: true }));
       })
     ),
@@ -117,7 +122,6 @@ export class LogsEffects {
       ofType(logsActions.actionSetErrorLogFilter),
       map(action => action.filterType),
       tap(() => {
-        this.store$.dispatch(logsActions.actionSetSkipErrorLog({ skipErrorLog: 0 }));
         this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart: true }));
       })
     ),
