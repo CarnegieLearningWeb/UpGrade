@@ -1,6 +1,7 @@
 import { Repository, EntityRepository } from 'typeorm';
 import { ExperimentError } from '../models/ExperimentError';
 import repositoryError from './utils/repositoryError';
+import { SERVER_ERROR } from 'ees_types';
 
 @EntityRepository(ExperimentError)
 export class ErrorRepository extends Repository<ExperimentError> {
@@ -18,14 +19,29 @@ export class ErrorRepository extends Repository<ExperimentError> {
     return result.raw && result.raw[0];
   }
 
-  public async paginatedFind(limit: number, offset: number): Promise<ExperimentError[]> {
-    return this.createQueryBuilder('error')
+  public async paginatedFind(limit: number, offset: number, filter: SERVER_ERROR): Promise<ExperimentError[]> {
+    let queryBuilder = this.createQueryBuilder('error')
       .skip(offset)
       .take(limit)
-      .orderBy('error.createdAt', 'DESC')
+      .orderBy('error.createdAt', 'DESC');
+    if (filter) {
+      queryBuilder = queryBuilder
+        .where('error.type = :filter', { filter });
+    }
+    return queryBuilder
       .getMany()
       .catch((error: any) => {
         const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { limit, offset }, error);
+        throw new Error(errorMsg);
+      });
+  }
+
+  public getTotalLogs(filter: SERVER_ERROR): Promise<number> {
+    return this.createQueryBuilder('error')
+      .where('error.type = :filter', { filter })
+      .getCount()
+      .catch((error: any) => {
+        const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { filter }, error);
         throw new Error(errorMsg);
       });
   }
