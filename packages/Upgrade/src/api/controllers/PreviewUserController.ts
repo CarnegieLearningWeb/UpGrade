@@ -174,4 +174,32 @@ export class PreviewUserController {
   public delete(@Param('id') id: string): Promise<PreviewUser | undefined> {
     return this.previewUserService.delete(id);
   }
+
+  /**
+   * @swagger
+   * /previewusers/assign:
+   *    post:
+   *       description: Create Assignments for Preview users
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: user
+   *           required: true
+   *           schema:
+   *             type: object
+   *             $ref: '#/definitions/PreviewUser'
+   *           description: PreviewUser Structure
+   *       tags:
+   *         - Preview Users
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Assignment is created
+   */
+  @Post('/assign')
+  public assign(@Body() user: PreviewUser): Promise<PreviewUser> {
+    return this.previewUserService.upsertExperimentConditionAssignment(user);
+  }
 }

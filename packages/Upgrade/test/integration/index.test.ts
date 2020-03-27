@@ -29,7 +29,7 @@ import {
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
-import { NoPreviewUser, PreviewExperimentWithPreviewUser } from './PreviewExperiment/index';
+import { NoPreviewUser, PreviewAssignments, PreviewExperimentWithPreviewUser } from './PreviewExperiment/index';
 import { Scenario9, Scenario10 } from './ExperimentAssignment/index';
 import Container from 'typedi';
 import { AWSService } from '../../src/api/services/AWSService';
@@ -211,6 +211,11 @@ describe('Integration Tests', () => {
 
   test('No preview user', async done => {
     await NoPreviewUser();
+    done();
+  });
+
+  test('Preview Assignments', async done => {
+    await PreviewAssignments();
     done();
   });
 

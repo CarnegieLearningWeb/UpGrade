@@ -37,12 +37,27 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
   }
 
   public async findOneById(id: string): Promise<PreviewUser | undefined> {
-    return this.createQueryBuilder()
-      .where('id=:id', { id })
+    return this.createQueryBuilder('user')
+      .innerJoinAndSelect('user.assignments', 'assignments')
+      .innerJoin('assignments.experiment', 'experiment')
+      .addSelect(['experiment.id', 'experiment.name'])
+      .innerJoin('assignments.experimentCondition', 'experimentCondition')
+      .addSelect(['experimentCondition.id', 'experimentCondition.name'])
+      .where('user.id=:id', { id })
       .getOne()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('PreviewUserRepository', 'findOne', { id }, errorMsg);
+        const errorMsgString = repositoryError('PreviewUserRepository', 'findOneById', { id }, errorMsg);
         throw new Error(errorMsgString);
       });
+  }
+
+  public async findWithNames(): Promise<PreviewUser[]> {
+    return this.createQueryBuilder('user')
+      .innerJoinAndSelect('user.assignments', 'assignments')
+      .innerJoin('assignments.experiment', 'experiment')
+      .addSelect(['experiment.id', 'experiment.name'])
+      .innerJoin('assignments.experimentCondition', 'experimentCondition')
+      .addSelect(['experimentCondition.id', 'experimentCondition.name'])
+      .getMany();
   }
 }

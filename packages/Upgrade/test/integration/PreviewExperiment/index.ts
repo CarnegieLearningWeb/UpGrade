@@ -1,6 +1,7 @@
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import TestCase1 from './NoPreviewUser';
+import TestCase2 from './PreviewAssignments';
 import TestCase3 from './PreviewExperimentWithPreviewUser';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -42,6 +43,11 @@ const initialChecks = async () => {
 export const NoPreviewUser = async () => {
   await initialChecks();
   await TestCase1();
+};
+
+export const PreviewAssignments = async () => {
+  await initialChecks();
+  await TestCase2();
 };
 
 export const PreviewExperimentWithPreviewUser = async () => {

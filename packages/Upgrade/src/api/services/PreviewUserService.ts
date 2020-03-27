@@ -4,22 +4,34 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import uuid from 'uuid/v4';
 import { PreviewUser } from '../models/PreviewUser';
 import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
+import { ExplicitIndividualAssignmentRepository } from '../repositories/ExplicitIndividualAssignmentRepository';
+import { ExplicitIndividualAssignment } from '../models/ExplicitIndividualAssignment';
 
 @Service()
 export class PreviewUserService {
   constructor(
     @OrmRepository() private userRepository: PreviewUserRepository,
+    @OrmRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public find(): Promise<PreviewUser[]> {
+  public async find(): Promise<PreviewUser[]> {
     this.log.info(`Find all preview users`);
-    return this.userRepository.find();
+    const [previewUsers, assignments] = await Promise.all([
+      this.userRepository.find(),
+      this.userRepository.findWithNames(),
+    ]);
+    return previewUsers.map(user => {
+      const doc = assignments.find(assignment => {
+        return assignment.id === user.id;
+      });
+      return doc ? doc : user;
+    });
   }
 
   public findOne(id: string): Promise<PreviewUser | undefined> {
     this.log.info(`Find user by id => ${id}`);
-    return this.userRepository.findOneById(id);
+    return this.userRepository.findOne({ id });
   }
 
   public create(user: Partial<PreviewUser>): Promise<PreviewUser> {
@@ -39,5 +51,60 @@ export class PreviewUserService {
     this.log.info('Delete a user => ', id.toString());
     const deletedDoc = await this.userRepository.deleteById(id);
     return deletedDoc;
+  }
+
+  public async upsertExperimentConditionAssignment(previewUser: PreviewUser): Promise<PreviewUser | undefined> {
+    this.log.info('Upsert Experiment Condition Assignment => ', JSON.stringify(previewUser, undefined, 1));
+
+    const [previewDocument, previewDocumentWithOldAssignments] = await Promise.all([
+      this.userRepository.findByIds([previewUser.id]),
+      this.userRepository.findOneById(previewUser.id),
+    ]);
+    // console.log('previewDocument[0]', previewDocument[0]);
+    const { id, ...rest } = previewDocument[0];
+    // console.log('assignments', previewDocumentWithAssignments);
+    const newAssignments = previewUser.assignments;
+
+    const assignmentDocToSave: Array<Partial<ExplicitIndividualAssignment>> =
+      (newAssignments &&
+        newAssignments.length > 0 &&
+        newAssignments.map((assignment: ExplicitIndividualAssignment) => {
+          // tslint:disable-next-line:no-shadowed-variable
+          const { createdAt, updatedAt, versionNumber, ...rest } = assignment;
+          rest.previewUser = previewUser;
+          rest.id = rest.id || uuid();
+          rest.experimentCondition = assignment.experimentCondition.id as any;
+          rest.experiment = assignment.experiment.id as any;
+          return rest;
+        })) ||
+      [];
+
+    if (previewDocumentWithOldAssignments && previewDocumentWithOldAssignments.assignments) {
+      // delete conditions which don't exist in new experiment document
+      const toDeleteAssignments = [];
+      previewDocumentWithOldAssignments.assignments.forEach(assignment => {
+        if (
+          !assignmentDocToSave.find(doc => {
+            return doc.id === assignment.id;
+          })
+        ) {
+          toDeleteAssignments.push(this.explicitIndividualAssignmentRepository.delete({ id: assignment.id }));
+        }
+      });
+
+      // delete old assignments
+      await Promise.all(toDeleteAssignments);
+    }
+
+    // save new documents
+    const savedAssignments: ExplicitIndividualAssignment[] = await this.explicitIndividualAssignmentRepository.save(
+      assignmentDocToSave
+    );
+
+    return {
+      id: previewUser.id,
+      assignments: savedAssignments,
+      ...rest,
+    };
   }
 }
