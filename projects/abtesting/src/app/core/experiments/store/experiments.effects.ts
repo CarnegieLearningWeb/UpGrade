@@ -30,7 +30,7 @@ export class ExperimentEffects {
         this.store$.pipe(select(selectSortKey)),
         this.store$.pipe(select(selectSortAs))
       ),
-      filter(([_, skip, total]) => skip < total || total === null),
+      filter(([fromStarting, skip, total]) => skip < total || total === null || fromStarting),
       tap(() => {
         this.store$.dispatch(experimentAction.actionSetIsLoadingExperiment({ isLoadingExperiment: true }));
       }),
@@ -198,8 +198,11 @@ export class ExperimentEffects {
       this.actions$.pipe(
         ofType(experimentAction.actionSetSearchString),
         map(action => action.searchString),
-        tap(() => {
-          this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }))
+        tap((searchString) => {
+          // Allow empty string as we erasing text from search input
+          if (searchString !== null) {
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }))
+          }
         })
       ),
       { dispatch: false }

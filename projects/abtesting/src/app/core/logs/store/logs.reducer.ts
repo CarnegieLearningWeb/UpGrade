@@ -13,7 +13,9 @@ export const initialState: LogState = adapter.getInitialState({
   skipAuditLog: 0,
   totalAuditLogs: null,
   skipErrorLog: 0,
-  totalErrorLogs: null
+  totalErrorLogs: null,
+  auditLogFilter: null,
+  errorLogFilter: null
 });
 
 const reducer = createReducer(
@@ -48,11 +50,23 @@ const reducer = createReducer(
     ...state,
     isErrorLogLoading: false
   })),
+  on(logsActions.actionSetSkipAuditLog,  (state, { skipAuditLog }) => {
+    return ({ ...state, skipAuditLog });
+  }),
+  on(logsActions.actionSetSkipErrorLog,  (state, { skipErrorLog }) => {
+    return ({ ...state, skipErrorLog });
+  }),
   on(logsActions.actionSetIsAuditLogLoading, (state, { isAuditLogLoading }) => {
     return ({ ...state, isAuditLogLoading })
   }),
   on(logsActions.actionSetIsErrorLogLoading, (state, { isErrorLogLoading }) => {
     return ({ ...state, isErrorLogLoading })
+  }),
+  on(logsActions.actionSetAuditLogFilter, (state, { filterType }) => {
+    return ({ ...state, auditLogFilter: filterType })
+  }),
+  on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => {
+    return ({ ...state, errorLogFilter: filterType })
   })
 );
 

@@ -16,6 +16,18 @@ export enum LogDateFormatType {
   YEAR_DAY = 'yearDay'
 }
 
+export interface AuditLogParams {
+  skip: number;
+  take: number;
+  filter?: EXPERIMENT_LOG_TYPE;
+}
+
+export interface ErrorLogParams {
+  skip: number;
+  take: number;
+  filter?: SERVER_ERROR;
+}
+
 export interface AuditLogs {
   id: string;
   createdAt: string;
@@ -44,6 +56,8 @@ export interface LogState extends EntityState<AuditLogs | ErrorLogs> {
   totalAuditLogs: number;
   skipErrorLog: number;
   totalErrorLogs: number;
+  auditLogFilter: EXPERIMENT_LOG_TYPE;
+  errorLogFilter: SERVER_ERROR;
 }
 
 export interface State extends AppState {
