@@ -42,8 +42,10 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   searchLogs(value: string) {}
 
   // Used for keyvalue pipe to sort data by key
-  valueDescOrder = (a: KeyValue<string, ErrorLogs>, b: KeyValue<string, ErrorLogs>): number => {
-    return new Date(a.key).getTime() > new Date(b.key).getTime() ? 1 : 0;
+  valueDescOrder = (a: KeyValue<string, ErrorLogs>, b: KeyValue<string, ErrorLogs>) => {
+    if (new Date(a.key).getTime() < new Date(b.key).getTime()) {
+      return b.key;
+    }
   };
 
   changeLogOption(value: string) {}
