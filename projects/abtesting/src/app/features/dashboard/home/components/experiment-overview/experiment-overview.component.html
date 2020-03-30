@@ -79,6 +79,14 @@
     </mat-error>
   </mat-form-field>
 
+  <mat-form-field class="context">
+    <input
+      matInput
+      [placeholder]="'home.new-experiment.overview.context.placeHolder' | translate"
+      formControlName="context"
+    />
+  </mat-form-field>
+
   <mat-form-field class="tags">
     <mat-chip-list #tagsList aria-label="Tags">
       <mat-chip

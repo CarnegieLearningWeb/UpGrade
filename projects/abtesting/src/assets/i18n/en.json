@@ -53,6 +53,7 @@
   "home.new-experiment.overview.name.placeHolder": "Name of the Experiment",
   "home.new-experiment.overview.description.placeHolder": "Description of Experiment (optional)",
   "home.new-experiment.overview.group-type.placeHolder": "Group Type",
+  "home.new-experiment.overview.context.placeHolder": "Context (optional)",
   "home.new-experiment.overview.tags.placeHolder": "Tags (optional)",
   "home.new-experiment.overview.unit-of-assignment.error.text": "Please choose unit of assignment",
   "home.new-experiment.overview.group-type.error.text": "Please choose group type",

@@ -56,7 +56,8 @@ export class ExperimentOverviewComponent implements OnInit {
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         customGroupName: [null],
-        consistencyRule: [null, Validators.required]
+        consistencyRule: [null, Validators.required],
+        context: [null]
       },
       { validators: ExperimentFormValidators.validateExperimentOverviewForm }
     );
@@ -89,7 +90,8 @@ export class ExperimentOverviewComponent implements OnInit {
         unitOfAssignment: this.experimentInfo.assignmentUnit,
         groupType,
         customGroupName,
-        consistencyRule: this.experimentInfo.consistencyRule
+        consistencyRule: this.experimentInfo.consistencyRule,
+        context: this.experimentInfo.context
       });
       this.experimentTags = this.experimentInfo.tags;
     }
@@ -140,7 +142,8 @@ export class ExperimentOverviewComponent implements OnInit {
             unitOfAssignment,
             groupType,
             customGroupName,
-            consistencyRule
+            consistencyRule,
+            context
           } = this.overviewForm.value;
           const overviewFormData = {
             name: experimentName,
@@ -148,7 +151,8 @@ export class ExperimentOverviewComponent implements OnInit {
             consistencyRule: consistencyRule,
             assignmentUnit: unitOfAssignment,
             group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
-            tags: this.experimentTags
+            tags: this.experimentTags,
+            context
           };
           this.emitExperimentDialogEvent.emit({
             type: eventType,
