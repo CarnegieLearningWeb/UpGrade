@@ -3,7 +3,8 @@ import { AuditService } from '../services/AuditService';
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from '../services/ErrorService';
-import { LogParamsValidator } from './validators/LogParamsValidator';
+import { ErrorLogParamsValidator } from './validators/ErrorLogParamsValidator';
+import { AuditLogParamsValidator } from './validators/AuditLogParamsValidators';
 
 interface ExperimentAuditPaginationInfo {
   total: number;
@@ -28,7 +29,7 @@ interface ExperimentErrorPaginatedInfo {
 @Authorized()
 @JsonController('/')
 export class AuditLogController {
-  constructor(public auditService: AuditService, public errorService: ErrorService) {}
+  constructor(public auditService: AuditService, public errorService: ErrorService) { }
 
   /**
    * @swagger
@@ -51,6 +52,9 @@ export class AuditLogController {
    *                type: integer
    *               take:
    *                type: integer
+   *               filter:
+   *                type: string
+   *                enum: [experimentCreated, experimentUpdated, experimentStateChanged, experimentDeleted]
    *           description: number of audit logs to requests
    *       tags:
    *         - Logs
@@ -62,11 +66,11 @@ export class AuditLogController {
    */
   @Post('audit')
   public async getAuditLogService(
-    @Body({ validate: { validationError: { target: true, value: true } } }) logParams: LogParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) logParams: AuditLogParamsValidator
   ): Promise<ExperimentAuditPaginationInfo> {
     const [nodes, total] = await Promise.all([
-      this.auditService.getAuditLogs(logParams.take, logParams.skip),
-      this.auditService.getTotalLogs(),
+      this.auditService.getAuditLogs(logParams.take, logParams.skip, logParams.filter),
+      this.auditService.getTotalLogs(logParams.filter),
     ]);
     return {
       total,
@@ -96,6 +100,18 @@ export class AuditLogController {
    *                type: integer
    *               take:
    *                type: integer
+   *               filter:
+   *                type: string
+   *                enum: [Database not reachable,
+   *                       Database auth fail, Error in the assignment algorithm,
+   *                       Parameter missing in the client request,
+   *                       Parameter not in the correct format,
+   *                       User ID not found,
+   *                       Query Failed,
+   *                       Error reported from client,
+   *                       Experiment user not defined,
+   *                       Experiment user group not defined,
+   *                       Working group is not a subset of user group]
    *           description: number of error logs to requests
    *       tags:
    *         - Logs
@@ -107,11 +123,11 @@ export class AuditLogController {
    */
   @Post('error')
   public async getErrorLogService(
-    @Body({ validate: { validationError: { target: true, value: true } } }) logParams: LogParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) logParams: ErrorLogParamsValidator
   ): Promise<ExperimentErrorPaginatedInfo> {
     const [nodes, total] = await Promise.all([
-      this.errorService.getErrorLogs(logParams.take, logParams.skip),
-      this.errorService.getTotalLogs(),
+      this.errorService.getErrorLogs(logParams.take, logParams.skip, logParams.filter),
+      this.errorService.getTotalLogs(logParams.filter),
     ]);
 
     return {
