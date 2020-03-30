@@ -40,7 +40,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   expect(startExperiment).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        experimentId: experiments[0].id,
+        experiment: expect.objectContaining({ id: experiments[0].id }),
         type: SCHEDULE_TYPE.START_EXPERIMENT,
         timeStamp: new Date(experimentObject.startOn),
       }),
@@ -52,7 +52,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   expect(endExperiment).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        experimentId: experiments[0].id,
+        experiment: expect.objectContaining({ id: experiments[0].id }),
         type: SCHEDULE_TYPE.END_EXPERIMENT,
         timeStamp: new Date(experimentObject.endOn),
       }),
@@ -89,7 +89,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   expect(endExperiment).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        experimentId: experiments[0].id,
+        experiment: expect.objectContaining({ id: experiments[0].id }),
         type: SCHEDULE_TYPE.END_EXPERIMENT,
         timeStamp: new Date(experimentObject.endOn),
       }),

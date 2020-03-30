@@ -31,7 +31,7 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
       .createQueryBuilder()
       .delete()
       .from(ScheduledJob)
-      .where('experimentId = :experimentId', { experimentId })
+      .where('experiment = :experimentId', { experimentId })
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
@@ -42,7 +42,6 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
         );
         throw new Error(errorMsgString);
       });
-
     return result.raw;
   }
 }

@@ -23,48 +23,58 @@ export class ScheduledJobService {
   ) {}
 
   public async startExperiment(id: string): Promise<any> {
-    const scheduledJob = await this.scheduledJobRepository.findOne(id);
-    if (scheduledJob && scheduledJob.experimentId) {
-      const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
+    const scheduledJob = await this.scheduledJobRepository.findOne(id, { relations: ['experiment'] });
+    if (scheduledJob && scheduledJob.experiment) {
+      const experiment = await this.experimentRepository.findOne(scheduledJob.experiment.id);
       if (scheduledJob && experiment) {
         const systemUser = await this.userRepository.findOne({ id: systemUserDoc.id });
         const experimentService = Container.get<ExperimentService>(ExperimentService);
-        return experimentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLING, systemUser);
+        return experimentService.updateState(scheduledJob.experiment.id, EXPERIMENT_STATE.ENROLLING, systemUser);
       }
     }
     return {};
   }
 
   public async endExperiment(id: string): Promise<any> {
-    const scheduledJob = await this.scheduledJobRepository.findOne(id);
-    const experiment = await this.experimentRepository.findOne(scheduledJob.experimentId);
+    const scheduledJob = await this.scheduledJobRepository.findOne(id, { relations: ['experiment'] });
+    const experiment = await this.experimentRepository.findOne(scheduledJob.experiment.id);
     if (scheduledJob && experiment) {
       // get system user
       const systemUser = await this.userRepository.findOne({ id: systemUserDoc.id });
       const experimentService = Container.get<ExperimentService>(ExperimentService);
-      return experimentService.updateState(scheduledJob.experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, systemUser);
+      return experimentService.updateState(
+        scheduledJob.experiment.id,
+        EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+        systemUser
+      );
     }
     return {};
   }
 
   public getAllStartExperiment(): Promise<ScheduledJob[]> {
     this.log.info('get all start experiment scheduled jobs');
-    return this.scheduledJobRepository.find({ type: SCHEDULE_TYPE.START_EXPERIMENT });
+    return this.scheduledJobRepository.find({
+      where: { type: SCHEDULE_TYPE.START_EXPERIMENT },
+      relations: ['experiment'],
+    });
   }
 
   public getAllEndExperiment(): Promise<ScheduledJob[]> {
     this.log.info('get all end experiment scheduled jobs');
-    return this.scheduledJobRepository.find({ type: SCHEDULE_TYPE.END_EXPERIMENT });
+    return this.scheduledJobRepository.find({
+      where: { type: SCHEDULE_TYPE.END_EXPERIMENT },
+      relations: ['experiment'],
+    });
   }
 
   public async updateExperimentSchedules(experiment: Experiment): Promise<void> {
     try {
-      const { id, state, startOn, endOn } = experiment;
+      const { state, startOn, endOn } = experiment;
       const experimentStartCondition = state === EXPERIMENT_STATE.SCHEDULED;
       const experimentEndCondition =
         !(state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE || state === EXPERIMENT_STATE.CANCELLED) && endOn;
       // query experiment schedules
-      const scheduledJobs = await this.scheduledJobRepository.find({ experimentId: id });
+      const scheduledJobs = await this.scheduledJobRepository.find({ experiment });
       const startExperimentDoc = scheduledJobs.find(({ type }) => {
         return type === SCHEDULE_TYPE.START_EXPERIMENT;
       });
@@ -74,7 +84,7 @@ export class ScheduledJobService {
         if (!startExperimentDoc || (startOn && startExperimentDoc.timeStamp !== startOn)) {
           const startDoc = startExperimentDoc || {
             id: `${experiment.id}_${SCHEDULE_TYPE.START_EXPERIMENT}`,
-            experimentId: experiment.id,
+            experiment,
             type: SCHEDULE_TYPE.START_EXPERIMENT,
             timeStamp: startOn,
           };
@@ -112,7 +122,7 @@ export class ScheduledJobService {
         if (!endExperimentDoc || (endOn && endExperimentDoc.timeStamp !== endOn)) {
           const endDoc = endExperimentDoc || {
             id: `${experiment.id}_${SCHEDULE_TYPE.END_EXPERIMENT}`,
-            experimentId: experiment.id,
+            experiment,
             type: SCHEDULE_TYPE.END_EXPERIMENT,
             timeStamp: endOn,
           };

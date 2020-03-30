@@ -41,33 +41,38 @@ export default async function DeleteEndExperiment(): Promise<void> {
   expect(endExperiment).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        experimentId: experiments[0].id,
+        experiment: expect.objectContaining({ id: experiments[0].id }),
         type: SCHEDULE_TYPE.END_EXPERIMENT,
         timeStamp: new Date(experimentObject.endOn),
       }),
     ])
   );
 
-  const updatedExperiment = {
-    ...experiments[0],
-    state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-  };
+  await experimentService.delete(experiments[0].id, user);
 
-  await experimentService.update(updatedExperiment.id, updatedExperiment, user);
-  experiments = await experimentService.find();
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-      }),
-    ])
-  );
-
-  await new Promise(r => setTimeout(r, 1000));
   endExperiment = await scheduledJobService.getAllEndExperiment();
   expect(endExperiment.length).toEqual(0);
+
+  // const updatedExperiment = {
+  //   ...experiments[0],
+  //   state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+  // };
+
+  // await experimentService.update(updatedExperiment.id, updatedExperiment, user);
+  // experiments = await experimentService.find();
+  // expect(experiments).toEqual(
+  //   expect.arrayContaining([
+  //     expect.objectContaining({
+  //       name: experimentObject.name,
+  //       state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+  //       postExperimentRule: experimentObject.postExperimentRule,
+  //       assignmentUnit: experimentObject.assignmentUnit,
+  //       consistencyRule: experimentObject.consistencyRule,
+  //     }),
+  //   ])
+  // );
+
+  // await new Promise(r => setTimeout(r, 1000));
+  // endExperiment = await scheduledJobService.getAllEndExperiment();
+  // expect(endExperiment.length).toEqual(0);
 }

@@ -55,7 +55,6 @@ export default async function testCase(): Promise<void> {
   await previewService.upsertExperimentConditionAssignment(previewDocuments);
 
   let previewUsersData = await previewService.find();
-  console.log('previewUsersData', previewUsersData);
   expect(previewUsersData[0].assignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -69,67 +68,67 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  //   // add new document for assignment
-  //   previewDocuments = {
-  //     ...previewUsersData[0],
-  //     assignments: [
-  //       ...previewUsersData[0].assignments,
-  //       {
-  //         experiment: {
-  //           id: experiments[0].id,
-  //         },
-  //         experimentCondition: {
-  //           id: experiments[0].conditions[1].id,
-  //         },
-  //       },
-  //     ],
-  //   };
+  // add new document for assignment
+  previewDocuments = {
+    ...previewUsersData[0],
+    assignments: [
+      ...previewUsersData[0].assignments,
+      {
+        experiment: {
+          id: experiments[0].id,
+        },
+        experimentCondition: {
+          id: experiments[0].conditions[1].id,
+        },
+      },
+    ],
+  };
 
-  //   await previewService.upsertExperimentConditionAssignment(previewDocuments);
+  await previewService.upsertExperimentConditionAssignment(previewDocuments);
 
-  //   previewUsersData = await previewService.find();
-  //   expect(previewUsersData[0].assignments.length).toEqual(2);
-  //   expect(previewUsersData[0].assignments).toEqual(
-  //     expect.arrayContaining([
-  //       expect.objectContaining({
-  //         experiment: expect.objectContaining({
-  //           id: experiments[0].id,
-  //         }),
-  //         experimentCondition: expect.objectContaining({
-  //           id: experiments[0].conditions[0].id,
-  //         }),
-  //       }),
-  //       expect.objectContaining({
-  //         experiment: expect.objectContaining({
-  //           id: experiments[0].id,
-  //         }),
-  //         experimentCondition: expect.objectContaining({
-  //           id: experiments[0].conditions[1].id,
-  //         }),
-  //       }),
-  //     ])
-  //   );
+  previewUsersData = await previewService.find();
+  expect(previewUsersData[0].assignments.length).toEqual(2);
+  expect(previewUsersData[0].assignments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        experiment: expect.objectContaining({
+          id: experiments[0].id,
+        }),
+        experimentCondition: expect.objectContaining({
+          id: experiments[0].conditions[0].id,
+        }),
+      }),
+      expect.objectContaining({
+        experiment: expect.objectContaining({
+          id: experiments[0].id,
+        }),
+        experimentCondition: expect.objectContaining({
+          id: experiments[0].conditions[1].id,
+        }),
+      }),
+    ])
+  );
 
-  //   // delete a document for assignments
-  //   previewDocuments = {
-  //     ...previewUsersData[0],
-  //     assignments: [{ ...previewUsersData[0].assignments[0] }],
-  //   };
+  // delete a document for assignments
+  previewDocuments = {
+    ...previewUsersData[0],
+    assignments: [{ ...previewUsersData[0].assignments[0] }],
+  };
 
-  //   await previewService.upsertExperimentConditionAssignment(previewDocuments);
+  await previewService.upsertExperimentConditionAssignment(previewDocuments);
 
-  //   previewUsersData = await previewService.find();
-  //   expect(previewUsersData[0].assignments.length).toEqual(1);
-  //   expect(previewUsersData[0].assignments).toEqual(
-  //     expect.arrayContaining([
-  //       expect.objectContaining({
-  //         experiment: expect.objectContaining({
-  //           id: previewDocuments.assignments[0].experiment.id,
-  //         }),
-  //         experimentCondition: expect.objectContaining({
-  //           id: previewDocuments.assignments[0].experimentCondition.id,
-  //         }),
-  //       }),
-  //     ])
-  //   );
+  previewUsersData = await previewService.find();
+  expect(previewUsersData[0].assignments.length).toEqual(1);
+  expect(previewUsersData[0].assignments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        experiment: expect.objectContaining({
+          id: previewDocuments.assignments[0].experiment.id,
+        }),
+        experimentCondition: expect.objectContaining({
+          id: previewDocuments.assignments[0].experimentCondition.id,
+        }),
+      }),
+    ])
+  );
 }

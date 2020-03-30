@@ -25,6 +25,8 @@ import {
   UpdateExperimentState,
   DeleteStartExperiment,
   DeleteEndExperiment,
+  CompleteStartExperiment,
+  CompleteEndExperiment,
 } from './Experiment/scheduleJob';
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
@@ -184,8 +186,18 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Complete Start Experiment', async done => {
+    await CompleteStartExperiment();
+    done();
+  });
+
   test('Delete Start Experiment', async done => {
     await DeleteStartExperiment();
+    done();
+  });
+
+  test('Complete End Experiment', async done => {
+    await CompleteEndExperiment();
     done();
   });
 

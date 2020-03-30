@@ -62,7 +62,7 @@ export default async function StartExperiment(): Promise<void> {
   expect(startExperiment).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        experimentId: experiments[0].id,
+        experiment: expect.objectContaining({ id: experiments[0].id }),
         type: SCHEDULE_TYPE.START_EXPERIMENT,
         timeStamp: new Date(experimentObject.startOn),
       }),

@@ -1,4 +1,4 @@
-import { scheduleJobStartExperiment } from '../../mockData/experiment/index';
+import { scheduleJobEndExperiment } from '../../mockData/experiment/index';
 import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
@@ -8,7 +8,7 @@ import { EXPERIMENT_STATE } from 'ees_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 
-export default async function DeleteStartExperiment(): Promise<void> {
+export default async function DeleteEndExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
@@ -18,10 +18,10 @@ export default async function DeleteStartExperiment(): Promise<void> {
   const user = await userService.create(systemUser as any);
 
   // experiment object
-  const experimentObject = scheduleJobStartExperiment;
+  const experimentObject = scheduleJobEndExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
+  await experimentService.create(scheduleJobEndExperiment as any, user);
   let experiments = await experimentService.find();
   expect(experiments).toEqual(
     expect.arrayContaining([
@@ -36,21 +36,21 @@ export default async function DeleteStartExperiment(): Promise<void> {
   );
 
   await new Promise(r => setTimeout(r, 1000));
-  let startExperiment = await scheduledJobService.getAllStartExperiment();
+  let endExperiment = await scheduledJobService.getAllEndExperiment();
 
-  expect(startExperiment).toEqual(
+  expect(endExperiment).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         experiment: expect.objectContaining({ id: experiments[0].id }),
-        type: SCHEDULE_TYPE.START_EXPERIMENT,
-        timeStamp: new Date(experimentObject.startOn),
+        type: SCHEDULE_TYPE.END_EXPERIMENT,
+        timeStamp: new Date(experimentObject.endOn),
       }),
     ])
   );
 
   const updatedExperiment = {
     ...experiments[0],
-    state: EXPERIMENT_STATE.ENROLLING,
+    state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
   };
 
   await experimentService.update(updatedExperiment.id, updatedExperiment, user);
@@ -59,7 +59,7 @@ export default async function DeleteStartExperiment(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
+        state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
@@ -68,6 +68,6 @@ export default async function DeleteStartExperiment(): Promise<void> {
   );
 
   await new Promise(r => setTimeout(r, 1000));
-  startExperiment = await scheduledJobService.getAllStartExperiment();
-  expect(startExperiment.length).toEqual(0);
+  endExperiment = await scheduledJobService.getAllEndExperiment();
+  expect(endExperiment.length).toEqual(0);
 }

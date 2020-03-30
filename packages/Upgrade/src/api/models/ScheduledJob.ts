@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
+import { Experiment } from './Experiment';
 
 export enum SCHEDULE_TYPE {
   START_EXPERIMENT = 'start experiment',
@@ -11,8 +12,8 @@ export class ScheduledJob extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
-  @Column()
-  public experimentId: string;
+  @ManyToOne(type => Experiment)
+  public experiment: Experiment;
 
   @Column()
   public type: SCHEDULE_TYPE;
