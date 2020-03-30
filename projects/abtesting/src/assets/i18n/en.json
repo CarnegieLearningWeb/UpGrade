@@ -103,7 +103,7 @@
   "home.view-experiment.enrollment-over-time.unique-enrolled.text": "UNIQUE ENROLLED",
   "home.view-experiment.enrollment-over-time.classes-enrolled.text": "CLASSES ENROLLED",
   "home.view-experiment.enrollment-over-time.excluded.text": "({{ numbers }} excluded)",
-  "home.view-experiment.enrollment-by-condition.title.text": "Enrollment by Condition",
+  "home.view-experiment.marked-experiment-point-by-condition.title.text": "Marked Experiment Point by Condition",
   "home.view-experiment.enrollment-by-point-partition.title.text": "Enrollment by Experiment Point and Partition",
   "home.view-experiment.experiment-conditions-title.text": "Experiment Conditions",
   "home.view-experiment.experiment-partitions-title.text": "Experiment Partitions",
