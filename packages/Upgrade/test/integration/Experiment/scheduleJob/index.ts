@@ -6,4 +6,12 @@ import DeleteStartExperiment from './DeleteStartExperiment';
 import CompleteStartExperiment from './CompleteStartExperiment';
 import CompleteEndExperiment from './CompleteEndExperiment';
 
-export { EndExperiment, StartExperiment, UpdateExperimentState, DeleteEndExperiment, DeleteStartExperiment, CompleteStartExperiment, CompleteEndExperiment };
+export {
+  EndExperiment,
+  StartExperiment,
+  UpdateExperimentState,
+  DeleteEndExperiment,
+  DeleteStartExperiment,
+  CompleteStartExperiment,
+  CompleteEndExperiment,
+};

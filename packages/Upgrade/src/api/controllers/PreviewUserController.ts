@@ -16,10 +16,20 @@ const validator = new Validator();
  *     properties:
  *       id:
  *         type: string
- *       group:
- *         type: object
- *       workingGroup:
- *         type: object
+ *       assignments:
+ *          type: array
+ *          items:
+ *            properties:
+ *              experiment:
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: string
+ *              experimentCondition:
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: string
  */
 
 /**
