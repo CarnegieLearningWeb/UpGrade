@@ -48,7 +48,6 @@ export class NewExperimentComponent {
         };
         this.stepper.next();
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
-          this.newExperimentData.state = EXPERIMENT_STATE.INACTIVE;
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }
