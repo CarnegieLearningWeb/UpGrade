@@ -9,6 +9,16 @@
     font-weight: 600;
   }
 
+  .starts-on-title {
+    font-family: 'Open Sans';
+    font-size: var(--text-size-normal);
+    font-weight: 600;
+
+    &--disable {
+      color: rgba(0, 0, 0, 0.38);
+    }
+  }
+
   .date-picker-container {
     margin: 0 0 30px 20px;
 
