@@ -2,12 +2,21 @@ import DataService from './common/dataService';
 import fetchDataService from './common/fetchDataService';
 import { IExperimentAssignment } from 'ees_types';
 
-export default async function getAllExperimentConditions(): Promise<IExperimentAssignment[]> {
+export default async function getAllExperimentConditions(context?: string): Promise<IExperimentAssignment[]> {
   try {
     const commonConfig = DataService.getData('commonConfig')
     const getAllExperimentConditionsUrl = commonConfig.api.getAllExperimentConditions;
     const userId = commonConfig.userId;
-    const experimentConditionResponse = await fetchDataService(getAllExperimentConditionsUrl, { userId });
+    let params: any = {
+      userId
+    };
+    if (context) {
+      params = {
+        ...params,
+        context
+      }
+    }
+    const experimentConditionResponse = await fetchDataService(getAllExperimentConditionsUrl, params);
     if (experimentConditionResponse.status) {
       if (Array.isArray(experimentConditionResponse.data)) {
         experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
