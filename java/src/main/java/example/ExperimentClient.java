@@ -60,8 +60,7 @@ public class ExperimentClient {
 		Utils.BASE_URL = baseUrl;
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
-		Call<InitRequest> call = client.initUser(initRequest);
-		call.enqueue(new Callback<InitRequest>() {
+		client.initUser(initRequest).enqueue(new Callback<InitRequest>() {
 
 			@Override
             public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
@@ -95,8 +94,7 @@ public class ExperimentClient {
 
 		InitRequest initRequest = new InitRequest(studentId, group, null);
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
-		Call<InitRequest> call = client.setGroupMemebership(initRequest);
-		call.enqueue(new Callback<InitRequest>() {
+		client.setGroupMemebership(initRequest).enqueue(new Callback<InitRequest>() {
 
 			@Override
             public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
@@ -128,8 +126,7 @@ public class ExperimentClient {
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
 		InitRequest initRequest = new InitRequest(studentId, null, workingGroup);
-		Call<InitRequest> call = client.updateWorkingGroup(initRequest);
-		call.enqueue(new Callback<InitRequest>() {
+		client.updateWorkingGroup(initRequest).enqueue(new Callback<InitRequest>() {
 
 			@Override
             public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
@@ -162,8 +159,7 @@ public class ExperimentClient {
 
 		HashMap< String, String> reqObject = new HashMap<>();
 		reqObject.put("userId", studentId);
-		Call<List<ExperimentsResponse>> call = client.getAllExperiments(reqObject);
-		call.enqueue(new Callback<List<ExperimentsResponse>>() {
+		client.getAllExperiments(reqObject).enqueue(new Callback<List<ExperimentsResponse>>() {
 
 			@Override
             public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
@@ -252,8 +248,7 @@ public class ExperimentClient {
 		if(!utils.isStringNull(experimentId))
 			reqObject.put("partitionId", experimentId);
 
-		Call<MarkExperimentPoint> call = client.markExperimentPoint(reqObject);
-		call.enqueue(new Callback<MarkExperimentPoint>() {
+		client.markExperimentPoint(reqObject).enqueue(new Callback<MarkExperimentPoint>() {
 
 			@Override
             public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
@@ -301,9 +296,7 @@ public class ExperimentClient {
 		if(!utils.isStringNull(reason))
 			reqObject.put("reason", reason);
 
-		Call<FailedExperiment> call = client.failedExperimentPoint(reqObject);
-
-		call.enqueue(new Callback<FailedExperiment>() {
+		client.failedExperimentPoint(reqObject).enqueue(new Callback<FailedExperiment>() {
 
 			@Override
             public void onResponse(Call<FailedExperiment> call, Response<FailedExperiment> response) {
