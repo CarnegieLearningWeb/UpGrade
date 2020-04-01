@@ -3,6 +3,9 @@ import { ExperimentUserService } from '../../../src/api/services/ExperimentUserS
 import TestCase1 from './NoPreviewUser';
 import TestCase2 from './PreviewAssignments';
 import TestCase3 from './PreviewExperimentWithPreviewUser';
+import TestCase4 from './DeletePreviewAssignmentsWithExperimentUpdate';
+import TestCase5 from './DeletePreviewAssignmentOnExperimentDelete';
+import TestCase6 from './DeletePreviewAssignmentWithPreviewUserDelete';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 
@@ -53,4 +56,19 @@ export const PreviewAssignments = async () => {
 export const PreviewExperimentWithPreviewUser = async () => {
   await initialChecks();
   await TestCase3();
+};
+
+export const DeletePreviewAssignmentWithExperimentUpdate = async () => {
+  await initialChecks();
+  await TestCase4();
+};
+
+export const DeletePreviewAssignmentOnExperimentDelete = async () => {
+  await initialChecks();
+  await TestCase5();
+};
+
+export const DeletePreviewAssignmentWithPreviewUserDelete = async () => {
+  await initialChecks();
+  await TestCase6();
 };

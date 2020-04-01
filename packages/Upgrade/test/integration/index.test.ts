@@ -31,13 +31,22 @@ import {
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
-import { NoPreviewUser, PreviewAssignments, PreviewExperimentWithPreviewUser } from './PreviewExperiment/index';
+import {
+  NoPreviewUser,
+  PreviewAssignments,
+  PreviewExperimentWithPreviewUser,
+  DeletePreviewAssignmentWithExperimentUpdate,
+} from './PreviewExperiment/index';
 import { Scenario9, Scenario10 } from './ExperimentAssignment/index';
 import Container from 'typedi';
 import { AWSService } from '../../src/api/services/AWSService';
 import AWSServiceMock from './mockData/AWSServiceMock';
 import { CreateSystemUser } from '../../src/init/seed/systemUser';
 import { SystemUserCreated } from './SystemUser/index';
+import {
+  DeletePreviewAssignmentOnExperimentDelete,
+  DeletePreviewAssignmentWithPreviewUserDelete,
+} from './PreviewExperiment/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -238,6 +247,21 @@ describe('Integration Tests', () => {
 
   test('Experiment without partition', async done => {
     await NoPartitionPoint();
+    done();
+  });
+
+  test('Delete Preview Assignment with experiment Update', async done => {
+    await DeletePreviewAssignmentWithExperimentUpdate();
+    done();
+  });
+
+  test('Delete Preview Assignment on experiment Delete', async done => {
+    await DeletePreviewAssignmentOnExperimentDelete();
+    done();
+  });
+
+  test('Delete Preview Assignment with preview user delete', async done => {
+    await DeletePreviewAssignmentWithPreviewUserDelete();
     done();
   });
 });

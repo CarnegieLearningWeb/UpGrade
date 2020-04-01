@@ -11,13 +11,14 @@ export class ExplicitIndividualAssignment extends BaseModel {
 
   @ManyToOne(
     type => PreviewUser,
-    previewUser => previewUser.assignments
+    previewUser => previewUser.assignments,
+    { onDelete: 'CASCADE' }
   )
   public previewUser: PreviewUser;
 
-  @ManyToOne(type => Experiment)
+  @ManyToOne(type => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @ManyToOne(type => ExperimentCondition)
+  @ManyToOne(type => ExperimentCondition, { onDelete: 'CASCADE' })
   public experimentCondition: ExperimentCondition;
 }
