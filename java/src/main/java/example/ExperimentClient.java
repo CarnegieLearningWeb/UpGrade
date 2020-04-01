@@ -61,7 +61,8 @@ public class ExperimentClient {
 		Call<InitRequest> call = client.initUser(initRequest);
 		call.enqueue(new Callback<InitRequest>() {
 
-			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
+			@Override
+            public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					InitRequest reqResponse = response.body();
 
@@ -73,7 +74,8 @@ public class ExperimentClient {
 						callbacks.onError(response.errorBody());
 				}
 			}
-			public void onFailure(Call<InitRequest> call, Throwable t) {
+			@Override
+            public void onFailure(Call<InitRequest> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
 		});
@@ -94,7 +96,8 @@ public class ExperimentClient {
 		Call<InitRequest> call = client.setGroupMemebership(initRequest);
 		call.enqueue(new Callback<InitRequest>() {
 
-			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
+			@Override
+            public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
 						callbacks.onSuccess(response.body());;
@@ -103,7 +106,8 @@ public class ExperimentClient {
 						callbacks.onError(response.errorBody());
 				}
 			}
-			public void onFailure(Call<InitRequest> call, Throwable t) {
+			@Override
+            public void onFailure(Call<InitRequest> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
 		});
@@ -125,7 +129,8 @@ public class ExperimentClient {
 		Call<InitRequest> call = client.updateWorkingGroup(initRequest);
 		call.enqueue(new Callback<InitRequest>() {
 
-			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
+			@Override
+            public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
 						callbacks.onSuccess(response.body());;
@@ -134,7 +139,8 @@ public class ExperimentClient {
 						callbacks.onError(response.errorBody());
 				}
 			}
-			public void onFailure(Call<InitRequest> call, Throwable t) {
+			@Override
+            public void onFailure(Call<InitRequest> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
 		});
@@ -157,7 +163,8 @@ public class ExperimentClient {
 		Call<List<ExperimentsResponse>> call = client.getAllExperiments(reqObject);
 		call.enqueue(new Callback<List<ExperimentsResponse>>() {
 
-			public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
+			@Override
+            public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null) {
 						callbacks.onSuccess(response.body());;
@@ -167,7 +174,8 @@ public class ExperimentClient {
 						callbacks.onError(response.errorBody());
 				}
 			}
-			public void onFailure(Call<List<ExperimentsResponse>> call, Throwable t) {
+			@Override
+            public void onFailure(Call<List<ExperimentsResponse>> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
 		});
@@ -245,7 +253,8 @@ public class ExperimentClient {
 		Call<MarkExperimentPoint> call = client.markExperimentPoint(reqObject);
 		call.enqueue(new Callback<MarkExperimentPoint>() {
 
-			public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
+			@Override
+            public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
 						callbacks.onSuccess(new MarkExperimentPoint(studentId, experimentId, experimentPoint ));
@@ -255,7 +264,8 @@ public class ExperimentClient {
 				}
 			}
 
-			public void onFailure(Call<MarkExperimentPoint> call, Throwable t) {
+			@Override
+            public void onFailure(Call<MarkExperimentPoint> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 
 			}
@@ -293,7 +303,8 @@ public class ExperimentClient {
 
 		call.enqueue(new Callback<FailedExperiment>() {
 
-			public void onResponse(Call<FailedExperiment> call, Response<FailedExperiment> response) {
+			@Override
+            public void onResponse(Call<FailedExperiment> call, Response<FailedExperiment> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
 						callbacks.onSuccess(new FailedExperiment(response.body().getType(), response.body().getMessage() ));
@@ -303,7 +314,8 @@ public class ExperimentClient {
 				}
 			}
 
-			public void onFailure(Call<FailedExperiment> call, Throwable t) {
+			@Override
+            public void onFailure(Call<FailedExperiment> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 
 			}
