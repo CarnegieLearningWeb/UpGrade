@@ -50,14 +50,14 @@ public class ExperimentClient {
 	}
 
 	// User Initialize request
-	public void userInit(String BASE_URL, InitRequest initRequest, final ResponseCallback<InitRequest> callbacks) {
+	public void userInit(String baseUrl, InitRequest initRequest, final ResponseCallback<InitRequest> callbacks) {
 
-		if (!utils.validateInitData(initRequest) || utils.isStringNull(BASE_URL)) {
+		if (!utils.validateInitData(initRequest) || utils.isStringNull(baseUrl)) {
 			if (callbacks != null)
 				callbacks.validationError(INVALID_INIT_USER_DATA);
 			return;
 		}
-		Utils.BASE_URL = BASE_URL;
+		Utils.BASE_URL = baseUrl;
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 		Call<InitRequest> call = client.initUser(initRequest);
