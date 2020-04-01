@@ -26,8 +26,6 @@ import utils.ServiceGenerator;
 import utils.Utils;
 
 public class ExperimentClient {
-	Utils utils = new Utils();
-
 	public ExperimentClient() {}
 
 	// Initialize user  with userId and hostUrl
@@ -52,7 +50,7 @@ public class ExperimentClient {
 	// User Initialize request
 	public void userInit(String baseUrl, InitRequest initRequest, final ResponseCallback<InitRequest> callbacks) {
 
-		if (!utils.validateInitData(initRequest) || utils.isStringNull(baseUrl)) {
+		if (!validateInitData(initRequest) || isStringNull(baseUrl)) {
 			if (callbacks != null)
 				callbacks.validationError(INVALID_INIT_USER_DATA);
 			return;
@@ -86,7 +84,7 @@ public class ExperimentClient {
 	// To set user group membership
 	public void setGroupMembership(String studentId, HashMap<String, ArrayList<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
-		if (!utils.validateGroupMembershipData(group) || utils.isStringNull(Utils.BASE_URL)) {
+		if (isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
 				callbacks.validationError(INVALID_GROUP_MEMBERSHIP_DATA);
 			return;
@@ -117,7 +115,7 @@ public class ExperimentClient {
 	// To set user workingGroup
 	public void setWorkingGroup(String studentId, HashMap<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
 
-		if (utils.isStringNull(Utils.BASE_URL)){
+		if (isStringNull(Utils.BASE_URL)){
 			if (callbacks != null)
 				callbacks.validationError(INVALID_WORKING_GROUP_DATA);
 			return;
@@ -149,7 +147,7 @@ public class ExperimentClient {
 	// To get all Experiments
 	public void getAllExperimentCondition(String studentId, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
 
-		if ( utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL) ) {
+		if ( isStringNull(studentId) || isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
 				callbacks.validationError(INVALID_STUDENT_ID);
 			return;
@@ -194,8 +192,8 @@ public class ExperimentClient {
 				if( experiments !=null && experiments.size() > 0) {
 
 					ExperimentsResponse experimentsResponse  = experiments.stream().filter(t -> 
-					utils.isStringNull(experimentId) == false ?  t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
-						t.getPoint().equals(experimentPoint) && utils.isStringNull(t.getName().toString()) ).findFirst().get();
+					isStringNull(experimentId) == false ?  t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
+						t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()) ).findFirst().get();
 
 					ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
 					GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
@@ -234,7 +232,7 @@ public class ExperimentClient {
 	public void markExperimentPoint(String studentId, final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 
-		if ( utils.isStringNull(experimentPoint) || utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL)) {
+		if ( isStringNull(experimentPoint) || isStringNull(studentId) || isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
 				callbacks.validationError(INVALID_MARK_EXPERIMENT_DATA);
 			return;
@@ -245,7 +243,7 @@ public class ExperimentClient {
 		HashMap< String, String> reqObject = new HashMap<>();
 		reqObject.put("userId", studentId);
 		reqObject.put("experimentPoint", experimentPoint);
-		if(!utils.isStringNull(experimentId))
+		if(!isStringNull(experimentId))
 			reqObject.put("partitionId", experimentId);
 
 		client.markExperimentPoint(reqObject).enqueue(new Callback<MarkExperimentPoint>() {
@@ -281,7 +279,7 @@ public class ExperimentClient {
 	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason, 
 			final ResponseCallback<FailedExperiment> callbacks) {
 
-		if ( utils.isStringNull(experimentPoint) || utils.isStringNull(reason) || utils.isStringNull(Utils.BASE_URL) ) {
+		if ( isStringNull(experimentPoint) || isStringNull(reason) || isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
 				callbacks.validationError(INVALID_FAILED_EXPERIMENT_DATA);
 			return;
@@ -291,9 +289,9 @@ public class ExperimentClient {
 
 		HashMap< String, String> reqObject = new HashMap<>();
 		reqObject.put("experimentPoint", experimentPoint);
-		if(!utils.isStringNull(experimentId))
+		if(!isStringNull(experimentId))
 			reqObject.put("experimentId", experimentId);
-		if(!utils.isStringNull(reason))
+		if(!isStringNull(reason))
 			reqObject.put("reason", reason);
 
 		client.failedExperimentPoint(reqObject).enqueue(new Callback<FailedExperiment>() {
