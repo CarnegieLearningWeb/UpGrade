@@ -1,5 +1,7 @@
 package example;
 
+import static utils.Utils.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +54,7 @@ public class ExperimentClient {
 
 		if (!utils.validateInitData(initRequest) || utils.isStringNull(BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_INIT_USER_DATA);
+				callbacks.validationError(INVALID_INIT_USER_DATA);
 			return;
 		}
 		Utils.BASE_URL = BASE_URL;
@@ -87,7 +89,7 @@ public class ExperimentClient {
 
 		if (!utils.validateGroupMembershipData(group) || utils.isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_GROUP_MEMBERSHIP_DATA);
+				callbacks.validationError(INVALID_GROUP_MEMBERSHIP_DATA);
 			return;
 		}
 
@@ -119,7 +121,7 @@ public class ExperimentClient {
 
 		if (utils.isStringNull(Utils.BASE_URL)){
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_WORKING_GROUP_DATA);
+				callbacks.validationError(INVALID_WORKING_GROUP_DATA);
 			return;
 		}
 
@@ -152,7 +154,7 @@ public class ExperimentClient {
 
 		if ( utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_STUDENT_ID);
+				callbacks.validationError(INVALID_STUDENT_ID);
 			return;
 		}
 
@@ -238,7 +240,7 @@ public class ExperimentClient {
 
 		if ( utils.isStringNull(experimentPoint) || utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_MARK_EXPERIMENT_DATA);
+				callbacks.validationError(INVALID_MARK_EXPERIMENT_DATA);
 			return;
 		}
 
@@ -286,7 +288,7 @@ public class ExperimentClient {
 
 		if ( utils.isStringNull(experimentPoint) || utils.isStringNull(reason) || utils.isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_FAILED_EXPERIMENT_DATA);
+				callbacks.validationError(INVALID_FAILED_EXPERIMENT_DATA);
 			return;
 		}
 
