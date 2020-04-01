@@ -19,7 +19,7 @@ public class GetExperimentCondition {
 	private ExperimentConditions assignedCondition;
 	
 	
-	public GetExperimentCondition() {};
+	public GetExperimentCondition() {}
 	
 	public GetExperimentCondition(Object experimentId, String experimentPoint, String uniqueIdentifier,
 			ExperimentConditions assignedCondition) {

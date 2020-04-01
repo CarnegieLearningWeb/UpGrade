@@ -100,7 +100,7 @@ public class ExperimentClient {
             public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
-						callbacks.onSuccess(response.body());;
+						callbacks.onSuccess(response.body());
 				} else {
 					if (callbacks != null)
 						callbacks.onError(response.errorBody());
@@ -133,7 +133,7 @@ public class ExperimentClient {
             public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
-						callbacks.onSuccess(response.body());;
+						callbacks.onSuccess(response.body());
 				} else {
 					if (callbacks != null)
 						callbacks.onError(response.errorBody());
@@ -158,7 +158,7 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<String, String>();
+		HashMap< String, String> reqObject = new HashMap<>();
 		reqObject.put("userId", studentId);
 		Call<List<ExperimentsResponse>> call = client.getAllExperiments(reqObject);
 		call.enqueue(new Callback<List<ExperimentsResponse>>() {
@@ -167,7 +167,7 @@ public class ExperimentClient {
             public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null) {
-						callbacks.onSuccess(response.body());;
+						callbacks.onSuccess(response.body());
 					}
 				} else {
 					if (callbacks != null)
@@ -244,7 +244,7 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<String, String>();
+		HashMap< String, String> reqObject = new HashMap<>();
 		reqObject.put("userId", studentId);
 		reqObject.put("experimentPoint", experimentPoint);
 		if(!utils.isStringNull(experimentId))
@@ -292,7 +292,7 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<String, String>();
+		HashMap< String, String> reqObject = new HashMap<>();
 		reqObject.put("experimentPoint", experimentPoint);
 		if(!utils.isStringNull(experimentId))
 			reqObject.put("experimentId", experimentId);
