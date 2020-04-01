@@ -2,9 +2,9 @@ package example;
 
 import static utils.Utils.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -35,13 +35,13 @@ public class ExperimentClient {
 	}
 
 	// Initialize user  with userId, hostUrl and group
-	public void init(String userId, String hostUrl , HashMap<String, ArrayList<String>> group, final ResponseCallback<InitRequest> callbacks) {
+	public void init(String userId, String hostUrl , Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 		InitRequest initRequest = new InitRequest(userId, group, null);
 		userInit(hostUrl,initRequest, callbacks );
 	}
 
 	// Initialize user  with userId, hostUrl and workingGroup
-	public void init(String userId, String hostUrl , HashMap<String, ArrayList<String>> group, HashMap<String, String> workingGroup ,
+	public void init(String userId, String hostUrl , Map<String, List<String>> group, Map<String, String> workingGroup ,
 			final ResponseCallback<InitRequest> callbacks) {
 		InitRequest initRequest = new InitRequest(userId, group, workingGroup);
 		userInit(hostUrl,initRequest, callbacks );
@@ -82,7 +82,7 @@ public class ExperimentClient {
 
 
 	// To set user group membership
-	public void setGroupMembership(String studentId, HashMap<String, ArrayList<String>> group, final ResponseCallback<InitRequest> callbacks) {
+	public void setGroupMembership(String studentId, Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
 		if (isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
@@ -113,7 +113,7 @@ public class ExperimentClient {
 	}
 
 	// To set user workingGroup
-	public void setWorkingGroup(String studentId, HashMap<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
+	public void setWorkingGroup(String studentId, Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
 
 		if (isStringNull(Utils.BASE_URL)){
 			if (callbacks != null)
@@ -155,7 +155,7 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<>();
+		Map< String, String> reqObject = new HashMap<>();
 		reqObject.put("userId", studentId);
 		client.getAllExperiments(reqObject).enqueue(new Callback<List<ExperimentsResponse>>() {
 
@@ -240,7 +240,7 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<>();
+		Map< String, String> reqObject = new HashMap<>();
 		reqObject.put("userId", studentId);
 		reqObject.put("experimentPoint", experimentPoint);
 		if(!isStringNull(experimentId))
@@ -287,7 +287,7 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<>();
+		Map< String, String> reqObject = new HashMap<>();
 		reqObject.put("experimentPoint", experimentPoint);
 		if(!isStringNull(experimentId))
 			reqObject.put("experimentId", experimentId);
