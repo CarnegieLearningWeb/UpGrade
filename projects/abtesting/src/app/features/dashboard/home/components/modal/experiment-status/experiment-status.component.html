@@ -13,9 +13,11 @@
     <mat-form-field>
       <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
       <mat-select formControlName="newStatus">
-        <mat-option *ngFor="let status of experimentStatus" [value]="status">
-          {{ status.value | experimentState }}
-        </mat-option>
+        <ng-container *ngFor="let status of experimentStatus">
+          <mat-option *ngIf="status.value === ExperimentStatus.SCHEDULED || status.value !== experimentInfo?.state" [value]="status">
+            {{ status.value | experimentState }}
+          </mat-option>
+        </ng-container>
       </mat-select>
       <mat-error *ngIf="statusForm.controls.newStatus.hasError('required')">
         {{ 'home.change-experiment-status.new-status.error.text' | translate }}
@@ -35,6 +37,9 @@
       <owl-date-time #dateTime></owl-date-time>
     </mat-form-field>
   </form>
+  <span class="info-msg" *ngIf="showInfoMsg">
+    {{ 'home.change-experiment-status.enrolling-info.text' | translate }}
+  </span>
 
   <div class="button-container">
     <button mat-raised-button (click)="onCancelClick()">
