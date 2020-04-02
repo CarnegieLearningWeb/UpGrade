@@ -1,6 +1,7 @@
 package interfaces;
 
 import java.util.List;
+import java.util.Map;
 
 import requestbeans.ExperimentRequest;
 import requestbeans.FailedExperimentPointRequest;
@@ -38,5 +39,6 @@ public interface ExperimentServiceAPI {
 	@Retry
 	@POST("api/failed")
 	Call<FailedExperiment> failedExperimentPoint(@Body FailedExperimentPointRequest failedExperimentPointRequest);
+
 	
 }

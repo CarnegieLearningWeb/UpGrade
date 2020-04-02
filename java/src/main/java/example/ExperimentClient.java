@@ -1,8 +1,9 @@
 package example;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import static utils.Utils.*;
+
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -27,8 +28,6 @@ import utils.ServiceGenerator;
 import utils.Utils;
 
 public class ExperimentClient {
-	Utils utils = new Utils();
-
 	public ExperimentClient() {}
 
 	// Initialize user  with userId and hostUrl
@@ -38,32 +37,32 @@ public class ExperimentClient {
 	}
 
 	// Initialize user  with userId, hostUrl and group
-	public void init(String userId, String hostUrl , HashMap<String, ArrayList<String>> group, final ResponseCallback<InitRequest> callbacks) {
+	public void init(String userId, String hostUrl , Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 		InitRequest initRequest = new InitRequest(userId, group, null);
 		userInit(hostUrl,initRequest, callbacks );
 	}
 
 	// Initialize user  with userId, hostUrl and workingGroup
-	public void init(String userId, String hostUrl , HashMap<String, ArrayList<String>> group, HashMap<String, String> workingGroup ,
+	public void init(String userId, String hostUrl , Map<String, List<String>> group, Map<String, String> workingGroup ,
 			final ResponseCallback<InitRequest> callbacks) {
 		InitRequest initRequest = new InitRequest(userId, group, workingGroup);
 		userInit(hostUrl,initRequest, callbacks );
 	}
 
 	// User Initialize request
-	public void userInit(String BASE_URL, InitRequest initRequest, final ResponseCallback<InitRequest> callbacks) {
+	public void userInit(String baseUrl, InitRequest initRequest, final ResponseCallback<InitRequest> callbacks) {
 
-		if (!utils.validateInitData(initRequest) || utils.isStringNull(BASE_URL)) {
+		if (!validateInitData(initRequest) || isStringNull(baseUrl)) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_INIT_USER_DATA);
+				callbacks.validationError(INVALID_INIT_USER_DATA);
 			return;
 		}
-		Utils.BASE_URL = BASE_URL;
+		Utils.BASE_URL = baseUrl;
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
-		Call<InitRequest> call = client.initUser(initRequest);
-		call.enqueue(new Callback<InitRequest>() {
+		client.initUser(initRequest).enqueue(new Callback<InitRequest>() {
 
+			@Override
 			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					InitRequest reqResponse = response.body();
@@ -76,6 +75,7 @@ public class ExperimentClient {
 						callbacks.onError(response.errorBody());
 				}
 			}
+			@Override
 			public void onFailure(Call<InitRequest> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
@@ -84,28 +84,29 @@ public class ExperimentClient {
 
 
 	// To set user group membership
-	public void setGroupMembership(String studentId, HashMap<String, ArrayList<String>> group, final ResponseCallback<InitRequest> callbacks) {
+	public void setGroupMembership(String studentId, Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
-		if (!utils.validateGroupMembershipData(group) || utils.isStringNull(Utils.BASE_URL)) {
+		if (isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_GROUP_MEMBERSHIP_DATA);
+				callbacks.validationError(INVALID_GROUP_MEMBERSHIP_DATA);
 			return;
 		}
 
 		InitRequest initRequest = new InitRequest(studentId, group, null);
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
-		Call<InitRequest> call = client.setGroupMemebership(initRequest);
-		call.enqueue(new Callback<InitRequest>() {
+		client.setGroupMemebership(initRequest).enqueue(new Callback<InitRequest>() {
 
+			@Override
 			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
-						callbacks.onSuccess(response.body());;
+						callbacks.onSuccess(response.body());
 				} else {
 					if (callbacks != null)
 						callbacks.onError(response.errorBody());
 				}
 			}
+			@Override
 			public void onFailure(Call<InitRequest> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
@@ -114,29 +115,30 @@ public class ExperimentClient {
 	}
 
 	// To set user workingGroup
-	public void setWorkingGroup(String studentId, HashMap<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
+	public void setWorkingGroup(String studentId, Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
 
-		if (utils.isStringNull(Utils.BASE_URL)){
+		if (isStringNull(Utils.BASE_URL)){
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_WORKING_GROUP_DATA);
+				callbacks.validationError(INVALID_WORKING_GROUP_DATA);
 			return;
 		}
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
 		InitRequest initRequest = new InitRequest(studentId, null, workingGroup);
-		Call<InitRequest> call = client.updateWorkingGroup(initRequest);
-		call.enqueue(new Callback<InitRequest>() {
+		client.updateWorkingGroup(initRequest).enqueue(new Callback<InitRequest>() {
 
+			@Override
 			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
-						callbacks.onSuccess(response.body());;
+						callbacks.onSuccess(response.body());
 				} else {
 					if (callbacks != null)
 						callbacks.onError(response.errorBody());
 				}
 			}
+			@Override
 			public void onFailure(Call<InitRequest> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
@@ -147,28 +149,31 @@ public class ExperimentClient {
 	// To get all Experiments
 	public void getAllExperimentCondition(String studentId, String context, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
 
-		if ( utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL) ) {
+		if ( isStringNull(studentId) || isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_STUDENT_ID);
+				callbacks.validationError(INVALID_STUDENT_ID);
 			return;
 		}
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		ExperimentRequest experimentRequest = new ExperimentRequest(studentId, context );
-		Call<List<ExperimentsResponse>> call = client.getAllExperiments(experimentRequest);
-		call.enqueue(new Callback<List<ExperimentsResponse>>() {
 
+		ExperimentRequest experimentRequest = new ExperimentRequest(studentId, context );
+
+		client.getAllExperiments(experimentRequest).enqueue(new Callback<List<ExperimentsResponse>>() {
+
+			@Override
 			public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null) {
-						callbacks.onSuccess(response.body());;
+						callbacks.onSuccess(response.body());
 					}
 				} else {
 					if (callbacks != null)
 						callbacks.onError(response.errorBody());
 				}
 			}
+			@Override
 			public void onFailure(Call<List<ExperimentsResponse>> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 			}
@@ -190,8 +195,8 @@ public class ExperimentClient {
 				if( experiments !=null && experiments.size() > 0) {
 
 					ExperimentsResponse experimentsResponse  = experiments.stream().filter(t -> 
-					utils.isStringNull(experimentId) == false ?  t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
-						t.getPoint().equals(experimentPoint) && utils.isStringNull(t.getName().toString()) ).findFirst().get();
+					isStringNull(experimentId) == false ?  t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
+						t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()) ).findFirst().get();
 
 					ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
 					GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
@@ -230,18 +235,17 @@ public class ExperimentClient {
 	public void markExperimentPoint(String studentId, final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 
-		if ( utils.isStringNull(experimentPoint) || utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL)) {
+		if ( isStringNull(experimentPoint) || isStringNull(studentId) || isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_MARK_EXPERIMENT_DATA);
+				callbacks.validationError(INVALID_MARK_EXPERIMENT_DATA);
 			return;
 		}
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(studentId, experimentPoint, experimentId );
 
-		Call<MarkExperimentPoint> call = client.markExperimentPoint(markExperimentRequest);
-		call.enqueue(new Callback<MarkExperimentPoint>() {
-
+		client.markExperimentPoint(markExperimentRequest).enqueue(new Callback<MarkExperimentPoint>() {
+			@Override
 			public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
@@ -252,6 +256,7 @@ public class ExperimentClient {
 				}
 			}
 
+			@Override
 			public void onFailure(Call<MarkExperimentPoint> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 
@@ -260,31 +265,29 @@ public class ExperimentClient {
 	}
 
 	//Failed experiment point 
-	public void failedExperimentPoint(final String experimentPoint, final ResponseCallback<FailedExperiment> callbacks) {
+	public void failedExperimentPoint (final String experimentPoint, final ResponseCallback<FailedExperiment> callbacks) {
 		failedExperimentPoint(experimentPoint,"", "", callbacks );
 	}
 
-	public void failedExperimentPoint(final String experimentPoint,final String experimentId, final ResponseCallback<FailedExperiment> callbacks) {
+	public void failedExperimentPoint (final String experimentPoint,final String experimentId, final ResponseCallback<FailedExperiment> callbacks) {
 		failedExperimentPoint(experimentPoint,experimentId, "", callbacks );
 	}
 
 	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason, 
 			final ResponseCallback<FailedExperiment> callbacks) {
 
-		if ( utils.isStringNull(experimentPoint) || utils.isStringNull(reason) || utils.isStringNull(Utils.BASE_URL) ) {
+		if ( isStringNull(experimentPoint) || isStringNull(reason) || isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
-				callbacks.validationError(utils.INVALID_FAILED_EXPERIMENT_DATA);
+				callbacks.validationError(INVALID_FAILED_EXPERIMENT_DATA);
 			return;
 		}
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
-
 		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(experimentPoint, experimentId, reason);
 
-		Call<FailedExperiment> call = client.failedExperimentPoint(failedExperimentPointRequest);
+		client.failedExperimentPoint(failedExperimentPointRequest).enqueue(new Callback<FailedExperiment>() {
 
-		call.enqueue(new Callback<FailedExperiment>() {
-
+			@Override
 			public void onResponse(Call<FailedExperiment> call, Response<FailedExperiment> response) {
 				if(response.isSuccessful()) {
 					if (callbacks != null)
@@ -295,6 +298,7 @@ public class ExperimentClient {
 				}
 			}
 
+			@Override
 			public void onFailure(Call<FailedExperiment> call, Throwable t) {
 				callbacks.validationError("Request failed finally:  " + t.getMessage());
 

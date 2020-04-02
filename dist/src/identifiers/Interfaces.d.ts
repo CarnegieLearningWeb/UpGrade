@@ -16,8 +16,8 @@ export declare namespace Interfaces {
     }
     interface IUser {
         id: string;
-        group: Map<string, Array<string>>;
-        workingGroup: Map<string, string>;
+        group?: Map<string, Array<string>>;
+        workingGroup?: Map<string, string>;
     }
     interface IMarkExperimentPoint {
         experimentId: string;

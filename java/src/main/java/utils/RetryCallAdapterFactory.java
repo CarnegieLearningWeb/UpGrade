@@ -72,7 +72,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		}
 		@Override
 		public void enqueue(@NonNull Callback<R> callback) {
-			delegated.enqueue(new RetryCallback<>(delegated, callback, maxRetries));
+			delegated.enqueue(new RetryCallback<>(callback, maxRetries));
 		}
 		@Override
 		public boolean isExecuted() {
@@ -96,11 +96,9 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		}
 	}
 	static final class RetryCallback<T> implements Callback<T> {
-		private final Call<T> call;
 		private final Callback<T> callback;
 		private final int maxRetries;
-		public RetryCallback(Call<T> call, Callback<T> callback, int maxRetries) {
-			this.call = call;
+		public RetryCallback(Callback<T> callback, int maxRetries) {
 			this.callback = callback;
 			this.maxRetries = maxRetries;
 		}
@@ -108,7 +106,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		@Override
 		public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
 			if (!response.isSuccessful() && retryCount.incrementAndGet() <= maxRetries) {
-				retryCall();
+				retryCall(call);
 			} else {
 				callback.onResponse(call, response);
 			}
@@ -116,7 +114,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		@Override
 		public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
 			if (retryCount.incrementAndGet() <= maxRetries) {
-				retryCall();
+				retryCall(call);
 			} else if (maxRetries > 0) {
 				callback.onFailure(call,
 						new TimeoutException(String.format("No retries left after %s attempts.", maxRetries)));
@@ -124,7 +122,8 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 				callback.onFailure(call, t);
 			}
 		}
-		private void retryCall() {
+
+		private void retryCall(Call<T> call) {			
 			call.clone().enqueue(this);
 		}
 	}
