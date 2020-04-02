@@ -41,7 +41,7 @@ export default async function init(userId: string, hostUrl: string, groupInfo?: 
 
       // Set working group if working group is passed
       if (groupInfo && groupInfo.workingGroup) {
-        const workingGroup = convertMapToObj(groupInfo.group);
+        const workingGroup = convertMapToObj(groupInfo.workingGroup);
         data = {
           ...data,
           workingGroup
@@ -54,11 +54,12 @@ export default async function init(userId: string, hostUrl: string, groupInfo?: 
       const initUrl = commonConfig.api.init;
       const res = await fetchDataService(initUrl, data);
       if (res.status) {
-        return {
-          id: userId,
-          group: groupInfo.group,
-          workingGroup: groupInfo.workingGroup
-        }
+        let response: Interfaces.IUser = {
+          id: userId
+        };
+        response = groupInfo && groupInfo.group ? { ...response, group: groupInfo.group } : response;
+        response = groupInfo && groupInfo.workingGroup ? { ...response, workingGroup: groupInfo.workingGroup } : response;
+        return response;
       } else {
         throw new Error(res.message);
       }
