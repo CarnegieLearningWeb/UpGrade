@@ -8,6 +8,9 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import interfaces.ResponseCallback;
 import okhttp3.ResponseBody;
+import requestbeans.ExperimentRequest;
+import requestbeans.FailedExperimentPointRequest;
+import requestbeans.MarkExperimentRequest;
 import interfaces.ExperimentServiceAPI;
 
 import responsebeans.ExperimentConditions;
@@ -142,7 +145,7 @@ public class ExperimentClient {
 	}
 
 	// To get all Experiments
-	public void getAllExperimentCondition(String studentId, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
+	public void getAllExperimentCondition(String studentId, String context, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
 
 		if ( utils.isStringNull(studentId) || utils.isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
@@ -152,9 +155,8 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<String, String>();
-		reqObject.put("userId", studentId);
-		Call<List<ExperimentsResponse>> call = client.getAllExperiments(reqObject);
+		ExperimentRequest experimentRequest = new ExperimentRequest(studentId, context );
+		Call<List<ExperimentsResponse>> call = client.getAllExperiments(experimentRequest);
 		call.enqueue(new Callback<List<ExperimentsResponse>>() {
 
 			public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
@@ -182,7 +184,7 @@ public class ExperimentClient {
 	public void getExperimentCondition(String studentId, String experimentPoint, String experimentId, 
 			final ResponseCallback<GetExperimentCondition> callbacks) {
 
-		getAllExperimentCondition(studentId, new ResponseCallback<List<ExperimentsResponse>>() {
+		getAllExperimentCondition(studentId, "", new ResponseCallback<List<ExperimentsResponse>>() {
 			@Override
 			public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 				if( experiments !=null && experiments.size() > 0) {
@@ -235,14 +237,9 @@ public class ExperimentClient {
 		}
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(studentId, experimentPoint, experimentId );
 
-		HashMap< String, String> reqObject = new HashMap<String, String>();
-		reqObject.put("userId", studentId);
-		reqObject.put("experimentPoint", experimentPoint);
-		if(!utils.isStringNull(experimentId))
-			reqObject.put("partitionId", experimentId);
-
-		Call<MarkExperimentPoint> call = client.markExperimentPoint(reqObject);
+		Call<MarkExperimentPoint> call = client.markExperimentPoint(markExperimentRequest);
 		call.enqueue(new Callback<MarkExperimentPoint>() {
 
 			public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
@@ -282,14 +279,9 @@ public class ExperimentClient {
 
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
-		HashMap< String, String> reqObject = new HashMap<String, String>();
-		reqObject.put("experimentPoint", experimentPoint);
-		if(!utils.isStringNull(experimentId))
-			reqObject.put("experimentId", experimentId);
-		if(!utils.isStringNull(reason))
-			reqObject.put("reason", reason);
+		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(experimentPoint, experimentId, reason);
 
-		Call<FailedExperiment> call = client.failedExperimentPoint(reqObject);
+		Call<FailedExperiment> call = client.failedExperimentPoint(failedExperimentPointRequest);
 
 		call.enqueue(new Callback<FailedExperiment>() {
 

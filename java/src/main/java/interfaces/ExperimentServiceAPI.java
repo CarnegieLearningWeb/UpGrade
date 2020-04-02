@@ -1,8 +1,10 @@
 package interfaces;
 
-import java.util.HashMap;
 import java.util.List;
 
+import requestbeans.ExperimentRequest;
+import requestbeans.FailedExperimentPointRequest;
+import requestbeans.MarkExperimentRequest;
 import responsebeans.ExperimentsResponse;
 import responsebeans.FailedExperiment;
 import responsebeans.InitRequest;
@@ -27,14 +29,14 @@ public interface ExperimentServiceAPI {
 	
 	@Retry
 	@POST("api/assign")
-	Call<List<ExperimentsResponse>> getAllExperiments(@Body HashMap<String, String> body);
+	Call<List<ExperimentsResponse>> getAllExperiments(@Body ExperimentRequest experimentRequest);
 	
 	@Retry
 	@POST("api/mark")
-	Call<MarkExperimentPoint> markExperimentPoint(@Body HashMap<String, String> body);
+	Call<MarkExperimentPoint> markExperimentPoint(@Body MarkExperimentRequest markExperimentRequest);
 	
 	@Retry
 	@POST("api/failed")
-	Call<FailedExperiment> failedExperimentPoint(@Body HashMap<String, String> body);
+	Call<FailedExperiment> failedExperimentPoint(@Body FailedExperimentPointRequest failedExperimentPointRequest);
 	
 }
