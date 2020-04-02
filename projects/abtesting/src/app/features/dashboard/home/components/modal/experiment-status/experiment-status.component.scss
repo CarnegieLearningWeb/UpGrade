@@ -17,6 +17,12 @@
     }
   }
 
+  .info-msg {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--green);
+  }
+
   .button-container {
     display: flex;
     justify-content: flex-end;

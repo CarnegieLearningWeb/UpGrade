@@ -16,6 +16,7 @@ export class ExperimentStatusComponent implements OnInit {
   statusForm: FormGroup;
   experimentStatus = [];
   minDate = new Date();
+  showInfoMsg = false;
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -42,10 +43,14 @@ export class ExperimentStatusComponent implements OnInit {
     );
     switch (this.experimentInfo.state) {
       case EXPERIMENT_STATE.ENROLLING:
+        this.experimentStatus = [
+          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
+          { value: EXPERIMENT_STATE.CANCELLED }
+        ];
+        break;
       case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
         this.experimentStatus = [
           { value: EXPERIMENT_STATE.ENROLLING },
-          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
           { value: EXPERIMENT_STATE.CANCELLED }
         ];
         break;
@@ -59,6 +64,9 @@ export class ExperimentStatusComponent implements OnInit {
           { value: EXPERIMENT_STATE.CANCELLED }
         ];
     }
+    this.statusForm.get('newStatus').valueChanges.subscribe(status => {
+      this.showInfoMsg = status.value === EXPERIMENT_STATE.ENROLLING;
+    });
   }
 
   get ExperimentStatus() {
