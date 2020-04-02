@@ -20,8 +20,8 @@ export namespace Interfaces {
 
   export interface IUser {
     id: string;
-    group: Map<string, Array<string>>;
-    workingGroup: Map<string, string>;
+    group?: Map<string, Array<string>>;
+    workingGroup?: Map<string, string>;
   }
 
   export interface IMarkExperimentPoint {
