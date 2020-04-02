@@ -75,7 +75,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		}
 		@Override
 		public void enqueue(@NonNull Callback<R> callback) {
-			delegated.enqueue(new RetryCallback<>(delegated, callback, maxRetries));
+			delegated.enqueue(new RetryCallback<>(callback, maxRetries));
 		}
 		@Override
 		public boolean isExecuted() {
@@ -99,11 +99,9 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		}
 	}
 	static final class RetryCallback<T> implements Callback<T> {
-		private final Call<T> call;
 		private final Callback<T> callback;
 		private final int maxRetries;
-		public RetryCallback(Call<T> call, Callback<T> callback, int maxRetries) {
-			this.call = call;
+		public RetryCallback(Callback<T> callback, int maxRetries) {
 			this.callback = callback;
 			this.maxRetries = maxRetries;
 		}
@@ -112,7 +110,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
 			if (!response.isSuccessful() && retryCount.incrementAndGet() <= maxRetries) {
 				System.out.println("Call with no success result code: {} " + response.code());
-				retryCall();
+				retryCall(call);
 			} else {
 				callback.onResponse(call, response);
 			}
@@ -121,7 +119,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
 			System.out.println("Call failed with message:  " + t.getMessage());
 			if (retryCount.incrementAndGet() <= maxRetries) {
-				retryCall();
+				retryCall(call);
 			} else if (maxRetries > 0) {
 				System.out.println("No retries left sending timeout up.");
 				callback.onFailure(call,
@@ -130,7 +128,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 				callback.onFailure(call, t);
 			}
 		}
-		private void retryCall() {
+		private void retryCall(Call<T> call) {
 			System.out.println(retryCount.get() + "/" + maxRetries + " " + " Retrying...");
 			call.clone().enqueue(this);
 		}
