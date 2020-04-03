@@ -56,13 +56,7 @@ export class PreviewUserService {
   public async upsertExperimentConditionAssignment(previewUser: PreviewUser): Promise<PreviewUser | undefined> {
     this.log.info('Upsert Experiment Condition Assignment => ', JSON.stringify(previewUser, undefined, 1));
 
-    const [previewDocument, previewDocumentWithOldAssignments] = await Promise.all([
-      this.userRepository.findByIds([previewUser.id]),
-      this.userRepository.findOneById(previewUser.id),
-    ]);
-    // console.log('previewDocument[0]', previewDocument[0]);
-    const { id, ...rest } = previewDocument[0];
-    // console.log('assignments', previewDocumentWithAssignments);
+    const previewDocumentWithOldAssignments = await this.userRepository.findOneById(previewUser.id);
     const newAssignments = previewUser.assignments;
 
     const assignmentDocToSave: Array<Partial<ExplicitIndividualAssignment>> =
@@ -97,14 +91,8 @@ export class PreviewUserService {
     }
 
     // save new documents
-    const savedAssignments: ExplicitIndividualAssignment[] = await this.explicitIndividualAssignmentRepository.save(
-      assignmentDocToSave
-    );
+    await this.explicitIndividualAssignmentRepository.save(assignmentDocToSave);
 
-    return {
-      id: previewUser.id,
-      assignments: savedAssignments,
-      ...rest,
-    };
+    return this.userRepository.findOneById(previewUser.id);
   }
 }
