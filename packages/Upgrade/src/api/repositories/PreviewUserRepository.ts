@@ -42,7 +42,7 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .innerJoin('assignments.experiment', 'experiment')
       .addSelect(['experiment.id', 'experiment.name'])
       .innerJoin('assignments.experimentCondition', 'experimentCondition')
-      .addSelect(['experimentCondition.id', 'experimentCondition.name'])
+      .addSelect(['experimentCondition.id', 'experimentCondition.conditionCode'])
       .where('user.id=:id', { id })
       .getOne()
       .catch((errorMsg: any) => {
@@ -57,7 +57,7 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .innerJoin('assignments.experiment', 'experiment')
       .addSelect(['experiment.id', 'experiment.name'])
       .innerJoin('assignments.experimentCondition', 'experimentCondition')
-      .addSelect(['experimentCondition.id', 'experimentCondition.name'])
+      .addSelect(['experimentCondition.id', 'experimentCondition.conditionCode'])
       .getMany();
   }
 }
