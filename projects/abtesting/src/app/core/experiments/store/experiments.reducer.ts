@@ -24,7 +24,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   sortAs: null,
   stats: {},
   uniqueIdentifiers: null,
-  allPartitions: null
+  allPartitions: null,
+  allExperimentNames: null
 });
 
 const reducer = createReducer(
@@ -42,7 +43,9 @@ const reducer = createReducer(
     return adapter.addMany(experiments, { ...newState });
   }),
   on(
-    experimentsAction.actionGetExperimentsFailure, (state) =>
+    experimentsAction.actionGetExperimentsFailure,
+    experimentsAction.actionGetExperimentByIdFailure,
+    (state) =>
       ({ ...state, isLoadingExperiment: false })
   ),
   on(
@@ -63,6 +66,16 @@ const reducer = createReducer(
       delete state.stats[experimentStatId];
       const stats = state.stats;
       return { ...state, stats };
+    }
+  ),
+  on(
+    experimentsAction.actionGetExperimentById,
+    (state) => ({ ...state, isLoadingExperiment: true })
+  ),
+  on(
+    experimentsAction.actionGetExperimentByIdSuccess,
+    (state, { experiment }) => {
+      return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
     }
   ),
   on(
@@ -116,6 +129,10 @@ const reducer = createReducer(
   on(
     experimentsAction.actionSetSkipExperiment,
     (state, { skipExperiment }) => ({ ...state, skipExperiment })
+  ),
+  on(
+    experimentsAction.actionFetchAllExperimentNamesSuccess,
+    (state, { allExperimentNames }) => ({ ...state, allExperimentNames })
   )
 );
 

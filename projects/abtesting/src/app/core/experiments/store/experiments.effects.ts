@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
 import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment, NUMBER_OF_EXPERIMENTS, ExperimentPaginationParams } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -155,6 +155,33 @@ export class ExperimentEffects {
     )
   );
 
+  getExperimentById$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionGetExperimentById),
+        map(action => action.experimentId),
+        filter(experimentId => !!experimentId),
+        withLatestFrom(
+          this.store$.pipe(select(selectExperimentStats)),
+        ),
+        mergeMap(([experimentId, experimentStats]) =>
+          this.experimentDataService.getExperimentById(experimentId).pipe(
+            switchMap((data: Experiment) =>
+              this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
+                switchMap((stat: IExperimentEnrollmentStats) => {
+                  const stats = { ...experimentStats, [data.id]: stat[0] }
+                  return [
+                    experimentAction.actionGetExperimentByIdSuccess({ experiment: data }),
+                    experimentAction.actionStoreExperimentStats({ stats })
+                  ];
+                })
+              )
+            )
+          )
+        )
+      )
+  );
+
   fetchAllPartitions = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchAllPartitions),
@@ -174,6 +201,20 @@ export class ExperimentEffects {
         this.experimentDataService.fetchAllUniqueIdentifiers().pipe(
           map(uniqueIdentifiers => experimentAction.actionFetchAllUniqueIdentifiersSuccess({ uniqueIdentifiers })),
           catchError(() => [experimentAction.actionFetchAllUniqueIdentifiersFailure()])
+        )
+      )
+    )
+  );
+
+  fetchAllExperimentNames$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionFetchAllExperimentNames),
+        switchMap(() =>
+          this.experimentDataService.fetchAllExperimentNames().pipe(
+            map((data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data }),
+            catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
+          )
         )
       )
     )

@@ -45,4 +45,18 @@ export class PreviewUsersEffects {
       ))
     ),
   );
+
+  assignCondition$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(previewUserActions.actionAssignConditionToPreviewUser),
+      map(action => action.data),
+      filter(data => !!data),
+      switchMap(data =>
+        this.previewUserDataService.assignConditionToPreviewUser(data).pipe(
+          map(previewUser => previewUserActions.actionAssignConditionToPreviewUserSuccess({ previewUser })),
+          catchError(() => [previewUserActions.actionAssignConditionToPreviewUserFailure()])
+        )
+      )
+    )
+  );
 }

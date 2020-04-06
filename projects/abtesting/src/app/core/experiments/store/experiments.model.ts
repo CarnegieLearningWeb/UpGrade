@@ -103,6 +103,11 @@ export interface ExperimentPartition {
   twoCharacterId: string;
 }
 
+export interface ExperimentNameVM {
+  id: string;
+  name: string;
+}
+
 export interface Experiment {
   id: string;
   name: string;
@@ -150,6 +155,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   };
   uniqueIdentifiers: {};
   allPartitions: {};
+  allExperimentNames: {};
 }
 
 export interface State extends AppState {

@@ -36,6 +36,11 @@ export const selectSelectedExperiment = createSelector(
   }
 );
 
+export const selectExperimentById = createSelector(
+  selectExperimentState,
+  (state, { experimentId }) => state.entities[experimentId]
+);
+
 export const selectExperimentStats = createSelector(
   selectExperimentState,
   (state) => state.stats
@@ -79,4 +84,9 @@ export const selectSortKey = createSelector(
 export const selectSortAs = createSelector(
   selectExperimentState,
   (state) => state.sortAs
+);
+
+export const selectAllExperimentNames = createSelector(
+  selectExperimentState,
+  (state) => state.allExperimentNames
 );

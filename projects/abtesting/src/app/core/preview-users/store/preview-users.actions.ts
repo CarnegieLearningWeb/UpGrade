@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { PreviewUsers } from './preview-users.model';
+import { PreviewUsers, PreviewUserAssignCondition } from './preview-users.model';
 
 export const actionFetchPreviewUsers = createAction(
   '[Preview Users] Fetch Preview Users'
@@ -40,4 +40,18 @@ export const actionDeletePreviewUserSuccess = createAction(
 
 export const actionDeletePreviewUserFailure = createAction(
   '[Preview Users] Delete Preview User Failure',
+);
+
+export const actionAssignConditionToPreviewUser = createAction(
+  '[Preview User] Assign Condition To Preview User',
+  props<{ data: PreviewUserAssignCondition }>()
+);
+
+export const actionAssignConditionToPreviewUserSuccess = createAction(
+  '[Preview User] Assign Condition To Preview User Success',
+  props<{ previewUser: any }>()
+);
+
+export const actionAssignConditionToPreviewUserFailure = createAction(
+  '[Preview User] Assign Condition To Preview User Failure',
 );

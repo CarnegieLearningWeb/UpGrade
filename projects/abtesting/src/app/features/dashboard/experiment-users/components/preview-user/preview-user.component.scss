@@ -5,25 +5,122 @@
     margin-top: 30px;
 
     table {
-      width: 350px;
+      width: 100%;
 
       .mat-cell {
-        width: 50%;
+        width: 20%;
 
-        &.mat-column-id {
-          width: 75%;
+        &.mat-column-totalAssignedConditions {
+          width: 15%;
+          text-align: center;
+        }
+
+        &.mat-column-assignment {
+          width: 50%;
+        }
+
+        &.mat-column-actions {
+          width: 15%;
         }
       }
 
-      .remove-icon {
+      .mat-header-cell {
+        &.mat-column-totalAssignedConditions {
+          text-align: center;
+        }
+      }
+
+      .assignment-heading {
+        display: flex;
+
+        span {
+          width: 50%;
+          text-align: left;
+        }
+      }
+
+      .assignment-list {
+        padding-top: 10px !important;
+
+        .condition-selection {
+          max-height: 100px;
+          overflow: scroll;
+
+          .condition-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+
+            &-selection {
+              width: 50%;
+            }
+          }
+        }
+
+        .add-new-experiment {
+          display: block;
+          margin: 5px 5px 5px 0;
+          outline: 0;
+          border: 0;
+          background-color: transparent;
+          padding-left: 0;
+          color: var(--blue);
+          font-family: 'Open Sans';
+          font-size: var(--text-size-x-small);
+          font-weight: 700;
+        }
+
+        .assigned-condition-info {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          span {
+            margin-bottom: 7px;
+            width: 50%;
+            text-align: left;
+            word-break: break-word;
+          }
+        }
+      }
+
+      .assigned-condition-list {
+        max-height: 100px;
+        overflow: scroll;
+      }
+
+      .pencil-container {
+        display: inline-block;
+        width: 80px;
+      }
+
+      .action-icon {
+        margin-right: 5px;
+
         &:hover {
           cursor: pointer;
+        }
+
+        &--small {
+          &:hover {
+            cursor: pointer;
+          }
+
+          ::ng-deep svg {
+            width: 15px;
+            height: 15px;
+          }
         }
       }
     }
 
     .paginator {
-      width: 350px;
+      width: 100%;
     }
+  }
+
+  .spin {
+    width: 100% !important;
   }
 }
