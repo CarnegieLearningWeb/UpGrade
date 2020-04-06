@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Experiment, UpsertExperimentType, ExperimentStateInfo, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './experiments.model';
+import { Experiment, UpsertExperimentType, ExperimentStateInfo, ExperimentNameVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './experiments.model';
 
 export const actionGetExperiments = createAction(
   '[Experiment] Get Experiments',
@@ -21,6 +21,20 @@ export const actionStoreExperimentStats = createAction('[Experiment] Store Exper
 export const actionRemoveExperimentStat = createAction(
   '[Experiment] Remove Experiment stat',
   props<{ experimentStatId: string }>()
+);
+
+export const actionGetExperimentById = createAction(
+  '[Experiment] Get Experiment By Id',
+  props<{ experimentId: string }>()
+);
+
+export const actionGetExperimentByIdSuccess = createAction(
+  '[Experiment] Get Experiment By Id Success',
+  props<{ experiment: Experiment }>()
+);
+
+export const actionGetExperimentByIdFailure = createAction(
+  '[Experiment] Get Experiment By Id Failure'
 );
 
 export const actionUpsertExperiment = createAction(
@@ -102,4 +116,17 @@ export const actionSetSortKey = createAction(
 export const actionSetSortingType = createAction(
   '[Experiment] Set Sorting type',
   props<{ sortingType: EXPERIMENT_SORT_AS }>()
+);
+
+export const actionFetchAllExperimentNames = createAction(
+  '[Experiment] Fetch All Experiment Names'
+);
+
+export const actionFetchAllExperimentNamesSuccess = createAction(
+  '[Experiment] Fetch All Experiment Names Success',
+  props<{ allExperimentNames: ExperimentNameVM[] }>()
+);
+
+export const actionFetchAllExperimentNamesFailure = createAction(
+  '[Experiment] Fetch All Experiment Names Failure'
 );

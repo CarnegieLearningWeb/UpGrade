@@ -129,7 +129,7 @@
         <!-- Condition Code Column -->
         <ng-container matColumnDef="conditionCode">
           <mat-header-cell *matHeaderCellDef>
-            {{ 'home-global.condition.text' | translate }}
+            {{ 'global.condition.text' | translate }}
           </mat-header-cell>
           <mat-cell *matCellDef="let data">
             <span *ngIf="data.conditionCode?.length < 50; else conditionCode">

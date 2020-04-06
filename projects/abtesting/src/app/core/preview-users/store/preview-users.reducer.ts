@@ -27,7 +27,7 @@ const reducer = createReducer(
   on(
     previewUsersActions.actionFetchPreviewUsersSuccess,
     (state, { data }) => {
-      return adapter.addMany(data, { ...state, isLoading: false });
+      return adapter.addAll(data, { ...state, isLoading: false });
     }
   ),
   on(
@@ -48,6 +48,12 @@ const reducer = createReducer(
     previewUsersActions.actionDeletePreviewUserFailure,
     (state) => ({ ...state, isLoading: false })
   ),
+  on(
+    previewUsersActions.actionAssignConditionToPreviewUserSuccess,
+    (state, { previewUser }) => {
+      return adapter.upsertOne(previewUser, { ...state });
+    }
+  )
 )
 
 export function previewUsersReducer(

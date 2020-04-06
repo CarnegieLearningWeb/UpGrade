@@ -7,7 +7,9 @@ import {
   selectIsLoadingExperiment,
   selectSelectedExperiment,
   selectAllPartitions,
-  selectAllUniqueIdentifiers
+  selectAllUniqueIdentifiers,
+  selectAllExperimentNames,
+  selectExperimentById
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -31,6 +33,7 @@ export class ExperimentService {
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   allPartitions$ = this.store$.pipe(select(selectAllPartitions));
   uniqueIdentifiers$ = this.store$.pipe(select(selectAllUniqueIdentifiers));
+  allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
 
   isInitialExperimentsLoading() {
     return combineLatest(
@@ -64,6 +67,23 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
 
+  selectExperimentById(experimentId: string) {
+    return combineLatest(
+      this.store$.pipe(select(selectExperimentById, { experimentId }))
+    ).pipe(
+      map(([experiment]) => {
+        if (!experiment) {
+          this.fetchExperimentById(experimentId);
+        }
+        return experiment;
+      }),
+    );
+  }
+
+  fetchExperimentById(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionGetExperimentById({ experimentId }));
+  }
+
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
   }
@@ -82,5 +102,9 @@ export class ExperimentService {
 
   setSortingType(sortingType: EXPERIMENT_SORT_AS) {
     this.store$.dispatch(experimentAction.actionSetSortingType({ sortingType }));
+  }
+
+  fetchAllExperimentNames() {
+    this.store$.dispatch(experimentAction.actionFetchAllExperimentNames());
   }
 }

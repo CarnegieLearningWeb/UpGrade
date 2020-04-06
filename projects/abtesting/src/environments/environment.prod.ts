@@ -27,6 +27,7 @@ export const environment = {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
     updateExperiments: `${endpointApi}/experiments`,
+    getExperimentById: `${endpointApi}/experiments/single`,
     getAllAuditLogs: `${endpointApi}/audit`,
     getAllErrorLogs: `${endpointApi}/error`,
     experimentsStats: `${endpointApi}/stats`,
@@ -36,7 +37,9 @@ export const environment = {
     excludeUsers: `${endpointApi}/exclude/user`,
     excludeGroups: `${endpointApi}/exclude/group`,
     previewUsers: `${endpointApi}/previewUsers`,
+    previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,
     uniqueIdentifier: `${endpointApi}/experiments/uniqueIdentifier`,
-    allPartitions: `${endpointApi}/experiments/partitions`
+    allPartitions: `${endpointApi}/experiments/partitions`,
+    allExperimentNames: `${endpointApi}/experiments/names`
   }
 };

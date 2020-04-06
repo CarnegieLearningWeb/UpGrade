@@ -15,6 +15,7 @@
   "global.group-custom-type.placeHolder": "Name of Group",
   "global.number.text": "NO.",
   "global.description.text": "DESCRIPTION",
+  "global.condition.text": "CONDITION",
   "login.sign-in-btn.text": "Login with Google",
   "login.description-1.text": "By creating this account, you agree to",
   "login.description-2.text": "Terms & Conditions",
@@ -24,7 +25,6 @@
   "home-global.unit-of-assignment.text": "Unit of Assignment",
   "home-global.consistency-rule.text": "Consistency Rule",
   "home-global.post-experiment-rule.text": "POST EXPERIMENT RULE",
-  "home-global.condition.text": "CONDITION",
   "home-global.enrollments-per-custom.text": "Enrollments per {{ groupType }}",
   "home-global.assignment-weight.text": "ASSIGNMENT WEIGHT",
   "home.experiment.text.subtitle": "Create and analyze new experiments",
@@ -145,5 +145,11 @@
   "users.experiment-users-title.text": "Experiment Users",
   "users.preview-users-title.text": "Preview Users",
   "users.create-preview-users-title.text": "Create Preview Users",
-  "users.preview-users.add-user-btn.text": "ADD USER"
+  "users.preview-users.add-user-btn.text": "ADD USER",
+  "users.preview-users.experiment.text": "Experiment",
+  "users.preview-users.table-experiment-name-heading.text": "Experiment Name",
+  "users.preview-users.table-assigned-condition-heading.text": "Assigned Condition",
+  "users.preview-users.table-total-assigned-condition-heading.text": "Total Assigned Conditions",
+  "users.preview-users.add-new-experiment.text": "+ Add New Experiment",
+  "users.preview-users.save.text": "Save"
 }

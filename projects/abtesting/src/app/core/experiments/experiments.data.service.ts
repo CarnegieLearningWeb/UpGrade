@@ -41,6 +41,11 @@ export class ExperimentDataService {
     return this.http.delete(url);
   }
 
+  getExperimentById(experimentId: string) {
+    const url = `${environment.api.getExperimentById}/${experimentId}`;
+    return this.http.get(url);
+  }
+
   fetchAllPartitions() {
     const url = environment.api.allPartitions;
     return this.http.get(url);
@@ -48,6 +53,11 @@ export class ExperimentDataService {
 
   fetchAllUniqueIdentifiers() {
     const url = environment.api.uniqueIdentifier;
+    return this.http.get(url);
+  }
+
+  fetchAllExperimentNames() {
+    const url = environment.api.allExperimentNames;
     return this.http.get(url);
   }
 }

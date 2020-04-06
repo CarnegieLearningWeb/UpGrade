@@ -18,6 +18,7 @@ import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'home-experiment-design',
@@ -76,7 +77,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
-    this.allPartitionsSub = this.experimentService.allPartitions$.subscribe((partitions: any) => {
+    this.allPartitionsSub = this.experimentService.allPartitions$.pipe(
+      filter(partitions => !!partitions))
+      .subscribe((partitions: any) => {
       this.allPartitions = partitions.map(partition =>
         partition.name ? partition.point + partition.name : partition.point
       );

@@ -4,6 +4,7 @@ import { Store, select } from '@ngrx/store';
 import * as previewUsersActions from './store/preview-users.actions';
 import { selectIsPreviewUserLoading, selectAllPreviewUsers } from './store/preview-users.selectors';
 import { map } from 'rxjs/operators';
+import { PreviewUserAssignCondition } from './store/preview-users.model';
 
 @Injectable()
 export class PreviewUsersService {
@@ -19,11 +20,19 @@ export class PreviewUsersService {
   );
   constructor(private store$: Store<AppState>) {}
 
+  fetchPreviewUsers() {
+    this.store$.dispatch(previewUsersActions.actionFetchPreviewUsers());
+  }
+
   addPreviewUser(id: string) {
     this.store$.dispatch(previewUsersActions.actionAddPreviewUser({ id }));
   }
 
   deletePreviewUser(id: string) {
     this.store$.dispatch(previewUsersActions.actionDeletePreviewUser({ id }));
+  }
+
+  assignConditionForPreviewUser(data: PreviewUserAssignCondition) {
+    this.store$.dispatch(previewUsersActions.actionAssignConditionToPreviewUser({ data }));
   }
 }
