@@ -110,7 +110,7 @@ export class ExperimentAssignmentService {
     });
   }
 
-  public async getAllExperimentConditions(userId: string): Promise<IExperimentAssignment[]> {
+  public async getAllExperimentConditions(userId: string, context?: string): Promise<IExperimentAssignment[]> {
     this.log.info(`Get all experiment for User Id ${userId}`);
     const usersData: any[] = await Promise.all([
       this.experimentUserService.findOne(userId),
@@ -120,56 +120,70 @@ export class ExperimentAssignmentService {
     const experimentUser: ExperimentUser = usersData[0];
     const previewUser: PreviewUser = usersData[1];
 
-    // check user validation
+    // create user if user not defined
     if (!experimentUser) {
-      // throw error user group not defined
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User is not defined: ${userId}}`,
-        })
-      );
+      await this.userRepository.save({ id: userId });
     }
 
     // query all experiment and sub experiment
     let experiments: Experiment[] = [];
     if (previewUser) {
-      experiments = await this.experimentRepository.getValidExperimentsWithPreview();
+      experiments = await this.experimentRepository.getValidExperimentsWithPreview(context);
     } else {
-      experiments = await this.experimentRepository.getValidExperiments();
+      experiments = await this.experimentRepository.getValidExperiments(context);
     }
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
-    const groupExperiment = experiments.find(experiment => experiment.group);
+    const hasGroupExperiment = experiments.find((experiment) => experiment.group) ? true : false;
 
     // check for group and working group
-    if (groupExperiment) {
+    if (hasGroupExperiment) {
       if (!experimentUser.group || !experimentUser.workingGroup) {
-        // throw error user group not defined
-        throw new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-            message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
-          })
-        );
+        // filter group experiments
+        experiments = experiments.filter((experiment) => experiment.assignmentUnit !== ASSIGNMENT_UNIT.GROUP);
+
+        // add error inside the error database
+
+        // // throw error user group not defined
+        // throw new Error(
+        //   JSON.stringify({
+        //     type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+        //     message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
+        //   })
+        // );
       } else {
         const keys = Object.keys(experimentUser.workingGroup);
-        keys.forEach(key => {
+        keys.forEach((key) => {
           if (!experimentUser.group[key]) {
-            throw new Error(
-              JSON.stringify({
-                type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-                message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
-              })
+            // filter experiment whose group membership is not set
+            experiments = experiments.filter(
+              (experiment) =>
+                experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+                (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && experiment.group !== experimentUser.group[key])
             );
+            // add error inside the error database
+            // throw new Error(
+            //   JSON.stringify({
+            //     type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+            //     message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
+            //   })
+            // );
           } else {
             if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
-              throw new Error(
-                JSON.stringify({
-                  type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-                  message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
-                })
+              // filter experiment whose group membership is not set
+              experiments = experiments.filter(
+                (experiment) =>
+                  experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+                  (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+                    experiment.group !== experimentUser.group[key])
               );
+              // add error inside the error database
+              // throw new Error(
+              //   JSON.stringify({
+              //     type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+              //     message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
+              //   })
+              // );
             }
           }
         });
@@ -185,7 +199,7 @@ export class ExperimentAssignmentService {
 
       // ============= check if user or group is excluded
       let userGroup = [];
-      userGroup = Object.keys(experimentUser.workingGroup).map((type: string) => {
+      userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
         return `${type}_${experimentUser.workingGroup[type]}`;
       });
 
@@ -202,8 +216,8 @@ export class ExperimentAssignmentService {
       // filter group experiment according to group excluded
       let filteredExperiments: Experiment[] = [...experiments];
       if (groupExcluded.length > 0) {
-        const groupNameArray = groupExcluded.map(group => group.type);
-        filteredExperiments = experiments.filter(experiment => {
+        const groupNameArray = groupExcluded.map((group) => group.type);
+        filteredExperiments = experiments.filter((experiment) => {
           if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
             return !groupNameArray.includes(experiment.group);
           }
@@ -211,7 +225,7 @@ export class ExperimentAssignmentService {
         });
       }
 
-      const experimentIds = filteredExperiments.map(experiment => experiment.id);
+      const experimentIds = filteredExperiments.map((experiment) => experiment.id);
 
       // return if no experiment
       if (experimentIds.length === 0) {
@@ -234,30 +248,40 @@ export class ExperimentAssignmentService {
       const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
         promiseAssignmentExclusion
       );
-      this.log.info('individualAssignments', individualAssignments);
+
+      let mergedIndividualAssignment = individualAssignments;
+      // add assignments for individual assignments if preview user
+      if (previewUser && previewUser.assignments) {
+        const previewAssignment = previewUser.assignments.map((assignment) => {
+          return { experimentId: assignment.experiment.id, userId, condition: assignment.experimentCondition };
+        });
+        mergedIndividualAssignment = [...previewAssignment, ...mergedIndividualAssignment];
+      }
+
+      this.log.info('individualAssignments', mergedIndividualAssignment);
       this.log.info('groupAssignment', groupAssignments);
       this.log.info('individualExclusion', individualExclusions);
       this.log.info('groupExclusion', groupExclusions);
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
-        filteredExperiments.map(experiment => {
-          const individualAssignment = individualAssignments.find(assignment => {
+        filteredExperiments.map((experiment) => {
+          const individualAssignment = mergedIndividualAssignment.find((assignment) => {
             return assignment.experimentId === experiment.id;
           });
 
-          const groupAssignment = groupAssignments.find(assignment => {
+          const groupAssignment = groupAssignments.find((assignment) => {
             return (
               assignment.experimentId === experiment.id &&
               assignment.groupId === experimentUser.workingGroup[experiment.group]
             );
           });
 
-          const individualExclusion = individualExclusions.find(exclusion => {
+          const individualExclusion = individualExclusions.find((exclusion) => {
             return exclusion.experimentId === experiment.id;
           });
 
-          const groupExclusion = groupExclusions.find(exclusion => {
+          const groupExclusion = groupExclusions.find((exclusion) => {
             return (
               exclusion.experimentId === experiment.id &&
               exclusion.groupId === experimentUser.workingGroup[experiment.group]
@@ -278,7 +302,7 @@ export class ExperimentAssignmentService {
 
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
-        const partitions = experiment.partitions.map(partition => {
+        const partitions = experiment.partitions.map((partition) => {
           const { name, point, twoCharacterId } = partition;
           const conditionAssigned = assignment;
           return {
@@ -390,7 +414,7 @@ export class ExperimentAssignmentService {
         if (!experiment.revertTo) {
           return;
         } else {
-          const condition = experiment.conditions.find(key => key.id === experiment.revertTo);
+          const condition = experiment.conditions.find((key) => key.id === experiment.revertTo);
           return condition;
         }
       }
@@ -402,8 +426,6 @@ export class ExperimentAssignmentService {
         return individualAssignment.condition;
       } else if (individualExclusion) {
         return;
-      } else if (groupExclusion) {
-        return;
       } else if (groupAssignment) {
         // add entry in individual assignment
         this.individualAssignmentRepository.saveRawJson({
@@ -412,9 +434,11 @@ export class ExperimentAssignmentService {
           condition: groupAssignment.condition,
         });
         return groupAssignment.condition;
+      } else if (groupExclusion) {
+        return;
       } else {
         const randomConditions = this.weightedRandom(
-          experiment.conditions.map(condition => condition.assignmentWeight)
+          experiment.conditions.map((condition) => condition.assignmentWeight)
         );
         const experimentalCondition = experiment.conditions[randomConditions];
         // assignment operations will happen here

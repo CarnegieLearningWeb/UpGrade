@@ -2,6 +2,7 @@ import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExper
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
+import { IExperimentAssignment } from 'ees_types';
 
 export function checkExperimentAssignedIsDefault(
   experimentConditionAssignments: any,
@@ -25,7 +26,7 @@ export function checkExperimentAssignedIsNotDefault(
   experimentPoint: string
 ): void {
   // get object with name and point
-  const experimentObject = experimentConditionAssignments.find(experiment => {
+  const experimentObject = experimentConditionAssignments.find((experiment) => {
     return experiment.name === experimentName && experiment.point === experimentPoint;
   });
   expect(experimentObject.assignedCondition.conditionCode).not.toEqual('default');
@@ -49,11 +50,14 @@ export function checkMarkExperimentPointForUser(
   );
 }
 
-export async function getAllExperimentCondition(userId: string): Promise<any> {
+export async function getAllExperimentCondition(
+  userId: string,
+  context?: string | undefined
+): Promise<IExperimentAssignment[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
 
   // getAllExperimentConditions
-  return experimentAssignmentService.getAllExperimentConditions(userId);
+  return experimentAssignmentService.getAllExperimentConditions(userId, context);
 }
 
 export async function markExperimentPoint(

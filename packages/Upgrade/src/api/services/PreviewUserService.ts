@@ -21,17 +21,21 @@ export class PreviewUserService {
       this.userRepository.find(),
       this.userRepository.findWithNames(),
     ]);
-    return previewUsers.map(user => {
-      const doc = assignments.find(assignment => {
+    return previewUsers.map((user) => {
+      const doc = assignments.find((assignment) => {
         return assignment.id === user.id;
       });
       return doc ? doc : user;
     });
   }
 
-  public findOne(id: string): Promise<PreviewUser | undefined> {
+  public async findOne(id: string): Promise<PreviewUser | undefined> {
     this.log.info(`Find user by id => ${id}`);
-    return this.userRepository.findOne({ id });
+    const [previewUser, assignments] = await Promise.all([
+      this.userRepository.findOne({ id }),
+      this.userRepository.findOneById(id),
+    ]);
+    return assignments ? assignments : previewUser;
   }
 
   public create(user: Partial<PreviewUser>): Promise<PreviewUser> {
@@ -76,9 +80,9 @@ export class PreviewUserService {
     if (previewDocumentWithOldAssignments && previewDocumentWithOldAssignments.assignments) {
       // delete conditions which don't exist in new experiment document
       const toDeleteAssignments = [];
-      previewDocumentWithOldAssignments.assignments.forEach(assignment => {
+      previewDocumentWithOldAssignments.assignments.forEach((assignment) => {
         if (
-          !assignmentDocToSave.find(doc => {
+          !assignmentDocToSave.find((doc) => {
             return doc.id === assignment.id;
           })
         ) {

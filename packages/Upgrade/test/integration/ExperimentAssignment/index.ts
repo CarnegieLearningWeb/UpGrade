@@ -14,6 +14,7 @@ import TestCase8 from './PreviewScenario2';
 import TestCase9 from './PreviewScenario3';
 import TestCase10 from './PreviewScenario4';
 import TestCase11 from './PreviewScenario5';
+import TestCase16 from './PreviewForcedAssigned';
 import RevertToDefaultTestCase from './RevertToDefault';
 import RevertToConditionTestCase from './RevertToCondition';
 import { CheckService } from '../../../src/api/services/CheckService';
@@ -48,7 +49,7 @@ const initialChecks = async () => {
   // get all user here
   const userList = await userService.find();
   expect(userList.length).toBe(experimentUsers.length);
-  experimentUsers.map(user => {
+  experimentUsers.map((user) => {
     expect(userList).toContainEqual(user);
   });
 };
@@ -131,4 +132,9 @@ export const RevertToDefault = async () => {
 export const RevertToCondition = async () => {
   await initialChecks();
   await RevertToConditionTestCase();
+};
+
+export const PreviewForcedAssigned = async () => {
+  await initialChecks();
+  await TestCase16();
 };

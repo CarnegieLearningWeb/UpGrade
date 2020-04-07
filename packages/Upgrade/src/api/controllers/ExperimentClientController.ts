@@ -213,7 +213,7 @@ export class ExperimentClientController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId);
+    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context);
   }
 
   /**

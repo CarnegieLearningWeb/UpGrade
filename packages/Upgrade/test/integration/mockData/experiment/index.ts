@@ -1,4 +1,4 @@
-import { experiment } from './raw';
+import { experiment, experimentSecond } from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'ees_types';
 
 export const individualAssignmentExperiment = {
@@ -110,4 +110,8 @@ export const previewIndividualAssignmentExperiment = {
 export const previewGroupExperiment = {
   ...groupAssignmentWithGroupConsistencyExperiment,
   state: EXPERIMENT_STATE.PREVIEW,
+};
+
+export const secondExperiment = {
+  ...experimentSecond,
 };

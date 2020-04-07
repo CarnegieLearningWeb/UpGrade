@@ -1,5 +1,5 @@
 import { EXPERIMENT_STATE } from 'ees_types';
-import { Repository, EntityRepository, EntityManager } from 'typeorm';
+import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
 
@@ -26,46 +26,56 @@ export class ExperimentRepository extends Repository<Experiment> {
       });
   }
 
-  public async getValidExperiments(): Promise<Experiment[]> {
-    return this.createQueryBuilder('experiment')
+  public async getValidExperiments(context: string | undefined): Promise<Experiment[]> {
+    let query = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete', {
-        enrolling: 'enrolling',
-        enrollmentComplete: 'enrollmentComplete',
-        preview: 'preview',
-      })
-      .getMany()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'getEnrollingAndEnrollmentComplete',
-          {},
-          errorMsg
-        );
-        throw new Error(errorMsgString);
-      });
+      .where(
+        new Brackets((qb) => {
+          qb.where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete', {
+            enrolling: 'enrolling',
+            enrollmentComplete: 'enrollmentComplete',
+          });
+        })
+      );
+
+    // add context query here
+    if (context) {
+      query = query.andWhere('experiment.context = :context', { context });
+    }
+
+    return query.getMany().catch((errorMsg: any) => {
+      const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments', {}, errorMsg);
+      throw new Error(errorMsgString);
+    });
   }
 
-  public async getValidExperimentsWithPreview(): Promise<Experiment[]> {
-    return this.createQueryBuilder('experiment')
+  public async getValidExperimentsWithPreview(context: string | undefined): Promise<Experiment[]> {
+    let query = this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .where('experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview', {
-        enrolling: 'enrolling',
-        enrollmentComplete: 'enrollmentComplete',
-        preview: 'preview',
-      })
-      .getMany()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'ExperimentRepository',
-          'getEnrollingAndEnrollmentComplete',
-          {},
-          errorMsg
-        );
-        throw new Error(errorMsgString);
-      });
+      .where(
+        new Brackets((qb) => {
+          qb.where(
+            'experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview',
+            {
+              enrolling: 'enrolling',
+              enrollmentComplete: 'enrollmentComplete',
+              preview: 'preview',
+            }
+          );
+        })
+      );
+
+    // add context query here
+    if (context) {
+      query = query.andWhere('experiment.context = :context', { context });
+    }
+
+    return query.getMany().catch((errorMsg: any) => {
+      const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperimentsWithPreview', {}, errorMsg);
+      throw new Error(errorMsgString);
+    });
   }
 
   public async updateState(experimentId: string, state: EXPERIMENT_STATE, scheduleDate: Date): Promise<Experiment> {
