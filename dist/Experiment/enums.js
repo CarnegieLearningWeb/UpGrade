@@ -38,6 +38,8 @@ var SERVER_ERROR;
     SERVER_ERROR["EXPERIMENT_USER_NOT_DEFINED"] = "Experiment user not defined";
     SERVER_ERROR["EXPERIMENT_USER_GROUP_NOT_DEFINED"] = "Experiment user group not defined";
     SERVER_ERROR["WORKING_GROUP_NOT_SUBSET_OF_GROUP"] = "Working group is not a subset of user group";
+    SERVER_ERROR["INVALID_TOKEN"] = "Invalid token";
+    SERVER_ERROR["TOKEN_NOT_PRESENT"] = "Token is not present in request";
 })(SERVER_ERROR = exports.SERVER_ERROR || (exports.SERVER_ERROR = {}));
 var EXPERIMENT_LOG_TYPE;
 (function (EXPERIMENT_LOG_TYPE) {
