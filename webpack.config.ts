@@ -19,6 +19,6 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
     libraryTarget: 'umd',
-    library: 'ees-client-lib'
+    library: 'upgrade-client-lib'
   }
 };

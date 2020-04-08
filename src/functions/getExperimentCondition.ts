@@ -1,9 +1,7 @@
-import DataService from './common/dataService';
-import { Interfaces } from './identifiers';
+import { IExperimentAssignment } from 'ees_types';
 
-export default function getExperimentCondition(experimentPoint: string, partitionId?: string): Interfaces.IGetExperimentCondition {
+export default function getExperimentCondition(experimentConditionData: IExperimentAssignment[], experimentPoint: string, partitionId?: string): IExperimentAssignment {
   try {
-    const experimentConditionData = DataService.getData('experimentConditionData');
     if (experimentConditionData) {
       const result = experimentConditionData.filter(data =>
         partitionId ? (data.name === partitionId && data.point === experimentPoint) : (data.point === experimentPoint && !data.name)

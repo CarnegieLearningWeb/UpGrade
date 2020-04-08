@@ -30,16 +30,6 @@ export namespace Interfaces {
     userId: string;
   }
 
-  export interface IGetExperimentCondition {
-    experimentId: string;
-    experimentPoint: string;
-    uniqueIdentifier: string;
-    assignedCondition: {
-      condition: string;
-      uniqueIdentifier: string;
-    };
-  }
-
   export interface IFailedExperimentPoint {
     type: SERVER_ERROR,
     message: string;
