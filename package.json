@@ -1,5 +1,5 @@
 {
-  "name": "ees_client_lib",
+  "name": "upgrade_client_lib",
   "version": "1.0.0",
   "description": "",
   "main": "dist/bundle.js",
