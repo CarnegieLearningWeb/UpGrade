@@ -1,7 +1,6 @@
 package interfaces;
 
 import java.util.List;
-import java.util.Map;
 
 import requestbeans.ExperimentRequest;
 import requestbeans.FailedExperimentPointRequest;
@@ -15,10 +14,6 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface ExperimentServiceAPI {
-
-	@Retry
-	@POST("api/init")
-	Call<InitRequest> initUser(@Body InitRequest initRequest);
 	
 	@Retry
 	@POST("api/groupmembership")
