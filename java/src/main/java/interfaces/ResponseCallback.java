@@ -4,12 +4,11 @@ package interfaces;
 import org.eclipse.jdt.annotation.NonNull;
 
 import okhttp3.ResponseBody;
+import responsebeans.ErrorResponse;
 
 public interface ResponseCallback<T> {
 	
 	void onSuccess(@NonNull T t);
-	void validationError(@NonNull String t);
-	void onError(@NonNull ResponseBody responseBody);
-
+	void onError(@NonNull ErrorResponse error);
 
 }

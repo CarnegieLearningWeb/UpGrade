@@ -4,16 +4,16 @@ import static utils.Utils.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNull;
 
 import interfaces.ResponseCallback;
-import okhttp3.ResponseBody;
 import requestbeans.ExperimentRequest;
 import requestbeans.FailedExperimentPointRequest;
 import requestbeans.MarkExperimentRequest;
 import interfaces.ExperimentServiceAPI;
-
+import responsebeans.ErrorResponse;
 import responsebeans.ExperimentConditions;
 import responsebeans.ExperimentsResponse;
 import responsebeans.FailedExperiment;
@@ -24,18 +24,20 @@ import responsebeans.MarkExperimentPoint;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import utils.ErrorUtils;
 import utils.ServiceGenerator;
 import utils.Utils;
 
 public class ExperimentClient {
-	
+
 	private List<ExperimentsResponse> allExperiments;
 	private String userId;
 	private String authToken;
-	
-	public ExperimentClient(String userId, String authToken ) {
+
+	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
 		this.authToken = authToken;
+		Utils.BASE_URL = baseUrl;
 	}
 
 	// To set user group membership
@@ -43,7 +45,7 @@ public class ExperimentClient {
 
 		if (isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(INVALID_GROUP_MEMBERSHIP_DATA);
+				callbacks.onError(new ErrorResponse(INVALID_GROUP_MEMBERSHIP_DATA));
 			return;
 		}
 
@@ -57,13 +59,15 @@ public class ExperimentClient {
 					if (callbacks != null)
 						callbacks.onSuccess(response.body());
 				} else {
+					ErrorResponse error = ErrorUtils.parseError(response);
+
 					if (callbacks != null)
-						callbacks.onError(response.errorBody());
+						callbacks.onError(error);
 				}
 			}
 			@Override
 			public void onFailure(Call<InitRequest> call, Throwable t) {
-				callbacks.validationError("Request failed finally:  " + t.getMessage());
+				callbacks.onError(new ErrorResponse(t.getMessage()));
 			}
 		});
 
@@ -74,10 +78,9 @@ public class ExperimentClient {
 
 		if (isStringNull(Utils.BASE_URL)){
 			if (callbacks != null)
-				callbacks.validationError(INVALID_WORKING_GROUP_DATA);
+				callbacks.onError(new ErrorResponse(INVALID_WORKING_GROUP_DATA));
 			return;
 		}
-
 		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
 
 		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
@@ -89,13 +92,15 @@ public class ExperimentClient {
 					if (callbacks != null)
 						callbacks.onSuccess(response.body());
 				} else {
+					ErrorResponse error = ErrorUtils.parseError(response);
+
 					if (callbacks != null)
-						callbacks.onError(response.errorBody());
+						callbacks.onError(error);
 				}
 			}
 			@Override
 			public void onFailure(Call<InitRequest> call, Throwable t) {
-				callbacks.validationError("Request failed finally:  " + t.getMessage());
+				callbacks.onError(new ErrorResponse(t.getMessage()) );
 			}
 		});
 
@@ -106,7 +111,7 @@ public class ExperimentClient {
 
 		if ( isStringNull(this.userId) || isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
-				callbacks.validationError(INVALID_STUDENT_ID);
+				callbacks.onError(new ErrorResponse(INVALID_STUDENT_ID) );
 			return;
 		}
 
@@ -125,13 +130,14 @@ public class ExperimentClient {
 						callbacks.onSuccess(response.body());
 					}
 				} else {
+					ErrorResponse error = ErrorUtils.parseError(response);
 					if (callbacks != null)
-						callbacks.onError(response.errorBody());
+						callbacks.onError(error);
 				}
 			}
 			@Override
 			public void onFailure(Call<List<ExperimentsResponse>> call, Throwable t) {
-				callbacks.validationError("Request failed finally:  " + t.getMessage());
+				callbacks.onError(new ErrorResponse(t.getMessage()));
 			}
 		});
 	}
@@ -146,35 +152,40 @@ public class ExperimentClient {
 			final ResponseCallback<GetExperimentCondition> callbacks) {
 		
 		if (this.allExperiments != null) {
-			
+
 			ExperimentsResponse experimentsResponse  = allExperiments.stream().filter(t -> 
 			isStringNull(experimentId) == false ?  t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
 				t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()) ).findFirst().get();
 
 			ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
 			GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
-			
+
 			if (callbacks != null)
 				callbacks.onSuccess(getExperimentCondition) ;
 		} else {
-			
 			getAllExperimentCondition("", new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 					if( experiments !=null && experiments.size() > 0) {
-						
-						ExperimentsResponse experimentsResponse  = experiments.stream().filter(t -> 
+
+						Optional<ExperimentsResponse> result = experiments.stream().filter(t -> 
 						isStringNull(experimentId) == false ? 
 								t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
-							t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()))
-								.findFirst().get();
+									t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()))
+								.findFirst();
 
-						ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
-						GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
-						
-						if (callbacks != null)
-							callbacks.onSuccess(getExperimentCondition) ;
 
+						if (result.isPresent()) {
+							ExperimentsResponse experimentsResponse =  result.get();
+							ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
+							GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+
+							if (callbacks != null)
+								callbacks.onSuccess(getExperimentCondition) ;
+						} else {
+							if (callbacks != null)
+								callbacks.onSuccess(new GetExperimentCondition());
+						}
 					} else {
 						if (callbacks != null)
 							callbacks.onSuccess(new GetExperimentCondition());
@@ -182,16 +193,9 @@ public class ExperimentClient {
 				}
 
 				@Override
-				public void onError(@NonNull ResponseBody responseBody) {
-					//System.out.println("Unable to get experiment responses");
+				public void onError(@NonNull ErrorResponse error) {
 					if (callbacks != null)
-						callbacks.onError(responseBody);
-				}
-
-				@Override
-				public void validationError(@NonNull String t) {
-					if (callbacks != null)
-						callbacks.validationError(t);
+						callbacks.onError(error);
 
 				}
 
@@ -210,7 +214,7 @@ public class ExperimentClient {
 
 		if ( isStringNull(experimentPoint) || isStringNull(this.userId) || isStringNull(Utils.BASE_URL)) {
 			if (callbacks != null)
-				callbacks.validationError(INVALID_MARK_EXPERIMENT_DATA);
+				callbacks.onError(new ErrorResponse(INVALID_MARK_EXPERIMENT_DATA));
 			return;
 		}
 
@@ -225,14 +229,16 @@ public class ExperimentClient {
 					if (callbacks != null)
 						callbacks.onSuccess(new MarkExperimentPoint(response.body().getUserId(), experimentId, experimentPoint ));
 				} else {
+					ErrorResponse error = ErrorUtils.parseError(response);
+
 					if (callbacks != null)
-						callbacks.onError(response.errorBody());
+						callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void onFailure(Call<MarkExperimentPoint> call, Throwable t) {
-				callbacks.validationError("Request failed finally:  " + t.getMessage());
+				callbacks.onError(new ErrorResponse(t.getMessage()));
 
 			}
 		});
@@ -252,7 +258,7 @@ public class ExperimentClient {
 
 		if ( isStringNull(experimentPoint) || isStringNull(reason) || isStringNull(Utils.BASE_URL) ) {
 			if (callbacks != null)
-				callbacks.validationError(INVALID_FAILED_EXPERIMENT_DATA);
+				callbacks.onError(new ErrorResponse(INVALID_FAILED_EXPERIMENT_DATA));
 			return;
 		}
 
@@ -267,14 +273,16 @@ public class ExperimentClient {
 					if (callbacks != null)
 						callbacks.onSuccess(new FailedExperiment(response.body().getType(), response.body().getMessage() ));
 				} else {
+					ErrorResponse error = ErrorUtils.parseError(response);
+
 					if (callbacks != null)
-						callbacks.onError(response.errorBody());
+						callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void onFailure(Call<FailedExperiment> call, Throwable t) {
-				callbacks.validationError("Request failed finally:  " + t.getMessage());
+				callbacks.onError(new ErrorResponse(t.getMessage()));
 			}
 		});
 

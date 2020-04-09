@@ -24,7 +24,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 	@Override
 	public CallAdapter<?, ?> get(@NonNull Type returnType, @NonNull Annotation[] annotations,
 			@NonNull Retrofit retrofit) {
-		
+
 		int itShouldRetry = 0;
 		final Retry retry = getRetry(annotations);
 		if (retry != null) {
@@ -105,11 +105,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		private final AtomicInteger retryCount = new AtomicInteger(0);
 		@Override
 		public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
-			if (!response.isSuccessful() && retryCount.incrementAndGet() <= maxRetries) {
-				retryCall(call);
-			} else {
-				callback.onResponse(call, response);
-			}
+			callback.onResponse(call, response);
 		}
 		@Override
 		public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
@@ -123,7 +119,7 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 			}
 		}
 
-		private void retryCall(Call<T> call) {			
+		private void retryCall(Call<T> call) {	
 			call.clone().enqueue(this);
 		}
 	}
