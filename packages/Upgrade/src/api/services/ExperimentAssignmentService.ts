@@ -34,6 +34,7 @@ import { ExperimentUserService } from './ExperimentUserService';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
+import { ErrorService } from './ErrorService';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -62,6 +63,7 @@ export class ExperimentAssignmentService {
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
     public scheduledJobService: ScheduledJobService,
+    public errorService: ErrorService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
@@ -144,16 +146,18 @@ export class ExperimentAssignmentService {
 
         // add error inside the error database
 
-        // // throw error user group not defined
-        // throw new Error(
-        //   JSON.stringify({
-        //     type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-        //     message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
-        //   })
-        // );
+        // throw error user group not defined
+        await this.errorService.create({
+          endPoint: '/api/assign',
+          errorCode: 417,
+          message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
+          name: 'Experiment user not defined',
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+        } as any);
       } else {
         const keys = Object.keys(experimentUser.workingGroup);
-        keys.forEach((key) => {
+        let addError = false;
+        keys.forEach(async (key) => {
           if (!experimentUser.group[key]) {
             // filter experiment whose group membership is not set
             experiments = experiments.filter(
@@ -162,12 +166,7 @@ export class ExperimentAssignmentService {
                 (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && experiment.group !== experimentUser.group[key])
             );
             // add error inside the error database
-            // throw new Error(
-            //   JSON.stringify({
-            //     type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-            //     message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
-            //   })
-            // );
+            addError = true;
           } else {
             if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
               // filter experiment whose group membership is not set
@@ -178,15 +177,19 @@ export class ExperimentAssignmentService {
                     experiment.group !== experimentUser.group[key])
               );
               // add error inside the error database
-              // throw new Error(
-              //   JSON.stringify({
-              //     type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-              //     message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
-              //   })
-              // );
+              addError = true;
             }
           }
         });
+        if (addError) {
+          await this.errorService.create({
+            endPoint: '/api/assign',
+            errorCode: 417,
+            message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
+            name: 'Working group not subset of group',
+            type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+          } as any);
+        }
       }
     }
 
