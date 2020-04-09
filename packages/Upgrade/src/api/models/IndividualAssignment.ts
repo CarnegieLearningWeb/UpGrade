@@ -5,6 +5,7 @@ import { ExperimentCondition } from './ExperimentCondition';
 
 @Entity()
 export class IndividualAssignment extends BaseModel {
+  // TODO convert this to foreign key
   @PrimaryColumn()
   public experimentId: string;
 

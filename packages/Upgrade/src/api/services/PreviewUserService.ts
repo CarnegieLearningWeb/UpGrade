@@ -60,7 +60,7 @@ export class PreviewUserService {
   public async upsertExperimentConditionAssignment(previewUser: PreviewUser): Promise<PreviewUser | undefined> {
     this.log.info('Upsert Experiment Condition Assignment => ', JSON.stringify(previewUser, undefined, 1));
 
-    const previewDocumentWithOldAssignments = await this.userRepository.findOneById(previewUser.id);
+    const previewDocumentWithOldAssignments = await this.findOne(previewUser.id);
     const newAssignments = previewUser.assignments;
 
     const assignmentDocToSave: Array<Partial<ExplicitIndividualAssignment>> =
@@ -91,12 +91,16 @@ export class PreviewUserService {
       });
 
       // delete old assignments
-      await Promise.all(toDeleteAssignments);
+      if (toDeleteAssignments.length > 0) {
+        await Promise.all(toDeleteAssignments);
+      }
     }
 
     // save new documents
-    await this.explicitIndividualAssignmentRepository.save(assignmentDocToSave);
-
-    return this.userRepository.findOneById(previewUser.id);
+    if (assignmentDocToSave.length > 0) {
+      await this.explicitIndividualAssignmentRepository.save(assignmentDocToSave);
+    }
+    const getDocument = await this.findOne(previewUser.id);
+    return getDocument;
   }
 }

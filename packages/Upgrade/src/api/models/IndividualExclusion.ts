@@ -3,6 +3,7 @@ import { BaseModel } from './base/BaseModel';
 
 @Entity()
 export class IndividualExclusion extends BaseModel {
+  // TODO convert this to foreign key
   @PrimaryColumn()
   public experimentId: string;
 

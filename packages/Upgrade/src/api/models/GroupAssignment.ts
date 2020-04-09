@@ -4,6 +4,7 @@ import { BaseModel } from './base/BaseModel';
 
 @Entity()
 export class GroupAssignment extends BaseModel {
+  // TODO convert this to foreign key
   @PrimaryColumn()
   public experimentId: string;
 
