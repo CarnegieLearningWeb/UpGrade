@@ -117,12 +117,12 @@ export class ExperimentAssignmentService {
       this.previewUserService.findOne(userId),
     ]);
 
-    const experimentUser: ExperimentUser = usersData[0];
+    let experimentUser: ExperimentUser = usersData[0];
     const previewUser: PreviewUser = usersData[1];
 
     // create user if user not defined
     if (!experimentUser) {
-      await this.userRepository.save({ id: userId });
+      experimentUser = await this.userRepository.save({ id: userId });
     }
 
     // query all experiment and sub experiment
@@ -233,7 +233,7 @@ export class ExperimentAssignmentService {
       }
 
       // ============ query assignment/exclusion for user
-      const allGroupIds: string[] = Object.values(experimentUser.workingGroup) || [];
+      const allGroupIds: string[] = (experimentUser.workingGroup && Object.values(experimentUser.workingGroup)) || [];
       const promiseAssignmentExclusion: any[] = [
         experimentIds.length > 0 ? this.individualAssignmentRepository.findAssignment(userId, experimentIds) : [],
         allGroupIds.length > 0 && experimentIds.length > 0
