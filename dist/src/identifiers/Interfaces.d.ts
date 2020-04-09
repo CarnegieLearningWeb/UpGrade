@@ -24,15 +24,6 @@ export declare namespace Interfaces {
         experimentPoint: string;
         userId: string;
     }
-    interface IGetExperimentCondition {
-        experimentId: string;
-        experimentPoint: string;
-        uniqueIdentifier: string;
-        assignedCondition: {
-            condition: string;
-            uniqueIdentifier: string;
-        };
-    }
     interface IFailedExperimentPoint {
         type: SERVER_ERROR;
         message: string;

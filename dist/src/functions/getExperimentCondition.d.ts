@@ -1,2 +1,2 @@
-import { Interfaces } from '../identifiers';
-export default function getExperimentCondition(experimentConditionData: any, experimentPoint: string, partitionId?: string): Interfaces.IGetExperimentCondition;
+import { IExperimentAssignment } from 'ees_types';
+export default function getExperimentCondition(experimentConditionData: IExperimentAssignment[], experimentPoint: string, partitionId?: string): IExperimentAssignment;
