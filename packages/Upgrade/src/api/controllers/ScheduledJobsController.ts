@@ -1,8 +1,12 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore } from 'routing-controllers';
 import { ScheduledJobsParamsValidator } from './validators/ScheduledJobsParamsValidator';
 import { ScheduledJobService } from '../services/ScheduledJobService';
+import { ScheduleJobMiddleware } from '../middlewares/ScheduleJobMiddleware';
+import bodyParser from 'body-parser';
 
 @JsonController('/scheduledJobs')
+@UseBefore(ScheduleJobMiddleware)
+@UseBefore(bodyParser.json())
 export class ScheduledJobsController {
   constructor(public scheduledJobService: ScheduledJobService) {}
 

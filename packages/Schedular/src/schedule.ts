@@ -1,16 +1,19 @@
 import 'source-map-support/register';
 import fetch from 'node-fetch';
+import * as jwt from 'jsonwebtoken';
 
 export const schedule = async event => {
   try {
     console.log('Event data ', event);
-    const scheduleId = event.body.id;
+    const { id } = event.body; // Extract scheduleId
+    const token = jwt.sign({ id }, process.env.TOKEN_SECRET_KEY, { expiresIn: 120 }); //Toke will expires in 2 minutes
     await fetch(event.url, {
       method: 'post',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ id: scheduleId })
+      body: JSON.stringify({ id })
     }).catch(error => {
       console.log('Error in schedular endpoint invocation ', error.message);
       return { status: false, message: 'Failed' };
