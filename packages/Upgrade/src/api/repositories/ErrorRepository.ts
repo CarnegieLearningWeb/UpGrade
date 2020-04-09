@@ -45,4 +45,23 @@ export class ErrorRepository extends Repository<ExperimentError> {
         throw new Error(errorMsg);
       });
   }
+
+  public async clearLogs(limit: number): Promise<ExperimentError[]> {
+    // Fetch logs which we do not want to delete
+    const errorLogOffset = await  this.createQueryBuilder('error')
+      .select('error.id')
+      .orderBy('error.createdAt', 'DESC')
+      .take(limit);
+
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(ExperimentError)
+      .where('id NOT IN (' + errorLogOffset.getQuery() + ')')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ErrorRepository', 'clearLogs', {}, errorMsg);
+        throw new Error(errorMsgString);
+      });
+    return result.raw;
+  }
 }

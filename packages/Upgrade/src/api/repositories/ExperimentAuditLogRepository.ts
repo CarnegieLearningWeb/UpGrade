@@ -48,4 +48,24 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
 
     return result.raw;
   }
+
+  public async clearLogs(limit: number): Promise<ExperimentAuditLog[]> {
+    // Fetch logs which we do not want to delete
+    const auditLogOffset = await this.createQueryBuilder('audit')
+      .select('audit.id')
+      .orderBy('audit.createdAt', 'DESC')
+      .take(limit);
+
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(ExperimentAuditLog)
+      .where('id NOT IN (' + auditLogOffset.getQuery() + ')')
+      .execute()
+      .catch((error: any) => {
+        const errorMsgString = repositoryError('ExperimentAuditLogRepository', 'clearLogs', {}, error);
+        throw new Error(errorMsgString);
+      });
+
+    return result.raw;
+  }
 }
