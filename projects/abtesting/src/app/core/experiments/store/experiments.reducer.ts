@@ -40,7 +40,7 @@ const reducer = createReducer(
       totalExperiments,
       skipExperiment: state.skipExperiment + experiments.length
     };
-    return adapter.addMany(experiments, { ...newState });
+    return adapter.upsertMany(experiments, { ...newState });
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,
