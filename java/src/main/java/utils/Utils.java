@@ -26,7 +26,6 @@ public class Utils
 		if (isStringNull(initRequest.getId())) {
 			return false;
 		}
-		
 		return true;
 	}
 }

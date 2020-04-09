@@ -24,3 +24,10 @@ typings/
 .idea/
 *.swp
 .awcache
+ 
+ # java #
+java/.classpath
+java/.project
+java/.settings
+java/target
+

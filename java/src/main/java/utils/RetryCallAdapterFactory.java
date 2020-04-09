@@ -24,15 +24,12 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 	@Override
 	public CallAdapter<?, ?> get(@NonNull Type returnType, @NonNull Annotation[] annotations,
 			@NonNull Retrofit retrofit) {
-		/**
-		 * You can setup a default max retry count for all connections.
-		 */
+		
 		int itShouldRetry = 0;
 		final Retry retry = getRetry(annotations);
 		if (retry != null) {
 			itShouldRetry = retry.max();
 		}
-		System.out.println("Starting a CallAdapter with {} retries." + itShouldRetry);
 		return new RetryCallAdapter<>(
 				retrofit.nextCallAdapter(this, returnType, annotations),
 				itShouldRetry
@@ -109,7 +106,6 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		@Override
 		public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
 			if (!response.isSuccessful() && retryCount.incrementAndGet() <= maxRetries) {
-				System.out.println("Call with no success result code: {} " + response.code());
 				retryCall(call);
 			} else {
 				callback.onResponse(call, response);
@@ -117,19 +113,17 @@ public class RetryCallAdapterFactory extends CallAdapter.Factory {
 		}
 		@Override
 		public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
-			System.out.println("Call failed with message:  " + t.getMessage());
 			if (retryCount.incrementAndGet() <= maxRetries) {
 				retryCall(call);
 			} else if (maxRetries > 0) {
-				System.out.println("No retries left sending timeout up.");
 				callback.onFailure(call,
 						new TimeoutException(String.format("No retries left after %s attempts.", maxRetries)));
 			} else {
 				callback.onFailure(call, t);
 			}
 		}
-		private void retryCall(Call<T> call) {
-			System.out.println(retryCount.get() + "/" + maxRetries + " " + " Retrying...");
+
+		private void retryCall(Call<T> call) {			
 			call.clone().enqueue(this);
 		}
 	}
