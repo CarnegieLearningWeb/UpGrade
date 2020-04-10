@@ -5,15 +5,14 @@ import * as jwt from 'jsonwebtoken';
 export const schedule = async event => {
   try {
     console.log('Event data ', event);
-    const { id } = event.body; // Extract scheduleId
-    const token = jwt.sign({ id }, process.env.TOKEN_SECRET_KEY, { expiresIn: 120 }); //Toke will expires in 2 minutes
+    const token = jwt.sign(event.body, process.env.TOKEN_SECRET_KEY, { expiresIn: 120 }); //Toke will expires in 2 minutes
     await fetch(event.url, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ id })
+      body: JSON.stringify(event.body)
     }).catch(error => {
       console.log('Error in schedular endpoint invocation ', error.message);
       return { status: false, message: 'Failed' };

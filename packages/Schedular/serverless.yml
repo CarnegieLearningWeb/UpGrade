@@ -24,5 +24,3 @@ provider:
 functions:
   schedule:
     handler: src/schedule.schedule
-  clearLogs:
-    handler: src/clearLogs.clearLogs
