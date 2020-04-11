@@ -74,4 +74,5 @@ export const env = {
     region: getOsEnv('AWS_REGION'),
   },
   hostUrl: getOsEnv('HOST_URL'),
+  tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),
 };

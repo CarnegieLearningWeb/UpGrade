@@ -67,6 +67,14 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP;
         message = errorMessage;
         break;
+      case SERVER_ERROR.INVALID_TOKEN:
+        type = SERVER_ERROR.INVALID_TOKEN;
+        message = errorMessage;
+        break;
+      case SERVER_ERROR.TOKEN_NOT_PRESENT:
+        type = SERVER_ERROR.TOKEN_NOT_PRESENT;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:

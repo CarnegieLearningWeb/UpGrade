@@ -11,6 +11,8 @@ import { AWSService } from './AWSService';
 import { UserRepository } from '../repositories/UserRepository';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { ExperimentService } from './ExperimentService';
+import { ErrorRepository } from '../repositories/ErrorRepository';
+import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 
 @Service()
 export class ScheduledJobService {
@@ -18,6 +20,8 @@ export class ScheduledJobService {
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository() private userRepository: UserRepository,
+    @OrmRepository() private errorRepository: ErrorRepository,
+    @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     private awsService: AWSService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
@@ -151,6 +155,21 @@ export class ScheduledJobService {
       }
     } catch (error) {
       this.log.error('Error in experiment schedular ', error.message);
+    }
+  }
+
+  public async clearLogs(): Promise<boolean> {
+    try {
+      // Do not return deleted logs as number of logs can be very large
+      const offset = 25; // Number of logs that we do not want to delete
+      await Promise.all([
+        this.experimentAuditLogRepository.clearLogs(offset),
+        this.errorRepository.clearLogs(offset),
+      ]);
+      return true;
+    } catch (error) {
+      this.log.error('Error in clear Logs schedular ', error.message);
+      return false;
     }
   }
 

@@ -139,7 +139,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('ExperimentRepository', 'insertExperiment', { id }, errorMsg);
+        const errorMsgString = repositoryError('ExperimentRepository', 'deleteExperimentById', { id }, errorMsg);
         throw new Error(errorMsgString);
       });
 

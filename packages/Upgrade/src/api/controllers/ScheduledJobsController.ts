@@ -1,10 +1,14 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore } from 'routing-controllers';
 import { ScheduledJobsParamsValidator } from './validators/ScheduledJobsParamsValidator';
 import { ScheduledJobService } from '../services/ScheduledJobService';
+import { ScheduleJobMiddleware } from '../middlewares/ScheduleJobMiddleware';
+import bodyParser from 'body-parser';
 
 @JsonController('/scheduledJobs')
+@UseBefore(ScheduleJobMiddleware)
+@UseBefore(bodyParser.json())
 export class ScheduledJobsController {
-  constructor(public scheduledJobService: ScheduledJobService) {}
+  constructor(public scheduledJobService: ScheduledJobService) { }
 
   /**
    * @swagger
@@ -74,5 +78,25 @@ export class ScheduledJobsController {
     scheduledParams: ScheduledJobsParamsValidator
   ): Promise<any> {
     return this.scheduledJobService.endExperiment(scheduledParams.id);
+  }
+
+  /**
+   * @swagger
+   * /scheduledJobs/clearLogs:
+   *    post:
+   *       description: Clear audit and error logs
+   *       consumes:
+   *         - application/json
+   *       tags:
+   *         - Scheduled Jobs
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Clear audit and error logs
+   */
+  @Post('/clearLogs')
+  public async clearLogs(): Promise<boolean> {
+    return this.scheduledJobService.clearLogs();
   }
 }
