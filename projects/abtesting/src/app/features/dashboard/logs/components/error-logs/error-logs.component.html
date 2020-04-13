@@ -1,3 +1,4 @@
+<mat-progress-bar mode="indeterminate" *ngIf="isErrorLogLoading$ | async"></mat-progress-bar>
 <div class="logs" #ErrorLogContainer>
   <div class="logs__searching">
     <!-- TODO: Add search error log -->
@@ -37,8 +38,4 @@
   <ng-template #zeroStateAudit>
     <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
   </ng-template>
-
-  <div class="spinner" *ngIf="isErrorLogLoading$ | async">
-    <mat-spinner diameter="60" value="60"></mat-spinner>
-  </div>
 </div>

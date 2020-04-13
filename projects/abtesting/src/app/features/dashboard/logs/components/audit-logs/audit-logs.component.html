@@ -1,3 +1,4 @@
+<mat-progress-bar mode="indeterminate" *ngIf="isAuditLoading$ | async"></mat-progress-bar>
 <div class="logs" #auditLogContainer>
   <div class="logs__searching">
     <!-- TODO: Add search audit log -->
@@ -32,8 +33,4 @@
   <ng-template #zeroStateAudit>
     <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
   </ng-template>
-
-  <div class="spinner" *ngIf="isAuditLoading$ | async">
-    <mat-spinner diameter="60" value="60"></mat-spinner>
-  </div>
 </div>

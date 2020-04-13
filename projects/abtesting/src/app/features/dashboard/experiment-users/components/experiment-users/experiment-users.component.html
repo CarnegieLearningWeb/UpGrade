@@ -41,6 +41,7 @@
   </form>
 
   <div class="entities-container" *ngIf="allExcludedEntities.data.length">
+    <mat-progress-bar mode="indeterminate" *ngIf="isEntityLoading$ | async"></mat-progress-bar>
     <table mat-table [dataSource]="allExcludedEntities" matSort>
       <!-- TYPE Column -->
       <ng-container matColumnDef="type">
@@ -75,10 +76,6 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-
-    <div class="spin" *ngIf="isEntityLoading$ | async">
-      <mat-spinner diameter="50"></mat-spinner>
-    </div>
     <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="7"></mat-paginator>
   </div>
 </div>
