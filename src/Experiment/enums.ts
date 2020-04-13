@@ -51,6 +51,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   NAME = 'name',
   STATUS = 'status',
   TAG = 'tag',
+  CONTEXT = 'context'
 }
 
 export enum EXPERIMENT_SORT_KEY {

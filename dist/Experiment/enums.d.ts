@@ -44,7 +44,8 @@ export declare enum EXPERIMENT_SEARCH_KEY {
     ALL = "all",
     NAME = "name",
     STATUS = "status",
-    TAG = "tag"
+    TAG = "tag",
+    CONTEXT = "context"
 }
 export declare enum EXPERIMENT_SORT_KEY {
     NAME = "name",
