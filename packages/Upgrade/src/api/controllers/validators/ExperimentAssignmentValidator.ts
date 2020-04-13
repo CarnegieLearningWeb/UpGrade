@@ -5,5 +5,7 @@ export class ExperimentAssignmentValidator {
   @IsDefined()
   public userId: string;
 
-  public context: string | undefined;
+  @IsNotEmpty()
+  @IsDefined()
+  public context: string;
 }
