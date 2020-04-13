@@ -5,39 +5,39 @@ UpgradeClient named class is exported from this library
 # Functions
 
 ## setHostUrl (url: string)
-This is a static method to set host URL which can be accessed by
+This is a static method to set host URL which can be accessed by  
 ```UpgradeClient.setHostUrl(url)```
 
 # Initialize User
-To initialize user call UpgradeClient constructor with userId
+To initialize user call UpgradeClient constructor with userId  
 ``` const upClient = UpgradeClient('userId');```
 
 ## setGroupMembership (group: Map<string, Array<string>>)
-Updates/Set the group membership of the initialized user
+Updates/Set the group membership of the initialized user  
 ```upClient.setGroupMembership(group)```
 
 ## setWorkingGroup (workingGroup: Map<string, string>)
-Updates/Set the working group of the initialized user
+Updates/Set the working group of the initialized user  
 ```upClient.setWorkingGroup(workingGroup)```
 
-## getAllExperimentConditions(context?: string)
-Get all the experiment assignments for the initialized user
-```upClient.getAllExperimentConditions()```
+## getAllExperimentConditions(context: string)
+Get all the experiment assignments for the initialized user  
+```upClient.getAllExperimentConditions()```  
 ```upClient.getAllExperimentConditions(context)```
 
 ## getExperimentCondition (experimentPoint: string, partitionId?: string)
-Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the initialized user
-```upClient.getExperimentCondition(experimentPoint)```
+Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the initialized user  
+```upClient.getExperimentCondition(experimentPoint)```  
 ```upClient.getExperimentCondition(experimentPoint, partitionId)```
 
 ## markExperimentPoint (experimentPoint: string, partitionId?: string)
-Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user
-```upClient.markExperimentPoint(experimentPoint)```
+Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user  
+```upClient.markExperimentPoint(experimentPoint)```  
 ```upClient.markExperimentPoint(experimentPoint, partitionId)```
 
 ## failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string)
-Use this function to report failure with given reason
-```upClient.failedExperimentPoint(experimentPoint, reason)```
+Use this function to report failure with given reason  
+```upClient.failedExperimentPoint(experimentPoint, reason)```  
 ```upClient.failedExperimentPoint(experimentPoint, reason, experimentId)```
 
 # Example
