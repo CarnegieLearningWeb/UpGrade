@@ -77,7 +77,7 @@ export default class UpgradeClient {
         return response;
     }
 
-    async getAllExperimentConditions(context?: string): Promise<IExperimentAssignment[]> {
+    async getAllExperimentConditions(context: string): Promise<IExperimentAssignment[]> {
         this.validateClient();
         const response = await getAllExperimentConditions(UpgradeClient.api.getAllExperimentConditions, this.userId, context);
         if (Array.isArray(response)) {

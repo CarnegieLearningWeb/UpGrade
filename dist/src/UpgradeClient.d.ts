@@ -13,7 +13,7 @@ export default class UpgradeClient {
     private validateClient;
     setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser>;
     setWorkingGroup(workingGroup: Map<string, string>): Promise<Interfaces.IUser>;
-    getAllExperimentConditions(context?: string): Promise<IExperimentAssignment[]>;
+    getAllExperimentConditions(context: string): Promise<IExperimentAssignment[]>;
     getExperimentCondition(experimentPoint: string, partitionId?: string): IExperimentAssignment;
     markExperimentPoint(experimentPoint: string, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint>;
     failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint>;
