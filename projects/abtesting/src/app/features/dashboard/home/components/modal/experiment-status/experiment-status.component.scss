@@ -17,10 +17,15 @@
     }
   }
 
-  .info-msg {
+  .info-msg,
+  .error-msg {
     display: block;
     margin-bottom: 10px;
     color: var(--green);
+  }
+
+  .error-msg {
+    color: var(--red);
   }
 
   .button-container {

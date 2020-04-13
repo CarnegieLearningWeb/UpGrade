@@ -119,6 +119,7 @@
   "home.change-experiment-status.new-status.text": "NEW STATUS",
   "home.change-experiment-status.new-status.error.text": "Please choose new status",
   "home.change-experiment-status.enrolling-info.text": "*Once the experiment is started you won’t be allowed to update Experiment’s Condition and Partitions",
+  "home.change-experiment-status.enrolling-error.text": "*Experiment start date should not be grater than experiment end date {{ endDate }}",
   "home.change-post-experiment-rule.title.text": "Change post Experiment Condition",
   "logs-global.log-zero-state.text": "No Logs available",
   "logs-global.log-view-diff.text": "view",
