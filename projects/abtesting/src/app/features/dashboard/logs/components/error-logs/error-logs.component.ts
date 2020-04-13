@@ -27,6 +27,8 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     { value: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED },
     { value: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED },
     { value: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP, viewValue: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP },
+    { value: SERVER_ERROR.INVALID_TOKEN, viewValue: SERVER_ERROR.INVALID_TOKEN },
+    { value: SERVER_ERROR.TOKEN_NOT_PRESENT, viewValue: SERVER_ERROR.TOKEN_NOT_PRESENT },
   ];
   selectedLogOption = this.logsOptions[0].value;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
