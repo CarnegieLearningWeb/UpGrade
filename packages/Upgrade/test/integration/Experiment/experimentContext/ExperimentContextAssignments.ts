@@ -25,7 +25,7 @@ export default async function testCase(): Promise<void> {
 
   // experiment object
   const experimentObject1 = individualAssignmentExperiment;
-  experimentObject1.context = context1;
+  experimentObject1.context = [context1];
 
   // create experiment 1
   await experimentService.create(experimentObject1 as any, user);
@@ -38,13 +38,13 @@ export default async function testCase(): Promise<void> {
         postExperimentRule: experimentObject1.postExperimentRule,
         assignmentUnit: experimentObject1.assignmentUnit,
         consistencyRule: experimentObject1.consistencyRule,
-        context: context1,
+        context: [context1],
       }),
     ])
   );
 
   const experimentObject2 = secondExperiment;
-  experimentObject2.context = context2;
+  experimentObject2.context = [context2];
   // create experiment 2
   await experimentService.create(experimentObject2 as any, user);
   experiments = await experimentService.find();
@@ -56,7 +56,7 @@ export default async function testCase(): Promise<void> {
         postExperimentRule: experimentObject2.postExperimentRule,
         assignmentUnit: experimentObject2.assignmentUnit,
         consistencyRule: experimentObject2.consistencyRule,
-        context: context2,
+        context: [context2],
       }),
     ])
   );

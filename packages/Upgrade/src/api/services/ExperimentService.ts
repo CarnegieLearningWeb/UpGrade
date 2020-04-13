@@ -559,6 +559,9 @@ export class ExperimentService {
       case EXPERIMENT_SEARCH_KEY.TAG:
         searchString.push("coalesce(experiment.tags::TEXT,'')");
         break;
+      case EXPERIMENT_SEARCH_KEY.CONTEXT:
+        searchString.push("coalesce(experiment.context::TEXT,'')");
+        break;
       default:
         searchString.push("coalesce(experiment.name::TEXT,'')");
         searchString.push("coalesce(partitions.name::TEXT,'')");
