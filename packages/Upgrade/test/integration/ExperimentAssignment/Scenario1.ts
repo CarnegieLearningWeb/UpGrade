@@ -3,7 +3,7 @@ import { individualAssignmentExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -12,6 +12,8 @@ import {
   checkExperimentAssignedIsNotDefault,
   checkExperimentAssignedIsDefault,
 } from '../utils/index';
+import { getRepository } from 'typeorm';
+import { IndividualAssignment } from '../../../src/api/models/IndividualAssignment';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -140,4 +142,6 @@ export default async function testCase(): Promise<void> {
   // mark experiment point for user 4
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
+
+  await checkDeletedExperiment(experimentId, user);
 }

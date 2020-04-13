@@ -104,7 +104,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, context2);
   expect(experimentConditionAssignments.length).toEqual(experimentObject2.partitions.length);
 
-  // check that no assignment of context 2 is assigned
+  //   // check that no assignment of context 2 is assigned
   allIndividualAssignments = await individualAssignmentRepository.find();
   expect(allIndividualAssignments.length).toEqual(2);
 

@@ -3,6 +3,13 @@ import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { IExperimentAssignment } from 'ees_types';
+import { ExperimentService } from '../../../src/api/services/ExperimentService';
+import { User } from '../../../src/api/models/User';
+import { getRepository } from 'typeorm';
+import { IndividualAssignment } from '../../../src/api/models/IndividualAssignment';
+import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
+import { GroupAssignmentRepository } from '../../../src/api/repositories/GroupAssignmentRepository';
+import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
 
 export function checkExperimentAssignedIsDefault(
   experimentConditionAssignments: any,
@@ -44,7 +51,9 @@ export function checkMarkExperimentPointForUser(
       expect.objectContaining({
         id: `${experimentId}_${userId}`,
         experimentId,
-        userId,
+        user: expect.objectContaining({
+          id: userId,
+        }),
       }),
     ])
   );
@@ -71,4 +80,35 @@ export async function markExperimentPoint(
   // mark experiment point
   await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, experimentName);
   return checkService.getAllMarkedExperimentPoints();
+}
+
+export async function checkDeletedExperiment(experimentId: string, user: User): Promise<void> {
+  const experimentService = Container.get<ExperimentService>(ExperimentService);
+  // delete experiment and check assignments operations
+  await experimentService.delete(experimentId, user);
+
+  // no individual assignments
+  const individualAssignmentRepository = getRepository(IndividualAssignment);
+  const individualAssignments = await individualAssignmentRepository.find();
+  expect(individualAssignments.length).toEqual(0);
+
+  // no individual exclusion
+  const individualExclusionRepository = getRepository(IndividualExclusion);
+  const individualExclusions = await individualExclusionRepository.find();
+  expect(individualExclusions.length).toEqual(0);
+
+  // no group assignment
+  const groupAssignmentRepository = getRepository(GroupAssignment);
+  const groupAssignments = await groupAssignmentRepository.find();
+  expect(groupAssignments.length).toEqual(0);
+
+  // no group exclusion
+  const groupExclusionRepository = getRepository(GroupAssignment);
+  const groupExclusions = await groupExclusionRepository.find();
+  expect(groupExclusions.length).toEqual(0);
+
+  // no monitored experiment point
+  const monitoredExperimentPointRepository = getRepository(MonitoredExperimentPoint);
+  const monitoredExperimentPoint = await monitoredExperimentPointRepository.find();
+  expect(monitoredExperimentPoint.length).toEqual(0);
 }

@@ -3,7 +3,7 @@ import { groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment } f
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
@@ -224,4 +224,6 @@ export default async function testCase(): Promise<void> {
   // mark experiment point for user 4
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
+
+  await checkDeletedExperiment(experimentId, user);
 }

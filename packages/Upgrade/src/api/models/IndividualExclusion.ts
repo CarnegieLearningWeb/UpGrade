@@ -1,12 +1,16 @@
-import { Entity, PrimaryColumn } from 'typeorm';
+import { Entity, PrimaryColumn, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
+import { Experiment } from './Experiment';
+import { ExperimentUser } from './ExperimentUser';
 
 @Entity()
 export class IndividualExclusion extends BaseModel {
-  // TODO convert this to foreign key
   @PrimaryColumn()
-  public experimentId: string;
+  public id: string;
 
-  @PrimaryColumn()
-  public userId: string;
+  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  public experiment: Experiment;
+
+  @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
+  public user: ExperimentUser;
 }

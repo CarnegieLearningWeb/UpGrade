@@ -46,9 +46,9 @@ export class AnalyticsService {
     }
 
     const experimentIdAndPoint = [];
-    experimentDefinition.forEach(experiment => {
+    experimentDefinition.forEach((experiment) => {
       const partitions = experiment.partitions;
-      partitions.forEach(partition => {
+      partitions.forEach((partition) => {
         const experimentId = partition.name ? `${partition.name}_${partition.point}` : partition.point;
         experimentIdAndPoint.push(experimentId);
       });
@@ -86,18 +86,18 @@ export class AnalyticsService {
     const mappedIndividualAssignment = new Map<string, IndividualAssignment>();
 
     // mappedMonitoredExperimentPoint
-    monitoredExperimentPoints.forEach(monitoredPoint => {
+    monitoredExperimentPoints.forEach((monitoredPoint) => {
       mappedMonitoredExperimentPoint.set(monitoredPoint.id, monitoredPoint);
     });
 
     // get user definition
     const userDefinition =
       (await this.experimentUserRepository.findByIds(
-        monitoredExperimentPoints.map(monitoredPoint => monitoredPoint.userId)
+        monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user.id)
       )) || [];
 
     // mappedUserDefinition
-    userDefinition.forEach(user => {
+    userDefinition.forEach((user) => {
       mappedUserDefinition.set(user.id, user);
     });
 
@@ -112,31 +112,31 @@ export class AnalyticsService {
     // structure data here
     const experimentsStats: IExperimentEnrollmentStats[] = experimentDefinition.map(
       (experiment): IExperimentEnrollmentStats => {
-        const usersAssignedToExperiment = individualAssignments.filter(individualAssignment => {
-          return individualAssignment.experimentId === experiment.id;
+        const usersAssignedToExperiment = individualAssignments.filter((individualAssignment) => {
+          return individualAssignment.experiment.id === experiment.id;
         });
-        const usersExcludedFromExperiment = individualExclusions.filter(individualExclusion => {
-          return individualExclusion.experimentId === experiment.id;
+        const usersExcludedFromExperiment = individualExclusions.filter((individualExclusion) => {
+          return individualExclusion.experiment.id === experiment.id;
         });
 
         const groupAssignedToExperiment =
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            groupAssignments.filter(groupAssignment => {
-              return groupAssignment.experimentId === experiment.id;
+            groupAssignments.filter((groupAssignment) => {
+              return groupAssignment.experiment.id === experiment.id;
             })) ||
           [];
         const groupExcludedFromExperiment =
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            groupExclusions.filter(groupExclusion => {
-              return groupExclusion.experimentId === experiment.id;
+            groupExclusions.filter((groupExclusion) => {
+              return groupExclusion.experiment.id === experiment.id;
             })) ||
           [];
 
-        const conditionStats = experiment.conditions.map(condition => {
-          const conditionAssignedUser = usersAssignedToExperiment.filter(userPartition => {
+        const conditionStats = experiment.conditions.map((condition) => {
+          const conditionAssignedUser = usersAssignedToExperiment.filter((userPartition) => {
             return (
-              mappedIndividualAssignment.has(`${experiment.id}_${userPartition.userId}`) &&
-              mappedIndividualAssignment.get(`${experiment.id}_${userPartition.userId}`).condition.id === condition.id
+              mappedIndividualAssignment.has(`${experiment.id}_${userPartition.user.id}`) &&
+              mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id === condition.id
             );
           });
           const conditionAssignedGroup =
@@ -144,9 +144,9 @@ export class AnalyticsService {
               Array.from(
                 new Set(
                   conditionAssignedUser.map(
-                    monitoredPoint =>
-                      mappedUserDefinition.has(monitoredPoint.userId) &&
-                      mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
+                    (monitoredPoint) =>
+                      mappedUserDefinition.has(monitoredPoint.user.id) &&
+                      mappedUserDefinition.get(monitoredPoint.user.id)[experiment.group]
                   )
                 )
               )) ||
@@ -159,13 +159,13 @@ export class AnalyticsService {
           };
         });
 
-        const partitionStats = experiment.partitions.map(partition => {
+        const partitionStats = experiment.partitions.map((partition) => {
           const partitionId = partition.id;
 
-          const usersPartitionIncluded = monitoredExperimentPoints.filter(monitoredPoint => {
+          const usersPartitionIncluded = monitoredExperimentPoints.filter((monitoredPoint) => {
             return (
               monitoredPoint.experimentId === partitionId &&
-              mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.userId}`)
+              mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.user.id}`)
             );
           });
 
@@ -174,18 +174,18 @@ export class AnalyticsService {
               Array.from(
                 new Set(
                   usersPartitionIncluded.map(
-                    monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
+                    (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id)[experiment.group]
                   )
                 )
               )) ||
             [];
 
           // condition
-          const conditions = experiment.conditions.map(condition => {
-            const conditionAssignedUser = usersPartitionIncluded.filter(userPartition => {
+          const conditions = experiment.conditions.map((condition) => {
+            const conditionAssignedUser = usersPartitionIncluded.filter((userPartition) => {
               return (
-                mappedIndividualAssignment.has(`${experiment.id}_${userPartition.userId}`) &&
-                mappedIndividualAssignment.get(`${experiment.id}_${userPartition.userId}`).condition.id === condition.id
+                mappedIndividualAssignment.has(`${experiment.id}_${userPartition.user.id}`) &&
+                mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id === condition.id
               );
             });
 
@@ -194,7 +194,7 @@ export class AnalyticsService {
                 Array.from(
                   new Set(
                     conditionAssignedUser.map(
-                      monitoredPoint => mappedUserDefinition.get(monitoredPoint.userId)[experiment.group]
+                      (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id)[experiment.group]
                     )
                   )
                 )) ||

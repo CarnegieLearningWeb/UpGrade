@@ -35,7 +35,7 @@ export class ExperimentUserService {
 
   public async create(users: Array<Partial<ExperimentUser>>): Promise<ExperimentUser[]> {
     this.log.info('Create a new user => ', users.toString());
-    const multipleUsers = users.map(user => {
+    const multipleUsers = users.map((user) => {
       user.id = user.id || uuid();
       return user;
     });
@@ -95,10 +95,10 @@ export class ExperimentUserService {
     const userGroupRemovedMap: Map<string, string[]> = new Map();
 
     // check the groups removed from setGroupMembership
-    Object.keys(oldGroupMembership).map(key => {
+    Object.keys(oldGroupMembership).map((key) => {
       const oldGroupArray: string[] = oldGroupMembership[key] || [];
       const newGroupArray: string[] = groupMembership[key] || [];
-      oldGroupArray.map(groupId => {
+      oldGroupArray.map((groupId) => {
         if (!(newGroupArray && newGroupArray.includes(groupId))) {
           const groupNames = userGroupRemovedMap.has(key) ? userGroupRemovedMap.get(key) : [];
           if (!newGroupArray) {
@@ -131,13 +131,13 @@ export class ExperimentUserService {
 
     const experimentAssignmentRemovalArray = [];
     // ============       Experiment with Group Consistency
-    const filteredGroupExperiment = groupExperiments.filter(experiment => {
+    const filteredGroupExperiment = groupExperiments.filter((experiment) => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.GROUP;
     });
 
     experimentAssignmentRemovalArray.push(this.groupExperimentsWithGroupConsistency(filteredGroupExperiment, userId));
 
-    const filteredIndividualExperiment = groupExperiments.filter(experiment => {
+    const filteredIndividualExperiment = groupExperiments.filter((experiment) => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL;
     });
 
@@ -145,7 +145,7 @@ export class ExperimentUserService {
       this.groupExperimentsWithIndividualConsistency(filteredIndividualExperiment, userId)
     );
 
-    const filteredExperimentExperiment = groupExperiments.filter(experiment => {
+    const filteredExperimentExperiment = groupExperiments.filter((experiment) => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT;
     });
 
@@ -158,7 +158,7 @@ export class ExperimentUserService {
   }
 
   private async groupExperimentsWithGroupConsistency(filteredExperiment: Experiment[], userId: string): Promise<void> {
-    const filteredExperimentIds = filteredExperiment.map(experiment => experiment.id);
+    const filteredExperimentIds = filteredExperiment.map((experiment) => experiment.id);
 
     if (filteredExperimentIds.length === 0) {
       return;
@@ -169,14 +169,16 @@ export class ExperimentUserService {
       userId,
       filteredExperimentIds
     );
-    const assignedExperimentIds = individualAssignments.map(individualAssignment => individualAssignment.experimentId);
+    const assignedExperimentIds = individualAssignments.map(
+      (individualAssignment) => individualAssignment.experiment.id
+    );
     if (assignedExperimentIds.length > 0) {
       await this.individualAssignmentRepository.deleteExperimentsForUserId(userId, assignedExperimentIds);
     }
 
     // remove individual exclusion related to that group
     const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
-    const excludedExperimentIds = individualExclusions.map(individualExclusion => individualExclusion.experimentId);
+    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
 
     if (excludedExperimentIds.length > 0) {
       await this.individualExclusionRepository.deleteExperimentsForUserId(userId, excludedExperimentIds);
@@ -185,9 +187,9 @@ export class ExperimentUserService {
       const otherExclusions = await this.individualExclusionRepository.find({
         where: { experimentId: In(excludedExperimentIds) },
       });
-      const otherExcludedExperimentIds = otherExclusions.map(otherExclusion => otherExclusion.experimentId);
+      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
       // remove group exclusion
-      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter(experimentId => {
+      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
       });
       if (toRemoveExperimentFromGroupExclusions.length > 0) {
@@ -200,7 +202,7 @@ export class ExperimentUserService {
     filteredExperiment: Experiment[],
     userId: string
   ): Promise<void> {
-    const filteredExperimentIds = filteredExperiment.map(experiment => experiment.id);
+    const filteredExperimentIds = filteredExperiment.map((experiment) => experiment.id);
 
     if (filteredExperimentIds.length === 0) {
       return;
@@ -211,18 +213,18 @@ export class ExperimentUserService {
       userId,
       filteredExperimentIds
     );
-    individualAssignments.map(individualAssignment => individualAssignment.experimentId);
+    individualAssignments.map((individualAssignment) => individualAssignment.experiment.id);
 
     // remove individual exclusion related to that group
     const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
-    const excludedExperimentIds = individualExclusions.map(individualExclusion => individualExclusion.experimentId);
+    const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
     if (excludedExperimentIds.length > 0) {
       const otherExclusions = await this.individualExclusionRepository.find({
         where: { experimentId: In(excludedExperimentIds), userId: Not(userId) },
       });
-      const otherExcludedExperimentIds = otherExclusions.map(otherExclusion => otherExclusion.experimentId);
+      const otherExcludedExperimentIds = otherExclusions.map((otherExclusion) => otherExclusion.experiment.id);
       // remove group exclusion
-      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter(experimentId => {
+      const toRemoveExperimentFromGroupExclusions = otherExcludedExperimentIds.filter((experimentId) => {
         return !otherExcludedExperimentIds.includes(experimentId);
       });
       if (toRemoveExperimentFromGroupExclusions.length > 0) {
@@ -235,7 +237,7 @@ export class ExperimentUserService {
     filteredExperiment: Experiment[],
     userId: string
   ): Promise<void> {
-    const filteredExperimentIds = filteredExperiment.map(experiment => experiment.id);
+    const filteredExperimentIds = filteredExperiment.map((experiment) => experiment.id);
     if (filteredExperimentIds.length === 0) {
       return;
     }
@@ -245,7 +247,9 @@ export class ExperimentUserService {
       userId,
       filteredExperimentIds
     );
-    const assignedExperimentIds = individualAssignments.map(individualAssignment => individualAssignment.experimentId);
+    const assignedExperimentIds = individualAssignments.map(
+      (individualAssignment) => individualAssignment.experiment.id
+    );
     if (assignedExperimentIds.length > 0) {
       await this.individualAssignmentRepository.deleteExperimentsForUserId(userId, assignedExperimentIds);
     }

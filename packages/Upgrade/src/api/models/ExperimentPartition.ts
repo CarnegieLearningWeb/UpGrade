@@ -23,9 +23,6 @@ export class ExperimentPartition extends BaseModel {
   @Column()
   public description: string;
 
-  @ManyToOne(
-    type => Experiment,
-    experiment => experiment.partitions
-  )
+  @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 }

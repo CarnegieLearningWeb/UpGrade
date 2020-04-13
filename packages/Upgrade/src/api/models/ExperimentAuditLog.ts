@@ -16,10 +16,7 @@ export class ExperimentAuditLog extends BaseModel {
   })
   public type: EXPERIMENT_LOG_TYPE;
 
-  @ManyToOne(
-    type => User,
-    user => user.auditLogs
-  )
+  @ManyToOne((type) => User, (user) => user.auditLogs, { onDelete: 'CASCADE' })
   public user: User;
 
   @Column({ type: 'json' })
