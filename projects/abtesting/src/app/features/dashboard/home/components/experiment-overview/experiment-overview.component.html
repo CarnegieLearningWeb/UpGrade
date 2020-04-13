@@ -79,24 +79,42 @@
     </mat-error>
   </mat-form-field>
 
-  <mat-form-field class="context">
-    <input
-      matInput
-      [placeholder]="'home.new-experiment.overview.context.placeHolder' | translate"
-      formControlName="context"
-    />
+  <mat-form-field class="chips">
+    <mat-chip-list #contextList aria-label="Contexts" formControlName="context" >
+      <mat-chip
+        *ngFor="let context of contexts.value"
+        [selectable]="isChipSelectable"
+        [removable]="isChipRemovable"
+        (removed)="removeChip(context, 'contexts')"
+      >
+        {{ context }}
+        <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+      </mat-chip>
+      <input
+        [placeholder]="'Context'"
+        [matChipInputFor]="contextList"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addChipOnBlur"
+        (matChipInputTokenEnd)="addChip($event, 'contexts')"
+      />
+    </mat-chip-list>
+    <mat-error
+      *ngIf="overviewForm.controls.context.hasError('required')"
+    >
+      {{ 'home.new-experiment.overview.context.error.text' | translate }}
+    </mat-error>
   </mat-form-field>
 
-  <mat-form-field class="tags">
+  <mat-form-field class="chips">
     <mat-chip-list #tagsList aria-label="Tags">
       <mat-chip
-        *ngFor="let experimentTag of experimentTags"
-        [selectable]="isTagSelectable"
-        [removable]="isTagRemovable"
-        (removed)="removeTag(experimentTag)"
+        *ngFor="let experimentTag of tags.value"
+        [selectable]="isChipSelectable"
+        [removable]="isChipRemovable"
+        (removed)="removeChip(experimentTag, 'tags')"
       >
         {{ experimentTag }}
-        <mat-icon matChipRemove *ngIf="isTagRemovable">cancel</mat-icon>
+        <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
       </mat-chip>
       <input
         [placeholder]="
@@ -104,8 +122,8 @@
         "
         [matChipInputFor]="tagsList"
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        [matChipInputAddOnBlur]="addTagOnBlur"
-        (matChipInputTokenEnd)="addTag($event)"
+        [matChipInputAddOnBlur]="addChipOnBlur"
+        (matChipInputTokenEnd)="addChip($event, 'tags')"
       />
     </mat-chip-list>
   </mat-form-field>

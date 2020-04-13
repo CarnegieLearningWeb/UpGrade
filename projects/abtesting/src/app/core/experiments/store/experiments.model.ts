@@ -115,7 +115,7 @@ export interface Experiment {
   createdAt: string;
   updatedAt: string;
   state: EXPERIMENT_STATE;
-  context: string;
+  context: string[];
   startOn: string;
   consistencyRule: CONSISTENCY_RULE;
   assignmentUnit: ASSIGNMENT_UNIT;
