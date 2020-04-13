@@ -104,35 +104,35 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="tags">
+      <ng-container matColumnDef="context">
         <th mat-header-cell *matHeaderCellDef>
-          <span [matTooltip]="'home.experiments-table.tags-tooltip.text' | translate" matTooltipPosition="above">
-            {{ 'home.experiments-table.text.tags' | translate }}
+          <span [matTooltip]="'home.experiments-table.context-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'home.experiments-table.text.context' | translate }}
           </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
           <mat-chip-list>
-            <ng-container *ngFor="let tag of experiment.tags; let tagIndex = index">
+            <ng-container *ngFor="let context of experiment.context; let contextIndex = index">
               <mat-chip
-                *ngIf="tagIndex < 2; else moreTagsTemplate"
-                class="tags"
-                (click)="filterExperimentByTags(tag)"
+                *ngIf="contextIndex < 2; else moreContextTemplate"
+                class="context"
+                (click)="filterExperimentByContext(context)"
                 #tagValue=""
               >
-                {{ tag }}
+                {{ context }}
               </mat-chip>
-              <ng-template #moreTagsTemplate>
-                <mat-chip class="tags" *ngIf="isAllTagVisible(experiment.id)" (click)="filterExperimentByTags(tag)">
-                  {{ tag }}
+              <ng-template #moreContextTemplate>
+                <mat-chip class="context" *ngIf="isAllContextVisible(experiment.id)" (click)="filterExperimentByContext(context)">
+                  {{ context }}
                 </mat-chip>
               </ng-template>
             </ng-container>
             <mat-chip
-              *ngIf="experiment.tags.length > 2 && !isAllTagVisible(experiment.id)"
-              class="tags tags--clicked"
-              (click)="setTagsVisible(experiment.id)"
+              *ngIf="experiment.context.length > 2 && !isAllContextVisible(experiment.id)"
+              class="context context--clicked"
+              (click)="setContextVisible(experiment.id)"
             >
-              {{ '+' + (experiment.tags.length - 2) }}
+              {{ '+' + (experiment.context.length - 2) }}
             </mat-chip>
           </mat-chip-list>
         </td>

@@ -19,7 +19,7 @@
 
   <div class="preview-user-container" *ngIf="allPreviewUsers.data.length">
     <form [formGroup]="previewUserAssignConditionForm">
-      <mat-progress-bar mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
+      <mat-progress-bar mode="indeterminate" *ngIf="isPreviewUserLoading$ | async"></mat-progress-bar>
       <table mat-table [dataSource]="allPreviewUsers" formArrayName="assignedConditions">
         <!-- ID Column -->
         <ng-container matColumnDef="id">
@@ -145,9 +145,6 @@
       </table>
     </form>
 
-    <div class="spin" *ngIf="isPreviewUserLoading$ | async">
-      <mat-spinner diameter="50"></mat-spinner>
-    </div>
     <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="5"></mat-paginator>
   </div>
 </div>

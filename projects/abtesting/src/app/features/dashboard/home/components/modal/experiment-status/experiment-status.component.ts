@@ -77,6 +77,11 @@ export class ExperimentStatusComponent implements OnInit {
     return this.statusForm.get('newStatus').value;
   }
 
+  get isScheduleDateWrong(): boolean {
+    const { scheduleDate } =  this.statusForm.value;
+    return !!this.experimentInfo.endOn && !!scheduleDate && new Date(this.experimentInfo.endOn).getTime() < new Date(new Date(scheduleDate)).getTime();
+  }
+
   changeStatus() {
     const { newStatus, scheduleDate } = this.statusForm.value;
     let data: ExperimentStateInfo = {

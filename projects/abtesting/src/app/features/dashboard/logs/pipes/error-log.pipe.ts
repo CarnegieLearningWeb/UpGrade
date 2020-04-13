@@ -15,6 +15,8 @@ export class ErrorLogPipe implements PipeTransform {
       case SERVER_ERROR.QUERY_FAILED:
       case SERVER_ERROR.INCORRECT_PARAM_FORMAT:
       case SERVER_ERROR.MISSING_PARAMS:
+      case SERVER_ERROR.INVALID_TOKEN:
+      case SERVER_ERROR.TOKEN_NOT_PRESENT:
         return type === 'icon' ? 'database' : 'red';
       case SERVER_ERROR.USER_NOT_FOUND:
       case SERVER_ERROR.REPORTED_ERROR:

@@ -5,11 +5,11 @@ import {
   GroupTypes,
   NewExperimentDialogEvents,
   NewExperimentDialogData,
-  NewExperimentPaths,
-  ExperimentVM
+  ExperimentVM,
+  NewExperimentPaths
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import * as find from 'lodash.find';
 
@@ -38,15 +38,13 @@ export class ExperimentOverviewComponent implements OnInit {
     { value: CONSISTENCY_RULE.EXPERIMENT }
   ];
 
-  // Used to control tags
-  isTagSelectable = true;
-  isTagRemovable = true;
-  addTagOnBlur = true;
+  // Used to control chips
+  isChipSelectable = true;
+  isChipRemovable = true;
+  addChipOnBlur = true;
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  experimentTags = [];
-
-  constructor(private _formBuilder: FormBuilder) {}
+  constructor(private _formBuilder: FormBuilder) { }
 
   ngOnInit() {
     this.overviewForm = this._formBuilder.group(
@@ -57,7 +55,8 @@ export class ExperimentOverviewComponent implements OnInit {
         groupType: [null],
         customGroupName: [null],
         consistencyRule: [null, Validators.required],
-        context: [null]
+        context: [[], Validators.required],
+        tags: [[]]
       },
       { validators: ExperimentFormValidators.validateExperimentOverviewForm }
     );
@@ -91,9 +90,9 @@ export class ExperimentOverviewComponent implements OnInit {
         groupType,
         customGroupName,
         consistencyRule: this.experimentInfo.consistencyRule,
-        context: this.experimentInfo.context
+        context: this.experimentInfo.context,
+        tags: this.experimentInfo.tags
       });
-      this.experimentTags = this.experimentInfo.tags;
     }
   }
 
@@ -107,13 +106,15 @@ export class ExperimentOverviewComponent implements OnInit {
       : { groupType: GroupTypes.OTHER, customGroupName: this.experimentInfo.group };
   }
 
-  addTag(event: MatChipInputEvent): void {
+  // Used to add tags or contexts
+  addChip(event: MatChipInputEvent, type: string): void {
     const input = event.input;
     const value = event.value;
 
-    // Add our experimentTags
+    // Add chip
     if ((value || '').trim()) {
-      this.experimentTags.push(value.trim());
+      this[type].setValue([...this[type].value, value.trim()]);
+      this[type].updateValueAndValidity();
     }
 
     // Reset the input value
@@ -122,10 +123,12 @@ export class ExperimentOverviewComponent implements OnInit {
     }
   }
 
-  removeTag(experimentTags): void {
-    const index = this.experimentTags.indexOf(experimentTags);
+  // Used to remove tags or contexts
+  removeChip(tag: string, type: string): void {
+    const index = this[type].value.indexOf(tag);
     if (index >= 0) {
-      this.experimentTags.splice(index, 1);
+      this[type].value.splice(index, 1);
+      this[type].updateValueAndValidity();
     }
   }
 
@@ -143,7 +146,8 @@ export class ExperimentOverviewComponent implements OnInit {
             groupType,
             customGroupName,
             consistencyRule,
-            context
+            context,
+            tags
           } = this.overviewForm.value;
           const overviewFormData = {
             name: experimentName,
@@ -151,7 +155,7 @@ export class ExperimentOverviewComponent implements OnInit {
             consistencyRule: consistencyRule,
             assignmentUnit: unitOfAssignment,
             group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
-            tags: this.experimentTags,
+            tags,
             context
           };
           this.emitExperimentDialogEvent.emit({
@@ -174,5 +178,13 @@ export class ExperimentOverviewComponent implements OnInit {
 
   get unitOfAssignmentValue() {
     return this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP;
+  }
+
+  get contexts(): FormArray {
+    return this.overviewForm.get('context') as FormArray;
+  }
+
+  get tags(): FormArray {
+    return this.overviewForm.get('tags') as FormArray;
   }
 }

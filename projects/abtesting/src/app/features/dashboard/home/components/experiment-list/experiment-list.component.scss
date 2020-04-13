@@ -105,7 +105,7 @@
 
     .mat-header-cell {
       &.cdk-column-state,
-      &.cdk-column-tags,
+      &.cdk-column-context,
       &.cdk-column-createdAt {
         padding-left: 5px;
       }
@@ -126,7 +126,7 @@
       }
     }
 
-    .tags {
+    .context {
       height: auto;
       color: var(--black-2);
       font-family: 'Open Sans';

@@ -27,7 +27,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     'state',
     'postExperimentRule',
     'createdAt',
-    'tags',
+    'context',
     'enrollment',
     'view'
   ];
@@ -37,11 +37,12 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     EXPERIMENT_SEARCH_KEY.ALL,
     EXPERIMENT_SEARCH_KEY.NAME,
     EXPERIMENT_SEARCH_KEY.STATUS,
-    EXPERIMENT_SEARCH_KEY.TAG
+    EXPERIMENT_SEARCH_KEY.TAG,
+    EXPERIMENT_SEARCH_KEY.CONTEXT
   ];
   selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
   searchValue: string;
-  tagsVisibility = [];
+  contextVisibility = [];
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
   @ViewChild('tableContainer', { static: false }) experimentTableContainer: ElementRef;
   @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
@@ -84,6 +85,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
           return !!data.tags.filter(tags =>
             tags.toLocaleLowerCase().includes(filter)
           ).length;
+        case EXPERIMENT_SEARCH_KEY.CONTEXT:
+          return !!data.context.filter(context =>
+            context.toLocaleLowerCase().includes(filter)
+          ).length;
       }
     };
   }
@@ -122,9 +127,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.loadExperiments(true);
   }
 
-  filterExperimentByTags(tagValue: string) {
+  filterExperimentByContext(tagValue: string) {
     this.searchValue = tagValue;
-    this.selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.TAG;
+    this.selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.CONTEXT;
     this.applyFilter(tagValue);
     this.setSearchKey();
     this.setSearchString(this.searchValue);
@@ -140,28 +145,28 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
-  setTagsVisible(experimentId: string) {
-    const index = this.tagsVisibility.findIndex(
+  setContextVisible(experimentId: string) {
+    const index = this.contextVisibility.findIndex(
       data => data.experimentId === experimentId
     );
     if (index !== -1) {
-      this.tagsVisibility[index] = { experimentId, visibility: true };
+      this.contextVisibility[index] = { experimentId, visibility: true };
     } else {
-      this.tagsVisibility.push({ experimentId, visibility: true });
+      this.contextVisibility.push({ experimentId, visibility: true });
     }
-    this.tagsVisibility.forEach((data, tagIndex) => {
+    this.contextVisibility.forEach((data, tagIndex) => {
       if (data.experimentId !== experimentId) {
-        this.tagsVisibility[tagIndex] = { ...data, visibility: false };
+        this.contextVisibility[tagIndex] = { ...data, visibility: false };
       }
     });
   }
 
-  // Used to check whether tags are visible for particular experiment or not
-  isAllTagVisible(experimentId: string): boolean {
-    const index = this.tagsVisibility.findIndex(
+  // Used to check whether context are visible for particular experiment or not
+  isAllContextVisible(experimentId: string): boolean {
+    const index = this.contextVisibility.findIndex(
       data => data.experimentId === experimentId
     );
-    return index !== -1 ? this.tagsVisibility[index].visibility : false;
+    return index !== -1 ? this.contextVisibility[index].visibility : false;
   }
 
   getConditionCode(conditionId: string, experimentId: string) {
