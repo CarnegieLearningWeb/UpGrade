@@ -567,6 +567,7 @@ export class ExperimentService {
         searchString.push("coalesce(partitions.name::TEXT,'')");
         searchString.push("coalesce(experiment.state::TEXT,'')");
         searchString.push("coalesce(experiment.tags::TEXT,'')");
+        searchString.push("coalesce(experiment.context::TEXT,'')");
         break;
     }
     const stringConcat = searchString.join(',');
