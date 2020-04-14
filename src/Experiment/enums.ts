@@ -65,3 +65,10 @@ export enum EXPERIMENT_SORT_AS {
   ASCENDING = 'ASC',
   DESCENDING = 'DESC',
 }
+
+export enum UserRole {
+  ADMIN = 'admin',
+  CREATOR = 'creator',
+  MANAGER = 'manager',
+  READER = 'reader'
+}

@@ -7,7 +7,8 @@ import {
   EXPERIMENT_LOG_TYPE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS
+  EXPERIMENT_SORT_AS,
+  UserRole
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -31,5 +32,6 @@ export {
   EXPERIMENT_LOG_TYPE,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS
+  EXPERIMENT_SORT_AS,
+  UserRole
 };
