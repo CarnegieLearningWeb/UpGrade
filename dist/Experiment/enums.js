@@ -68,4 +68,11 @@ var EXPERIMENT_SORT_AS;
     EXPERIMENT_SORT_AS["ASCENDING"] = "ASC";
     EXPERIMENT_SORT_AS["DESCENDING"] = "DESC";
 })(EXPERIMENT_SORT_AS = exports.EXPERIMENT_SORT_AS || (exports.EXPERIMENT_SORT_AS = {}));
+var UserRole;
+(function (UserRole) {
+    UserRole["ADMIN"] = "admin";
+    UserRole["CREATOR"] = "creator";
+    UserRole["MANAGER"] = "manager";
+    UserRole["READER"] = "reader";
+})(UserRole = exports.UserRole || (exports.UserRole = {}));
 //# sourceMappingURL=enums.js.map

@@ -10,4 +10,5 @@ exports.EXPERIMENT_LOG_TYPE = enums_1.EXPERIMENT_LOG_TYPE;
 exports.EXPERIMENT_SEARCH_KEY = enums_1.EXPERIMENT_SEARCH_KEY;
 exports.EXPERIMENT_SORT_KEY = enums_1.EXPERIMENT_SORT_KEY;
 exports.EXPERIMENT_SORT_AS = enums_1.EXPERIMENT_SORT_AS;
+exports.UserRole = enums_1.UserRole;
 //# sourceMappingURL=index.js.map
