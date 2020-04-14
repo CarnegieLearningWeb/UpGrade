@@ -310,6 +310,7 @@ export class ExperimentService {
     this.scheduledJobService.updateExperimentSchedules(experiment);
 
     return getConnection().transaction(async transactionalEntityManager => {
+      experiment.context = experiment.context.map(context => context.toLocaleLowerCase());
       const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
       let experimentDoc: Experiment;
       try {
@@ -477,6 +478,7 @@ export class ExperimentService {
   private async addExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     const createdExperiment = await getConnection().transaction(async transactionalEntityManager => {
       experiment.id = experiment.id || uuid();
+      experiment.context = experiment.context.map(context => context.toLocaleLowerCase());
       const { conditions, partitions, ...expDoc } = experiment;
       // saving experiment doc
       let experimentDoc: Experiment;
