@@ -75,7 +75,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
             data.state.toLocaleLowerCase().includes(filter) ||
             !!data.tags.filter(tags =>
               tags.toLocaleLowerCase().includes(filter)
-            ).length || this.isPartitionFound(data, filter)
+            ).length || this.isPartitionFound(data, filter) ||
+            !!data.context.filter(context =>
+              context.toLocaleLowerCase().includes(filter)
+            ).length
           );
         case EXPERIMENT_SEARCH_KEY.NAME:
           return data.name.toLowerCase().includes(filter) || this.isPartitionFound(data, filter);
