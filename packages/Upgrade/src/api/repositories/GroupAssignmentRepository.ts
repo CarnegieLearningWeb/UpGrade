@@ -1,16 +1,21 @@
-import { EntityRepository, Repository, EntityManager } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { GroupAssignment } from '../models/GroupAssignment';
 import repositoryError from './utils/repositoryError';
 
 @EntityRepository(GroupAssignment)
 export class GroupAssignmentRepository extends Repository<GroupAssignment> {
-  public findExperiment(groupIds: string[], experimentIds: string[]): Promise<GroupAssignment[]> {
+  public async findExperiment(groupIds: string[], experimentIds: string[]): Promise<GroupAssignment[]> {
+    const primaryKeys = experimentIds.reduce((accu, experimentId) => {
+      const selectedPrimaryKey = groupIds.map((groupId) => {
+        return `${experimentId}_${groupId}`;
+      });
+      return [...selectedPrimaryKey, ...accu];
+    }, []);
+
     return this.createQueryBuilder('groupAssignment')
       .leftJoinAndSelect('groupAssignment.condition', 'condition')
-      .where('groupAssignment.groupId IN (:...groupIds) AND groupAssignment.experimentId IN (:...experimentIds)', {
-        groupIds,
-        experimentIds,
-      })
+      .leftJoinAndSelect('groupAssignment.experiment', 'experiment')
+      .whereInIds(primaryKeys)
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
@@ -23,57 +28,18 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       });
   }
 
-  public async deleteByExperimentId(experimentId: string, entityManager: EntityManager): Promise<GroupAssignment[]> {
-    const result = await entityManager
-      .createQueryBuilder()
-      .delete()
-      .from(GroupAssignment)
-      .where('experimentId = :experimentId', { experimentId })
-      .execute()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          this.constructor.name,
-          'deleteByExperimentId',
-          { experimentId },
-          errorMsg
-        );
-        throw new Error(errorMsgString);
-      });
-
-    return result.raw;
-  }
-
   public async saveRawJson(
-    rawData: Omit<GroupAssignment, 'createdAt' | 'updatedAt' | 'versionNumber'>
+    rawData: Omit<GroupAssignment, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id'>
   ): Promise<GroupAssignment> {
+    const id = `${rawData.experiment.id}_${rawData.groupId}`;
     const result = await this.createQueryBuilder('groupAssignment')
       .insert()
       .into(GroupAssignment)
-      .values(rawData)
+      .values({ id, ...rawData })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'saveRawJson', { rawData }, errorMsg);
-        throw new Error(errorMsgString);
-      });
-
-    return result.raw;
-  }
-
-  public async deleteByExperimentIds(experimentIds: string[]): Promise<GroupAssignment> {
-    const result = await this.createQueryBuilder('groupAssignment')
-      .delete()
-      .from(GroupAssignment)
-      .where('groupAssignment.experimentId IN (:...experimentIds)')
-      .returning('*')
-      .execute()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          this.constructor.name,
-          'deleteByExperimentIds',
-          { experimentIds },
-          errorMsg
-        );
         throw new Error(errorMsgString);
       });
 

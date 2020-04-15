@@ -50,6 +50,7 @@ import {
   DeletePreviewAssignmentWithPreviewUserDelete,
 } from './PreviewExperiment/index';
 import { NoExperimentUserOnAssignment } from './ExperimentUser';
+import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -81,11 +82,6 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
-
-  test('Experiment Context Assignment', async (done) => {
-    await ExperimentContextAssignments();
-    done();
-  });
 
   test('No Experiment user on assignment', async (done) => {
     await NoExperimentUserOnAssignment();
@@ -281,6 +277,16 @@ describe('Integration Tests', () => {
 
   test('Delete Preview Assignment with preview user delete', async (done) => {
     await DeletePreviewAssignmentWithPreviewUserDelete();
+    done();
+  });
+
+  test('Delete Assignments on Experiment Delete', async (done) => {
+    await DeleteAssignmentOnExperimentDelete();
+    done();
+  });
+
+  test('Experiment Context Assignment', async (done) => {
+    await ExperimentContextAssignments();
     done();
   });
 });

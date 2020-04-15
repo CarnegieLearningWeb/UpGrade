@@ -31,7 +31,7 @@ export class CheckService {
 
   public getAllIndividualAssignment(): Promise<IndividualAssignment[]> {
     return this.individualAssignmentRepository.find({
-      relations: ['condition'],
+      relations: ['experiment', 'user', 'condition'],
     });
   }
 
@@ -44,6 +44,6 @@ export class CheckService {
   }
 
   public getAllMarkedExperimentPoints(): Promise<MonitoredExperimentPoint[]> {
-    return this.monitoredExperimentPointRepository.find();
+    return this.monitoredExperimentPointRepository.find({ relations: ['user'] });
   }
 }

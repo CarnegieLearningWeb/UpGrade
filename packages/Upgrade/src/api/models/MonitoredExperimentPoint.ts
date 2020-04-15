@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
+import { ExperimentUser } from './ExperimentUser';
 
 @Entity()
 export class MonitoredExperimentPoint extends BaseModel {
@@ -9,6 +10,6 @@ export class MonitoredExperimentPoint extends BaseModel {
   @Column()
   public experimentId: string;
 
-  @Column()
-  public userId: string;
+  @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
+  public user: ExperimentUser;
 }

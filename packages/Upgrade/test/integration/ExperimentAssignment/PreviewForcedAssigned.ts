@@ -172,16 +172,26 @@ export default async function testCase(): Promise<void> {
     assignments: [],
   } as any);
 
+  // check assignment is the one assigned
+  expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
+    assignedConditionUser2.conditionCode
+  );
+
   previewUser1 = await previewService.findOne(previewUsers[0].id);
   expect((previewUser1.assignments && previewUser1.assignments.length) || 0).toEqual(0);
 
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
   markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
+
+  // check assignment is the one assigned
+  expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
+    assignedConditionUser1.conditionCode
+  );
 
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(previewUsers[2].id);

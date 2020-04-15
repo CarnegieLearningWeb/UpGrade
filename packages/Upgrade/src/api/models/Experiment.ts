@@ -13,7 +13,7 @@ import {
   EXPERIMENT_SORT_AS,
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
 } from 'ees_types';
 import { Type } from 'class-transformer';
 
@@ -22,7 +22,7 @@ export {
   EXPERIMENT_SORT_AS,
   EXPERIMENT_SORT_KEY,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
 };
 
 @Entity()
@@ -48,9 +48,8 @@ export class Experiment extends BaseModel {
   })
   public state: EXPERIMENT_STATE;
 
-  // TODO add conditional validity here ie EXPERIMENT_STATE is scheduled
   @Column({ nullable: true })
-  @ValidateIf(o => o.state === EXPERIMENT_STATE.SCHEDULED)
+  @ValidateIf((o) => o.state === EXPERIMENT_STATE.SCHEDULED)
   @IsNotEmpty()
   public startOn: Date;
 
@@ -92,18 +91,12 @@ export class Experiment extends BaseModel {
   @Column('text', { nullable: true })
   public group: string;
 
-  @OneToMany(
-    type => ExperimentCondition,
-    condition => condition.experiment
-  )
+  @OneToMany((type) => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()
   @Type(() => ExperimentCondition)
   public conditions: ExperimentCondition[];
 
-  @OneToMany(
-    type => ExperimentPartition,
-    partition => partition.experiment
-  )
+  @OneToMany((type) => ExperimentPartition, (partition) => partition.experiment)
   @ValidateNested()
   @Type(() => ExperimentPartition)
   public partitions: ExperimentPartition[];

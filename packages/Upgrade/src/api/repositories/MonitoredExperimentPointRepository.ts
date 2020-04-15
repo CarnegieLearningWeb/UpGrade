@@ -5,12 +5,13 @@ import repositoryError from './utils/repositoryError';
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
   public async saveRawJson(
-    rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber'>
+    rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id'>
   ): Promise<MonitoredExperimentPoint> {
+    const id = `${rawData.experimentId}_${rawData.user.id}`;
     const result = await this.createQueryBuilder('monitoredPoint')
       .insert()
       .into(MonitoredExperimentPoint)
-      .values(rawData)
+      .values({ id, ...rawData })
       .onConflict(`("id") DO UPDATE SET "experimentId" = :experimentId`)
       .setParameter('experimentId', rawData.experimentId)
       .returning('*')

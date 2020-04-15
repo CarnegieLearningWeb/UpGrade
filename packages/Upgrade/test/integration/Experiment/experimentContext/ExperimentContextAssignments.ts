@@ -76,7 +76,7 @@ export default async function testCase(): Promise<void> {
         postExperimentRule: experimentObject1.postExperimentRule,
         assignmentUnit: experimentObject1.assignmentUnit,
         consistencyRule: experimentObject1.consistencyRule,
-        context: context1,
+        context: [context1],
       }),
       expect.objectContaining({
         name: experimentObject2.name,
@@ -84,7 +84,7 @@ export default async function testCase(): Promise<void> {
         postExperimentRule: experimentObject2.postExperimentRule,
         assignmentUnit: experimentObject2.assignmentUnit,
         consistencyRule: experimentObject2.consistencyRule,
-        context: context2,
+        context: [context2],
       }),
     ])
   );
@@ -109,7 +109,5 @@ export default async function testCase(): Promise<void> {
   expect(allIndividualAssignments.length).toEqual(2);
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
-  expect(experimentConditionAssignments.length).toEqual(
-    experimentObject2.partitions.length + experimentObject1.partitions.length
-  );
+  expect(experimentConditionAssignments.length).toEqual(0);
 }
