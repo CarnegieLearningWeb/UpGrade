@@ -83,210 +83,210 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
-  // test('Experiment Context Assignment', async (done) => {
-  //   await ExperimentContextAssignments();
-  //   done();
-  // });
+  test('No Experiment user on assignment', async (done) => {
+    await NoExperimentUserOnAssignment();
+    done();
+  });
 
-  // test('No Experiment user on assignment', async (done) => {
-  //   await NoExperimentUserOnAssignment();
-  //   done();
-  // });
+  test('System User is created', async (done) => {
+    await SystemUserCreated();
+    done();
+  });
 
-  // test('System User is created', async (done) => {
-  //   await SystemUserCreated();
-  //   done();
-  // });
+  test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async (done) => {
+    await Scenario1();
+    done();
+  });
 
-  // test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async (done) => {
-  //   await Scenario1();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async (done) => {
+    await PreviewScenario1();
+    done();
+  });
 
-  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async (done) => {
-  //   await PreviewScenario1();
-  //   done();
-  // });
+  test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async (done) => {
+    await Scenario2();
+    done();
+  });
 
-  // test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async (done) => {
-  //   await Scenario2();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async (done) => {
+    await PreviewScenario2();
+    done();
+  });
 
-  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async (done) => {
-  //   await PreviewScenario2();
-  //   done();
-  // });
+  test('Experiment Scenario 3 - Group Assignment With Group Consistency', async (done) => {
+    await Scenario3();
+    done();
+  });
 
-  // test('Experiment Scenario 3 - Group Assignment With Group Consistency', async (done) => {
-  //   await Scenario3();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async (done) => {
+    await PreviewScenario3();
+    done();
+  });
 
-  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async (done) => {
-  //   await PreviewScenario3();
-  //   done();
-  // });
+  test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async (done) => {
+    await Scenario4();
+    done();
+  });
 
-  // test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async (done) => {
-  //   await Scenario4();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async (done) => {
+    await PreviewScenario4();
+    done();
+  });
 
-  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async (done) => {
-  //   await PreviewScenario4();
-  //   done();
-  // });
+  test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async (done) => {
+    await Scenario5();
+    done();
+  });
 
-  // test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async (done) => {
-  //   await Scenario5();
-  //   done();
-  // });
+  test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async (done) => {
+    await PreviewScenario5();
+    done();
+  });
 
-  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async (done) => {
-  //   await PreviewScenario5();
-  //   done();
-  // });
+  test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async (done) => {
+    await Scenario6();
+    done();
+  });
 
-  // test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async (done) => {
-  //   await Scenario6();
-  //   done();
-  // });
+  test('Experiment Scenario 8 - Group Switching after assignment Group Assignment With Group Consistency', async (done) => {
+    await Scenario8();
+    done();
+  });
 
-  // test('Experiment Scenario 8 - Group Switching after assignment Group Assignment With Group Consistency', async (done) => {
-  //   await Scenario8();
-  //   done();
-  // });
+  test('Experiment Scenario 9 - Group Switching after assignment Group Assignment With Individual Consistency', async (done) => {
+    await Scenario9();
+    done();
+  });
 
-  // test('Experiment Scenario 9 - Group Switching after assignment Group Assignment With Individual Consistency', async (done) => {
-  //   await Scenario9();
-  //   done();
-  // });
+  test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', async (done) => {
+    await Scenario10();
+    done();
+  });
 
-  // test('Experiment Scenario 10 - Group Switching after assignment Group Assignment With Experiment Consistency', async (done) => {
-  //   await Scenario10();
-  //   done();
-  // });
+  test('Preview User Forced assignment', async (done) => {
+    await PreviewForcedAssigned();
+    done();
+  });
 
-  // test('Preview User Forced assignment', async (done) => {
-  //   await PreviewForcedAssigned();
-  //   done();
-  // });
+  test('Revert to Default', async (done) => {
+    await RevertToDefault();
+    done();
+  });
+  test('Revert to Condition', async (done) => {
+    await RevertToCondition();
+    done();
+  });
 
-  // test('Revert to Default', async (done) => {
-  //   await RevertToDefault();
-  //   done();
-  // });
-  // test('Revert to Condition', async (done) => {
-  //   await RevertToCondition();
-  //   done();
-  // });
+  // testing exclusion over here
+  test('Individual Exclude', async (done) => {
+    await IndividualExclude();
+    done();
+  });
 
-  // // testing exclusion over here
-  // test('Individual Exclude', async (done) => {
-  //   await IndividualExclude();
-  //   done();
-  // });
+  test('Group Exclude', async (done) => {
+    await GroupExclude();
+    done();
+  });
 
-  // test('Group Exclude', async (done) => {
-  //   await GroupExclude();
-  //   done();
-  // });
+  // testing experiment update over here
+  test('Update Experiment', async (done) => {
+    await UpdateExperiment();
+    done();
+  });
 
-  // // testing experiment update over here
-  // test('Update Experiment', async (done) => {
-  //   await UpdateExperiment();
-  //   done();
-  // });
+  // testing ScheduleJob
+  test('Create Scheduled Job in database to start experiment', async (done) => {
+    await StartExperiment();
+    done();
+  });
 
-  // // testing ScheduleJob
-  // test('Create Scheduled Job in database to start experiment', async (done) => {
-  //   await StartExperiment();
-  //   done();
-  // });
+  test('End Experiment after some timestamp', async (done) => {
+    await EndExperiment();
+    done();
+  });
 
-  // test('End Experiment after some timestamp', async (done) => {
-  //   await EndExperiment();
-  //   done();
-  // });
+  test('Update Experiment state some timestamp', async (done) => {
+    await UpdateExperimentState();
+    done();
+  });
 
-  // test('Update Experiment state some timestamp', async (done) => {
-  //   await UpdateExperimentState();
-  //   done();
-  // });
+  test('Complete Start Experiment', async (done) => {
+    await CompleteStartExperiment();
+    done();
+  });
 
-  // test('Complete Start Experiment', async (done) => {
-  //   await CompleteStartExperiment();
-  //   done();
-  // });
+  test('Delete Start Experiment', async (done) => {
+    await DeleteStartExperiment();
+    done();
+  });
 
-  // test('Delete Start Experiment', async (done) => {
-  //   await DeleteStartExperiment();
-  //   done();
-  // });
+  test('Complete End Experiment', async (done) => {
+    await CompleteEndExperiment();
+    done();
+  });
 
-  // test('Complete End Experiment', async (done) => {
-  //   await CompleteEndExperiment();
-  //   done();
-  // });
+  test('Delete End Experiment', async (done) => {
+    await DeleteEndExperiment();
+    done();
+  });
 
-  // test('Delete End Experiment', async (done) => {
-  //   await DeleteEndExperiment();
-  //   done();
-  // });
-
-  // test('Check audit log', async (done) => {
-  //   await MainAuditLog();
-  //   done();
-  // });
+  test('Check audit log', async (done) => {
+    await MainAuditLog();
+    done();
+  });
 
   test('Stats for Group Experiment', async (done) => {
     await StatsGroupExperiment();
     done();
   });
 
-  // test('Stats for Individual Experiment', async (done) => {
-  //   await StatsIndividualExperiment();
-  //   done();
-  // });
+  test('Stats for Individual Experiment', async (done) => {
+    await StatsIndividualExperiment();
+    done();
+  });
 
-  // test('No preview user', async (done) => {
-  //   await NoPreviewUser();
-  //   done();
-  // });
+  test('No preview user', async (done) => {
+    await NoPreviewUser();
+    done();
+  });
 
-  // test('Preview Assignments', async (done) => {
-  //   await PreviewAssignments();
-  //   done();
-  // });
+  test('Preview Assignments', async (done) => {
+    await PreviewAssignments();
+    done();
+  });
 
-  // test('Preview experiment with preview user', async (done) => {
-  //   await PreviewExperimentWithPreviewUser();
-  //   done();
-  // });
+  test('Preview experiment with preview user', async (done) => {
+    await PreviewExperimentWithPreviewUser();
+    done();
+  });
 
-  // test('Experiment without partition', async (done) => {
-  //   await NoPartitionPoint();
-  //   done();
-  // });
+  test('Experiment without partition', async (done) => {
+    await NoPartitionPoint();
+    done();
+  });
 
-  // test('Delete Preview Assignment with experiment Update', async (done) => {
-  //   await DeletePreviewAssignmentWithExperimentUpdate();
-  //   done();
-  // });
+  test('Delete Preview Assignment with experiment Update', async (done) => {
+    await DeletePreviewAssignmentWithExperimentUpdate();
+    done();
+  });
 
-  // test('Delete Preview Assignment on experiment Delete', async (done) => {
-  //   await DeletePreviewAssignmentOnExperimentDelete();
-  //   done();
-  // });
+  test('Delete Preview Assignment on experiment Delete', async (done) => {
+    await DeletePreviewAssignmentOnExperimentDelete();
+    done();
+  });
 
-  // test('Delete Preview Assignment with preview user delete', async (done) => {
-  //   await DeletePreviewAssignmentWithPreviewUserDelete();
-  //   done();
-  // });
+  test('Delete Preview Assignment with preview user delete', async (done) => {
+    await DeletePreviewAssignmentWithPreviewUserDelete();
+    done();
+  });
 
-  // test('Delete Assignments on Experiment Delete', async (done) => {
-  //   await DeleteAssignmentOnExperimentDelete();
-  //   done();
-  // });
+  test('Delete Assignments on Experiment Delete', async (done) => {
+    await DeleteAssignmentOnExperimentDelete();
+    done();
+  });
+
+  test('Experiment Context Assignment', async (done) => {
+    await ExperimentContextAssignments();
+    done();
+  });
 });

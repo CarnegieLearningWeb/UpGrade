@@ -60,7 +60,7 @@ export function checkMarkExperimentPointForUser(
 
 export async function getAllExperimentCondition(
   userId: string,
-  context?: string | undefined // TODO: Make this as required field
+  context: string = 'home'
 ): Promise<IExperimentAssignment[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
 
