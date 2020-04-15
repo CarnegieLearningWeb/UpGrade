@@ -100,10 +100,22 @@ export class ExperimentAssignmentService {
     });
 
     if (experimentPartition) {
-      await this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment);
+      const { experiment } = experimentPartition;
+      const promiseArray = [];
+      if (
+        experiment.enrollmentCompleteCondition &&
+        experiment.state === EXPERIMENT_STATE.ENROLLING &&
+        experiment.group
+      ) {
+        promiseArray.push(this.updateExperimentEnrollmentComplete(experiment));
+      }
+      promiseArray.push(
+        this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment)
+      );
+
+      await Promise.all(promiseArray);
     }
 
-    // TODO check if experiment enrollmentComplete condition is defined and to change experiment state
     const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
     // adding in monitored experiment point table
     return this.monitoredExperimentPointRepository.saveRawJson({
@@ -341,6 +353,51 @@ export class ExperimentAssignmentService {
       reason,
     });
     return this.errorRepository.saveRawJson(error);
+  }
+
+  private async updateExperimentEnrollmentComplete(experiment: Experiment): Promise<void> {
+    const { enrollmentCompleteCondition, group } = experiment;
+    const { groupCount, userCount } = enrollmentCompleteCondition;
+    if (groupCount && userCount) {
+      // check the group assignments table for user
+      const groupAssignments = await this.groupAssignmentRepository.find({ experiment });
+      const individualAssignments = await this.individualAssignmentRepository.find({
+        where: { experiment },
+        relations: ['user'],
+      });
+
+      if (groupAssignments.length >= groupCount) {
+        // check for student inside each group
+        const groupMap = new Map<string, IndividualAssignment[]>();
+        groupAssignments.map((groupAssignment) => {
+          groupMap.set(groupAssignment.groupId, []);
+        });
+        individualAssignments.forEach((individualAssignment) => {
+          const groupId = individualAssignment.user.workingGroup[group];
+          if (groupMap.has(groupId)) {
+            groupMap.set(groupId, [...groupMap.get(groupId), individualAssignment]);
+          }
+        });
+        let individualUserSatisfied = true;
+        groupMap.forEach((individualAssignment) => {
+          if (individualAssignment.length < userCount) {
+            individualUserSatisfied = false;
+          }
+        });
+
+        if (individualUserSatisfied) {
+          await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        }
+      }
+      // check the individual assignment table for the user
+    } else if (userCount) {
+      // check the individual assignment table for the user
+      const individualAssignmentCount = await this.individualAssignmentRepository.count({ experiment });
+      if (individualAssignmentCount >= userCount) {
+        // update state of experiment
+        await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+      }
+    }
   }
 
   private async updateExclusionFromMarkExperimentPoint(

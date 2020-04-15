@@ -51,6 +51,7 @@ import {
 } from './PreviewExperiment/index';
 import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
+import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -282,6 +283,16 @@ describe('Integration Tests', () => {
 
   test('Delete Assignments on Experiment Delete', async (done) => {
     await DeleteAssignmentOnExperimentDelete();
+    done();
+  });
+
+  test('Individual User Count for State Change to Enrollment Complete', async (done) => {
+    await IndividualUserCount();
+    done();
+  });
+
+  test('Group User Count for State Change to Enrollment Complete', async (done) => {
+    await GroupUserCount();
     done();
   });
 
