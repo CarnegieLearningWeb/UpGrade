@@ -37,8 +37,8 @@ export class Experiment extends BaseModel {
   @Column()
   public description: string;
 
-  @Column({ nullable: true })
-  public context: string;
+  @Column('text', { array: true })
+  public context: string[];
 
   @IsNotEmpty()
   @Column({

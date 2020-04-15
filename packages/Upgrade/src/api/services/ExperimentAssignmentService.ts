@@ -112,7 +112,7 @@ export class ExperimentAssignmentService {
     });
   }
 
-  public async getAllExperimentConditions(userId: string, context?: string): Promise<IExperimentAssignment[]> {
+  public async getAllExperimentConditions(userId: string, context: string): Promise<IExperimentAssignment[]> {
     this.log.info(`Get all experiment for User Id ${userId}`);
     const usersData: any[] = await Promise.all([
       this.experimentUserService.findOne(userId),
