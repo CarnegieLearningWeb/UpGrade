@@ -34,6 +34,8 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       .insert()
       .into(IndividualAssignment)
       .values({ id, ...rawData })
+      .onConflict(`("id") DO UPDATE SET "conditionId" = :conditionId`)
+      .setParameter('conditionId', rawData.condition.id)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

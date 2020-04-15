@@ -23,7 +23,7 @@ import { GroupExclusionRepository } from '../repositories/GroupExclusionReposito
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
 import { User } from '../models/User';
 import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
-import { IUniqueIds } from '../../types/index';
+import { IUniqueIds, ASSIGNMENT_TYPE } from '../../types/index';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
@@ -222,6 +222,9 @@ export class ExperimentService {
       return id;
     });
 
+    // get all preview usersData
+    const previewUsers = await this.previewUserService.find();
+
     // query all monitored experiment point for this experiment Id
     let monitoredExperimentPoints: MonitoredExperimentPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
@@ -230,9 +233,6 @@ export class ExperimentService {
         where: { experimentId: In(subExperiments) },
       });
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
-      // get all preview usersData
-      const previewUsers = await this.previewUserService.find();
-
       const previewUsersIds = previewUsers.map((user) => user.id);
 
       if (previewUsersIds.length > 0) {
@@ -281,7 +281,12 @@ export class ExperimentService {
       // individual exclusion document
       const individualExclusionDocs = [...uniqueUserIds].map((userId) => {
         const user = userDetails.find((userDetail) => userDetail.id === userId);
-        return { user, experiment };
+        const isPreviewUser = previewUsers.find((previewUser) => previewUser.id === userId);
+        return {
+          user,
+          experiment,
+          assignmentType: isPreviewUser ? ASSIGNMENT_TYPE.MANUAL : ASSIGNMENT_TYPE.ALGORITHMIC,
+        };
       });
       await this.individualExclusionRepository.saveRawJson(individualExclusionDocs);
     }

@@ -31,7 +31,7 @@ export class CheckService {
 
   public getAllIndividualAssignment(): Promise<IndividualAssignment[]> {
     return this.individualAssignmentRepository.find({
-      relations: ['condition'],
+      relations: ['experiment', 'user', 'condition'],
     });
   }
 

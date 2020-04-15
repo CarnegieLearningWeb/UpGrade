@@ -35,6 +35,7 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from './ErrorService';
+import { ASSIGNMENT_TYPE } from '../../types';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -295,14 +296,13 @@ export class ExperimentAssignmentService {
           });
 
           return this.assignExperiment(
-            experimentUser.id,
-            experimentUser.workingGroup,
+            experimentUser,
             experiment,
             individualAssignment,
             groupAssignment,
             individualExclusion,
             groupExclusion,
-            experimentUser
+            previewUser
           );
         })
       );
@@ -396,18 +396,36 @@ export class ExperimentAssignmentService {
   }
 
   private async assignExperiment(
-    userId: string,
-    userEnvironment: any,
+    user: ExperimentUser,
     experiment: Experiment,
     individualAssignment: IndividualAssignment | undefined,
     groupAssignment: GroupAssignment | undefined,
     individualExclusion: IndividualExclusion | undefined,
     groupExclusion: GroupExclusion | undefined,
-    experimentUser: ExperimentUser
+    previewUser: PreviewUser
   ): Promise<ExperimentCondition | void> {
+    const userId = user.id;
+    const userEnvironment = user.workingGroup;
     if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && userId) {
       if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
         if (individualAssignment) {
+          // override the individual assignment
+          // save the preview user here
+          if (previewUser && previewUser.assignments) {
+            const previewAssigned = previewUser.assignments.find((assignment) => {
+              return assignment.experiment.id === experiment.id;
+            });
+            if (previewAssigned) {
+              // rewrite the individual assignment if preview assignment
+              this.individualAssignmentRepository.saveRawJson({
+                experiment,
+                user,
+                condition: previewAssigned.experimentCondition,
+                assignmentType: ASSIGNMENT_TYPE.MANUAL,
+              });
+              return previewAssigned.experimentCondition;
+            }
+          }
           return individualAssignment.condition;
         } else if (individualExclusion) {
           return;
@@ -431,6 +449,22 @@ export class ExperimentAssignmentService {
       userId
     ) {
       if (individualAssignment) {
+        // override the individual assignment
+        if (previewUser && previewUser.assignments) {
+          const previewAssigned = previewUser.assignments.find((assignment) => {
+            return assignment.experiment.id === experiment.id;
+          });
+          if (previewAssigned) {
+            // rewrite the individual assignment if preview assignment
+            this.individualAssignmentRepository.saveRawJson({
+              experiment,
+              user,
+              condition: previewAssigned.experimentCondition,
+              assignmentType: ASSIGNMENT_TYPE.MANUAL,
+            });
+            return previewAssigned.experimentCondition;
+          }
+        }
         return individualAssignment.condition;
       } else if (individualExclusion) {
         return;
@@ -438,8 +472,9 @@ export class ExperimentAssignmentService {
         // add entry in individual assignment
         this.individualAssignmentRepository.saveRawJson({
           experiment,
-          user: experimentUser,
+          user,
           condition: groupAssignment.condition,
+          assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
         });
         return groupAssignment.condition;
       } else if (groupExclusion) {
@@ -459,16 +494,18 @@ export class ExperimentAssignmentService {
             }),
             this.individualAssignmentRepository.saveRawJson({
               experiment,
-              user: experimentUser,
+              user,
               condition: experimentalCondition,
+              assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
             }),
           ]);
           return experimentalCondition;
         } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
           await this.individualAssignmentRepository.saveRawJson({
             experiment,
-            user: experimentUser,
+            user,
             condition: experimentalCondition,
+            assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
           });
           return experimentalCondition;
         }

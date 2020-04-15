@@ -8,7 +8,6 @@ import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
 import { IndividualAssignment } from '../../../src/api/models/IndividualAssignment';
 import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
-import { GroupAssignmentRepository } from '../../../src/api/repositories/GroupAssignmentRepository';
 import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
 
 export function checkExperimentAssignedIsDefault(

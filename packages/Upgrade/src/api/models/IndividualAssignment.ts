@@ -1,8 +1,9 @@
-import { Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, ManyToOne, PrimaryColumn, Column } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentCondition } from './ExperimentCondition';
 import { Experiment } from './Experiment';
 import { ExperimentUser } from './ExperimentUser';
+import { ASSIGNMENT_TYPE } from '../../types/index';
 
 @Entity()
 export class IndividualAssignment extends BaseModel {
@@ -17,4 +18,11 @@ export class IndividualAssignment extends BaseModel {
 
   @ManyToOne((type) => ExperimentCondition, { onDelete: 'CASCADE' })
   public condition: ExperimentCondition;
+
+  @Column({
+    type: 'enum',
+    enum: ASSIGNMENT_TYPE,
+    default: ASSIGNMENT_TYPE.ALGORITHMIC,
+  })
+  public assignmentType: ASSIGNMENT_TYPE;
 }

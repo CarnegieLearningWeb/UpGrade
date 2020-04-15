@@ -41,6 +41,7 @@ export class AnalyticsService {
       relations: ['partitions', 'conditions'],
     });
 
+    // if no experiment definition return empty array
     if (experimentDefinition && experimentDefinition.length === 0) {
       return [];
     }
@@ -49,7 +50,7 @@ export class AnalyticsService {
     experimentDefinition.forEach((experiment) => {
       const partitions = experiment.partitions;
       partitions.forEach((partition) => {
-        const experimentId = partition.name ? `${partition.name}_${partition.point}` : partition.point;
+        const experimentId = partition.id;
         experimentIdAndPoint.push(experimentId);
       });
     });
@@ -57,20 +58,24 @@ export class AnalyticsService {
     // data for all
     const promiseData = await Promise.all([
       this.monitoredExperimentPointRepository.find({
-        where: { id: In(experimentIdAndPoint) },
+        where: { experimentId: In(experimentIdAndPoint) },
+        relations: ['user'],
       }),
       this.individualAssignmentRepository.find({
         where: { experimentId: In(experimentIds) },
-        relations: ['condition'],
+        relations: ['experiment', 'user', 'condition'],
       }),
       this.individualExclusionRepository.find({
         where: { experimentId: In(experimentIds) },
+        relations: ['experiment', 'user'],
       }),
       this.groupAssignmentRepository.find({
         where: { experimentId: In(experimentIds) },
+        relations: ['experiment', 'condition'],
       }),
       this.groupExclusionRepository.find({
         where: { experimentId: In(experimentIds) },
+        relations: ['experiment'],
       }),
     ]);
 
@@ -102,11 +107,8 @@ export class AnalyticsService {
     });
 
     // mappedIndividualAssignment
-    individualAssignments.forEach((individualAssignment: any) => {
-      mappedIndividualAssignment.set(
-        `${individualAssignment.experimentId}_${individualAssignment.userId}`,
-        individualAssignment
-      );
+    individualAssignments.forEach((individualAssignment) => {
+      mappedIndividualAssignment.set(individualAssignment.id, individualAssignment);
     });
 
     // structure data here
@@ -115,6 +117,7 @@ export class AnalyticsService {
         const usersAssignedToExperiment = individualAssignments.filter((individualAssignment) => {
           return individualAssignment.experiment.id === experiment.id;
         });
+
         const usersExcludedFromExperiment = individualExclusions.filter((individualExclusion) => {
           return individualExclusion.experiment.id === experiment.id;
         });
@@ -125,6 +128,7 @@ export class AnalyticsService {
               return groupAssignment.experiment.id === experiment.id;
             })) ||
           [];
+
         const groupExcludedFromExperiment =
           (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
             groupExclusions.filter((groupExclusion) => {
@@ -139,6 +143,7 @@ export class AnalyticsService {
               mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id === condition.id
             );
           });
+
           const conditionAssignedGroup =
             (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
               Array.from(
@@ -161,7 +166,6 @@ export class AnalyticsService {
 
         const partitionStats = experiment.partitions.map((partition) => {
           const partitionId = partition.id;
-
           const usersPartitionIncluded = monitoredExperimentPoints.filter((monitoredPoint) => {
             return (
               monitoredPoint.experimentId === partitionId &&
@@ -185,7 +189,8 @@ export class AnalyticsService {
             const conditionAssignedUser = usersPartitionIncluded.filter((userPartition) => {
               return (
                 mappedIndividualAssignment.has(`${experiment.id}_${userPartition.user.id}`) &&
-                mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id === condition.id
+                mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id ===
+                  condition.id
               );
             });
 
