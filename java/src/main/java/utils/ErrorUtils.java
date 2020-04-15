@@ -16,14 +16,10 @@ public class ErrorUtils {
         Converter<ResponseBody, ErrorResponse> converter = 
                 ServiceGenerator.retrofit.responseBodyConverter(ErrorResponse.class, new Annotation[0]);
 
-        ErrorResponse error;
-
-        try {
-            error = converter.convert(response.errorBody());
+        try (ResponseBody body = response.errorBody()) {
+            return converter.convert(body);
         } catch (IOException e) {
-            return new ErrorResponse();
+            return new ErrorResponse(e.toString());
         }
-
-        return error;
     }
 }
