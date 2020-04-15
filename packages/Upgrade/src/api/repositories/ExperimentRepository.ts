@@ -32,7 +32,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .where(
         new Brackets((qb) => {
-          qb.where('(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND experiment.context && ARRAY[:context]', {
+          qb.where('(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])', {
             enrolling: 'enrolling',
             enrollmentComplete: 'enrollmentComplete',
             context,
@@ -52,7 +52,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-          '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND experiment.context && ARRAY[:context]',
+          '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
               enrollmentComplete: 'enrollmentComplete',
