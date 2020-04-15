@@ -1,7 +1,6 @@
 import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment/index';
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { EXPERIMENT_STATE } from 'ees_types';
 import { ExcludeService } from '../../../src/api/services/ExcludeService';
@@ -13,7 +12,6 @@ import { getAllExperimentCondition } from '../utils';
 export default async function GroupExclude(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const excludeService = Container.get<ExcludeService>(ExcludeService);
   const userService = Container.get<UserService>(UserService);
 
@@ -76,6 +74,6 @@ export default async function GroupExclude(): Promise<void> {
     ])
   );
 
-  experimentCondition = await experimentAssignmentService.getAllExperimentConditions(user.id);
+  experimentCondition = await getAllExperimentCondition(user.id);
   expect(experimentCondition.length).toEqual(0);
 }
