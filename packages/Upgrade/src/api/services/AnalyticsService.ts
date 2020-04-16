@@ -89,17 +89,24 @@ export class AnalyticsService {
         const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
         let individualAssignments: IndividualAssignment[] = promiseData[1] as any;
         const individualExclusions: IndividualExclusion[] = promiseData[2] as any;
-        const groupAssignments: GroupAssignment[] = promiseData[3] as any;
+        let groupAssignments: GroupAssignment[] = promiseData[3] as any;
         const groupExclusions: GroupExclusion[] = promiseData[4] as any;
-
-        // console.log('individualAssignments', individualAssignments);
-        // console.log('individualExclusions', individualExclusions);
 
         // filter individual assignment
         individualAssignments = individualAssignments.filter((individualAssignment) => {
           const user = individualAssignment.user.id;
           const exist = monitoredExperimentPoints.find((monitoredExperimentPoint) => {
             return monitoredExperimentPoint.user.id === user;
+          });
+          return exist ? true : false;
+        });
+
+        // filter group assignments
+        groupAssignments = groupAssignments.filter((groupAssignment) => {
+          const groupId = groupAssignment.groupId;
+          const exist = individualAssignments.find((individualAssignment) => {
+            const workingGroupId = individualAssignment.user.workingGroup[experiment.group];
+            return workingGroupId === groupId;
           });
           return exist ? true : false;
         });
@@ -142,7 +149,7 @@ export class AnalyticsService {
                   conditionAssignedUser.map(
                     (monitoredPoint) =>
                       mappedUserDefinition.has(monitoredPoint.user.id) &&
-                      mappedUserDefinition.get(monitoredPoint.user.id)[experiment.group]
+                      mappedUserDefinition.get(monitoredPoint.user.id).workingGroup[experiment.group]
                   )
                 )
               )) ||
@@ -169,7 +176,7 @@ export class AnalyticsService {
               Array.from(
                 new Set(
                   usersPartitionIncluded.map(
-                    (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id)[experiment.group]
+                    (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id).workingGroup[experiment.group]
                   )
                 )
               )) ||
@@ -190,7 +197,8 @@ export class AnalyticsService {
                 Array.from(
                   new Set(
                     conditionAssignedUser.map(
-                      (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id)[experiment.group]
+                      (monitoredPoint) =>
+                        mappedUserDefinition.get(monitoredPoint.user.id).workingGroup[experiment.group]
                     )
                   )
                 )) ||
