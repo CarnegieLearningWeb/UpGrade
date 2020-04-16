@@ -59,6 +59,7 @@
   "home.new-experiment.overview.tags.placeHolder": "Tags (optional)",
   "home.new-experiment.overview.unit-of-assignment.error.text": "Please choose unit of assignment",
   "home.new-experiment.overview.group-type.error.text": "Please choose group type",
+  "home.new-experiment.overview.custom-group-name.error.text": "Please enter group name",
   "home.new-experiment.overview.consistency-rule.error.text": "Please choose consistency rule",
   "home.new-experiment.overview.context.error.text": "Please enter at least one context",
   "home.new-experiment.design.unique-identifier.text": "UNIQUE IDENTIFIER",
