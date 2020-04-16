@@ -14,7 +14,7 @@ import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'ees_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
-import { IConditionEnrollmentStats, IPartitionEnrollmentStats } from 'ees_types/dist/Experiment/interfaces';
+import { ASSIGNMENT_TYPE } from '../../types/index';
 
 @Service()
 export class AnalyticsService {
@@ -69,7 +69,7 @@ export class AnalyticsService {
             relations: ['user'],
           }),
           this.individualAssignmentRepository.find({
-            where: { experimentId },
+            where: { experimentId, assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC },
             relations: ['experiment', 'user', 'condition'],
           }),
           this.individualExclusionRepository.find({
@@ -127,7 +127,7 @@ export class AnalyticsService {
           mappedIndividualAssignment.set(individualAssignment.id, individualAssignment);
         });
 
-        const conditionStats: IConditionEnrollmentStats[] = experiment.conditions.map((condition) => {
+        const conditionStats = experiment.conditions.map((condition) => {
           const conditionAssignedUser = individualAssignments.filter((userPartition) => {
             return (
               mappedIndividualAssignment.has(`${experiment.id}_${userPartition.user.id}`) &&
@@ -155,7 +155,7 @@ export class AnalyticsService {
           };
         });
 
-        const partitionStats: IPartitionEnrollmentStats[] = experiment.partitions.map((partition) => {
+        const partitionStats = experiment.partitions.map((partition) => {
           const partitionId = partition.id;
           const usersPartitionIncluded = monitoredExperimentPoints.filter((monitoredPoint) => {
             return (
