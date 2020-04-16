@@ -2,71 +2,15 @@
   <span class="title">{{ 'home.view-experiment.enrollment-by-point-partition.title.text' | translate }}</span>
   <mat-table [dataSource]="enrollmentPointPartitionData" class="enrollment-point-partition-table">
 
-    <!-- Experiment Point Column -->
-    <ng-container matColumnDef="experimentPoint">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment-global.experiment-point.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.experimentPoint }} </mat-cell>
-    </ng-container>
-
-    <!-- Experiment Partition Column -->
-    <ng-container matColumnDef="experimentPartition">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment-global.experiment-partition.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.experimentPartition }} </mat-cell>
-    </ng-container>
-
-    <!-- Condition Column -->
-    <ng-container matColumnDef="condition">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'global.condition.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.condition }} </mat-cell>
-    </ng-container>
-
-    <!-- Weight Column -->
-    <ng-container matColumnDef="weight">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.global.weight.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.weight }} </mat-cell>
-    </ng-container>
-
-    <!-- User Enrolled Column -->
-    <ng-container matColumnDef="usersEnrolled">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.global.users-enrolled.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.userEnrolled }} </mat-cell>
-    </ng-container>
-
-    <!-- User Excluded Column -->
-    <ng-container matColumnDef="userExcluded">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.global.users-excluded.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.userExcluded }} </mat-cell>
-    </ng-container>
-
-    <!-- Classes Enrolled Column -->
-    <ng-container matColumnDef="classesEnrolled">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.global.classes-enrolled.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.classesEnrolled }} </mat-cell>
-    </ng-container>
-
-    <!-- Classes Excluded Column -->
-    <ng-container matColumnDef="classesExcluded">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.view-experiment.global.classes-excluded.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let data"> {{ data.classesExcluded }} </mat-cell>
+     <!-- Generic column definition -->
+     <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.columnDef">
+      <mat-header-cell *cdkHeaderCellDef>{{ column.header }}</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">{{ column.cell(row) || '' }}</mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
   </mat-table>
 </div>
+
+<ng-template #emptyTemplate></ng-template>
