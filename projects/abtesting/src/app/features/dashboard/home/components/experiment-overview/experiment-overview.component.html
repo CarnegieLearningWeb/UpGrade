@@ -59,6 +59,9 @@
         "
         formControlName="customGroupName"
       />
+      <mat-error *ngIf="overviewForm.controls.customGroupName.hasError('required')">
+        {{ 'home.new-experiment.overview.custom-group-name.error.text' | translate }}
+      </mat-error>
     </mat-form-field>
   </div>
 

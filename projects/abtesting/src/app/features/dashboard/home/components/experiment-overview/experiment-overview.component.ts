@@ -71,6 +71,7 @@ export class ExperimentOverviewComponent implements OnInit {
           break;
         case ASSIGNMENT_UNIT.GROUP:
           this.overviewForm.get('groupType').enable();
+          this.overviewForm.get('groupType').setValidators(Validators.required);
           this.consistencyRules = [
             { value: CONSISTENCY_RULE.INDIVIDUAL },
             { value: CONSISTENCY_RULE.GROUP },
