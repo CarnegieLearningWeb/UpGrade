@@ -80,7 +80,7 @@ export class ExperimentAssignmentService {
     const userDoc = await this.userRepository.findOne({ id: userId });
 
     // adding experiment error when user is not defined
-    if (!userDoc || (!userDoc.group && !userDoc.workingGroup)) {
+    if (!userDoc) {
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
@@ -411,9 +411,11 @@ export class ExperimentAssignmentService {
       // query individual assignment for user
       this.individualAssignmentRepository.findAssignment(user.id, [id]),
       // query group assignment
-      this.groupAssignmentRepository.findExperiment([userEnvironment[experiment.group]], [id]),
+      (userEnvironment && this.groupAssignmentRepository.findExperiment([userEnvironment[experiment.group]], [id])) ||
+        Promise.resolve([]),
       // query group exclusion
-      this.groupExclusionRepository.findExcluded([userEnvironment[experiment.group]], [id]),
+      (userEnvironment && this.groupExclusionRepository.findExcluded([userEnvironment[experiment.group]], [id])) ||
+        Promise.resolve([]),
     ];
     const [individualAssignments, groupAssignments, groupExcluded] = await Promise.all(assignmentPromise);
 
