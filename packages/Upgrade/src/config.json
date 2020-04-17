@@ -1,0 +1,16 @@
+{
+  "adminUsers": [
+    {
+      "email": "vivek@playpowerlabs.com",
+      "role": "admin"
+    },
+    {
+      "email": "vivekfitkariwala@gmail.com",
+      "role": "admin"
+    },
+    {
+      "email": "jaydip.hirapara@playpowerlabs.com",
+      "role": "admin"
+    }
+  ]
+}

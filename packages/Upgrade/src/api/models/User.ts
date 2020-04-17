@@ -3,11 +3,10 @@ import { BaseModel } from './base/BaseModel';
 import { IsUrl, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ExperimentAuditLog } from './ExperimentAuditLog';
+import { UserRole } from 'ees_types';
 
 @Entity()
 export class User extends BaseModel {
-  @PrimaryColumn()
-  public id: string;
 
   @PrimaryColumn()
   public email: string;
@@ -19,6 +18,14 @@ export class User extends BaseModel {
   @Column({ nullable: true })
   @IsString()
   public lastName: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.READER,
+    nullable: true,
+  })
+  public role: UserRole;
 
   @Column({ nullable: true })
   @IsUrl()
