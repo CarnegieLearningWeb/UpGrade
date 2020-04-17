@@ -57,8 +57,7 @@ export class ExperimentOverviewComponent implements OnInit {
         consistencyRule: [null, Validators.required],
         context: [[], Validators.required],
         tags: [[]]
-      },
-      { validators: ExperimentFormValidators.validateExperimentOverviewForm }
+      }
     );
 
     this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
@@ -78,6 +77,17 @@ export class ExperimentOverviewComponent implements OnInit {
             { value: CONSISTENCY_RULE.EXPERIMENT }
           ];
           break;
+      }
+    });
+
+    this.overviewForm.get('groupType').valueChanges.subscribe(groupType => {
+      switch (groupType) {
+        case GroupTypes.OTHER:
+          this.overviewForm.get('customGroupName').setValidators(Validators.required);
+          break;
+        default:
+          this.overviewForm.get('customGroupName').setValidators([]);
+          this.overviewForm.get('customGroupName').reset();
       }
     });
 
