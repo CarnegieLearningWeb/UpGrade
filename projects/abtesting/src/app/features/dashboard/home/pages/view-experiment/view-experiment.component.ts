@@ -8,6 +8,8 @@ import { EXPERIMENT_STATE, ExperimentVM } from '../../../../../core/experiments/
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
+import { UserPermission } from '../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -23,6 +25,8 @@ enum DialogType {
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
 
+  permissions: UserPermission;
+  permissionsSub: Subscription;
   experiment: ExperimentVM;
   experimentSub: Subscription;
   displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
@@ -30,10 +34,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   constructor(
     private experimentService: ExperimentService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
+      this.permissions = permission
+    });
     this.experimentSub = this.experimentService.selectedExperiment$.pipe(
       filter(experiment => !!experiment)
     ).subscribe(experiment => {
@@ -72,6 +80,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
+    this.permissionsSub.unsubscribe();
   }
 
   get ExperimentState() {

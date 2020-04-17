@@ -1,11 +1,19 @@
 import { AppState } from '../../core.module';
+import { User } from '../../users/store/users.model';
 
-export interface User {
-  firstName: string;
-  lastName: string;
-  imageUrl: string;
-  email: string;
-  token: string;
+// TODO: Define proper place for this interface
+interface CRUD {
+  create: boolean;
+  read: boolean;
+  update: boolean;
+  delete: boolean;
+}
+
+export interface UserPermission {
+  experiments: CRUD;
+  users: CRUD;
+  logs: CRUD;
+  manageRoles: CRUD
 }
 
 export interface AuthState {

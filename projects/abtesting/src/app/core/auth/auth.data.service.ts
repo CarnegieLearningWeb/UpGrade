@@ -8,7 +8,11 @@ export class AuthDataService {
 
   createUser(userInfo: any) {
     const url = environment.api.users;
-    delete userInfo['token'];
     return this.http.post(url, userInfo);
+  }
+
+  getUserByEmail(email: string) {
+    const url = `${environment.api.users}/${email}`;
+    return this.http.get(url);
   }
 }

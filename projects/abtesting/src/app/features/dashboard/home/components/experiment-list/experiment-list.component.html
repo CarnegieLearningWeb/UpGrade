@@ -20,7 +20,12 @@
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
-    <button mat-flat-button color="primary" (click)="openNewExperimentDialog()">
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="openNewExperimentDialog()"
+      *ngIf="(permissions$ | async)?.experiments.create"
+    >
       <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
       {{ 'home.experiment.add-experiment.text' | translate }}
     </button>

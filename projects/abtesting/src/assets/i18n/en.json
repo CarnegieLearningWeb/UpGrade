@@ -3,6 +3,7 @@
   "global.app.description": "Open Source A/B Testing Platform for Education Software",
   "global.experiment.title": "Experiments",
   "global.logs.title": "Logs",
+  "global.profile.title": "Profile",
   "global.experiment-user.title": "Users",
   "global.username.title": "User Name",
   "global.back.text": "BACK",
@@ -154,5 +155,13 @@
   "users.preview-users.table-assigned-condition-heading.text": "Assigned Condition",
   "users.preview-users.table-total-assigned-condition-heading.text": "Total Assigned Conditions",
   "users.preview-users.add-new-experiment.text": "+ Add New Experiment",
-  "users.preview-users.save.text": "Save"
+  "users.preview-users.save.text": "Save",
+  "profile.heading.text": "Profile",
+  "profile.sub-heading.text": "Your personal information",
+  "profile.manage-roles.heading.text": "Manage Roles",
+  "profile.table.firstName.text": "First Name",
+  "profile.table.lastName.text": "Last Name",
+  "profile.table.email.text": "Email",
+  "profile.table.role.text": "Role",
+  "profile.form.role-control.text": "User role"
 }

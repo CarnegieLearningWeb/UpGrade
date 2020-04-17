@@ -24,13 +24,16 @@
         </mat-list>
         <div class="user">
           <mat-list class="user-list">
+            <a class="profile" [routerLink]="['/profile']">
             <mat-list-item
               class="user-list--item"
               *ngIf="currentUser$ | async as user"
+              routerLinkActive="user-list--item-selected"
             >
-              <img [src]="user.imageUrl" class="user-pic" />
-              <span>{{ user.firstName + ' ' + user.lastName }}</span>
-            </mat-list-item>
+                <img [src]="user.imageUrl" class="user-pic" />
+                <span>{{ user.firstName + ' ' + user.lastName }}</span>
+              </mat-list-item>
+            </a>
             <mat-list-item class="user-list--item">
               <a role="presentation" class="logout-link" (click)="logout()">
                 <app-shared-icons [iconType]="'logout'"></app-shared-icons>
