@@ -28,8 +28,8 @@ export interface IExperimentEnrollmentStats {
 }
 
 export interface IExperimentAssignment {
-  experimentId: string;
-  experimentPoint: string;
+  expId: string;
+  expPoint: string;
   twoCharacterId: string;
   description: string;
   assignedCondition: {
@@ -40,19 +40,19 @@ export interface IExperimentAssignment {
 }
 
 interface ExperimentCreatedData {
-  experimentId: string;
-  experimentPoint: string;
+  expId: string;
+  expPoint: string;
 }
 
 interface ExperimentUpdatedData {
-  experimentId: string;
-  experimentPoint: string;
+  expId: string;
+  expPoint: string;
   diff: string;
 }
 
 interface ExperimentStateChangedData {
-  experimentId: string;
-  experimentPoint: string;
+  expId: string;
+  expPoint: string;
   previousState: EXPERIMENT_STATE;
   newState: EXPERIMENT_STATE;
   startOn?: Date;
