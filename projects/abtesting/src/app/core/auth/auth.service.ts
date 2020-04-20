@@ -61,7 +61,7 @@ export class AuthService {
           manageRoles: { create: false, read: false, update: false, delete: false }
         });
         break;
-      case UserRole.MANAGER:
+      case UserRole.USER_MANAGER:
         this.userPermissions$.next({
           experiments: { create: false, read: true, update: false, delete: false },
           users: { create: true, read: true, update: true, delete: true },

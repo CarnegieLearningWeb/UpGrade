@@ -29,7 +29,7 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
   userRoles = [
     UserRole.ADMIN,
     UserRole.CREATOR,
-    UserRole.MANAGER,
+    UserRole.USER_MANAGER,
     UserRole.READER,
   ];
   currentUser$ = this.authService.currentUser$;
