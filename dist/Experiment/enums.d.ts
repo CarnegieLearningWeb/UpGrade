@@ -60,6 +60,6 @@ export declare enum EXPERIMENT_SORT_AS {
 export declare enum UserRole {
     ADMIN = "admin",
     CREATOR = "creator",
-    MANAGER = "manager",
+    USER_MANAGER = "user manager",
     READER = "reader"
 }

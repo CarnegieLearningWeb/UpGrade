@@ -72,7 +72,7 @@ var UserRole;
 (function (UserRole) {
     UserRole["ADMIN"] = "admin";
     UserRole["CREATOR"] = "creator";
-    UserRole["MANAGER"] = "manager";
+    UserRole["USER_MANAGER"] = "user manager";
     UserRole["READER"] = "reader";
 })(UserRole = exports.UserRole || (exports.UserRole = {}));
 //# sourceMappingURL=enums.js.map
