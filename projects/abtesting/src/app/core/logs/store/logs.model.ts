@@ -1,6 +1,6 @@
 import { AppState } from '../../core.module';
 import { EntityState } from '@ngrx/entity';
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'ees_types';
+import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 
 export { EXPERIMENT_LOG_TYPE, SERVER_ERROR };
 

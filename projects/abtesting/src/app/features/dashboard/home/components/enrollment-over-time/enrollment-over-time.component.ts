@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ASSIGNMENT_UNIT } from 'ees_types';
+import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import { GroupTypes, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 
 // Used in EnrollmentOverTimeComponent

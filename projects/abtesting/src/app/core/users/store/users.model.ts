@@ -1,6 +1,6 @@
 import { EntityState } from '@ngrx/entity';
 import { AppState } from '../../core.state';
-import { UserRole } from 'ees_types';
+import { UserRole } from 'upgrade_types';
 
 export {
   UserRole

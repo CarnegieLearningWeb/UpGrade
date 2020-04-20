@@ -37,7 +37,7 @@
         <ng-container [ngSwitch]="log.type">
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
             <span class="action action-msg">
-              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.expPoint }}
             </span>
             <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
@@ -62,8 +62,8 @@
               <a
                 class="link"
                 *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                [routerLink]="['/home', 'detail', log.data.experimentId]"
-                >{{ log.data.experimentName }}</a
+                [routerLink]="['/home', 'detail', log.data.expId]"
+                >{{ log.data.expPoint }}</a
               ></span
             >
             <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
@@ -79,8 +79,8 @@
                       <a
                         class="link"
                         *ngIf="log.data.isExperimentExist; else experimentNotExist"
-                        [routerLink]="['/home', 'detail', log.data.experimentId]"
-                        >{{ log.data.experimentName }}</a
+                        [routerLink]="['/home', 'detail', log.data.expId]"
+                        >{{ log.data.expPoint }}</a
                       ></span
                     >
                     <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
@@ -95,7 +95,7 @@
         </ng-container>
 
         <ng-template #experimentNotExist>
-          <span class="action-msg">{{ ' ' + log.data.experimentName }}</span>
+          <span class="action-msg">{{ ' ' + log.data.expPoint }}</span>
         </ng-template>
       </div>
 
