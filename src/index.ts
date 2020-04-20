@@ -8,14 +8,15 @@ import {
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
-  UserRole
+  UserRole,
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
   IExperimentEnrollmentStats,
   IExperimentAssignment,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
+  AuditLogData,
 } from './Experiment/interfaces';
 
 export {
@@ -24,6 +25,7 @@ export {
   IExperimentAssignment,
   IExperimentSearchParams,
   IExperimentSortParams,
+  AuditLogData,
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
@@ -33,5 +35,5 @@ export {
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
-  UserRole
+  UserRole,
 };
