@@ -9,6 +9,7 @@ import { getRepository } from 'typeorm';
 import { IndividualAssignment } from '../../../src/api/models/IndividualAssignment';
 import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
 import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
+import { SupportService } from '../../../src/api/services/SupportService';
 
 export function checkExperimentAssignedIsDefault(
   experimentConditionAssignments: any,
@@ -66,6 +67,11 @@ export async function getAllExperimentCondition(
 
   // getAllExperimentConditions
   return experimentAssignmentService.getAllExperimentConditions(userId, context);
+}
+
+export async function getUserAssignments(userId: string, context: string = 'home'): Promise<IExperimentAssignment[]> {
+  const supportService = Container.get<SupportService>(SupportService);
+  return supportService.getAssignments(userId, context);
 }
 
 export async function markExperimentPoint(

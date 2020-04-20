@@ -52,6 +52,7 @@ import {
 import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
+import { GetAssignments } from './Support/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -298,6 +299,11 @@ describe('Integration Tests', () => {
 
   test('Experiment Context Assignment', async (done) => {
     await ExperimentContextAssignments();
+    done();
+  });
+
+  test('Support Get Assignments', async (done) => {
+    await GetAssignments();
     done();
   });
 });
