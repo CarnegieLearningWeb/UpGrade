@@ -4,13 +4,16 @@ import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
 import * as experimentActions from '../../experiments/store/experiments.actions';
 import * as previewUsersActions from '../../preview-users/store/preview-users.actions';
-import { tap, map, filter, withLatestFrom, catchError } from 'rxjs/operators';
+import * as usersActions from '../../users/store/users.actions';
+import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
 import { environment as env } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
+import { AuthService } from '../auth.service';
+import { User } from '../../users/store/users.model';
 
 declare const gapi: any;
 
@@ -19,12 +22,16 @@ export class AuthEffects {
   auth2: any;
   scope = ['profile', 'email'].join(' ');
 
+  // Used to control flow of currentUser listener
+  hasUserClickedLogin = false;
+
   constructor(
     private actions$: Actions,
     private store$: Store<AppState>,
     private router: Router,
     private ngZone: NgZone,
-    private authDataService: AuthDataService
+    private authDataService: AuthDataService,
+    private authService: AuthService
   ) {}
 
   initializeGapi$ = createEffect(
@@ -41,23 +48,22 @@ export class AuthEffects {
             });
             this.auth2.currentUser.listen(currentUser => {
               this.ngZone.run(() => {
-                const profile = currentUser.getBasicProfile();
-                const isCurrentUserSignedIn = this.auth2.isSignedIn.get();
+                if (!this.hasUserClickedLogin) {
+                  const profile = currentUser.getBasicProfile();
+                  const isCurrentUserSignedIn = this.auth2.isSignedIn.get();
 
-                const action = isCurrentUserSignedIn
-                  ? authActions.actionSetIsLoggedIn({ isLoggedIn: true })
-                  : authActions.actionSetIsLoggedIn({ isLoggedIn: false });
-                this.store$.dispatch(action);
-                this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: false }));
-                if (!!profile && isCurrentUserSignedIn) {
-                  const user = {
-                    firstName: profile.getGivenName(),
-                    lastName: profile.getFamilyName(),
-                    email: profile.getEmail(),
-                    imageUrl: profile.getImageUrl(),
-                    token: currentUser.getAuthResponse().id_token
-                  };
-                  this.store$.dispatch(authActions.actionSetUserInfo({ user }));
+                  const action = isCurrentUserSignedIn
+                    ? authActions.actionSetIsLoggedIn({ isLoggedIn: true })
+                    : authActions.actionSetIsLoggedIn({ isLoggedIn: false });
+                  this.store$.dispatch(action);
+                  this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: false }));
+                  if (!!profile && isCurrentUserSignedIn) {
+                    const user: any = {
+                      token: currentUser.getAuthResponse().id_token,
+                      email: profile.getEmail()
+                    };
+                    this.store$.dispatch(authActions.actionSetUserInfo({ user }));
+                  }
                 }
               });
             });
@@ -77,6 +83,7 @@ export class AuthEffects {
         tap(element => {
           this.auth2.attachClickHandler(element, {},
             googleUser => {
+              this.hasUserClickedLogin = true;
               this.ngZone.run(() => {
                 const profile = googleUser.getBasicProfile();
                 const user = {
@@ -84,13 +91,13 @@ export class AuthEffects {
                   lastName: profile.getFamilyName(),
                   email: profile.getEmail(),
                   imageUrl: profile.getImageUrl(),
-                  token: googleUser.getAuthResponse().id_token
                 };
-                const id = profile.getId();
-                this.authDataService.createUser({ ...user, id }).pipe(
-                    tap(() => {
-                      this.store$.dispatch(authActions.actionSetUserInfo({ user }));
+                const token = googleUser.getAuthResponse().id_token;
+                this.authDataService.createUser(user).pipe(
+                    tap((res: User) => {
+                      this.hasUserClickedLogin = false;
                       this.store$.dispatch(authActions.actionLoginSuccess());
+                      this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
                     }),
                     catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
                   )
@@ -112,17 +119,44 @@ export class AuthEffects {
     () => {
       return this.actions$.pipe(
         ofType(authActions.actionSetUserInfo),
-        tap(() => {
-          this.store$.dispatch(experimentActions.actionGetExperiments({ fromStarting: true }));
-          this.store$.dispatch(previewUsersActions.actionFetchPreviewUsers());
-          this.store$.dispatch(experimentUserActions.actionFetchExcludedUsers());
-          this.store$.dispatch(experimentUserActions.actionFetchExcludedGroups());
-          this.store$.dispatch(experimentActions.actionFetchAllPartitions());
-          this.store$.dispatch(experimentActions.actionFetchAllUniqueIdentifiers());
+        map(action => action.user),
+        filter(user => !!user.email),
+        switchMap((user: User) => {
+          const actions = [
+            experimentActions.actionGetExperiments({ fromStarting: true }),
+            previewUsersActions.actionFetchPreviewUsers(),
+            experimentUserActions.actionFetchExcludedUsers(),
+            experimentUserActions.actionFetchExcludedGroups(),
+            experimentActions.actionFetchAllPartitions(),
+            experimentActions.actionFetchAllUniqueIdentifiers(),
+            usersActions.actionFetchUsers()
+          ];
+          if (user.role) {
+            this.authService.setUserPermissions(user.role);
+            return [
+              authActions.actionSetUserInfoSuccess({ user }),
+              ...actions
+            ];
+          } else {
+            return this.authDataService.getUserByEmail(user.email).pipe(
+              switchMap((res: User) => {
+                if (res[0]) {
+                  this.authService.setUserPermissions(res[0].role);
+                  return [
+                    authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }),
+                    ...actions
+                  ];
+                } else {
+                  return [
+                    authActions.actionSetUserInfoFailed()
+                  ];
+                }
+              })
+            )
+          }
         })
       );
     },
-    { dispatch: false }
   );
 
   logout$ = createEffect(

@@ -18,12 +18,12 @@
           class="edit-button"
           (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
           *ngIf="
-            experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
+          permissions?.experiments.update && experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
           "
         >
           {{ 'home.view-experiment.edit-button.text' | translate }}
         </button>
-        <button mat-flat-button class="delete-button" (click)="deleteExperiment()">
+        <button mat-flat-button class="delete-button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
           {{ 'home.view-experiment.delete-button.text' | translate }}
         </button>
       </div>
@@ -42,17 +42,31 @@
       <div class="experiment-state-container">
         <div class="state-data state-data--fixed">
           <span>{{ 'home-global.status.text' | translate }}</span>
-          <button mat-flat-button (click)="openDialog(DialogType.CHANGE_STATUS)">
+          <button
+            mat-flat-button
+            *ngIf="permissions?.experiments.update; else readOnlyStatus"
+            (click)="openDialog(DialogType.CHANGE_STATUS)"
+          >
             {{ experiment.state | experimentState }}
             <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           </button>
+          <ng-template #readOnlyStatus>
+            <span class="state-data-value">{{ experiment.state | experimentState }}</span>
+          </ng-template>
         </div>
         <div class="state-data">
           <span>{{ 'home-global.post-experiment-rule.text' | translate }}</span>
-          <button mat-flat-button (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)">
+          <button
+            mat-flat-button
+            *ngIf="permissions?.experiments.update; else readOnlyRule"
+            (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
+          >
             {{ experiment.postExperimentRule | titlecase }}
             <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
           </button>
+          <ng-template #readOnlyRule>
+            <span class="state-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
+          </ng-template>
         </div>
       </div>
 

@@ -4,6 +4,8 @@ import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { UserPermission } from '../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'users-preview-user',
@@ -11,6 +13,8 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
   styleUrls: ['./preview-user.component.scss']
 })
 export class PreviewUserComponent implements OnInit, OnDestroy {
+  permissions: UserPermission;
+  permissionSub: Subscription;
   displayedColumns = ['id', 'totalAssignedConditions', 'assignment', 'actions'];
 
   // Used for displaying preview users
@@ -47,10 +51,14 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
   constructor(
     private _formBuilder: FormBuilder,
     private previewUserService: PreviewUsersService,
-    private experimentService: ExperimentService
+    private experimentService: ExperimentService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
+    this.permissionSub = this.authService.userPermissions$.subscribe(permission => {
+      this.permissions = permission;
+    });
     // For creating preview user
     this.previewUsersForm = this._formBuilder.group({
       id: [null, Validators.required],
@@ -190,5 +198,6 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     this.allPreviewUsersSub.unsubscribe();
     this.allExperimentNamesSub.unsubscribe();
     this.selectExperimentByIdSub.unsubscribe();
+    this.permissionSub.unsubscribe();
   }
 }

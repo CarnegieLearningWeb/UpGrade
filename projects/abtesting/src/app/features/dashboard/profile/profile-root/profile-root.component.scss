@@ -1,0 +1,139 @@
+$role-background-color: #e6fce9;
+$role-text-color: #0a7319;
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4.375rem 2rem;
+
+  .title {
+    margin-bottom: 0;
+    color: var(--black-2);
+    font-family: 'Open Sans';
+    font-size: var(--text-size-xxxxx-large);
+    font-weight: 700;
+  }
+
+  .subtitle {
+    display: block;
+    margin-bottom: 40px;
+    color: var(--grey-3);
+    font-family: 'Open Sans';
+    font-size: var(--text-size-normal);
+    font-weight: 400;
+  }
+
+  .profile-wrapper {
+    border-radius: 10px;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
+    background-color: var(--white);
+    padding: 2rem;
+
+    .personal-information {
+      display: flex;
+      margin-bottom: 30px;
+
+      &.normal-user {
+        margin-bottom: 0;
+      }
+
+      .profile-pic {
+        margin-right: 30px;
+        border: 1px solid var(--blue);
+        border-radius: 50%;
+        width: 64px;
+        height: 64px;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+
+        .name {
+          color: var(--black-2);
+          font-family: 'Open Sans';
+          font-size: var(--text-size-xx-large);
+          font-weight: 700;
+        }
+
+        .email {
+          color: var(--grey-3);
+          font-family: 'Open Sans';
+          font-size: var(--text-size-x-small);
+          font-weight: 400;
+        }
+
+        .role {
+          margin-top: 10px;
+          border-radius: 4px;
+          background-color: $role-background-color;
+          padding: 2px;
+          width: 100px;
+          text-align: center;
+          color: $role-text-color;
+          font-family: 'Open Sans';
+          font-size: var(--text-size-small);
+          font-weight: 600;
+        }
+      }
+    }
+
+    .users-list {
+      width: 100%;
+
+      th {
+        border-color: var(--light-grey);
+        color: var(--grey-2);
+        font-family: 'Open Sans';
+        font-size: var(--text-size-x-small);
+        font-weight: 700;
+      }
+
+      tr.mat-footer-row,
+      tr.mat-row {
+        height: 55px;
+      }
+
+      td {
+        border-color: var(--light-grey);
+        color: var(--black-2);
+        font-family: 'Open Sans';
+        font-size: var(--text-size-x-small);
+        font-weight: 600;
+      }
+
+      .mat-cell {
+        padding: 10px 5px;
+        width: 20%;
+        word-break: break-word;
+
+        &:first-of-type {
+          padding-left: 24px;
+        }
+
+        &.cdk-column-firstName,
+        &.cdk-column-lastName {
+          width: 20%;
+        }
+
+        &.cdk-column-email {
+          width: 25%;
+        }
+
+        &.cdk-column-role {
+          width: 25%;
+        }
+      }
+
+      .paginator {
+        width: 100%;
+      }
+    }
+  }
+
+  .icon {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}

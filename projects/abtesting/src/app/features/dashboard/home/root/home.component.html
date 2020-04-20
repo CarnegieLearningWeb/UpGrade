@@ -15,7 +15,12 @@
           class="text"
           [innerHTML]="'home.no-experiment.text' | translate"
         ></span>
-        <button (click)="openNewExperimentDialog()" mat-flat-button color="primary">
+        <button
+          (click)="openNewExperimentDialog()"
+          mat-flat-button
+          color="primary"
+          *ngIf="(permissions$ | async)?.experiments.create"
+        >
           <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
           {{ 'home.experiment.add-experiment.text' | translate }}
         </button>

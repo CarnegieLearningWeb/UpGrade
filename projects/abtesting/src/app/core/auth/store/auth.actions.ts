@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { User } from './auth.models';
+import { User } from '../../users/store/users.model';
 
 export const actionInitializeGapi = createAction('[Auth] Initialize Gapi');
 
@@ -27,6 +27,15 @@ export const actionSetIsAuthenticating = createAction(
 export const actionSetUserInfo = createAction(
   '[Auth] Set User Information',
   props<{ user: User }>()
+);
+
+export const actionSetUserInfoSuccess = createAction(
+  '[Auth] Set User Information Success',
+  props<{ user: User }>()
+);
+
+export const actionSetUserInfoFailed = createAction(
+  '[Auth] Set User Info Failed'
 );
 
 export const actionLogoutStart = createAction('[Auth] Logout Start');

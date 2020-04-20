@@ -75,6 +75,11 @@ mat-drawer {
     }
   }
 
+  .profile {
+    text-decoration: none;
+    color: var(--black-2);
+  }
+
   .user {
     display: flex;
     flex-direction: column;
@@ -85,6 +90,15 @@ mat-drawer {
       &--item {
         font-family: 'Open Sans';
         font-weight: 600;
+
+        &-selected {
+          border-radius: 7px;
+          background-color: var(--blue);
+
+          span {
+            color: var(--white);
+          }
+        }
       }
     }
 

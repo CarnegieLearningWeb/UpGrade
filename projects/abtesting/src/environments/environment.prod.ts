@@ -34,6 +34,7 @@ export const environment = {
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/experiments/state`,
     users: `${endpointApi}/users`, // Used to create a new user after login
+    userRole: `${endpointApi}/users/role`,
     excludeUsers: `${endpointApi}/exclude/user`,
     excludeGroups: `${endpointApi}/exclude/group`,
     previewUsers: `${endpointApi}/previewUsers`,
