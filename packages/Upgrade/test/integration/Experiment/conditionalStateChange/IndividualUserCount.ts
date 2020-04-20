@@ -11,7 +11,7 @@ import {
   checkExperimentAssignedIsDefault,
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 export default async function IndividualUserCount(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -43,8 +43,8 @@ export default async function IndividualUserCount(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.partitions[0].name;
-  const experimentPoint = experimentObject.partitions[0].point;
+  const experimentName = experimentObject.partitions[0].expId;
+  const experimentPoint = experimentObject.partitions[0].expPoint;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);

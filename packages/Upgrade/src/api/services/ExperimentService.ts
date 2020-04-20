@@ -17,16 +17,16 @@ import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE } from 'ees_types';
+import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
 import { User } from '../models/User';
-import { AuditLogData } from 'ees_types/dist/Experiment/interfaces';
 import { IUniqueIds, ASSIGNMENT_TYPE } from '../../types/index';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
+import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
 
 @Service()
 export class ExperimentService {
@@ -113,7 +113,7 @@ export class ExperimentService {
       if (experiment) {
         // monitoredIds
         const monitoredIds = experiment.partitions.map((partition) => {
-          return partition.name ? `${partition.name}_${partition.point}` : partition.point;
+          return partition.expId ? `${partition.expId}_${partition.expPoint}` : partition.expPoint;
         });
 
         const promiseArray = [];
@@ -160,7 +160,7 @@ export class ExperimentService {
     return experiment.partitions;
   }
 
-  public async getAllExperimentPartitions(): Promise<Array<Pick<ExperimentPartition, 'name' | 'point'>>> {
+  public async getAllExperimentPartitions(): Promise<Array<Pick<ExperimentPartition, 'expId' | 'expPoint'>>> {
     return this.experimentPartitionRepository.partitionPointAndName();
   }
 
@@ -183,7 +183,7 @@ export class ExperimentService {
 
     const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
     let data: AuditLogData = {
-      experimentId,
+      expId: experimentId,
       experimentName: oldExperiment.name,
       previousState: oldExperiment.state,
       newState: state,
@@ -247,6 +247,7 @@ export class ExperimentService {
         });
       }
     }
+
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.user.id)
     );
@@ -302,7 +303,7 @@ export class ExperimentService {
     this.scheduledJobService.updateExperimentSchedules(experiment);
 
     return getConnection().transaction(async (transactionalEntityManager) => {
-      experiment.context = experiment.context.map(context => context.toLocaleLowerCase());
+      experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
       const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
       let experimentDoc: Experiment;
       try {
@@ -331,11 +332,11 @@ export class ExperimentService {
           partitions.map((partition) => {
             // tslint:disable-next-line:no-shadowed-variable
             const { createdAt, updatedAt, versionNumber, ...rest } = partition;
-            const joinedForId = rest.name ? `${rest.name}_${rest.point}` : `${rest.point}`;
+            const joinedForId = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
             if (rest.id && rest.id === joinedForId) {
               rest.id = rest.id;
             } else {
-              rest.id = rest.name ? `${rest.name}_${rest.point}` : `${rest.point}`;
+              rest.id = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
             }
             rest.experiment = experimentDoc;
             return rest;
@@ -356,10 +357,10 @@ export class ExperimentService {
 
       // delete partitions which don't exist in new experiment document
       const toDeletePartitions = [];
-      oldPartitions.forEach(({ id, point, name }) => {
+      oldPartitions.forEach(({ id, expPoint, expId }) => {
         if (
           !partitionDocToSave.find((doc) => {
-            return doc.id === id && doc.point === point && doc.name === name;
+            return doc.id === id && doc.expPoint === expPoint && doc.expId === expId;
           })
         ) {
           toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
@@ -457,7 +458,7 @@ export class ExperimentService {
 
       // add AuditLogs here
       const updateAuditLog: AuditLogData = {
-        experimentId: experiment.id,
+        expId: experiment.id,
         experimentName: experiment.name,
         diff: diffString(oldExperimentClone, newExperimentClone),
       };
@@ -470,7 +471,7 @@ export class ExperimentService {
   private async addExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
-      experiment.context = experiment.context.map(context => context.toLocaleLowerCase());
+      experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
       const { conditions, partitions, ...expDoc } = experiment;
       // saving experiment doc
       let experimentDoc: Experiment;
@@ -497,7 +498,7 @@ export class ExperimentService {
         partitions &&
         partitions.length > 0 &&
         partitions.map((partition) => {
-          partition.id = partition.name ? `${partition.name}_${partition.point}` : `${partition.point}`;
+          partition.id = partition.expId ? `${partition.expId}_${partition.expPoint}` : `${partition.expPoint}`;
           partition.experiment = experimentDoc;
           return partition;
         });
@@ -532,7 +533,7 @@ export class ExperimentService {
 
     // add auditLog here
     const createAuditLogData: AuditLogData = {
-      experimentId: createdExperiment.id,
+      expId: createdExperiment.id,
       experimentName: createdExperiment.name,
     };
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);

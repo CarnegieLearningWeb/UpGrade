@@ -2,7 +2,7 @@ import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
 import { createConnection, getConnectionOptions, ConnectionOptions } from 'typeorm';
 
 import { env } from '../env';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   const loadedConnectionOptions = await getConnectionOptions();

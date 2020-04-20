@@ -5,7 +5,7 @@ import { groupExperimentStats } from '../mockData/experiment/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
@@ -72,11 +72,11 @@ export default async function testCase(): Promise<void> {
   // check when no stats in database
   checkStatsObject(stats[0], customStats);
 
-  const experimentName1 = experimentObject.partitions[0].name;
-  const experimentPoint1 = experimentObject.partitions[0].point;
+  const experimentName1 = experimentObject.partitions[0].expId;
+  const experimentPoint1 = experimentObject.partitions[0].expPoint;
 
-  const experimentName2 = experimentObject.partitions[1].name;
-  const experimentPoint2 = experimentObject.partitions[1].point;
+  const experimentName2 = experimentObject.partitions[1].expId;
+  const experimentPoint2 = experimentObject.partitions[1].expPoint;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);

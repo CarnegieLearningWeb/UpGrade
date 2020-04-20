@@ -6,7 +6,7 @@ import { env } from '../../env';
 import { formatBadReqErrorMessage } from '../../lib/env/utils';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Middleware({ type: 'after' })
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {

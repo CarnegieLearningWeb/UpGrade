@@ -8,7 +8,7 @@ import {
   POST_EXPERIMENT_RULE,
   CONSISTENCY_RULE,
   IEnrollmentCompleteCondition,
-} from 'ees_types';
+} from 'upgrade_types';
 
 define(Experiment, (faker: typeof Faker, settings: {}) => {
   const name = faker.name.firstName();

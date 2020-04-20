@@ -29,19 +29,19 @@ export const experiment = {
   ],
   partitions: [
     {
-      point: 'CurriculumSequence',
-      name: 'W1',
+      expPoint: 'CurriculumSequence',
+      expId: 'W1',
       description: 'Partition on Workspace 1',
       twoCharacterId: 'W1',
     },
     {
-      point: 'CurriculumSequence',
-      name: 'W2',
+      expPoint: 'CurriculumSequence',
+      expId: 'W2',
       description: 'Partition on Workspace 2',
       twoCharacterId: 'W2',
     },
     {
-      point: 'CurriculumSequence',
+      expPoint: 'CurriculumSequence',
       description: 'No Partition',
       twoCharacterId: 'NP',
     },
@@ -79,14 +79,14 @@ export const experimentSecond = {
   ],
   partitions: [
     {
-      point: 'CurriculumSequence2',
-      name: 'W1',
+      expPoint: 'CurriculumSequence2',
+      expId: 'W1',
       description: 'Partition on Workspace 1',
       twoCharacterId: 'X1',
     },
     {
-      point: 'CurriculumSequence2',
-      name: 'W2',
+      expPoint: 'CurriculumSequence2',
+      expId: 'W2',
       description: 'Partition on Workspace 2',
       twoCharacterId: 'X2',
     },

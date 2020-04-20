@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Entity()
 export class ExperimentError extends BaseModel {

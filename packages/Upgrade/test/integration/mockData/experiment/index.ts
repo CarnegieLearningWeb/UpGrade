@@ -1,5 +1,5 @@
 import { experiment, experimentSecond } from './raw';
-import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'ees_types';
+import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
   ...experiment,

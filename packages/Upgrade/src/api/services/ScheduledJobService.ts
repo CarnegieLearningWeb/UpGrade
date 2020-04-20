@@ -4,7 +4,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { env } from '../../env';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';

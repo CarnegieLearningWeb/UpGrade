@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsDefined, IsUUID, IsEnum, IsDate } from 'class-validator';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 export class AssignmentStateUpdateValidator {
   @IsDate()

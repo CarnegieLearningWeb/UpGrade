@@ -55,8 +55,8 @@ export default async function UpdateExperiment(): Promise<void> {
   // delete one partition
   editedPartitions.pop();
 
-  editedPartitions[0].name = 'T1';
-  editedPartitions[0].point = 'Test';
+  editedPartitions[0].expId = 'T1';
+  editedPartitions[0].expPoint = 'Test';
   editedPartitions[0].id = 'T1_Test';
 
   // adding new condition
@@ -75,8 +75,8 @@ export default async function UpdateExperiment(): Promise<void> {
     partitions: [
       ...editedPartitions,
       {
-        point: 'CurriculumSequence ',
-        name: 'W3',
+        expPoint: 'CurriculumSequence ',
+        expId: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
       },
@@ -87,7 +87,7 @@ export default async function UpdateExperiment(): Promise<void> {
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([
-      ...editedConditions.map(condition => {
+      ...editedConditions.map((condition) => {
         return expect.objectContaining({
           name: condition.name,
           description: condition.description,
@@ -111,17 +111,17 @@ export default async function UpdateExperiment(): Promise<void> {
   // check the partitions
   expect(updatedExperimentDoc.partitions).toEqual(
     expect.arrayContaining([
-      ...editedPartitions.map(partition => {
+      ...editedPartitions.map((partition) => {
         return expect.objectContaining({
           id: partition.id,
-          point: partition.point,
-          name: partition.name,
+          expPoint: partition.expPoint,
+          expId: partition.expId,
           description: partition.description,
         });
       }),
       expect.objectContaining({
-        point: 'CurriculumSequence ',
-        name: 'W3',
+        expPoint: 'CurriculumSequence ',
+        expId: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
       }),

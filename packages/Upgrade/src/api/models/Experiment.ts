@@ -14,7 +14,7 @@ import {
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
   IExperimentSortParams,
-} from 'ees_types';
+} from 'upgrade_types';
 import { Type } from 'class-transformer';
 
 export {

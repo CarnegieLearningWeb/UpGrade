@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import isequal from 'lodash.isequal';
 import { env } from '../../env';
 import { LoggerInterface, Logger } from '../../decorators/Logger';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 export class ScheduleJobMiddleware implements ExpressMiddlewareInterface {
 

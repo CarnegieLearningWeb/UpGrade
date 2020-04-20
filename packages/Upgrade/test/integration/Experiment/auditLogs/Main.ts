@@ -6,7 +6,7 @@ import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { AuditService } from '../../../../src/api/services/AuditService';
-import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 

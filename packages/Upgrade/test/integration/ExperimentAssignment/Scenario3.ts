@@ -1,8 +1,7 @@
-
 import { Container } from 'typedi';
 import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
 import { UserService } from '../../../src/api/services/UserService';
@@ -25,8 +24,8 @@ export default async function testCase(): Promise<void> {
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperiment;
 
-  const experimentName = experimentObject.partitions[0].name;
-  const experimentPoint = experimentObject.partitions[0].point;
+  const experimentName = experimentObject.partitions[0].expId;
+  const experimentPoint = experimentObject.partitions[0].expPoint;
 
   // create experiment
   await experimentService.create(experimentObject as any, user);

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsUUID, IsObject, IsEnum } from 'class-validator';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 
 export class ExperimentAssignmentValidator {
     @IsNotEmpty()

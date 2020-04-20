@@ -2,7 +2,7 @@ import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExper
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
@@ -18,8 +18,8 @@ export function checkExperimentAssignedIsDefault(
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        name: experimentName,
-        point: experimentPoint,
+        expId: experimentName,
+        expPoint: experimentPoint,
         assignedCondition: { conditionCode: 'default' },
       }),
     ])
@@ -27,13 +27,13 @@ export function checkExperimentAssignedIsDefault(
 }
 
 export function checkExperimentAssignedIsNotDefault(
-  experimentConditionAssignments: any,
+  experimentConditionAssignments: IExperimentAssignment[],
   experimentName: string,
   experimentPoint: string
 ): void {
   // get object with name and point
   const experimentObject = experimentConditionAssignments.find((experiment) => {
-    return experiment.name === experimentName && experiment.point === experimentPoint;
+    return experiment.expId === experimentName && experiment.expPoint === experimentPoint;
   });
   expect(experimentObject.assignedCondition.conditionCode).not.toEqual('default');
 }

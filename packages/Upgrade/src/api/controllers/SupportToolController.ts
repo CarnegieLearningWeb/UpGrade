@@ -1,6 +1,6 @@
 import { JsonController, Post, Body } from 'routing-controllers';
 import { SupportGetAssignmentParamsValidator } from './validators/SupportGetAssignmentParamsValidator';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 import { SupportService } from '../services/SupportService';
 
 /**
@@ -46,7 +46,6 @@ export class SupportToolController {
     @Body({ validate: { validationError: { target: true, value: true } } })
     assignmentParams: SupportGetAssignmentParamsValidator
   ): Promise<IExperimentAssignment[]> {
-    console.log('assignmentParams', assignmentParams);
     return this.supportService.getAssignments(assignmentParams.userId, assignmentParams.context);
   }
 }

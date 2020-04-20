@@ -5,7 +5,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentUser } from '../models/ExperimentUser';
 import uuid from 'uuid/v4';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'ees_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
 import { In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';

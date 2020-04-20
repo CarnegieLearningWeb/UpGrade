@@ -8,7 +8,7 @@ import {
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
   IExperimentAssignment,
-} from 'ees_types';
+} from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -264,9 +264,12 @@ export class ExperimentAssignmentService {
           : [],
       ];
 
-      const [individualAssignments, groupAssignments, individualExclusions, groupExclusions] = await Promise.all(
-        promiseAssignmentExclusion
-      );
+      const promiseData = await Promise.all(promiseAssignmentExclusion);
+
+      const individualAssignments: IndividualAssignment[] = promiseData[0];
+      const groupAssignments: GroupAssignment[] = promiseData[1];
+      const individualExclusions: IndividualExclusion[] = promiseData[2];
+      const groupExclusions: GroupExclusion[] = promiseData[3];
 
       let mergedIndividualAssignment = individualAssignments;
       // add assignments for individual assignments if preview user
@@ -278,7 +281,7 @@ export class ExperimentAssignmentService {
             condition: assignment.experimentCondition,
           };
         });
-        mergedIndividualAssignment = [...previewAssignment, ...mergedIndividualAssignment];
+        mergedIndividualAssignment = [...(previewAssignment as any), ...mergedIndividualAssignment];
       }
 
       this.log.info('individualAssignments', mergedIndividualAssignment);
@@ -327,11 +330,11 @@ export class ExperimentAssignmentService {
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         const partitions = experiment.partitions.map((partition) => {
-          const { name, point, twoCharacterId } = partition;
+          const { expId, expPoint, twoCharacterId } = partition;
           const conditionAssigned = assignment;
           return {
-            name,
-            point,
+            expId,
+            expPoint,
             twoCharacterId,
             assignedCondition: conditionAssigned || {
               conditionCode: 'default',

@@ -3,7 +3,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentError } from '../models/ExperimentError';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Service()
 export class ErrorService {

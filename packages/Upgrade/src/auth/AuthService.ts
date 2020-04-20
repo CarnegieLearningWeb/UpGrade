@@ -7,7 +7,7 @@ import { UserRepository } from '../api/repositories/UserRepository';
 import { Logger, LoggerInterface } from '../decorators/Logger';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../env';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Service()
 export class AuthService {

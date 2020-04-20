@@ -1,4 +1,4 @@
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 export default function repositoryError(className: string, functionName: string, parameters: any, error: any): string {
   const errorMessage = {

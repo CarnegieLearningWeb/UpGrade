@@ -10,7 +10,7 @@ import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { ExperimentUser } from '../models/ExperimentUser';
-import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'ees_types';
+import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';

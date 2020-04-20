@@ -2,7 +2,7 @@ import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized } from '
 import { ExcludeService } from '../services/ExcludeService';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 /**
  * @swagger

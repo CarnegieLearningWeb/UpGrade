@@ -13,7 +13,7 @@ import {
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 import { Validator, validate } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
@@ -247,7 +247,7 @@ export class ExperimentController {
    *            description: Experiment Partitions not found
    */
   @Get('/partitions')
-  public getAllExperimentPoints(): Promise<Array<Pick<ExperimentPartition, 'point' | 'name'>>> {
+  public getAllExperimentPoints(): Promise<Array<Pick<ExperimentPartition, 'expPoint' | 'expId'>>> {
     return this.experimentService.getAllExperimentPartitions();
   }
 
@@ -448,7 +448,7 @@ export class ExperimentController {
         );
       }
 
-      await validate(currentUser).catch(error => {
+      await validate(currentUser).catch((error) => {
         return Promise.reject(new Error(error));
       });
     }

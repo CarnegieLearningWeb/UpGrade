@@ -1,5 +1,5 @@
 import { IsNumber, IsNotEmpty } from 'class-validator';
-import { EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 export class AuditLogParamsValidator {
   @IsNumber()
   @IsNotEmpty()

@@ -1,6 +1,6 @@
 import { JsonController, Post, Body, Authorized } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
-import { IExperimentEnrollmentStats } from 'ees_types';
+import { IExperimentEnrollmentStats } from 'upgrade_types';
 
 interface IExperimentParams {
   experimentIds: string[];

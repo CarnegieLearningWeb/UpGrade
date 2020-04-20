@@ -7,7 +7,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 

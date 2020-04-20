@@ -6,7 +6,7 @@ import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobSe
 import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { AuditService } from '../../../../src/api/services/AuditService';
 import { systemUserDoc } from '../../../../src/init/seed/systemUser';
 

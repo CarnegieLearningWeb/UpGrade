@@ -3,7 +3,7 @@ import { Connection } from 'typeorm/connection/Connection';
 import { Experiment } from '../../api/models/Experiment';
 import { ExperimentCondition } from '../../api/models/ExperimentCondition';
 import { ExperimentPartition } from '../../api/models/ExperimentPartition';
-import { POST_EXPERIMENT_RULE } from 'ees_types';
+import { POST_EXPERIMENT_RULE } from 'upgrade_types';
 
 export class CreateExperiments implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {

@@ -2,7 +2,7 @@ import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized } 
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
 
 const validator = new Validator();

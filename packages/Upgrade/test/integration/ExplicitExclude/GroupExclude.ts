@@ -2,7 +2,7 @@ import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/exper
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { Logger as WinstonLogger } from '../../../src/lib/logger';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ExcludeService } from '../../../src/api/services/ExcludeService';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';

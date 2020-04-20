@@ -1,7 +1,7 @@
 import { Container } from 'typedi';
 import { individualAssignmentExperiment, secondExperiment } from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { getAllExperimentCondition } from '../../utils';
 import { UserService } from '../../../../src/api/services/UserService';

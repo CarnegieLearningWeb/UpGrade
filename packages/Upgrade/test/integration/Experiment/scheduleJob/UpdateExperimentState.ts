@@ -4,7 +4,7 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { Container } from 'typedi';
 import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobService';
 import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
-import { EXPERIMENT_STATE } from 'ees_types';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 

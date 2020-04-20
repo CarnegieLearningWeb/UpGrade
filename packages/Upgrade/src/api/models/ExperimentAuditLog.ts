@@ -1,7 +1,7 @@
 import { BaseModel } from './base/BaseModel';
 import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
 import { IsNotEmpty } from 'class-validator';
-import { EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { User } from './User';
 
 @Entity()

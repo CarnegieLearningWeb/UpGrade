@@ -1882,10 +1882,6 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
-ees_types@CarnegieLearningWeb/educational-experiment-types#master:
-  version "1.0.0"
-  resolved "https://codeload.github.com/CarnegieLearningWeb/educational-experiment-types/tar.gz/045f0e2bbe735b212f516b0cc146df58dfbed5e8"
-
 emoji-regex@^7.0.1:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-7.0.3.tgz#933a04052860c85e83c122479c4748a8e4c72156"
@@ -6205,6 +6201,10 @@ update-notifier@^2.5.0:
     latest-version "^3.0.0"
     semver-diff "^2.0.0"
     xdg-basedir "^3.0.0"
+
+upgrade_types@CarnegieLearningWeb/educational-experiment-types#master:
+  version "1.0.0"
+  resolved "https://codeload.github.com/CarnegieLearningWeb/educational-experiment-types/tar.gz/2fdc708c97c7477348efabd329726ae97ff38ac9"
 
 uri-js@^4.2.2:
   version "4.2.2"

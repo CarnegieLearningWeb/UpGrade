@@ -13,8 +13,8 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .insert()
       .into(ExperimentPartition)
       .values(partitionDoc)
-      .onConflict(`("id") DO UPDATE SET "name" = :name, "description" = :description`)
-      .setParameter('name', partitionDoc.name)
+      .onConflict(`("id") DO UPDATE SET "expId" = :expId, "description" = :description`)
+      .setParameter('expId', partitionDoc.expId)
       .setParameter('description', partitionDoc.description)
       .returning('*')
       .execute()
@@ -78,9 +78,9 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       });
   }
 
-  public async partitionPointAndName(): Promise<Array<Pick<ExperimentPartition, 'name' | 'point'>>> {
+  public async partitionPointAndName(): Promise<Array<Pick<ExperimentPartition, 'expId' | 'expPoint'>>> {
     return this.createQueryBuilder('experimentPartition')
-      .select(['experimentPartition.point', 'experimentPartition.name'])
+      .select(['experimentPartition.expPoint', 'experimentPartition.expId'])
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);
@@ -92,7 +92,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
     const experimentPartitions = await this.createQueryBuilder('experimentPartition')
       .select('experimentPartition.twoCharacterId')
       .getMany();
-    const uniqueIdentifier = experimentPartitions.map(experimentPartition => experimentPartition.twoCharacterId);
+    const uniqueIdentifier = experimentPartitions.map((experimentPartition) => experimentPartition.twoCharacterId);
     return uniqueIdentifier;
   }
 }

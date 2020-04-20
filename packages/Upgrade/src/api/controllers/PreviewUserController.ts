@@ -1,6 +1,6 @@
 import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized, Delete } from 'routing-controllers';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 import { PreviewUserService } from '../services/PreviewUserService';
 import { PreviewUser } from '../models/PreviewUser';
 import { Validator } from 'class-validator';

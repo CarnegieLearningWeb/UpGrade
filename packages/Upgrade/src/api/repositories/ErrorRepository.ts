@@ -1,7 +1,7 @@
 import { Repository, EntityRepository } from 'typeorm';
 import { ExperimentError } from '../models/ExperimentError';
 import repositoryError from './utils/repositoryError';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @EntityRepository(ExperimentError)
 export class ErrorRepository extends Repository<ExperimentError> {

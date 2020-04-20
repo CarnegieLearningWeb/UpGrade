@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { ValidationError } from 'class-validator';
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 
 export function getOsEnv(key: string): string {
   if (typeof process.env[key] === 'undefined') {
