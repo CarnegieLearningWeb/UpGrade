@@ -24,26 +24,28 @@ export interface IExperimentEnrollmentStats {
     partitions: IPartitionEnrollmentStats[];
 }
 export interface IExperimentAssignment {
-    name: string;
-    point: string;
+    experimentId: string;
+    experimentPoint: string;
     twoCharacterId: string;
+    description: string;
     assignedCondition: {
         conditionCode: string;
         twoCharacterId: string;
+        description: string;
     };
 }
 interface ExperimentCreatedData {
     experimentId: string;
-    experimentName: string;
+    experimentPoint: string;
 }
 interface ExperimentUpdatedData {
     experimentId: string;
-    experimentName: string;
+    experimentPoint: string;
     diff: string;
 }
 interface ExperimentStateChangedData {
     experimentId: string;
-    experimentName: string;
+    experimentPoint: string;
     previousState: EXPERIMENT_STATE;
     newState: EXPERIMENT_STATE;
     startOn?: Date;
