@@ -10,9 +10,9 @@ define(ExperimentPartition, (faker: typeof Faker, settings: { experimentId: stri
 
   const experimentCondition = new ExperimentPartition();
   experimentCondition.id = uuid.v4();
-  experimentCondition.name = name;
+  experimentCondition.expId = name;
   experimentCondition.description = description;
-  experimentCondition.point = point;
+  experimentCondition.expPoint = point;
   experimentCondition.experiment = settings.experimentId as any;
 
   return experimentCondition;
