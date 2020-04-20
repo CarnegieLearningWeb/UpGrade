@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Repository, EntityRepository } from 'typeorm';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';
