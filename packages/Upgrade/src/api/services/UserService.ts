@@ -4,6 +4,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
 import { UserRole } from 'upgrade_types';
+import { systemUserDoc } from '../../init/seed/systemUser';
 
 @Service()
 export class UserService {
@@ -18,8 +19,12 @@ export class UserService {
   }
 
   public find(): Promise<User[]> {
-    // As systemUserDoc can not be directly used in where clause, pass it in method
     return this.userRepository.find();
+  }
+
+  public findAll(): Promise<User[]> {
+    // As systemUserDoc can not be directly used in where clause, pass it in method
+    return this.userRepository.getAllUser(systemUserDoc.email);
   }
 
   public async getUserByEmail(email: string): Promise<User[]> {

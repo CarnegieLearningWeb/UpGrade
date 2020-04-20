@@ -39,9 +39,9 @@ export class UserRepository extends Repository<User> {
   }
 
   // As systemUserDoc can not be directly used in where clause, pass it in method
-  public getAllUser(systemUserEmail: string): Promise<User[]> {
+  public getAllUser(systemEmail: string): Promise<User[]> {
     return this.createQueryBuilder('user')
-      .where('user.email != :email', { email: systemUserEmail })
+      .where('user.email != :email', { email: systemEmail })
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('UserRepository', 'getAllUser', {}, errorMsg);
