@@ -1,5 +1,7 @@
-import { Component, ChangeDetectionStrategy, OnChanges, Input, SimpleChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input, SimpleChanges, OnDestroy } from '@angular/core';
 import { EnrollmentByConditionData, ExperimentVM, ASSIGNMENT_UNIT } from '../../../../../core/experiments/store/experiments.model';
+import { TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 // Used in EnrollmentPointPartitionTableComponent only
 interface EnrollmentByPointPartitionData extends EnrollmentByConditionData {
@@ -14,39 +16,50 @@ interface EnrollmentByPointPartitionData extends EnrollmentByConditionData {
   styleUrls: ['./enrollment-point-partition-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EnrollmentPointPartitionTableComponent implements OnChanges {
+export class EnrollmentPointPartitionTableComponent implements OnChanges, OnDestroy {
 
   @Input() experiment: ExperimentVM;
-  // displayedColumns: string[] = [
-  //   'experimentPoint',
-  //   'experimentPartition',
-  //   'condition',
-  //   'weight',
-  //   'usersEnrolled',
-  //   'userExcluded',
-  //   'classesEnrolled',
-  //   'classesExcluded'
-  // ];
-  columns = [];
+  columns = []; // Used to create dynamic columns
   displayedColumns = [];
-  commonColumns = [
-    { name: 'experimentPoint', header: 'EXPERIMENT POINT' },
-    { name: 'experimentPartition', header: 'ID' },
-    { name: 'condition', header: 'CONDITION' },
-    { name: 'weight', header: 'WEIGHT' },
-    { name: 'userEnrolled', header: 'USERS ENROLLED' },
-    { name: 'userExcluded', header: 'USERS EXCLUDED' },
-  ];
+  commonColumns = [];
   enrollmentPointPartitionData: EnrollmentByPointPartitionData[] = [];
 
-  setColumns(columnNames) {
-    this.columns = [];
-    columnNames.forEach(column => {
-      this.columns.push(
-        { columnDef: `${column.name}`, header: `${column.header}`,    cell: (element) => `${element[`${column.name}`]}` },
-      );
-    });
-    this.displayedColumns = this.columns.map(x => x.columnDef);
+  // For translation strings
+  translatedStrings = [];
+  translateSub: Subscription;
+
+  constructor(
+    private translate: TranslateService
+  ) {
+    this.translateSub = this.translate.get([
+      'home.view-experiment-global.experiment-point.text',
+      'home.view-experiment-global.experiment-partition.text',
+      'global.condition.text',
+      'home.view-experiment.global.weight.text',
+      'home.view-experiment.global.users-enrolled.text',
+      'home.view-experiment.global.users-excluded.text',
+      'home.view-experiment.global.group-enrolled.text',
+      'home.view-experiment.global.group-excluded.text'
+    ]).subscribe(arrayValues => {
+        this.translatedStrings = [
+          arrayValues['home.view-experiment-global.experiment-point.text'],
+          arrayValues['home.view-experiment-global.experiment-partition.text'],
+          arrayValues['global.condition.text'],
+          arrayValues['home.view-experiment.global.weight.text'],
+          arrayValues['home.view-experiment.global.users-enrolled.text'],
+          arrayValues['home.view-experiment.global.users-excluded.text'],
+          arrayValues['home.view-experiment.global.group-enrolled.text'],
+          arrayValues['home.view-experiment.global.group-excluded.text'],
+        ];
+        this.commonColumns = [
+          { name: 'experimentPoint', header: this.translatedStrings[0] },
+          { name: 'experimentPartition', header: this.translatedStrings[1] },
+          { name: 'condition', header: this.translatedStrings[2] },
+          { name: 'weight', header: this.translatedStrings[3] },
+          { name: 'userEnrolled', header: this.translatedStrings[4] },
+          { name: 'userExcluded', header: this.translatedStrings[5] },
+        ];
+    })
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -56,8 +69,8 @@ export class EnrollmentPointPartitionTableComponent implements OnChanges {
     } else {
       const columns = [
         ...this.commonColumns,
-        { name: 'classesEnrolled', header: 'GROUP ENROLLED' },
-        { name: 'classesExcluded', header: 'GROUP EXCLUDED' },
+        { name: 'groupEnrolled', header: this.translatedStrings[6] },
+        { name: 'groupExcluded', header: this.translatedStrings[7] },
       ];
       this.setColumns(columns);
     }
@@ -67,7 +80,6 @@ export class EnrollmentPointPartitionTableComponent implements OnChanges {
 
         partition.conditions.forEach(condition => {
 
-          // TODO: Remained userExcluded and classesExcluded data
           this.enrollmentPointPartitionData.push({
             experimentPoint: this.getPartitionData(partition.id, 'point'),
             experimentPartition: this.getPartitionData(partition.id, 'name') || '',
@@ -75,12 +87,22 @@ export class EnrollmentPointPartitionTableComponent implements OnChanges {
             weight: this.getConditionData(condition.id, 'assignmentWeight'),
             userEnrolled: condition.user,
             userExcluded: this.experiment.stat.userExcluded,
-            classesEnrolled: condition.group,
-            classesExcluded: 0
+            groupEnrolled: condition.group,
+            groupExcluded: this.experiment.stat.groupExcluded
           });
         });
         });
     }
+  }
+
+  setColumns(columnNames) {
+    this.columns = [];
+    columnNames.forEach(column => {
+      this.columns.push(
+        { columnDef: `${column.name}`, header: `${column.header}`,    cell: (element) => `${element[`${column.name}`]}` },
+      );
+    });
+    this.displayedColumns = this.columns.map(x => x.columnDef);
   }
 
   getConditionData(conditionId: string,  key: string) {
@@ -97,5 +119,9 @@ export class EnrollmentPointPartitionTableComponent implements OnChanges {
 
   get assignmentUnit() {
     return ASSIGNMENT_UNIT;
+  }
+
+  ngOnDestroy() {
+    this.translateSub.unsubscribe();
   }
 }
