@@ -82,8 +82,8 @@ export interface EnrollmentByConditionData {
   weight: number;
   userEnrolled: number;
   userExcluded: number;
-  classesEnrolled: number;
-  classesExcluded: number;
+  groupEnrolled: number;
+  groupExcluded: number;
 }
 
 export interface ExperimentCondition {
