@@ -189,17 +189,16 @@ export class ExperimentClientController {
    *         - application/json
    *       parameters:
    *          - in: body
-   *            name: userId
-   *            required: true
-   *            schema:
-   *             type: string
-   *            description: User ID
-   *          - in: body
-   *            name: userEnvironment
+   *            name: user
    *            required: true
    *            schema:
    *             type: object
-   *            description: User Environment
+   *             properties:
+   *               userId:
+   *                 type: string
+   *               context:
+   *                 type: string
+   *            description: User Document
    *       tags:
    *         - Experiment Point
    *       produces:

@@ -124,7 +124,11 @@ export class ExperimentAssignmentService {
     });
   }
 
-  public async getAllExperimentConditions(userId: string, context: string): Promise<IExperimentAssignment[]> {
+  public async getAllExperimentConditions(
+    userId: string,
+    context: string,
+    toAssign: boolean = true
+  ): Promise<IExperimentAssignment[]> {
     this.log.info(`Get all experiment for User Id ${userId}`);
     const usersData: any[] = await Promise.all([
       this.experimentUserService.findOne(userId),
@@ -314,7 +318,8 @@ export class ExperimentAssignmentService {
             groupAssignment,
             individualExclusion,
             groupExclusion,
-            previewUser
+            previewUser,
+            toAssign
           );
         })
       );
@@ -461,7 +466,8 @@ export class ExperimentAssignmentService {
     groupAssignment: GroupAssignment | undefined,
     individualExclusion: IndividualExclusion | undefined,
     groupExclusion: GroupExclusion | undefined,
-    previewUser: PreviewUser
+    previewUser: PreviewUser,
+    toAssign: boolean
   ): Promise<ExperimentCondition | void> {
     const userId = user.id;
     const userEnvironment = user.workingGroup;
@@ -475,14 +481,18 @@ export class ExperimentAssignmentService {
               return assignment.experiment.id === experiment.id;
             });
             if (previewAssigned) {
-              // rewrite the individual assignment if preview assignment
-              this.individualAssignmentRepository.saveRawJson({
-                experiment,
-                user,
-                condition: previewAssigned.experimentCondition,
-                assignmentType: ASSIGNMENT_TYPE.MANUAL,
-              });
-              return previewAssigned.experimentCondition;
+              if (toAssign) {
+                // rewrite the individual assignment if preview assignment
+                this.individualAssignmentRepository.saveRawJson({
+                  experiment,
+                  user,
+                  condition: previewAssigned.experimentCondition,
+                  assignmentType: ASSIGNMENT_TYPE.MANUAL,
+                });
+                return previewAssigned.experimentCondition;
+              } else {
+                return;
+              }
             }
           }
           return individualAssignment.condition;
@@ -514,28 +524,36 @@ export class ExperimentAssignmentService {
             return assignment.experiment.id === experiment.id;
           });
           if (previewAssigned) {
-            // rewrite the individual assignment if preview assignment
-            this.individualAssignmentRepository.saveRawJson({
-              experiment,
-              user,
-              condition: previewAssigned.experimentCondition,
-              assignmentType: ASSIGNMENT_TYPE.MANUAL,
-            });
-            return previewAssigned.experimentCondition;
+            if (toAssign) {
+              // rewrite the individual assignment if preview assignment
+              this.individualAssignmentRepository.saveRawJson({
+                experiment,
+                user,
+                condition: previewAssigned.experimentCondition,
+                assignmentType: ASSIGNMENT_TYPE.MANUAL,
+              });
+              return previewAssigned.experimentCondition;
+            } else {
+              return;
+            }
           }
         }
         return individualAssignment.condition;
       } else if (individualExclusion) {
         return;
       } else if (groupAssignment) {
-        // add entry in individual assignment
-        this.individualAssignmentRepository.saveRawJson({
-          experiment,
-          user,
-          condition: groupAssignment.condition,
-          assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
-        });
-        return groupAssignment.condition;
+        if (toAssign) {
+          // add entry in individual assignment
+          this.individualAssignmentRepository.saveRawJson({
+            experiment,
+            user,
+            condition: groupAssignment.condition,
+            assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
+          });
+          return groupAssignment.condition;
+        } else {
+          return;
+        }
       } else if (groupExclusion) {
         return;
       } else {
@@ -545,28 +563,36 @@ export class ExperimentAssignmentService {
         const experimentalCondition = experiment.conditions[randomConditions];
         // assignment operations will happen here
         if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
-          await Promise.all([
-            this.groupAssignmentRepository.saveRawJson({
-              experiment,
-              groupId: userEnvironment[experiment.group],
-              condition: experimentalCondition,
-            }),
-            this.individualAssignmentRepository.saveRawJson({
+          if (toAssign) {
+            await Promise.all([
+              this.groupAssignmentRepository.saveRawJson({
+                experiment,
+                groupId: userEnvironment[experiment.group],
+                condition: experimentalCondition,
+              }),
+              this.individualAssignmentRepository.saveRawJson({
+                experiment,
+                user,
+                condition: experimentalCondition,
+                assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
+              }),
+            ]);
+            return experimentalCondition;
+          } else {
+            return;
+          }
+        } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
+          if (toAssign) {
+            await this.individualAssignmentRepository.saveRawJson({
               experiment,
               user,
               condition: experimentalCondition,
               assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
-            }),
-          ]);
-          return experimentalCondition;
-        } else if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
-          await this.individualAssignmentRepository.saveRawJson({
-            experiment,
-            user,
-            condition: experimentalCondition,
-            assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
-          });
-          return experimentalCondition;
+            });
+            return experimentalCondition;
+          } else {
+            return;
+          }
         }
       }
     }
