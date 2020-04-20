@@ -85,6 +85,11 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
+  test('Support Get Assignments', async (done) => {
+    await GetAssignments();
+    done();
+  });
+
   test('No Experiment user on assignment', async (done) => {
     await NoExperimentUserOnAssignment();
     done();
@@ -299,11 +304,6 @@ describe('Integration Tests', () => {
 
   test('Experiment Context Assignment', async (done) => {
     await ExperimentContextAssignments();
-    done();
-  });
-
-  test('Support Get Assignments', async (done) => {
-    await GetAssignments();
     done();
   });
 });

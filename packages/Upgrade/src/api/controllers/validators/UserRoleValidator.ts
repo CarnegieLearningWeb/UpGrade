@@ -1,5 +1,5 @@
 import { IsNumber, IsNotEmpty, IsString } from 'class-validator';
-import { UserRole } from 'ees_types';
+import { UserRole } from 'upgrade_types';
 
 export class UserRoleValidator {
   @IsString()

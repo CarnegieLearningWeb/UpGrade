@@ -3,11 +3,10 @@ import { BaseModel } from './base/BaseModel';
 import { IsUrl, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ExperimentAuditLog } from './ExperimentAuditLog';
-import { UserRole } from 'ees_types';
+import { UserRole } from 'upgrade_types';
 
 @Entity()
 export class User extends BaseModel {
-
   @PrimaryColumn()
   public email: string;
 
@@ -31,10 +30,7 @@ export class User extends BaseModel {
   @IsUrl()
   public imageUrl: string;
 
-  @OneToMany(
-    type => ExperimentAuditLog,
-    auditLog => auditLog.user
-  )
+  @OneToMany((type) => ExperimentAuditLog, (auditLog) => auditLog.user)
   @Type(() => ExperimentAuditLog)
   public auditLogs: ExperimentAuditLog[];
 }

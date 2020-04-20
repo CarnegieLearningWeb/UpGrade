@@ -1,14 +1,13 @@
 import { User } from '../../api/models/User';
 import Container from 'typedi';
 import { UserService } from '../../api/services/UserService';
-import { UserRole } from 'ees_types';
 import * as config from '../../config.json';
 
 export const systemUserDoc = {
   email: 'system@gmail.com',
   firstName: 'System',
   lastName: '',
-  role: UserRole.READER,
+  role: 'admin',
   imageUrl: 'https://cdn1.iconfinder.com/data/icons/business-set-18/32/2.business-icons-final-19-512.png',
 };
 
