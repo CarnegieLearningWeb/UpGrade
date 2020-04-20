@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input } from '@angular/core';
 import { MatChipInputEvent } from '@angular/material';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'ees_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'upgrade_types';
 import {
   GroupTypes,
   NewExperimentDialogEvents,

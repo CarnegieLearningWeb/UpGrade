@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 
 @Pipe({
   name: 'experimentActionMessage'

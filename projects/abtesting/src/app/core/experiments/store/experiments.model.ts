@@ -11,7 +11,7 @@ import {
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams
-} from 'ees_types';
+} from 'upgrade_types';
 
 export {
   CONSISTENCY_RULE,

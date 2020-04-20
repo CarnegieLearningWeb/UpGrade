@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { AuditLogs, ErrorLogs } from './logs.model';
-import { SERVER_ERROR, EXPERIMENT_LOG_TYPE } from 'ees_types';
+import { SERVER_ERROR, EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 
 export const actionGetAuditLogs = createAction(
   '[Logs] Get Audit Logs',
