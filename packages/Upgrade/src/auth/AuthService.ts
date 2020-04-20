@@ -35,16 +35,12 @@ export class AuthService {
     const payload = ticket.getPayload();
 
     // check if user exist in the user repo
-    const userId = payload.sub;
+    const email = payload.email;
 
     // add local cache for validating user for each request
-    const document = await this.userRepository.find({ id: userId });
+    const document = await this.userRepository.find({ email });
     if (document.length === 0) {
       throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
-    } else {
-      if (document[0].email !== payload.email) {
-        throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
-      }
     }
 
     // If request specified a G Suite domain:

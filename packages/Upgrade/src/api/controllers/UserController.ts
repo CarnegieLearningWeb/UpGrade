@@ -1,6 +1,7 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, Get, Param } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
+import { UserRoleValidator } from './validators/UserRoleValidator';
 
 /**
  * @swagger
@@ -31,7 +32,50 @@ import { UserService } from '../services/UserService';
 
 @JsonController('/users')
 export class UserController {
-  constructor(public userService: UserService) {}
+  constructor(public userService: UserService) { }
+
+  /**
+   * @swagger
+   * /users:
+   *    get:
+   *       description: Get all users
+   *       produces:
+   *         - application/json
+   *       tags:
+   *         - Users
+   *       responses:
+   *          '200':
+   *            description: Experiment Name List
+   */
+  @Get()
+  public getAllUser(): Promise<User[]> {
+    return this.userService.findAll();
+  }
+
+  /**
+   * @swagger
+   * /users/{email}:
+   *    get:
+   *       description: Get user by email
+   *       parameters:
+   *         - in: path
+   *           name: email
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: User email
+   *       tags:
+   *         - Users
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get User By Email
+   */
+  @Get('/:email')
+  public getUserByEmail(@Param('email') email: string): Promise<User[]> {
+    return this.userService.getUserByEmail(email);
+  }
 
   /**
    * @swagger
@@ -59,5 +103,43 @@ export class UserController {
   @Post()
   public create(@Body() user: User): Promise<User> {
     return this.userService.create(user);
+  }
+
+  /**
+   * @swagger
+   * /users/role:
+   *   post:
+   *     description: Update User role
+   *     consumes:
+   *       - application/json
+   *     parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - role
+   *             properties:
+   *               email:
+   *                 type: string
+   *               role:
+   *                 type: string
+   *                 enum: [admin, creator, manager, reader]
+   *     tags:
+   *       - Users
+   *     produces:
+   *        - application/json
+   *     responses:
+   *         '200':
+   *           description: User role is updated
+   */
+  @Post('/role')
+  public updateRole(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    user: UserRoleValidator
+  ): Promise<User> {
+    return this.userService.updateUserRole(user.email, user.role);
   }
 }

@@ -31,7 +31,7 @@ export class ScheduledJobService {
     if (scheduledJob && scheduledJob.experiment) {
       const experiment = await this.experimentRepository.findOne(scheduledJob.experiment.id);
       if (scheduledJob && experiment) {
-        const systemUser = await this.userRepository.findOne({ id: systemUserDoc.id });
+        const systemUser = await this.userRepository.findOne({ email: systemUserDoc.email });
         const experimentService = Container.get<ExperimentService>(ExperimentService);
         return experimentService.updateState(scheduledJob.experiment.id, EXPERIMENT_STATE.ENROLLING, systemUser);
       }
@@ -44,7 +44,7 @@ export class ScheduledJobService {
     const experiment = await this.experimentRepository.findOne(scheduledJob.experiment.id);
     if (scheduledJob && experiment) {
       // get system user
-      const systemUser = await this.userRepository.findOne({ id: systemUserDoc.id });
+      const systemUser = await this.userRepository.findOne({ email: systemUserDoc.email });
       const experimentService = Container.get<ExperimentService>(ExperimentService);
       return experimentService.updateState(
         scheduledJob.experiment.id,
