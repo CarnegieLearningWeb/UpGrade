@@ -173,7 +173,7 @@
     </ng-container>
 
       <!-- PARTITION POINT Column -->
-      <ng-container matColumnDef="point">
+      <ng-container matColumnDef="expPoint">
         <mat-header-cell *matHeaderCellDef>
           {{ 'home.new-experiment.design.partition-point.text' | translate }}
         </mat-header-cell>
@@ -188,14 +188,14 @@
                 'home.new-experiment.design.partition-point.placeholder.text'
                   | translate
               "
-              formControlName="point"
+              formControlName="expPoint"
             />
           </mat-form-field>
         </mat-cell>
       </ng-container>
 
       <!-- ID Column -->
-      <ng-container matColumnDef="name">
+      <ng-container matColumnDef="expId">
         <mat-header-cell *matHeaderCellDef>
           {{ 'home.new-experiment.design.partition-id.text' | translate }}
         </mat-header-cell>
@@ -210,7 +210,7 @@
                 'home.new-experiment.design.partition-id.placeholder.text'
                   | translate
               "
-              formControlName="name"
+              formControlName="expId"
             />
           </mat-form-field>
         </mat-cell>

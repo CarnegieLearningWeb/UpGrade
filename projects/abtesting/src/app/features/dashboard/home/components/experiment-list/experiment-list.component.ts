@@ -104,7 +104,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   // Used to search based on partition point and name
   isPartitionFound(data: Experiment, filterValue: string): boolean {
     const isPartitionFound = data.partitions.filter(
-      partition => (partition.name ? partition.name.toLocaleLowerCase().includes(filterValue) : false) || partition.point.toLocaleLowerCase().includes(filterValue)
+      partition => (partition.expId ? partition.expId.toLocaleLowerCase().includes(filterValue) : false) || partition.expPoint.toLocaleLowerCase().includes(filterValue)
     );
     return !!isPartitionFound.length;
   }
