@@ -23,8 +23,8 @@ export class LogsService {
     ).pipe(
       map(([auditLogs, experiments]) =>
       auditLogs.map((log: AuditLogs) => {
-          if (log.data.expId) {
-            const result = experiments.find(experiment => experiment.id === log.data.expId);
+          if (log.data.experimentId) {
+            const result = experiments.find(experiment => experiment.id === log.data.experimentId);
             log.data = result
               ? {
                   ...log.data,
