@@ -81,8 +81,8 @@ export class EnrollmentPointPartitionTableComponent implements OnChanges, OnDest
         partition.conditions.forEach(condition => {
 
           this.enrollmentPointPartitionData.push({
-            experimentPoint: this.getPartitionData(partition.id, 'point'),
-            experimentPartition: this.getPartitionData(partition.id, 'name') || '',
+            experimentPoint: this.getPartitionData(partition.id, 'expPoint'),
+            experimentPartition: this.getPartitionData(partition.id, 'expId') || '',
             condition: this.getConditionData(condition.id, 'conditionCode'),
             weight: this.getConditionData(condition.id, 'assignmentWeight'),
             userEnrolled: condition.user,

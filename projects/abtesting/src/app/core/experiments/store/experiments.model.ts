@@ -97,8 +97,8 @@ export interface ExperimentCondition {
 
 export interface ExperimentPartition {
   id: string;
-  point: string;
-  name: string;
+  expPoint: string;
+  expId: string;
   description: string;
   twoCharacterId: string;
 }

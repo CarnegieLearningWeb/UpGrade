@@ -206,12 +206,12 @@
             {{ 'home.view-experiment-global.experiment-point.text' | translate }}
           </mat-header-cell>
           <mat-cell *matCellDef="let data">
-            <span *ngIf="data.point?.length < 50; else partitionPoint">
-              {{ data.point }}
+            <span *ngIf="data.expPoint?.length < 50; else partitionPoint">
+              {{ data.expPoint }}
             </span>
             <ng-template #partitionPoint>
-              <span [matTooltip]="data.point" matTooltipPosition="above">
-                {{ data.point | truncate: 50 }}
+              <span [matTooltip]="data.expPoint" matTooltipPosition="above">
+                {{ data.expPoint | truncate: 50 }}
               </span>
             </ng-template>
           </mat-cell>
@@ -223,12 +223,12 @@
             {{ 'home.view-experiment-global.experiment-partition.text' | translate }}
           </mat-header-cell>
           <mat-cell *matCellDef="let data">
-            <span *ngIf="data.name?.length < 50; else partitionName">
-              {{ data.name }}
+            <span *ngIf="data.expId?.length < 50; else partitionName">
+              {{ data.expId }}
             </span>
             <ng-template #partitionName>
-              <span [matTooltip]="data.name" matTooltipPosition="above">
-                {{ data.name | truncate: 50 }}
+              <span [matTooltip]="data.expId" matTooltipPosition="above">
+                {{ data.expId | truncate: 50 }}
               </span>
             </ng-template>
           </mat-cell>
