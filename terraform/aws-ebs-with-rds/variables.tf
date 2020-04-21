@@ -86,8 +86,7 @@ variable "APP_SCHEMA" { default = "http" }
 variable "AUTH_CHECK" { default = false }
 variable "AWS_REGION" { default = "us-east-1" }
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
-variable "GOOGLE_CLIENT_ID" { default = "135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com" }
-variable "HOST_URL" { default = "http://upgrade-development.us-east-1.elasticbeanstalk.com/api" }
+variable "GOOGLE_CLIENT_ID" { }
 variable "INTERCEPTORS" { default = "src/api/interceptors/**/*Interceptor.ts" }
 variable "LOG_LEVEL" { default = "debug" }
 variable "LOG_OUTPUT" { default = "dev" }

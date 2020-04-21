@@ -1,8 +1,3 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
-
 resource "aws_elastic_beanstalk_application" "upgrade-app" {
   name        = "${var.environment}-${var.prefix}-experiment-app"
   description = "app"
@@ -170,7 +165,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "HOST_URL"
-    value     = var.HOST_URL
+    value     = "${aws_elastic_beanstalk_environment.upgrade-app-prod.cname}/api"
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"

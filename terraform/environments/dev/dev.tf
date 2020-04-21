@@ -13,6 +13,7 @@ terraform {
 
 provider "aws" {
   region = "us-east-1"
+  profile = "playpower"
 }
 
 # ------------------------------------------------------------------------------
@@ -23,7 +24,7 @@ module "aws_lambda_function" {
 
   source = "../../aws-lambda"
 
-  environment          = "dev"
+  environment          = "developement"
   prefix               = "upgrade"
   app_version          = "1.0.0"
   lambda_iam_role_name = "schedular-lambda-iam" // will be prefixed by environment-prefix-
@@ -41,7 +42,7 @@ module "aws-state-machine" {
 
   source = "../../aws-step-fn"
 
-  environment                = "dev"  
+  environment                = "developement"  
   prefix                     = "upgrade"
   app_version                = "1.0.0"
   aws_sfn_state_machine_name = "experiment-schedular" // will be prefixed by environment-prefix
@@ -60,10 +61,10 @@ module "aws-ebs-app" {
 
   source = "../../aws-ebs-with-rds"
 
-  environment                = "dev"  
+  environment                = "developement"  
   prefix                     = "upgrade"
-  app_version                = "1.0.0"
   allocated_storage          = 100
+  identifier                 = "dev-postgres"
   instance_class             = "db.t2.small"
   storage_type               = "gp2"
   app_instance_type          = "t2.micro"

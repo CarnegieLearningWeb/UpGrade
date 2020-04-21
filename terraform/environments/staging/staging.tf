@@ -13,6 +13,7 @@ terraform {
 
 provider "aws" {
   region = "us-east-1"
+  profile = "playpower"
 }
 
 # ------------------------------------------------------------------------------
@@ -30,7 +31,7 @@ module "aws_lambda_function" {
   s3_bucket            = "schedular" // will be prefixed by environment-prefix
   lambda_zip           = "schedular.zip"
   lambda_path          = "../../packages/Schedular" //Path of the lambda function folder
-  output_path          = "../environments/staging/.terraform"
+  output_path          = "../environments/dev/.terraform"
   function_name        = "Schedule" // will be prefixed by environment-prefix
   function_handler     = "schedule.schedule"
   runtime              = "nodejs10.x"
@@ -62,8 +63,8 @@ module "aws-ebs-app" {
 
   environment                = "staging"  
   prefix                     = "upgrade"
-  app_version                = "1.0.0"
   allocated_storage          = 100
+  identifier                 = "staging-postgres"
   instance_class             = "db.t2.small"
   storage_type               = "gp2"
   app_instance_type          = "t2.micro"
