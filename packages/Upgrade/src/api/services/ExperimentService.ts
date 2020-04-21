@@ -183,7 +183,7 @@ export class ExperimentService {
 
     const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
     let data: AuditLogData = {
-      expId: experimentId,
+      experimentId,
       experimentName: oldExperiment.name,
       previousState: oldExperiment.state,
       newState: state,
@@ -458,7 +458,7 @@ export class ExperimentService {
 
       // add AuditLogs here
       const updateAuditLog: AuditLogData = {
-        expId: experiment.id,
+        experimentId: experiment.id,
         experimentName: experiment.name,
         diff: diffString(oldExperimentClone, newExperimentClone),
       };
@@ -533,7 +533,7 @@ export class ExperimentService {
 
     // add auditLog here
     const createAuditLogData: AuditLogData = {
-      expId: createdExperiment.id,
+      experimentId: createdExperiment.id,
       experimentName: createdExperiment.name,
     };
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);

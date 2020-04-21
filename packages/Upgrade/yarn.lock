@@ -6204,7 +6204,7 @@ update-notifier@^2.5.0:
 
 upgrade_types@CarnegieLearningWeb/educational-experiment-types#master:
   version "1.0.0"
-  resolved "https://codeload.github.com/CarnegieLearningWeb/educational-experiment-types/tar.gz/2fdc708c97c7477348efabd329726ae97ff38ac9"
+  resolved "https://codeload.github.com/CarnegieLearningWeb/educational-experiment-types/tar.gz/67359be6e740d73575ce752810a335966eb6198e"
 
 uri-js@^4.2.2:
   version "4.2.2"
