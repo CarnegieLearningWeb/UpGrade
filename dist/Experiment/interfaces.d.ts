@@ -35,17 +35,17 @@ export interface IExperimentAssignment {
     };
 }
 interface ExperimentCreatedData {
-    expId: string;
-    expPoint: string;
+    experimentId: string;
+    experimentName: string;
 }
 interface ExperimentUpdatedData {
-    expId: string;
-    expPoint: string;
+    experimentId: string;
+    experimentName: string;
     diff: string;
 }
 interface ExperimentStateChangedData {
-    expId: string;
-    expPoint: string;
+    experimentId: string;
+    experimentName: string;
     previousState: EXPERIMENT_STATE;
     newState: EXPERIMENT_STATE;
     startOn?: Date;
