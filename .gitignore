@@ -39,3 +39,9 @@ mydb.sql
 
 .ebextensions
 Dockerrun.aws.json
+
+# Terraform 
+terraform/environments/*/mykey*
+terraform/environments/*/.terraform
+terraform/environments/*/terraform.tfstate.backup
+terraform/environments/*/terraform.tfstate
