@@ -64,6 +64,7 @@ module "aws-ebs-app" {
   environment                = "developement"  
   prefix                     = "upgrade"
   allocated_storage          = 100
+  GOOGLE_CLIENT_ID            = var.GOOGLE_CLIENT_ID
   identifier                 = "dev-postgres"
   instance_class             = "db.t2.small"
   storage_type               = "gp2"
@@ -76,3 +77,5 @@ module "aws-ebs-app" {
 output "eb" {
   value = module.aws-ebs-app.ebs
 }
+
+variable "GOOGLE_CLIENT_ID"{}
