@@ -80,7 +80,12 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:autoscaling:asg"
     name      = "MinSize"
-    value     = "1"
+    value     = var.autoscaling_min_size
+  }
+  setting {
+    namespace = "aws:autoscaling:asg"
+    name      = "MaxSize"
+    value     = var.autoscaling_max_size
   }
   setting {
     namespace = "aws:autoscaling:updatepolicy:rollingupdate"

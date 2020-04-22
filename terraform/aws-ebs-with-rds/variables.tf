@@ -44,7 +44,7 @@ variable "identifier" {
 
 variable "multi_az" {
   description = "Availability zones.. set to true to have high availability"
-  default     = "false"
+  default     = "true"
 }
 
 variable "storage_type" {
@@ -70,8 +70,9 @@ variable "RDS_PASSWORD" {
 # ---------------------------------------------------------------------------------------------------------------------
 # BEANSTACK APP SPECIFIC VARIABLES 
 # ---------------------------------------------------------------------------------------------------------------------
-variable "app_instance_type" {
-}
+variable "app_instance_type" {}
+variable "autoscaling_min_size" {}
+variable "autoscaling_max_size" {}
 
 
 # ---------------------------------------------------------------------------------------------------------------------

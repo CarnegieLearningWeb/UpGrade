@@ -16,6 +16,9 @@ resource "aws_db_parameter_group" "postgres-parameters" {
   description = "postgres parameter group"
 }
 
+// if multi_az false db will be in either main-private-1 or main-private-2
+// if multi_az true db will be available in both main-private-1 and main-private-2
+
 # Create DB
 resource "aws_db_instance" "app-rds" {
   allocated_storage         = var.allocated_storage
@@ -28,7 +31,7 @@ resource "aws_db_instance" "app-rds" {
   password                  = var.RDS_PASSWORD
   db_subnet_group_name      = aws_db_subnet_group.postgres-subnet.name
   parameter_group_name      = aws_db_parameter_group.postgres-parameters.name
-  multi_az                  = var.multi_az
+  multi_az                  = var.multi_az  
   vpc_security_group_ids    = [aws_security_group.allow-rds.id]
   storage_type              = var.storage_type
   backup_retention_period   = 30

@@ -69,6 +69,8 @@ module "aws-ebs-app" {
   instance_class             = "db.t2.small"
   storage_type               = "gp2"
   app_instance_type          = "t2.micro"
+  autoscaling_min_size       =  1  // Min nunber instances running
+  autoscaling_max_size       =  4  // Max number of instances that ASG can create
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "mykey"
   PATH_TO_PUBLIC_KEY      = "mykey.pub"
