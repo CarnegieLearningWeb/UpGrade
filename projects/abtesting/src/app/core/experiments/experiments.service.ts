@@ -8,11 +8,13 @@ import {
   selectSelectedExperiment,
   selectAllPartitions,
   selectAllExperimentNames,
-  selectExperimentById
+  selectExperimentById,
+  selectSearchString,
+  selectSearchKey
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
-import { map } from 'rxjs/operators';
+import { map, first, filter } from 'rxjs/operators';
 
 @Injectable()
 export class ExperimentService {
@@ -32,6 +34,20 @@ export class ExperimentService {
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   allPartitions$ = this.store$.pipe(select(selectAllPartitions));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
+  selectSearchString$ = this.store$.pipe(select(selectSearchString));
+  selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
+
+  selectSearchExperimentParams(): Observable<Object> {
+    return combineLatest(
+      this.selectSearchKey$,
+      this.selectSearchString$
+    ).pipe(
+      filter(([searchKey, searchString]) => !!searchKey && !!searchString),
+      map(([searchKey, searchString]) => ({ searchKey, searchString })),
+      first()
+    );
+  }
+
 
   isInitialExperimentsLoading() {
     return combineLatest(

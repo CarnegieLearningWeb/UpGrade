@@ -68,6 +68,13 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
         this.applyFilter(this.searchValue);
       }
     );
+
+    this.experimentService.selectSearchExperimentParams().subscribe((searchParams: any) => {
+      // Used when user clicks on context or tags from view experiment page
+      this.searchValue = searchParams.searchString;
+      this.selectedExperimentFilterOption = searchParams.searchKey;
+      this.applyFilter(searchParams.searchString);
+    });
   }
 
   // Modify angular material's table's default search behavior
@@ -185,8 +192,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     // TODO: should implement persist search
-    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
     this.experimentService.setSearchString(null);
+    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
     this.experimentService.setSortKey(null);
     this.experimentService.setSortingType(null);
   }

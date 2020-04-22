@@ -17,6 +17,8 @@
   "global.number.text": "NO.",
   "global.description.text": "DESCRIPTION",
   "global.condition.text": "CONDITION",
+  "global.context.text": "CONTEXT",
+  "global.tags.text": "TAGS",
   "login.sign-in-btn.text": "Login with Google",
   "login.description-1.text": "By creating this account, you agree to",
   "login.description-2.text": "Terms & Conditions",
