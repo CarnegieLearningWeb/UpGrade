@@ -94,13 +94,13 @@ variable "LOG_LEVEL" { default = "debug" }
 variable "LOG_OUTPUT" { default = "dev" }
 variable "MIDDLEWARES" { default = "src/api/middlewares/**/*Middleware.ts" }
 variable "MONITOR_ENABLED" { default = true }
-variable "MONITOR_PASSWORD" { default = 1234 }
+variable "MONITOR_PASSWORD" {}
 variable "MONITOR_ROUTE" { default = "/monitor" }
 variable "MONITOR_USERNAME" { default = "admin" }
 variable "SWAGGER_API" { default = "src/api/controllers/*.ts" }
 variable "SWAGGER_ENABLED" { default = true }
 variable "SWAGGER_FILE" { default = "api/swagger.json" }
-variable "SWAGGER_PASSWORD" { default = 1234 }
+variable "SWAGGER_PASSWORD" {}
 variable "SWAGGER_ROUTE" { default = "/swagger" }
 variable "SWAGGER_USERNAME" { default = "admin" }
 variable "TOKEN_SECRET_KEY" { default = "carnegielearning" }
