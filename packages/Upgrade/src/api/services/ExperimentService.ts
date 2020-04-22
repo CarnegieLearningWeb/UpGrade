@@ -22,7 +22,7 @@ import { IndividualExclusionRepository } from '../repositories/IndividualExclusi
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
 import { User } from '../models/User';
-import { IUniqueIds, ASSIGNMENT_TYPE } from '../../types/index';
+import { ASSIGNMENT_TYPE } from '../../types/index';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
@@ -164,11 +164,11 @@ export class ExperimentService {
     return this.experimentPartitionRepository.partitionPointAndName();
   }
 
-  public async getAllUniqueIdentifiers(): Promise<IUniqueIds> {
+  public async getAllUniqueIdentifiers(): Promise<string[]> {
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
     const partitionsUniqueIdentifier = this.experimentPartitionRepository.getAllUniqueIdentifier();
     const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
-    return { conditionIds, partitionsIds };
+    return [ ...conditionIds, ...partitionsIds ];
   }
 
   public async updateState(
@@ -304,6 +304,17 @@ export class ExperimentService {
 
     return getConnection().transaction(async (transactionalEntityManager) => {
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
+      let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+      if (experiment.conditions.length) {
+        const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
+        experiment.conditions = response[0];
+        uniqueIdentifiers = response[1];
+      }
+      if (experiment.partitions.length) {
+        const response = this.setConditionOrPartitionIdentifiers(experiment.partitions, uniqueIdentifiers);
+        experiment.partitions = response[0];
+        uniqueIdentifiers = response[1];
+      }
       const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
       let experimentDoc: Experiment;
       try {
@@ -468,10 +479,48 @@ export class ExperimentService {
     });
   }
 
+  // Used to generate twoCharacterId for condition and partition
+  private getUniqueIdentifier(uniqueIdentifiers: string[]): string {
+    let identifier;
+    while (true) {
+      identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
+      if (uniqueIdentifiers.indexOf(identifier) === -1) {
+        break;
+      }
+    }
+    return identifier;
+  }
+
+  private setConditionOrPartitionIdentifiers(data: ExperimentCondition[] | ExperimentPartition[], uniqueIdentifiers: string[]): any[] {
+    const updatedData = (data as any).map(conditionOrPartition => {
+      if (!conditionOrPartition.twoCharacterId) {
+        const twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+        return {
+          ...conditionOrPartition,
+          twoCharacterId,
+        };
+      }
+      return conditionOrPartition;
+    });
+    return [updatedData, uniqueIdentifiers];
+  }
+
   private async addExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
+      let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+      if (experiment.conditions.length) {
+        const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
+        experiment.conditions = response[0];
+        uniqueIdentifiers = response[1];
+      }
+      if (experiment.partitions.length) {
+        const response = this.setConditionOrPartitionIdentifiers(experiment.partitions, uniqueIdentifiers);
+        experiment.partitions = response[0];
+        uniqueIdentifiers = response[1];
+      }
       const { conditions, partitions, ...expDoc } = experiment;
       // saving experiment doc
       let experimentDoc: Experiment;
