@@ -19,7 +19,6 @@ import { ExperimentCondition } from '../models/ExperimentCondition';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { User } from '../models/User';
 import { ExperimentPartition } from '../models/ExperimentPartition';
-import { IUniqueIds } from '../../types/index';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 const validator = new Validator();
@@ -249,26 +248,6 @@ export class ExperimentController {
   @Get('/partitions')
   public getAllExperimentPoints(): Promise<Array<Pick<ExperimentPartition, 'expPoint' | 'expId'>>> {
     return this.experimentService.getAllExperimentPartitions();
-  }
-
-  /**
-   * @swagger
-   * /experiments/uniqueIdentifier:
-   *    get:
-   *       description: Get all unique identifier
-   *       tags:
-   *         - Experiments
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Get All Unique Identifier
-   *          '404':
-   *            description: Unique Identifier not found
-   */
-  @Get('/uniqueIdentifier')
-  public getAllUniqueIdentifier(): Promise<IUniqueIds> {
-    return this.experimentService.getAllUniqueIdentifiers();
   }
 
   /**
