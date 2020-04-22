@@ -81,3 +81,5 @@ output "eb" {
 }
 
 variable "GOOGLE_CLIENT_ID"{}
+variable "MONITOR_PASSWORD"{}
+variable "SWAGGER_PASSWORD"{}
