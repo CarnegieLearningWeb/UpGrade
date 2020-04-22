@@ -44,7 +44,7 @@ variable "identifier" {
 
 variable "multi_az" {
   description = "Availability zones.. set to true to have high availability"
-  default     = "true"
+  default     = "false"
 }
 
 variable "storage_type" {

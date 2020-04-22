@@ -65,6 +65,8 @@ module "aws-ebs-app" {
   prefix                     = "upgrade"
   allocated_storage          = 100
   GOOGLE_CLIENT_ID            = var.GOOGLE_CLIENT_ID
+  MONITOR_PASSWORD            = var.MONITOR_PASSWORD
+  SWAGGER_PASSWORD            = var.SWAGGER_PASSWORD
   identifier                 = "dev-postgres"
   instance_class             = "db.t2.small"
   storage_type               = "gp2"
@@ -72,8 +74,8 @@ module "aws-ebs-app" {
   autoscaling_min_size       =  1  // Min nunber instances running
   autoscaling_max_size       =  4  // Max number of instances that ASG can create
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
-  PATH_TO_PRIVATE_KEY     = "mykey"
-  PATH_TO_PUBLIC_KEY      = "mykey.pub"
+  PATH_TO_PRIVATE_KEY     = "~/.ssh/id_rsa"
+  PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
 }
 
 output "eb" {
@@ -81,3 +83,5 @@ output "eb" {
 }
 
 variable "GOOGLE_CLIENT_ID"{}
+variable "MONITOR_PASSWORD"{}
+variable "SWAGGER_PASSWORD"{}

@@ -1,3 +1,3 @@
-GOOGLE_CLIENT_ID = "Provide your google id"
+GOOGLE_CLIENT_ID = "135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com"
  MONITOR_PASSWORD = 1234
  SWAGGER_PASSWORD = 1234
