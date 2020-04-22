@@ -53,6 +53,7 @@ import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { GetAssignments } from './Support/index';
+import { StatsIndividualExperimentWithDateRange } from './ExperimentStats/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -249,6 +250,11 @@ describe('Integration Tests', () => {
 
   test('Stats for Individual Experiment', async (done) => {
     await StatsIndividualExperiment();
+    done();
+  });
+
+  test('Stats from Individual Experiment with Date Range', async (done) => {
+    await StatsIndividualExperimentWithDateRange();
     done();
   });
 

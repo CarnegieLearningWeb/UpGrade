@@ -1,5 +1,6 @@
 import GroupExperiment from './GroupExperiment';
 import IndividualExperiment from './IndividualExperiment';
+import IndividualExperimentWithDateRange from './individualExperimentWithDateRange';
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -34,7 +35,7 @@ const initialChecks = async () => {
   // get all user here
   const userList = await userService.find();
   expect(userList.length).toBe(experimentUsers.length);
-  experimentUsers.map(user => {
+  experimentUsers.map((user) => {
     expect(userList).toContainEqual(user);
   });
 };
@@ -47,4 +48,9 @@ export const StatsGroupExperiment = async () => {
 export const StatsIndividualExperiment = async () => {
   await initialChecks();
   await IndividualExperiment();
+};
+
+export const StatsIndividualExperimentWithDateRange = async () => {
+  await initialChecks();
+  await IndividualExperimentWithDateRange();
 };

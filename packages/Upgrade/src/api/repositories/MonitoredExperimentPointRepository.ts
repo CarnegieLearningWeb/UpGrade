@@ -38,4 +38,25 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
 
     return result.raw;
   }
+
+  public async getByDateRange(ids: string[], from: Date, to: Date): Promise<MonitoredExperimentPoint[]> {
+    const qb = this.createQueryBuilder('monitoredExperiment')
+      .leftJoinAndSelect('monitoredExperiment.user', 'user')
+      .where('monitoredExperiment.experimentId IN (:...ids)', { ids });
+    let searchText = '';
+    if (from) {
+      searchText = searchText + 'monitoredExperiment.createdAt > :from';
+    }
+    if (to) {
+      searchText = searchText + ' AND monitoredExperiment.createdAt < :to';
+    }
+
+    return qb
+      .andWhere(searchText, { from, to })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'getByDateRange', { ids, from, to }, errorMsg);
+        throw new Error(errorMsgString);
+      });
+  }
 }

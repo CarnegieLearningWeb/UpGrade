@@ -1,10 +1,8 @@
 import { JsonController, Post, Body, Authorized } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { IExperimentEnrollmentStats } from 'upgrade_types';
-
-interface IExperimentParams {
-  experimentIds: string[];
-}
+import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsValidator';
+import { EnrollmentAnalyticsDateValidator } from './validators/EnrollmentAnalyticsDateValidator';
 
 /**
  * @swagger
@@ -19,7 +17,7 @@ export class AnalyticsController {
 
   /**
    * @swagger
-   * /stats:
+   * /stats/enrolment:
    *    post:
    *       description: Get Enrollment Analytics
    *       consumes:
@@ -43,8 +41,50 @@ export class AnalyticsController {
    *          '200':
    *            description: Analytics For Experiment Enrollment
    */
-  @Post('/')
-  public async analyticsService(@Body() auditParams: IExperimentParams): Promise<IExperimentEnrollmentStats[]> {
+  @Post('/enrolment')
+  public async analyticsService(
+    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
+  ): Promise<IExperimentEnrollmentStats[]> {
     return this.auditService.getStats(auditParams.experimentIds);
+  }
+
+  /**
+   * @swagger
+   * /stats/enrolment/date:
+   *    post:
+   *       description: Get Enrollment Analytics By Date
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: props
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *              experimentId:
+   *               type: string
+   *              fromDate:
+   *               type: string
+   *              toDate:
+   *               type: string
+   *       tags:
+   *         - Analytics
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Analytics For Experiment Enrollment
+   */
+  @Post('/enrolment/date')
+  public async enrolmentByDate(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    auditParams: EnrollmentAnalyticsDateValidator
+  ): Promise<any> {
+    return this.auditService.getEnrolmentStatsByDate(
+      auditParams.experimentId,
+      auditParams.fromDate,
+      auditParams.toDate
+    );
   }
 }
