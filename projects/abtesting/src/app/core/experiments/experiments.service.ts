@@ -7,7 +7,6 @@ import {
   selectIsLoadingExperiment,
   selectSelectedExperiment,
   selectAllPartitions,
-  selectAllUniqueIdentifiers,
   selectAllExperimentNames,
   selectExperimentById
 } from './store/experiments.selectors';
@@ -32,7 +31,6 @@ export class ExperimentService {
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   allPartitions$ = this.store$.pipe(select(selectAllPartitions));
-  uniqueIdentifiers$ = this.store$.pipe(select(selectAllUniqueIdentifiers));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
 
   isInitialExperimentsLoading() {

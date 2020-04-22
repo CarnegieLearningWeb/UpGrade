@@ -29,8 +29,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissionsSub: Subscription;
   experiment: ExperimentVM;
   experimentSub: Subscription;
-  displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
-  displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
+  displayedConditionColumns: string[] = ['no', 'twoCharacterId', 'conditionCode', 'assignmentWeight', 'description'];
+  displayedPartitionColumns: string[] = ['no', 'twoCharacterId', 'partitionPoint', 'partitionId'];
 
   constructor(
     private experimentService: ExperimentService,

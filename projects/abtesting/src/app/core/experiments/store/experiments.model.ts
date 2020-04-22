@@ -153,7 +153,6 @@ export interface ExperimentState extends EntityState<Experiment> {
   stats: {
     [key: string]: IExperimentEnrollmentStats;
   };
-  uniqueIdentifiers: {};
   allPartitions: {};
   allExperimentNames: {};
 }

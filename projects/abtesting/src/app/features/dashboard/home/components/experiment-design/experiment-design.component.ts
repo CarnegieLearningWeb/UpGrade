@@ -38,8 +38,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  allUniqueIdentifiers = [];
-  uniqueIdentifiersSub: Subscription;
   allPartitions = [];
   allPartitionsSub: Subscription;
 
@@ -48,8 +46,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   partitionErrorMessages = [];
   partitionErrorMessagesSub: Subscription;
 
-  conditionDisplayedColumns = [ 'conditionNumber', 'uniqueIdentifier', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['partitionNumber', 'uniqueIdentifier', 'expPoint', 'expId', 'removePartition'];
+  conditionDisplayedColumns = [ 'conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
+  partitionDisplayedColumns = ['partitionNumber', 'expPoint', 'expId', 'removePartition'];
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -84,9 +82,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         partition.expId ? partition.expPoint + partition.expId : partition.expPoint
       );
     });
-    this.uniqueIdentifiersSub = this.experimentService.uniqueIdentifiers$.subscribe((identifiers: any) => {
-      this.allUniqueIdentifiers = !!identifiers ? [...identifiers.conditionIds, ...identifiers.partitionsIds] : [];
-    });
     this.experimentDesignForm = this._formBuilder.group(
       {
         conditions: this._formBuilder.array([this.addConditions(), this.addConditions()]),
@@ -100,10 +95,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.condition.removeAt(0);
       this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach(condition => {
-        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description, condition.twoCharacterId));
+        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description));
       });
       this.experimentInfo.partitions.forEach(partition => {
-        this.partition.push(this.addPartitions(partition.expPoint, partition.expId, partition.description, partition.twoCharacterId));
+        this.partition.push(this.addPartitions(partition.expPoint, partition.expId, partition.description));
       });
     }
     this.updateView();
@@ -113,21 +108,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  addConditions(conditionCode = null, assignmentWeight = null, description = null, twoCharacterId = null) {
+  addConditions(conditionCode = null, assignmentWeight = null, description = null) {
     return this._formBuilder.group({
       conditionCode: [conditionCode, Validators.required],
       assignmentWeight: [assignmentWeight, Validators.required],
-      description: [description],
-      twoCharacterId: [twoCharacterId ? twoCharacterId : this.getUniqueCharacterId()]
+      description: [description]
     });
   }
 
-  addPartitions(expPoint = null, expId = null, description = '', twoCharacterId = null) {
+  addPartitions(expPoint = null, expId = null, description = '') {
     return this._formBuilder.group({
       expPoint: [expPoint, Validators.required],
       expId: [expId],
-      description: [description],
-      twoCharacterId: [twoCharacterId ? twoCharacterId : this.getUniqueCharacterId()]
+      description: [description]
     });
   }
 
@@ -138,10 +131,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.updateView(scrollTableType);
   }
 
-  removeConditionOrPartition(type: string, groupIndex: number, twoCharacterId: string) {
+  removeConditionOrPartition(type: string, groupIndex: number) {
     this[type].removeAt(groupIndex);
     this.updateView();
-    this.allUniqueIdentifiers.splice(this.allUniqueIdentifiers.indexOf(twoCharacterId), 1);
   }
 
   updateView(type?: string) {
@@ -207,17 +199,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
         if (!this.partitionPointErrors.length && this.experimentDesignForm.valid) {
-          this.experimentDesignForm.value.partitions = this.experimentDesignForm.value.partitions.map((partition =>
-            partition.expId ? partition : this.removePartitionName(partition)
-          ))
-          const experimentDesignFormData = {
-            ...this.experimentDesignForm.value
-          };
+          const experimentDesignFormData = this.experimentDesignForm.value;
+
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition })
                 : ({ id: uuid(), ...condition, name: ''});
+            }
+          );
+          experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
+            (partition, index) => {
+              return this.experimentInfo
+                ? ({ ...this.experimentInfo.partitions[index], ...partition })
+                : (partition.expId ? partition : this.removePartitionName(partition));
             }
           );
           this.emitExperimentDialogEvent.emit({
@@ -257,21 +252,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return false;
   }
 
-  // Used to generate twoCharacterId for condition and partition
-  getUniqueCharacterId() {
-    let identifier;
-    while (true) {
-      identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
-      if (this.allUniqueIdentifiers.indexOf(identifier) === -1) {
-        break;
-      }
-    }
-    this.allUniqueIdentifiers = [ ...this.allUniqueIdentifiers, identifier ];
-    return identifier;
-  }
 
   ngOnDestroy() {
-    this.uniqueIdentifiersSub.unsubscribe();
     this.allPartitionsSub.unsubscribe();
     this.partitionErrorMessagesSub.unsubscribe();
   }

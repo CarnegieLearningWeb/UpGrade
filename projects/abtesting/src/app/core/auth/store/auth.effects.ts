@@ -128,7 +128,6 @@ export class AuthEffects {
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
-            experimentActions.actionFetchAllUniqueIdentifiers(),
             usersActions.actionFetchUsers()
           ];
           if (user.role) {

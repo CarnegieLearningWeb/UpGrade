@@ -51,11 +51,6 @@ export class ExperimentDataService {
     return this.http.get(url);
   }
 
-  fetchAllUniqueIdentifiers() {
-    const url = environment.api.uniqueIdentifier;
-    return this.http.get(url);
-  }
-
   fetchAllExperimentNames() {
     const url = environment.api.allExperimentNames;
     return this.http.get(url);
