@@ -44,7 +44,7 @@ variable "identifier" {
 
 variable "multi_az" {
   description = "Availability zones.. set to true to have high availability"
-  default     = "false"
+  default     = "true"
 }
 
 variable "storage_type" {
@@ -70,8 +70,9 @@ variable "RDS_PASSWORD" {
 # ---------------------------------------------------------------------------------------------------------------------
 # BEANSTACK APP SPECIFIC VARIABLES 
 # ---------------------------------------------------------------------------------------------------------------------
-variable "app_instance_type" {
-}
+variable "app_instance_type" {}
+variable "autoscaling_min_size" {}
+variable "autoscaling_max_size" {}
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -86,20 +87,20 @@ variable "APP_SCHEMA" { default = "http" }
 variable "AUTH_CHECK" { default = false }
 variable "AWS_REGION" { default = "us-east-1" }
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
-variable "GOOGLE_CLIENT_ID" { default = "135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com" }
+variable "GOOGLE_CLIENT_ID" { }
 variable "HOST_URL" { default = "http://upgrade-development.us-east-1.elasticbeanstalk.com/api" }
 variable "INTERCEPTORS" { default = "src/api/interceptors/**/*Interceptor.ts" }
 variable "LOG_LEVEL" { default = "debug" }
 variable "LOG_OUTPUT" { default = "dev" }
 variable "MIDDLEWARES" { default = "src/api/middlewares/**/*Middleware.ts" }
 variable "MONITOR_ENABLED" { default = true }
-variable "MONITOR_PASSWORD" { default = 1234 }
+variable "MONITOR_PASSWORD" {}
 variable "MONITOR_ROUTE" { default = "/monitor" }
 variable "MONITOR_USERNAME" { default = "admin" }
 variable "SWAGGER_API" { default = "src/api/controllers/*.ts" }
 variable "SWAGGER_ENABLED" { default = true }
 variable "SWAGGER_FILE" { default = "api/swagger.json" }
-variable "SWAGGER_PASSWORD" { default = 1234 }
+variable "SWAGGER_PASSWORD" {}
 variable "SWAGGER_ROUTE" { default = "/swagger" }
 variable "SWAGGER_USERNAME" { default = "admin" }
 variable "TOKEN_SECRET_KEY" { default = "carnegielearning" }

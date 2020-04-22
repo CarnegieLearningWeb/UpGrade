@@ -13,6 +13,7 @@ terraform {
 
 provider "aws" {
   region = "us-east-1"
+  profile = "playpower"
 }
 
 # ------------------------------------------------------------------------------
@@ -23,7 +24,7 @@ module "aws_lambda_function" {
 
   source = "../../aws-lambda"
 
-  environment          = "dev"
+  environment          = "developement"
   prefix               = "upgrade"
   app_version          = "1.0.0"
   lambda_iam_role_name = "schedular-lambda-iam" // will be prefixed by environment-prefix-
@@ -41,7 +42,7 @@ module "aws-state-machine" {
 
   source = "../../aws-step-fn"
 
-  environment                = "dev"  
+  environment                = "developement"  
   prefix                     = "upgrade"
   app_version                = "1.0.0"
   aws_sfn_state_machine_name = "experiment-schedular" // will be prefixed by environment-prefix
@@ -60,13 +61,16 @@ module "aws-ebs-app" {
 
   source = "../../aws-ebs-with-rds"
 
-  environment                = "dev"  
+  environment                = "developement"  
   prefix                     = "upgrade"
-  app_version                = "1.0.0"
   allocated_storage          = 100
+  GOOGLE_CLIENT_ID            = var.GOOGLE_CLIENT_ID
+  identifier                 = "dev-postgres"
   instance_class             = "db.t2.small"
   storage_type               = "gp2"
   app_instance_type          = "t2.micro"
+  autoscaling_min_size       =  1  // Min nunber instances running
+  autoscaling_max_size       =  4  // Max number of instances that ASG can create
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "mykey"
   PATH_TO_PUBLIC_KEY      = "mykey.pub"
@@ -75,3 +79,5 @@ module "aws-ebs-app" {
 output "eb" {
   value = module.aws-ebs-app.ebs
 }
+
+variable "GOOGLE_CLIENT_ID"{}

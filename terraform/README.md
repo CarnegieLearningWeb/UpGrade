@@ -16,14 +16,20 @@ Setup a aws provider profile using `aws configure`.
     ├── environments                        
         ├── dev                   
           ├── dev.tf                       # Config file for dev environment.
+          ├── backend.tf                   # File that gives details of where to store tfstate files
         ├── staging                   
           ├── staging.tf                   # Config file for staging environment.
+          ├── backend.tf                   # File that gives details of where to store tfstate files
           
           
+ 
  Generate ssh key using `ssh-keygen -f mykey` (if you generate it with a different name, make sure to replace variables accordingly )
+ 
+ 
 
- use `terraform init` to initialize the project and `terraform apply` inside `environment/dev` or `environment/staging` 
- to create dev and staging infrastructure respectively.
+ - use `terraform init`to initialize the project (Make sure you create a bucket with a name specified in backend.tf file before executing this command)
+ 
+ - `terraform apply` inside `environment/dev` or `environment/staging`  to create dev and staging infrastructure respectively. You can pass .tfvars file using `--var-file` option.
  
  
  AWS Resources that will be created by this script.
@@ -38,6 +44,7 @@ Setup a aws provider profile using `aws configure`.
  Once the environment setup is successfull, You can deploy docker image using eb-cli.
  
  Use `eb init` to initialize your app and then `eb deploy` using your docker file.
+ 
  
  # Sample Dockerrun.aws.json file
  
