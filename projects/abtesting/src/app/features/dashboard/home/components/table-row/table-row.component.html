@@ -1,0 +1,44 @@
+<div>
+  <mat-table [dataSource]="dataSource" multiTemplateDataRows>
+    <!-- COLUMNS AND ROWS-->
+    <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
+      <mat-header-cell *matHeaderCellDef>{{ key.includes('Icon') ? '' : columnHeaders[key] }}</mat-header-cell>
+
+      <mat-cell *matCellDef="let element; let i = dataIndex">
+        <span *ngIf="!key.includes('Icon'); else icon">{{ element.data[key] }}</span>
+
+        <ng-template #icon>
+          <mat-icon
+            *ngIf="element.partitions&& key === 'expandIcon'"
+            [class.active]="element.data[referenceId] === expandedId"
+            (click)="toggleExpandableSymbol(element.data[referenceId])"
+            >play_arrow</mat-icon
+          >
+        </ng-template>
+      </mat-cell>
+    </ng-container>
+
+    <!-- EXPANDABLE ROW -->
+    <ng-container matColumnDef="expandedDetail">
+      <mat-cell
+        *matCellDef="let element"
+        [@expandableRow]="element.data[referenceId] === expandedId ? 'expanded' : 'collapsed'"
+      >
+        <div *ngIf="element.data[referenceId] === expandedId" class="inner-table-container">
+          <home-enrollment-point-partition-table
+            [partitionData]="element.partitions"
+            [experiment]="experiment"
+          >
+          </home-enrollment-point-partition-table>
+        </div>
+      </mat-cell>
+    </ng-container>
+
+    <!-- -->
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+
+    <mat-row class="expandable-row" *matRowDef="let row; columns: ['expandedDetail']"> </mat-row>
+  </mat-table>
+</div>

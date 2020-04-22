@@ -1,90 +1,70 @@
-import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
-import { EnrollmentByConditionData, ASSIGNMENT_UNIT, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
-import { Subscription } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ASSIGNMENT_UNIT, ExperimentVM, EnrollmentByConditionOrPartitionData } from '../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'home-enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
-  styleUrls: ['./enrollment-condition-table.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./enrollment-condition-table.component.scss']
 })
-export class EnrollmentConditionTableComponent implements OnChanges, OnDestroy {
+export class EnrollmentConditionTableComponent implements OnChanges {
 
   @Input() experiment: ExperimentVM;
-  columns = []; // Used to create dynamic columns
-  enrollmentConditionData: EnrollmentByConditionData[] = [];
-  displayedColumns = [];
-  commonColumns = [];
-
-  // For translation strings
-  translatedStrings = [];
-  translateSub: Subscription;
-
-  constructor(
-    private translate: TranslateService
-  ) {
-    this.translateSub = this.translate.get([
-      'global.condition.text',
-      'home.view-experiment.global.weight.text',
-      'home.view-experiment.global.users-enrolled.text',
-      'home.view-experiment.global.users-excluded.text',
-      'home.view-experiment.global.group-enrolled.text',
-      'home.view-experiment.global.group-excluded.text'
-    ]).subscribe(arrayValues => {
-        this.translatedStrings = [
-          arrayValues['global.condition.text'],
-          arrayValues['home.view-experiment.global.weight.text'],
-          arrayValues['home.view-experiment.global.users-enrolled.text'],
-          arrayValues['home.view-experiment.global.users-excluded.text'],
-          arrayValues['home.view-experiment.global.group-enrolled.text'],
-          arrayValues['home.view-experiment.global.group-excluded.text'],
-        ];
-        this.commonColumns = [
-          { name: 'condition', header: this.translatedStrings[0] },
-          { name: 'weight', header: this.translatedStrings[1] },
-          { name: 'userEnrolled', header: this.translatedStrings[2] },
-          { name: 'userExcluded', header: this.translatedStrings[3] },
-        ];
-    })
-  }
+  experimentData: any[] = [];
+  commonColumns = [
+    'expandIcon',
+    'condition',
+    'weight',
+    'userEnrolled',
+  ];
+  displayedColumns: string[] = [];
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
-      const columns = this.commonColumns;
-      this.setColumns(columns);
+      this.displayedColumns = this.commonColumns;
     } else {
-      const columns = [
-        ...this.commonColumns,
-        { name: 'groupEnrolled', header: this.translatedStrings[4] },
-        { name: 'groupExcluded', header: this.translatedStrings[5] },
-      ];
-      this.setColumns(columns);
+      this.displayedColumns = [...this.commonColumns, 'groupEnrolled'];
     }
     if (changes.experiment) {
-      this.enrollmentConditionData = [];
+      this.experimentData = [];
       this.experiment.stat.conditions.forEach(condition => {
 
-        this.enrollmentConditionData.push({
+        const conditionObj: EnrollmentByConditionOrPartitionData = {
           condition: this.getConditionData(condition.id, 'conditionCode'),
           weight: this.getConditionData(condition.id, 'assignmentWeight'),
           userEnrolled: condition.user,
-          userExcluded: this.experiment.stat.userExcluded,
           groupEnrolled: condition.group,
-          groupExcluded: this.experiment.stat.groupExcluded
+        };
+        let experimentObj: any = {
+          'data': conditionObj
+        };
+
+        const partitions = [];
+        this.experiment.stat.partitions.forEach(partition => {
+          const currentCondition = partition.conditions.find(assignedCondition => condition.id === assignedCondition.id);
+          const partitionObj: EnrollmentByConditionOrPartitionData = {
+            experimentPoint: this.getPartitionData(partition.id, 'expPoint'),
+            experimentId: this.getPartitionData(partition.id, 'expId') || '',
+            userEnrolled: currentCondition.user,
+            groupEnrolled: currentCondition.group,
+          };
+          partitions.push({
+            'data': partitionObj
+          });
         });
+        experimentObj = {
+          ...experimentObj,
+          partitions
+        }
+        this.experimentData.push(experimentObj);
+
       });
     }
   }
 
-  setColumns(columnNames) {
-    this.columns = [];
-    columnNames.forEach(column => {
-      this.columns.push(
-        { columnDef: `${column.name}`, header: `${column.header}`, cell: (element) => `${element[`${column.name}`]}` },
-      );
-    });
-    this.displayedColumns = this.columns.map(x => x.columnDef);
+  getPartitionData(partitionId: string, key: string) {
+    return this.experiment.partitions.reduce((acc, partition) =>
+      partition.id === partitionId ? acc = partition[key] : acc
+      , null);
   }
 
   getConditionData(conditionId: string, key: string) {
@@ -93,11 +73,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnDestroy {
       , null);
   }
 
-  get assignmentUnit() {
+  get AssignmentUnit() {
     return ASSIGNMENT_UNIT;
-  }
-
-  ngOnDestroy() {
-    this.translateSub.unsubscribe();
   }
 }

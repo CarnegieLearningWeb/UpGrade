@@ -1,15 +1,7 @@
-<div class="enrollment-point-partition-table-container">
-  <span class="title">{{ 'home.view-experiment.enrollment-by-point-partition.title.text' | translate }}</span>
-  <mat-table [dataSource]="enrollmentPointPartitionData" class="enrollment-point-partition-table">
-
-     <!-- Generic column definition -->
-     <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.columnDef">
-      <mat-header-cell *cdkHeaderCellDef>{{ column.header }}</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">{{ column.cell(row) || '' }}</mat-cell>
-    </ng-container>
-
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-  </mat-table>
-</div>
-
+<app-table-row
+  [dataSource]="partitionData"
+  [displayedColumns]="displayedColumns"
+  [referenceId]="'experimentPoint'"
+  [experiment]="experiment"
+>
+</app-table-row>

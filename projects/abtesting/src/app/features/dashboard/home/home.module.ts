@@ -24,7 +24,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 import { DeleteExperimentComponent } from './components/modal/delete-experiment/delete-experiment.component';
-import { CdkTableModule } from '@angular/cdk/table';
+import { TableRowComponent } from './components/table-row/table-row.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +43,8 @@ import { CdkTableModule } from '@angular/cdk/table';
     EnrollmentConditionTableComponent,
     EnrollmentPointPartitionTableComponent,
     ExperimentPostConditionComponent,
-    DeleteExperimentComponent
+    DeleteExperimentComponent,
+    TableRowComponent,
   ],
   imports: [
     CommonModule,
@@ -54,7 +55,6 @@ import { CdkTableModule } from '@angular/cdk/table';
     NgxChartsModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
-    CdkTableModule
   ],
   providers: [],
   entryComponents: [

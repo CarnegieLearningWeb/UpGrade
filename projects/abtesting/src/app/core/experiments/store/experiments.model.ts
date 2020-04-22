@@ -77,13 +77,13 @@ export interface EnrollmentCompleteCondition {
   groupCount: number;
 }
 
-export interface EnrollmentByConditionData {
-  condition: string;
-  weight: number;
+export interface EnrollmentByConditionOrPartitionData {
+  condition?: string;
+  weight?: number;
   userEnrolled: number;
-  userExcluded: number;
   groupEnrolled: number;
-  groupExcluded: number;
+  experimentPoint?: string;
+  experimentId?: string;
 }
 
 export interface ExperimentCondition {
