@@ -29,7 +29,7 @@ Setup a aws provider profile using `aws configure`.
 
  - use `terraform init`to initialize the project (Make sure you create a bucket with a name specified in backend.tf file before executing this command)
  
- - `terraform apply` inside `environment/dev` or `environment/staging`  to create dev and staging infrastructure respectively.
+ - `terraform apply` inside `environment/dev` or `environment/staging`  to create dev and staging infrastructure respectively. You can pass .tfvars file using `--var-file` option.
  
  
  AWS Resources that will be created by this script.
