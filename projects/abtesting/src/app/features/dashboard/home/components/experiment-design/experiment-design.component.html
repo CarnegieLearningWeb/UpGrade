@@ -17,21 +17,6 @@
         </mat-cell>
       </ng-container>
 
-      <!-- UNIQUE IDENTIFIER Column -->
-      <ng-container matColumnDef="uniqueIdentifier">
-        <mat-header-cell *matHeaderCellDef>
-          {{ 'home.new-experiment.design.unique-identifier.text' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-          <mat-form-field floatLabel="never">
-            <input
-              matInput
-              formControlName="twoCharacterId"
-              readonly
-            />
-          </mat-form-field>
-        </mat-cell>
-      </ng-container>
 
       <!-- CONDITION NAME Column -->
       <ng-container matColumnDef="conditionCode">
@@ -111,7 +96,7 @@
             [iconType]="'delete'"
             class="remove-icon"
             *ngIf="groupIndex !== 0 && groupIndex !== 1"
-            (click)="removeConditionOrPartition('condition', groupIndex, element.controls.twoCharacterId.value)"
+            (click)="removeConditionOrPartition('condition', groupIndex)"
           ></app-shared-icons>
         </mat-cell>
       </ng-container>
@@ -156,21 +141,6 @@
       </mat-cell>
     </ng-container>
 
-    <!-- UNIQUE IDENTIFIER Column -->
-    <ng-container matColumnDef="uniqueIdentifier">
-      <mat-header-cell *matHeaderCellDef>
-        {{ 'home.new-experiment.design.unique-identifier.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
-        <mat-form-field floatLabel="never">
-          <input
-            matInput
-            formControlName="twoCharacterId"
-            readonly
-          />
-        </mat-form-field>
-      </mat-cell>
-    </ng-container>
 
       <!-- PARTITION POINT Column -->
       <ng-container matColumnDef="expPoint">
@@ -226,7 +196,7 @@
             [iconType]="'delete'"
             class="remove-icon"
             *ngIf="groupIndex !== 0"
-            (click)="removeConditionOrPartition('partition', groupIndex, element.controls.twoCharacterId.value)"
+            (click)="removeConditionOrPartition('partition', groupIndex)"
           ></app-shared-icons>
         </mat-cell>
       </ng-container>

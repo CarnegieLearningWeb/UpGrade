@@ -23,7 +23,6 @@ export const initialState: ExperimentState = adapter.getInitialState({
   sortKey: null,
   sortAs: null,
   stats: {},
-  uniqueIdentifiers: null,
   allPartitions: null,
   allExperimentNames: null
 });
@@ -98,12 +97,6 @@ const reducer = createReducer(
     experimentsAction.actionFetchAllPartitionSuccess,
     (state, { partitions }) => {
       return ({ ...state, allPartitions: partitions })
-    }
-  ),
-  on(
-    experimentsAction.actionFetchAllUniqueIdentifiersSuccess,
-    (state, { uniqueIdentifiers }) => {
-      return ({ ...state, uniqueIdentifiers })
     }
   ),
   on(

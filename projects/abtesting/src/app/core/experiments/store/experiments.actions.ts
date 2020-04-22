@@ -79,14 +79,7 @@ export const actionFetchAllPartitionSuccess = createAction(
 
 export const actionFetchAllPartitionFailure = createAction('[Experiment] Fetch All Partitions Failure');
 
-export const actionFetchAllUniqueIdentifiers = createAction('[Experiment] Fetch All Unique Identifiers');
 
-export const actionFetchAllUniqueIdentifiersSuccess = createAction(
-  '[Experiment] Fetch All Unique Identifiers Success',
-  props<{ uniqueIdentifiers: any }>()
-);
-
-export const actionFetchAllUniqueIdentifiersFailure = createAction('[Experiment] Fetch All Unique Identifiers Failure');
 
 export const actionSetIsLoadingExperiment = createAction(
   '[Experiment] Set Is Loading Experiment',

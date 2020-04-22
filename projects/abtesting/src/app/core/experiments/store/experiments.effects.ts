@@ -109,8 +109,7 @@ export class ExperimentEffects {
                 return [
                   experimentAction.actionStoreExperimentStats({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
-                  experimentAction.actionFetchAllPartitions(),
-                  experimentAction.actionFetchAllUniqueIdentifiers()
+                  experimentAction.actionFetchAllPartitions()
                 ];
               })
             )
@@ -146,8 +145,7 @@ export class ExperimentEffects {
         return this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(_ => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
-            experimentAction.actionFetchAllPartitions(),
-            experimentAction.actionFetchAllUniqueIdentifiers()
+            experimentAction.actionFetchAllPartitions()
           ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
         );
@@ -194,17 +192,6 @@ export class ExperimentEffects {
     )
   );
 
-  fetchAllUniqueIdentifiers = createEffect(() =>
-    this.actions$.pipe(
-      ofType(experimentAction.actionFetchAllUniqueIdentifiers),
-      switchMap(() =>
-        this.experimentDataService.fetchAllUniqueIdentifiers().pipe(
-          map(uniqueIdentifiers => experimentAction.actionFetchAllUniqueIdentifiersSuccess({ uniqueIdentifiers })),
-          catchError(() => [experimentAction.actionFetchAllUniqueIdentifiersFailure()])
-        )
-      )
-    )
-  );
 
   fetchAllExperimentNames$ = createEffect(
     () =>

@@ -51,11 +51,6 @@ export const selectAllPartitions = createSelector(
   (state) => state.allPartitions
 );
 
-export const selectAllUniqueIdentifiers = createSelector(
-  selectExperimentState,
-  (state) => state.uniqueIdentifiers
-);
-
 export const selectSkipExperiment = createSelector(
   selectExperimentState,
   (state) => state.skipExperiment
