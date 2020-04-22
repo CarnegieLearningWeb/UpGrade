@@ -1,22 +1,10 @@
 import { AbstractControl } from '@angular/forms';
 import {
-  EndExperimentCondition,
-  GroupTypes,
-  ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE
 } from '../../../../core/experiments/store/experiments.model';
 
 export class ExperimentFormValidators {
-  static validateExperimentOverviewForm(controls: AbstractControl): { [key: string]: any } | null {
-    const groupValue = controls.get('groupType').value;
-    const customGroupValue = controls.get('customGroupName').value;
-    const assignmentUnit = controls.get('unitOfAssignment').value;
-    if (groupValue === GroupTypes.OTHER) {
-      return !!customGroupValue ? null : { customGroupNameError: true };
-    }
-    return assignmentUnit === ASSIGNMENT_UNIT.GROUP && !groupValue ? { groupValueError: true } : null;
-  }
 
   static validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
     const conditions = controls.get('conditions').value;

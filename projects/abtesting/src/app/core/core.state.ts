@@ -10,13 +10,15 @@ import { environment } from '../../environments/environment';
 import { initStateFromLocalStorage } from './meta-reducers/init-state-from-local-storage.reducer';
 import { debug } from './meta-reducers/debug.reducer';
 import { RouterStateUrl } from './router/router.state';
+import { clearState } from './meta-reducers/clear-state.reducer';
 
 export const reducers: ActionReducerMap<AppState> = {
   router: routerReducer
 };
 
 export const metaReducers: MetaReducer<AppState>[] = [
-  initStateFromLocalStorage
+  initStateFromLocalStorage,
+  clearState
 ];
 
 if (!environment.production) {
