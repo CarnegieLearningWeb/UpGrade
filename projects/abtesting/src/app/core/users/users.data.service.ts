@@ -17,4 +17,9 @@ export class UsersDataService {
     const url = environment.api.userRole;
     return this.http.post(url, { email, role });
   }
+
+  createNewUser(email: string, role: UserRole) {
+    const url = environment.api.users;
+    return this.http.post(url, { email, role });
+  }
 }

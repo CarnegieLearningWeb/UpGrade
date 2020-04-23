@@ -4,7 +4,7 @@
 
   <div class="profile-wrapper">
     <ng-container>
-      <div class="personal-information" *ngIf="currentUser$ | async as currentUser" [ngClass]="{'normal-user': currentUser?.role !== UserRole.ADMIN }">
+      <div class="personal-information" *ngIf="currentUser" [ngClass]="{'normal-user': currentUser?.role !== UserRole.ADMIN }">
         <img [src]="currentUser?.imageUrl" class="profile-pic" />
         <div class="user-info">
           <span class="name">{{ currentUser?.firstName + ' ' + currentUser?.lastName }}</span>
@@ -15,14 +15,30 @@
     </ng-container>
     <ng-container *ngIf="(permissions$ | async)?.manageRoles.update">
       <h3>{{ 'profile.manage-roles.heading.text' | translate }}</h3>
+      <div class="header">
+        <mat-form-field>
+          <input
+            class="search-input"
+            matInput
+            [(ngModel)]="searchString"
+            (keyup)="applyFilter($event.target.value)"
+            [placeholder]="'global.search.text' | translate"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <button mat-flat-button color="primary" (click)="openNewUserModal()">
+          <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
+          {{ 'profile.add-user.text' | translate }}
+        </button>
+      </div>
       <form [formGroup]="userRoleForm">
-        <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading$ | async"></mat-progress-bar>
+        <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
         <table
           class="users-list"
           mat-table
           [dataSource]="allUsers"
           matSort
-          (matSortChange)="userSortingChange()"
+          (matSortChange)="resetForm()"
         >
           <ng-container matColumnDef="firstName">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -50,8 +66,8 @@
           </ng-container>
           <ng-container matColumnDef="email">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
-              <span [matTooltip]="'profile.table.email.text' | translate" matTooltipPosition="above">
-                {{ 'profile.table.email.text' | translate }}
+              <span [matTooltip]="'profile.global.email.text' | translate" matTooltipPosition="above">
+                {{ 'profile.global.email.text' | translate }}
               </span>
             </th>
             <td mat-cell *matCellDef="let user">
@@ -62,8 +78,8 @@
           </ng-container>
           <ng-container matColumnDef="role">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
-              <span [matTooltip]="'profile.table.role.text' | translate" matTooltipPosition="above">
-                {{ 'profile.table.role.text' | translate }}
+              <span [matTooltip]="'profile.global.role.text' | translate" matTooltipPosition="above">
+                {{ 'profile.global.role.text' | translate }}
               </span>
             </th>
             <td mat-cell *matCellDef="let user; let index = index">

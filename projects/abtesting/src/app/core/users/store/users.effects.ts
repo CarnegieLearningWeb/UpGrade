@@ -42,4 +42,18 @@ export class UsersEffects {
     )
   );
 
+  createNewUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UsersActions.actionCreateNewUser),
+      map(action => action.user),
+      filter(({ email, role }) => !!email && !!role),
+      switchMap(({ email, role }) => {
+        return this.usersDataService.createNewUser(email, role).pipe(
+          map((data: User) => UsersActions.actionCreateNewUserSuccess({ user: data })),
+          catchError(() => [UsersActions.actionCreateNewUserFailure()])
+        )
+      })
+    )
+  );
+
 }

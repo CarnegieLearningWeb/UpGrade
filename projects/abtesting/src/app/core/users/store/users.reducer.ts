@@ -23,6 +23,7 @@ const reducer = createReducer(
   on(
     UsersActions.actionFetchUsers,
     UsersActions.actionUpdateUserRole,
+    UsersActions.actionCreateNewUser,
     (state) => ({ ...state, isUsersLoading: true })
   ),
   on(
@@ -33,12 +34,19 @@ const reducer = createReducer(
   on(
     UsersActions.actionFetchUsersFailure,
     UsersActions.actionUpdateUserRoleFailure,
+    UsersActions.actionCreateNewUserFailure,
     (state) => ({ ...state, isUsersLoading: false })
   ),
   on(
     UsersActions.actionUpdateUserRoleSuccess,
     (state, { user }) => {
       return adapter.updateOne({ id: user.email, changes: { ...user }}, { ...state, isUsersLoading: false });
+    }
+  ),
+  on(
+    UsersActions.actionCreateNewUserSuccess,
+    (state, { user }) => {
+      return adapter.addOne(user, { ...state, isUsersLoading: false });
     }
   )
 );

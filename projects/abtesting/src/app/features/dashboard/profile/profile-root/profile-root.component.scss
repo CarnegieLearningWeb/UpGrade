@@ -1,6 +1,41 @@
 $role-background-color: #e6fce9;
 $role-text-color: #0a7319;
 
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  .filter-options {
+    margin-right: 10px;
+    width: 80px;
+
+    ::ng-deep .mat-form-field-underline,
+    ::ng-deep .mat-form-field-ripple {
+      background-color: unset;
+    }
+  }
+
+  .search-input {
+    font-family: 'Open Sans';
+    font-weight: 400;
+  }
+
+  button {
+    background-color: var(--blue);
+    height: 40px;
+    color: var(--white);
+    font-family: 'Open Sans';
+    font-weight: 700;
+
+    .icon {
+      margin-right: 5px;
+      vertical-align: unset;
+    }
+  }
+}
+
 .profile-container {
   display: flex;
   flex-direction: column;

@@ -6,7 +6,7 @@ export {
   UserRole
 };
 
-export interface UpdateUserRole {
+export interface UpdateUser {
   email: string;
   role: UserRole
 }
