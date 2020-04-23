@@ -7,15 +7,13 @@ import { UserRole } from './store/users.model';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private store$: Store<AppState>
-  ) {}
+  constructor(private store$: Store<AppState>) {}
 
   isUsersLoading$ = this.store$.pipe(select(selectIsUsersLoading));
   allUsers$ = this.store$.pipe(select(selectAllUsers));
 
   updateUserRole(email: string, role: UserRole) {
-    this.store$.dispatch(UsersActions.actionUpdateUserRole({ userRoleData: { email, role }}))
+    this.store$.dispatch(UsersActions.actionUpdateUserRole({ userRoleData: { email, role } }));
   }
 
   createNewUser(email: string, role: UserRole) {

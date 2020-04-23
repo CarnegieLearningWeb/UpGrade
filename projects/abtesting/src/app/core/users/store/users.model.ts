@@ -2,13 +2,11 @@ import { EntityState } from '@ngrx/entity';
 import { AppState } from '../../core.state';
 import { UserRole } from 'upgrade_types';
 
-export {
-  UserRole
-};
+export { UserRole };
 
 export interface UpdateUser {
   email: string;
-  role: UserRole
+  role: UserRole;
 }
 
 export interface User {
@@ -28,5 +26,5 @@ export interface UserState extends EntityState<User> {
 }
 
 export interface State extends AppState {
-  users: UserState
+  users: UserState;
 }

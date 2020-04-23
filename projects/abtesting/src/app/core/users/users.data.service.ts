@@ -5,11 +5,10 @@ import { UserRole } from './store/users.model';
 
 @Injectable()
 export class UsersDataService {
-
   constructor(private http: HttpClientService) {}
 
   fetchUsers() {
-    const url  = environment.api.users;
+    const url = environment.api.users;
     return this.http.get(url);
   }
 

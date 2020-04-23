@@ -11,21 +11,15 @@ import { UsersService } from '../../../../../../core/users/users.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewUserComponent implements OnInit {
-
   newUserForm: FormGroup;
-  userRole = [
-    UserRole.ADMIN,
-    UserRole.CREATOR,
-    UserRole.USER_MANAGER,
-    UserRole.READER
-  ];
+  userRole = [UserRole.ADMIN, UserRole.CREATOR, UserRole.USER_MANAGER, UserRole.READER];
   isUserExist = false;
   constructor(
     public dialogRef: MatDialogRef<NewUserComponent>,
     private _formBuilder: FormBuilder,
     private usersService: UsersService,
     @Inject(MAT_DIALOG_DATA) private data: any
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.newUserForm = this._formBuilder.group({
@@ -46,5 +40,4 @@ export class NewUserComponent implements OnInit {
       this.onNoClick();
     }
   }
-
 }

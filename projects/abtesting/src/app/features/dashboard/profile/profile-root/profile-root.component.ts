@@ -15,21 +15,10 @@ import { NewUserComponent } from '../components/modals/new-user/new-user.compone
 })
 export class ProfileRootComponent implements OnInit, OnDestroy {
   permissions$: Observable<UserPermission>;
-  displayedUsersColumns: string[] = [
-    'firstName',
-    'lastName',
-    'email',
-    'role',
-    'edit'
-  ];
+  displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit'];
   userRoleForm: FormGroup;
   editMode = null;
-  userRoles = [
-    UserRole.ADMIN,
-    UserRole.CREATOR,
-    UserRole.USER_MANAGER,
-    UserRole.READER,
-  ];
+  userRoles = [UserRole.ADMIN, UserRole.CREATOR, UserRole.USER_MANAGER, UserRole.READER];
   allUsers: any;
   allUsersSub: Subscription;
   isUsersLoading: boolean;
@@ -53,9 +42,8 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
     private usersService: UsersService,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private _matDialog: MatDialog,
-  ) {
-  }
+    private _matDialog: MatDialog
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -118,7 +106,6 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       // Do action after closing dialog
     });
-
   }
 
   ngOnDestroy() {
@@ -130,5 +117,4 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
   get UserRole() {
     return UserRole;
   }
-
 }

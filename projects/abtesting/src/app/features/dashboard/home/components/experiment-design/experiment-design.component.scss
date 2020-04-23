@@ -6,6 +6,7 @@
 
     mat-header-cell {
       justify-content: center;
+      margin-right: 15px;
       color: var(--grey-2);
       font-family: 'Open Sans';
       font-weight: 700;
@@ -14,18 +15,25 @@
     mat-cell {
       justify-content: center;
       margin-right: 15px;
+    }
 
-      &.cdk-column-removeCondition {
-        margin-right: 0;
-        padding-right: 0;
-      }
+    .cdk-column-removeCondition {
+      margin-right: 0;
+      padding-right: 0;
     }
 
     .cdk-column-conditionNumber,
     .cdk-column-partitionNumber,
-    .cdk-column-removeCondition {
+    .cdk-column-removeCondition,
+    .cdk-column-removePartition {
       flex: 0 0 10%;
       width: 10%;
+    }
+
+    .cdk-column-expId,
+    .cdk-column-expPoint {
+      flex: 0 0 30%;
+      width: 30%;
     }
 
     .remove-icon {

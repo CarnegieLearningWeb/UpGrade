@@ -4,7 +4,11 @@
 
   <div class="profile-wrapper">
     <ng-container>
-      <div class="personal-information" *ngIf="currentUser" [ngClass]="{'normal-user': currentUser?.role !== UserRole.ADMIN }">
+      <div
+        class="personal-information"
+        *ngIf="currentUser"
+        [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
+      >
         <img [src]="currentUser?.imageUrl" class="profile-pic" />
         <div class="user-info">
           <span class="name">{{ currentUser?.firstName + ' ' + currentUser?.lastName }}</span>
@@ -33,13 +37,7 @@
       </div>
       <form [formGroup]="userRoleForm">
         <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
-        <table
-          class="users-list"
-          mat-table
-          [dataSource]="allUsers"
-          matSort
-          (matSortChange)="resetForm()"
-        >
+        <table class="users-list" mat-table [dataSource]="allUsers" matSort (matSortChange)="resetForm()">
           <ng-container matColumnDef="firstName">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
               <span [matTooltip]="'profile.table.firstName.text' | translate" matTooltipPosition="above">
@@ -87,10 +85,7 @@
                 <mat-form-field class="form-control">
                   <mat-label>{{ 'profile.form.role-control.text' | translate }}</mat-label>
                   <mat-select formControlName="role">
-                    <mat-option
-                      *ngFor="let role of userRoles"
-                      [value]="role"
-                    >
+                    <mat-option *ngFor="let role of userRoles" [value]="role">
                       {{ role | titlecase }}
                     </mat-option>
                   </mat-select>
@@ -105,15 +100,14 @@
           </ng-container>
 
           <ng-container matColumnDef="edit">
-            <th mat-header-cell *matHeaderCellDef>
-            </th>
+            <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let user; let index = index">
               <app-shared-icons
-                  *ngIf="editMode !== index; else saveBtnTemplate"
-                  [iconType]="'pencil'"
-                  class="icon"
-                  (click)="editPermission(user, index)"
-                ></app-shared-icons>
+                *ngIf="editMode !== index; else saveBtnTemplate"
+                [iconType]="'pencil'"
+                class="icon"
+                (click)="editPermission(user, index)"
+              ></app-shared-icons>
 
               <ng-template #saveBtnTemplate>
                 <button
@@ -128,7 +122,6 @@
               </ng-template>
             </td>
           </ng-container>
-
 
           <tr mat-header-row *matHeaderRowDef="displayedUsersColumns; sticky: true"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedUsersColumns"></tr>

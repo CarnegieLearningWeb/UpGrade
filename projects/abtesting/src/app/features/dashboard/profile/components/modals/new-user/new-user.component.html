@@ -2,11 +2,7 @@
 <div mat-dialog-content class="content">
   <form class="user-form" [formGroup]="newUserForm">
     <mat-form-field>
-      <input
-        matInput
-        [placeholder]="'profile.global.email.text' | translate"
-        formControlName="email"
-      />
+      <input matInput [placeholder]="'profile.global.email.text' | translate" formControlName="email" />
       <mat-error *ngIf="newUserForm.controls.email.hasError('required')">
         {{ 'profile.new-user.email-required-error.text' | translate }}
       </mat-error>
@@ -31,12 +27,12 @@
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">{{ 'global.cancel.text' | translate | titlecase }}</button>
   <button
-      mat-raised-button
-      class="default-button"
-      [ngClass]="{'default-button--disabled': !this.newUserForm.valid}"
-      [disabled]="!this.newUserForm.valid"
-      (click)="addNewUser()"
-    >
-      {{ 'profile.new-user.add-btn.text' | translate }}
-    </button>
+    mat-raised-button
+    class="default-button"
+    [ngClass]="{ 'default-button--disabled': !this.newUserForm.valid }"
+    [disabled]="!this.newUserForm.valid"
+    (click)="addNewUser()"
+  >
+    {{ 'profile.new-user.add-btn.text' | translate }}
+  </button>
 </div>

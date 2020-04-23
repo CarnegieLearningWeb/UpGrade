@@ -8,11 +8,7 @@ import { NewUserComponent } from './components/modals/new-user/new-user.componen
 
 @NgModule({
   declarations: [ProfileRootComponent, NewUserComponent],
-  imports: [
-    CommonModule,
-    ProfileRoutingModule,
-    SharedModule
-  ],
+  imports: [CommonModule, ProfileRoutingModule, SharedModule],
   entryComponents: [NewUserComponent]
 })
-export class ProfileModule { }
+export class ProfileModule {}

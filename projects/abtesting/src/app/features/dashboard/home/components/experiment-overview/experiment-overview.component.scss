@@ -45,4 +45,9 @@
       margin-left: 20px;
     }
   }
+
+  ::ng-deep .mat-chip-list-wrapper {
+    max-height: 60px;
+    overflow: scroll;
+  }
 }

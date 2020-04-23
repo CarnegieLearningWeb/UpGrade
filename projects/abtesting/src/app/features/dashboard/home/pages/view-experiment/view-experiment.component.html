@@ -74,6 +74,19 @@
         <div class="state-data state-data--fixed">
           <span>{{ 'home-global.unit-of-assignment.text' | translate | uppercase }} </span>
           <span class="state-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
+          <ng-container *ngIf="experiment.group">
+            <span
+              class="state-data-group"
+              *ngIf="experiment.group?.length < 30; else experimentGroupTruncate"
+            >
+              {{ '( ' + (experiment.group | titlecase) + ' )' }}
+            </span>
+            <ng-template #experimentGroupTruncate>
+              <span class="state-data-group" [matTooltip]="experiment.group" matTooltipPosition="above">
+                {{ '( ' + (experiment.group | titlecase | truncate: 35) + ' )' }}
+              </span>
+            </ng-template>
+          </ng-container>
         </div>
         <div class="state-data">
           <span>{{ 'home-global.consistency-rule.text' | translate | uppercase }}</span>
@@ -124,6 +137,22 @@
             </span>
           </ng-template>
         </div>
+      </div>
+    </div>
+
+    <!-- Experiment Context -->
+    <div class="experiment-props">
+      <span class="experiment-props-title">{{ 'global.context.text' | translate }}</span>
+      <div class="experiment-props-values">
+        <span (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)" *ngFor="let context of experiment.context">{{ context }}</span>
+      </div>
+    </div>
+
+    <!-- Experiment Tags -->
+    <div class="experiment-props" *ngIf="experiment.tags.length">
+      <span class="experiment-props-title">{{ 'global.tags.text' | translate }}</span>
+      <div class="experiment-props-values">
+        <span (click)="searchExperiment(ExperimentSearchKey.TAG, tag)" *ngFor="let tag of experiment.tags">{{ tag }}</span>
       </div>
     </div>
 

@@ -4,12 +4,14 @@ import { MatDialog } from '@angular/material';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
-import { EXPERIMENT_STATE, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
+import { EXPERIMENT_STATE, ExperimentVM, EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { Router } from '@angular/router';
+import * as clonedeep from 'lodash.clonedeep';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -35,7 +37,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -56,11 +59,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         : (dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE ?  PostExperimentRuleComponent : NewExperimentComponent);
     const dialogRef = this.dialog.open(dialogComponent as any, {
       width: '55%',
-      data: { experiment: this.experiment }
+      data: { experiment: clonedeep(this.experiment) }
     });
 
     dialogRef.afterClosed().subscribe(() => {
     });
+  }
+
+  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: string) {
+    this.experimentService.setSearchKey(type);
+    this.experimentService.setSearchString(value);
+    this.router.navigate(['/home']);
   }
 
   deleteExperiment() {
@@ -85,5 +94,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get ExperimentState() {
     return EXPERIMENT_STATE;
+  }
+
+  get ExperimentSearchKey() {
+    return EXPERIMENT_SEARCH_KEY;
   }
 }
