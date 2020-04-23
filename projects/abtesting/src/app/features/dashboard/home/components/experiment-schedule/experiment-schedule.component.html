@@ -60,9 +60,10 @@
             formControlName="userCount"
           />
         </mat-form-field>
+        <!-- TODO: Update en.json -->
         <span
           class="group-type"
-          [innerHTML]="'home.new-experiment.schedule.user-count.title.text' | translate"
+          [innerHTML]="!!experimentScheduleForm.get('groupCount').value ? ('Students marked per ' + groupType) : 'Students Marked'"
           [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
         ></span>
       </div>
@@ -71,13 +72,13 @@
           <input
             type="number"
             matInput
-            [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate"
+            [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: groupType | titlecase } "
             formControlName="groupCount"
           />
         </mat-form-field>
         <span
           class="group-type"
-          [innerHTML]="'home-global.enrollments-per-custom.text' | translate: { groupType: groupType | titlecase }"
+          [innerHTML]="(groupType | titlecase) + ' Marked'"
           [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
         ></span>
       </div>
