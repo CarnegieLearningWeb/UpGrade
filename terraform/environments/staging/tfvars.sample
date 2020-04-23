@@ -1,0 +1,3 @@
+GOOGLE_CLIENT_ID = "google-project-id"
+MONITOR_PASSWORD = "your-password"
+SWAGGER_PASSWORD = "your-password"

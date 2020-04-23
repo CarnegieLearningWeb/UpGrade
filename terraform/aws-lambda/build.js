@@ -15,10 +15,10 @@ outputPath = join(__dirname, '/', outputPath);
 if (!outputPath.endsWith('/')) { outputPath += '/'; }
 
 //console.log('COMPILE: STEP #1 - Installing all the dependencies using npm');
-execPromise('npm install --production', { cwd: lambdaPath })
+execPromise('npm install', { cwd: lambdaPath })
 .then(() => {
     //console.log('COMPILE: STEP #2 - compile to javascript');
-    return execPromise('tsc', { cwd: lambdaPath })
+    return execPromise('npm run tsc --', { cwd: lambdaPath })
 }).then(() => {
     //console.log('COMPILE: STEP #3 - compress bundled javascript into .zip file');
     return execPromise(`zip -j ${lambdaZip} ${lambdaPath}/lib/*.js*`, { cwd: outputPath })

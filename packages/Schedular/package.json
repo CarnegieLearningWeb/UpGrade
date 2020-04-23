@@ -5,7 +5,8 @@
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "sls deploy"
+    "deploy": "sls deploy",
+    "tsc": "tsc"
   },
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
