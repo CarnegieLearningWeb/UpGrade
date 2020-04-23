@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { UpdateUserRole, User } from './users.model';
+import { UpdateUser, User } from './users.model';
 
 export const actionFetchUsers = createAction(
   '[Users] Fetch Users'
@@ -16,7 +16,7 @@ export const actionFetchUsersFailure = createAction(
 
 export const actionUpdateUserRole = createAction(
   '[Users] Update User Role',
-  props<{ userRoleData: UpdateUserRole }>()
+  props<{ userRoleData: UpdateUser }>()
 );
 
 export const actionUpdateUserRoleSuccess = createAction(
@@ -27,3 +27,18 @@ export const actionUpdateUserRoleSuccess = createAction(
 export const actionUpdateUserRoleFailure = createAction(
   '[Users] Update User Role Failure'
 );
+
+export const actionCreateNewUser = createAction(
+  '[Users] Create New User',
+  props<{ user: UpdateUser }>()
+);
+
+export const actionCreateNewUserSuccess = createAction(
+  '[Users] Create New User Success',
+  props<{ user: User }>()
+);
+
+export const actionCreateNewUserFailure = createAction(
+  '[Users] Create New User Failure',
+);
+

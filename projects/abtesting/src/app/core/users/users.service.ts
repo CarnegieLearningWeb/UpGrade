@@ -17,4 +17,8 @@ export class UsersService {
   updateUserRole(email: string, role: UserRole) {
     this.store$.dispatch(UsersActions.actionUpdateUserRole({ userRoleData: { email, role }}))
   }
+
+  createNewUser(email: string, role: UserRole) {
+    this.store$.dispatch(UsersActions.actionCreateNewUser({ user: { email, role } }));
+  }
 }
