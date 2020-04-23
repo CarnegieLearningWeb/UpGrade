@@ -7,12 +7,7 @@ export const adapter: EntityAdapter<User> = createEntityAdapter<User>({
   selectId: entity => entity.email
 });
 
-export const {
-  selectIds,
-  selectEntities,
-  selectAll,
-  selectTotal
-} = adapter.getSelectors();
+export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: UserState = adapter.getInitialState({
   isUsersLoading: false
@@ -20,32 +15,27 @@ export const initialState: UserState = adapter.getInitialState({
 
 const reducer = createReducer(
   initialState,
-  on(
-    UsersActions.actionFetchUsers,
-    UsersActions.actionUpdateUserRole,
-    (state) => ({ ...state, isUsersLoading: true })
-  ),
-  on(
-    UsersActions.actionFetchUsersSuccess,
-    (state, { users }) => {
-    return adapter.addMany(users, { ...state, isUsersLoading: false  });
+  on(UsersActions.actionFetchUsers, UsersActions.actionUpdateUserRole, UsersActions.actionCreateNewUser, state => ({
+    ...state,
+    isUsersLoading: true
+  })),
+  on(UsersActions.actionFetchUsersSuccess, (state, { users }) => {
+    return adapter.addMany(users, { ...state, isUsersLoading: false });
   }),
   on(
     UsersActions.actionFetchUsersFailure,
     UsersActions.actionUpdateUserRoleFailure,
-    (state) => ({ ...state, isUsersLoading: false })
+    UsersActions.actionCreateNewUserFailure,
+    state => ({ ...state, isUsersLoading: false })
   ),
-  on(
-    UsersActions.actionUpdateUserRoleSuccess,
-    (state, { user }) => {
-      return adapter.updateOne({ id: user.email, changes: { ...user }}, { ...state, isUsersLoading: false });
-    }
-  )
+  on(UsersActions.actionUpdateUserRoleSuccess, (state, { user }) => {
+    return adapter.updateOne({ id: user.email, changes: { ...user } }, { ...state, isUsersLoading: false });
+  }),
+  on(UsersActions.actionCreateNewUserSuccess, (state, { user }) => {
+    return adapter.addOne(user, { ...state, isUsersLoading: false });
+  })
 );
 
-export function UsersReducer(
-  state: UserState | undefined,
-  action: Action
-) {
+export function UsersReducer(state: UserState | undefined, action: Action) {
   return reducer(state, action);
 }

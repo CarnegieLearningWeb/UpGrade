@@ -10,23 +10,19 @@ import { selectCurrentUser } from '../../auth/store/auth.selectors';
 
 @Injectable()
 export class UsersEffects {
-  constructor(
-    private actions$: Actions,
-    private usersDataService: UsersDataService,
-    private store$: Store<AppState>
-  ) { }
+  constructor(private actions$: Actions, private usersDataService: UsersDataService, private store$: Store<AppState>) {}
 
   fetchUsers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UsersActions.actionFetchUsers),
-      withLatestFrom(
-        this.store$.pipe(select(selectCurrentUser))
-      ),
+      withLatestFrom(this.store$.pipe(select(selectCurrentUser))),
       filter(([_, user]) => user.role === UserRole.ADMIN),
-      switchMap(() => this.usersDataService.fetchUsers().pipe(
-        map((data: User[]) => UsersActions.actionFetchUsersSuccess({ users: data })),
-        catchError(() => [UsersActions.actionFetchUsersFailure()])
-      ))
+      switchMap(() =>
+        this.usersDataService.fetchUsers().pipe(
+          map((data: User[]) => UsersActions.actionFetchUsersSuccess({ users: data })),
+          catchError(() => [UsersActions.actionFetchUsersFailure()])
+        )
+      )
     )
   );
 
@@ -35,11 +31,26 @@ export class UsersEffects {
       ofType(UsersActions.actionUpdateUserRole),
       map(action => action.userRoleData),
       filter(({ email, role }) => !!email && !!role),
-      switchMap(({ email, role }) => this.usersDataService.updateUserRole(email, role).pipe(
-        map((data: User) => UsersActions.actionUpdateUserRoleSuccess({ user: data[0] })),
-        catchError(() => [UsersActions.actionUpdateUserRoleFailure()])
-      ))
+      switchMap(({ email, role }) =>
+        this.usersDataService.updateUserRole(email, role).pipe(
+          map((data: User) => UsersActions.actionUpdateUserRoleSuccess({ user: data[0] })),
+          catchError(() => [UsersActions.actionUpdateUserRoleFailure()])
+        )
+      )
     )
   );
 
+  createNewUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UsersActions.actionCreateNewUser),
+      map(action => action.user),
+      filter(({ email, role }) => !!email && !!role),
+      switchMap(({ email, role }) => {
+        return this.usersDataService.createNewUser(email, role).pipe(
+          map((data: User) => UsersActions.actionCreateNewUserSuccess({ user: data })),
+          catchError(() => [UsersActions.actionCreateNewUserFailure()])
+        );
+      })
+    )
+  );
 }
