@@ -88,7 +88,7 @@
   "home.new-experiment.schedule.date-picker.placeholder.text": "Choose a date and time",
   "home.new-experiment.schedule.user-count.placeholder.text": "Number of students",
   "home.new-experiment.schedule.user-count.title.text": "Students",
-  "home.new-experiment.schedule.group-count.placeholder.text": "Number of enrollments",
+  "home.new-experiment.schedule.group-count.placeholder.text": "Number of {{ groupType }}",
   "home.view-experiment-global.experiment-point.text": "EXPERIMENT POINT",
   "home.view-experiment-global.experiment-partition.text": "ID",
   "home.view-experiment.global.weight.text": "WEIGHT",
