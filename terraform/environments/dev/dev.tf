@@ -99,9 +99,9 @@ module "aws-code-pipeline"{
   ebs_env_name          = module.aws-ebs-app.application
 }
 
-output "eb" {
+output "ebs-cname" {
   value = module.aws-ebs-app.ebs-cname
 }
-output "step" {
+output "step_function" {
   value = module.aws-state-machine.step_function_arn
 }
