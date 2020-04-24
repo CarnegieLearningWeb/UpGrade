@@ -70,21 +70,29 @@ resource "aws_iam_policy_attachment" "app-attach3" {
   roles      = [aws_iam_role.app-ec2-role.name]
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"
 }
-
 resource "aws_iam_policy_attachment" "app-attach4" {
   name       = "app-attach4"
-  roles      = [aws_iam_role.elasticbeanstalk-service-role.name]
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
-}
-
-resource "aws_iam_policy_attachment" "app-attach5" {
-  name       = "app-attach5"
   roles      = [aws_iam_role.app-ec2-role.name]
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
-
+resource "aws_iam_policy_attachment" "app-attach5" {
+  name       = "app-attach5"
+  roles      = [aws_iam_role.app-ec2-role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
+}
 resource "aws_iam_policy_attachment" "app-attach6" {
   name       = "app-attach6"
+  roles      = [aws_iam_role.app-ec2-role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "aws_iam_policy_attachment" "app-attach7" {
+  name       = "app-attach7"
+  roles      = [aws_iam_role.elasticbeanstalk-service-role.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
+}
+resource "aws_iam_policy_attachment" "app-attach8" {
+  name       = "app-attach8"
   roles      = [aws_iam_role.elasticbeanstalk-service-role.name]
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }

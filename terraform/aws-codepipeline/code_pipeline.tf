@@ -51,6 +51,22 @@ resource "aws_codepipeline" "codepipeline" {
       }
     }
   }
+  stage {
+    name = "Deploy"
+    action {
+      name            = "Deploy"
+      category        = "Deploy"
+      owner           = "AWS"
+      provider        = "ElasticBeanstalk"
+      input_artifacts = ["${var.environment}-${var.prefix}-backend-docker-build"]
+      version         = "1"
+
+      configuration = {
+        ApplicationName = var.ebs_app_name
+        EnvironmentName =  var.ebs_env_name
+      }
+    }
+  }
 }
 
 

@@ -78,8 +78,20 @@ module "aws-ebs-app" {
   PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
 }
 
+module "aws-code-pipeline"{
+  source = "../../aws-codepipeline"
+
+  environment                = "developement"  
+  prefix                     = "upgrade"
+  repository_name            = "educational-experiment-service"
+  AWS_REGION = "us-east-1"
+  branch_name     = "master"
+  ebs_app_name = module.aws-ebs-app.ebs-env
+  ebs_env_name = module.aws-ebs-app.application
+}
+
 output "eb" {
-  value = module.aws-ebs-app.ebs
+  value = module.aws-ebs-app.ebs-cname
 }
 
 variable "GOOGLE_CLIENT_ID"{}

@@ -18,7 +18,8 @@ phases:
       - echo Build started on `date`
       - echo deploying serverless functions
       - echo Building docker config
-      - npm run dockerConfig:$IMAGE_TAG
+      # added extra params to docker config
+      - npm run dockerConfig $IMAGE_TAG $AWS_ACCOUNT_ID $AWS_DEFAULT_REGION $IMAGE_REPO_NAME
       - echo Building the Docker image...
       #- docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
       - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION .
