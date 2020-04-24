@@ -16,9 +16,6 @@ resource "aws_db_parameter_group" "postgres-parameters" {
   description = "postgres parameter group"
 }
 
-// if multi_az false db will be in either main-private-1 or main-private-2
-// if multi_az true db will be available in both main-private-1 and main-private-2
-
 # Create DB
 resource "aws_db_instance" "app-rds" {
   allocated_storage         = var.allocated_storage

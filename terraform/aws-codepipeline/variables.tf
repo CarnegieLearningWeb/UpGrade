@@ -1,36 +1,23 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # ENV AND PREFIX SPECIFIC VARIABLES
 # ---------------------------------------------------------------------------------------------------------------------
+variable "environment" {}
+variable "prefix" {}
+variable "aws_region" {}
 
-variable "environment" {
-  description = "Environment for the terraform"
-}
-
-variable "prefix" {
-  description = "Prefix resources with this string.."
-}
-
-variable "aws_region" {
-  description = "The AWS region to create things in."
-  default     = "us-east-1"
-}
 # ---------------------------------------------------------------------------------------------------------------------
-# APP SPECIFIC VARIABLES
+# CODE COMMIT SPECIFIC VARIABLES
+# ---------------------------------------------------------------------------------------------------------------------
+variable "repository_name"{}
+variable "branch_name"{}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CODE BUILD ENV SPECIFIC VARIABLES
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "app_version" {
-  description = "version of the application"
-  default = "1.0.0"
-}
-
-variable "repository_name"{
-  description = "Name of the code commit repository"
-}
-
-variable "branch_name"{
-  description = "Branch name of the repo to build and deploy source from"
-}
+variable "build_image" {default = "aws/codebuild/standard:1.0"}
+variable "build_compute_type"{default = "BUILD_GENERAL1_LARGE"}
+variable "privileged_mode"{default = true}
 
 variable "ebs_app_name"{}
 variable "ebs_env_name"{}
-variable "AWS_REGION"{}

@@ -2,21 +2,9 @@
 # ENV AND PREFIX SPECIFIC VARIABLES
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "environment" {
-  description = "Environment for the terraform"
-}
-
-variable "prefix" {
-  description = "Prefix resources with this string.."
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# APP SPECIFIC VARIABLES
-# ---------------------------------------------------------------------------------------------------------------------
-
-variable "app_version" {
-  description = "version of the application"
-}
+variable "environment" {}
+variable "prefix" {}
+variable "app_version" {}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # IAM SPECIFIC VARIABLES

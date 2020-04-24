@@ -11,10 +11,10 @@ resource "aws_codebuild_project" "backend_code_build" {
   }
 
   environment {
-    compute_type    = "BUILD_GENERAL1_LARGE"
-    image           = "aws/codebuild/standard:1.0"
+    compute_type    = var.build_compute_type
+    image           = var.build_image
     type            = "LINUX_CONTAINER"
-    privileged_mode = true
+    privileged_mode = var.privileged_mode
 
   environment_variable {
       name  = "ENVIRONMENT"
@@ -23,7 +23,7 @@ resource "aws_codebuild_project" "backend_code_build" {
 
     environment_variable {
       name  = "AWS_DEFAULT_REGION"
-      value = var.AWS_REGION
+      value = var.aws_region
     }
     environment_variable {
       name  = "AWS_ACCOUNT_ID"

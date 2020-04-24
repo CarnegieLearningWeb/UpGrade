@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "codebuild_cache" {
 
 resource "aws_s3_bucket" "artifacts" {
   bucket = "${var.environment}-${var.prefix}-backend-artifacts"
-  acl    = "private",
+  acl    = "private"
   force_destroy = true
 
   lifecycle_rule {
