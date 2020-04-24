@@ -168,7 +168,7 @@ export class ExperimentService {
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
     const partitionsUniqueIdentifier = this.experimentPartitionRepository.getAllUniqueIdentifier();
     const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
-    return [ ...conditionIds, ...partitionsIds ];
+    return [...conditionIds, ...partitionsIds];
   }
 
   public async updateState(
@@ -491,8 +491,11 @@ export class ExperimentService {
     return identifier;
   }
 
-  private setConditionOrPartitionIdentifiers(data: ExperimentCondition[] | ExperimentPartition[], uniqueIdentifiers: string[]): any[] {
-    const updatedData = (data as any).map(conditionOrPartition => {
+  private setConditionOrPartitionIdentifiers(
+    data: ExperimentCondition[] | ExperimentPartition[],
+    uniqueIdentifiers: string[]
+  ): any[] {
+    const updatedData = (data as any).map((conditionOrPartition) => {
       if (!conditionOrPartition.twoCharacterId) {
         const twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
         uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
@@ -595,7 +598,7 @@ export class ExperimentService {
     switch (type) {
       case EXPERIMENT_SEARCH_KEY.NAME:
         searchString.push("coalesce(experiment.name::TEXT,'')");
-        searchString.push("coalesce(partitions.name::TEXT,'')");
+        searchString.push("coalesce(partitions.id::TEXT,'')");
         break;
       case EXPERIMENT_SEARCH_KEY.STATUS:
         searchString.push("coalesce(experiment.state::TEXT,'')");
@@ -608,7 +611,7 @@ export class ExperimentService {
         break;
       default:
         searchString.push("coalesce(experiment.name::TEXT,'')");
-        searchString.push("coalesce(partitions.name::TEXT,'')");
+        searchString.push("coalesce(partitions.id::TEXT,'')");
         searchString.push("coalesce(experiment.state::TEXT,'')");
         searchString.push("coalesce(experiment.tags::TEXT,'')");
         searchString.push("coalesce(experiment.context::TEXT,'')");
