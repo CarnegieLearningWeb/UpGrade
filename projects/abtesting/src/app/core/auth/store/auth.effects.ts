@@ -128,7 +128,8 @@ export class AuthEffects {
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
-            usersActions.actionFetchUsers()
+            usersActions.actionFetchUsers(),
+            experimentActions.actionFetchExperimentContext()
           ];
           if (user.role) {
             this.authService.setUserPermissions(user.role);

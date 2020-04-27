@@ -134,6 +134,12 @@ export class ExperimentScheduleComponent implements OnInit {
             startOn: null,
             state: EXPERIMENT_STATE.INACTIVE
           };
+          if (this.experimentInfo) {
+            scheduleData = {
+              ...scheduleData,
+              state: this.experimentInfo.state
+            };
+          }
           const { endExperimentAutomatically, endCondition, dateOfExperimentEnd, userCount, groupCount, dateOfExperimentStart } = this.experimentScheduleForm.value;
           if (endExperimentAutomatically) {
             switch (endCondition) {

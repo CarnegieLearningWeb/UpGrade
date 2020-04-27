@@ -32,6 +32,7 @@ export const environment = {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
     updateExperiments: `${endpointApi}/experiments`,
+    experimentContext: `${endpointApi}/experiments/context`,
     getExperimentById: `${endpointApi}/experiments/single`,
     getAllAuditLogs: `${endpointApi}/audit`,
     getAllErrorLogs: `${endpointApi}/error`,

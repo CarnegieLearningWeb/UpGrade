@@ -24,7 +24,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   sortAs: null,
   stats: {},
   allPartitions: null,
-  allExperimentNames: null
+  allExperimentNames: null,
+  context: []
 });
 
 const reducer = createReducer(
@@ -126,6 +127,10 @@ const reducer = createReducer(
   on(
     experimentsAction.actionFetchAllExperimentNamesSuccess,
     (state, { allExperimentNames }) => ({ ...state, allExperimentNames })
+  ),
+  on(
+    experimentsAction.actionFetchExperimentContextSuccess,
+    (state, { context }) => ({ ...state, context })
   )
 );
 

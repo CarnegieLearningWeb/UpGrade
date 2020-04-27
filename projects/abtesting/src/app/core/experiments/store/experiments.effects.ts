@@ -252,6 +252,18 @@ export class ExperimentEffects {
       { dispatch: false }
   );
 
+  fetchExperimentContext$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(experimentAction.actionFetchExperimentContext),
+      switchMap(() =>
+        this.experimentDataService.fetchExperimentContext().pipe(
+          map((context: string[]) => experimentAction.actionFetchExperimentContextSuccess({ context })),
+          catchError(() => [experimentAction.actionFetchExperimentContextFailure()])
+        )
+      )
+    )
+  );
+
 
   private getSearchString$ = () => combineLatest(
     this.store$.pipe(select(selectSearchString))

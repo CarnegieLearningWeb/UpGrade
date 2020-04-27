@@ -10,7 +10,8 @@ import {
   selectAllExperimentNames,
   selectExperimentById,
   selectSearchString,
-  selectSearchKey
+  selectSearchKey,
+  selectExperimentContext
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -36,6 +37,7 @@ export class ExperimentService {
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
+  experimentContext$ = this.store$.pipe(select(selectExperimentContext));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(

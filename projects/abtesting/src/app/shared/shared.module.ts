@@ -21,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatSliderModule } from '@angular/material/';
+import { MatSliderModule, MatAutocompleteModule } from '@angular/material/';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -66,7 +66,8 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatStepperModule,
     MatRadioModule,
     MatExpansionModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatAutocompleteModule,
   ],
   declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe],
   exports: [
@@ -103,6 +104,7 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatExpansionModule,
     RtlSupportDirective,
     MatProgressBarModule,
+    MatAutocompleteModule,
 
     SharedIconsComponent,
     TruncatePipe

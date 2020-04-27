@@ -155,6 +155,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   };
   allPartitions: {};
   allExperimentNames: {};
+  context: string[]
 }
 
 export interface State extends AppState {
