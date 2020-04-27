@@ -158,6 +158,24 @@ export class ExperimentController {
 
   /**
    * @swagger
+   * /experiments/context:
+   *    get:
+   *       description: Get experiments context
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment List
+   */
+  @Get('/context')
+  public getContext(): string[] {
+    return this.experimentService.getContext();
+  }
+
+  /**
+   * @swagger
    * /experiments/paginated:
    *    post:
    *       description: Get Paginated Experiment
