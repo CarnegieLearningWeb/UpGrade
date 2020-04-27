@@ -12,9 +12,10 @@ terraform {
 # ------------------------------------------------------------------------------
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
   profile = "playpower"
 }
+
 
 # ------------------------------------------------------------------------------
 # START RUNNING MODULES 
@@ -22,66 +23,85 @@ provider "aws" {
 
 module "aws_lambda_function" {
 
-  source = "../../aws-lambda"
+  source                =  "../../aws-lambda"
 
-  environment          = "developement"
-  prefix               = "upgrade"
-  app_version          = "1.0.0"
-  lambda_iam_role_name = "schedular-lambda-iam" // will be prefixed by environment-prefix-
-  s3_bucket            = "schedular" // will be prefixed by environment-prefix
-  lambda_zip           = "schedular.zip"
-  lambda_path          = "../../packages/Schedular" //Path of the lambda function folder
-  output_path          = "../environments/dev/.terraform"
-  function_name        = "Schedule" // will be prefixed by environment-prefix
-  function_handler     = "schedule.schedule"
-  runtime              = "nodejs10.x"
+  environment           = var.environment 
+  prefix                = var.prefix 
+  app_version           = var.app_version 
+  lambda_path           = "../../packages/Schedular"  
+  output_path           = "../environments/dev/.terraform" 
+  function_name         = "Schedule" 
+  function_handler      = "schedule.schedule"
+  runtime               =  "nodejs10.x"
 }
 
 
 module "aws-state-machine" {
 
-  source = "../../aws-step-fn"
+  source                = "../../aws-step-fn"
 
-  environment                = "developement"  
-  prefix                     = "upgrade"
-  app_version                = "1.0.0"
-  aws_sfn_state_machine_name = "experiment-schedular" // will be prefixed by environment-prefix
-  lambda_arn                 = module.aws_lambda_function.lambda-arn[0]
-  sfn_iam_role_name          = "iam_for_sfn" // will be prefixed by environment-prefix
-}
-
-
-
-output "step" {
-  value = module.aws-state-machine.step_function_arn
+  environment           = var.environment 
+  prefix                = var.prefix 
+  app_version           = var.app_version 
+  aws_region            = var.aws_region
+  lambda_arn            = module.aws_lambda_function.lambda-arn[0] 
 }
 
 
 module "aws-ebs-app" {
 
-  source = "../../aws-ebs-with-rds"
+  source                = "../../aws-ebs-with-rds"
 
-  environment                = "developement"  
-  prefix                     = "upgrade"
-  allocated_storage          = 100
-  GOOGLE_CLIENT_ID            = var.GOOGLE_CLIENT_ID
-  MONITOR_PASSWORD            = var.MONITOR_PASSWORD
-  SWAGGER_PASSWORD            = var.SWAGGER_PASSWORD
-  identifier                 = "dev-postgres"
-  instance_class             = "db.t2.small"
-  storage_type               = "gp2"
-  app_instance_type          = "t2.micro"
-  autoscaling_min_size       =  1  // Min nunber instances running
-  autoscaling_max_size       =  4  // Max number of instances that ASG can create
+  environment           = var.environment
+  prefix                = var.prefix 
+
+  /*RDS*/
+  allocated_storage     = 100
+  engine_version        = var.engine_version    // "11.5"
+  identifier            = var.identifier
+  instance_class        = var.instance_class
+  storage_type          = var.storage_type
+  multi_az = "false"
+  
+  /*EBS config*/
+  app_instance_type     = var.app_instance_type
+  autoscaling_min_size  = var.autoscaling_min_size
+  autoscaling_max_size  = var.autoscaling_max_size
+
+  /* APP env config*/
+  GOOGLE_CLIENT_ID      = var.GOOGLE_CLIENT_ID
+  MONITOR_PASSWORD      = var.MONITOR_PASSWORD  
+  SWAGGER_PASSWORD      = var.SWAGGER_PASSWORD 
+
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "~/.ssh/id_rsa"
   PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
 }
 
-output "eb" {
-  value = module.aws-ebs-app.ebs
+module "aws-code-pipeline"{
+
+  source = "../../aws-codepipeline"
+
+  environment           = var.environment 
+  prefix                = var.prefix 
+  aws_region            = var.aws_region
+
+  /* CODE COMMIT variables*/
+  repository_name       = var.repository_name
+  branch_name           = var.branch_name
+
+  /* CODE BUILD variables*/
+  build_image           = var.build_image
+  build_compute_type    = var.build_compute_type
+  privileged_mode       = var.privileged_mode
+
+  ebs_app_name          = module.aws-ebs-app.ebs-env
+  ebs_env_name          = module.aws-ebs-app.application
 }
 
-variable "GOOGLE_CLIENT_ID"{}
-variable "MONITOR_PASSWORD"{}
-variable "SWAGGER_PASSWORD"{}
+output "ebs-cname" {
+  value = module.aws-ebs-app.ebs-cname
+}
+output "step_function" {
+  value = module.aws-state-machine.step_function_arn
+}

@@ -2,13 +2,9 @@
 # ENV AND PREFIX SPECIFIC VARIABLES
 # ---------------------------------------------------------------------------------------------------------------------
 
-variable "environment" {
-  description = "Environment for the terraform"
-}
+variable "environment" {}
+variable "prefix" {}
 
-variable "prefix" {
-  description = "Prefix resources with this string.."
-}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # POSTGRESS SPECIFIC VARIABLES 
@@ -39,7 +35,6 @@ variable "instance_class" {
 
 variable "identifier" {
   description = "DB identifier"
-  default     = "postgres"
 }
 
 variable "multi_az" {
@@ -115,10 +110,8 @@ variable "TYPEORM_MIGRATIONS_DIR" { default = "src/database/migrations" }
 variable "TYPEORM_SEED" { default = "src/database/seeds/**/*.seed.ts" }
 variable "TYPEORM_SYNCHRONIZE" { default = true }
 
-variable "SCHEDULER_STEP_FUNCTION" {
-  description = "Schedular step function ARN"
-}
 
+variable "SCHEDULER_STEP_FUNCTION" {}
 
 variable "PATH_TO_PRIVATE_KEY" {}
 variable "PATH_TO_PUBLIC_KEY" {}
