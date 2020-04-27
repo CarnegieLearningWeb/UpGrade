@@ -7,7 +7,7 @@ mat-drawer-container {
 
 mat-drawer {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-  width: 20em;
+  width: 243px;
 }
 
 .drawer-container {
@@ -19,14 +19,16 @@ mat-drawer {
     display: flex;
     align-items: flex-end;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
+    padding: 0 26px;
     height: 150px;
 
     &-link {
-      margin: 0 0 10px 20px;
+      margin-bottom: 22px;
       text-decoration: none;
       color: var(--blue);
+      font-family: 'Open Sans';
       font-size: 36px;
-      font-weight: bold;
+      font-weight: 800;
     }
   }
 
@@ -34,10 +36,16 @@ mat-drawer {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-top: 50px;
+    margin-top: 43px;
     height: 100%;
 
     .list {
+      padding: 0 26px;
+
+      ::ng-deep .mat-list-item-content {
+        padding: 0;
+      }
+
       .nav-item {
         cursor: pointer;
         padding: 0.75rem 1rem;
@@ -134,11 +142,12 @@ mat-drawer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    max-height: 50px;
 
     .theme-selector {
       display: flex;
       justify-content: flex-end;
-      padding-right: 4.375rem;
+      padding-right: 2.75rem;
     }
   }
 }

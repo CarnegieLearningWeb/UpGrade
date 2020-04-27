@@ -6,7 +6,7 @@
   ></span>
 
   <ng-container *ngIf="isLoadingExperiments$ | async; else loadingExperimentState">
-    <div *ngIf="(experiments$ | async).length; else noExperimentTemplate">
+    <div class="experiment-table" *ngIf="(experiments$ | async).length; else noExperimentTemplate">
       <home-experiment-list></home-experiment-list>
     </div>
     <ng-template #noExperimentTemplate>

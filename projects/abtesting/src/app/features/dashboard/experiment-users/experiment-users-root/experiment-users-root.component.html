@@ -3,7 +3,7 @@
   <span class="subtitle" [innerHTML]="'users.sub-heading.text' | translate"></span>
 
   <div class="tabs-wrapper">
-    <mat-tab-group class="tabs-tabs" disableRipple="true" (selectedTabChange)="selectedTabChange($event)">
+    <mat-tab-group disableRipple="true" (selectedTabChange)="selectedTabChange($event)">
       <mat-tab [label]="'users.experiment-users-title.text' | translate">
         <users-experiment-users></users-experiment-users>
       </mat-tab>
