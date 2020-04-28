@@ -10,6 +10,7 @@ resource "aws_iam_instance_profile" "app-ec2-role" {
 
 resource "aws_iam_role" "app-ec2-role" {
   name               = "${var.environment}-${var.prefix}-app-ec2-role"
+  force_detach_policies = true
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -34,6 +35,7 @@ EOF
 # service
 resource "aws_iam_role" "elasticbeanstalk-service-role" {
   name               = "${var.environment}-${var.prefix}-elasticbeanstalk-service-role"
+  force_detach_policies = true
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
