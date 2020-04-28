@@ -46,6 +46,24 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
     return result.raw;
   }
 
+  public async findIndividualAssignmentsByExperimentId(experimentId: string): Promise<IndividualAssignment[]> {
+    return this.createQueryBuilder('individualAssignment')
+      .leftJoinAndSelect('individualAssignment.experiment', 'experiment')
+      .leftJoinAndSelect('individualAssignment.user', 'user')
+      .leftJoinAndSelect('individualAssignment.condition', 'condition')
+      .where('experiment.id = :experimentId', { experimentId })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findIndividualAssignmentsByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async deleteExperimentsForUserId(userId: string, experimentIds: string[]): Promise<IndividualAssignment[]> {
     const primaryKeys = experimentIds.map((experimentId) => {
       return `${experimentId}_${userId}`;

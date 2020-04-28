@@ -240,33 +240,33 @@ export class AnalyticsService {
         where: { experimentId: In(experimentIdAndPoint) },
         relations: ['user'],
       }),
-      this.individualExclusionRepository.find({
-        where: { experimentId },
-        relations: ['experiment', 'user'],
-      }),
-      this.groupExclusionRepository.find({
-        where: { experimentId },
-        relations: ['experiment'],
-      }),
+      this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
+      this.groupExclusionRepository.findExcludedByExperimentId(experimentId),
+      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentId(experimentId),
+      this.groupAssignmentRepository.findGroupAssignmentsByExperimentId(experimentId),
     ]);
 
     let monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
     let individualExclusions: IndividualExclusion[] = promiseData[1] as any;
     let groupExclusions: GroupExclusion[] = promiseData[2] as any;
+    let individualAssignments: IndividualAssignment[] = promiseData[3] as any;
+    let groupAssignments: GroupAssignment[] = promiseData[4] as any;
     const mappedUserDefinition = new Map<string, ExperimentUser>();
 
     // get user definition
     monitoredExperimentPoints.map((monitoredPoint) => {
-      const user = monitoredPoint.user;
-      user.workingGroup = user.workingGroup ? JSON.stringify(user.workingGroup) as any : '';
-      user.group = user.group ? JSON.stringify(user.group) as any : '';
+      const user = this.getConvertedUserInfo(monitoredPoint.user);
       mappedUserDefinition.set(user.id, user);
     });
     individualExclusions.map(individualExclusion => {
       if (!mappedUserDefinition.has(individualExclusion.user.id)) {
-        const user = individualExclusion.user;
-        user.workingGroup = user.workingGroup ? JSON.stringify(user.workingGroup) as any : '';
-        user.group = user.group ? JSON.stringify(user.group) as any : '';
+        const user = this.getConvertedUserInfo(individualExclusion.user);
+        mappedUserDefinition.set(user.id, user);
+      }
+    });
+    individualAssignments.map(assignment => {
+      if (!mappedUserDefinition.has(assignment.user.id)) {
+        const user = this.getConvertedUserInfo(assignment.user);
         mappedUserDefinition.set(user.id, user);
       }
     });
@@ -280,17 +280,23 @@ export class AnalyticsService {
       'Monitor Experiment Point',
       'Experiment Individual Exclusion',
       'Experiment Group Exclusion',
+      'Experiment Individual Assignments',
+      'Experiment Group Assignments',
       'Experiment Users',
     ];
+    // Experiment Information
     csvData += tableHeadings[0] + '\r\n\n';
     csvData += this.convertArrayToCsvForm([experimentInfo]);
 
+    // Experiment Conditions
     csvData += tableHeadings[1] + '\r\n\n';
     csvData += this.convertArrayToCsvForm(conditions);
 
+    // Experiment Partitions
     csvData += tableHeadings[2] + '\r\n\n';
     csvData += this.convertArrayToCsvForm(partitions);
 
+    // Experiment Monitor Points
     csvData += tableHeadings[3] + '\r\n\n';
     if (monitoredExperimentPoints.length) {
       monitoredExperimentPoints = monitoredExperimentPoints.map(monitoredPoint => {
@@ -304,19 +310,23 @@ export class AnalyticsService {
     }
     csvData += this.convertArrayToCsvForm(monitoredExperimentPoints);
 
+    // Experiment Individual Exclusions
     csvData += tableHeadings[4] + '\r\n\n';
     if (individualExclusions.length) {
       individualExclusions = individualExclusions.map(individualExclusion => {
         const data = {
           ...individualExclusion,
+          experimentId: individualExclusion.experiment.id,
           userId: individualExclusion.user.id,
         };
         delete data.user;
+        delete data.experiment;
         return data;
       });
     }
     csvData += this.convertArrayToCsvForm(individualExclusions);
 
+    // Experiment Group Exclusions
     csvData += tableHeadings[5] + '\r\n\n';
     if (groupExclusions.length) {
       groupExclusions = groupExclusions.map(groupExclusion => {
@@ -328,9 +338,44 @@ export class AnalyticsService {
         return data;
       });
     }
-    csvData += this.convertArrayToCsvForm(individualExclusions);
+    csvData += this.convertArrayToCsvForm(groupExclusions);
 
+    // Experiment Individual Assignments
     csvData += tableHeadings[6] + '\r\n\n';
+    if (individualAssignments.length) {
+      individualAssignments = individualAssignments.map(assignment => {
+        const data = {
+          ...assignment,
+          experimentId: assignment.experiment.id,
+          userId: assignment.user.id,
+          conditionId: assignment.condition.id,
+        };
+        delete data.experiment;
+        delete data.user;
+        delete data.condition;
+        return data;
+      });
+    }
+    csvData += this.convertArrayToCsvForm(individualAssignments);
+
+    // Experiment Group Assignments
+    csvData += tableHeadings[7] + '\r\n\n';
+    if (groupAssignments.length) {
+      groupAssignments = groupAssignments.map(assignment => {
+        const data = {
+          ...assignment,
+          experimentId: assignment.experiment.id,
+          conditionId: assignment.condition.id,
+        };
+        delete data.experiment;
+        delete data.condition;
+        return data;
+      });
+    }
+    csvData += this.convertArrayToCsvForm(groupAssignments);
+
+    // Experiment Users
+    csvData += tableHeadings[8] + '\r\n\n';
     csvData += this.convertArrayToCsvForm(userDefinition);
 
     return csvData;
@@ -477,6 +522,12 @@ export class AnalyticsService {
       partitions: partitionStats,
       conditions: conditionStats,
     };
+  }
+
+  private getConvertedUserInfo(user: ExperimentUser): any {
+    user.workingGroup = user.workingGroup ? JSON.stringify(user.workingGroup) as any : '';
+    user.group = user.group ? JSON.stringify(user.group) as any : '';
+    return user;
   }
 
   private convertArrayToCsvForm(data: any[]): string {
