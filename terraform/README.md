@@ -3,7 +3,7 @@
 
 # Before you use...
 - Download and install [Terraform](https://www.terraform.io/downloads.html) on your system.
-- Configure aws-cli on your system.
+- Install & Configure [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html) on your system.
 - Setup a aws provider profile using `aws configure`
 - Create a s3 Bucket to store `tfstate` files remotely. We recommend enable versioning on that bucket.
 >   aws s3api create-bucket --acl private --bucket terraform-artifacts-bucket
