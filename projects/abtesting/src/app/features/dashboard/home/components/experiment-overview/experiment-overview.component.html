@@ -83,7 +83,7 @@
   </mat-form-field>
 
   <mat-form-field class="chips">
-    <mat-chip-list #contextList aria-label="Contexts" formControlName="context" >
+    <mat-chip-list #contextList aria-label="Context" formControlName="context" >
       <mat-chip
         *ngFor="let context of contexts.value"
         [selectable]="isChipSelectable"
@@ -95,12 +95,20 @@
       </mat-chip>
       <input
         [placeholder]="'Context'"
+        #contextInput
         [matChipInputFor]="contextList"
+        [formControl]="autoCompleteContext"
+        [matAutocomplete]="auto"
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
         [matChipInputAddOnBlur]="addChipOnBlur"
         (matChipInputTokenEnd)="addChip($event, 'contexts')"
       />
     </mat-chip-list>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedAutoCompleteContext($event)">
+      <mat-option *ngFor="let context of experimentContext$ | async" [value]="context">
+        {{ context | titlecase }}
+      </mat-option>
+    </mat-autocomplete>
     <mat-error
       *ngIf="overviewForm.controls.context.hasError('required')"
     >

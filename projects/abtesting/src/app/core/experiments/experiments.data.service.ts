@@ -55,4 +55,9 @@ export class ExperimentDataService {
     const url = environment.api.allExperimentNames;
     return this.http.get(url);
   }
+
+  fetchExperimentContext() {
+    const url = environment.api.experimentContext;
+    return this.http.get(url);
+  }
 }
