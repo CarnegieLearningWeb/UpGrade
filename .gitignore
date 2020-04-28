@@ -49,3 +49,9 @@ Thumbs.db
 
 # debug
 debug.log
+
+# terraform
+terraform/environments/*/.terraform*
+terraform/environments/*/terraform.tfstate.backup
+terraform/environments/*/terraform.tfstate
+terraform/environments/*/*.tfvars
