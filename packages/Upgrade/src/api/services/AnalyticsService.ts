@@ -64,8 +64,8 @@ import { Experiment } from '../models/Experiment';
 // }
 
 interface IExperimentDateStat {
-  experimentId: string;
   userId: string;
+  groupId: string | undefined;
   conditionId: string;
   partitionIds: string[];
 }
@@ -158,95 +158,62 @@ export class AnalyticsService {
     );
   }
 
-  public async getEnrolmentStatsByDate(experimentId: string, from: Date, to: Date): Promise<IExperimentDateStat> {
-    // const experiment = await this.experimentRepository.findOne({
-    //   where: { id: experimentId },
-    //   relations: ['partitions', 'conditions'],
-    // });
-    // // when experiment is not defined
-    // if (!experiment) {
-    //   return {} as any;
-    // }
-    // const experimentIdAndPoint = [];
-    // const partitions = experiment.partitions;
-    // partitions.forEach((partition) => {
-    //   const partitionId = partition.id;
-    //   experimentIdAndPoint.push(partitionId);
-    // });
-    // const promiseData = await Promise.all([
-    //   this.monitoredExperimentPointRepository.getByDateRange(experimentIdAndPoint, from, to),
-    //   this.individualAssignmentRepository.find({
-    //     where: { experimentId, assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC },
-    //     relations: ['experiment', 'user', 'condition'],
-    //   }),
-    //   this.individualExclusionRepository.find({
-    //     where: { experimentId },
-    //     relations: ['experiment', 'user'],
-    //   }),
-    //   this.groupAssignmentRepository.find({
-    //     where: { experimentId },
-    //     relations: ['experiment', 'condition'],
-    //   }),
-    //   this.groupExclusionRepository.find({
-    //     where: { experimentId },
-    //     relations: ['experiment'],
-    //   }),
-    // ]);
-    // const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
-    // let individualAssignments: IndividualAssignment[] = promiseData[1] as any;
-    // const individualExclusions: IndividualExclusion[] = promiseData[2] as any;
-    // let groupAssignments: GroupAssignment[] = promiseData[3] as any;
-    // const groupExclusions: GroupExclusion[] = promiseData[4] as any;
-    // const resultDocument: Map<string, Partial<IExperimentDateStat>> = new Map();
-    // // monitored document per user
-    // const userMap = monitoredExperimentPoints.map((monitoredExperimentPoint) => {
-    //   const document = resultDocument.get(monitoredExperimentPoint.user.id);
-    //   resultDocument.set(monitoredExperimentPoint.user.id, {
-    //     experimentId,
-    //     userId: monitoredExperimentPoint.user.id,
-    //     partitionIds: [],
-    //   });
-    // });
-    // // convert
-    // // filter individual assignment
-    // individualAssignments = individualAssignments.filter((individualAssignment) => {
-    //   const user = individualAssignment.user.id;
-    //   const exist = monitoredExperimentPoints.find((monitoredExperimentPoint) => {
-    //     return monitoredExperimentPoint.user.id === user;
-    //   });
-    //   return exist ? true : false;
-    // });
-    // // filter group assignments
-    // groupAssignments = groupAssignments.filter((groupAssignment) => {
-    //   const groupId = groupAssignment.groupId;
-    //   const exist = individualAssignments.find((individualAssignment) => {
-    //     const workingGroupId = individualAssignment.user.workingGroup[experiment.group];
-    //     return workingGroupId === groupId;
-    //   });
-    //   return exist ? true : false;
-    // });
-    // const conditionsStats = experiment.conditions.map((condition) => {});
-    // // remove unwanted individual assignments fields
-    // individualAssignments.forEach((individualAssignment) => {
-    //   individualAssignment.experiment = individualAssignment.experiment.id as any;
-    //   individualAssignment.user = individualAssignment.user.id as any;
-    // });
-    // // remove unwanted group assignment fields
-    // groupAssignments.forEach((groupAssignment) => {
-    //   groupAssignment.experiment = groupAssignment.experiment.id as any;
-    // });
-    // // remove unwanted monitored experiment points fields
-    // monitoredExperimentPoints.forEach((monitoredExperimentPoint) => {
-    //   monitoredExperimentPoint.user = monitoredExperimentPoint.user.id as any;
-    // });
-    // return {
-    //   individualExclusionCount: individualExclusions.length,
-    //   groupExclusionCount: groupExclusions.length,
-    //   markedDocuments: monitoredExperimentPoints,
-    //   conditionsStats: [],
-    //   partitionsStats: [],
-    // };
-    return {} as any;
+  public async getEnrolmentStatsByDate(experimentId: string, from: Date, to: Date): Promise<IExperimentDateStat[]> {
+    const experiment = await this.experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['partitions', 'conditions'],
+    });
+    // when experiment is not defined
+    if (!experiment) {
+      return {} as any;
+    }
+    const experimentIdAndPoint = [];
+    const partitions = experiment.partitions;
+    partitions.forEach((partition) => {
+      const partitionId = partition.id;
+      experimentIdAndPoint.push(partitionId);
+    });
+    const promiseData = await Promise.all([
+      this.monitoredExperimentPointRepository.getByDateRange(experimentIdAndPoint, from, to),
+      this.individualAssignmentRepository.find({
+        where: { experimentId, assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC },
+        relations: ['experiment', 'user', 'condition'],
+      }),
+      this.individualExclusionRepository.find({
+        where: { experimentId },
+        relations: ['experiment', 'user'],
+      }),
+    ]);
+    const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
+    const individualAssignments: IndividualAssignment[] = promiseData[1] as any;
+
+    const userMap: Map<string, IExperimentDateStat> = new Map();
+
+    // monitored document per user
+    monitoredExperimentPoints.forEach((monitoredExperimentPoint) => {
+      const document = userMap.get(monitoredExperimentPoint.user.id);
+      const userGroup = monitoredExperimentPoint.user.workingGroup
+        ? monitoredExperimentPoint.user.workingGroup[experiment.group]
+        : undefined;
+      userMap.set(monitoredExperimentPoint.user.id, {
+        userId: monitoredExperimentPoint.user.id,
+        groupId: experiment.group ? userGroup : undefined,
+        partitionIds: document
+          ? [...document.partitionIds, monitoredExperimentPoint.experimentId]
+          : [monitoredExperimentPoint.experimentId],
+        conditionId: 'default',
+      });
+    });
+
+    // add conditions based on individual assignments
+    individualAssignments.forEach((individualAssignment) => {
+      const document = userMap.get(individualAssignment.user.id);
+      if (document) {
+        document.conditionId = individualAssignment.condition.id;
+        userMap.set(individualAssignment.user.id, document);
+      }
+    });
+    return Array.from(userMap.values());
   }
 
   public async getCSVData(experimentId: string): Promise<any> {
