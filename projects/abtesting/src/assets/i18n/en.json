@@ -101,6 +101,7 @@
   "home.view-experiment.experiments-partitions.text": "Experiment Partitions",
   "home.view-experiment.edit-button.text": "EDIT",
   "home.view-experiment.delete-button.text": "DELETE",
+  "home.view-experiment.export-button.text": "EXPORT",
   "home.view-experiment.created-on.text": "CREATED ON: ",
   "home.view-experiment.ending-criteria.text": "ENDING CRITERIA",
   "home.view-experiment.ending-criteria.reaches.text": "( Reaches ",

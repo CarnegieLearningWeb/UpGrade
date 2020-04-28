@@ -15,7 +15,7 @@
       <div class="action-buttons">
         <button
           mat-flat-button
-          class="edit-button"
+          class="button"
           (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
           *ngIf="
           permissions?.experiments.update && experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
@@ -23,8 +23,11 @@
         >
           {{ 'home.view-experiment.edit-button.text' | translate }}
         </button>
-        <button mat-flat-button class="delete-button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
+        <button mat-flat-button class="button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
           {{ 'home.view-experiment.delete-button.text' | translate }}
+        </button>
+        <button mat-flat-button class="button" (click)="exportExperimentInfo(experiment.id, experiment.name)">
+          {{ 'home.view-experiment.export-button.text' | translate }}
         </button>
       </div>
     </div>

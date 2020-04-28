@@ -50,8 +50,7 @@ $chip-background: #e0e0e0;
         flex-shrink: 0;
         align-self: flex-start;
 
-        .edit-button,
-        .delete-button {
+        .button {
           margin-left: 15px !important;
           border: 1px solid var(--blue);
           background: $white-background;

@@ -21,12 +21,11 @@ export class HttpClientService {
     });
   }
 
-  get(url: string) {
+  get(url: string, responseType?: any) {
     const headers = this.createAuthorizationHeader();
+    const options = responseType ? { headers, responseType } : { headers };
     return this.http
-      .get(url, {
-        headers
-      })
+      .get(url, options)
       .pipe(
         catchError(e => {
           if (e.status === 401) {

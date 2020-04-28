@@ -123,3 +123,16 @@ export const actionFetchAllExperimentNamesSuccess = createAction(
 export const actionFetchAllExperimentNamesFailure = createAction(
   '[Experiment] Fetch All Experiment Names Failure'
 );
+
+export const actionExportExperimentInfo = createAction(
+  '[Experiment] Export Experiment Info',
+  props<{ experimentId: string, experimentName: string }>()
+);
+
+export const actionExportExperimentInfoSuccess = createAction(
+  '[Experiment] Export Experiment Info Success',
+);
+
+export const actionExportExperimentInfoFailure = createAction(
+  '[Experiment] Export Experiment Info Failure',
+);

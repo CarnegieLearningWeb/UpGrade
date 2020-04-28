@@ -9,6 +9,7 @@ import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
 import { selectExperimentStats, selectSkipExperiment, selectSearchKey, selectSortAs, selectSortKey, selectTotalExperiment, selectSearchString } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
+import { saveAs } from 'file-saver';
 
 @Injectable()
 export class ExperimentEffects {
@@ -250,6 +251,27 @@ export class ExperimentEffects {
         })
       ),
       { dispatch: false }
+  );
+
+  exportExperimentInfo$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionExportExperimentInfo),
+        map(action => ({ experimentId: action.experimentId, experimentName: action.experimentName })),
+        filter(({ experimentId }) => !!experimentId),
+        switchMap(({ experimentId, experimentName }) =>
+          this.experimentDataService.exportExperimentInfo(experimentId).pipe(
+            map((data: any) => {
+              const BOM = '\uFEFF';
+              const csvData = BOM + data;
+              const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
+              saveAs(blob, `${experimentName}.csv`);
+              return experimentAction.actionExportExperimentInfoSuccess()
+            }),
+            catchError(() => [experimentAction.actionExportExperimentInfoFailure()])
+          )
+        )
+      )
   );
 
 
