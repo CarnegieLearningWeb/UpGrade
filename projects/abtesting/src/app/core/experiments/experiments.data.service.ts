@@ -60,4 +60,9 @@ export class ExperimentDataService {
     const url = environment.api.experimentContext;
     return this.http.get(url);
   }
+
+  exportExperimentInfo(experimentId: string) {
+    const url = `${environment.api.generateCsv}/${experimentId}`;
+    return this.http.get(url, 'text');
+  }
 }

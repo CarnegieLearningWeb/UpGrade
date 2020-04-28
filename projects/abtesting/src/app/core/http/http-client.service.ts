@@ -21,20 +21,17 @@ export class HttpClientService {
     });
   }
 
-  get(url: string) {
+  get(url: string, responseType?: any) {
     const headers = this.createAuthorizationHeader();
-    return this.http
-      .get(url, {
-        headers
+    const options = responseType ? { headers, responseType } : { headers };
+    return this.http.get(url, options).pipe(
+      catchError(e => {
+        if (e.status === 401) {
+          this.authService.authLogout();
+        }
+        return throwError(e);
       })
-      .pipe(
-        catchError(e => {
-          if (e.status === 401) {
-            this.authService.authLogout();
-          }
-          return throwError(e);
-        })
-      );
+    );
   }
 
   post(url: string, data: any) {

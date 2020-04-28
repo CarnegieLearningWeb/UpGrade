@@ -3,12 +3,27 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
-import { UpsertExperimentType, IExperimentEnrollmentStats, Experiment, NUMBER_OF_EXPERIMENTS, ExperimentPaginationParams } from './experiments.model';
+import {
+  UpsertExperimentType,
+  IExperimentEnrollmentStats,
+  Experiment,
+  NUMBER_OF_EXPERIMENTS,
+  ExperimentPaginationParams
+} from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
-import { selectExperimentStats, selectSkipExperiment, selectSearchKey, selectSortAs, selectSortKey, selectTotalExperiment, selectSearchString } from './experiments.selectors';
+import {
+  selectExperimentStats,
+  selectSkipExperiment,
+  selectSearchKey,
+  selectSortAs,
+  selectSortKey,
+  selectTotalExperiment,
+  selectSearchString
+} from './experiments.selectors';
 import { combineLatest } from 'rxjs';
+import { saveAs } from 'file-saver';
 
 @Injectable()
 export class ExperimentEffects {
@@ -43,7 +58,7 @@ export class ExperimentEffects {
         });
         let params: ExperimentPaginationParams = {
           skip: fromStarting ? 0 : skip,
-          take: NUMBER_OF_EXPERIMENTS,
+          take: NUMBER_OF_EXPERIMENTS
         };
         if (sortKey) {
           params = {
@@ -52,7 +67,7 @@ export class ExperimentEffects {
               key: sortKey,
               sortAs
             }
-          }
+          };
         }
         if (searchString) {
           params = {
@@ -61,7 +76,7 @@ export class ExperimentEffects {
               key: searchKey,
               string: searchString
             }
-          }
+          };
         }
         return this.experimentDataService.getAllExperiment(params).pipe(
           switchMap((data: any) => {
@@ -74,7 +89,7 @@ export class ExperimentEffects {
                   {}
                 );
 
-                const actions = fromStarting ? [ experimentAction.actionSetSkipExperiment({ skipExperiment: 0 }) ] : [];
+                const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
                 return [
                   ...actions,
                   experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
@@ -85,7 +100,7 @@ export class ExperimentEffects {
             );
           }),
           catchError(error => [experimentAction.actionGetExperimentsFailure(error)])
-        )
+        );
       })
     )
   );
@@ -153,31 +168,28 @@ export class ExperimentEffects {
     )
   );
 
-  getExperimentById$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(experimentAction.actionGetExperimentById),
-        map(action => action.experimentId),
-        filter(experimentId => !!experimentId),
-        withLatestFrom(
-          this.store$.pipe(select(selectExperimentStats)),
-        ),
-        mergeMap(([experimentId, experimentStats]) =>
-          this.experimentDataService.getExperimentById(experimentId).pipe(
-            switchMap((data: Experiment) =>
-              this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
-                switchMap((stat: IExperimentEnrollmentStats) => {
-                  const stats = { ...experimentStats, [data.id]: stat[0] }
-                  return [
-                    experimentAction.actionGetExperimentByIdSuccess({ experiment: data }),
-                    experimentAction.actionStoreExperimentStats({ stats })
-                  ];
-                })
-              )
+  getExperimentById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionGetExperimentById),
+      map(action => action.experimentId),
+      filter(experimentId => !!experimentId),
+      withLatestFrom(this.store$.pipe(select(selectExperimentStats))),
+      mergeMap(([experimentId, experimentStats]) =>
+        this.experimentDataService.getExperimentById(experimentId).pipe(
+          switchMap((data: Experiment) =>
+            this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
+              switchMap((stat: IExperimentEnrollmentStats) => {
+                const stats = { ...experimentStats, [data.id]: stat[0] };
+                return [
+                  experimentAction.actionGetExperimentByIdSuccess({ experiment: data }),
+                  experimentAction.actionStoreExperimentStats({ stats })
+                ];
+              })
             )
           )
         )
       )
+    )
   );
 
   fetchAllPartitions = createEffect(() =>
@@ -192,14 +204,13 @@ export class ExperimentEffects {
     )
   );
 
-
-  fetchAllExperimentNames$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(experimentAction.actionFetchAllExperimentNames),
-        switchMap(() =>
-          this.experimentDataService.fetchAllExperimentNames().pipe(
-            map((data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data }),
+  fetchAllExperimentNames$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchAllExperimentNames),
+      switchMap(() =>
+        this.experimentDataService.fetchAllExperimentNames().pipe(
+          map(
+            (data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data }),
             catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
           )
         )
@@ -226,34 +237,32 @@ export class ExperimentEffects {
       this.actions$.pipe(
         ofType(experimentAction.actionSetSearchString),
         map(action => action.searchString),
-        tap((searchString) => {
+        tap(searchString => {
           // Allow empty string as we erasing text from search input
           if (searchString !== null) {
-            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }))
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
           }
         })
       ),
-      { dispatch: false }
+    { dispatch: false }
   );
 
   fetchExperimentOnSearchKeyChange$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionSetSearchKey),
-        withLatestFrom(
-          this.store$.pipe(select(selectSearchString))
-        ),
+        withLatestFrom(this.store$.pipe(select(selectSearchString))),
         tap(([_, searchString]) => {
           if (searchString) {
-            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }))
+            this.store$.dispatch(experimentAction.actionGetExperiments({ fromStarting: true }));
           }
         })
       ),
-      { dispatch: false }
+    { dispatch: false }
   );
 
-  fetchExperimentContext$ = createEffect(
-    () => this.actions$.pipe(
+  fetchExperimentContext$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(experimentAction.actionFetchExperimentContext),
       switchMap(() =>
         this.experimentDataService.fetchExperimentContext().pipe(
@@ -264,11 +273,29 @@ export class ExperimentEffects {
     )
   );
 
-
-  private getSearchString$ = () => combineLatest(
-    this.store$.pipe(select(selectSearchString))
-  ).pipe(
-    map(([searchString]) => searchString),
-    first()
+  exportExperimentInfo$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionExportExperimentInfo),
+      map(action => ({ experimentId: action.experimentId, experimentName: action.experimentName })),
+      filter(({ experimentId }) => !!experimentId),
+      switchMap(({ experimentId, experimentName }) =>
+        this.experimentDataService.exportExperimentInfo(experimentId).pipe(
+          map((data: any) => {
+            const BOM = '\uFEFF';
+            const csvData = BOM + data;
+            const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
+            saveAs(blob, `${experimentName}.csv`);
+            return experimentAction.actionExportExperimentInfoSuccess();
+          }),
+          catchError(() => [experimentAction.actionExportExperimentInfoFailure()])
+        )
+      )
+    )
   );
+
+  private getSearchString$ = () =>
+    combineLatest(this.store$.pipe(select(selectSearchString))).pipe(
+      map(([searchString]) => searchString),
+      first()
+    );
 }
