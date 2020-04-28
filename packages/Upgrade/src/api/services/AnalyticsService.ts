@@ -216,40 +216,33 @@ export class AnalyticsService {
     return Array.from(userMap.values());
   }
 
-  public async getCSVData(experimentId: string): Promise<any> {
+  public async getCSVData(experimentId: string): Promise<string> {
+    // get experiment definition
     const experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
       relations: ['partitions', 'conditions'],
     });
 
     if (!experiment) {
-      return {};
+      return '';
     }
 
+    const { conditions, partitions, ...experimentInfo } = experiment;
+
     const experimentIdAndPoint = [];
-    const partitions = experiment.partitions;
     partitions.forEach((partition) => {
       const partitionId = partition.id;
       experimentIdAndPoint.push(partitionId);
     });
 
-    // data for all
     const promiseData = await Promise.all([
       this.monitoredExperimentPointRepository.find({
         where: { experimentId: In(experimentIdAndPoint) },
         relations: ['user'],
       }),
-      this.individualAssignmentRepository.find({
-        where: { experimentId, assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC },
-        relations: ['experiment', 'user', 'condition'],
-      }),
       this.individualExclusionRepository.find({
         where: { experimentId },
         relations: ['experiment', 'user'],
-      }),
-      this.groupAssignmentRepository.find({
-        where: { experimentId },
-        relations: ['experiment', 'condition'],
       }),
       this.groupExclusionRepository.find({
         where: { experimentId },
@@ -257,23 +250,90 @@ export class AnalyticsService {
       }),
     ]);
 
-    const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
-    const individualAssignments: IndividualAssignment[] = promiseData[1] as any;
-    const individualExclusions: IndividualExclusion[] = promiseData[2] as any;
-    const groupAssignments: GroupAssignment[] = promiseData[3] as any;
-    const groupExclusions: GroupExclusion[] = promiseData[4] as any;
+    let monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
+    let individualExclusions: IndividualExclusion[] = promiseData[1] as any;
+    let groupExclusions: GroupExclusion[] = promiseData[2] as any;
+    const mappedUserDefinition = new Map<string, ExperimentUser>();
 
-    const data = this.getStatsData(
-      experiment,
-      monitoredExperimentPoints,
-      individualAssignments,
-      individualExclusions,
-      groupAssignments,
-      groupExclusions
-    );
+    // get user definition
+    monitoredExperimentPoints.map((monitoredPoint) => {
+      const user = monitoredPoint.user;
+      user.workingGroup = user.workingGroup ? JSON.stringify(user.workingGroup) as any : '';
+      user.group = user.group ? JSON.stringify(user.group) as any : '';
+      mappedUserDefinition.set(user.id, user);
+    });
+    individualExclusions.map(individualExclusion => {
+      if (!mappedUserDefinition.has(individualExclusion.user.id)) {
+        const user = individualExclusion.user;
+        user.workingGroup = user.workingGroup ? JSON.stringify(user.workingGroup) as any : '';
+        user.group = user.group ? JSON.stringify(user.group) as any : '';
+        mappedUserDefinition.set(user.id, user);
+      }
+    });
 
-    console.log('data', data);
-    return {};
+    const userDefinition = Array.from(mappedUserDefinition.values());
+    let csvData = '';
+    const tableHeadings = [
+      'Experiment Information',
+      'Experiment Conditions',
+      'Experiment Partitions',
+      'Monitor Experiment Point',
+      'Experiment Individual Exclusion',
+      'Experiment Group Exclusion',
+      'Experiment Users',
+    ];
+    csvData += tableHeadings[0] + '\r\n\n';
+    csvData += this.convertArrayToCsvForm([experimentInfo]);
+
+    csvData += tableHeadings[1] + '\r\n\n';
+    csvData += this.convertArrayToCsvForm(conditions);
+
+    csvData += tableHeadings[2] + '\r\n\n';
+    csvData += this.convertArrayToCsvForm(partitions);
+
+    csvData += tableHeadings[3] + '\r\n\n';
+    if (monitoredExperimentPoints.length) {
+      monitoredExperimentPoints = monitoredExperimentPoints.map(monitoredPoint => {
+        const data = {
+          ...monitoredPoint,
+          userId: monitoredPoint.user.id,
+        };
+        delete data.user;
+        return data;
+      });
+    }
+    csvData += this.convertArrayToCsvForm(monitoredExperimentPoints);
+
+    csvData += tableHeadings[4] + '\r\n\n';
+    if (individualExclusions.length) {
+      individualExclusions = individualExclusions.map(individualExclusion => {
+        const data = {
+          ...individualExclusion,
+          userId: individualExclusion.user.id,
+        };
+        delete data.user;
+        return data;
+      });
+    }
+    csvData += this.convertArrayToCsvForm(individualExclusions);
+
+    csvData += tableHeadings[5] + '\r\n\n';
+    if (groupExclusions.length) {
+      groupExclusions = groupExclusions.map(groupExclusion => {
+        const data = {
+          ...groupExclusion,
+          experimentId: groupExclusion.experiment.id,
+        };
+        delete data.experiment;
+        return data;
+      });
+    }
+    csvData += this.convertArrayToCsvForm(individualExclusions);
+
+    csvData += tableHeadings[6] + '\r\n\n';
+    csvData += this.convertArrayToCsvForm(userDefinition);
+
+    return csvData;
   }
 
   private getStatsData(
@@ -417,5 +477,41 @@ export class AnalyticsService {
       partitions: partitionStats,
       conditions: conditionStats,
     };
+  }
+
+  private convertArrayToCsvForm(data: any[]): string {
+    if (!data.length) {
+      return 'No Data\n\n\n';
+    }
+    const keys = Object.keys(data[0]);
+    const separator = ',';
+    let csvData = '';
+    csvData +=
+      keys.join(separator) +
+      '\n' +
+      data
+        .map(row => {
+          return keys
+            .map(k => {
+              let cell = row[k] === null || row[k] === undefined ? '' : row[k];
+              cell = this.wrapCellsContainingRestrictedCharactersInDoubleQuotes(cell);
+              return cell;
+            })
+            .join(separator);
+        })
+        .join('\n');
+    return csvData + '\n\n\n';
+  }
+
+  private wrapCellsContainingRestrictedCharactersInDoubleQuotes(cellValue: string): string {
+    let cell = this.escapeDoubleQuotes(cellValue);
+    if (cell.search(/("|,|\n)/g) >= 0) {
+      cell = `"${cell}"`;
+    }
+    return cell;
+  }
+
+  private escapeDoubleQuotes(cell: string): string {
+    return cell.toString().replace(/"/g, '""');
   }
 }
