@@ -17,11 +17,11 @@ export class ExperimentStatePipe implements PipeTransform {
       case EXPERIMENT_STATE.SCHEDULED:
         return type === ExperimentStatePipeType.TEXT ? 'Scheduled' : '#000';
       case EXPERIMENT_STATE.INACTIVE:
-        return type === ExperimentStatePipeType.TEXT ? 'Inactive' : '#8F9BB3';
+        return type === ExperimentStatePipeType.TEXT ? 'Inactive' : '#d8d8d8';
       case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
-        return type === ExperimentStatePipeType.TEXT ? 'Enrollment Complete' : '#00B383';
+        return type === ExperimentStatePipeType.TEXT ? 'Enrollment Complete' : '#0cdda5';
       case EXPERIMENT_STATE.ENROLLING:
-        return type === ExperimentStatePipeType.TEXT ? 'Enrolling' : '#3366FF';
+        return type === ExperimentStatePipeType.TEXT ? 'Enrolling' : '#7b9cff';
       case EXPERIMENT_STATE.CANCELLED:
         return type === ExperimentStatePipeType.TEXT ? 'Cancelled' : '#ff0000';
     }

@@ -50,13 +50,13 @@
           </span>
         </th>
         <td mat-cell *matCellDef="let experiment">
-          <span *ngIf="experiment.name?.length < 30; else experimentNameEllipsis" class="experiment-name">
+          <a [routerLink]="['/home', 'detail', experiment.id]" *ngIf="experiment.name?.length < 30; else experimentNameEllipsis" class="experiment-name">
             {{ experiment.name }}
-          </span>
+          </a>
           <ng-template #experimentNameEllipsis>
-            <span [matTooltip]="experiment.name" class="experiment-name" matTooltipPosition="above">
+            <a [routerLink]="['/home', 'detail', experiment.id]" [matTooltip]="experiment.name" class="experiment-name" matTooltipPosition="above">
               {{ experiment.name | truncate: 30 }}
-            </span>
+            </a>
           </ng-template>
           <br />
           <span class="experiment-description" *ngIf="experiment.description?.length < 30; else experimentDescription">
@@ -79,10 +79,22 @@
         <td
           mat-cell
           *matCellDef="let experiment"
-          [ngStyle]="{ color: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"
         >
-          <span>{{ experiment.state | experimentState }}</span>
-          <br />
+          <div class="experiment-state">
+            <ng-container
+              *ngIf="experiment.state === ExperimentState.PREVIEW || experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.SCHEDULED; else experimentStateTemplate"
+            >
+              <app-shared-icons class="icons" [iconType]="experiment.state"></app-shared-icons>
+            </ng-container>
+            <ng-template #experimentStateTemplate>
+              <span class="experiment-state-circle" [ngStyle]="{'backgroundColor': experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+            </ng-template>
+            <span
+              [ngClass]="{'experiment-state--light': experiment.state === ExperimentState.INACTIVE || experiment.state === ExperimentState.CANCELLED }"
+            >
+              {{ experiment.state | experimentState }}
+            </span>
+          </div>
           <span class="experiment-schedule" *ngIf="experiment.state === ExperimentState.SCHEDULED">
             {{ '(' + (experiment.startOn | date: 'medium') + ')' }}
           </span>
@@ -126,28 +138,64 @@
             <ng-container *ngFor="let context of experiment.context; let contextIndex = index">
               <mat-chip
                 *ngIf="contextIndex < 2; else moreContextTemplate"
-                class="context"
-                (click)="filterExperimentByContext(context)"
-                #tagValue=""
+                class="chip"
+                (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
               >
                 {{ context }}
               </mat-chip>
               <ng-template #moreContextTemplate>
                 <mat-chip
-                  class="context"
-                  *ngIf="isAllContextVisible(experiment.id)"
-                  (click)="filterExperimentByContext(context)"
+                  class="chip"
+                  *ngIf="isAllChipsVisible(experiment.id, 'contextVisibility')"
+                  (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
                 >
                   {{ context }}
                 </mat-chip>
               </ng-template>
             </ng-container>
             <mat-chip
-              *ngIf="experiment.context.length > 2 && !isAllContextVisible(experiment.id)"
-              class="context context--clicked"
-              (click)="setContextVisible(experiment.id)"
+              *ngIf="experiment.context.length > 2 && !isAllChipsVisible(experiment.id, 'contextVisibility')"
+              class="chip"
+              (click)="setChipsVisible(experiment.id, 'contextVisibility')"
             >
               {{ '+' + (experiment.context.length - 2) }}
+            </mat-chip>
+          </mat-chip-list>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="tags">
+        <th mat-header-cell *matHeaderCellDef>
+          <span [matTooltip]="'home.experiments-table.tags-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'global.tags.text' | translate }}
+          </span>
+        </th>
+        <td mat-cell *matCellDef="let experiment">
+          <mat-chip-list>
+            <ng-container *ngFor="let tag of experiment.tags; let tagIndex = index">
+              <mat-chip
+                *ngIf="tagIndex < 2; else moreTagsTemplate"
+                class="chip"
+                (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
+              >
+                {{ tag }}
+              </mat-chip>
+              <ng-template #moreTagsTemplate>
+                <mat-chip
+                  class="chip"
+                  *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
+                  (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
+                >
+                  {{ tag }}
+                </mat-chip>
+              </ng-template>
+            </ng-container>
+            <mat-chip
+              *ngIf="experiment.tags.length > 2 && !isAllChipsVisible(experiment.id, 'tagsVisibility')"
+              class="chip"
+              (click)="setChipsVisible(experiment.id, 'tagsVisibility')"
+            >
+              {{ '+' + (experiment.tags.length - 2) }}
             </mat-chip>
           </mat-chip-list>
         </td>
@@ -178,14 +226,6 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="view">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let experiment">
-          <a [routerLink]="['/home', 'detail', experiment.id]" class="link">{{
-            'home.experiments-table.text.view' | translate
-          }}</a>
-        </td>
-      </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

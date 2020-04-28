@@ -3,7 +3,7 @@ $tab-text-color: #8f9bb3;
 .tabs-container {
   display: flex;
   flex-direction: column;
-  padding: 0 4.375rem 2rem;
+  padding: 0 2.75rem 2.75rem;
 
   .title {
     margin-bottom: 0;
@@ -23,14 +23,11 @@ $tab-text-color: #8f9bb3;
   }
 
   .tabs-wrapper {
+    flex-grow: 1;
     border-radius: 10px;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     background-color: var(--white);
     padding: 2rem;
-  }
-
-  .tabs-tabs {
-    margin-bottom: 30px;
   }
 
   ::ng-deep .logs-tabs .mat-tab-header {
