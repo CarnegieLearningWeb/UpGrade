@@ -14,7 +14,6 @@ import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
-import { ASSIGNMENT_TYPE } from '../../types/index';
 import { Experiment } from '../models/Experiment';
 
 // interface IExperimentEnrollmentStatsByDate {
@@ -122,22 +121,10 @@ export class AnalyticsService {
             where: { experimentId: In(experimentIdAndPoint) },
             relations: ['user'],
           }),
-          this.individualAssignmentRepository.find({
-            where: { experimentId, assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC },
-            relations: ['experiment', 'user', 'condition'],
-          }),
-          this.individualExclusionRepository.find({
-            where: { experimentId },
-            relations: ['experiment', 'user'],
-          }),
-          this.groupAssignmentRepository.find({
-            where: { experimentId },
-            relations: ['experiment', 'condition'],
-          }),
-          this.groupExclusionRepository.find({
-            where: { experimentId },
-            relations: ['experiment'],
-          }),
+          this.individualAssignmentRepository.findIndividualAssignmentsByExperimentId(experimentId),
+          this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
+          this.groupAssignmentRepository.findGroupAssignmentsByExperimentId(experimentId),
+          this.groupExclusionRepository.findExcludedByExperimentId(experimentId),
         ]);
 
         const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
@@ -175,14 +162,8 @@ export class AnalyticsService {
     });
     const promiseData = await Promise.all([
       this.monitoredExperimentPointRepository.getByDateRange(experimentIdAndPoint, from, to),
-      this.individualAssignmentRepository.find({
-        where: { experimentId, assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC },
-        relations: ['experiment', 'user', 'condition'],
-      }),
-      this.individualExclusionRepository.find({
-        where: { experimentId },
-        relations: ['experiment', 'user'],
-      }),
+      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentId(experimentId),
+      this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
     ]);
     const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
     const individualAssignments: IndividualAssignment[] = promiseData[1] as any;
