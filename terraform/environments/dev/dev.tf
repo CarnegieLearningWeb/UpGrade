@@ -78,6 +78,12 @@ module "aws-ebs-app" {
   PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
 }
 
+resource "null_resource" "update-ebs-env" { 
+  provisioner "local-exec" {
+    command = "aws elasticbeanstalk update-environment --environment-name ${module.aws-ebs-app.application} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname}/api"
+  }
+}
+
 module "aws-code-pipeline"{
 
   source = "../../aws-codepipeline"
