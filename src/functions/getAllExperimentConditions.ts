@@ -1,5 +1,5 @@
 import fetchDataService from '../common/fetchDataService';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 
 export default async function getAllExperimentConditions(url: string, userId: string, context: string): Promise<IExperimentAssignment[]> {
   try {

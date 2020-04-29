@@ -1,4 +1,4 @@
-import { SERVER_ERROR } from 'ees_types';
+import { SERVER_ERROR } from 'upgrade_types';
 export declare namespace Interfaces {
     interface IConfig {
         hostURL: string;

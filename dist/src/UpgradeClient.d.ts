@@ -1,5 +1,5 @@
 import { Interfaces } from './identifiers';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 export default class UpgradeClient {
     private static hostUrl;
     private static api;

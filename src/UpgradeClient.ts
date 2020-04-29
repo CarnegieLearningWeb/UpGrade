@@ -2,7 +2,7 @@ import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
