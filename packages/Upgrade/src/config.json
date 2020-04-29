@@ -60,5 +60,25 @@
       "email": "dhaval.prajapati@playpowerlabs.com",
       "role": "admin"
     }
+  ],
+  "context": [
+    "app",
+    "addition",
+    "subtraction",
+    "multiplication",
+    "division",
+    "addition simple",
+    "subtraction simple",
+    "multiplication simple",
+    "division simple",
+    "addition medium",
+    "subtraction medium",
+    "multiplication medium",
+    "division medium",
+    "addition hard",
+    "subtraction hard",
+    "multiplication hard",
+    "division hard",
+    "fraction"
   ]
 }
