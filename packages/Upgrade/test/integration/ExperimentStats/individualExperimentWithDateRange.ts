@@ -81,10 +81,7 @@ export default async function testCase(): Promise<void> {
 
   // check stats
   let checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.individualAssignments.length).toEqual(0);
-  expect(checkData.individualExclusionCount).toEqual(0);
-  expect(checkData.groupAssignments.length).toEqual(0);
-  expect(checkData.groupExclusionCount).toEqual(0);
+  expect(checkData.length).toEqual(0);
 
   // change experiment state to enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
@@ -93,19 +90,13 @@ export default async function testCase(): Promise<void> {
   toDate = new Date();
 
   checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.individualAssignments.length).toEqual(0);
-  expect(checkData.individualExclusionCount).toEqual(2);
-  expect(checkData.groupAssignments.length).toEqual(0);
-  expect(checkData.groupExclusionCount).toEqual(0);
+  expect(checkData.length).toEqual(0);
 
   await new Promise((r) => setTimeout(r, 100));
   fromDate = new Date();
   toDate = new Date();
   checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.individualAssignments.length).toEqual(0);
-  expect(checkData.individualExclusionCount).toEqual(2);
-  expect(checkData.groupAssignments.length).toEqual(0);
-  expect(checkData.groupExclusionCount).toEqual(0);
+  expect(checkData.length).toEqual(0);
 
   // check state
 
@@ -125,10 +116,7 @@ export default async function testCase(): Promise<void> {
   toDate = new Date();
 
   checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.individualAssignments.length).toEqual(1);
-  expect(checkData.individualExclusionCount).toEqual(2);
-  expect(checkData.groupAssignments.length).toEqual(0);
-  expect(checkData.groupExclusionCount).toEqual(0);
+  expect(checkData.length).toEqual(1);
 
   // change experiment state to enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
@@ -144,8 +132,5 @@ export default async function testCase(): Promise<void> {
   toDate = new Date();
 
   checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.individualAssignments.length).toEqual(0);
-  expect(checkData.individualExclusionCount).toEqual(3);
-  expect(checkData.groupAssignments.length).toEqual(0);
-  expect(checkData.groupExclusionCount).toEqual(0);
+  expect(checkData.length).toEqual(1);
 }
