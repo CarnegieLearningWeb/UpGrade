@@ -1,20 +1,22 @@
 import { createAction, props } from '@ngrx/store';
-import { Experiment, UpsertExperimentType, ExperimentStateInfo, ExperimentNameVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './experiments.model';
+import {
+  Experiment,
+  UpsertExperimentType,
+  ExperimentStateInfo,
+  ExperimentNameVM,
+  EXPERIMENT_SEARCH_KEY,
+  EXPERIMENT_SORT_KEY,
+  EXPERIMENT_SORT_AS
+} from './experiments.model';
 
-export const actionGetExperiments = createAction(
-  '[Experiment] Get Experiments',
-  props<{ fromStarting?: boolean }>()
-);
+export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
 
 export const actionGetExperimentsSuccess = createAction(
   '[Experiment] Get Experiments Success',
-  props<{ experiments: Experiment[], totalExperiments: number }>()
+  props<{ experiments: Experiment[]; totalExperiments: number }>()
 );
 
-export const actionGetExperimentsFailure = createAction(
-  '[Experiment] Get Experiment Failure',
-  props<{ error: any }>()
-);
+export const actionGetExperimentsFailure = createAction('[Experiment] Get Experiment Failure', props<{ error: any }>());
 
 export const actionStoreExperimentStats = createAction('[Experiment] Store Experiment Stats', props<{ stats: any }>());
 
@@ -33,9 +35,7 @@ export const actionGetExperimentByIdSuccess = createAction(
   props<{ experiment: Experiment }>()
 );
 
-export const actionGetExperimentByIdFailure = createAction(
-  '[Experiment] Get Experiment By Id Failure'
-);
+export const actionGetExperimentByIdFailure = createAction('[Experiment] Get Experiment By Id Failure');
 
 export const actionUpsertExperiment = createAction(
   '[Experiment] Upsert Experiment',
@@ -79,8 +79,6 @@ export const actionFetchAllPartitionSuccess = createAction(
 
 export const actionFetchAllPartitionFailure = createAction('[Experiment] Fetch All Partitions Failure');
 
-
-
 export const actionSetIsLoadingExperiment = createAction(
   '[Experiment] Set Is Loading Experiment',
   props<{ isLoadingExperiment: boolean }>()
@@ -96,10 +94,7 @@ export const actionSetSearchKey = createAction(
   props<{ searchKey: EXPERIMENT_SEARCH_KEY }>()
 );
 
-export const actionSetSearchString = createAction(
-  '[Experiment] Set Search String',
-  props<{ searchString: string }>()
-);
+export const actionSetSearchString = createAction('[Experiment] Set Search String', props<{ searchString: string }>());
 
 export const actionSetSortKey = createAction(
   '[Experiment] Set Sort key value',
@@ -111,28 +106,29 @@ export const actionSetSortingType = createAction(
   props<{ sortingType: EXPERIMENT_SORT_AS }>()
 );
 
-export const actionFetchAllExperimentNames = createAction(
-  '[Experiment] Fetch All Experiment Names'
-);
+export const actionFetchAllExperimentNames = createAction('[Experiment] Fetch All Experiment Names');
 
 export const actionFetchAllExperimentNamesSuccess = createAction(
   '[Experiment] Fetch All Experiment Names Success',
   props<{ allExperimentNames: ExperimentNameVM[] }>()
 );
 
-export const actionFetchAllExperimentNamesFailure = createAction(
-  '[Experiment] Fetch All Experiment Names Failure'
-);
+export const actionFetchAllExperimentNamesFailure = createAction('[Experiment] Fetch All Experiment Names Failure');
 
-export const actionFetchExperimentContext = createAction(
-  '[Experiment] Fetch Experiment Context'
-);
+export const actionFetchExperimentContext = createAction('[Experiment] Fetch Experiment Context');
 
 export const actionFetchExperimentContextSuccess = createAction(
   '[Experiment] Fetch Experiment Context Success',
   props<{ context: string[] }>()
 );
 
-export const actionFetchExperimentContextFailure = createAction(
-  '[Experiment] Fetch Experiment Context Failure'
+export const actionFetchExperimentContextFailure = createAction('[Experiment] Fetch Experiment Context Failure');
+
+export const actionExportExperimentInfo = createAction(
+  '[Experiment] Export Experiment Info',
+  props<{ experimentId: string; experimentName: string }>()
 );
+
+export const actionExportExperimentInfoSuccess = createAction('[Experiment] Export Experiment Info Success');
+
+export const actionExportExperimentInfoFailure = createAction('[Experiment] Export Experiment Info Failure');

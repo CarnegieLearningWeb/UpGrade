@@ -4,7 +4,11 @@ import { MatDialog } from '@angular/material';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
-import { EXPERIMENT_STATE, ExperimentVM, EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
+import {
+  EXPERIMENT_STATE,
+  ExperimentVM,
+  EXPERIMENT_SEARCH_KEY
+} from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
@@ -26,7 +30,6 @@ enum DialogType {
   styleUrls: ['./view-experiment.component.scss']
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
-
   permissions: UserPermission;
   permissionsSub: Subscription;
   experiment: ExperimentVM;
@@ -43,27 +46,28 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
-      this.permissions = permission
+      this.permissions = permission;
     });
-    this.experimentSub = this.experimentService.selectedExperiment$.pipe(
-      filter(experiment => !!experiment)
-    ).subscribe(experiment => {
-      this.experiment = experiment;
-    });
+    this.experimentSub = this.experimentService.selectedExperiment$
+      .pipe(filter(experiment => !!experiment))
+      .subscribe(experiment => {
+        this.experiment = experiment;
+      });
   }
 
   openDialog(dialogType: DialogType) {
     const dialogComponent =
       dialogType === DialogType.CHANGE_STATUS
         ? ExperimentStatusComponent
-        : (dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE ?  PostExperimentRuleComponent : NewExperimentComponent);
+        : dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE
+        ? PostExperimentRuleComponent
+        : NewExperimentComponent;
     const dialogRef = this.dialog.open(dialogComponent as any, {
       width: '55%',
       data: { experiment: clonedeep(this.experiment) }
     });
 
-    dialogRef.afterClosed().subscribe(() => {
-    });
+    dialogRef.afterClosed().subscribe(() => {});
   }
 
   searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: string) {
@@ -81,6 +85,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       // Add code of further actions after deleting experiment
     });
+  }
+
+  exportExperimentInfo(experimentId: string, experimentName: string) {
+    // TODO: Find a better way for this
+    this.experimentService.exportExperimentInfo(experimentId, experimentName);
   }
 
   get DialogType() {

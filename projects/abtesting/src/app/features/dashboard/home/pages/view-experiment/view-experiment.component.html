@@ -15,16 +15,21 @@
       <div class="action-buttons">
         <button
           mat-flat-button
-          class="edit-button"
+          class="button"
           (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
           *ngIf="
-          permissions?.experiments.update && experiment.state !== ExperimentState.ENROLLING && experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
+            permissions?.experiments.update &&
+            experiment.state !== ExperimentState.ENROLLING &&
+            experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
           "
         >
           {{ 'home.view-experiment.edit-button.text' | translate }}
         </button>
-        <button mat-flat-button class="delete-button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
+        <button mat-flat-button class="button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
           {{ 'home.view-experiment.delete-button.text' | translate }}
+        </button>
+        <button mat-flat-button class="button" (click)="exportExperimentInfo(experiment.id, experiment.name)">
+          {{ 'home.view-experiment.export-button.text' | translate }}
         </button>
       </div>
     </div>
@@ -75,10 +80,7 @@
           <span>{{ 'home-global.unit-of-assignment.text' | translate | uppercase }} </span>
           <span class="state-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
           <ng-container *ngIf="experiment.group">
-            <span
-              class="state-data-group"
-              *ngIf="experiment.group?.length < 30; else experimentGroupTruncate"
-            >
+            <span class="state-data-group" *ngIf="experiment.group?.length < 30; else experimentGroupTruncate">
               {{ '( ' + (experiment.group | titlecase) + ' )' }}
             </span>
             <ng-template #experimentGroupTruncate>
@@ -144,7 +146,11 @@
     <div class="experiment-props">
       <span class="experiment-props-title">{{ 'global.context.text' | translate }}</span>
       <div class="experiment-props-values">
-        <span (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)" *ngFor="let context of experiment.context">{{ context }}</span>
+        <span
+          (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
+          *ngFor="let context of experiment.context"
+          >{{ context }}</span
+        >
       </div>
     </div>
 
@@ -152,7 +158,9 @@
     <div class="experiment-props" *ngIf="experiment.tags.length">
       <span class="experiment-props-title">{{ 'global.tags.text' | translate }}</span>
       <div class="experiment-props-values">
-        <span (click)="searchExperiment(ExperimentSearchKey.TAG, tag)" *ngFor="let tag of experiment.tags">{{ tag }}</span>
+        <span (click)="searchExperiment(ExperimentSearchKey.TAG, tag)" *ngFor="let tag of experiment.tags">{{
+          tag
+        }}</span>
       </div>
     </div>
 
@@ -160,7 +168,6 @@
     <div class="table-container">
       <span class="title">{{ 'home.view-experiment.experiment-conditions-title.text' | translate }}</span>
       <mat-table [dataSource]="experiment.conditions" class="table">
-
         <!-- Number Column -->
         <ng-container matColumnDef="no">
           <mat-header-cell *matHeaderCellDef>
@@ -220,7 +227,7 @@
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedConditionColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedConditionColumns;"></mat-row>
+        <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
       </mat-table>
     </div>
 
@@ -228,7 +235,6 @@
     <div class="table-container">
       <span class="title">{{ 'home.view-experiment.experiment-partitions-title.text' | translate }}</span>
       <mat-table [dataSource]="experiment.partitions" class="table">
-
         <!-- Number Column -->
         <ng-container matColumnDef="no">
           <mat-header-cell *matHeaderCellDef>
@@ -280,7 +286,7 @@
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedPartitionColumns;"></mat-row>
+        <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>
       </mat-table>
     </div>
 
@@ -289,6 +295,5 @@
 
     <!-- Enrollment by condition table -->
     <home-enrollment-condition-table [experiment]="experiment"></home-enrollment-condition-table>
-
   </div>
 </div>
