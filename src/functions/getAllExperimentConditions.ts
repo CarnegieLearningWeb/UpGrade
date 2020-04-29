@@ -15,7 +15,8 @@ export default async function getAllExperimentConditions(url: string, userId: st
             ...data,
             assignedCondition: {
               conditionCode: data.assignedCondition.conditionCode,
-              twoCharacterId: data.assignedCondition.twoCharacterId
+              twoCharacterId: data.assignedCondition.twoCharacterId,
+              description: data.assignedCondition.description
             }
           }
         });
