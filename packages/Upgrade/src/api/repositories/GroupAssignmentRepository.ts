@@ -28,6 +28,23 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       });
   }
 
+  public async findGroupAssignmentsByExperimentId(experimentId: string): Promise<GroupAssignment[]> {
+    return this.createQueryBuilder('groupAssignment')
+      .leftJoinAndSelect('groupAssignment.experiment', 'experiment')
+      .leftJoinAndSelect('groupAssignment.condition', 'condition')
+      .where('experiment.id = :experimentId', { experimentId })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findGroupAssignmentsByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async saveRawJson(
     rawData: Omit<GroupAssignment, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id'>
   ): Promise<GroupAssignment> {

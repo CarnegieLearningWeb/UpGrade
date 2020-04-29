@@ -88,10 +88,28 @@ export class AnalyticsController {
     );
   }
 
+  /**
+   * @swagger
+   * /stats/csv/{experimentId}:
+   *    get:
+   *       description: Get report by experimentId
+   *       parameters:
+   *         - in: path
+   *           name: experimentId
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment Id
+   *       tags:
+   *         - Analytics
+   *       responses:
+   *          '200':
+   *            description: Get Report by Experiment Id
+   */
   @Get('/csv/:experimentId')
-  @ContentType('text/cvs')
-  @Header('Content-disposition', 'attachment; filename=testing.csv')
-  public async downloadCSV(@Param('experimentId') experimentId: string): Promise<any> {
+  @ContentType('text/csv')
+  @Header('Content-disposition', 'attachment; filename="experiment.csv"')
+  public async downloadCSV(@Param('experimentId') experimentId: string): Promise<string> {
     return this.auditService.getCSVData(experimentId);
   }
 }
