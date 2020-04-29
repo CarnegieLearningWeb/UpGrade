@@ -17,57 +17,12 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { ASSIGNMENT_TYPE } from '../../types/index';
 import { Experiment } from '../models/Experiment';
 
-// interface IExperimentEnrollmentStatsByDate {
-//   individualAssignments: IndividualAssignment[];
-//   individualExclusionCount: number;
-//   groupAssignments: GroupAssignment[];
-//   groupExclusionCount: number;
-// }
-
-// interface RelevantDocuments {
-//   id: string;
-//   documentIds: string[];
-// }
-
-// interface ConditionStats {
-//   id: string;
-//   totalUsers: string[];
-//   totalGroups: string[];
-//   partitions: Array<{
-//     id: string;
-//     totalUsers: string[];
-//     totalGroups: string[];
-//   }>;
-// }
-
-// interface ConditionStats {
-
-// }
-
-// interface PartitionStats {
-//   id: string;
-//   totalUsers: string[];
-//   totalGroups: [];
-//   conditions: Array<{
-//     id: string;
-//     totalUsers: string[];
-//     totalGroups: string[];
-//   }>;
-// }
-
-// interface IExperimentDateStat {
-//   individualExclusionCount: number;
-//   groupExclusionCount: number;
-//   conditionsStats: RelevantDocuments[];
-//   partitionsStats: RelevantDocuments[];
-//   markedDocuments: MonitoredExperimentPoint[];
-// }
-
 interface IExperimentDateStat {
   userId: string;
   groupId: string | undefined;
   conditionId: string;
   partitionIds: string[];
+  createdAt: any;
 }
 
 @Service()
@@ -195,6 +150,9 @@ export class AnalyticsService {
       const userGroup = monitoredExperimentPoint.user.workingGroup
         ? monitoredExperimentPoint.user.workingGroup[experiment.group]
         : undefined;
+      const createdAt = document
+        ? { [monitoredExperimentPoint.experimentId]: monitoredExperimentPoint.createdAt, ...document.createdAt }
+        : { [monitoredExperimentPoint.experimentId]: monitoredExperimentPoint.createdAt };
       userMap.set(monitoredExperimentPoint.user.id, {
         userId: monitoredExperimentPoint.user.id,
         groupId: experiment.group ? userGroup : undefined,
@@ -202,6 +160,7 @@ export class AnalyticsService {
           ? [...document.partitionIds, monitoredExperimentPoint.experimentId]
           : [monitoredExperimentPoint.experimentId],
         conditionId: 'default',
+        createdAt,
       });
     });
 
