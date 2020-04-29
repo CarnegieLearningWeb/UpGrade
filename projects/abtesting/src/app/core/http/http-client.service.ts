@@ -24,16 +24,14 @@ export class HttpClientService {
   get(url: string, responseType?: any) {
     const headers = this.createAuthorizationHeader();
     const options = responseType ? { headers, responseType } : { headers };
-    return this.http
-      .get(url, options)
-      .pipe(
-        catchError(e => {
-          if (e.status === 401) {
-            this.authService.authLogout();
-          }
-          return throwError(e);
-        })
-      );
+    return this.http.get(url, options).pipe(
+      catchError(e => {
+        if (e.status === 401) {
+          this.authService.authLogout();
+        }
+        return throwError(e);
+      })
+    );
   }
 
   post(url: string, data: any) {

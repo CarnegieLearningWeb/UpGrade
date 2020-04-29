@@ -85,3 +85,8 @@ export const selectAllExperimentNames = createSelector(
   selectExperimentState,
   (state) => state.allExperimentNames
 );
+
+export const selectExperimentContext = createSelector(
+  selectExperimentState,
+  (state) => state.context
+);

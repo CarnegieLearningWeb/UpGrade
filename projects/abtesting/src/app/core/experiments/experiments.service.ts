@@ -1,6 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Observable, combineLatest } from 'rxjs';
-import { Experiment, UpsertExperimentType, ExperimentVM, ExperimentStateInfo, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './store/experiments.model';
+import {
+  Experiment,
+  UpsertExperimentType,
+  ExperimentVM,
+  ExperimentStateInfo,
+  EXPERIMENT_SEARCH_KEY,
+  EXPERIMENT_SORT_KEY,
+  EXPERIMENT_SORT_AS
+} from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
@@ -10,7 +18,8 @@ import {
   selectAllExperimentNames,
   selectExperimentById,
   selectSearchString,
-  selectSearchKey
+  selectSearchKey,
+  selectExperimentContext
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -36,28 +45,22 @@ export class ExperimentService {
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
+  experimentContext$ = this.store$.pipe(select(selectExperimentContext));
 
   selectSearchExperimentParams(): Observable<Object> {
-    return combineLatest(
-      this.selectSearchKey$,
-      this.selectSearchString$
-    ).pipe(
+    return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString })),
       first()
     );
   }
 
-
   isInitialExperimentsLoading() {
-    return combineLatest(
-      this.store$.pipe(select(selectIsLoadingExperiment)),
-      this.experiments$
-    ).pipe(
+    return combineLatest(this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$).pipe(
       map(([isLoading, experiments]) => {
-        return !isLoading || experiments.length
+        return !isLoading || experiments.length;
       })
-    )
+    );
   }
 
   loadExperiments(fromStarting?: boolean) {
@@ -82,15 +85,13 @@ export class ExperimentService {
   }
 
   selectExperimentById(experimentId: string) {
-    return combineLatest(
-      this.store$.pipe(select(selectExperimentById, { experimentId }))
-    ).pipe(
+    return combineLatest(this.store$.pipe(select(selectExperimentById, { experimentId }))).pipe(
       map(([experiment]) => {
         if (!experiment) {
           this.fetchExperimentById(experimentId);
         }
         return experiment;
-      }),
+      })
     );
   }
 

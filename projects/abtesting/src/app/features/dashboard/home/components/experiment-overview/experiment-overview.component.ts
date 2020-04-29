@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input } from '@angular/core';
-import { MatChipInputEvent } from '@angular/material';
+import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { MatChipInputEvent, MatAutocompleteSelectedEvent } from '@angular/material';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'upgrade_types';
 import {
   GroupTypes,
@@ -9,9 +9,11 @@ import {
   NewExperimentPaths
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
-import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
+import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
 import * as find from 'lodash.find';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { Observable, Subscription } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
 
 @Component({
   selector: 'home-experiment-overview',
@@ -19,9 +21,10 @@ import * as find from 'lodash.find';
   styleUrls: ['./experiment-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExperimentOverviewComponent implements OnInit {
+export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
+  @ViewChild('contextInput', { static: false }) contextInput: ElementRef<HTMLInputElement>;
   overviewForm: FormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 
@@ -42,11 +45,28 @@ export class ExperimentOverviewComponent implements OnInit {
   isChipSelectable = true;
   isChipRemovable = true;
   addChipOnBlur = true;
+
+  // Used for autocomplete context input
+  experimentContext$: Observable<string[]>;
+  allContext = [];
+  allContextSub: Subscription;
+  autoCompleteContext = new FormControl();
+
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  constructor(private _formBuilder: FormBuilder) { }
+  constructor(
+    private _formBuilder: FormBuilder,
+    private experimentService: ExperimentService
+  ) {
+    this.experimentContext$ = this.autoCompleteContext.valueChanges.pipe(
+      startWith(null),
+      map((context: string | null) => context ? this._filter(context) : this.allContext.slice()));
+  }
 
   ngOnInit() {
+    this.allContextSub = this.experimentService.experimentContext$.subscribe(context => {
+      this.allContext = context;
+    });
     this.overviewForm = this._formBuilder.group(
       {
         experimentName: [null, Validators.required],
@@ -117,14 +137,39 @@ export class ExperimentOverviewComponent implements OnInit {
       : { groupType: GroupTypes.OTHER, customGroupName: this.experimentInfo.group };
   }
 
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.allContext.filter(context => context.toLowerCase().indexOf(filterValue) === 0);
+  }
+
+  selectedAutoCompleteContext(event: MatAutocompleteSelectedEvent): void {
+    const contextValue = event.option.viewValue.toLowerCase();
+    if (this.contexts.value.indexOf(contextValue.trim()) === -1) {
+      this.contexts.setValue([...this.contexts.value, contextValue.trim()]);
+    }
+    this.contextInput.nativeElement.value = '';
+    this.autoCompleteContext.setValue(null);
+  }
+
   // Used to add tags or contexts
   addChip(event: MatChipInputEvent, type: string): void {
     const input = event.input;
-    const value = event.value;
+    const value = event.value.toLowerCase();
 
     // Add chip
     if ((value || '').trim()) {
-      this[type].setValue([...this[type].value, value.trim()]);
+      switch (type) {
+        case 'contexts':
+          if (this.allContext.indexOf(value.trim()) !== -1 && this.contexts.value.indexOf(value.trim()) === -1) {
+            this[type].setValue([...this[type].value, value.trim()]);
+          }
+          break;
+        case 'tags':
+          if (this.tags.value.indexOf(value.toLowerCase().trim()) === -1) {
+            this[type].setValue([...this[type].value, value.trim()]);
+          }
+          break;
+      }
       this[type].updateValueAndValidity();
     }
 
@@ -177,6 +222,10 @@ export class ExperimentOverviewComponent implements OnInit {
         }
         break;
     }
+  }
+
+  ngOnDestroy() {
+    this.allContextSub.unsubscribe();
   }
 
   get NewExperimentDialogEvents() {

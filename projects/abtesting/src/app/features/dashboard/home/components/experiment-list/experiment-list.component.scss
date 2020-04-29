@@ -1,14 +1,20 @@
+$experiment-state-light-color: #8f9bb3;
+$extra-small-font-size: 10px;
+
 .experiments-list-container {
   border-radius: 10px;
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
   background-color: var(--white);
-  padding: 2rem;
+  height: 100%;
 
   .header {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
+    padding: 0 2.25rem;
+    height: 94px;
 
     .filter-options {
       margin-right: 10px;
@@ -45,6 +51,8 @@
 
   .experiment-list-table-container {
     position: relative;
+    margin-top: 8px;
+    padding: 0 2.25rem;
     overflow: auto;
 
     .spinner {
@@ -82,25 +90,33 @@
       }
     }
 
-    .mat-cell {
+    .mat-cell,
+    .mat-header-cell {
       padding: 10px 5px;
-      width: 15%;
       word-break: break-word;
 
-      &:first-of-type {
-        padding-left: 24px;
-      }
-
       &.cdk-column-name {
-        width: 20%;
-      }
-
-      &.cdk-column-view {
-        width: 10%;
+        width: 15%;
       }
 
       &.cdk-column-postExperimentRule {
+        width: 16%;
         text-align: center;
+      }
+
+      &.cdk-column-enrollment {
+        width: 9%;
+        text-align: center;
+      }
+
+      &.cdk-column-createdAt {
+        width: 13%;
+      }
+
+      &.cdk-column-context,
+      &.cdk-column-tags,
+      &.cdk-column-state {
+        width: 14%;
       }
     }
 
@@ -114,7 +130,30 @@
 
     .experiment {
       &-name {
-        font-size: var(--text-size-small);
+        text-decoration: underline;
+        color: var(--black-2);
+      }
+
+      &-state {
+        display: flex;
+        align-items: center;
+
+        &--light {
+          color: $experiment-state-light-color;
+        }
+
+        &-circle {
+          display: inline-block;
+          margin-right: 6px;
+          border-radius: 50%;
+          width: 12px;
+          height: 12px;
+        }
+
+        .icons {
+          display: inline-flex;
+          margin-right: 6px;
+        }
       }
 
       &-description,
@@ -122,33 +161,26 @@
       &-revertTo {
         color: var(--grey-3);
         font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
+        font-size: $extra-small-font-size;
         font-weight: 400;
       }
     }
 
-    .context {
+    .chip {
       height: auto;
       color: var(--black-2);
       font-family: 'Open Sans';
       font-size: var(--text-size-x-small);
       font-weight: 400;
 
-      &--clicked {
-        &:hover {
-          cursor: pointer;
-        }
+      &:hover {
+        cursor: pointer;
       }
     }
 
     .mat-form-field {
       width: 40%;
       font-size: var(--text-size-small);
-    }
-
-    .link {
-      text-decoration: none;
-      color: var(--blue);
     }
   }
 }
