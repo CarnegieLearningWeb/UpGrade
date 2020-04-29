@@ -1,0 +1,130 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect":"Allow",
+        "Action": [
+            "s3:CreateBucket",
+            "s3:ListObjects",
+            "s3:GetObjectAcl",
+            "s3:GetObjectVersionAcl",
+            "s3:DeleteObject",
+            "s3:HeadBucket",
+            "s3:GetBucketNotification",
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:GetBucketTagging",
+            "s3:ListBucketVersions",
+            "s3:ListBucket",
+            "s3:GetBucketPolicy",
+            "s3:DeleteBucket",
+            "s3:PutBucketVersioning",
+            "s3:GetBucketAcl",
+            "s3:ListAllMyBuckets",
+            "s3:GetBucketLocation",
+            "s3:GetObjectVersion"
+        ],
+        "Resource": [
+          "*"
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "codecommit:UploadArchive",
+          "codecommit:Get*",
+          "codecommit:BatchGet*",
+          "codecommit:Describe*",
+          "codecommit:BatchDescribe*",
+          "codecommit:GitPull"
+        ],
+        "Resource" : [
+          "*"
+        ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "codebuild:BatchGetBuilds",
+          "codebuild:StartBuild"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Action": [
+          "ecs:*",
+          "events:DescribeRule",
+          "events:DeleteRule",
+          "events:ListRuleNamesByTarget",
+          "events:ListTargetsByRule",
+          "events:PutRule",
+          "events:PutTargets",
+          "events:RemoveTargets",
+          "iam:ListAttachedRolePolicies",
+          "iam:ListInstanceProfiles",
+          "iam:ListRoles",
+          "logs:CreateLogGroup",
+          "logs:DescribeLogGroups",
+          "logs:FilterLogEvents"
+        ],
+        "Resource": "*",
+        "Effect": "Allow"
+      },
+      {
+        "Action": "iam:PassRole",
+        "Effect": "Allow",
+        "Resource": [
+          "*"
+        ],
+        "Condition": {
+          "StringLike": {
+            "iam:PassedToService": "ecs-tasks.amazonaws.com"
+          }
+        }
+      },
+      {
+        "Action": "iam:PassRole",
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:iam::*:role/ecsInstanceRole*"
+        ],
+        "Condition": {
+          "StringLike": {
+            "iam:PassedToService": [
+              "ec2.amazonaws.com",
+              "ec2.amazonaws.com.cn"
+            ]
+          }
+        }
+      },
+      {
+        "Action": "iam:PassRole",
+        "Effect": "Allow",
+        "Resource": [
+          "arn:aws:iam::*:role/ecsAutoscaleRole*"
+        ],
+        "Condition": {
+          "StringLike": {
+            "iam:PassedToService": [
+              "application-autoscaling.amazonaws.com",
+              "application-autoscaling.amazonaws.com.cn"
+            ]
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": "iam:CreateServiceLinkedRole",
+        "Resource": "*",
+        "Condition": {
+          "StringLike": {
+            "iam:AWSServiceName": [
+              "ecs.amazonaws.com",
+              "spot.amazonaws.com",
+              "spotfleet.amazonaws.com"
+            ]
+          }
+        }
+      }
+    ]
+  }
