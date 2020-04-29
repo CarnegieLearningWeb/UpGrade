@@ -5,7 +5,7 @@
       <mat-label>{{ 'home.change-experiment-status.current-status.text' | translate }}</mat-label>
       <mat-select disabled="true" [(value)]="experimentInfo.state">
         <mat-option *ngFor="let status of experimentStatus" [value]="status.value">
-          {{ status.value | titlecase }}
+          {{ status.value | experimentState }}
         </mat-option>
       </mat-select>
     </mat-form-field>
