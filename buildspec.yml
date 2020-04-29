@@ -8,8 +8,9 @@ phases:
       - npm install
   build:
     commands:
-      - npm run build:$ENVIRONMENT
-artifacts:
-  files:
-    - ./**/*
-  base-directory: 'dist/abtesting*'
+      - npm run build
+      - aws s3 sync --delete 'dist/abtesting/' s3://$bucket_name --cache-control max-age=3600
+  post_build:
+    commands:
+      - echo 'Invalidating distribuition cache'
+      - aws cloudfront create-invalidation --distribution-id $distribuition_id --paths "/*"
