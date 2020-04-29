@@ -48,6 +48,22 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       });
   }
 
+  public async findExcludedByExperimentId(experimentId: string): Promise<GroupExclusion[]> {
+    return this.createQueryBuilder('groupExclusion')
+      .leftJoinAndSelect('groupExclusion.experiment', 'experiment')
+      .where('experiment.id = :experimentId', { experimentId })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findExcludedByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async deleteByExperimentIds(experimentIds: string[]): Promise<GroupExclusion[]> {
     const result = await this.createQueryBuilder('groupExclusion')
       .delete()
