@@ -27,6 +27,7 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
+import * as config from '../../config.json';
 
 @Service()
 export class ExperimentService {
@@ -96,6 +97,10 @@ export class ExperimentService {
 
   public getTotalCount(): Promise<number> {
     return this.experimentRepository.count();
+  }
+
+  public getContext(): string[] {
+    return config.context;
   }
 
   public create(experiment: Experiment, currentUser: User): Promise<Experiment> {

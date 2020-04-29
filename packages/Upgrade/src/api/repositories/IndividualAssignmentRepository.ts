@@ -1,6 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import repositoryError from './utils/repositoryError';
+import { ASSIGNMENT_TYPE } from '../../types';
 
 @EntityRepository(IndividualAssignment)
 export class IndividualAssignmentRepository extends Repository<IndividualAssignment> {
@@ -44,6 +45,27 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       });
 
     return result.raw;
+  }
+
+  public async findIndividualAssignmentsByExperimentId(experimentId: string): Promise<IndividualAssignment[]> {
+    return this.createQueryBuilder('individualAssignment')
+      .leftJoinAndSelect('individualAssignment.experiment', 'experiment')
+      .leftJoinAndSelect('individualAssignment.user', 'user')
+      .leftJoinAndSelect('individualAssignment.condition', 'condition')
+      .where('experiment.id = :experimentId AND individualAssignment.assignmentType = :assignmentType', {
+        experimentId,
+        assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
+      })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findIndividualAssignmentsByExperimentId',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
   }
 
   public async deleteExperimentsForUserId(userId: string, experimentIds: string[]): Promise<IndividualAssignment[]> {

@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, Authorized } from 'routing-controllers';
+import { JsonController, Get, Post, Body, Authorized, ContentType, Param, Header } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { IExperimentEnrollmentStats } from 'upgrade_types';
 import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsValidator';
@@ -86,5 +86,30 @@ export class AnalyticsController {
       auditParams.fromDate,
       auditParams.toDate
     );
+  }
+
+  /**
+   * @swagger
+   * /stats/csv/{experimentId}:
+   *    get:
+   *       description: Get report by experimentId
+   *       parameters:
+   *         - in: path
+   *           name: experimentId
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment Id
+   *       tags:
+   *         - Analytics
+   *       responses:
+   *          '200':
+   *            description: Get Report by Experiment Id
+   */
+  @Get('/csv/:experimentId')
+  @ContentType('text/csv')
+  @Header('Content-disposition', 'attachment; filename="experiment.csv"')
+  public async downloadCSV(@Param('experimentId') experimentId: string): Promise<string> {
+    return this.auditService.getCSVData(experimentId);
   }
 }
