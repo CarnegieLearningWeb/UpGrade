@@ -11,6 +11,8 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_profile" {}
+
 variable "repository_name" {
   description = "Code commit repository name to setup CICD => s3 static website CDN"
 }
