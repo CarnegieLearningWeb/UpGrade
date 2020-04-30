@@ -1,21 +1,22 @@
 resource "aws_elastic_beanstalk_application" "upgrade-app" {
-  name        = "${var.environment}-${var.prefix}-experiment-app"
+  name        = "${var.prefix}-experiment-app"
   description = "app"
 }
 
 resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
-  name                = "${var.environment}-${var.prefix}-experiment-app"
+  count = length(var.environment)
+  name                = "${var.environment[count.index]}-${var.prefix}-experiment-app"
   application         = aws_elastic_beanstalk_application.upgrade-app.name
   solution_stack_name = "64bit Amazon Linux 2018.03 v2.14.3 running Docker 18.09.9-ce"
   setting {
     namespace = "aws:ec2:vpc"
     name      = "VPCId"
-    value     = aws_vpc.main.id
+    value     = aws_vpc.main[count.index].id
   }
   setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = "${aws_subnet.main-private-1.id},${aws_subnet.main-private-2.id}"
+    value     = "${aws_subnet.main-private-1[count.index].id},${aws_subnet.main-private-2[count.index].id}"
   }
   setting {
     namespace = "aws:ec2:vpc"
@@ -25,17 +26,17 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
-    value     = aws_iam_instance_profile.app-ec2-role.name
+    value     = aws_iam_instance_profile.app-ec2-role[count.index].name
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "SecurityGroups"
-    value     = aws_security_group.app-prod.id
+    value     = aws_security_group.app-prod[count.index].id
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "EC2KeyName"
-    value     = aws_key_pair.mykeypair.id
+    value     = aws_key_pair.mykeypair[count.index].id
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
@@ -45,7 +46,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elasticbeanstalk:environment"
     name      = "ServiceRole"
-    value     = aws_iam_role.elasticbeanstalk-service-role.name
+    value     = aws_iam_role.elasticbeanstalk-service-role[count.index].name
   }
   setting {
     namespace = "aws:ec2:vpc"
@@ -55,7 +56,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:ec2:vpc"
     name      = "ELBSubnets"
-    value     = "${aws_subnet.main-public-1.id},${aws_subnet.main-public-2.id}"
+    value     = "${aws_subnet.main-public-1[count.index].id},${aws_subnet.main-public-2[count.index].id}"
   }
   setting {
     namespace = "aws:elb:loadbalancer"
@@ -95,27 +96,27 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_USERNAME"
-    value     = aws_db_instance.app-rds.username
+    value     = aws_db_instance.app-rds[count.index].username
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_PASSWORD"
-    value     = aws_db_instance.app-rds.password
+    value     = aws_db_instance.app-rds[count.index].password
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_DB_NAME"
-    value     = aws_db_instance.app-rds.name
+    value     = aws_db_instance.app-rds[count.index].name
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_HOSTNAME"
-    value     = split(":", aws_db_instance.app-rds.endpoint)[0]
+    value     = split(":", aws_db_instance.app-rds[count.index].endpoint)[0]
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_PORT"
-    value     = split(":", aws_db_instance.app-rds.endpoint)[1]
+    value     = split(":", aws_db_instance.app-rds[count.index].endpoint)[1]
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
@@ -215,7 +216,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "SCHEDULER_STEP_FUNCTION"
-    value     = var.SCHEDULER_STEP_FUNCTION
+    value     = var.SCHEDULER_STEP_FUNCTION[count.index]
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"

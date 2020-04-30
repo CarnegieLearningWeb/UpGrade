@@ -44,9 +44,11 @@ module "aws-state-machine" {
   prefix                = var.prefix 
   app_version           = var.app_version 
   aws_region            = var.aws_region
-  lambda_arn            = module.aws_lambda_function.lambda-arn[0] 
+  lambda_arn            = module.aws_lambda_function.lambda-arn
 }
-
+output "step_function" {
+  value = module.aws-state-machine.step_function_arn
+}
 
 module "aws-ebs-app" {
 
@@ -79,8 +81,9 @@ module "aws-ebs-app" {
 }
 
 resource "null_resource" "update-ebs-env" { 
+  count = length(var.environment)
   provisioner "local-exec" {
-    command = "aws elasticbeanstalk update-environment --environment-name ${module.aws-ebs-app.application} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname}/api"
+    command = "aws elasticbeanstalk update-environment --environment-name ${module.aws-ebs-app.application[count.index]} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname[count.index]}/api"
   }
 }
 
@@ -107,7 +110,4 @@ module "aws-code-pipeline"{
 
 output "ebs-cname" {
   value = module.aws-ebs-app.ebs-cname
-}
-output "step_function" {
-  value = module.aws-state-machine.step_function_arn
 }

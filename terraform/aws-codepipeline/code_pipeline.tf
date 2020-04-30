@@ -4,14 +4,15 @@ data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "current" {}
 
 resource "aws_codepipeline" "codepipeline" {
-  name     = "${var.environment}-${var.prefix}-backend-pipeline"
-  role_arn = aws_iam_role.iam_code_pipeline.arn
+  count = length(var.environment)
+  name     = "${var.environment[count.index]}-${var.prefix}-backend-pipeline"
+  role_arn = aws_iam_role.iam_code_pipeline[count.index].arn
 
   artifact_store {
-    location = aws_s3_bucket.artifacts.bucket
+    location = aws_s3_bucket.artifacts[count.index].bucket
     type     = "S3"
     encryption_key {
-      id   = aws_kms_alias.artifacts.arn
+      id   = aws_kms_alias.artifacts[count.index].arn
       type = "KMS"
     }
   }
@@ -25,11 +26,11 @@ resource "aws_codepipeline" "codepipeline" {
       owner            = "AWS"
       provider         = "CodeCommit"
       version          = "1"
-      output_artifacts = ["${var.environment}-${var.prefix}-backend-docker-source"]
+      output_artifacts = ["${var.environment[count.index]}-${var.prefix}-backend-docker-source"]
 
       configuration = {
         RepositoryName = aws_codecommit_repository.code_repo.repository_name
-        BranchName     = var.branch_name
+        BranchName     = var.branch_name[count.index]
       }
     }
   }
@@ -42,12 +43,12 @@ resource "aws_codepipeline" "codepipeline" {
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
-      input_artifacts  = ["${var.environment}-${var.prefix}-backend-docker-source"]
-      output_artifacts = ["${var.environment}-${var.prefix}-backend-docker-build"]
+      input_artifacts  = ["${var.environment[count.index]}-${var.prefix}-backend-docker-source"]
+      output_artifacts = ["${var.environment[count.index]}-${var.prefix}-backend-docker-build"]
       version          = 1
 
       configuration = {
-        ProjectName = aws_codebuild_project.backend_code_build.name
+        ProjectName = aws_codebuild_project.backend_code_build[count.index].name
       }
     }
   }
@@ -58,12 +59,12 @@ resource "aws_codepipeline" "codepipeline" {
       category        = "Deploy"
       owner           = "AWS"
       provider        = "ElasticBeanstalk"
-      input_artifacts = ["${var.environment}-${var.prefix}-backend-docker-build"]
+      input_artifacts = ["${var.environment[count.index]}-${var.prefix}-backend-docker-build"]
       version         = "1"
 
       configuration = {
-        ApplicationName = var.ebs_app_name
-        EnvironmentName =  var.ebs_env_name
+        ApplicationName = var.ebs_app_name[count.index]
+        EnvironmentName =  var.ebs_env_name[count.index]
       }
     }
   }

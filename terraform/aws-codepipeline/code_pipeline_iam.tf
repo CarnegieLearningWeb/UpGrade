@@ -1,5 +1,6 @@
 resource "aws_iam_role" "iam_code_pipeline" {
-  name = "${var.environment}-${var.prefix}-backend-codepipeline"
+  count = length(var.environment)
+  name = "${var.environment[count.index]}-${var.prefix}-backend-codepipeline"
 
   assume_role_policy = <<EOF
 {
@@ -19,6 +20,7 @@ EOF
 }
 
 data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
+  count = length(var.environment)
   statement {
     sid = ""
 
@@ -48,8 +50,8 @@ data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
       "s3:*",
     ]
     resources = [
-      aws_s3_bucket.artifacts.arn,
-      "${aws_s3_bucket.artifacts.arn}/*",
+      aws_s3_bucket.artifacts[count.index].arn,
+      "${aws_s3_bucket.artifacts[count.index].arn}/*",
       "arn:aws:s3:::elasticbeanstalk*"
     ]
   }
@@ -82,7 +84,7 @@ data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
       "kms:Decrypt",
     ]
     resources = [
-      aws_kms_key.artifacts.arn,
+      aws_kms_key.artifacts[count.index].arn,
     ]
   }
   statement {
@@ -102,9 +104,10 @@ data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
 }
 
 resource "aws_iam_role_policy" "iam_codepipeline" {
-  name   = "${var.environment}-${var.prefix}-codepipeline-policy"
-  role   = aws_iam_role.iam_code_pipeline.id
-  policy = data.aws_iam_policy_document.iam_codepipeline_role_policy.json
+  count = length(var.environment)
+  name   = "${var.environment[count.index]}-${var.prefix}-codepipeline-policy"
+  role   = aws_iam_role.iam_code_pipeline[count.index].id
+  policy = data.aws_iam_policy_document.iam_codepipeline_role_policy[count.index].json
 }
 
 
