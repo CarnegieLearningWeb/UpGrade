@@ -8,7 +8,7 @@ export default class UpgradeClient {
     private group;
     private workingGroup;
     private experimentConditionData;
-    constructor(userId: string, token?: string);
+    constructor(userId: string, token: string);
     static setHostUrl(url: string): void;
     private validateClient;
     setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser>;

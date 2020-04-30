@@ -1,13 +1,13 @@
 import fetchDataService from '../common/fetchDataService';
 import { IExperimentAssignment } from 'upgrade_types';
 
-export default async function getAllExperimentConditions(url: string, userId: string, context: string): Promise<IExperimentAssignment[]> {
+export default async function getAllExperimentConditions(url: string, userId: string, token: string, context: string): Promise<IExperimentAssignment[]> {
   try {
     const params: any = {
       userId,
       context
     };
-    const experimentConditionResponse = await fetchDataService(url, params);
+    const experimentConditionResponse = await fetchDataService(url, token, params);
     if (experimentConditionResponse.status) {
       if (Array.isArray(experimentConditionResponse.data)) {
         experimentConditionResponse.data = experimentConditionResponse.data.map(data => {

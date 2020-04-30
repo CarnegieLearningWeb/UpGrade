@@ -1,7 +1,7 @@
 import { Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 
-export default async function failedExperimentPoint(url: string, experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint> {
+export default async function failedExperimentPoint(url: string, token: string, experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint> {
     try {
         let data: any = {
             experimentPoint,
@@ -13,7 +13,7 @@ export default async function failedExperimentPoint(url: string, experimentPoint
                 experimentId
             }
         }
-        const response = await fetchDataService(url, data);
+        const response = await fetchDataService(url, token, data);
         if (response.status) {
             return {
                 type: response.data.type,
