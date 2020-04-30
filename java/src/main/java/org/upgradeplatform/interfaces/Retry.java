@@ -1,4 +1,4 @@
-package interfaces;
+package org.upgradeplatform.interfaces;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

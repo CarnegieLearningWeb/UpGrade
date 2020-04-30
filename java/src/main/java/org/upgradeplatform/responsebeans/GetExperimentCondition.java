@@ -1,4 +1,4 @@
-package responsebeans;
+package org.upgradeplatform.responsebeans;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

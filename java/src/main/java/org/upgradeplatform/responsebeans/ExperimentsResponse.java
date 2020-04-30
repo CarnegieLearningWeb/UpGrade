@@ -1,4 +1,4 @@
-package responsebeans;
+package org.upgradeplatform.responsebeans;
 
 
 
