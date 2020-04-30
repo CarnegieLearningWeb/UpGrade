@@ -1,57 +1,69 @@
-package example;
+package org.upgradeplatform.client;
 
-import static utils.Utils.*;
+import static org.upgradeplatform.utils.Utils.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNull;
-
-import interfaces.ResponseCallback;
-import requestbeans.ExperimentRequest;
-import requestbeans.FailedExperimentPointRequest;
-import requestbeans.MarkExperimentRequest;
-import interfaces.ExperimentServiceAPI;
-import responsebeans.ErrorResponse;
-import responsebeans.ExperimentConditions;
-import responsebeans.ExperimentsResponse;
-import responsebeans.FailedExperiment;
-import responsebeans.GetExperimentCondition;
-import responsebeans.InitRequest;
-import responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.interfaces.ExperimentServiceAPI;
+import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.requestbeans.ExperimentRequest;
+import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
+import org.upgradeplatform.requestbeans.MarkExperimentRequest;
+import org.upgradeplatform.responsebeans.ErrorResponse;
+import org.upgradeplatform.responsebeans.ExperimentConditions;
+import org.upgradeplatform.responsebeans.ExperimentsResponse;
+import org.upgradeplatform.responsebeans.FailedExperiment;
+import org.upgradeplatform.responsebeans.GetExperimentCondition;
+import org.upgradeplatform.responsebeans.InitRequest;
+import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.utils.ErrorUtils;
+import org.upgradeplatform.utils.ServiceGenerator;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import utils.ErrorUtils;
-import utils.ServiceGenerator;
-import utils.Utils;
 
 public class ExperimentClient {
 
 	private List<ExperimentsResponse> allExperiments;
 	private String userId;
 	private String authToken;
-
+	private String baseUrl;
+	
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
 		this.authToken = authToken;
-		Utils.BASE_URL = baseUrl;
+		this.baseUrl = baseUrl;
+	}
+	
+
+	private String validateRequestData(String userId, String authToken, String baseUrl) {
+		if (isStringNull(this.baseUrl)) {
+			return INVALID_BASE_URL;
+		} else if (isStringNull(this.authToken)) {
+			return INVALID_AUTH_TOKEN;
+		} else if (isStringNull(this.authToken)) {
+			return INVALID_STUDENT_ID;
+		}
+		
+		return "";
 	}
 
 	// To set user group membership
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
-		if (isStringNull(Utils.BASE_URL)) {
-			if (callbacks != null)
-				callbacks.onError(new ErrorResponse(INVALID_GROUP_MEMBERSHIP_DATA));
+		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
+		if(validateData != "") {
+			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
 		InitRequest initRequest = new InitRequest(this.userId, group, null);
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
-		client.setGroupMemebership(initRequest).enqueue(new Callback<InitRequest>() {
+		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
+		client.setGroupMemebership( "Bearer "+this.authToken , initRequest).enqueue(new Callback<InitRequest>() {
 
 			@Override
 			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
@@ -76,15 +88,16 @@ public class ExperimentClient {
 	// To set user workingGroup
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
 
-		if (isStringNull(Utils.BASE_URL)){
-			if (callbacks != null)
-				callbacks.onError(new ErrorResponse(INVALID_WORKING_GROUP_DATA));
+		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
+		if(validateData != "") {
+			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
+		
+		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
 
 		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
-		client.updateWorkingGroup(initRequest).enqueue(new Callback<InitRequest>() {
+		client.updateWorkingGroup("Bearer "+this.authToken ,initRequest).enqueue(new Callback<InitRequest>() {
 
 			@Override
 			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
@@ -109,18 +122,18 @@ public class ExperimentClient {
 	// To get all Experiments
 	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
 
-		if ( isStringNull(this.userId) || isStringNull(Utils.BASE_URL) ) {
-			if (callbacks != null)
-				callbacks.onError(new ErrorResponse(INVALID_STUDENT_ID) );
+		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
+		if(validateData != "") {
+			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
+		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
 
 
 		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context );
 
-		client.getAllExperiments(experimentRequest).enqueue(new Callback<List<ExperimentsResponse>>() {
+		client.getAllExperiments("Bearer "+this.authToken, experimentRequest).enqueue(new Callback<List<ExperimentsResponse>>() {
 
 			@Override
 			public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
@@ -151,6 +164,12 @@ public class ExperimentClient {
 	public void getExperimentCondition(String experimentPoint, String experimentId, 
 			final ResponseCallback<GetExperimentCondition> callbacks) {
 		
+		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
+		if(validateData != "") {
+			callbacks.onError(new ErrorResponse(validateData));
+			return;
+		}
+		
 		if (this.allExperiments != null) {
 
 			ExperimentsResponse experimentsResponse  = allExperiments.stream().filter(t -> 
@@ -174,12 +193,12 @@ public class ExperimentClient {
 									t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()))
 								.findFirst();
 
-
+				
 						if (result.isPresent()) {
 							ExperimentsResponse experimentsResponse =  result.get();
 							ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
 							GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
-
+						
 							if (callbacks != null)
 								callbacks.onSuccess(getExperimentCondition) ;
 						} else {
@@ -212,16 +231,16 @@ public class ExperimentClient {
 	public void markExperimentPoint(final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 
-		if ( isStringNull(experimentPoint) || isStringNull(this.userId) || isStringNull(Utils.BASE_URL)) {
-			if (callbacks != null)
-				callbacks.onError(new ErrorResponse(INVALID_MARK_EXPERIMENT_DATA));
+		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
+		if(validateData != "") {
+			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
+		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint, experimentId );
 
-		client.markExperimentPoint(markExperimentRequest).enqueue(new Callback<MarkExperimentPoint>() {
+		client.markExperimentPoint("Bearer "+this.authToken ,markExperimentRequest).enqueue(new Callback<MarkExperimentPoint>() {
 
 			@Override
 			public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
@@ -256,16 +275,16 @@ public class ExperimentClient {
 	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason, 
 			final ResponseCallback<FailedExperiment> callbacks) {
 
-		if ( isStringNull(experimentPoint) || isStringNull(reason) || isStringNull(Utils.BASE_URL) ) {
-			if (callbacks != null)
-				callbacks.onError(new ErrorResponse(INVALID_FAILED_EXPERIMENT_DATA));
+		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
+		if(validateData != "") {
+			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class);
+		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
 		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(experimentPoint, experimentId, reason);
 
-		client.failedExperimentPoint(failedExperimentPointRequest).enqueue(new Callback<FailedExperiment>() {
+		client.failedExperimentPoint("Bearer "+this.authToken, failedExperimentPointRequest).enqueue(new Callback<FailedExperiment>() {
 
 			@Override
 			public void onResponse(Call<FailedExperiment> call, Response<FailedExperiment> response) {

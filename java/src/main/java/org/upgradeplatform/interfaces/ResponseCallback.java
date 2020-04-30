@@ -1,10 +1,8 @@
-package interfaces;
+package org.upgradeplatform.interfaces;
 
 
 import org.eclipse.jdt.annotation.NonNull;
-
-import okhttp3.ResponseBody;
-import responsebeans.ErrorResponse;
+import org.upgradeplatform.responsebeans.ErrorResponse;
 
 public interface ResponseCallback<T> {
 	

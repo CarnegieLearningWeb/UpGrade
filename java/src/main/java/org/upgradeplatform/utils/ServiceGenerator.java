@@ -1,4 +1,4 @@
-package utils;
+package org.upgradeplatform.utils;
 
 
 import okhttp3.OkHttpClient;
@@ -10,16 +10,18 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ServiceGenerator {
 
 	static Retrofit.Builder builder = new Retrofit.Builder()
-			.baseUrl(Utils.BASE_URL)
 			.addConverterFactory(GsonConverterFactory.create())
 			.addCallAdapterFactory(RetryCallAdapterFactory.create());
 
-	static Retrofit retrofit = builder.build();
+	static Retrofit retrofit;
 	
 	private static HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE);
 	private static OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
 
-	public static <S> S createService(Class<S> serviceClass) {
+	public static <S> S createService(Class<S> serviceClass, String baseUrl) {
+		
+		builder.baseUrl(baseUrl);
+		retrofit = builder.build();
 		
 		if(!httpClientBuilder.interceptors().contains(loggingInterceptor)) {
 			httpClientBuilder.addInterceptor(loggingInterceptor);

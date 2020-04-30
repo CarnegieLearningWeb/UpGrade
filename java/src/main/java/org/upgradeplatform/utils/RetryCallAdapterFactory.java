@@ -1,4 +1,4 @@
-package utils;
+package org.upgradeplatform.utils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.upgradeplatform.interfaces.Retry;
 
-import interfaces.Retry;
 import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.CallAdapter;

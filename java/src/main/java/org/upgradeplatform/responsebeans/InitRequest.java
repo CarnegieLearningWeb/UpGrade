@@ -1,4 +1,4 @@
-package responsebeans;
+package org.upgradeplatform.responsebeans;
 
 import java.util.List;
 import java.util.Map;

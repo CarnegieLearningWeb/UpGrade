@@ -1,10 +1,11 @@
-package utils;
+package org.upgradeplatform.utils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 
+import org.upgradeplatform.responsebeans.ErrorResponse;
+
 import okhttp3.ResponseBody;
-import responsebeans.ErrorResponse;
 import retrofit2.Converter;
 import retrofit2.Response;
 
