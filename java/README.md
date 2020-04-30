@@ -61,12 +61,12 @@ Use this function to report failure with given reason
 
 			@Override
 			public void onSuccess(@NonNull GetExperimentCondition t) {
-				System.out.println("final: "+ t.getExperimentPoint());
+				System.out.println(" Response: "+ t.getExperimentPoint());
 			}
 
 			@Override
 			public void onError(@NonNull ErrorResponse error) {
-				System.out.println("final validationError: "+ error.getType());
+				System.out.println(" Error : "+ error.getType());
 
 			}
 		});
