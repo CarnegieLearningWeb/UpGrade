@@ -1,6 +1,6 @@
 {
   "name": "upgrade_client_lib",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "",
   "main": "dist/bundle.js",
   "scripts": {
@@ -23,6 +23,6 @@
   "dependencies": {
     "es6-promise": "^4.2.8",
     "isomorphic-fetch": "^2.2.1",
-    "ees_types": "github:CarnegieLearningWeb/educational-experiment-types#master"
+    "upgrade_types": "github:CarnegieLearningWeb/educational-experiment-types#master"
   }
 }

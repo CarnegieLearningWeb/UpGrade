@@ -1,18 +1,13 @@
 import fetchDataService from '../common/fetchDataService';
-import { IExperimentAssignment } from 'ees_types';
+import { IExperimentAssignment } from 'upgrade_types';
 
-export default async function getAllExperimentConditions(url: string, userId: string, context?: string): Promise<IExperimentAssignment[]> {
+export default async function getAllExperimentConditions(url: string, userId: string, token: string, context: string): Promise<IExperimentAssignment[]> {
   try {
-    let params: any = {
-      userId
+    const params: any = {
+      userId,
+      context
     };
-    if (context) {
-      params = {
-        ...params,
-        context
-      }
-    }
-    const experimentConditionResponse = await fetchDataService(url, params);
+    const experimentConditionResponse = await fetchDataService(url, token, params);
     if (experimentConditionResponse.status) {
       if (Array.isArray(experimentConditionResponse.data)) {
         experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
@@ -20,7 +15,8 @@ export default async function getAllExperimentConditions(url: string, userId: st
             ...data,
             assignedCondition: {
               conditionCode: data.assignedCondition.conditionCode,
-              twoCharacterId: data.assignedCondition.twoCharacterId
+              twoCharacterId: data.assignedCondition.twoCharacterId,
+              description: data.assignedCondition.description
             }
           }
         });
