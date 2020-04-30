@@ -10,7 +10,7 @@ This is a static method to set host URL which can be accessed by
 
 # Initialize User
 To initialize user call UpgradeClient constructor with userId  
-``` const upClient = UpgradeClient('userId');```
+``` const upClient = UpgradeClient('userId', 'token');```
 
 ## setGroupMembership (group: Map<string, Array<string>>)
 Updates/Set the group membership of the initialized user  
