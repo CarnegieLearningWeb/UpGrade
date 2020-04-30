@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "external" "compile_compress_lambda" {
-  program = ["node", "../../aws-lambda/build.js"]
+  program = ["node", "../aws-lambda/build.js"]
   query = {
     lambda_zip  = "${var.lambda_zip}-${var.app_version}"
     lambda_path = "${var.lambda_path}"
@@ -17,7 +17,6 @@ data "null_data_source" "lambda_zip_source" {
     output_path = "${data.external.compile_compress_lambda.result["output_path"]}${var.lambda_zip}-${var.app_version}"
   }
 }
-
 # ---------------------------------------------------------------------------------------------------------------------
 # CREATE S3 AND UPLOAD COMPRESSED LAMBDA ZIP
 # ---------------------------------------------------------------------------------------------------------------------
