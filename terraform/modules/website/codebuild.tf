@@ -1,8 +1,8 @@
 resource "aws_codebuild_project" "prod_app_build" {
-
-  name          = "${var.environment}-${var.prefix}-codebuild"
+  count = length(var.environment)
+  name          = "${var.environment[count.index]}-${var.prefix}-codebuild"
   build_timeout = "80"
-  service_role = aws_iam_role.codebuild_role.arn
+  service_role = aws_iam_role.codebuild_role[count.index].arn
 
   depends_on = [aws_s3_bucket.bucket_site, aws_s3_bucket.source]
 
@@ -20,15 +20,15 @@ resource "aws_codebuild_project" "prod_app_build" {
 
     environment_variable {
       name  = "stage"
-      value = var.repository_branch
+      value = var.repository_branch[count.index]
     }
     environment_variable {
       name  = "distribuition_id"
-      value = aws_cloudfront_distribution.site_s3_distribution.id
+      value = aws_cloudfront_distribution.site_s3_distribution[count.index].id
     }
     environment_variable {
       name  = "bucket_name"
-      value = aws_s3_bucket.bucket_site.bucket
+      value = aws_s3_bucket.bucket_site[count.index].bucket
     }
   }
 
