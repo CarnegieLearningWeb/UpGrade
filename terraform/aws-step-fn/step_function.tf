@@ -12,12 +12,13 @@ terraform {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_sfn_state_machine" "upgrade-experimentSchedular-sfn" {
-  name     = "${var.environment}-${var.prefix}-${var.aws_sfn_state_machine_name}"
-  role_arn = aws_iam_role.iam_for_sfn.arn
+  count = length(var.environment)
+  name     = "${var.environment[count.index]}-${var.prefix}-${var.aws_sfn_state_machine_name}"
+  role_arn = aws_iam_role.iam_for_sfn[count.index].arn
 
   definition = <<EOF
   {
-  "Comment": "Experiment schedular ${var.environment} mode",
+  "Comment": "Experiment schedular ${var.environment[count.index]} mode",
   "StartAt": "InitialState",
   "States": {
     "InitialState": {
@@ -27,7 +28,7 @@ resource "aws_sfn_state_machine" "upgrade-experimentSchedular-sfn" {
     },
     "FinalState": {
       "Type": "Task",
-      "Resource": "${var.lambda_arn}",
+      "Resource": "${var.lambda_arn[count.index]}",
       "End": true
     }
   }

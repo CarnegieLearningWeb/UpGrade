@@ -1,6 +1,7 @@
 
 resource "aws_iam_role" "iam_code_codebuild" {
-  name = "${var.environment}-${var.prefix}-backend-codebuild"
+  count = length(var.environment)
+  name = "${var.environment[count.index]}-${var.prefix}-backend-codebuild"
 
   assume_role_policy = <<EOF
 {
@@ -20,7 +21,8 @@ EOF
 }
 
 resource "aws_iam_role_policy" "iam_code_codebuild_role_policy" {
-  role = aws_iam_role.iam_code_codebuild.name
+  count = length(var.environment)
+  role = aws_iam_role.iam_code_codebuild[count.index].name
 
   policy = <<POLICY
 {
@@ -66,8 +68,8 @@ resource "aws_iam_role_policy" "iam_code_codebuild_role_policy" {
         "s3:*"
       ],
       "Resource": [
-        "${aws_s3_bucket.codebuild_cache.arn}",
-        "${aws_s3_bucket.codebuild_cache.arn}/*"
+        "${aws_s3_bucket.codebuild_cache[count.index].arn}",
+        "${aws_s3_bucket.codebuild_cache[count.index].arn}/*"
       ]
     },
     {
@@ -78,8 +80,8 @@ resource "aws_iam_role_policy" "iam_code_codebuild_role_policy" {
         "s3:Get*"
       ],
       "Resource": [
-        "${aws_s3_bucket.artifacts.arn}",
-        "${aws_s3_bucket.artifacts.arn}/*"
+        "${aws_s3_bucket.artifacts[count.index].arn}",
+        "${aws_s3_bucket.artifacts[count.index].arn}/*"
       ]
     },
     {
@@ -122,7 +124,7 @@ resource "aws_iam_role_policy" "iam_code_codebuild_role_policy" {
          "kms:Decrypt"
         ],
       "Resource": [
-         "${aws_kms_key.artifacts.arn}"
+         "${aws_kms_key.artifacts[count.index].arn}"
         ]
     }
   ]

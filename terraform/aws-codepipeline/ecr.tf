@@ -1,3 +1,4 @@
 resource "aws_ecr_repository" "ecr_repo_name" {
-  name = "${var.environment}-${var.prefix}-backend"
+  count = length(var.environment)
+  name = "${var.environment[count.index]}-${var.prefix}-backend"
 }
