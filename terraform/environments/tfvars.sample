@@ -1,6 +1,7 @@
 # General variables
 aws_region              = "us-east-1"
-environment             = "developement"
+aws_profile             = "default"
+environment             = ["developement", "staging"]
 prefix                  = "upgrade" 
 app_version             = "1.0.0"
 
@@ -19,12 +20,12 @@ autoscaling_max_size    =  4
 
 # APP environment variables
 GOOGLE_CLIENT_ID        = "google-project-id"
-MONITOR_PASSWORD        = "passowrd"
-SWAGGER_PASSWORD        = "passowrd"
+MONITOR_PASSWORD        = password
+SWAGGER_PASSWORD        = password
 
 # CICD variables
 repository_name         = "educational-experiment-service"
-branch_name             = "master"
-build_iamge             = "aws/codebuild/standard:1.0"
+branch_name             = ["dev", "staging"]
+build_image             = "aws/codebuild/standard:1.0"
 build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
