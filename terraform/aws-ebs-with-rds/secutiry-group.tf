@@ -1,5 +1,5 @@
 resource "aws_security_group" "app-prod" {
-  count       = length(var.environment)
+  
   vpc_id      = aws_vpc.main.id
   name        = "${var.environment}-${var.prefix}-schedular-security group"
   description = "${var.environment}-${var.prefix}-security group for for the app"
@@ -19,7 +19,7 @@ resource "aws_security_group" "app-prod" {
 }
 
 resource "aws_security_group" "allow-rds" {
-  count       = length(var.environment)
+  
   vpc_id      = aws_vpc.main.id
   name        = "${var.environment}-${var.prefix}-allow-rds"
   description = "${var.environment}-${var.prefix}-allow-rds"
