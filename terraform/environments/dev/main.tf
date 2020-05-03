@@ -13,7 +13,7 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  profile = "playpower"
+  profile = var.aws_profile
 }
 
 
@@ -29,10 +29,14 @@ module "aws_lambda_function" {
   prefix                = var.prefix 
   app_version           = var.app_version 
   lambda_path           = "../../packages/Schedular"  
-  output_path           = "../environments/dev/.terraform" 
+  output_path           = "../environments/.terraform" 
   function_name         = "Schedule" 
   function_handler      = "schedule.schedule"
   runtime               =  "nodejs10.x"
+}
+
+output "lambda"{
+  value = module.aws_lambda_function.lambda-arn
 }
 
 
@@ -61,7 +65,7 @@ module "aws-ebs-app" {
   identifier            = var.identifier
   instance_class        = var.instance_class
   storage_type          = var.storage_type
-  multi_az              = "false"
+  multi_az = "false"
   
   /*EBS config*/
   app_instance_type     = var.app_instance_type
@@ -79,8 +83,10 @@ module "aws-ebs-app" {
 }
 
 resource "null_resource" "update-ebs-env" { 
+  depends_on= [module.aws-ebs-app.ebs-cname]
+  
   provisioner "local-exec" {
-    command = "aws elasticbeanstalk update-environment --environment-name ${module.aws-ebs-app.application} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname}/api"
+    command = "export AWS_PROFILE=${var.aws_profile} && aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname}/api"
   }
 }
 
@@ -101,8 +107,8 @@ module "aws-code-pipeline"{
   build_compute_type    = var.build_compute_type
   privileged_mode       = var.privileged_mode
 
-  ebs_app_name          = module.aws-ebs-app.ebs-env
-  ebs_env_name          = module.aws-ebs-app.application
+  ebs_app_name          = module.aws-ebs-app.application 
+  ebs_env_name          = module.aws-ebs-app.ebs-env
 }
 
 output "ebs-cname" {

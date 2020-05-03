@@ -22,7 +22,7 @@ resource "aws_db_instance" "app-rds" {
   engine                    = var.engine
   engine_version            = var.engine_version
   instance_class            = var.instance_class
-  identifier                = var.identifier
+  identifier                = "${var.environment}-${var.prefix}-${var.identifier}"
   name                      = var.RDS_DB_NAME
   username                  = var.RDS_USERNAME
   password                  = var.RDS_PASSWORD
