@@ -96,7 +96,7 @@ data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
       "codecommit:GitPull",
     ]
     resources = [
-      aws_codecommit_repository.code_repo.arn,
+      "*"
     ]
   }
 }

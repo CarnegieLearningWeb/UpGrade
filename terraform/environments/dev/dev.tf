@@ -101,8 +101,8 @@ module "aws-code-pipeline"{
   build_compute_type    = var.build_compute_type
   privileged_mode       = var.privileged_mode
 
-  ebs_app_name          = module.aws-ebs-app.ebs-env
-  ebs_env_name          = module.aws-ebs-app.application
+  ebs_app_name          = module.aws-ebs-app.application 
+  ebs_env_name          = module.aws-ebs-app.ebs-env
 }
 
 output "ebs-cname" {

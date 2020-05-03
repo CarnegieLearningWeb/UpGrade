@@ -28,7 +28,7 @@ resource "aws_codepipeline" "codepipeline" {
       output_artifacts = ["${var.environment}-${var.prefix}-backend-docker-source"]
 
       configuration = {
-        RepositoryName = aws_codecommit_repository.code_repo.repository_name
+        RepositoryName = var.repository_name
         BranchName     = var.branch_name
       }
     }
