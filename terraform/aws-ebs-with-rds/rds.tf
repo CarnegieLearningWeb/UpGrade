@@ -4,6 +4,7 @@
 
 
 resource "aws_db_subnet_group" "postgres-subnet" {
+  
   name        = "${var.environment}-${var.prefix}-${var.engine}-subnet"
   description = "RDS subnet group"
   subnet_ids  = [aws_subnet.main-private-1.id, aws_subnet.main-private-2.id]
@@ -11,6 +12,7 @@ resource "aws_db_subnet_group" "postgres-subnet" {
 
 # DB params 
 resource "aws_db_parameter_group" "postgres-parameters" {
+  
   name        = "${var.environment}-${var.prefix}-${var.engine}-parameters"
   family      = var.rds_family
   description = "postgres parameter group"
@@ -18,6 +20,7 @@ resource "aws_db_parameter_group" "postgres-parameters" {
 
 # Create DB
 resource "aws_db_instance" "app-rds" {
+  
   allocated_storage         = var.allocated_storage
   engine                    = var.engine
   engine_version            = var.engine_version

@@ -4,6 +4,7 @@ data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "current" {}
 
 resource "aws_codepipeline" "codepipeline" {
+  
   name     = "${var.environment}-${var.prefix}-backend-pipeline"
   role_arn = aws_iam_role.iam_code_pipeline.arn
 

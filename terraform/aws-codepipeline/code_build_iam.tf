@@ -1,5 +1,6 @@
 
 resource "aws_iam_role" "iam_code_codebuild" {
+  
   name = "${var.environment}-${var.prefix}-backend-codebuild"
 
   assume_role_policy = <<EOF
@@ -20,6 +21,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "iam_code_codebuild_role_policy" {
+  
   role = aws_iam_role.iam_code_codebuild.name
 
   policy = <<POLICY

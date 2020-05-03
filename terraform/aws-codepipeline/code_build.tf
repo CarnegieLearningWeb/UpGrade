@@ -1,5 +1,6 @@
 
 resource "aws_codebuild_project" "backend_code_build" {
+  
   name           = "${var.environment}-${var.prefix}-backend-docker-build"
   description    = "${var.environment}-${var.prefix}-backend docker build"
   build_timeout  = "30"

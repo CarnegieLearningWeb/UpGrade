@@ -23,7 +23,7 @@ provider "aws" {
 
 module "aws_lambda_function" {
 
-  source                =  "../../aws-lambda"
+  source                =  "../aws-lambda"
 
   environment           = var.environment 
   prefix                = var.prefix 
@@ -42,19 +42,18 @@ output "lambda"{
 
 module "aws-state-machine" {
 
-  source                = "../../aws-step-fn"
+  source                = "../aws-step-fn"
 
   environment           = var.environment 
   prefix                = var.prefix 
   app_version           = var.app_version 
   aws_region            = var.aws_region
-  lambda_arn            = module.aws_lambda_function.lambda-arn[0] 
+  lambda_arn            = module.aws_lambda_function.lambda-arn
 }
-
 
 module "aws-ebs-app" {
 
-  source                = "../../aws-ebs-with-rds"
+  source                = "../aws-ebs-with-rds"
 
   environment           = var.environment
   prefix                = var.prefix 
@@ -92,7 +91,7 @@ resource "null_resource" "update-ebs-env" {
 
 module "aws-code-pipeline"{
 
-  source = "../../aws-codepipeline"
+  source = "../aws-codepipeline"
 
   environment           = var.environment 
   prefix                = var.prefix 
@@ -113,7 +112,4 @@ module "aws-code-pipeline"{
 
 output "ebs-cname" {
   value = module.aws-ebs-app.ebs-cname
-}
-output "step_function" {
-  value = module.aws-state-machine.step_function_arn
 }

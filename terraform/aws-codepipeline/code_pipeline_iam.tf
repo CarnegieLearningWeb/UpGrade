@@ -1,4 +1,5 @@
 resource "aws_iam_role" "iam_code_pipeline" {
+  
   name = "${var.environment}-${var.prefix}-backend-codepipeline"
 
   assume_role_policy = <<EOF
@@ -19,6 +20,7 @@ EOF
 }
 
 data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
+  
   statement {
     sid = ""
 
@@ -102,6 +104,7 @@ data "aws_iam_policy_document" "iam_codepipeline_role_policy" {
 }
 
 resource "aws_iam_role_policy" "iam_codepipeline" {
+  
   name   = "${var.environment}-${var.prefix}-codepipeline-policy"
   role   = aws_iam_role.iam_code_pipeline.id
   policy = data.aws_iam_policy_document.iam_codepipeline_role_policy.json
