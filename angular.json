@@ -73,7 +73,7 @@
                 }
               ]
             },
-            "development": {
+            "develop": {
               "fileReplacements": [
                 {
                   "replace": "projects/abtesting/src/environments/environment.ts",

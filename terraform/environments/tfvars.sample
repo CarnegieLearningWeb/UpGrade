@@ -3,4 +3,4 @@ aws_region                    = "us-east-1"
 environment                   = ["dev", "staging"]
 prefix                        = "upgrade-frontend"
 repository_name               = "experiment-service-client"
-repository_branch             = ["dev", "staging"]
+repository_branch             = ["develop", "staging"]

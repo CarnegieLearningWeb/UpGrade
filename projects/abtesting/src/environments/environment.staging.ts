@@ -1,6 +1,6 @@
 const packageJson = require('../../../../package.json');
 
-const endpointApi = 'http://staging-upgrade-experiment-app.eba-kcfr22am.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'http://staging-upgrade-experiment-app.eba-yyrtci3p.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
   appName: 'UpGrade',
