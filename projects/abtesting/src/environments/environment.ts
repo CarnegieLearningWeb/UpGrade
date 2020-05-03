@@ -38,6 +38,7 @@ export const environment = {
     getAllErrorLogs: `${endpointApi}/error`,
     experimentsStats: `${endpointApi}/stats/enrolment`,
     generateCsv: `${endpointApi}/stats/csv`,
+    experimentGraphInfo: `${endpointApi}/stats/enrolment/date`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/experiments/state`,
     users: `${endpointApi}/users`, // Used to create a new user after login

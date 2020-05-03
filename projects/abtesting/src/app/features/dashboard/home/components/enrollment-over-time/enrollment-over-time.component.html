@@ -1,68 +1,78 @@
 <div class="enrollment-over-time">
-  <span class="enrollment-over-time__title">{{ 'home.view-experiment.enrollment-over-time.text' | translate }}</span>
+  <span class="enrollment-over-time__title">{{ 'home.view-experiment.marked-over-time.text' | translate }}</span>
   <div class="enrollment-filters">
-    <div>
-      <mat-form-field>
-        <mat-select
-          [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
-          [(ngModel)]="selectedGroupFilter"
-          (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
+    <mat-form-field>
+      <mat-label>{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
+      <mat-select
+        [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
+        [(ngModel)]="selectedGroupFilter"
+        (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
+      >
+        <mat-option
+          *ngFor="let groupValue of groupFiltersOptions"
+          [value]="groupValue"
         >
-          <mat-option
-            *ngFor="let groupValue of groupFiltersOptions"
-            [value]="groupValue"
-          >
-            {{ groupValue | titlecase }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+          {{ groupValue | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-      <mat-form-field>
-        <mat-select
-          [(ngModel)]="selectedCondition"
-          multiple
-          (selectionChange)="applyExperimentFilter(ExperimentFilter.CONDITION_FILTER)"
+    <mat-form-field>
+      <mat-label>{{ 'home.view-experiment.graph-conditions.text' | translate }}</mat-label>
+      <mat-select
+        [(ngModel)]="selectedCondition"
+        multiple
+        (selectionChange)="applyExperimentFilter(ExperimentFilter.CONDITION_FILTER)"
+      >
+        <mat-checkbox color="primary" class="mat-option" [indeterminate]="isIndeterminate('conditions')"
+        [checked]="isChecked('conditions')" (click)="$event.stopPropagation()"
+            (change)="toggleSelection($event, 'conditions')">
+            {{ 'home.view-experiment.graph-select-all.text' | translate }}
+        </mat-checkbox>
+        <mat-option
+          *ngFor="let condition of conditionsFilterOptions"
+          [value]="condition.id"
         >
-          <mat-option
-            *ngFor="let condition of conditionsFilterOptions"
-            [value]="condition"
-          >
-            {{ condition | titlecase }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+          {{ condition.code | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-    <div>
-      <mat-form-field *ngIf="selectedDateFilter === ExperimentDateFilterOptions.CUSTOM">
-        <input
-          matInput
-          readonly
-          [placeholder]="'home.view-experiment.enrollment-over-time.choose-date-range.text' | translate"
-          [owlDateTimeTrigger]="dateTimePicker"
-          [owlDateTime]="dateTimePicker"
-          [rangeSeparator]="'-'"
-          [selectMode]="'range'"
-          [ngModel]="selectedDateRange"
-          (ngModelChange)="selectedDateRange = $event;applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
+    <mat-form-field>
+      <mat-label>{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
+      <mat-select
+        [(ngModel)]="selectedPartition"
+        multiple
+        (selectionChange)="applyExperimentFilter(ExperimentFilter.PARTITION_FILTER)"
+      >
+        <mat-checkbox color="primary" class="mat-option" [indeterminate]="isIndeterminate('partitions')"
+        [checked]="isChecked('partitions')" (click)="$event.stopPropagation()"
+            (change)="toggleSelection($event, 'partitions')">
+            {{ 'home.view-experiment.graph-select-all.text' | translate }}
+        </mat-checkbox>
+        <mat-option
+          *ngFor="let partition of partitionsFilterOptions"
+          [value]="partition.id"
         >
-        <owl-date-time #dateTimePicker panelClass="date-time-picker" pickerType="calendar"></owl-date-time>
-      </mat-form-field>
+          {{ partition.point | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-      <mat-form-field>
-        <mat-select
-          [(ngModel)]="selectedDateFilter"
-          (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
+    <mat-form-field>
+      <mat-label>{{ 'home.view-experiment.graph-time.text' | translate }}</mat-label>
+      <mat-select
+        [(ngModel)]="selectedDateFilter"
+        (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
+      >
+        <mat-option
+          *ngFor="let dateFilterType of dateFilterOptions"
+          [value]="dateFilterType"
         >
-          <mat-option
-            *ngFor="let dateFilterType of dateFilterOptions"
-            [value]="dateFilterType"
-          >
-            {{ dateFilterType | titlecase }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+          {{ dateFilterType | titlecase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
 
   <div class="chart-container">
@@ -75,14 +85,17 @@
 
     <div class="chart">
       <div class="chart-data">
-        <ngx-charts-bar-vertical-normalized
+        <ngx-charts-bar-vertical-stacked
           [scheme]="colorScheme"
-          [results]="chartData"
-          xAxis="true"
-          yAxis="true"
+          [results]="graphData"
+          [xAxis]="true"
+          [yAxis]="true"
           [legend]="false"
+          [barPadding]="8"
+          [xAxisTickFormatting]="formateXAxisLabel"
+          [yAxisTickFormatting]="formateYAxisLabel"
         >
-        </ngx-charts-bar-vertical-normalized>
+        </ngx-charts-bar-vertical-stacked>
       </div>
 
       <div class="enrollment-statistic">
@@ -90,21 +103,13 @@
           <span class="title">
             {{ 'home.view-experiment.enrollment-over-time.unique-enrolled.text' | translate }}
           </span>
-          <span class="numbers">67
-            <span class="numbers--excluded">
-              {{ 'home.view-experiment.enrollment-over-time.excluded.text' | translate: { numbers: 50 } }}
-            </span>
-          </span>
+          <span class="numbers">{{ uniqueEnrolled }}</span>
         </div>
-        <div class="enrollment-statistic__class">
+        <div class="enrollment-statistic__class" [ngClass]="{'group-enabled': selectedGroupFilter !== 'Individual'}">
           <span class="title">
-            {{ 'home.view-experiment.enrollment-over-time.classes-enrolled.text' | translate }}
+            {{ 'home.view-experiment.enrollment-over-time.group-enrolled.text' | translate }}
           </span>
-          <span class="numbers">12
-            <span class="numbers--excluded">
-              {{ 'home.view-experiment.enrollment-over-time.excluded.text' | translate: { numbers: 12 } }}
-            </span>
-          </span>
+          <span class="numbers">{{ groupEnrolled }}</span>
         </div>
       </div>
     </div>

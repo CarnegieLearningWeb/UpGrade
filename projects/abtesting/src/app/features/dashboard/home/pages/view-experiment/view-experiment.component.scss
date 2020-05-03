@@ -1,6 +1,7 @@
 $white-background: #f0f2f9;
 $dark-grey-text-color: #707a85;
 $chip-background: #e0e0e0;
+$selected-range-color: #c2d1ff;
 
 .experiment-container {
   background-color: $white-background;
@@ -220,4 +221,17 @@ $chip-background: #e0e0e0;
       }
     }
   }
+}
+
+::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
+  background-color: var(--blue);
+}
+
+::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-in-range {
+  background-color: $selected-range-color;
+}
+
+::ng-deep .owl-dt-container-info .owl-dt-container-info-active,
+::ng-deep .owl-dt-container-info .owl-dt-container-range:last-child {
+  color: var(--blue);
 }

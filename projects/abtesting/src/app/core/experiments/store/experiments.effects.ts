@@ -8,7 +8,8 @@ import {
   IExperimentEnrollmentStats,
   Experiment,
   NUMBER_OF_EXPERIMENTS,
-  ExperimentPaginationParams
+  ExperimentPaginationParams,
+  ExperimentGraphDateFilterOptions
 } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -20,10 +21,12 @@ import {
   selectSortAs,
   selectSortKey,
   selectTotalExperiment,
-  selectSearchString
+  selectSearchString,
+  selectExperimentGraphInfo
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { saveAs } from 'file-saver';
+import { subDays, subMonths, addDays, startOfMonth } from 'date-fns';
 
 @Injectable()
 export class ExperimentEffects {
@@ -216,6 +219,71 @@ export class ExperimentEffects {
         )
       )
     )
+  );
+
+  fetchGraphInfo$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionFetchExperimentGraphInfo),
+        map(action => ({ experimentId: action.experimentId, range: action.range})),
+        filter(({ experimentId, range }) => !!experimentId && !!range),
+        withLatestFrom(
+          this.store$.pipe(select(selectExperimentGraphInfo))
+        ),
+        mergeMap(([{ experimentId, range }, graphData]) => {
+          if (!graphData) {
+            // TODO: Update todate after updating backend
+            let params: any = {
+              experimentId,
+              toDate: addDays(new Date(), 1).toISOString()
+            };
+            const startDateOfCurrentMonth = startOfMonth(new Date());
+            let fromDate;
+            switch (range) {
+              case ExperimentGraphDateFilterOptions.LAST_7_DAYS:
+                fromDate = subDays(new Date(), 7);
+                break;
+              case ExperimentGraphDateFilterOptions.LAST_3_MONTHS:
+                fromDate = subMonths(startDateOfCurrentMonth, 2); // Subtract current Month so 3 - 1 = 2
+                break;
+              case ExperimentGraphDateFilterOptions.LAST_6_MONTHS:
+                fromDate = subMonths(startDateOfCurrentMonth, 5);
+                break;
+              case ExperimentGraphDateFilterOptions.LAST_12_MONTHS:
+                fromDate = subMonths(startDateOfCurrentMonth, 11);
+                break;
+            }
+            params = {
+              ...params,
+              fromDate: fromDate.toISOString()
+            }
+            return this.experimentDataService.fetchExperimentGraphInfo(params).pipe(
+              map((data: any) => {
+                return experimentAction.actionFetchExperimentGraphInfoSuccess({ range, graphInfo: data })
+              }),
+              catchError(() => [experimentAction.actionFetchExperimentGraphInfoFailure()])
+            )
+          }
+          return [];
+        })
+      )
+  );
+
+  setExperimentGraphRange$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionSetGraphRange),
+        map(action => ({ experimentId: action.experimentId, range: action.range })),
+        filter(({ experimentId }) => !!experimentId),
+        tap(({ experimentId, range }) => {
+          if (range) {
+            this.store$.dispatch(experimentAction.actionFetchExperimentGraphInfo({ experimentId, range }));
+          } else {
+            this.store$.dispatch(experimentAction.actionSetExperimentGraphInfo({ graphInfo: null }));
+          }
+        })
+      ),
+      { dispatch: false }
   );
 
   navigateOnDeleteExperiment$ = createEffect(

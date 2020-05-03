@@ -138,6 +138,20 @@ export interface ExperimentPaginationParams {
   sortParams?: IExperimentSortParams;
 }
 
+export enum ExperimentGraphDateFilterOptions {
+  LAST_7_DAYS = 'Last 7 Days',
+  LAST_3_MONTHS = 'Last 3 Months',
+  LAST_6_MONTHS = 'Last 6 Months',
+  LAST_12_MONTHS = 'Last 12 Months'
+}
+
+export interface IExperimentGraphInfo {
+  [ExperimentGraphDateFilterOptions.LAST_7_DAYS]: {},
+  [ExperimentGraphDateFilterOptions.LAST_3_MONTHS]: {},
+  [ExperimentGraphDateFilterOptions.LAST_6_MONTHS]: {},
+  [ExperimentGraphDateFilterOptions.LAST_12_MONTHS]: {},
+}
+
 export interface ExperimentVM extends Experiment {
   stat: IExperimentEnrollmentStats;
 }
@@ -153,6 +167,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   stats: {
     [key: string]: IExperimentEnrollmentStats;
   };
+  graphInfo: IExperimentGraphInfo,
+  graphRange: ExperimentGraphDateFilterOptions;
   allPartitions: {};
   allExperimentNames: {};
   context: string[]

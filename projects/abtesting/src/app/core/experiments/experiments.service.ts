@@ -7,7 +7,8 @@ import {
   ExperimentStateInfo,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS
+  EXPERIMENT_SORT_AS,
+  ExperimentGraphDateFilterOptions
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -19,7 +20,8 @@ import {
   selectExperimentById,
   selectSearchString,
   selectSearchKey,
-  selectExperimentContext
+  selectExperimentContext,
+  selectExperimentGraphInfo
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -46,6 +48,7 @@ export class ExperimentService {
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   experimentContext$ = this.store$.pipe(select(selectExperimentContext));
+  selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
@@ -125,5 +128,9 @@ export class ExperimentService {
 
   exportExperimentInfo(experimentId: string, experimentName: string) {
     this.store$.dispatch(experimentAction.actionExportExperimentInfo({ experimentId, experimentName }));
+  }
+
+  setGraphRange(range: ExperimentGraphDateFilterOptions, experimentId: string) {
+    this.store$.dispatch(experimentAction.actionSetGraphRange({ range, experimentId }));
   }
 }

@@ -65,4 +65,9 @@ export class ExperimentDataService {
     const url = `${environment.api.generateCsv}/${experimentId}`;
     return this.http.get(url, 'text');
   }
+
+  fetchExperimentGraphInfo(params: any) {
+    const url = environment.api.experimentGraphInfo;
+    return this.http.post(url, params);
+  }
 }
