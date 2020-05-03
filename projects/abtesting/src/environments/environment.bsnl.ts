@@ -4,7 +4,7 @@ const endpointApi = 'http://bsnl-upgrade-experiment-app.eba-yyrtci3p.us-east-1.e
 
 export const environment = {
   appName: 'UpGrade',
-  envName: 'BSNL',
+  envName: 'bsnl',
   endpointApi,
   production: true,
   test: false,
