@@ -26,7 +26,7 @@ import {
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { saveAs } from 'file-saver';
-import { subDays, subMonths, addDays, startOfMonth } from 'date-fns';
+import { subDays, subMonths, addDays, startOfMonth, set } from 'date-fns';
 
 @Injectable()
 export class ExperimentEffects {
@@ -232,16 +232,15 @@ export class ExperimentEffects {
         ),
         mergeMap(([{ experimentId, range }, graphData]) => {
           if (!graphData) {
-            // TODO: Update todate after updating backend
             let params: any = {
               experimentId,
-              toDate: addDays(new Date(), 1).toISOString()
+              toDate: new Date().toISOString()
             };
-            const startDateOfCurrentMonth = startOfMonth(new Date());
+            const startDateOfCurrentMonth = addDays(startOfMonth(new Date()), 1);
             let fromDate;
             switch (range) {
               case ExperimentGraphDateFilterOptions.LAST_7_DAYS:
-                fromDate = subDays(new Date(), 7);
+                fromDate = set(subDays(new Date(), 6), { hours: 0, minutes: 0, seconds: 0 });
                 break;
               case ExperimentGraphDateFilterOptions.LAST_3_MONTHS:
                 fromDate = subMonths(startDateOfCurrentMonth, 2); // Subtract current Month so 3 - 1 = 2

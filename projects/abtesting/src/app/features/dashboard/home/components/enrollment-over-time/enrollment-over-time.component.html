@@ -24,9 +24,13 @@
         multiple
         (selectionChange)="applyExperimentFilter(ExperimentFilter.CONDITION_FILTER)"
       >
-        <mat-checkbox color="primary" class="mat-option" [indeterminate]="isIndeterminate('conditions')"
-        [checked]="isChecked('conditions')" (click)="$event.stopPropagation()"
-            (change)="toggleSelection($event, 'conditions')">
+        <mat-checkbox
+          color="primary"
+          class="mat-option"
+          [indeterminate]="isIndeterminate('conditions')"
+          [checked]="isChecked('conditions')"
+          (click)="$event.stopPropagation()"
+          (change)="toggleSelection($event, 'conditions')">
             {{ 'home.view-experiment.graph-select-all.text' | translate }}
         </mat-checkbox>
         <mat-option
@@ -45,9 +49,13 @@
         multiple
         (selectionChange)="applyExperimentFilter(ExperimentFilter.PARTITION_FILTER)"
       >
-        <mat-checkbox color="primary" class="mat-option" [indeterminate]="isIndeterminate('partitions')"
-        [checked]="isChecked('partitions')" (click)="$event.stopPropagation()"
-            (change)="toggleSelection($event, 'partitions')">
+        <mat-checkbox
+          color="primary"
+          class="mat-option"
+          [indeterminate]="isIndeterminate('partitions')"
+          [checked]="isChecked('partitions')"
+          (click)="$event.stopPropagation()"
+          (change)="toggleSelection($event, 'partitions')">
             {{ 'home.view-experiment.graph-select-all.text' | translate }}
         </mat-checkbox>
         <mat-option
@@ -92,6 +100,7 @@
           [yAxis]="true"
           [legend]="false"
           [barPadding]="8"
+          [noBarWhenZero]="true"
           [xAxisTickFormatting]="formateXAxisLabel"
           [yAxisTickFormatting]="formateYAxisLabel"
         >

@@ -249,14 +249,10 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   // Used to form empty series data to keep graph bar width same different value of time filter
   formEmptyGraphSeriesData(limit: number) {
     const emptySeries = [];
-    const conditionEmptyData = [];
-    for (let i = 0; i < this.experiment.conditions.length; i++) {
-      conditionEmptyData.push({ name: '', value: 0 });
-    }
     for (let i = 0; i < limit; i++) {
       emptySeries.push({
         name: i,
-        series: conditionEmptyData
+        series: [{ name: '', value: 0 }]
       });
     }
     return emptySeries;
