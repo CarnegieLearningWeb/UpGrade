@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "external" "compile_compress_lambda" {
-  program = ["node", "../aws-lambda/build.js"]
+  program = ["node", "../../aws-lambda/build.js"]
   query = {
     lambda_zip  = "${var.lambda_zip}-${var.app_version}"
     lambda_path = "${var.lambda_path}"
@@ -38,14 +38,14 @@ data "null_data_source" "lambda_zip_source" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_lambda_function" "lambda_function" {
-  count = data.external.compile_compress_lambda.result["error"] == "0" ? length(var.environment): 0
+  count = data.external.compile_compress_lambda.result["error"] == "0" ? 1: 0
   source_code_hash = base64sha256(filebase64(data.null_data_source.lambda_zip_source.outputs["output_path"]))
-  function_name    = "${var.environment[count.index]}-${var.prefix}-${var.function_name}"
+  function_name    = "${var.environment}-${var.prefix}-${var.function_name}"
   filename         = data.null_data_source.lambda_zip_source.outputs["output_path"]
   #s3_bucket        = var.s3_bucket
   #s3_key           = aws_s3_bucket_object.file_upload.key
   handler = var.function_handler
   runtime = var.runtime
-  role    = aws_iam_role.iam_for_lambda[count.index].arn
+  role    = aws_iam_role.iam_for_lambda.arn
 }
 
