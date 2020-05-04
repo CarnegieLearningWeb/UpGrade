@@ -50,6 +50,8 @@ terraform/environments/.terraform*
 terraform/environments/terraform.tfstate.backup
 terraform/environments/terraform.tfstate
 terraform/environments/*.tfvars
+terraform/core/.terraform
+terraform/core/*.tfvars
 
 # Serverless compiled files
 packages/Schedular/lib

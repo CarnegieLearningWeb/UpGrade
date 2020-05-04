@@ -29,7 +29,7 @@ module "aws_lambda_function" {
   prefix                = var.prefix 
   app_version           = var.app_version 
   lambda_path           = "../../packages/Schedular"  
-  output_path           = "../environments/.terraform" 
+  output_path           = "../environments/lambda" 
   function_name         = "Schedule" 
   function_handler      = "schedule.schedule"
   runtime               =  "nodejs10.x"
@@ -69,6 +69,7 @@ module "aws-ebs-app" {
   
   /*EBS config*/
   app_instance_type     = var.app_instance_type
+  ebs_app_name          = var.ebs_app_name
   autoscaling_min_size  = var.autoscaling_min_size
   autoscaling_max_size  = var.autoscaling_max_size
 
