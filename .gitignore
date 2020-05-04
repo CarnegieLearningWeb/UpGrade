@@ -41,7 +41,11 @@ mydb.sql
 Dockerrun.aws.json
 
 # Terraform 
-terraform/environments/mykey*
+terraform/environments/*/mykey*
+terraform/environments/*/.terraform*
+terraform/environments/*/terraform.tfstate.backup
+terraform/environments/*/terraform.tfstate
+terraform/environments/*/*.tfvars
 terraform/environments/.terraform*
 terraform/environments/terraform.tfstate.backup
 terraform/environments/terraform.tfstate

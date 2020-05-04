@@ -23,7 +23,7 @@ provider "aws" {
 
 module "aws_lambda_function" {
 
-  source                =  "../aws-lambda"
+  source                =  "../../aws-lambda"
 
   environment           = var.environment 
   prefix                = var.prefix 
@@ -35,20 +35,26 @@ module "aws_lambda_function" {
   runtime               =  "nodejs10.x"
 }
 
+output "lambda"{
+  value = module.aws_lambda_function.lambda-arn
+}
+
+
 module "aws-state-machine" {
 
-  source                = "../aws-step-fn"
+  source                = "../../aws-step-fn"
 
   environment           = var.environment 
   prefix                = var.prefix 
   app_version           = var.app_version 
   aws_region            = var.aws_region
-  lambda_arn            = module.aws_lambda_function.lambda-arn
+  lambda_arn            = module.aws_lambda_function.lambda-arn[0] 
 }
+
 
 module "aws-ebs-app" {
 
-  source                = "../aws-ebs-with-rds"
+  source                = "../../aws-ebs-with-rds"
 
   environment           = var.environment
   prefix                = var.prefix 
@@ -77,15 +83,16 @@ module "aws-ebs-app" {
 }
 
 resource "null_resource" "update-ebs-env" { 
-  count = length(var.environment)
+  depends_on= [module.aws-ebs-app.ebs-cname]
+  
   provisioner "local-exec" {
-    command = "export AWS_PROFILE=${var.aws_profile} && aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env[count.index]} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname[count.index]}/api"
+    command = "export AWS_PROFILE=${var.aws_profile} && aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname}/api"
   }
 }
 
 module "aws-code-pipeline"{
 
-  source = "../aws-codepipeline"
+  source = "../../aws-codepipeline"
 
   environment           = var.environment 
   prefix                = var.prefix 
@@ -100,10 +107,13 @@ module "aws-code-pipeline"{
   build_compute_type    = var.build_compute_type
   privileged_mode       = var.privileged_mode
 
-  ebs_app_name          = module.aws-ebs-app.application
-  ebs_env_name          = module.aws-ebs-app.ebs-env 
+  ebs_app_name          = module.aws-ebs-app.application 
+  ebs_env_name          = module.aws-ebs-app.ebs-env
 }
 
 output "ebs-cname" {
   value = module.aws-ebs-app.ebs-cname
+}
+output "step_function" {
+  value = module.aws-state-machine.step_function_arn
 }

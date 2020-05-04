@@ -2,9 +2,9 @@
 # CREATE IAM ROLES
 # ---------------------------------------------------------------------------------------------------------------------
 resource "aws_iam_role" "iam_for_lambda" {
-  count = length(var.environment)
-  //name  = var.environment[count.index]
-  name = "${var.environment[count.index]}-${var.prefix}-${var.lambda_iam_role_name}"
+  
+  //name  = var.environment
+  name = "${var.environment}-${var.prefix}-${var.lambda_iam_role_name}"
 
   assume_role_policy = <<EOF
 {

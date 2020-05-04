@@ -1,11 +1,11 @@
 
 resource "aws_codebuild_project" "backend_code_build" {
-  count = length(var.environment)
-  name           = "${var.environment[count.index]}-${var.prefix}-backend-docker-build"
-  description    = "${var.environment[count.index]}-${var.prefix}-backend docker build"
+  
+  name           = "${var.environment}-${var.prefix}-backend-docker-build"
+  description    = "${var.environment}-${var.prefix}-backend docker build"
   build_timeout  = "30"
-  service_role   = aws_iam_role.iam_code_codebuild[count.index].arn
-  encryption_key = aws_kms_alias.artifacts[count.index].arn
+  service_role   = aws_iam_role.iam_code_codebuild.arn
+  encryption_key = aws_kms_alias.artifacts.arn
 
   artifacts {
     type = "CODEPIPELINE"
@@ -19,7 +19,7 @@ resource "aws_codebuild_project" "backend_code_build" {
 
   environment_variable {
       name  = "ENVIRONMENT"
-      value = var.environment[count.index]
+      value = var.environment
     }
 
     environment_variable {
@@ -32,7 +32,7 @@ resource "aws_codebuild_project" "backend_code_build" {
     }
     environment_variable {
       name  = "IMAGE_REPO_NAME"
-      value = aws_ecr_repository.ecr_repo_name[count.index].name
+      value = aws_ecr_repository.ecr_repo_name.name
     }
   }
 
