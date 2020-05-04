@@ -66,6 +66,7 @@ variable "RDS_PASSWORD" {
 # BEANSTACK APP SPECIFIC VARIABLES 
 # ---------------------------------------------------------------------------------------------------------------------
 variable "app_instance_type" {}
+variable "ebs_app_name"{}
 variable "autoscaling_min_size" {}
 variable "autoscaling_max_size" {}
 
