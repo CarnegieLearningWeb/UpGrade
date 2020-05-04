@@ -62,4 +62,11 @@ export interface IExperimentSortParams {
     key: EXPERIMENT_SORT_KEY;
     sortAs: EXPERIMENT_SORT_AS;
 }
+export interface IExperimentDateStat {
+    userId: string;
+    groupId: string | undefined;
+    conditionId: string;
+    partitionIds: string[];
+    createdAt: any;
+}
 export {};

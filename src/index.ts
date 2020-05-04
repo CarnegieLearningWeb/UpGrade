@@ -17,6 +17,7 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   AuditLogData,
+  IExperimentDateStat
 } from './Experiment/interfaces';
 
 export {
@@ -36,4 +37,5 @@ export {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   UserRole,
+  IExperimentDateStat
 };
