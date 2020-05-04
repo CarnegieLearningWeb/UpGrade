@@ -21,7 +21,7 @@ resource "aws_codepipeline" "prod_pipeline" {
       output_artifacts = ["${var.environment}-${var.prefix}-frontend-source"]
 
       configuration = {
-        RepositoryName = aws_codecommit_repository.code_repo.repository_name
+        RepositoryName = var.repository_name
         BranchName     = var.repository_branch
       }
     }

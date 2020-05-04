@@ -7,7 +7,7 @@ data "aws_caller_identity" "current" {}
 
 
 module "production" {
-  source                        = "../modules/website"
+  source                        = "../../modules/website"
   environment                   = var.environment
   prefix                        = var.prefix
   aws_region                    = var.aws_region
