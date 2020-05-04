@@ -79,7 +79,6 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     this.experimentService.selectExperimentGraphInfo$.pipe(
       filter((info) => !!info)
     ).subscribe((graphInfo: any) => {
-      // TODO: Use interface instead of any after putting same in upgrade_types
       graphInfo.forEach(data => {
         this.setMapValues(data);
       });
@@ -153,6 +152,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       this.groupEnrolled = graphInfo.length;
     }
 
+    // Set initial count to 0 for every conditions
     this.experiment.conditions.map(condition => {
       allConditions[condition.id] = 0;
     });
@@ -255,7 +255,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     }
     for (let i = 0; i < limit; i++) {
       emptySeries.push({
-        name: ' ' + i,
+        name: i,
         series: conditionEmptyData
       });
     }
@@ -264,39 +264,21 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   // For maintaining checkbox Select All in condition and partition filter
   isChecked(type: string): boolean {
-    if (type === 'conditions') {
-      return this.selectedCondition.length && this.conditionsFilterOptions.length
-        && this.selectedCondition.length === this.conditionsFilterOptions.length;
-    } else {
-      return this.selectedPartition.length && this.partitionsFilterOptions.length
-        && this.selectedPartition.length === this.partitionsFilterOptions.length;
-    }
+    const selectedType = type === 'conditions' ? this.selectedCondition : this.selectedPartition;
+    const filterOptions = type === 'conditions' ? this.conditionsFilterOptions : this.partitionsFilterOptions;
+    return selectedType.length && filterOptions.length && selectedType.length === filterOptions.length;
   }
 
   isIndeterminate(type: string): boolean {
-    if (type === 'conditions') {
-      return this.selectedCondition && this.conditionsFilterOptions.length && this.selectedCondition.length
-        && this.selectedCondition.length < this.conditionsFilterOptions.length;
-    } else {
-      return this.selectedPartition && this.partitionsFilterOptions.length && this.selectedPartition.length
-        && this.selectedPartition.length < this.partitionsFilterOptions.length;
-    }
+    const selectedType = type === 'conditions' ? this.selectedCondition : this.selectedPartition;
+    const filterOptions = type === 'conditions' ? this.conditionsFilterOptions : this.partitionsFilterOptions;
+    return selectedType && filterOptions.length && selectedType.length && selectedType.length < filterOptions.length;
   }
 
   toggleSelection(change: MatCheckboxChange, type: string): void {
-    if (change.checked) {
-      if (type === 'conditions') {
-        this.selectedCondition = this.conditionsFilterOptions.map(condition => condition.id);
-      } else {
-        this.selectedPartition = this.partitionsFilterOptions.map(partition => partition.id);
-      }
-    } else {
-      if (type === 'conditions') {
-        this.selectedCondition = [];
-      } else {
-        this.selectedPartition = [];
-      }
-    }
+    const selectedType = type === 'conditions' ? 'selectedCondition' : 'selectedPartition';
+    const filterOptions = type === 'conditions' ? 'conditionsFilterOptions' : 'partitionsFilterOptions';
+    this[selectedType] = change.checked ? this[filterOptions].map(data => data.id) : [];
     this.populateGraphData();
   }
 

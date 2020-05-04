@@ -10,7 +10,8 @@ import {
   EXPERIMENT_STATE,
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
+  IExperimentDateStat
 } from 'upgrade_types';
 
 export {
@@ -23,7 +24,8 @@ export {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
+  IExperimentDateStat
 };
 
 export enum GroupTypes {
@@ -146,10 +148,10 @@ export enum ExperimentGraphDateFilterOptions {
 }
 
 export interface IExperimentGraphInfo {
-  [ExperimentGraphDateFilterOptions.LAST_7_DAYS]: {},
-  [ExperimentGraphDateFilterOptions.LAST_3_MONTHS]: {},
-  [ExperimentGraphDateFilterOptions.LAST_6_MONTHS]: {},
-  [ExperimentGraphDateFilterOptions.LAST_12_MONTHS]: {},
+  [ExperimentGraphDateFilterOptions.LAST_7_DAYS]: IExperimentDateStat[],
+  [ExperimentGraphDateFilterOptions.LAST_3_MONTHS]: IExperimentDateStat[],
+  [ExperimentGraphDateFilterOptions.LAST_6_MONTHS]: IExperimentDateStat[],
+  [ExperimentGraphDateFilterOptions.LAST_12_MONTHS]: IExperimentDateStat[],
 }
 
 export interface ExperimentVM extends Experiment {
