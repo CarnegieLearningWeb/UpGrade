@@ -18,15 +18,15 @@ data "aws_iam_policy_document" "artifacts_kms_policy" {
 }
 
 resource "aws_kms_key" "artifacts" {
-  count = length(var.environment)
+  
   description = "kms key for artifacts"
   policy      = data.aws_iam_policy_document.artifacts_kms_policy.json
 }
 
 resource "aws_kms_alias" "artifacts" {
-  count = length(var.environment)
-  name          = "alias/${var.environment[count.index]}-${var.prefix}-backend-artifacts"
-  target_key_id = aws_kms_key.artifacts[count.index].key_id
+  
+  name          = "alias/${var.environment}-${var.prefix}-backend-artifacts"
+  target_key_id = aws_kms_key.artifacts.key_id
 }
 
 
