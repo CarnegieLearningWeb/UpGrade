@@ -59,6 +59,14 @@
     {
       "email": "dhaval.prajapati@playpowerlabs.com",
       "role": "admin"
+    },
+    {
+      "email": "dev@playpowerlabs.com",
+      "role": "admin"
+    },
+    {
+      "email": "dhrushit@playpowerlabs.com",
+      "role": "admin"
     }
   ],
   "context": [
