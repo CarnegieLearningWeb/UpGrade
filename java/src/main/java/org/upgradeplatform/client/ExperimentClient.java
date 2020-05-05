@@ -29,9 +29,9 @@ import retrofit2.Response;
 public class ExperimentClient {
 
 	private List<ExperimentsResponse> allExperiments;
-	private String userId;
-	private String authToken;
-	private String baseUrl;
+	private final String userId;
+	private final String authToken;
+	private final String baseUrl;
 	
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
