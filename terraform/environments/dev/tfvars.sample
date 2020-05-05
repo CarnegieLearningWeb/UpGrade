@@ -1,6 +1,6 @@
 aws_profile                   = "playpower"
 aws_region                    = "us-east-1"
-environment                   = ["dev", "staging"]
+environment                   = "dev"
 prefix                        = "upgrade-frontend"
 repository_name               = "experiment-service-client"
-repository_branch             = ["develop", "staging"]
+repository_branch             = "develop"

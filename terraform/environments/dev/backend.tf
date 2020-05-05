@@ -1,7 +1,7 @@
 terraform {
   backend "s3"{
-      bucket = "upgrade-terraform-tfstate"
-      key  =  "frontend"
+      bucket = "upgrade-frontend-terraform-tfstate"
+      key  =  "frontend/dev"
       region = "us-east-1"
       profile = "playpower"
   }

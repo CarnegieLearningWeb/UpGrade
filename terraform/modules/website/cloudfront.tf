@@ -1,15 +1,14 @@
 resource "aws_cloudfront_distribution" "site_s3_distribution" {
-    count = length(var.environment)
     depends_on = [aws_s3_bucket.bucket_site]
     enabled             = true
     is_ipv6_enabled     = true
     default_root_object = "index.html"
     
-    comment             = "${var.environment[count.index]}-${var.prefix}-${var.repository_branch[count.index]}-cdn"    
+    comment             = "${var.environment}-${var.prefix}-${var.repository_branch}-cdn"    
 
     origin {
-        domain_name = aws_s3_bucket.bucket_site[count.index].website_endpoint
-        origin_id   = aws_s3_bucket.bucket_site[count.index].id
+        domain_name = aws_s3_bucket.bucket_site.website_endpoint
+        origin_id   = aws_s3_bucket.bucket_site.id
 
         custom_origin_config {
             http_port = 80
@@ -24,7 +23,7 @@ resource "aws_cloudfront_distribution" "site_s3_distribution" {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
 
-    target_origin_id = aws_s3_bucket.bucket_site[count.index].id
+    target_origin_id = aws_s3_bucket.bucket_site.id
 
     forwarded_values {
       query_string = true
@@ -47,7 +46,7 @@ resource "aws_cloudfront_distribution" "site_s3_distribution" {
         allowed_methods  = ["GET", "HEAD", "OPTIONS"]
         cached_methods   = ["GET", "HEAD"]
 
-        target_origin_id = aws_s3_bucket.bucket_site[count.index].id
+        target_origin_id = aws_s3_bucket.bucket_site.id
 
         forwarded_values {
 
@@ -74,7 +73,7 @@ resource "aws_cloudfront_distribution" "site_s3_distribution" {
         allowed_methods  = ["GET", "HEAD", "OPTIONS"]
         cached_methods   = ["GET", "HEAD"]
 
-        target_origin_id = aws_s3_bucket.bucket_site[count.index].id
+        target_origin_id = aws_s3_bucket.bucket_site.id
         
         forwarded_values {
             query_string = true
@@ -97,7 +96,7 @@ resource "aws_cloudfront_distribution" "site_s3_distribution" {
         allowed_methods  = ["GET", "HEAD", "OPTIONS"]
         cached_methods   = ["GET", "HEAD"]
 
-        target_origin_id = aws_s3_bucket.bucket_site[count.index].id
+        target_origin_id = aws_s3_bucket.bucket_site.id
 
         forwarded_values {
             query_string = true
@@ -121,7 +120,7 @@ resource "aws_cloudfront_distribution" "site_s3_distribution" {
     }
 
     tags = {
-        Environment = "${var.environment[count.index]}-${var.prefix}-${var.repository_branch[count.index]}"
+        Environment = "${var.environment}-${var.prefix}-${var.repository_branch}"
     }
 
     viewer_certificate {
