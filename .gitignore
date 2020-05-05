@@ -52,6 +52,7 @@ terraform/environments/terraform.tfstate
 terraform/environments/*.tfvars
 terraform/core/.terraform
 terraform/core/*.tfvars
+terraform/environments/lambda/*
 
 # Serverless compiled files
 packages/Schedular/lib
