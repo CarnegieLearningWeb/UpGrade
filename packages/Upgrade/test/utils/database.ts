@@ -13,6 +13,10 @@ export const createDatabaseConnection = async (): Promise<Connection> => {
   const connection = await createConnection({
     type: env.db.type as any, // See createConnection options for valid types
     database: env.db.database,
+    host: env.db.host,
+    port: env.db.port,
+    username: env.db.username,
+    password: env.db.password,
     logging: env.db.logging as LoggerOptions,
     entities: env.app.dirs.entities,
     migrations: env.app.dirs.migrations,

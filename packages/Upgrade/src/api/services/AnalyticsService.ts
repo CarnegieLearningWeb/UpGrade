@@ -10,19 +10,12 @@ import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { ExperimentUser } from '../models/ExperimentUser';
-import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats, IExperimentDateStat } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
-
-interface IExperimentDateStat {
-  userId: string;
-  groupId: string | undefined;
-  conditionId: string;
-  partitionIds: string[];
-  createdAt: any;
-}
+import { ASSIGNMENT_TYPE } from '../../types';
 
 @Service()
 export class AnalyticsService {
@@ -76,7 +69,10 @@ export class AnalyticsService {
             where: { experimentId: In(experimentIdAndPoint) },
             relations: ['user'],
           }),
-          this.individualAssignmentRepository.findIndividualAssignmentsByExperimentId(experimentId),
+          this.individualAssignmentRepository.findIndividualAssignmentsByExperimentIdAndAlgorithm(
+            experimentId,
+            ASSIGNMENT_TYPE.ALGORITHMIC
+          ),
           this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
           this.groupAssignmentRepository.findGroupAssignmentsByExperimentId(experimentId),
           this.groupExclusionRepository.findExcludedByExperimentId(experimentId),
@@ -117,7 +113,10 @@ export class AnalyticsService {
     });
     const promiseData = await Promise.all([
       this.monitoredExperimentPointRepository.getByDateRange(experimentIdAndPoint, from, to),
-      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentId(experimentId),
+      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentIdAndAlgorithm(
+        experimentId,
+        ASSIGNMENT_TYPE.ALGORITHMIC
+      ),
       this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
     ]);
     const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
@@ -182,7 +181,10 @@ export class AnalyticsService {
       }),
       this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
       this.groupExclusionRepository.findExcludedByExperimentId(experimentId),
-      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentId(experimentId),
+      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentIdAndAlgorithm(
+        experimentId,
+        ASSIGNMENT_TYPE.ALGORITHMIC
+      ),
       this.groupAssignmentRepository.findGroupAssignmentsByExperimentId(experimentId),
     ]);
 
@@ -198,13 +200,13 @@ export class AnalyticsService {
       const user = this.getConvertedUserInfo(monitoredPoint.user);
       mappedUserDefinition.set(user.id, user);
     });
-    individualExclusions.map(individualExclusion => {
+    individualExclusions.map((individualExclusion) => {
       if (!mappedUserDefinition.has(individualExclusion.user.id)) {
         const user = this.getConvertedUserInfo(individualExclusion.user);
         mappedUserDefinition.set(user.id, user);
       }
     });
-    individualAssignments.map(assignment => {
+    individualAssignments.map((assignment) => {
       if (!mappedUserDefinition.has(assignment.user.id)) {
         const user = this.getConvertedUserInfo(assignment.user);
         mappedUserDefinition.set(user.id, user);
@@ -239,7 +241,7 @@ export class AnalyticsService {
     // Experiment Monitor Points
     csvData += tableHeadings[3] + '\r\n\n';
     if (monitoredExperimentPoints.length) {
-      monitoredExperimentPoints = monitoredExperimentPoints.map(monitoredPoint => {
+      monitoredExperimentPoints = monitoredExperimentPoints.map((monitoredPoint) => {
         const data = {
           ...monitoredPoint,
           userId: monitoredPoint.user.id,
@@ -253,7 +255,7 @@ export class AnalyticsService {
     // Experiment Individual Exclusions
     csvData += tableHeadings[4] + '\r\n\n';
     if (individualExclusions.length) {
-      individualExclusions = individualExclusions.map(individualExclusion => {
+      individualExclusions = individualExclusions.map((individualExclusion) => {
         const data = {
           ...individualExclusion,
           experimentId: individualExclusion.experiment.id,
@@ -269,7 +271,7 @@ export class AnalyticsService {
     // Experiment Group Exclusions
     csvData += tableHeadings[5] + '\r\n\n';
     if (groupExclusions.length) {
-      groupExclusions = groupExclusions.map(groupExclusion => {
+      groupExclusions = groupExclusions.map((groupExclusion) => {
         const data = {
           ...groupExclusion,
           experimentId: groupExclusion.experiment.id,
@@ -283,7 +285,7 @@ export class AnalyticsService {
     // Experiment Individual Assignments
     csvData += tableHeadings[6] + '\r\n\n';
     if (individualAssignments.length) {
-      individualAssignments = individualAssignments.map(assignment => {
+      individualAssignments = individualAssignments.map((assignment) => {
         const data = {
           ...assignment,
           experimentId: assignment.experiment.id,
@@ -301,7 +303,7 @@ export class AnalyticsService {
     // Experiment Group Assignments
     csvData += tableHeadings[7] + '\r\n\n';
     if (groupAssignments.length) {
-      groupAssignments = groupAssignments.map(assignment => {
+      groupAssignments = groupAssignments.map((assignment) => {
         const data = {
           ...assignment,
           experimentId: assignment.experiment.id,
@@ -338,15 +340,8 @@ export class AnalyticsService {
       return exist ? true : false;
     });
 
-    // filter group assignments
-    const groupAssignments = groupAssignmentsOriginal.filter((groupAssignment) => {
-      const groupId = groupAssignment.groupId;
-      const exist = individualAssignments.find((individualAssignment) => {
-        const workingGroupId = individualAssignment.user.workingGroup[experiment.group];
-        return workingGroupId === groupId;
-      });
-      return exist ? true : false;
-    });
+    // group assignments
+    const groupAssignments = groupAssignmentsOriginal;
 
     // making map of primary keys
     const mappedMonitoredExperimentPoint = new Map<string, MonitoredExperimentPoint>();
@@ -465,8 +460,8 @@ export class AnalyticsService {
   }
 
   private getConvertedUserInfo(user: ExperimentUser): any {
-    user.workingGroup = user.workingGroup ? JSON.stringify(user.workingGroup) as any : '';
-    user.group = user.group ? JSON.stringify(user.group) as any : '';
+    user.workingGroup = user.workingGroup ? (JSON.stringify(user.workingGroup) as any) : '';
+    user.group = user.group ? (JSON.stringify(user.group) as any) : '';
     return user;
   }
 
@@ -481,9 +476,9 @@ export class AnalyticsService {
       keys.join(separator) +
       '\n' +
       data
-        .map(row => {
+        .map((row) => {
           return keys
-            .map(k => {
+            .map((k) => {
               let cell = row[k] === null || row[k] === undefined ? '' : row[k];
               cell = this.wrapCellsContainingRestrictedCharactersInDoubleQuotes(cell);
               return cell;

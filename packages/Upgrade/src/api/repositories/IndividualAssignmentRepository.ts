@@ -47,14 +47,17 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
     return result.raw;
   }
 
-  public async findIndividualAssignmentsByExperimentId(experimentId: string): Promise<IndividualAssignment[]> {
+  public async findIndividualAssignmentsByExperimentIdAndAlgorithm(
+    experimentId: string,
+    assignmentType: ASSIGNMENT_TYPE
+  ): Promise<IndividualAssignment[]> {
     return this.createQueryBuilder('individualAssignment')
       .leftJoinAndSelect('individualAssignment.experiment', 'experiment')
       .leftJoinAndSelect('individualAssignment.user', 'user')
       .leftJoinAndSelect('individualAssignment.condition', 'condition')
       .where('experiment.id = :experimentId AND individualAssignment.assignmentType = :assignmentType', {
         experimentId,
-        assignmentType: ASSIGNMENT_TYPE.ALGORITHMIC,
+        assignmentType,
       })
       .getMany()
       .catch((errorMsg: any) => {
