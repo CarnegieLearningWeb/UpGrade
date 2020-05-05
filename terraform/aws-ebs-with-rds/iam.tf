@@ -81,7 +81,10 @@ resource "aws_iam_policy_attachment" "app-attach3" {
 resource "aws_iam_policy_attachment" "app-attach4" {
   
   name       = "app-attach4"
-  roles      = [aws_iam_role.app-ec2-role.name]
+  roles = [
+    "${aws_iam_role.app-ec2-role.name}",
+    "${aws_iam_role.elasticbeanstalk-service-role.name}"
+  ]
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 resource "aws_iam_policy_attachment" "app-attach5" {
@@ -102,10 +105,4 @@ resource "aws_iam_policy_attachment" "app-attach7" {
   name       = "app-attach7"
   roles      = [aws_iam_role.elasticbeanstalk-service-role.name]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
-}
-resource "aws_iam_policy_attachment" "app-attach8" {
-  
-  name       = "app-attach8"
-  roles      = [aws_iam_role.elasticbeanstalk-service-role.name]
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
