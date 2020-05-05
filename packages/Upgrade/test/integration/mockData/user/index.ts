@@ -1,6 +1,5 @@
 import { User } from '../../../../src/api/models/User';
 export const systemUser: Partial<User> = {
-  id: '1234',
   email: 'vivekfitkariwala@gmail.com',
   firstName: 'Vivek',
   lastName: 'Fitkariwala',
