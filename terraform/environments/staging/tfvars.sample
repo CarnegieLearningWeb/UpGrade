@@ -3,6 +3,7 @@ aws_region              = "us-east-1"
 environment             = "staging"
 prefix                  = "upgrade" 
 app_version             = "1.0.0"
+aws_profile             = "default"
 
 # RDS related details 
 allocated_storage       = 100
