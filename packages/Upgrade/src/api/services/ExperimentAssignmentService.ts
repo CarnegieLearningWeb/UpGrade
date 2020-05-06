@@ -351,6 +351,7 @@ export class ExperimentAssignmentService {
   public clientFailedExperimentPoint(
     reason: string,
     experimentPoint: string,
+    userId: string,
     experimentId: string
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
@@ -358,6 +359,7 @@ export class ExperimentAssignmentService {
     error.message = JSON.stringify({
       experimentPoint,
       experimentId,
+      userId,
       reason,
     });
     return this.errorRepository.saveRawJson(error);

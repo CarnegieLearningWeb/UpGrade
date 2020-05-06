@@ -282,6 +282,7 @@ export class ExperimentClientController {
     return this.experimentAssignmentService.clientFailedExperimentPoint(
       errorBody.reason,
       errorBody.experimentPoint,
+      errorBody.userId,
       errorBody.experimentId
     );
   }
