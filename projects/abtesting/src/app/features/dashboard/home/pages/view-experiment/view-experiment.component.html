@@ -4,163 +4,177 @@
     > <b> {{ experiment?.name }} </b>
   </span>
   <div class="experiment">
-    <div class="experiment-overview">
-      <span class="experiment-overview-title">
-        {{ experiment?.name }}
-        <span class="experiment-overview-partitions">
-          ({{ experiment.partitions?.length + ' ' + ('home.view-experiment.experiments-partitions.text' | translate) }})
+    <div class="experiment-info">
+      <div class="experiment-overview">
+        <span class="experiment-overview-title">
+          {{ experiment?.name }}
+          <span class="experiment-overview-partitions">
+            ({{ experiment.partitions?.length + ' ' + ('home.view-experiment.experiments-partitions.text' | translate) }})
+          </span>
         </span>
+
+        <div class="action-buttons">
+          <button
+            mat-flat-button
+            class="button"
+            (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
+            *ngIf="
+              permissions?.experiments.update &&
+              experiment.state !== ExperimentState.ENROLLING &&
+              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
+            "
+          >
+            {{ 'home.view-experiment.edit-button.text' | translate }}
+          </button>
+          <button mat-flat-button class="button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
+            {{ 'home.view-experiment.delete-button.text' | translate }}
+          </button>
+          <button mat-flat-button class="button" (click)="exportExperimentInfo(experiment.id, experiment.name)">
+            {{ 'home.view-experiment.export-button.text' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <span class="experiment-description">
+        {{ experiment.description }}
       </span>
 
-      <div class="action-buttons">
-        <button
-          mat-flat-button
-          class="button"
-          (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
-          *ngIf="
-            permissions?.experiments.update &&
-            experiment.state !== ExperimentState.ENROLLING &&
-            experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
-          "
-        >
-          {{ 'home.view-experiment.edit-button.text' | translate }}
-        </button>
-        <button mat-flat-button class="button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
-          {{ 'home.view-experiment.delete-button.text' | translate }}
-        </button>
-        <button mat-flat-button class="button" (click)="exportExperimentInfo(experiment.id, experiment.name)">
-          {{ 'home.view-experiment.export-button.text' | translate }}
-        </button>
-      </div>
+      <span class="experiment-create-date">
+        {{
+          ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate: 'medium date')
+        }}
+      </span>
     </div>
 
-    <div class="experiment-description">
-      {{ experiment.description }}
-    </div>
+    <div class="experiment-secondary-info">
+      <div class="experiment-secondary-info-container">
 
-    <span class="experiment-create-date">
-      <b>{{
-        ('home.view-experiment.created-on.text' | translate) + (experiment.createdAt | formatDate: 'medium date')
-      }}</b>
-    </span>
-    <div class="experiment-state">
-      <div class="experiment-state-container">
-        <div class="state-data state-data--fixed">
-          <span>{{ 'home-global.status.text' | translate }}</span>
-          <button
-            mat-flat-button
-            *ngIf="permissions?.experiments.update; else readOnlyStatus"
-            (click)="openDialog(DialogType.CHANGE_STATUS)"
-          >
-            {{ experiment.state | experimentState }}
-            <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
-          </button>
-          <ng-template #readOnlyStatus>
-            <span class="state-data-value">{{ experiment.state | experimentState }}</span>
-          </ng-template>
-        </div>
-        <div class="state-data">
-          <span>{{ 'home-global.post-experiment-rule.text' | translate }}</span>
-          <button
-            mat-flat-button
-            *ngIf="permissions?.experiments.update; else readOnlyRule"
-            (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
-          >
-            {{ experiment.postExperimentRule | titlecase }}
-            <app-shared-icons class="icon" [iconType]="'edit'"></app-shared-icons>
-          </button>
-          <ng-template #readOnlyRule>
-            <span class="state-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
-          </ng-template>
-        </div>
-      </div>
-
-      <div class="experiment-state-container">
-        <div class="state-data state-data--fixed">
-          <span>{{ 'home-global.unit-of-assignment.text' | translate | uppercase }} </span>
-          <span class="state-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
-          <ng-container *ngIf="experiment.group">
-            <span class="state-data-group" *ngIf="experiment.group?.length < 30; else experimentGroupTruncate">
-              {{ '( ' + (experiment.group | titlecase) + ' )' }}
-            </span>
-            <ng-template #experimentGroupTruncate>
-              <span class="state-data-group" [matTooltip]="experiment.group" matTooltipPosition="above">
-                {{ '( ' + (experiment.group | titlecase | truncate: 35) + ' )' }}
+        <div class="experiment-info-section">
+          <div class="section-data section-data--fixed">
+            <span class="section-data-title">{{ 'home-global.status.text' | translate }}</span>
+            <div class="experiment-state-container">
+              <ng-container
+                *ngIf="experiment.state === ExperimentState.PREVIEW || experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.SCHEDULED; else experimentStateTemplate"
+              >
+                <app-shared-icons class="icons" [iconType]="experiment.state"></app-shared-icons>
+              </ng-container>
+              <ng-template #experimentStateTemplate>
+                <span class="state-circle" [ngStyle]="{'backgroundColor': experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+              </ng-template>
+              <span
+                class="section-data-value section-data-value--editable"
+                *ngIf="permissions?.experiments.update; else readOnlyStatus"
+                (click)="openDialog(DialogType.CHANGE_STATUS)"
+              >
+                {{ experiment.state | experimentState }}
               </span>
+              <ng-template #readOnlyStatus>
+                <span class="section-data-value ">{{ experiment.state | experimentState }}</span>
+              </ng-template>
+            </div>
+          </div>
+
+          <div class="section-data">
+            <span class="section-data-title">{{ 'home-global.post-experiment-rule.text' | translate }}</span>
+            <span
+              class="section-data-value section-data-value--editable"
+              *ngIf="permissions?.experiments.update; else readOnlyRule"
+              (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
+            >{{ experiment.postExperimentRule | titlecase }}</span>
+            <ng-template #readOnlyRule>
+              <span class="section-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
             </ng-template>
-          </ng-container>
+          </div>
         </div>
-        <div class="state-data">
-          <span>{{ 'home-global.consistency-rule.text' | translate | uppercase }}</span>
-          <span class="state-data-value">{{ experiment.consistencyRule | titlecase }}</span>
-        </div>
-      </div>
 
-      <div class="experiment-state-container">
-        <div class="state-data end-criteria-container">
-          <span>{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
-          <ng-container *ngIf="experiment.endOn || experiment.enrollmentCompleteCondition; else noCriteriaTemplate">
-            <ng-container *ngIf="experiment.enrollmentCompleteCondition as endCondition">
-              <span class="end-criteria end-criteria--text">
-                {{ 'home.view-experiment.ending-criteria.reaches.text' | translate }}
+        <div class="experiment-info-section">
+          <div class="section-data section-data--fixed">
+            <span class="section-data-title">{{ 'home-global.unit-of-assignment.text' | translate | uppercase }} </span>
+            <span class="section-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
+            <ng-container *ngIf="experiment.group">
+              <span class="section-data-group" *ngIf="experiment.group?.length < 30; else experimentGroupTruncate">
+                {{ '( ' + (experiment.group | titlecase) + ' )' }}
               </span>
-              <span
-                class="end-criteria end-criteria--data end-criteria--text"
-                *ngIf="endCondition?.userCount as studentCount"
-              >
-                {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
-              </span>
-              <span class="end-criteria end-criteria--text" *ngIf="endCondition?.userCount && endCondition.groupCount">
-                {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
-              </span>
-              <span
-                class="end-criteria end-criteria--data end-criteria--text"
-                *ngIf="endCondition?.groupCount as groupCount"
-              >
-                {{
-                  groupCount +
-                    ' ' +
-                    ('home-global.enrollments-per-custom.text' | translate: { groupType: experiment.group } | lowercase)
-                }}
-              </span>
-              <span class="end-criteria end-criteria--text">
-                {{ 'home.view-experiment.ending-criteria.close-parentheses.text' | translate }}
+              <ng-template #experimentGroupTruncate>
+                <span class="section-data-group" [matTooltip]="experiment.group" matTooltipPosition="above">
+                  {{ '( ' + (experiment.group | titlecase | truncate: 35) + ' )' }}
+                </span>
+              </ng-template>
+            </ng-container>
+          </div>
+
+          <div class="section-data">
+            <span class="section-data-title">{{ 'home-global.consistency-rule.text' | translate | uppercase }}</span>
+            <span class="section-data-value">{{ experiment.consistencyRule | titlecase }}</span>
+          </div>
+        </div>
+
+        <div class="experiment-info-section">
+          <div class="section-data end-criteria-container">
+            <span class="section-data-title">{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
+            <ng-container *ngIf="experiment.endOn || experiment.enrollmentCompleteCondition; else noCriteriaTemplate">
+              <ng-container *ngIf="experiment.enrollmentCompleteCondition as endCondition">
+                <span class="end-criteria end-criteria--text">
+                  {{ 'home.view-experiment.ending-criteria.reaches.text' | translate }}
+                </span>
+                <span
+                  class="end-criteria end-criteria--data end-criteria--text"
+                  *ngIf="endCondition?.userCount as studentCount"
+                >
+                  {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
+                </span>
+                <span class="end-criteria end-criteria--text" *ngIf="endCondition?.userCount && endCondition.groupCount">
+                  {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
+                </span>
+                <span
+                  class="end-criteria end-criteria--data end-criteria--text"
+                  *ngIf="endCondition?.groupCount as groupCount"
+                >
+                  {{
+                    groupCount +
+                      ' ' +
+                      ('home-global.enrollments-per-custom.text' | translate: { groupType: experiment.group } | lowercase)
+                  }}
+                </span>
+                <span class="end-criteria end-criteria--text">
+                  {{ 'home.view-experiment.ending-criteria.close-parentheses.text' | translate }}
+                </span>
+              </ng-container>
+              <span class="end-criteria" *ngIf="experiment.endOn">
+                {{ experiment.endOn | formatDate: 'medium date' }}
               </span>
             </ng-container>
-            <span class="end-criteria" *ngIf="experiment.endOn">
-              {{ experiment.endOn | formatDate: 'medium date' }}
-            </span>
-          </ng-container>
 
-          <!-- Show template if ending criteria is not set -->
-          <ng-template #noCriteriaTemplate>
-            <span class="end-criteria">
-              {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
-            </span>
-          </ng-template>
+            <!-- Show template if ending criteria is not set -->
+            <ng-template #noCriteriaTemplate>
+              <span class="end-criteria">
+                {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
+              </span>
+            </ng-template>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Experiment Context -->
-    <div class="experiment-props">
-      <span class="experiment-props-title">{{ 'global.context.text' | translate }}</span>
-      <div class="experiment-props-values">
-        <span
-          (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
-          *ngFor="let context of experiment.context"
-          >{{ context }}</span
-        >
+      <!-- Experiment Context -->
+      <div class="experiment-chips">
+        <span class="experiment-chips-title">{{ 'global.context.text' | translate }}</span>
+        <div class="experiment-chips-values">
+          <span
+            (click)="searchExperiment(ExperimentSearchKey.CONTEXT, context)"
+            *ngFor="let context of experiment.context"
+            >{{ context }}</span
+          >
+        </div>
       </div>
-    </div>
 
-    <!-- Experiment Tags -->
-    <div class="experiment-props" *ngIf="experiment.tags.length">
-      <span class="experiment-props-title">{{ 'global.tags.text' | translate }}</span>
-      <div class="experiment-props-values">
-        <span (click)="searchExperiment(ExperimentSearchKey.TAG, tag)" *ngFor="let tag of experiment.tags">{{
-          tag
-        }}</span>
+      <!-- Experiment Tags -->
+      <div class="experiment-chips" *ngIf="experiment.tags.length">
+        <span class="experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
+        <div class="experiment-chips-values">
+          <span (click)="searchExperiment(ExperimentSearchKey.TAG, tag)" *ngFor="let tag of experiment.tags">{{
+            tag
+          }}</span>
+        </div>
       </div>
     </div>
 

@@ -2,7 +2,7 @@
   <span class="enrollment-over-time__title">{{ 'home.view-experiment.marked-over-time.text' | translate }}</span>
   <div class="enrollment-filters">
     <mat-form-field>
-      <mat-label>{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
+      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
       <mat-select
         [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
         [(ngModel)]="selectedGroupFilter"
@@ -18,7 +18,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label>{{ 'home.view-experiment.graph-conditions.text' | translate }}</mat-label>
+      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-conditions.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedCondition"
         multiple
@@ -43,7 +43,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label>{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
+      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedPartition"
         multiple
@@ -68,7 +68,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label>{{ 'home.view-experiment.graph-time.text' | translate }}</mat-label>
+      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-time.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedDateFilter"
         (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"

@@ -1,13 +1,13 @@
-$text-size-largest: 50px;
+$graph-text: 36px;
 
 .enrollment-over-time {
-  margin-top: 20px;
+  padding: 0 34px 34px;
 
   &__title {
     color: var(--black-2);
     font-family: 'Open Sans';
     font-size: var(--text-size-xxx-large);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .enrollment-filters {
@@ -20,6 +20,12 @@ $text-size-largest: 50px;
       ::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
         background-color: var(--blue) !important;
       }
+    }
+
+    .dropdown-label {
+      color: var(--grey-2);
+      font-family: 'Open Sans';
+      font-weight: 700;
     }
   }
 
@@ -81,18 +87,19 @@ $text-size-largest: 50px;
 
       .title {
         display: block;
-        margin-bottom: 10px;
-        color: var(--grey-4);
+        color: var(--grey-5);
         font-family: 'Open Sans';
-        font-size: var(--text-size-normal);
+        font-size: var(--text-size-large);
         font-weight: 600;
       }
 
       .numbers {
+        display: block;
+        margin-top: 10px;
         color: var(--blue);
         font-family: 'Open Sans';
-        font-size: $text-size-largest;
-        font-weight: 600;
+        font-size: $graph-text;
+        font-weight: 700;
       }
     }
   }
@@ -101,4 +108,11 @@ $text-size-largest: 50px;
 ::ng-deep .mat-checkbox-layout,
 ::ng-deep .mat-checkbox-label {
   width: 100% !important;
+}
+
+::ng-deep .ngx-charts {
+  ::ng-deep text {
+    font-family: 'Open Sans';
+    font-weight: 600;
+  }
 }
