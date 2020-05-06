@@ -10,7 +10,8 @@ import {
   EXPERIMENT_STATE,
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
+  IExperimentDateStat
 } from 'upgrade_types';
 
 export {
@@ -23,7 +24,8 @@ export {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   IExperimentSearchParams,
-  IExperimentSortParams
+  IExperimentSortParams,
+  IExperimentDateStat
 };
 
 export enum GroupTypes {
@@ -138,6 +140,20 @@ export interface ExperimentPaginationParams {
   sortParams?: IExperimentSortParams;
 }
 
+export enum ExperimentGraphDateFilterOptions {
+  LAST_7_DAYS = 'Last 7 Days',
+  LAST_3_MONTHS = 'Last 3 Months',
+  LAST_6_MONTHS = 'Last 6 Months',
+  LAST_12_MONTHS = 'Last 12 Months'
+}
+
+export interface IExperimentGraphInfo {
+  [ExperimentGraphDateFilterOptions.LAST_7_DAYS]: IExperimentDateStat[],
+  [ExperimentGraphDateFilterOptions.LAST_3_MONTHS]: IExperimentDateStat[],
+  [ExperimentGraphDateFilterOptions.LAST_6_MONTHS]: IExperimentDateStat[],
+  [ExperimentGraphDateFilterOptions.LAST_12_MONTHS]: IExperimentDateStat[],
+}
+
 export interface ExperimentVM extends Experiment {
   stat: IExperimentEnrollmentStats;
 }
@@ -153,6 +169,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   stats: {
     [key: string]: IExperimentEnrollmentStats;
   };
+  graphInfo: IExperimentGraphInfo,
+  graphRange: ExperimentGraphDateFilterOptions;
   allPartitions: {};
   allExperimentNames: {};
   context: string[]

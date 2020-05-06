@@ -6,10 +6,15 @@ import {
   ExperimentNameVM,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS
+  EXPERIMENT_SORT_AS,
+  ExperimentGraphDateFilterOptions,
+  IExperimentDateStat
 } from './experiments.model';
 
-export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
+export const actionGetExperiments = createAction(
+  '[Experiment] Get Experiments',
+  props<{ fromStarting?: boolean }>()
+);
 
 export const actionGetExperimentsSuccess = createAction(
   '[Experiment] Get Experiments Success',
@@ -129,6 +134,34 @@ export const actionExportExperimentInfo = createAction(
   props<{ experimentId: string; experimentName: string }>()
 );
 
-export const actionExportExperimentInfoSuccess = createAction('[Experiment] Export Experiment Info Success');
+export const actionExportExperimentInfoSuccess = createAction(
+  '[Experiment] Export Experiment Info Success'
+);
 
-export const actionExportExperimentInfoFailure = createAction('[Experiment] Export Experiment Info Failure');
+export const actionExportExperimentInfoFailure = createAction(
+  '[Experiment] Export Experiment Info Failure'
+);
+
+export const actionFetchExperimentGraphInfo = createAction(
+  '[Experiment] Fetch Experiment graph Info',
+  props<{ experimentId: string, range: ExperimentGraphDateFilterOptions }>()
+);
+
+export const actionFetchExperimentGraphInfoSuccess = createAction(
+  '[Experiment] Fetch Experiment graph Info Success',
+  props<{ range: ExperimentGraphDateFilterOptions, graphInfo: IExperimentDateStat[] }>()
+);
+
+export const actionFetchExperimentGraphInfoFailure = createAction(
+  '[Experiment] Fetch Experiment graph Info Failure',
+);
+
+export const actionSetExperimentGraphInfo = createAction(
+  '[Experiment] Set Experiment Graph Info',
+  props<{ graphInfo: any }>()
+);
+
+export const actionSetGraphRange = createAction(
+  '[Experiment] Set Graph Range',
+  props<{ range: ExperimentGraphDateFilterOptions, experimentId: string }>()
+);

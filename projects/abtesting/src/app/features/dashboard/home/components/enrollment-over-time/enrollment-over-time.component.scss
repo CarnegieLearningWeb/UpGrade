@@ -1,5 +1,4 @@
 $text-size-largest: 50px;
-$selected-range-color: #c2d1ff;
 
 .enrollment-over-time {
   margin-top: 20px;
@@ -17,6 +16,10 @@ $selected-range-color: #c2d1ff;
 
     mat-form-field {
       margin-right: 20px;
+
+      ::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
+        background-color: var(--blue) !important;
+      }
     }
   }
 
@@ -60,14 +63,20 @@ $selected-range-color: #c2d1ff;
       flex-direction: column;
       margin-left: 30px;
       width: 225px;
+      text-align: center;
 
       &__unique {
-        border-bottom: 1px solid var(--grey);
         padding-bottom: 30px;
       }
 
       &__class {
+        visibility: hidden;
+        border-top: 1px solid var(--grey);
         padding-top: 30px;
+
+        &.group-enabled {
+          visibility: visible;
+        }
       }
 
       .title {
@@ -84,27 +93,12 @@ $selected-range-color: #c2d1ff;
         font-family: 'Open Sans';
         font-size: $text-size-largest;
         font-weight: 600;
-
-        &--excluded {
-          color: var(--grey-4);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-normal);
-          font-weight: 400;
-        }
       }
     }
   }
 }
 
-::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
-  background-color: var(--blue);
-}
-
-::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-in-range {
-  background-color: $selected-range-color;
-}
-
-::ng-deep .owl-dt-container-info .owl-dt-container-info-active,
-::ng-deep .owl-dt-container-info .owl-dt-container-range:last-child {
-  color: var(--blue);
+::ng-deep .mat-checkbox-layout,
+::ng-deep .mat-checkbox-label {
+  width: 100% !important;
 }

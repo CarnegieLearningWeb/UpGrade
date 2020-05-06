@@ -23,6 +23,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   sortKey: null,
   sortAs: null,
   stats: {},
+  graphInfo: null,
+  graphRange: null,
   allPartitions: null,
   allExperimentNames: null,
   context: []
@@ -58,6 +60,24 @@ const reducer = createReducer(
     experimentsAction.actionStoreExperimentStats,
     (state, { stats }) => {
       return { ...state, stats: { ...state.stats, ...stats }, isLoadingExperiment: false };
+    }
+  ),
+  on(
+    experimentsAction.actionFetchExperimentGraphInfoSuccess,
+    (state, { graphInfo, range }) => {
+      return { ...state, graphInfo: { ...state.graphInfo, [range]: graphInfo } };
+    }
+  ),
+  on(
+    experimentsAction.actionSetExperimentGraphInfo,
+    (state, { graphInfo }) => {
+      return { ...state, graphInfo };
+    }
+  ),
+  on(
+    experimentsAction.actionSetGraphRange,
+    (state, { range }) => {
+      return { ...state, graphRange: range };
     }
   ),
   on(

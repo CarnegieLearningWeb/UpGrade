@@ -90,3 +90,19 @@ export const selectExperimentContext = createSelector(
   selectExperimentState,
   (state) => state.context
 );
+
+export const selectExperimentGraphRange = createSelector(
+  selectExperimentState,
+  (state) => state.graphRange
+);
+
+export const selectExperimentGraphInfo = createSelector(
+  selectExperimentState,
+  selectExperimentGraphRange,
+  (state, range) => {
+      if (state.graphInfo && range) {
+        return state.graphInfo[range];
+      }
+      return null;
+  }
+);
