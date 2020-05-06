@@ -34,6 +34,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
+import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 
 @NgModule({
   imports: [
@@ -69,7 +70,7 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatProgressBarModule,
     MatAutocompleteModule,
   ],
-  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe],
+  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe, ExperimentStatePipe],
   exports: [
     CommonModule,
     FormsModule,
@@ -107,7 +108,8 @@ import { TruncatePipe } from './pipes/truncate.pipe';
     MatAutocompleteModule,
 
     SharedIconsComponent,
-    TruncatePipe
+    TruncatePipe,
+    ExperimentStatePipe
   ]
 })
 export class SharedModule {}

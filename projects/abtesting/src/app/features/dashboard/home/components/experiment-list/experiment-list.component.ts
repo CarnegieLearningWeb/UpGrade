@@ -13,7 +13,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Subscription, fromEvent, Observable } from 'rxjs';
 import { MatDialog } from '@angular/material';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
-import { ExperimentStatePipeType } from '../../pipes/experiment-state.pipe';
+import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { debounceTime } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';

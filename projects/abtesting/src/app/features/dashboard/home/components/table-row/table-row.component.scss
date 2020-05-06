@@ -3,7 +3,7 @@ div {
 
   .inner-table-container {
     div {
-      border-bottom: 2px solid var(--grey-2);
+      margin-bottom: 5px;
     }
   }
 
@@ -15,14 +15,19 @@ div {
       padding: 10px;
       text-align: center;
       word-break: break-word;
+      font-family: 'Open Sans';
+      font-size: var(--text-size-x-small);
+      font-weight: 600;
     }
 
     mat-header-cell {
       border-color: var(--light-grey);
       color: var(--grey-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
       font-weight: 700;
+    }
+
+    .mat-column-condition {
+      justify-content: flex-start;
     }
 
     .mat-column-expandIcon {
@@ -31,7 +36,6 @@ div {
 
     .mat-icon {
       position: relative;
-      top: 4px;
       cursor: pointer;
 
       &.active {
@@ -42,7 +46,6 @@ div {
   }
 
   .expandable-row {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     background-color: #fafafa;
     min-height: 0;
     overflow: hidden;
@@ -50,6 +53,19 @@ div {
     mat-cell,
     mat-header-cell {
       padding: 0px;
+    }
+
+    .mat-column-experimentPoint {
+      justify-content: flex-start;
+      padding-left: 30px;
+    }
+
+    .mat-column-experimentId {
+      justify-content: flex-start;
+
+      &.mat-header-cell {
+        justify-content: center;
+      }
     }
   }
 }

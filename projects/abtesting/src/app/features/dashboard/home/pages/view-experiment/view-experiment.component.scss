@@ -1,17 +1,17 @@
 $white-background: #f0f2f9;
-$dark-grey-text-color: #707a85;
-$chip-background: #e0e0e0;
 $selected-range-color: #c2d1ff;
+$dark-grey-text-color: #646e7b;
+$font-size-small: 15px;
 
 .experiment-container {
   background-color: $white-background;
-  padding: 0 70px 40px;
+  padding: 0 2.75rem 2.75rem;
 
   .experiment-title,
   .experiment-link {
     color: var(--black-2);
     font-family: 'Open Sans';
-    font-size: var(--text-size-large);
+    font-size: var(--text-size-normal);
     font-weight: 400;
   }
 
@@ -20,139 +20,50 @@ $selected-range-color: #c2d1ff;
   }
 
   .experiment {
-    margin-top: 20px;
+    margin-top: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 0 2px var(--light-grey);
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     background-color: var(--white);
-    padding: 30px;
 
-    &-overview {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    &-info {
+      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
+      padding: 34px 34px 0;
 
-      &-title {
+      .experiment-overview {
         display: flex;
-        flex-direction: column;
-        color: var(--black-2);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-xxxxx-large);
-        font-weight: 700;
-      }
+        align-items: center;
+        justify-content: space-between;
 
-      &-partitions {
-        color: var(--grey-3);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-large);
-        font-weight: 400;
-      }
-
-      .action-buttons {
-        flex-shrink: 0;
-        align-self: flex-start;
-
-        .button {
-          margin-left: 15px !important;
-          border: 1px solid var(--blue);
-          background: $white-background;
-          color: var(--blue);
-          font-size: var(--text-size-small);
-
-          .icon {
-            margin-right: 3px;
-            vertical-align: unset;
-          }
+        &-title {
+          display: flex;
+          flex-direction: column;
+          color: var(--black-2);
+          font-family: 'Open Sans';
+          font-size: var(--text-size-xxxxx-large);
+          font-weight: 700;
         }
-      }
-    }
 
-    &-description {
-      margin: 15px 0 15px;
-      color: var(--grey-3);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 400;
-    }
+        &-partitions {
+          color: var(--grey-3);
+          font-family: 'Open Sans';
+          font-size: var(--text-size-normal);
+          font-weight: 400;
+        }
 
-    &-create-date {
-      display: block;
-      margin-bottom: 20px;
-      color: var(--grey-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 400;
-    }
+        .action-buttons {
+          flex-shrink: 0;
+          align-self: flex-start;
+          margin-top: 0.5rem;
 
-    &-state {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-
-      &-container {
-        display: flex;
-        flex: 0 1 33.33%;
-        flex-direction: column;
-
-        .state-data {
-          margin-bottom: 20px;
-
-          &.end-criteria-container {
-            .end-criteria {
-              color: $dark-grey-text-color;
-              font-family: 'Open Sans';
-              font-size: var(--text-size-normal);
-              font-weight: 600;
-
-              &--text {
-                display: unset;
-              }
-
-              &--data {
-                color: var(--blue);
-              }
-            }
-          }
-
-          &--fixed {
-            height: 66px;
-          }
-
-          &-value {
-            color: $dark-grey-text-color;
-            font-family: 'Open Sans';
-            font-size: var(--text-size-large);
-            font-weight: 600;
-          }
-
-          &-group {
-            color: var(--grey-2);
-            font-family: 'Open Sans';
-            font-size: var(--text-size-x-small);
-            font-weight: 400;
-          }
-
-          span {
-            display: block;
-
-            &:first-of-type {
-              margin-bottom: 5px;
-              color: var(--grey-3);
-              font-family: 'Open Sans';
-              font-size: var(--text-size-small);
-              font-weight: 600;
-            }
-          }
-
-          button {
-            padding: 0;
-            height: 40px;
+          .button {
+            margin-left: 15px !important;
+            border: 1px solid var(--blue);
+            background: $white-background;
             color: var(--blue);
-            font-family: 'Open Sans';
-            font-size: var(--text-size-large);
-            font-weight: 600;
+            font-size: var(--text-size-small);
 
             .icon {
-              margin-left: 5px;
+              margin-right: 3px;
               vertical-align: unset;
             }
           }
@@ -160,47 +71,162 @@ $selected-range-color: #c2d1ff;
       }
     }
 
-    &-props {
-      display: flex;
-      flex-direction: row;
-      margin-top: 10px;
+    &-description {
+      display: block;
+      margin: 14px 0 10px;
+      color: var(--grey-3);
+      font-family: 'Open Sans';
+      font-size: var(--text-size-normal);
+      font-weight: 400;
+    }
 
-      &-title {
-        flex-shrink: 0;
-        padding-top: 12px;
-        width: 90px;
-        color: var(--grey-3);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-small);
-        font-weight: 600;
+    &-create-date {
+      display: block;
+      padding-bottom: 23px;
+      color: var(--grey-5);
+      font-family: 'Open Sans';
+      font-size: var(--text-size-small);
+      font-weight: 700;
+    }
+
+    &-secondary-info {
+      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
+      padding: 34px 34px 24px;
+
+      &-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .experiment-info-section {
+          display: flex;
+          flex: 0 1 33.33%;
+          flex-direction: column;
+
+          .section-data {
+            margin-bottom: 20px;
+
+            .experiment-state-container {
+              display: flex;
+              align-items: center;
+
+              .state-circle {
+                display: inline-block;
+                margin-right: 6px;
+                border-radius: 50%;
+                width: 15px;
+                height: 15px;
+              }
+
+              .icons {
+                display: inline-flex;
+                margin-right: 6px;
+
+                ::ng-deep svg {
+                  width: 15px;
+                  height: 15px;
+                }
+              }
+            }
+
+            &.end-criteria-container {
+              .end-criteria {
+                color: $dark-grey-text-color;
+                font-family: 'Open Sans';
+                font-size: var(--text-size-large);
+                font-weight: 700;
+
+                &--text {
+                  display: unset;
+                }
+
+                &--data {
+                  color: var(--blue);
+                }
+              }
+            }
+
+            &--fixed {
+              height: 66px;
+            }
+
+            &-title {
+              display: block;
+              color: var(--grey-5);
+              font-family: 'Open Sans';
+              font-size: $font-size-small;
+              font-weight: 600;
+            }
+
+            &-value {
+              color: $dark-grey-text-color;
+              font-family: 'Open Sans';
+              font-size: var(--text-size-large);
+              font-weight: 700;
+
+              &--editable {
+                text-decoration: underline;
+
+                &:hover {
+                  cursor: pointer;
+                }
+              }
+            }
+
+            &-group {
+              color: var(--grey-2);
+              font-family: 'Open Sans';
+              font-size: var(--text-size-x-small);
+              font-weight: 400;
+            }
+          }
+        }
       }
 
-      &-values {
+      .experiment-chips {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: row;
 
-        span {
-          margin: 5px;
-          border-radius: 5px;
-          background: $chip-background;
-          padding: 7px 10px;
+        &-title {
+          flex-shrink: 0;
+          padding-top: 12px;
+          width: 90px;
+          color: var(--grey-5);
+          font-family: 'Open Sans';
+          font-size: $font-size-small;
+          font-weight: 600;
+        }
 
-          &:hover {
-            cursor: pointer;
+        &-values {
+          display: flex;
+          flex-wrap: wrap;
+
+          span {
+            margin: 5px;
+            border-radius: 14px;
+            background-color: rgba(216, 216, 216, 0.6);
+            padding: 7px 10px;
+            color: var(--black-2);
+            font-size: var(--text-size-small);
+
+            &:hover {
+              cursor: pointer;
+            }
           }
         }
       }
     }
+
   }
 
   .table-container {
-    margin-top: 30px;
+    padding: 24px 34px;
 
     .title {
       color: var(--black-2);
       font-family: 'Open Sans';
       font-size: var(--text-size-xxx-large);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .table {
@@ -210,14 +236,25 @@ $selected-range-color: #c2d1ff;
         justify-content: center;
         padding: 10px;
         word-break: break-word;
+        font-family: 'Open Sans';
+        font-size: var(--text-size-x-small);
+      }
+
+      mat-cell {
+        font-weight: 600;
       }
 
       mat-header-cell {
         border-color: var(--light-grey);
         color: var(--grey-2);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
         font-weight: 700;
+      }
+
+      .mat-column-conditionCode,
+      .mat-column-description,
+      .mat-column-partitionPoint,
+      .mat-column-partitionId {
+        justify-content: flex-start;
       }
     }
   }

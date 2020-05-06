@@ -16,6 +16,7 @@ import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import * as clonedeep from 'lodash.clonedeep';
+import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -107,5 +108,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get ExperimentSearchKey() {
     return EXPERIMENT_SEARCH_KEY;
+  }
+
+  get ExperimentStatePipeTypes() {
+    return ExperimentStatePipeType;
   }
 }

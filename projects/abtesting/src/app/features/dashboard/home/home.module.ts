@@ -6,8 +6,6 @@ import { SharedModule } from '../../../shared/shared.module';
 import { HomeComponent } from './root/home.component';
 import { HomeRoutingModule } from './home-routing.module';
 import { ExperimentListComponent } from './components/experiment-list/experiment-list.component';
-import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
-import { FormatDatePipe } from './pipes/format-date.pipe';
 import { FormsModule } from '@angular/forms';
 import { NewExperimentComponent } from './components/modal/new-experiment/new-experiment.component';
 import { ExperimentOverviewComponent } from './components/experiment-overview/experiment-overview.component';
@@ -25,12 +23,12 @@ import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 import { DeleteExperimentComponent } from './components/modal/delete-experiment/delete-experiment.component';
 import { TableRowComponent } from './components/table-row/table-row.component';
+import { FormatDatePipe } from './pipes/format-date.pipe';
 
 @NgModule({
   declarations: [
     HomeComponent,
     ExperimentListComponent,
-    ExperimentStatePipe,
     FormatDatePipe,
     NewExperimentComponent,
     ExperimentOverviewComponent,
