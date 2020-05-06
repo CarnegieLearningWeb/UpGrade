@@ -11,5 +11,8 @@ export class FailedParamsValidator {
   public reason: string;
 
   @IsString()
+  public userId: string;
+
+  @IsString()
   public experimentId?: string;
 }
