@@ -25,7 +25,6 @@ import org.upgradeplatform.responsebeans.InitRequest;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 import org.upgradeplatform.utils.APIService;
 
-
 public class ExperimentClient {
 
 	private List<ExperimentsResponse> allExperiments;
@@ -34,9 +33,8 @@ public class ExperimentClient {
 
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
-		this.apiService = new APIService(baseUrl,authToken);
+		this.apiService = new APIService(baseUrl, authToken);
 	}
-
 
 	private String validateRequestData(String userId, String authToken, String baseUrl) {
 		if (isStringNull(baseUrl)) {
@@ -53,34 +51,35 @@ public class ExperimentClient {
 	// To set user group membership
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
-		//Check if request has a valid data 
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(), this.apiService.getBaseUrl());
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		//Build a request object and prepare invocation method
+		// Build a request object and prepare invocation method
 		InitRequest initRequest = new InitRequest(this.userId, group, null);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
 
-		//Invoke the method
+		// Invoke the method
 		invocation.post(Entity.json(initRequest), new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
-				if(response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
 					System.out.println("set group membdership error.");
-					//					if (callbacks != null)
-					//						callbacks.onError(error);
+					// if (callbacks != null)
+					// callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));	
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
 
@@ -88,9 +87,10 @@ public class ExperimentClient {
 
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
 
-		//Check if request has a valid data 
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(), this.apiService.getBaseUrl());
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
@@ -98,37 +98,38 @@ public class ExperimentClient {
 		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 
-		//Invoke the method
+		// Invoke the method
 		invocation.post(Entity.json(initRequest), new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
-				if(response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
 					System.out.println("set working group error.");
-					//					if (callbacks != null)
-					//						callbacks.onError(error);
+					// if (callbacks != null)
+					// callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));	
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
 	}
 
-	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
+	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 
-		//Check if request has a valid data 
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(), this.apiService.getBaseUrl());
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context );
+		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 
 		invocation.post(Entity.json(experimentRequest), new InvocationCallback<Response>() {
@@ -136,15 +137,16 @@ public class ExperimentClient {
 			@Override
 			public void completed(Response response) {
 				// Cache allExperiment data for future requests
-				allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {});
-				callbacks.onSuccess(allExperiments);	
+				allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {
+				});
+				callbacks.onSuccess(allExperiments);
 			}
 
 			@Override
 			public void failed(Throwable throwable) {
 				throwable.printStackTrace();
 
-			}			
+			}
 		});
 	}
 
@@ -154,64 +156,64 @@ public class ExperimentClient {
 	}
 
 	// To get experiment condition for particular experiment point and experimentId
-	public void getExperimentCondition(String experimentPoint, String experimentId, 
+	public void getExperimentCondition(String experimentPoint, String experimentId,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 
-		//Check if request has a valid data 
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(), this.apiService.getBaseUrl());
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
 		if (this.allExperiments != null) {
 
-			ExperimentsResponse experimentsResponse  = allExperiments.stream()
-					.filter(t -> isStringNull(experimentId) == false ? 
-							t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint) :
-								t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()) ).findFirst().get();
+			ExperimentsResponse experimentsResponse = allExperiments.stream()
+					.filter(t -> isStringNull(experimentId) == false
+							? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
+							: t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
+					.findFirst().get();
 
 			AssignedCondition assignedCondition = new AssignedCondition(
 					experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-					experimentsResponse.getAssignedCondition().getConditionCode(), 
+					experimentsResponse.getAssignedCondition().getConditionCode(),
 					experimentsResponse.getAssignedCondition().getDescription());
-			
-			ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(), 
-					experimentsResponse.getExpPoint(), 
-					experimentsResponse.getTwoCharacterId(), 
-					assignedCondition);
-			
+
+			ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
+					experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+
 			if (callbacks != null)
-				callbacks.onSuccess(resultCondition) ;
+				callbacks.onSuccess(resultCondition);
 		} else {
 			getAllExperimentCondition("", new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-					if( experiments !=null && experiments.size() > 0) {
+					if (experiments != null && experiments.size() > 0) {
 
-						Optional<ExperimentsResponse> result = experiments.stream().filter(t -> 
-						isStringNull(experimentId) == false ? 
-								t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint) :
-									t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
+						Optional<ExperimentsResponse> result = experiments.stream()
+								.filter(t -> isStringNull(experimentId) == false
+										? t.getExpId().toString().equals(experimentId)
+												&& t.getExpPoint().equals(experimentPoint)
+										: t.getExpPoint().equals(experimentPoint)
+												&& isStringNull(t.getExpId().toString()))
 								.findFirst();
 
-
 						if (result.isPresent()) {
-							ExperimentsResponse experimentsResponse =  result.get();
-							
+							ExperimentsResponse experimentsResponse = result.get();
+
 							AssignedCondition assignedCondition = new AssignedCondition(
 									experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-									experimentsResponse.getAssignedCondition().getConditionCode(), 
+									experimentsResponse.getAssignedCondition().getConditionCode(),
 									experimentsResponse.getAssignedCondition().getDescription());
-							
-							ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(), 
-									experimentsResponse.getExpPoint(), 
-									experimentsResponse.getTwoCharacterId(), 
-									assignedCondition);
+
+							ExperimentsResponse resultCondition = new ExperimentsResponse(
+									experimentsResponse.getExpId().toString(), experimentsResponse.getExpPoint(),
+									experimentsResponse.getTwoCharacterId(), assignedCondition);
 
 							if (callbacks != null)
-								callbacks.onSuccess(resultCondition) ;
+								callbacks.onSuccess(resultCondition);
 						} else {
 							if (callbacks != null)
 								callbacks.onSuccess(new ExperimentsResponse());
@@ -233,85 +235,92 @@ public class ExperimentClient {
 	}
 
 	// To mark experiment point
-	public void markExperimentPoint(final String experimentPoint, final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markExperimentPoint(final String experimentPoint,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		markExperimentPoint(experimentPoint, "", callbacks);
 	}
 
-	// To mark experiment point with experimentPoint and experimentId 
+	// To mark experiment point with experimentPoint and experimentId
 	public void markExperimentPoint(final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 
-		//Check if request has a valid data 
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(), this.apiService.getBaseUrl());
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint, experimentId );
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
+				experimentId);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
-		//Invoke the method
+		// Invoke the method
 		invocation.post(Entity.json(markExperimentRequest), new InvocationCallback<Response>() {
 			@Override
 			public void completed(Response response) {
-				if(response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-					MarkExperimentPoint data = response.readEntity(MarkExperimentPoint.class);					
-					callbacks.onSuccess(new MarkExperimentPoint(data.getUserId(), experimentId, experimentPoint ));
+					MarkExperimentPoint data = response.readEntity(MarkExperimentPoint.class);
+					callbacks.onSuccess(new MarkExperimentPoint(data.getUserId(), experimentId, experimentPoint));
 				} else {
 					System.out.println("set group membdership error.");
-					//					if (callbacks != null)
-					//						callbacks.onError(error);
+					// if (callbacks != null)
+					// callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));	
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
 
 	}
 
-	//Failed experiment point 
-	public void failedExperimentPoint (final String experimentPoint, final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint,"", "", callbacks );
+	// Failed experiment point
+	public void failedExperimentPoint(final String experimentPoint,
+			final ResponseCallback<FailedExperiment> callbacks) {
+		failedExperimentPoint(experimentPoint, "", "", callbacks);
 	}
 
-	public void failedExperimentPoint (final String experimentPoint,final String experimentId, final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint,experimentId, "", callbacks );
+	public void failedExperimentPoint(final String experimentPoint, final String experimentId,
+			final ResponseCallback<FailedExperiment> callbacks) {
+		failedExperimentPoint(experimentPoint, experimentId, "", callbacks);
 	}
 
-	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason, 
+	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason,
 			final ResponseCallback<FailedExperiment> callbacks) {
 
-		//Check if request has a valid data 
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(), this.apiService.getBaseUrl());
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId, experimentPoint, experimentId, reason);
+		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId,
+				experimentPoint, experimentId, reason);
 		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
 
-		//Invoke the method
+		// Invoke the method
 		invocation.post(Entity.json(failedExperimentPointRequest), new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
-				if(response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(FailedExperiment.class));
 				} else {
 					System.out.println("set working group error.");
-					//					if (callbacks != null)
-					//						callbacks.onError(error);
+					// if (callbacks != null)
+					// callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void failed(Throwable throwable) {
-				callbacks.onError(new ErrorResponse(throwable.getMessage()));	
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
 
