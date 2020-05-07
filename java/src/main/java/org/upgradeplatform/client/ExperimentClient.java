@@ -140,16 +140,19 @@ public class ExperimentClient {
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
-			ExperimentsResponse experimentsResponse = allExperiments.stream()
+			Optional<ExperimentsResponse> optExperimentsResponse = allExperiments.stream()
 					.filter(t -> isStringNull(experimentId) == false
 					? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
 							: t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
-					.findFirst().get();
+					.findFirst();
 
-			if(experimentsResponse == null) {
-				if (callbacks != null)
+			if( ! optExperimentsResponse.isPresent()) {
+				if (callbacks != null) {
 					callbacks.onSuccess(new ExperimentsResponse());
 			}
+				return;
+			}
+			ExperimentsResponse experimentsResponse = optExperimentsResponse.get();
 
 			AssignedCondition assignedCondition = new AssignedCondition(
 					experimentsResponse.getAssignedCondition().getTwoCharacterId(),
