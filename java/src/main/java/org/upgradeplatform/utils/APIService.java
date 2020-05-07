@@ -1,6 +1,8 @@
 package org.upgradeplatform.utils;
 
 
+import static org.upgradeplatform.utils.Utils.*;
+
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -15,7 +17,14 @@ public class APIService {
 	private Client client;
 	
 	public APIService(String baseUrl, String authToken) {
+        if (isStringNull(baseUrl)) {
+            throw new IllegalArgumentException(INVALID_BASE_URL);
+        }
 		this.baseUrl=baseUrl;
+
+		if (isStringNull(authToken)) {
+		    throw new IllegalArgumentException(INVALID_AUTH_TOKEN);
+		}
 		this.authToken=authToken;
 		if(client == null) {
 			createClient();
