@@ -1,19 +1,14 @@
 package org.upgradeplatform.requestbeans;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 public class MarkExperimentRequest {
 
-	@SerializedName("userId")
-	@Expose
+	
 	private String userId;
-	@SerializedName("experimentPoint")
-	@Expose
 	private String experimentPoint;
-	@SerializedName("partitionId")
-	@Expose
 	private String partitionId;
+	
+	public MarkExperimentRequest() {}
 
 	public MarkExperimentRequest(String userId, String experimentPoint, String partitionId) {
 		super();

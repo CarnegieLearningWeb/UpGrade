@@ -1,31 +1,27 @@
 package org.upgradeplatform.responsebeans;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 public class FailedExperiment {
-	@SerializedName("id")
-	@Expose
+	
+	private String createdAt;
+	private String updatedAt;
+	private Integer versionNumber;
 	private Integer id;
-	@SerializedName("endPoint")
-	@Expose
 	private Object endPoint;
-	@SerializedName("errorCode")
-	@Expose
 	private Object errorCode;
-	@SerializedName("message")
-	@Expose
 	private String message;
-	@SerializedName("name")
-	@Expose
 	private Object name;
-	@SerializedName("type")
-	@Expose
 	private String type;
+	
+	
+	public FailedExperiment() {}
 
-
-	public FailedExperiment(Integer id, Object endPoint, Object errorCode, String message, Object name, String type) {
+	public FailedExperiment(String createdAt, String updatedAt, Integer versionNumber, Integer id, Object endPoint,
+			Object errorCode, String message, Object name, String type) {
 		super();
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
+		this.versionNumber = versionNumber;
 		this.id = id;
 		this.endPoint = endPoint;
 		this.errorCode = errorCode;
@@ -34,10 +30,28 @@ public class FailedExperiment {
 		this.type = type;
 	}
 
-	public FailedExperiment(String type, String message) {
-		super();
-		this.message = message;
-		this.type = type;
+	public String getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(String updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public Integer getVersionNumber() {
+		return versionNumber;
+	}
+
+	public void setVersionNumber(Integer versionNumber) {
+		this.versionNumber = versionNumber;
 	}
 
 	public Integer getId() {

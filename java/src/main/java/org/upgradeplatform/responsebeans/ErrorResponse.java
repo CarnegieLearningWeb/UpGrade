@@ -1,17 +1,9 @@
 package org.upgradeplatform.responsebeans;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class ErrorResponse {
-	@SerializedName("errorCode")
-	@Expose
+	
 	private Object errorCode;
-	@SerializedName("message")
-	@Expose
 	private String message;
-	@SerializedName("type")
-	@Expose
 	private String type;
 
 	public ErrorResponse() {

@@ -1,14 +1,8 @@
 package org.upgradeplatform.requestbeans;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class ExperimentRequest {
 	
-	@SerializedName("userId")
-	@Expose
+
 	private String userId;
-	@SerializedName("context")
-	@Expose
 	private String context;
 	
 	public ExperimentRequest(String userId, String context) {

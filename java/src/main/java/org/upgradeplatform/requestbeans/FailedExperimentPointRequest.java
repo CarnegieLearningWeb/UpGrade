@@ -1,27 +1,30 @@
 package org.upgradeplatform.requestbeans;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class FailedExperimentPointRequest {
 
-	@SerializedName("experimentPoint")
-	@Expose
+	private String userId;
 	private String experimentPoint;
-	@SerializedName("experimentId")
-	@Expose
 	private String experimentId;
-	@SerializedName("reason")
-	@Expose
 	private String reason;
 	
-	public FailedExperimentPointRequest(String experimentPoint, String experimentId, String reason) {
+	public FailedExperimentPointRequest() {}
+	
+	public FailedExperimentPointRequest(String userId, String experimentPoint, String experimentId, String reason) {
 		super();
+		this.userId = userId;
 		this.experimentPoint = experimentPoint;
 		this.experimentId = experimentId;
 		this.reason = reason;
 	}
 	
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
 	public String getExperimentPoint() {
 		return experimentPoint;
 	}
