@@ -9,6 +9,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
+import org.upgradeplatform.responsebeans.InitRequest;
 
 
 
@@ -28,22 +29,31 @@ public class Main {
 		
 		ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl);
 		
-		
-		experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
+		experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
+            @Override
+            public void onSuccess(InitRequest __){
+                experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
 
-			@Override
-			public void onSuccess(@NonNull List<ExperimentsResponse> t) {
-				System.out.println(t.size());
-				
-				//to Close jax-rs client
-				experimentClient.close();
-			}
+                    @Override
+                    public void onSuccess(@NonNull List<ExperimentsResponse> t) {
+                        System.out.println(t.size());
 
-			@Override
-			public void onError(@NonNull ErrorResponse error) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+                        //to Close jax-rs client
+                        experimentClient.close();
+                    }
+
+                    @Override
+                    public void onError(@NonNull ErrorResponse error) {
+                        // TODO Auto-generated method stub
+
+                    }
+                });
+            }
+
+            @Override
+            public void onError(@NonNull ErrorResponse error){
+                System.err.println(error);
+            }
+        });
 	}
 }
