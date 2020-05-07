@@ -21,7 +21,7 @@ export class AppErrorHandler extends ErrorHandler {
       displayMessage += ' See console for details.';
     }
 
-    if (!((error as any).status === 401)) {
+    if (!((error as any).status === 401) && !environment.production) {
       this.notificationsService.error(displayMessage);
     }
 

@@ -68,6 +68,7 @@
               >
                 {{ experiment.state | experimentState }}
               </span>
+              <app-shared-icons *ngIf="permissions?.experiments.update" [iconType]="'edit'"></app-shared-icons>
               <ng-template #readOnlyStatus>
                 <span class="section-data-value ">{{ experiment.state | experimentState }}</span>
               </ng-template>
@@ -81,6 +82,7 @@
               *ngIf="permissions?.experiments.update; else readOnlyRule"
               (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
             >{{ experiment.postExperimentRule | titlecase }}</span>
+            <app-shared-icons *ngIf="permissions?.experiments.update" [iconType]="'edit'"></app-shared-icons>
             <ng-template #readOnlyRule>
               <span class="section-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
             </ng-template>

@@ -165,6 +165,7 @@ $font-size-small: 15px;
               font-weight: 700;
 
               &--editable {
+                margin-right: 8px;
                 text-decoration: underline;
 
                 &:hover {
@@ -248,13 +249,6 @@ $font-size-small: 15px;
         border-color: var(--light-grey);
         color: var(--grey-2);
         font-weight: 700;
-      }
-
-      .mat-column-conditionCode,
-      .mat-column-description,
-      .mat-column-partitionPoint,
-      .mat-column-partitionId {
-        justify-content: flex-start;
       }
     }
   }
