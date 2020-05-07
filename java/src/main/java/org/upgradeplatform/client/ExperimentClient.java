@@ -71,9 +71,9 @@ public class ExperimentClient {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
-					System.out.println("set group membdership error.");
-					// if (callbacks != null)
-					// callbacks.onError(error);
+					//System.out.println("set group membdership error.");
+					if (callbacks != null)
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
 
@@ -106,9 +106,8 @@ public class ExperimentClient {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
-					System.out.println("set working group error.");
-					// if (callbacks != null)
-					// callbacks.onError(error);
+					if (callbacks != null)
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
 
@@ -136,10 +135,15 @@ public class ExperimentClient {
 
 			@Override
 			public void completed(Response response) {
-				// Cache allExperiment data for future requests
-				allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {
-				});
-				callbacks.onSuccess(allExperiments);
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					// Cache allExperiment data for future requests
+					allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {
+					});
+					callbacks.onSuccess(allExperiments);
+				} else {
+					if (callbacks != null)
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
+				}
 			}
 
 			@Override
@@ -171,9 +175,14 @@ public class ExperimentClient {
 
 			ExperimentsResponse experimentsResponse = allExperiments.stream()
 					.filter(t -> isStringNull(experimentId) == false
-							? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
+					? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
 							: t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
 					.findFirst().get();
+
+			if(experimentsResponse == null) {
+				if (callbacks != null)
+					callbacks.onSuccess(new ExperimentsResponse());
+			}
 
 			AssignedCondition assignedCondition = new AssignedCondition(
 					experimentsResponse.getAssignedCondition().getTwoCharacterId(),
@@ -194,10 +203,10 @@ public class ExperimentClient {
 
 						Optional<ExperimentsResponse> result = experiments.stream()
 								.filter(t -> isStringNull(experimentId) == false
-										? t.getExpId().toString().equals(experimentId)
-												&& t.getExpPoint().equals(experimentPoint)
+								? t.getExpId().toString().equals(experimentId)
+										&& t.getExpPoint().equals(experimentPoint)
 										: t.getExpPoint().equals(experimentPoint)
-												&& isStringNull(t.getExpId().toString()))
+										&& isStringNull(t.getExpId().toString()))
 								.findFirst();
 
 						if (result.isPresent()) {
@@ -264,9 +273,8 @@ public class ExperimentClient {
 					MarkExperimentPoint data = response.readEntity(MarkExperimentPoint.class);
 					callbacks.onSuccess(new MarkExperimentPoint(data.getUserId(), experimentId, experimentPoint));
 				} else {
-					System.out.println("set group membdership error.");
-					// if (callbacks != null)
-					// callbacks.onError(error);
+					if (callbacks != null)
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
 
@@ -312,9 +320,8 @@ public class ExperimentClient {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(FailedExperiment.class));
 				} else {
-					System.out.println("set working group error.");
-					// if (callbacks != null)
-					// callbacks.onError(error);
+					if (callbacks != null)
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
 
