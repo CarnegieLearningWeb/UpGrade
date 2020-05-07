@@ -70,7 +70,7 @@ public class ExperimentClient {
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<InitRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -106,7 +106,7 @@ public class ExperimentClient {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<InitRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -141,7 +141,7 @@ public class ExperimentClient {
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<ExperimentRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -276,7 +276,7 @@ public class ExperimentClient {
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<MarkExperimentRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -329,7 +329,7 @@ public class ExperimentClient {
 		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<FailedExperimentPointRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override

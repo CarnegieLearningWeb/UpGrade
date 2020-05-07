@@ -13,7 +13,7 @@ import org.upgradeplatform.responsebeans.ExperimentsResponse;
 
 
 public class Main {
-	public static void main(String []args) throws InterruptedException
+	public static void main(String []args)
 	{
 		String baseUrl = "http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com";
 		String userId = "user1";
@@ -22,7 +22,7 @@ public class Main {
 		String[] classList = {"1","2","3","4","5"};
 		String[] teacherList = {"1","2","7"};
 		
-		HashMap<String, List<String>> group = new HashMap<String, List<String>>();
+		HashMap<String, List<String>> group = new HashMap<>();
 		group.put("classes", Arrays.asList(classList));
 		group.put("teachers", Arrays.asList(teacherList));
 		
