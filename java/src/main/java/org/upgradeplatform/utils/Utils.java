@@ -20,6 +20,13 @@ public class Utils
 	public static final String INVALID_FAILED_EXPERIMENT_DATA = "Invalid failed experiment data";
 	
 	
+	public static final String SET_GROUP_MEMBERSHIP= "api/groupmembership";
+	public static final String SET_WORKING_GROUP= "api/workinggroup";
+	public static final String GET_ALL_EXPERIMENTS= "api/assign";
+	public static final String MARK_EXPERIMENT_POINT= "api/mark";
+	public static final String FAILED_EXPERIMENT_POINT= "api/failed";
+	
+	
 	public static boolean isStringNull(final String str) {
 		return str == null || str.equals(EMPTY);
 	}

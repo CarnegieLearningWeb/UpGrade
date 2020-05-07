@@ -1,17 +1,9 @@
 package org.upgradeplatform.responsebeans;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class ErrorResponse {
-	@SerializedName("errorCode")
-	@Expose
-	private Object errorCode;
-	@SerializedName("message")
-	@Expose
+	
+	private int errorCode;
 	private String message;
-	@SerializedName("type")
-	@Expose
 	private String type;
 
 	public ErrorResponse() {
@@ -22,12 +14,19 @@ public class ErrorResponse {
 		super();
 		this.message= message;
 	}
+	
+	public ErrorResponse(int errorCode, String message) {
+		super();
+		this.errorCode= errorCode;
+		this.message= message;
+	}
+	
 
-	public Object getErrorCode() {
+	public int getErrorCode() {
 		return errorCode;
 	}
 
-	public void setErrorCode(Object errorCode) {
+	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
 	}
 

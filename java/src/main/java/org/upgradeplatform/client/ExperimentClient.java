@@ -6,208 +6,230 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.ws.rs.client.AsyncInvoker;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.InvocationCallback;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
+
 import org.eclipse.jdt.annotation.NonNull;
-import org.upgradeplatform.interfaces.ExperimentServiceAPI;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
 import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
+import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
-import org.upgradeplatform.responsebeans.ExperimentConditions;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.FailedExperiment;
-import org.upgradeplatform.responsebeans.GetExperimentCondition;
 import org.upgradeplatform.responsebeans.InitRequest;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
-import org.upgradeplatform.utils.ErrorUtils;
-import org.upgradeplatform.utils.ServiceGenerator;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import org.upgradeplatform.utils.APIService;
 
 public class ExperimentClient {
 
 	private List<ExperimentsResponse> allExperiments;
-	private final String userId;
-	private final String authToken;
-	private final String baseUrl;
-	
+	private String userId;
+	APIService apiService;
+
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
-		this.authToken = authToken;
-		this.baseUrl = baseUrl;
+		this.apiService = new APIService(baseUrl, authToken);
 	}
-	
 
 	private String validateRequestData(String userId, String authToken, String baseUrl) {
-		if (isStringNull(this.baseUrl)) {
+		if (isStringNull(baseUrl)) {
 			return INVALID_BASE_URL;
-		} else if (isStringNull(this.authToken)) {
+		} else if (isStringNull(authToken)) {
 			return INVALID_AUTH_TOKEN;
-		} else if (isStringNull(this.authToken)) {
+		} else if (isStringNull(authToken)) {
 			return INVALID_STUDENT_ID;
 		}
-		
+
 		return "";
 	}
 
 	// To set user group membership
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
-		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
+		// Build a request object and prepare invocation method
 		InitRequest initRequest = new InitRequest(this.userId, group, null);
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
-		client.setGroupMemebership( "Bearer "+this.authToken , initRequest).enqueue(new Callback<InitRequest>() {
+		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
+
+		// Invoke the method
+		invocation.post(Entity.json(initRequest), new InvocationCallback<Response>() {
 
 			@Override
-			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
-				if(response.isSuccessful()) {
-					if (callbacks != null)
-						callbacks.onSuccess(response.body());
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
-					ErrorResponse error = ErrorUtils.parseError(response);
-
+					//System.out.println("set group membdership error.");
 					if (callbacks != null)
-						callbacks.onError(error);
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
+
 			@Override
-			public void onFailure(Call<InitRequest> call, Throwable t) {
-				callbacks.onError(new ErrorResponse(t.getMessage()));
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
 
 	}
 
-	// To set user workingGroup
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
 
-		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
-		
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
 
 		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
-		client.updateWorkingGroup("Bearer "+this.authToken ,initRequest).enqueue(new Callback<InitRequest>() {
+		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
+
+		// Invoke the method
+		invocation.post(Entity.json(initRequest), new InvocationCallback<Response>() {
 
 			@Override
-			public void onResponse(Call<InitRequest> call, Response<InitRequest> response) {
-				if(response.isSuccessful()) {
-					if (callbacks != null)
-						callbacks.onSuccess(response.body());
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
-					ErrorResponse error = ErrorUtils.parseError(response);
-
 					if (callbacks != null)
-						callbacks.onError(error);
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
+
 			@Override
-			public void onFailure(Call<InitRequest> call, Throwable t) {
-				callbacks.onError(new ErrorResponse(t.getMessage()) );
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
-
 	}
 
-	// To get all Experiments
-	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse> > callbacks) {
+	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 
-		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
+		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 
-
-		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context );
-
-		client.getAllExperiments("Bearer "+this.authToken, experimentRequest).enqueue(new Callback<List<ExperimentsResponse>>() {
+		invocation.post(Entity.json(experimentRequest), new InvocationCallback<Response>() {
 
 			@Override
-			public void onResponse(Call<List<ExperimentsResponse>> call, Response<List<ExperimentsResponse>> response) {
-				if(response.isSuccessful()) {
-					if (callbacks != null) {
-						allExperiments = response.body();
-						callbacks.onSuccess(response.body());
-					}
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					// Cache allExperiment data for future requests
+					allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {
+					});
+					callbacks.onSuccess(allExperiments);
 				} else {
-					ErrorResponse error = ErrorUtils.parseError(response);
 					if (callbacks != null)
-						callbacks.onError(error);
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
+
 			@Override
-			public void onFailure(Call<List<ExperimentsResponse>> call, Throwable t) {
-				callbacks.onError(new ErrorResponse(t.getMessage()));
+			public void failed(Throwable throwable) {
+				throwable.printStackTrace();
+
 			}
 		});
 	}
 
 	// To get experiment condition for particular experiment point
-	public void getExperimentCondition(String experimentPoint, final ResponseCallback<GetExperimentCondition> callbacks) {
+	public void getExperimentCondition(String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
 		getExperimentCondition(experimentPoint, null, callbacks);
 	}
 
 	// To get experiment condition for particular experiment point and experimentId
-	public void getExperimentCondition(String experimentPoint, String experimentId, 
-			final ResponseCallback<GetExperimentCondition> callbacks) {
-		
-		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
-		if(validateData != "") {
+	public void getExperimentCondition(String experimentPoint, String experimentId,
+			final ResponseCallback<ExperimentsResponse> callbacks) {
+
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
-		
+
 		if (this.allExperiments != null) {
 
-			ExperimentsResponse experimentsResponse  = allExperiments.stream().filter(t -> 
-			isStringNull(experimentId) == false ?  t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
-				t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()) ).findFirst().get();
+			ExperimentsResponse experimentsResponse = allExperiments.stream()
+					.filter(t -> isStringNull(experimentId) == false
+					? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
+							: t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
+					.findFirst().get();
 
-			ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
-			GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+			if(experimentsResponse == null) {
+				if (callbacks != null)
+					callbacks.onSuccess(new ExperimentsResponse());
+			}
+
+			AssignedCondition assignedCondition = new AssignedCondition(
+					experimentsResponse.getAssignedCondition().getTwoCharacterId(),
+					experimentsResponse.getAssignedCondition().getConditionCode(),
+					experimentsResponse.getAssignedCondition().getDescription());
+
+			ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
+					experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
 
 			if (callbacks != null)
-				callbacks.onSuccess(getExperimentCondition) ;
+				callbacks.onSuccess(resultCondition);
 		} else {
 			getAllExperimentCondition("", new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
-					if( experiments !=null && experiments.size() > 0) {
 
-						Optional<ExperimentsResponse> result = experiments.stream().filter(t -> 
-						isStringNull(experimentId) == false ? 
-								t.getName().toString().equals(experimentId) && t.getPoint().equals(experimentPoint) :
-									t.getPoint().equals(experimentPoint) && isStringNull(t.getName().toString()))
+					if (experiments != null && experiments.size() > 0) {
+
+						Optional<ExperimentsResponse> result = experiments.stream()
+								.filter(t -> isStringNull(experimentId) == false
+								? t.getExpId().toString().equals(experimentId)
+										&& t.getExpPoint().equals(experimentPoint)
+										: t.getExpPoint().equals(experimentPoint)
+										&& isStringNull(t.getExpId().toString()))
 								.findFirst();
 
-				
 						if (result.isPresent()) {
-							ExperimentsResponse experimentsResponse =  result.get();
-							ExperimentConditions assignedCondition = new ExperimentConditions(experimentsResponse.getAssignedCondition().getConditionCode(), experimentsResponse.getAssignedCondition().getTwoCharacterId());
-							GetExperimentCondition getExperimentCondition = new GetExperimentCondition(experimentsResponse.getName().toString(), experimentsResponse.getPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
-						
+							ExperimentsResponse experimentsResponse = result.get();
+
+							AssignedCondition assignedCondition = new AssignedCondition(
+									experimentsResponse.getAssignedCondition().getTwoCharacterId(),
+									experimentsResponse.getAssignedCondition().getConditionCode(),
+									experimentsResponse.getAssignedCondition().getDescription());
+
+							ExperimentsResponse resultCondition = new ExperimentsResponse(
+									experimentsResponse.getExpId().toString(), experimentsResponse.getExpPoint(),
+									experimentsResponse.getTwoCharacterId(), assignedCondition);
+
 							if (callbacks != null)
-								callbacks.onSuccess(getExperimentCondition) ;
+								callbacks.onSuccess(resultCondition);
 						} else {
 							if (callbacks != null)
-								callbacks.onSuccess(new GetExperimentCondition());
+								callbacks.onSuccess(new ExperimentsResponse());
 						}
 					} else {
 						if (callbacks != null)
-							callbacks.onSuccess(new GetExperimentCondition());
+							callbacks.onSuccess(new ExperimentsResponse());
 					}
 				}
 
@@ -217,91 +239,95 @@ public class ExperimentClient {
 						callbacks.onError(error);
 
 				}
-
 			});
 		}
 	}
 
 	// To mark experiment point
-	public void markExperimentPoint(final String experimentPoint, final ResponseCallback<MarkExperimentPoint> callbacks) {
+	public void markExperimentPoint(final String experimentPoint,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		markExperimentPoint(experimentPoint, "", callbacks);
 	}
 
-	// To mark experiment point with experimentPoint and experimentId 
+	// To mark experiment point with experimentPoint and experimentId
 	public void markExperimentPoint(final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 
-		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint, experimentId );
-
-		client.markExperimentPoint("Bearer "+this.authToken ,markExperimentRequest).enqueue(new Callback<MarkExperimentPoint>() {
-
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
+				experimentId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
+		// Invoke the method
+		invocation.post(Entity.json(markExperimentRequest), new InvocationCallback<Response>() {
 			@Override
-			public void onResponse(Call<MarkExperimentPoint> call, Response<MarkExperimentPoint> response) {
-				if(response.isSuccessful()) {
-					if (callbacks != null)
-						callbacks.onSuccess(new MarkExperimentPoint(response.body().getUserId(), experimentId, experimentPoint ));
-				} else {
-					ErrorResponse error = ErrorUtils.parseError(response);
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
+					MarkExperimentPoint data = response.readEntity(MarkExperimentPoint.class);
+					callbacks.onSuccess(new MarkExperimentPoint(data.getUserId(), experimentId, experimentPoint));
+				} else {
 					if (callbacks != null)
-						callbacks.onError(error);
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
 
 			@Override
-			public void onFailure(Call<MarkExperimentPoint> call, Throwable t) {
-				callbacks.onError(new ErrorResponse(t.getMessage()));
-
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
+
 	}
 
-	//Failed experiment point 
-	public void failedExperimentPoint (final String experimentPoint, final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint,"", "", callbacks );
+	// Failed experiment point
+	public void failedExperimentPoint(final String experimentPoint,
+			final ResponseCallback<FailedExperiment> callbacks) {
+		failedExperimentPoint(experimentPoint, "", "", callbacks);
 	}
 
-	public void failedExperimentPoint (final String experimentPoint,final String experimentId, final ResponseCallback<FailedExperiment> callbacks) {
-		failedExperimentPoint(experimentPoint,experimentId, "", callbacks );
+	public void failedExperimentPoint(final String experimentPoint, final String experimentId,
+			final ResponseCallback<FailedExperiment> callbacks) {
+		failedExperimentPoint(experimentPoint, experimentId, "", callbacks);
 	}
 
-	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason, 
+	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason,
 			final ResponseCallback<FailedExperiment> callbacks) {
 
-		String validateData = validateRequestData(this.userId, this.authToken, this.baseUrl);
-		if(validateData != "") {
+		// Check if request has a valid data
+		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
+				this.apiService.getBaseUrl());
+		if (validateData != "") {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
 
-		ExperimentServiceAPI client = ServiceGenerator.createService(ExperimentServiceAPI.class, this.baseUrl);
-		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(experimentPoint, experimentId, reason);
+		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId,
+				experimentPoint, experimentId, reason);
+		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
 
-		client.failedExperimentPoint("Bearer "+this.authToken, failedExperimentPointRequest).enqueue(new Callback<FailedExperiment>() {
+		// Invoke the method
+		invocation.post(Entity.json(failedExperimentPointRequest), new InvocationCallback<Response>() {
 
 			@Override
-			public void onResponse(Call<FailedExperiment> call, Response<FailedExperiment> response) {
-				if(response.isSuccessful()) {
-					if (callbacks != null)
-						callbacks.onSuccess(new FailedExperiment(response.body().getType(), response.body().getMessage() ));
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					callbacks.onSuccess(response.readEntity(FailedExperiment.class));
 				} else {
-					ErrorResponse error = ErrorUtils.parseError(response);
-
 					if (callbacks != null)
-						callbacks.onError(error);
+						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
 				}
 			}
 
 			@Override
-			public void onFailure(Call<FailedExperiment> call, Throwable t) {
-				callbacks.onError(new ErrorResponse(t.getMessage()));
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
 		});
 

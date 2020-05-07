@@ -2,37 +2,42 @@ package org.upgradeplatform.responsebeans;
 
 
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class ExperimentsResponse {
-	@SerializedName("name")
-	@Expose
-	private Object name;
-	@SerializedName("point")
-	@Expose
-	private String point;
-	@SerializedName("twoCharacterId")
-	@Expose
+	
+	private Object expId;
+	private String expPoint;
 	private String twoCharacterId;
-	@SerializedName("assignedCondition")
-	@Expose
 	private AssignedCondition assignedCondition;
+	
+	public ExperimentsResponse() {}
+	
+	
 
-	public Object getName() {
-		return name;
+	public ExperimentsResponse(Object expId, String expPoint, String twoCharacterId,
+			AssignedCondition assignedCondition) {
+		super();
+		this.expId = expId;
+		this.expPoint = expPoint;
+		this.twoCharacterId = twoCharacterId;
+		this.assignedCondition = assignedCondition;
 	}
 
-	public void setName(Object name) {
-		this.name = name;
+
+
+	public Object getExpId() {
+		return expId;
 	}
 
-	public String getPoint() {
-		return point;
+	public void setExpId(Object expId) {
+		this.expId = expId;
 	}
 
-	public void setPoint(String point) {
-		this.point = point;
+	public String getExpPoint() {
+		return expPoint;
+	}
+
+	public void setExpPoint(String expPoint) {
+		this.expPoint = expPoint;
 	}
 
 	public String getTwoCharacterId() {
@@ -50,4 +55,6 @@ public class ExperimentsResponse {
 	public void setAssignedCondition(AssignedCondition assignedCondition) {
 		this.assignedCondition = assignedCondition;
 	}
+
+	
 }

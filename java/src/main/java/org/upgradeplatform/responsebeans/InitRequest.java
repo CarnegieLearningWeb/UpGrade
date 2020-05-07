@@ -5,9 +5,15 @@ import java.util.Map;
 
 public class InitRequest
 {
-	public String id;
-	public Map<String, List<String>> group;
-	public Map<String, String> workingGroup;
+	
+	private String createdAt;
+	private String updatedAt;
+	private Integer versionNumber;
+	private String id;
+	private Map<String, List<String>> group;
+	private Map<String, String> workingGroup;
+	
+	public InitRequest() {}
 	
 	public InitRequest(String id, Map<String, List<String>> group, Map<String, String> workingGroup) {
 		super();
@@ -16,6 +22,24 @@ public class InitRequest
 		this.workingGroup = workingGroup;
 	}
 	
+	public String getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
+	}
+	public String getUpdatedAt() {
+		return updatedAt;
+	}
+	public void setUpdatedAt(String updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+	public Integer getVersionNumber() {
+		return versionNumber;
+	}
+	public void setVersionNumber(Integer versionNumber) {
+		this.versionNumber = versionNumber;
+	}
 	public String getId() {
 		return id;
 	}

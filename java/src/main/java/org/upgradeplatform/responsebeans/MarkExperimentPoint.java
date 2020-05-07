@@ -1,20 +1,49 @@
 package org.upgradeplatform.responsebeans;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class MarkExperimentPoint {
 	
-	@SerializedName("userId")
-	@Expose
+
+	private String createdAt;
+	private String updatedAt;
+	private Integer versionNumber;
 	private String userId;
-	@SerializedName("experimentId")
-	@Expose
 	private String experimentId;
-	@SerializedName("experimentPoint")
-	@Expose
 	private String experimentPoint;
+	private String id;
 	
+	public String getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(String updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public Integer getVersionNumber() {
+		return versionNumber;
+	}
+
+	public void setVersionNumber(Integer versionNumber) {
+		this.versionNumber = versionNumber;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public MarkExperimentPoint() {};
 	
 	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint) {
 		super();
