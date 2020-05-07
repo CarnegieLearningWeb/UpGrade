@@ -26,10 +26,6 @@ div {
       font-weight: 700;
     }
 
-    .mat-column-condition {
-      justify-content: flex-start;
-    }
-
     .mat-column-expandIcon {
       flex-grow: 0;
     }
@@ -56,8 +52,7 @@ div {
     }
 
     .mat-column-experimentPoint {
-      justify-content: flex-start;
-      padding-left: 30px;
+      padding-left: 20px;
     }
   }
 }
