@@ -33,9 +33,10 @@ public class Main {
 
 			@Override
 			public void onSuccess(@NonNull List<ExperimentsResponse> t) {
-				// TODO Auto-generated method stub
 				System.out.println(t.size());
 				
+				//to Close jax-rs client
+				experimentClient.close();
 			}
 
 			@Override
@@ -44,9 +45,5 @@ public class Main {
 				
 			}
 		});
-		
-
-		
-		
 	}
 }

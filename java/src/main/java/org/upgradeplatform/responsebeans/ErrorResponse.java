@@ -15,10 +15,11 @@ public class ErrorResponse {
 		this.message= message;
 	}
 	
-	public ErrorResponse(int errorCode, String message) {
+	public ErrorResponse(int errorCode, String message, String type) {
 		super();
 		this.errorCode= errorCode;
 		this.message= message;
+		this.type= type;
 	}
 	
 
