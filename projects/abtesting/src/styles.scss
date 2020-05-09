@@ -102,3 +102,11 @@
   font-size: var(--text-size-normal);
   font-weight: 600;
 }
+
+.mat-button,
+.mat-flat-button,
+.mat-stroked-button {
+  &.cdk-program-focused .mat-button-focus-overlay {
+    opacity: 0 !important;
+  }
+}
