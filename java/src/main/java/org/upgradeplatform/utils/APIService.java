@@ -6,38 +6,37 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
+import org.glassfish.jersey.client.ClientProperties;
+
 
 public class APIService {
 
+	String baseUrl,authToken;
+	private Client client;
+	
 	public APIService(String baseUrl, String authToken) {
 		this.baseUrl=baseUrl;
 		this.authToken=authToken;
-	}
-	
+		if(client == null) {
+			createClient();
+		}
 
-	String baseUrl,authToken;
-	Client client = ClientBuilder.newClient();
-	
-	
+	}
+
+	public void createClient() {
+		client = ClientBuilder.newClient();
+		client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
+		client.property(ClientProperties.READ_TIMEOUT,    3000);
+	}
 	public String getBaseUrl() {
 		return baseUrl;
 	}
-
-	public void setBaseUrl(String baseUrl) {
-		this.baseUrl = baseUrl;
-	}
-	
-
 	public String getAuthToken() {
 		return authToken;
 	}
 
-	public void setAuthToken(String authToken) {
-		this.authToken = authToken;
-	}
-
 	public AsyncInvoker prepareRequest(String apiPath) {
-		
+
 		return client.target(this.baseUrl)
 				.path(apiPath)
 				.request(MediaType.APPLICATION_JSON)
@@ -45,4 +44,7 @@ public class APIService {
 				.async();
 	}
 
+	public void close() {
+		client.close();
+	}
 }

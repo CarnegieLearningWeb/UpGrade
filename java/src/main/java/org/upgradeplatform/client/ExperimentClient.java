@@ -24,6 +24,7 @@ import org.upgradeplatform.responsebeans.FailedExperiment;
 import org.upgradeplatform.responsebeans.InitRequest;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 import org.upgradeplatform.utils.APIService;
+import org.upgradeplatform.utils.PublishingRetryCallback;
 
 public class ExperimentClient {
 
@@ -34,6 +35,11 @@ public class ExperimentClient {
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
 		this.apiService = new APIService(baseUrl, authToken);
+	}
+
+	// To close jax-rs client connection open when calling ExperimentClient constructor;
+	public void close() {
+		this.apiService.close();
 	}
 
 	private String validateRequestData(String userId, String authToken, String baseUrl) {
@@ -48,7 +54,6 @@ public class ExperimentClient {
 		return "";
 	}
 
-	// To set user group membership
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 
 		// Check if request has a valid data
@@ -62,18 +67,21 @@ public class ExperimentClient {
 		// Build a request object and prepare invocation method
 		InitRequest initRequest = new InitRequest(this.userId, group, null);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
+		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
 		// Invoke the method
-		invocation.post(Entity.json(initRequest), new InvocationCallback<Response>() {
+		invocation.post(requestContent,new PublishingRetryCallback<InitRequest>(invocation, requestContent, MAX_RETRIES, 
+				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
-					//System.out.println("set group membdership error.");
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
 					if (callbacks != null)
-						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
+						callbacks.onError(error);
 				}
 			}
 
@@ -81,8 +89,7 @@ public class ExperimentClient {
 			public void failed(Throwable throwable) {
 				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
-		});
-
+		}));
 	}
 
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
@@ -97,17 +104,20 @@ public class ExperimentClient {
 
 		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
+		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
-		// Invoke the method
-		invocation.post(Entity.json(initRequest), new InvocationCallback<Response>() {
+		invocation.post(requestContent,new PublishingRetryCallback<InitRequest>(invocation, requestContent, MAX_RETRIES, 
+				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(InitRequest.class));
 				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
 					if (callbacks != null)
-						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
+						callbacks.onError(error);
 				}
 			}
 
@@ -115,7 +125,7 @@ public class ExperimentClient {
 			public void failed(Throwable throwable) {
 				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
-		});
+		}));
 	}
 
 	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
@@ -127,39 +137,39 @@ public class ExperimentClient {
 			callbacks.onError(new ErrorResponse(validateData));
 			return;
 		}
-
 		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
+		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-		invocation.post(Entity.json(experimentRequest), new InvocationCallback<Response>() {
+		invocation.post(requestContent,new PublishingRetryCallback<ExperimentRequest>(invocation, requestContent, MAX_RETRIES, 
+				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					// Cache allExperiment data for future requests
-					allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {
-					});
+					allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {});
 					callbacks.onSuccess(allExperiments);
 				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
 					if (callbacks != null)
-						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
+						callbacks.onError(error);
 				}
 			}
 
 			@Override
 			public void failed(Throwable throwable) {
-				throwable.printStackTrace();
-
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
-		});
+
+		}));
 	}
 
-	// To get experiment condition for particular experiment point
 	public void getExperimentCondition(String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
 		getExperimentCondition(experimentPoint, null, callbacks);
 	}
 
-	// To get experiment condition for particular experiment point and experimentId
 	public void getExperimentCondition(String experimentPoint, String experimentId,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 
@@ -243,13 +253,11 @@ public class ExperimentClient {
 		}
 	}
 
-	// To mark experiment point
 	public void markExperimentPoint(final String experimentPoint,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		markExperimentPoint(experimentPoint, "", callbacks);
 	}
 
-	// To mark experiment point with experimentPoint and experimentId
 	public void markExperimentPoint(final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 
@@ -264,8 +272,13 @@ public class ExperimentClient {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
 				experimentId);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
+
+		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
+
 		// Invoke the method
-		invocation.post(Entity.json(markExperimentRequest), new InvocationCallback<Response>() {
+		invocation.post(requestContent,new PublishingRetryCallback<MarkExperimentRequest>(invocation, requestContent, MAX_RETRIES, 
+				new InvocationCallback<Response>() {
+
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
@@ -273,8 +286,10 @@ public class ExperimentClient {
 					MarkExperimentPoint data = response.readEntity(MarkExperimentPoint.class);
 					callbacks.onSuccess(new MarkExperimentPoint(data.getUserId(), experimentId, experimentPoint));
 				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
 					if (callbacks != null)
-						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
+						callbacks.onError(error);
 				}
 			}
 
@@ -282,11 +297,10 @@ public class ExperimentClient {
 			public void failed(Throwable throwable) {
 				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
-		});
+		}));
 
 	}
 
-	// Failed experiment point
 	public void failedExperimentPoint(final String experimentPoint,
 			final ResponseCallback<FailedExperiment> callbacks) {
 		failedExperimentPoint(experimentPoint, "", "", callbacks);
@@ -312,16 +326,21 @@ public class ExperimentClient {
 				experimentPoint, experimentId, reason);
 		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
 
+		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
+
 		// Invoke the method
-		invocation.post(Entity.json(failedExperimentPointRequest), new InvocationCallback<Response>() {
+		invocation.post(requestContent,new PublishingRetryCallback<FailedExperimentPointRequest>(invocation, requestContent, MAX_RETRIES, 
+				new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					callbacks.onSuccess(response.readEntity(FailedExperiment.class));
 				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
 					if (callbacks != null)
-						callbacks.onError(new ErrorResponse(response.getStatus(),"Error accessing API"));
+						callbacks.onError(error);
 				}
 			}
 
@@ -329,7 +348,7 @@ public class ExperimentClient {
 			public void failed(Throwable throwable) {
 				callbacks.onError(new ErrorResponse(throwable.getMessage()));
 			}
-		});
+		}));
 
 	}
 }

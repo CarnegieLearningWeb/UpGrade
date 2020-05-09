@@ -26,6 +26,8 @@ public class Utils
 	public static final String MARK_EXPERIMENT_POINT= "api/mark";
 	public static final String FAILED_EXPERIMENT_POINT= "api/failed";
 	
+	public static final int MAX_RETRIES = 3;
+	
 	
 	public static boolean isStringNull(final String str) {
 		return str == null || str.equals(EMPTY);
