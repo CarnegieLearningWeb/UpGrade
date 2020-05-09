@@ -2,6 +2,7 @@
   <mat-form-field class="name">
     <input
       matInput
+      class="input"
       [placeholder]="
         'home.new-experiment.overview.name.placeHolder' | translate
       "
@@ -13,6 +14,7 @@
   <mat-form-field class="description">
     <input
       matInput
+      class="input"
       [placeholder]="
         'home.new-experiment.overview.description.placeHolder' | translate
       "
@@ -23,7 +25,7 @@
   <div class="property-container">
     <mat-form-field class="unit-of-assignment">
       <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
-      <mat-select formControlName="unitOfAssignment">
+      <mat-select class="input" formControlName="unitOfAssignment">
         <mat-option
           *ngFor="let unitOfAssignment of unitOfAssignments"
           [value]="unitOfAssignment.value"
@@ -40,7 +42,7 @@
 
     <mat-form-field class="group-type" *ngIf="unitOfAssignmentValue">
       <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
-      <mat-select formControlName="groupType">
+      <mat-select class="input" formControlName="groupType">
         <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value | titlecase }}</mat-option>
       </mat-select>
       <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
@@ -54,6 +56,7 @@
     >
       <input
         matInput
+        class="input"
         [placeholder]="
           'global.group-custom-type.placeHolder' | translate
         "
@@ -67,7 +70,7 @@
 
   <mat-form-field class="consistency-rule">
     <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
-    <mat-select formControlName="consistencyRule">
+    <mat-select class="input" formControlName="consistencyRule">
       <mat-option
         *ngFor="let consistencyRule of consistencyRules"
         [value]="consistencyRule.value"
@@ -142,13 +145,14 @@
   <div class="button-container">
     <button
       mat-raised-button
+      class="modal-btn"
       (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
     >
       {{ 'global.cancel.text' | translate }}
     </button>
     <button
       mat-raised-button
-      class="default-button"
+      class="modal-btn default-button"
       (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
     >
       {{ 'global.next.text' | translate }}

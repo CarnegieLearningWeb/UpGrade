@@ -1,14 +1,24 @@
 .experiment-design {
   .condition-table,
   .partition-table {
-    max-height: 200px;
+    max-height: 180px;
     overflow: scroll;
+
+    mat-header-row {
+      min-height: 35px;
+    }
+
+    mat-row {
+      min-height: 46px;
+      max-height: 46px;
+    }
 
     mat-header-cell {
       justify-content: center;
       margin-right: 15px;
-      color: var(--grey-2);
+      color: var(--grey-6);
       font-family: 'Open Sans';
+      font-size: var(--text-size-small);
       font-weight: 700;
     }
 
@@ -75,7 +85,7 @@
   }
 
   .partition-table {
-    margin-top: 50px;
+    margin-top: 30px;
   }
 
   .button-container {
@@ -83,8 +93,8 @@
     justify-content: space-between;
     margin-top: 15px;
 
-    button {
-      margin-left: 10px;
+    .btn-back {
+      margin-left: 0 !important;
     }
   }
 

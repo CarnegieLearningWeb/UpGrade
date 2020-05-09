@@ -59,7 +59,8 @@
 }
 
 .delete-modal,
-.experiment-general-modal {
+.experiment-general-modal,
+.new-experiment-modal {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
@@ -82,12 +83,20 @@
   }
 }
 
+.new-experiment-modal {
+  width: 844px;
+
+  .mat-dialog-container {
+    padding: 0;
+  }
+}
+
 // Common style for modal button
 .modal-btn {
   margin-left: 20px !important;
   border-radius: 3px !important;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
-  width: 87px;
+  width: 90px;
   height: 36px;
   font-family: 'Open Sans';
   font-size: var(--text-size-normal);
