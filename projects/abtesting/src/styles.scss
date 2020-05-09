@@ -58,13 +58,38 @@
   }
 }
 
-.delete-modal {
+.delete-modal,
+.experiment-general-modal {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
-  width: 350px;
-  min-height: 192px;
 
   .mat-dialog-container {
     padding: 40px;
   }
+}
+
+.delete-modal {
+  width: 350px;
+  min-height: 192px;
+}
+
+.experiment-general-modal {
+  width: 804px;
+  min-height: 294px;
+
+  .mat-dialog-container {
+    padding: 0;
+  }
+}
+
+// Common style for modal button
+.modal-btn {
+  margin-left: 20px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
+  width: 87px;
+  height: 36px;
+  font-family: 'Open Sans';
+  font-size: var(--text-size-normal);
+  font-weight: 600;
 }

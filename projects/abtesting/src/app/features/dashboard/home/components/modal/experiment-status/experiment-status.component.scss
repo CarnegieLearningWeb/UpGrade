@@ -1,15 +1,20 @@
 .experiment-status {
   .title {
+    display: block;
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
+    padding: 40px 40px 0;
+    height: 108px;
     color: var(--black-2);
     font-family: 'Open Sans';
-    font-size: var(--text-size-x-large);
-    font-weight: 600;
+    font-size: var(--text-size-xxx-large);
+    font-weight: 700;
   }
 
   &-form {
     display: flex;
     justify-content: space-between;
-    margin: 25px 0;
+    margin: 20px 0;
+    padding: 0 40px;
 
     mat-form-field {
       margin-right: 10px;
@@ -31,9 +36,6 @@
   .button-container {
     display: flex;
     justify-content: flex-end;
-
-    button {
-      margin-left: 20px;
-    }
+    padding: 0 40px 40px;
   }
 }

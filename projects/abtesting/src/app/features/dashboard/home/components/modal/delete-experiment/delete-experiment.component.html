@@ -5,14 +5,14 @@
 </div>
 <div mat-dialog-actions class="dialog-actions">
   <button
-    class="btn btn-cancel"
+    class="modal-btn"
     mat-flat-button
     (click)="onCancelClick()"
   >
     {{ 'global.cancel.text' | translate }}
   </button>
   <button
-    class="btn btn-delete"
+    class="modal-btn default-button"
     mat-flat-button
     cdkFocusInitial
     (click)="deleteExperiment()"
