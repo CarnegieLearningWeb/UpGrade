@@ -21,7 +21,8 @@
             *ngIf="
               permissions?.experiments.update &&
               experiment.state !== ExperimentState.ENROLLING &&
-              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
+              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE &&
+              experiment.state !== ExperimentState.CANCELLED
             "
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}

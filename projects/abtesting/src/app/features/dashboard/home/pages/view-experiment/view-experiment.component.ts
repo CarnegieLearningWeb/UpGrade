@@ -79,7 +79,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   deleteExperiment() {
     const dialogRef = this.dialog.open(DeleteExperimentComponent, {
-      width: '300px',
+      panelClass: 'delete-modal',
       data: { experimentName: this.experiment.name, experimentId: this.experiment.id }
     });
 

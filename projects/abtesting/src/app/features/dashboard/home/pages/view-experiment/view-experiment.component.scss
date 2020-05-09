@@ -56,11 +56,15 @@ $font-size-small: 15px;
           margin-top: 0.5rem;
 
           .button {
-            margin-left: 15px !important;
+            margin-left: 24px !important;
             border: 1px solid var(--blue);
             background: $white-background;
+            width: 85px;
+            height: 40px;
             color: var(--blue);
+            font-family: 'Open Sans';
             font-size: var(--text-size-small);
+            font-weight: 600;
 
             .icon {
               margin-right: 3px;

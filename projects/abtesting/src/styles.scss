@@ -57,3 +57,14 @@
     pointer-events: none;
   }
 }
+
+.delete-modal {
+  border-radius: 7px;
+  box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
+  width: 350px;
+  min-height: 192px;
+
+  .mat-dialog-container {
+    padding: 40px;
+  }
+}

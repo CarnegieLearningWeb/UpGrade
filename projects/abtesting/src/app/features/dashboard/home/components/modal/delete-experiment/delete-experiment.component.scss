@@ -1,17 +1,34 @@
 .dialog {
   &-message {
+    color: var(--black-2);
     font-family: 'Open Sans';
     font-size: var(--text-size-normal);
-    font-weight: 400;
+    font-weight: 600;
   }
 
   &-actions {
     justify-content: flex-end;
+    margin: 0;
 
-    button {
+    .btn {
+      border-radius: 3px;
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+      width: 87px;
+      height: 36px;
       font-family: 'Open Sans';
       font-size: var(--text-size-normal);
       font-weight: 600;
+
+      &-delete {
+        background-color: var(--blue);
+        color: var(--white)
+      }
+
+      &-cancel {
+        margin-right: 18px;
+        background-color: var(--white);
+        color: var(--black-2);
+      }
     }
   }
 }
