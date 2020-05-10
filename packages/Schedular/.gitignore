@@ -4,6 +4,8 @@ jspm_packages
 
 # Serverless directories
 .serverless
+dist
+lib
 
 # Webpack directories
 .webpack

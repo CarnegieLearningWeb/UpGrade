@@ -85,9 +85,13 @@ module "aws-ebs-app" {
 
 resource "null_resource" "update-ebs-env" { 
   depends_on= [module.aws-ebs-app.ebs-cname]
+
+  triggers = {
+    always_run = "${timestamp()}"
+  }
   
   provisioner "local-exec" {
-    command = "export AWS_PROFILE=${var.aws_profile} && aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=${module.aws-ebs-app.ebs-cname}/api"
+    command = "export AWS_PROFILE=${var.aws_profile} && aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=http://${module.aws-ebs-app.ebs-cname}/api"
   }
 }
 

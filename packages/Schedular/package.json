@@ -5,8 +5,8 @@
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "sls deploy",
-    "tsc": "tsc"
+    "build": "webpack",
+    "build:prod": "NODE_ENV=production npm run build"
   },
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
@@ -15,13 +15,14 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.17",
+    "@types/jsonwebtoken": "^8.3.9",
     "@types/node": "^10.17.20",
+    "@types/node-fetch": "^2.5.7",
     "fork-ts-checker-webpack-plugin": "^3.0.1",
-    "serverless": "^1.66.0",
-    "serverless-webpack": "^5.2.0",
     "ts-loader": "^5.3.3",
     "typescript": "^3.2.4",
-    "webpack": "^4.29.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
     "webpack-node-externals": "^1.7.2"
   },
   "author": "The serverless webpack authors (https://github.com/elastic-coders/serverless-webpack)",

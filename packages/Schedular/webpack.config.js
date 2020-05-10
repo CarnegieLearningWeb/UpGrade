@@ -1,13 +1,14 @@
 const path = require('path');
-const slsw = require('serverless-webpack');
 const nodeExternals = require('webpack-node-externals');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
+const env = process.env.NODE_ENV || 'development';
+
 module.exports = {
   context: __dirname,
-  mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
-  entry: slsw.lib.entries,
-  devtool: slsw.lib.webpack.isLocal ? 'cheap-module-eval-source-map' : 'source-map',
+  mode: env,
+  entry: { schedule: './src/schedule/index.ts' },
+  devtool: env ? 'cheap-module-eval-source-map' : 'source-map',
   resolve: {
     extensions: ['.mjs', '.json', '.ts'],
     symlinks: false,
@@ -15,8 +16,8 @@ module.exports = {
   },
   output: {
     libraryTarget: 'commonjs',
-    path: path.join(__dirname, '.webpack'),
-    filename: '[name].js',
+    path: path.join(__dirname, 'dist'),
+    filename: './[name]/index.js',
   },
   target: 'node',
   externals: [nodeExternals()],
@@ -40,12 +41,5 @@ module.exports = {
       },
     ],
   },
-  plugins: [
-    // new ForkTsCheckerWebpackPlugin({
-    //   eslint: true,
-    //   eslintOptions: {
-    //     cache: true
-    //   }
-    // })
-  ],
+  plugins: [new ForkTsCheckerWebpackPlugin()],
 };
