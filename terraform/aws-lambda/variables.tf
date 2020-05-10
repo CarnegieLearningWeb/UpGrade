@@ -52,3 +52,8 @@ variable "runtime" {
   description = "Lambda function runtime"
   default     = "nodejs10.x"
 }
+
+variable "TOKEN_SECRET_KEY" { 
+  description = "Secret Key for server to server encryption"
+  default = "carnegielearning"
+}
