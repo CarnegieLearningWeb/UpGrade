@@ -4,7 +4,7 @@
 >
   <mat-form-field>
     <mat-label>{{ 'home-global.post-experiment-rule.text' | translate }}</mat-label>
-    <mat-select formControlName="postExperimentRule">
+    <mat-select class="rule-selection" formControlName="postExperimentRule">
       <mat-option
         *ngFor="let rule of postExperimentRules"
         [value]="rule.value"
@@ -16,7 +16,7 @@
 
   <mat-form-field>
     <mat-label>{{ 'global.condition.text' | translate }}</mat-label>
-    <mat-select formControlName="revertTo">
+    <mat-select class="rule-selection" formControlName="revertTo">
       <mat-option
         *ngFor="let condition of experimentConditions"
         [value]="condition.id"

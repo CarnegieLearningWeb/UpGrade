@@ -1,7 +1,5 @@
 .exclude-entities,
 .preview-users {
-  margin-top: 20px;
-
   &--title {
     font-family: 'Open Sans';
     font-size: var(--text-size-xx-large);
@@ -10,8 +8,16 @@
 
   .exclude-form,
   .preview-user-form {
-    .form-control {
-      margin-right: 20px;
+    .form-control,
+    .input {
+      margin-right: 45px;
+      font-family: 'Open Sans';
+      font-size: var(--text-size-small);
+      font-weight: 600;
+    }
+
+    .input {
+      line-height: 18px;
     }
   }
 
@@ -29,6 +35,9 @@
       .mat-cell {
         padding: 5px;
         width: 50%;
+        font-family: 'Open Sans';
+        font-size: var(--text-size-x-small);
+        font-weight: 600;
       }
 
       .mat-header-cell {
@@ -37,11 +46,6 @@
         font-family: 'Open Sans';
         font-size: var(--text-size-x-small);
         font-weight: 700;
-      }
-
-      .mat-cell {
-        font-family: 'Open Sans';
-        font-weight: 600;
       }
 
       .remove-icon {

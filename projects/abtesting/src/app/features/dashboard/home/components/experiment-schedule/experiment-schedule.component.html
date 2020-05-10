@@ -18,6 +18,7 @@
       <input
         matInput
         readonly
+        class="input"
         [min]="minDate"
         [owlDateTimeTrigger]="startDateTime" [owlDateTime]="startDateTime"
         [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
@@ -41,6 +42,7 @@
           <input
             matInput
             readonly
+            class="input"
             [min]="minDate"
             [owlDateTimeTrigger]="dateTime" [owlDateTime]="dateTime"
             [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
@@ -59,6 +61,7 @@
           <input
             type="number"
             matInput
+            class="input"
             [placeholder]="'home.new-experiment.schedule.user-count.placeholder.text' | translate"
             formControlName="userCount"
           />
@@ -76,6 +79,7 @@
           <input
             type="number"
             matInput
+            class="input"
             [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: groupType } "
             formControlName="groupCount"
           />
