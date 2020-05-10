@@ -31,6 +31,10 @@
     </div>
   </ng-container>
   <ng-template #zeroStateAudit>
-    <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"></span>
+    <span
+      *ngIf="!(isAuditLoading$ | async)"
+      class="zero-state"
+      [innerHTML]="'logs-global.log-zero-state.text' | translate"
+    ></span>
   </ng-template>
 </div>
