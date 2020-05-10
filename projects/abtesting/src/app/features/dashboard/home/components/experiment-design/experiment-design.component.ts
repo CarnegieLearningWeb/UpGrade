@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition } from '../../../../../core/experiments/store/experiments.model';
 import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -40,6 +40,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allPartitions = [];
   allPartitionsSub: Subscription;
+
+  // Condition Error
+  conditionCodeError: string;
 
   // Partition Errors
   partitionPointErrors = [];
@@ -192,13 +195,23 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  validateConditionCodes(conditions: ExperimentCondition[]) {
+    const conditionCodes = conditions.map(condition => condition.conditionCode);
+    if (conditionCodes.length !== new Set(conditionCodes).size) {
+      this.conditionCodeError = 'Condition should be unique'
+    } else {
+      this.conditionCodeError = null;
+    }
+  }
+
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if (!this.partitionPointErrors.length && this.experimentDesignForm.valid) {
+        this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
+        if (!this.partitionPointErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
           const experimentDesignFormData = this.experimentDesignForm.value;
 
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
