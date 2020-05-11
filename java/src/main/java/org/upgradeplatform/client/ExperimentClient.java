@@ -26,7 +26,7 @@ import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
 
-public class ExperimentClient {
+public class ExperimentClient implements AutoCloseable {
 
 	private List<ExperimentsResponse> allExperiments;
 	private final String userId;
@@ -42,6 +42,7 @@ public class ExperimentClient {
 	}
 
     // To close jax-rs client connection open when calling ExperimentClient constructor;
+    @Override
     public void close() {
         this.apiService.close();
     }
