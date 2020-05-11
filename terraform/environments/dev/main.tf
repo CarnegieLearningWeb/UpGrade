@@ -39,7 +39,6 @@ output "lambda"{
   value = module.aws_lambda_function.lambda-arn
 }
 
-
 module "aws-state-machine" {
 
   source                = "../../aws-step-fn"
@@ -95,6 +94,14 @@ resource "null_resource" "update-ebs-env" {
   }
 }
 
+module "aws_cloudwatch_event" {
+    source                =  "../../aws-cloudwatch-event"
+
+    lambda_arn            = module.aws_lambda_function.lambda-arn[0] 
+    host_url              = module.aws-ebs-app.ebs-cname
+    environment           = var.environment 
+}
+
 module "aws-code-pipeline"{
 
   source = "../../aws-codepipeline"
@@ -121,4 +128,8 @@ output "ebs-cname" {
 }
 output "step_function" {
   value = module.aws-state-machine.step_function_arn
+}
+
+output "cloudwatch" {
+    value = module.aws_cloudwatch_event.name
 }
