@@ -31,7 +31,7 @@ export class HomeComponent implements OnInit {
 
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
-      width: '50%',
+      panelClass: 'new-experiment-modal'
     });
 
     dialogRef.afterClosed().subscribe(result => {
