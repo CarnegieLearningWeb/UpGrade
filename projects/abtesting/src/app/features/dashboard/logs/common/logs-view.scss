@@ -21,7 +21,6 @@ $text-color: #8f9bb3;
 
   .timeline-container {
     display: flex;
-    margin-top: 40px;
 
     .error-date {
       width: 150px;
@@ -47,17 +46,6 @@ $text-color: #8f9bb3;
       flex-grow: 1;
       width: calc(100% - 150px);
     }
-  }
-
-  .zero-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50px;
-    color: var(--grey);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-xxx-large);
-    font-weight: 700;
   }
 
   .spinner {

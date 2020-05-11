@@ -1,48 +1,59 @@
 .experiment-schedule-form {
-  margin: 20px 0 0 20px;
-
   mat-checkbox,
   mat-radio-button,
   mat-form-field {
+    color: var(--black-2);
     font-family: 'Open Sans';
-    font-size: var(--text-size-normal);
+    font-size: var(--text-size-small);
+    font-weight: 700;
+  }
+
+  mat-checkbox {
+    &.mat-checkbox-checked {
+      color: var(--blue);
+    }
+  }
+
+  .mat-radio-button,
+  .input {
     font-weight: 600;
   }
 
   .starts-on-title {
     font-family: 'Open Sans';
-    font-size: var(--text-size-normal);
+    font-size: var(--text-size-small);
     font-weight: 600;
 
     &--disable {
-      color: rgba(0, 0, 0, 0.38);
+      color: var(--grey-5);
     }
   }
 
   .date-picker-container {
-    margin: 0 0 30px 20px;
+    margin: 0 0 30px 25px;
 
     mat-form-field {
-      margin-left: 30px;
+      margin-left: 16px;
       width: 200px;
     }
   }
 
   .experiment-end-criteria {
-    margin-left: 20px;
+    margin-left: 25px;
 
     .end-criteria {
       margin-left: 30px;
 
       .group-type {
         margin-left: 30px;
+        font-size: var(--text-size-small);
 
         &--enable {
-          color: var(--black);
+          color: var(--black-2);
         }
 
         &--disable {
-          color: rgba(0, 0, 0, 0.38);
+          color: var(--grey-5);
         }
       }
     }
@@ -54,6 +65,7 @@
   padding: 5px 0 0 10px;
   color: var(--red);
   font-size: var(--text-size-small);
+  font-weight: 600;
 }
 
 .button-container {
@@ -61,8 +73,8 @@
   justify-content: space-between;
   margin-top: 15px;
 
-  button {
-    margin-left: 10px;
+  .btn-back {
+    margin-left: 0 !important;
   }
 }
 

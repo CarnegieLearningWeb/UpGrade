@@ -8,6 +8,7 @@ import { ExperimentUsersService } from '../../../../../core/experiment-users/exp
 import { ExperimentUserValidators } from '../../validator/experiment-users-validators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { UserRole } from 'upgrade_types';
 
 @Component({
   selector: 'users-experiment-users',
@@ -16,6 +17,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 })
 export class ExperimentUsersComponent implements OnInit, OnDestroy {
   permissions$: Observable<UserPermission>;
+  currentUser$ = this.authService.currentUser$;
   displayedColumns = ['type', 'id', 'removeEntity'];
   allExcludedEntities: MatTableDataSource<ExcludeEntity>;
   allExcludedEntitiesSub: Subscription;
@@ -108,6 +110,10 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
   get groupTypeValue() {
     return this.excludeEntitiesForm.get('groupType').value === GroupTypes.OTHER && this.entityTypeValue;
+  }
+
+  get userRole() {
+    return UserRole;
   }
 
   ngOnDestroy() {

@@ -56,7 +56,6 @@ export class ExperimentStatusComponent implements OnInit {
           { value: EXPERIMENT_STATE.INACTIVE },
           { value: EXPERIMENT_STATE.SCHEDULED },
           { value: EXPERIMENT_STATE.ENROLLING },
-          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
           { value: EXPERIMENT_STATE.CANCELLED }
         ];
     }

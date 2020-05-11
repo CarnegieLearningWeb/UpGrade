@@ -40,7 +40,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   selectedDateFilter: ExperimentGraphDateFilterOptions = ExperimentGraphDateFilterOptions.LAST_7_DAYS;
   graphData = [];
 
-  colors = ['#31e8dd', '#7dc7fb', '#7dc7fb', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'];
+  colors = ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'];
   colorScheme = {
     domain: this.colors
   };

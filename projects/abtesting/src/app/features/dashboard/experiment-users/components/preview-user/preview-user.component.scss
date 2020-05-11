@@ -7,20 +7,22 @@
     table {
       width: 100%;
 
+      .form-control {
+        font-family: 'Open Sans';
+        font-weight: 600;
+      }
+
       .mat-cell {
-        width: 20%;
+        position: relative;
+        width: 15%;
 
         &.mat-column-totalAssignedConditions {
-          width: 15%;
+          width: 20%;
           text-align: center;
         }
 
         &.mat-column-assignment {
           width: 50%;
-        }
-
-        &.mat-column-actions {
-          width: 15%;
         }
       }
 
@@ -60,7 +62,7 @@
 
         .add-new-experiment {
           display: block;
-          margin: 5px 5px 5px 0;
+          margin: 5px 5px 35px 0;
           outline: 0;
           border: 0;
           background-color: transparent;
@@ -71,26 +73,31 @@
           font-weight: 700;
         }
 
-        .assigned-condition-info {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+        .assigned-condition-list {
+          max-height: 100px;
+          overflow: scroll;
 
-          span {
-            margin-bottom: 7px;
-            width: 50%;
-            text-align: left;
-            word-break: break-word;
+          .assigned-condition-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            span {
+              margin-bottom: 7px;
+              width: 50%;
+              text-align: left;
+              word-break: break-word;
+            }
           }
         }
       }
 
-      .assigned-condition-list {
-        max-height: 100px;
-        overflow: scroll;
+      .icons-container {
+        position: absolute;
+        bottom: 15px;
       }
 
-      .pencil-container {
+      .edit-icon {
         display: inline-block;
         width: 80px;
       }
@@ -103,13 +110,15 @@
         }
 
         &--small {
+          margin-left: 10px;
+
           &:hover {
             cursor: pointer;
           }
 
           ::ng-deep svg {
-            width: 15px;
-            height: 15px;
+            width: 10px;
+            height: 13px;
           }
         }
       }

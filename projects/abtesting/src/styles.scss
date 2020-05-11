@@ -51,9 +51,64 @@
   background-color: var(--blue) !important;
   padding: 0 1rem;
   color: var(--white) !important;
+  font-family: 'Open Sans';
+  font-weight: 600;
 
   &--disabled {
     opacity: 0.7;
     pointer-events: none;
+  }
+}
+
+.delete-modal,
+.experiment-general-modal,
+.new-experiment-modal {
+  border-radius: 7px;
+  box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
+
+  .mat-dialog-container {
+    padding: 40px;
+  }
+}
+
+.delete-modal {
+  width: 350px;
+  min-height: 192px;
+}
+
+.experiment-general-modal {
+  width: 804px;
+  min-height: 294px;
+
+  .mat-dialog-container {
+    padding: 0;
+  }
+}
+
+.new-experiment-modal {
+  width: 844px;
+
+  .mat-dialog-container {
+    padding: 0;
+  }
+}
+
+// Common style for modal button
+.modal-btn {
+  margin-left: 20px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
+  width: 90px;
+  height: 36px;
+  font-family: 'Open Sans';
+  font-size: var(--text-size-normal);
+  font-weight: 600;
+}
+
+.mat-button,
+.mat-flat-button,
+.mat-stroked-button {
+  &.cdk-program-focused .mat-button-focus-overlay {
+    opacity: 0 !important;
   }
 }

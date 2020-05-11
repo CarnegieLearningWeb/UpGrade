@@ -5,14 +5,15 @@
   mat-form-field {
     line-height: 20px;
     font-family: 'Open Sans';
-    font-size: var(--text-size-normal);
+    font-size: var(--text-size-small);
+    font-weight: 600;
+  }
+
+  .input {
     font-weight: 400;
   }
 
-  .name {
-    width: 50%;
-  }
-
+  .name,
   .description {
     width: 100%;
   }
@@ -40,14 +41,15 @@
   .button-container {
     display: flex;
     justify-content: flex-end;
-
-    button {
-      margin-left: 20px;
-    }
+    margin-top: 30px;
   }
 
   ::ng-deep .mat-chip-list-wrapper {
     max-height: 60px;
     overflow: scroll;
+  }
+
+  ::ng-deep .mat-form-field-label {
+    color: var(--grey-6);
   }
 }

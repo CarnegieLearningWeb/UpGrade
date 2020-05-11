@@ -4,8 +4,19 @@
   </p>
 </div>
 <div mat-dialog-actions class="dialog-actions">
-  <button mat-flat-button (click)="onCancelClick()">{{ 'global.cancel.text' | translate }}</button>
-  <button mat-flat-button cdkFocusInitial (click)="deleteExperiment()">
+  <button
+    class="modal-btn"
+    mat-flat-button
+    (click)="onCancelClick()"
+  >
+    {{ 'global.cancel.text' | translate }}
+  </button>
+  <button
+    class="modal-btn default-button"
+    mat-flat-button
+    cdkFocusInitial
+    (click)="deleteExperiment()"
+  >
     {{ 'home.delete-experiment.button.text' | translate }}
   </button>
 </div>

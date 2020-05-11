@@ -1,10 +1,18 @@
 .post-experiment-rule-form {
   display: flex;
   justify-content: space-between;
-  margin: 25px 0;
+  margin-bottom: 97px;
 
   mat-form-field {
     width: 45%;
+    color: var(--grey-6);
+    font-family: 'Open Sans';
+    font-size: var(--text-size-small);
+    font-weight: 600;
+  }
+
+  .rule-selection {
+    font-family: 'Open Sans';
   }
 }
 
@@ -13,7 +21,7 @@
   justify-content: space-between;
   margin-top: 15px;
 
-  button {
-    margin-left: 10px;
+  .btn-back {
+    margin-left: 0 !important;
   }
 }

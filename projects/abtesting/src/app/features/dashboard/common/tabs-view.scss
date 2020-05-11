@@ -27,7 +27,6 @@ $tab-text-color: #8f9bb3;
     border-radius: 10px;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     background-color: var(--white);
-    padding: 2rem;
   }
 
   ::ng-deep .logs-tabs .mat-tab-header {
@@ -39,7 +38,7 @@ $tab-text-color: #8f9bb3;
     color: $tab-text-color;
     font-family: 'Open Sans';
     font-size: var(--text-size-xx-large);
-    font-weight: 400;
+    font-weight: 600;
   }
 
   ::ng-deep .mat-tab-label-active {
@@ -49,4 +48,19 @@ $tab-text-color: #8f9bb3;
       color: var(--blue);
     }
   }
+
+  ::ng-deep .mat-tab-label-container {
+    padding: 34px 34px 0;
+    height: 94px;
+  }
+
+  ::ng-deep .mat-tab-header {
+    border-bottom: 0 !important;
+    box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
+  }
+
+  ::ng-deep .mat-tab-body-content {
+    padding: 24px 34px 34px;
+  }
+
 }

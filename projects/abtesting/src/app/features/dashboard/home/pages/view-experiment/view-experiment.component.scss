@@ -56,11 +56,15 @@ $font-size-small: 15px;
           margin-top: 0.5rem;
 
           .button {
-            margin-left: 15px !important;
+            margin-left: 24px !important;
             border: 1px solid var(--blue);
             background: $white-background;
+            width: 85px;
+            height: 40px;
             color: var(--blue);
+            font-family: 'Open Sans';
             font-size: var(--text-size-small);
+            font-weight: 600;
 
             .icon {
               margin-right: 3px;
@@ -222,6 +226,11 @@ $font-size-small: 15px;
 
   .table-container {
     padding: 24px 34px;
+
+    &-partition {
+      margin-bottom: 24px;
+      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
+    }
 
     .title {
       color: var(--black-2);

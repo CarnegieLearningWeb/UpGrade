@@ -1,6 +1,9 @@
 <form class="experiment-schedule-form" [formGroup]="experimentScheduleForm">
 
-  <mat-checkbox color="primary" formControlName="startExperimentAutomatically">
+  <mat-checkbox
+    color="primary"
+    formControlName="startExperimentAutomatically"
+  >
     {{ 'home.new-experiment.schedule.start-automatically.text' | translate }}
   </mat-checkbox>
 
@@ -15,6 +18,7 @@
       <input
         matInput
         readonly
+        class="input"
         [min]="minDate"
         [owlDateTimeTrigger]="startDateTime" [owlDateTime]="startDateTime"
         [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
@@ -38,6 +42,7 @@
           <input
             matInput
             readonly
+            class="input"
             [min]="minDate"
             [owlDateTimeTrigger]="dateTime" [owlDateTime]="dateTime"
             [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
@@ -56,14 +61,16 @@
           <input
             type="number"
             matInput
+            class="input"
             [placeholder]="'home.new-experiment.schedule.user-count.placeholder.text' | translate"
             formControlName="userCount"
           />
         </mat-form-field>
-        <!-- TODO: Update en.json -->
         <span
           class="group-type"
-          [innerHTML]="!!experimentScheduleForm.get('groupCount').value ? ('Students marked per ' + groupType) : 'Students Marked'"
+          [innerHTML]="!!experimentScheduleForm.get('groupCount').value && groupType
+            ? ('home.new-experiment.schedule.user-count-per-group.title.text' | translate: { groupType: groupType })
+            : ('home.new-experiment.schedule.user-count.title.text' | translate)"
           [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
         ></span>
       </div>
@@ -72,13 +79,14 @@
           <input
             type="number"
             matInput
-            [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: groupType | titlecase } "
+            class="input"
+            [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: groupType } "
             formControlName="groupCount"
           />
         </mat-form-field>
         <span
           class="group-type"
-          [innerHTML]="(groupType | titlecase) + ' Marked'"
+          [innerHTML]="'home.new-experiment.schedule.group-count.text' | translate: { groupType: groupType }"
           [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
         ></span>
       </div>
@@ -116,20 +124,21 @@
   <button
     matStepperPrevious
     mat-raised-button
-    class="default-button"
+    class="modal-btn btn-back default-button"
   >
     {{ 'global.back.text' | translate }}
   </button>
   <div>
     <button
       mat-raised-button
+      class="modal-btn"
       (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
     >
       {{ 'global.cancel.text' | translate }}
     </button>
     <button
       mat-raised-button
-      class="default-button"
+      class="modal-btn default-button"
       (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
     >
       {{ 'global.next.text' | translate }}

@@ -21,7 +21,8 @@
             *ngIf="
               permissions?.experiments.update &&
               experiment.state !== ExperimentState.ENROLLING &&
-              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE
+              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE &&
+              experiment.state !== ExperimentState.CANCELLED
             "
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}
@@ -248,7 +249,7 @@
     </div>
 
     <!-- Experiment Partitions Table -->
-    <div class="table-container">
+    <div class="table-container table-container-partition">
       <span class="title">{{ 'home.view-experiment.experiment-partitions-title.text' | translate }}</span>
       <mat-table [dataSource]="experiment.partitions" class="table">
         <!-- Number Column -->

@@ -113,6 +113,11 @@
       *ngIf="experimentDesignForm.errors?.assignmentWightsSumError && isAssignmentWeightControlDirty"
       [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
     ></span>
+    <span
+      class="validation-message"
+      *ngIf="conditionCodeError"
+      [innerHTML]="conditionCodeError"
+    ></span>
     <button
       type="button"
       class="add-condition"
@@ -225,20 +230,21 @@
     <button
       matStepperPrevious
       mat-raised-button
-      class="default-button"
+      class="modal-btn btn-back default-button"
     >
       {{ 'global.back.text' | translate }}
     </button>
     <div>
       <button
         mat-raised-button
+        class="modal-btn"
         (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
       >
         {{ 'global.cancel.text' | translate }}
       </button>
       <button
         mat-raised-button
-        class="default-button"
+        class="modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
       >
         {{ 'global.next.text' | translate }}
