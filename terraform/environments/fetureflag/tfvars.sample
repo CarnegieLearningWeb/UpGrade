@@ -1,0 +1,32 @@
+# General variables
+aws_region              = "us-east-1"
+environment             = "fetureflag"
+prefix                  = "upgrade" 
+app_version             = "1.0.0"
+aws_profile             = "default"
+
+# RDS related details 
+allocated_storage       = 100
+engine_version          = "11.5"
+identifier              = "fetureflag-postgres" 
+instance_class          = "db.t2.small"
+storage_type            = "gp2"
+multi_az                = "false"
+
+# EBS instance details
+app_instance_type       = "t2.micro"
+ebs_app_name            = "upgrade-experiment-app"
+autoscaling_min_size    =  1 
+autoscaling_max_size    =  4 
+
+# APP environment variables
+GOOGLE_CLIENT_ID        = "google-project-id"
+MONITOR_PASSWORD        = "password"
+SWAGGER_PASSWORD        = "password"
+
+# CICD variables
+repository_name         = "educational-experiment-service"
+branch_name             = "fetureflag"
+build_image             = "aws/codebuild/standard:1.0"
+build_compute_type      =  "BUILD_GENERAL1_LARGE"
+privileged_mode         =  true
