@@ -11,10 +11,10 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.client.ClientProperties;
 
 
-public class APIService {
+public class APIService implements AutoCloseable{
 
-	String baseUrl,authToken;
-	private Client client;
+	private final String baseUrl,authToken;
+	private final Client client;
 	
 	public APIService(String baseUrl, String authToken) {
         if (isStringNull(baseUrl)) {
@@ -26,17 +26,17 @@ public class APIService {
 		    throw new IllegalArgumentException(INVALID_AUTH_TOKEN);
 		}
 		this.authToken=authToken;
-		if(client == null) {
-			createClient();
-		}
 
+		client = createClient();
 	}
 
-	public void createClient() {
-		client = ClientBuilder.newClient();
+	public static Client createClient() {
+		Client client = ClientBuilder.newClient();
 		client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
 		client.property(ClientProperties.READ_TIMEOUT,    3000);
+		return client;
 	}
+
 	public String getBaseUrl() {
 		return baseUrl;
 	}
@@ -53,7 +53,8 @@ public class APIService {
 				.async();
 	}
 
-	public void close() {
+	@Override
+    public void close() {
 		client.close();
 	}
 }
