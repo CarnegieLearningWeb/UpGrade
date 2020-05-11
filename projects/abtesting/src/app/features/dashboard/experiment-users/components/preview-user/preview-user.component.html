@@ -17,7 +17,7 @@
     </button>
   </form>
 
-  <div class="preview-user-container" *ngIf="allPreviewUsers.data.length">
+  <div class="preview-user-container" *ngIf="allPreviewUsers.data.length; else zeroState">
     <form [formGroup]="previewUserAssignConditionForm">
       <mat-progress-bar mode="indeterminate" *ngIf="isPreviewUserLoading$ | async"></mat-progress-bar>
       <table mat-table [dataSource]="allPreviewUsers" formArrayName="assignedConditions">
@@ -151,4 +151,13 @@
 
     <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="5"></mat-paginator>
   </div>
+
+  <ng-template #zeroState>
+    <span
+      *ngIf="(currentUser$ | async)?.role === userRole.READER && !(isPreviewUserLoading$ | async)"
+      class="zero-state"
+      [innerHTML]="'users.no-preview-users.text' | translate"
+    >
+    </span>
+  </ng-template>
 </div>

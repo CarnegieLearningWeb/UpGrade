@@ -40,7 +40,7 @@
     </button>
   </form>
 
-  <div class="entities-container" *ngIf="allExcludedEntities.data.length">
+  <div class="entities-container" *ngIf="allExcludedEntities.data.length; else zeroState">
     <mat-progress-bar class="progress-bar" mode="indeterminate" *ngIf="isEntityLoading$ | async"></mat-progress-bar>
     <table mat-table [dataSource]="allExcludedEntities" matSort>
       <!-- TYPE Column -->
@@ -83,4 +83,13 @@
     </table>
     <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="5"></mat-paginator>
   </div>
+
+  <ng-template #zeroState>
+    <span
+      *ngIf="(currentUser$ | async)?.role === userRole.READER && !(isEntityLoading$ | async)"
+      class="zero-state"
+      [innerHTML]="'users.no-excluded-entity.text' | translate"
+    >
+    </span>
+  </ng-template>
 </div>

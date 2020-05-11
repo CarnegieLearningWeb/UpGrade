@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { UserRole } from 'upgrade_types';
 
 @Component({
   selector: 'users-preview-user',
@@ -15,6 +16,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 export class PreviewUserComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
   permissionSub: Subscription;
+  currentUser$ = this.authService.currentUser$;
   displayedColumns = ['id', 'totalAssignedConditions', 'assignment', 'actions'];
 
   // Used for displaying preview users
@@ -192,6 +194,10 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
 
   get assignedConditions(): FormArray {
     return this.previewUserAssignConditionForm.get('assignedConditions') as FormArray;
+  }
+
+  get userRole() {
+    return UserRole;
   }
 
   ngOnDestroy() {
