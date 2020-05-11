@@ -27,33 +27,33 @@ public class Main {
 		group.put("classes", Arrays.asList(classList));
 		group.put("teachers", Arrays.asList(teacherList));
 		
-		ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl);
-		
-		experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
-            @Override
-            public void onSuccess(InitRequest __){
-                experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
+		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl)){
+		    experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
+		        @Override
+		        public void onSuccess(InitRequest __){
+		            experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
 
-                    @Override
-                    public void onSuccess(@NonNull List<ExperimentsResponse> t) {
-                        System.out.println(t.size());
+		                @Override
+		                public void onSuccess(@NonNull List<ExperimentsResponse> t) {
+		                    System.out.println(t.size());
 
-                        //to Close jax-rs client
-                        experimentClient.close();
-                    }
+		                    //to Close jax-rs client
+		                    experimentClient.close();
+		                }
 
-                    @Override
-                    public void onError(@NonNull ErrorResponse error) {
-                        // TODO Auto-generated method stub
+		                @Override
+		                public void onError(@NonNull ErrorResponse error) {
+		                    // TODO Auto-generated method stub
 
-                    }
-                });
-            }
+		                }
+		            });
+		        }
 
-            @Override
-            public void onError(@NonNull ErrorResponse error){
-                System.err.println(error);
-            }
-        });
+		        @Override
+		        public void onError(@NonNull ErrorResponse error){
+		            System.err.println(error);
+		        }
+		    });
+		}
 	}
 }
