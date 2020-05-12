@@ -1,0 +1,35 @@
+<div class="feature-flags-container">
+  <h1 class="title">{{ 'feature-flags.title.text' | translate }}</h1>
+  <span
+    class="subtitle"
+    [innerHTML]="'feature-flags.subtitle.text' | translate"
+  ></span>
+
+  <ng-container *ngIf="isLoadingFeatureFlags$ | async; else loadingFeatureFlagState">
+    <div class="flags-table" *ngIf="(featureFlags$ | async).length; else noFeatureFlagsTemplate">
+      <feature-flags-list></feature-flags-list>
+    </div>
+    <ng-template #noFeatureFlagsTemplate>
+      <div class="no-flags-container">
+        <span
+          class="text"
+          [innerHTML]="'feature-flags.no-flags.text' | translate"
+        ></span>
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="openNewFlagDialog()"
+        >
+          <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
+          {{ 'feature-flags.add-flag.text' | translate }}
+        </button>
+      </div>
+    </ng-template>
+  </ng-container>
+</div>
+
+<ng-template #loadingFeatureFlagState>
+  <div class="loading-container">
+    <mat-spinner diameter="60"></mat-spinner>
+  </div>
+</ng-template>

@@ -1,0 +1,44 @@
+.flag-overview {
+  display: flex;
+  flex-direction: column;
+
+  mat-form-field {
+    line-height: 20px;
+    font-family: 'Open Sans';
+    font-size: var(--text-size-small);
+    font-weight: 600;
+  }
+
+  .input {
+    font-family: 'Open Sans';
+    font-size: var(--text-size-small);
+    font-weight: 400;
+  }
+
+  .name,
+  .key,
+  .variationType {
+    width: 50%;
+  }
+
+  .description {
+    width: 100%;
+  }
+
+  .error-message {
+    margin-bottom: 5px;
+    color: var(--red);
+    font-family: 'Open Sans';
+    font-size: var(--text-size-x-small);
+    font-weight: 400;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      margin-left: 20px;
+    }
+  }
+}

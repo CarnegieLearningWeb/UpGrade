@@ -27,6 +27,11 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'files'
     },
     {
+      path: ['/featureFlags'],
+      text: 'Feature flags',
+      iconType: 'featureFlag'
+    },
+    {
       path: ['/users'],
       text: 'global.experiment-user.title',
       iconType: 'user-group'

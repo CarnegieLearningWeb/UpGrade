@@ -62,7 +62,8 @@
 
 .delete-modal,
 .experiment-general-modal,
-.new-experiment-modal {
+.new-experiment-modal,
+.new-flag-modal {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
@@ -85,7 +86,8 @@
   }
 }
 
-.new-experiment-modal {
+.new-experiment-modal,
+.new-flag-modal {
   width: 844px;
 
   .mat-dialog-container {

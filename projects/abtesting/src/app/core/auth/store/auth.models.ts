@@ -13,7 +13,8 @@ export interface UserPermission {
   experiments: CRUD;
   users: CRUD;
   logs: CRUD;
-  manageRoles: CRUD
+  manageRoles: CRUD,
+  featureFlags: CRUD
 }
 
 export interface AuthState {

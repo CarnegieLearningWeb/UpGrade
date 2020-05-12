@@ -50,7 +50,8 @@ export class AuthService {
           experiments: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: true, read: true, update: true, delete: true },
-          manageRoles: { create: true, read: true, update: true, delete: true }
+          manageRoles: { create: true, read: true, update: true, delete: true },
+          featureFlags: { create: true, read: true, update: true, delete: true }
         });
         break;
       case UserRole.CREATOR:
@@ -58,7 +59,8 @@ export class AuthService {
           experiments: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
-          manageRoles: { create: false, read: false, update: false, delete: false }
+          manageRoles: { create: false, read: false, update: false, delete: false },
+          featureFlags: { create: false, read: true, update: false, delete: false }
         });
         break;
       case UserRole.USER_MANAGER:
@@ -66,7 +68,8 @@ export class AuthService {
           experiments: { create: false, read: true, update: false, delete: false },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
-          manageRoles: { create: false, read: false, update: false, delete: false }
+          manageRoles: { create: false, read: false, update: false, delete: false },
+          featureFlags: { create: false, read: true, update: false, delete: false }
         });
         break;
       case UserRole.READER:
@@ -74,7 +77,8 @@ export class AuthService {
           experiments: { create: false, read: true, update: false, delete: false },
           users: { create: false, read: true, update: false, delete: false },
           logs: { create: false, read: true, update: false, delete: false },
-          manageRoles: { create: false, read: false, update: false, delete: false }
+          manageRoles: { create: false, read: false, update: false, delete: false },
+          featureFlags: { create: false, read: true, update: false, delete: false }
         });
         break;
     }

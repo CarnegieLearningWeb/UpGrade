@@ -35,6 +35,7 @@ import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
+import { FormatDatePipe } from './pipes/format-date.pipe';
 
 @NgModule({
   imports: [
@@ -70,7 +71,7 @@ import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
     MatProgressBarModule,
     MatAutocompleteModule,
   ],
-  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe, ExperimentStatePipe],
+  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe, ExperimentStatePipe, FormatDatePipe],
   exports: [
     CommonModule,
     FormsModule,
@@ -109,7 +110,8 @@ import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 
     SharedIconsComponent,
     TruncatePipe,
-    ExperimentStatePipe
+    ExperimentStatePipe,
+    FormatDatePipe
   ]
 })
 export class SharedModule {}

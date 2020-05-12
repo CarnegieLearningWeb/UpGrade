@@ -1,0 +1,35 @@
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
+import { MatDialog } from '@angular/material';
+import { NewFlagComponent } from '../components/modal/new-flag/new-flag.component';
+
+@Component({
+  selector: 'app-feature-flags-root',
+  templateUrl: './feature-flags-root.component.html',
+  styleUrls: ['./feature-flags-root.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class FeatureFlagsRootComponent implements OnInit {
+
+  isLoadingFeatureFlags$ = this.featureFlagsService.isInitialFeatureFlagsLoading();
+  featureFlags$ = this.featureFlagsService.allFeatureFlags$;
+  constructor(
+    private featureFlagsService: FeatureFlagsService,
+    private dialog: MatDialog,
+  ) { }
+
+  ngOnInit() {
+    this.featureFlagsService.fetchAllFeatureFlags();
+  }
+
+  openNewFlagDialog() {
+    const dialogRef = this.dialog.open(NewFlagComponent, {
+      panelClass: 'new-flag-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Code will be executed after closing dialog
+    });
+  }
+
+}

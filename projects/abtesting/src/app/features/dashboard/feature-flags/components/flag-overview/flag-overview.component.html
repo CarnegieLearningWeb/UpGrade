@@ -1,0 +1,66 @@
+<form class="flag-overview" [formGroup]="overviewForm">
+  <mat-form-field class="name">
+    <input
+      class="input"
+      matInput
+      [placeholder]="'feature-flags.global-name.text' | translate"
+      formControlName="name"
+      cdkFocusInitial
+    />
+  </mat-form-field>
+
+  <mat-form-field class="key">
+    <input
+      class="input"
+      matInput
+      [placeholder]="'feature-flags.global-key.text' | translate"
+      formControlName="key"
+    />
+  </mat-form-field>
+  <mat-error class="error-message" *ngIf="keyError">
+    {{ keyError }}
+  </mat-error>
+
+  <mat-form-field class="variationType">
+    <mat-label>{{ 'feature-flags.overview.flag-variation-type.text' | translate }}</mat-label>
+    <mat-select class="input" formControlName="variationType">
+      <mat-option
+        *ngFor="let type of variationTypes"
+        [value]="type"
+      >
+        {{ type | titlecase }}
+      </mat-option>
+    </mat-select>
+    <mat-error
+      *ngIf="overviewForm.controls.variationType.hasError('required')"
+    >
+      {{ 'feature-flags.overview.flag-variation-type-error.text' | translate }}
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field class="description">
+    <input
+      class="input"
+      matInput
+      [placeholder]="'feature-flags.overview.flag-description.text' | translate"
+      formControlName="description"
+    />
+  </mat-form-field>
+
+  <div class="button-container">
+    <button
+      class="modal-btn"
+      mat-raised-button
+      (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)"
+    >
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      (click)="emitEvent(NewFlagDialogEvents.SEND_FORM_DATA)"
+    >
+      {{ 'global.next.text' | translate }}
+    </button>
+  </div>
+</form>

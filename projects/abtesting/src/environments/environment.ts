@@ -48,6 +48,8 @@ export const environment = {
     previewUsers: `${endpointApi}/previewUsers`,
     previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,
     allPartitions: `${endpointApi}/experiments/partitions`,
-    allExperimentNames: `${endpointApi}/experiments/names`
+    allExperimentNames: `${endpointApi}/experiments/names`,
+    featureFlag: `${endpointApi}/flags`,
+    updateFlagStatus: `${endpointApi}/flags/status`
   }
 };
