@@ -12,7 +12,7 @@ public class AssignedCondition {
 	private String conditionCode;
 	private Integer assignmentWeight;
 	
-	public AssignedCondition() {};
+	public AssignedCondition() {}
 	
 	
 	public AssignedCondition( String twoCharacterId, String conditionCode, String description) {

@@ -2,7 +2,7 @@ package org.upgradeplatform.responsebeans;
 
 public class ErrorResponse {
 	
-	private Object errorCode;
+	private int errorCode;
 	private String message;
 	private String type;
 
@@ -14,12 +14,20 @@ public class ErrorResponse {
 		super();
 		this.message= message;
 	}
+	
+	public ErrorResponse(int errorCode, String message, String type) {
+		super();
+		this.errorCode= errorCode;
+		this.message= message;
+		this.type= type;
+	}
+	
 
-	public Object getErrorCode() {
+	public int getErrorCode() {
 		return errorCode;
 	}
 
-	public void setErrorCode(Object errorCode) {
+	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
 	}
 
