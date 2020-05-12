@@ -39,8 +39,19 @@ public class Main {
 		            experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
 
 		                @Override
-		                public void onSuccess(@NonNull List<ExperimentsResponse> t) {
-		                    result.complete(prefix() + "retrieved " + t.size() + " experiment responses");
+		                public void onSuccess(@NonNull List<ExperimentsResponse> ers) {
+		                    experimentClient.getExperimentCondition("foo", new ResponseCallback<ExperimentsResponse>(){
+
+                                @Override
+                                public void onSuccess(@NonNull ExperimentsResponse er){
+                                    result.complete(prefix() + "retrieved " + ers.size() + " experiment responses; foo response: " + er);
+                                }
+
+                                @Override
+                                public void onError(@NonNull ErrorResponse error){
+                                    result.completeExceptionally(new Exception(prefix() + error.toString()));
+                                }
+                            });
 		                }
 
 		                @Override
