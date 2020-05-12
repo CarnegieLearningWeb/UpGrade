@@ -1,4 +1,4 @@
-import { Interfaces } from "../identifiers";
+import { Interfaces, Types } from "../identifiers";
 import fetchDataService from "../common/fetchDataService";
 
 export default async function failedExperimentPoint(
@@ -21,7 +21,7 @@ export default async function failedExperimentPoint(
         experimentId,
       };
     }
-    const response = await fetchDataService(url, token, data);
+    const response = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST);
     if (response.status) {
       return {
         type: response.data.type,

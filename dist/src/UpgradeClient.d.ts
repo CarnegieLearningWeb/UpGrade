@@ -17,4 +17,5 @@ export default class UpgradeClient {
     getExperimentCondition(experimentPoint: string, partitionId?: string): IExperimentAssignment;
     markExperimentPoint(experimentPoint: string, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint>;
     failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint>;
+    getAllFeatureFlags(): Promise<Interfaces.FeatureFlag[]>;
 }

@@ -22,7 +22,6 @@ Updates/Set the working group of the initialized user
 
 ## getAllExperimentConditions(context: string)
 Get all the experiment assignments for the initialized user  
-```upClient.getAllExperimentConditions()```  
 ```upClient.getAllExperimentConditions(context)```
 
 ## getExperimentCondition (experimentPoint: string, partitionId?: string)
@@ -39,6 +38,10 @@ Calls markExperimentPoint for experiment point and partitionId. It will use the 
 Use this function to report failure with given reason  
 ```upClient.failedExperimentPoint(experimentPoint, reason)```  
 ```upClient.failedExperimentPoint(experimentPoint, reason, experimentId)```
+
+## getAllFeatureFlags()
+Use this function to get feature flags list  
+```upClient.getAllFeatureFlags()```  
 
 # Example
 [Sample Code](https://gist.github.com/JD2455/819b178bd43fc3da376eb2d6ddc55c3b "Sample Code")
