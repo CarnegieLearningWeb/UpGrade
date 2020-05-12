@@ -1,45 +1,10 @@
 $role-background-color: #e6fce9;
 $role-text-color: #0a7319;
 
-.header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-
-  .filter-options {
-    margin-right: 10px;
-    width: 80px;
-
-    ::ng-deep .mat-form-field-underline,
-    ::ng-deep .mat-form-field-ripple {
-      background-color: unset;
-    }
-  }
-
-  .search-input {
-    font-family: 'Open Sans';
-    font-weight: 400;
-  }
-
-  button {
-    background-color: var(--blue);
-    height: 40px;
-    color: var(--white);
-    font-family: 'Open Sans';
-    font-weight: 700;
-
-    .icon {
-      margin-right: 5px;
-      vertical-align: unset;
-    }
-  }
-}
-
 .profile-container {
   display: flex;
   flex-direction: column;
-  padding: 0 4.375rem 2rem;
+  padding: 0 2.75rem 2.75rem;
 
   .title {
     margin-bottom: 0;
@@ -51,7 +16,7 @@ $role-text-color: #0a7319;
 
   .subtitle {
     display: block;
-    margin-bottom: 40px;
+    margin-bottom: 43px;
     color: var(--grey-3);
     font-family: 'Open Sans';
     font-size: var(--text-size-normal);
@@ -62,22 +27,23 @@ $role-text-color: #0a7319;
     border-radius: 10px;
     box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     background-color: var(--white);
-    padding: 2rem;
 
     .personal-information {
       display: flex;
-      margin-bottom: 30px;
+      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.1);
+      padding: 35px 34px 0;
+      height: 148px;
 
       &.normal-user {
         margin-bottom: 0;
       }
 
       .profile-pic {
-        margin-right: 30px;
+        margin-right: 20px;
         border: 1px solid var(--blue);
         border-radius: 50%;
-        width: 64px;
-        height: 64px;
+        width: 46px;
+        height: 46px;
       }
 
       .user-info {
@@ -92,10 +58,10 @@ $role-text-color: #0a7319;
         }
 
         .email {
-          color: var(--grey-3);
+          color: var(--grey-5);
           font-family: 'Open Sans';
           font-size: var(--text-size-x-small);
-          font-weight: 400;
+          font-weight: 600;
         }
 
         .role {
@@ -107,61 +73,86 @@ $role-text-color: #0a7319;
           text-align: center;
           color: $role-text-color;
           font-family: 'Open Sans';
-          font-size: var(--text-size-small);
+          font-size: var(--text-size-x-small);
           font-weight: 600;
         }
       }
     }
 
-    .users-list {
-      width: 100%;
+    .role-wrapper {
+      padding: 24px 34px 34px;
 
-      th {
-        border-color: var(--light-grey);
-        color: var(--grey-2);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
-        font-weight: 700;
+      .header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+
+        &-title {
+          font-size: var(--text-size-xx-large);
+        }
+
+        button {
+          background-color: var(--blue);
+          height: 40px;
+          color: var(--white);
+          font-family: 'Open Sans';
+          font-weight: 700;
+
+          .icon {
+            margin-right: 5px;
+            vertical-align: unset;
+          }
+        }
       }
 
-      tr.mat-footer-row,
-      tr.mat-row {
-        height: 55px;
-      }
-
-      td {
-        border-color: var(--light-grey);
-        color: var(--black-2);
+      mat-form-field,
+      .input {
+        line-height: 18px;
         font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
+        font-size: 14px;
         font-weight: 600;
       }
 
-      .mat-cell {
-        padding: 10px 5px;
-        width: 20%;
-        word-break: break-word;
-
-        &:first-of-type {
-          padding-left: 24px;
-        }
-
-        &.cdk-column-firstName,
-        &.cdk-column-lastName {
-          width: 20%;
-        }
-
-        &.cdk-column-email {
-          width: 25%;
-        }
-
-        &.cdk-column-role {
-          width: 25%;
-        }
-      }
-
-      .paginator {
+      .users-list {
         width: 100%;
+
+        th,
+        td {
+          border-color: var(--light-grey);
+          padding: 10px 5px;
+          font-family: 'Open Sans';
+          font-size: var(--text-size-x-small);
+        }
+
+        th {
+          color: var(--grey-2);
+          font-weight: 700;
+        }
+
+        tr.mat-footer-row,
+        tr.mat-row {
+          height: 55px;
+        }
+
+        td {
+          color: var(--black);
+          font-weight: 600;
+        }
+
+        .mat-cell {
+          width: 20%;
+          word-break: break-word;
+
+          &.cdk-column-email,
+          &.cdk-column-role {
+            width: 25%;
+          }
+        }
+
+        .paginator {
+          width: 100%;
+        }
       }
     }
   }

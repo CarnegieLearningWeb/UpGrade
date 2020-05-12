@@ -62,35 +62,36 @@
 
 .delete-modal,
 .experiment-general-modal,
-.new-experiment-modal {
+.new-experiment-modal,
+.new-user-modal {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
   .mat-dialog-container {
-    padding: 40px;
+    padding: 0px;
   }
 }
 
 .delete-modal {
   width: 350px;
   min-height: 192px;
+
+  .mat-dialog-container {
+    padding: 40px;
+  }
 }
 
 .experiment-general-modal {
   width: 804px;
   min-height: 294px;
-
-  .mat-dialog-container {
-    padding: 0;
-  }
 }
 
 .new-experiment-modal {
   width: 844px;
+}
 
-  .mat-dialog-container {
-    padding: 0;
-  }
+.new-user-modal {
+  width: 805px;
 }
 
 // Common style for modal button

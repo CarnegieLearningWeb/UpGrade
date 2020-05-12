@@ -98,7 +98,7 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
 
   openNewUserModal() {
     const dialogRef = this._matDialog.open(NewUserComponent, {
-      width: '350px',
+      panelClass: 'new-user-modal',
       disableClose: false,
       data: { users: this.allUsers.data }
     });

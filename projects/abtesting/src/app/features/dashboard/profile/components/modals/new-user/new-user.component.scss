@@ -1,7 +1,33 @@
+.title {
+  display: block;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
+  padding: 40px 40px 0;
+  height: 108px;
+  color: var(--black-2);
+  font-family: 'Open Sans';
+  font-size: var(--text-size-xxx-large);
+  font-weight: 700;
+}
+
 .content {
   .user-form {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 15px 40px 0;
+
+    mat-form-field {
+      width: 45%;
+      color: var(--black-2);
+      font-family: 'Open Sans';
+      font-size: var(--text-size-small);
+      font-weight: 600;
+    }
+
+    .input {
+      line-height: 18px;
+      font-family: 'Open Sans';
+    }
 
     .validation-message {
       display: block;
@@ -12,7 +38,8 @@
   }
 }
 
-.mat-dialog-actions {
+.action-buttons {
+  display: flex;
   justify-content: flex-end;
-  margin-bottom: -8px;
+  padding: 14px 40px 34px;
 }
