@@ -34,22 +34,23 @@ export class FlagVariationsComponent implements OnChanges {
       defaultOnVariation: [null, Validators.required],
       defaultOffVariation: [null, Validators.required]
     });
-    if (changes.variationType && this.variationType && !this.flagInfo) {
-      if (this.variationType === VariationTypes.BOOLEAN) {
-        this.variation.push(this.addVariations('true'));
-        this.variation.push(this.addVariations('false'));
-      } else if (this.variationType === VariationTypes.CUSTOM) {
-        this.variation.push(this.addVariations());
+
+    if (this.flagInfo) {
+      if (this.variationType === this.flagInfo.variationType) {
+        this.flagInfo.variations.forEach(variation => {
+          this.variation.push(this.addVariations(variation.value, variation.name, variation.description));
+        });
+        this.flagVariationsForm.patchValue({
+          defaultOnVariation: this.featureFlagService.getActiveVariation(this.flagInfo, true),
+          defaultOffVariation: this.featureFlagService.getActiveVariation(this.flagInfo, false)
+        });
+      } else {
+        this.setVariationFormControl();
       }
     }
-    if (this.flagInfo) {
-      this.flagInfo.variations.forEach(variation => {
-        this.variation.push(this.addVariations(variation.value, variation.name, variation.description));
-      });
-      this.flagVariationsForm.patchValue({
-        defaultOnVariation: this.featureFlagService.getActiveVariation(this.flagInfo, true),
-        defaultOffVariation: this.featureFlagService.getActiveVariation(this.flagInfo, false)
-      });
+
+    if (changes.variationType && this.variationType && !this.flagInfo) {
+      this.setVariationFormControl();
     }
     this.updateView();
     this.flagVariationsForm.get('variations').valueChanges.subscribe(change => {
@@ -76,6 +77,15 @@ export class FlagVariationsComponent implements OnChanges {
   removeVariation(groupIndex: number) {
     this.variation.removeAt(groupIndex);
     this.updateView();
+  }
+
+  setVariationFormControl() {
+    if (this.variationType === VariationTypes.BOOLEAN) {
+      this.variation.push(this.addVariations('true'));
+      this.variation.push(this.addVariations('false'));
+    } else if (this.variationType === VariationTypes.CUSTOM) {
+      this.variation.push(this.addVariations());
+    }
   }
 
   updateView() {

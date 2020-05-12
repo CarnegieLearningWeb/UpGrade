@@ -47,7 +47,7 @@ export interface FeatureFlag {
   name: string;
   key: string;
   description: string;
-  variationType: number;
+  variationType: string;
   status: boolean;
   variations: FlagVariation[];
 }
