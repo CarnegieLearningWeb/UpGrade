@@ -104,6 +104,6 @@ export default class UpgradeClient {
 
     async failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint> {
         this.validateClient();
-        return await failedExperimentPoint(UpgradeClient.api.failedExperimentPoint, this.token, experimentPoint, reason, experimentId);
+        return await failedExperimentPoint(UpgradeClient.api.failedExperimentPoint, this.token, experimentPoint, reason, this.userId, experimentId);
     }
 }

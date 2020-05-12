@@ -29,8 +29,8 @@ import org.upgradeplatform.utils.APIService;
 public class ExperimentClient {
 
 	private List<ExperimentsResponse> allExperiments;
-	private String userId;
-	APIService apiService;
+	private final String userId;
+	private final APIService apiService;
 
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
 		this.userId = userId;
