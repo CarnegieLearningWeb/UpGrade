@@ -26,51 +26,35 @@ import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
 
-public class ExperimentClient {
+public class ExperimentClient implements AutoCloseable {
 
 	private List<ExperimentsResponse> allExperiments;
-	private String userId;
-	APIService apiService;
+	private final String userId;
+	private final APIService apiService;
 
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
+        if (isStringNull(userId)) {
+            throw new IllegalArgumentException(INVALID_STUDENT_ID);
+		}
 		this.userId = userId;
+
 		this.apiService = new APIService(baseUrl, authToken);
 	}
 
-	// To close jax-rs client connection open when calling ExperimentClient constructor;
-	public void close() {
-		this.apiService.close();
-	}
-
-	private String validateRequestData(String userId, String authToken, String baseUrl) {
-		if (isStringNull(baseUrl)) {
-			return INVALID_BASE_URL;
-		} else if (isStringNull(authToken)) {
-			return INVALID_AUTH_TOKEN;
-		} else if (isStringNull(authToken)) {
-			return INVALID_STUDENT_ID;
-		}
-
-		return "";
-	}
+    // To close jax-rs client connection open when calling ExperimentClient constructor;
+    @Override
+    public void close() {
+        this.apiService.close();
+    }
 
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
-
-		// Check if request has a valid data
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
-				this.apiService.getBaseUrl());
-		if (validateData != "") {
-			callbacks.onError(new ErrorResponse(validateData));
-			return;
-		}
-
 		// Build a request object and prepare invocation method
 		InitRequest initRequest = new InitRequest(this.userId, group, null);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<InitRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -93,20 +77,11 @@ public class ExperimentClient {
 	}
 
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
-
-		// Check if request has a valid data
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
-				this.apiService.getBaseUrl());
-		if (validateData != "") {
-			callbacks.onError(new ErrorResponse(validateData));
-			return;
-		}
-
 		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<InitRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -129,19 +104,11 @@ public class ExperimentClient {
 	}
 
 	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
-
-		// Check if request has a valid data
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
-				this.apiService.getBaseUrl());
-		if (validateData != "") {
-			callbacks.onError(new ErrorResponse(validateData));
-			return;
-		}
 		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<ExperimentRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -172,27 +139,21 @@ public class ExperimentClient {
 
 	public void getExperimentCondition(String experimentPoint, String experimentId,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
-
-		// Check if request has a valid data
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
-				this.apiService.getBaseUrl());
-		if (validateData != "") {
-			callbacks.onError(new ErrorResponse(validateData));
-			return;
-		}
-
 		if (this.allExperiments != null) {
 
-			ExperimentsResponse experimentsResponse = allExperiments.stream()
+			Optional<ExperimentsResponse> optExperimentsResponse = allExperiments.stream()
 					.filter(t -> isStringNull(experimentId) == false
 					? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
 							: t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
-					.findFirst().get();
+					.findFirst();
 
-			if(experimentsResponse == null) {
-				if (callbacks != null)
+			if( ! optExperimentsResponse.isPresent()) {
+				if (callbacks != null) {
 					callbacks.onSuccess(new ExperimentsResponse());
 			}
+				return;
+			}
+			ExperimentsResponse experimentsResponse = optExperimentsResponse.get();
 
 			AssignedCondition assignedCondition = new AssignedCondition(
 					experimentsResponse.getAssignedCondition().getTwoCharacterId(),
@@ -260,15 +221,6 @@ public class ExperimentClient {
 
 	public void markExperimentPoint(final String experimentPoint, String experimentId,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-
-		// Check if request has a valid data
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
-				this.apiService.getBaseUrl());
-		if (validateData != "") {
-			callbacks.onError(new ErrorResponse(validateData));
-			return;
-		}
-
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
 				experimentId);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
@@ -276,7 +228,7 @@ public class ExperimentClient {
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<MarkExperimentRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -313,15 +265,6 @@ public class ExperimentClient {
 
 	public void failedExperimentPoint(final String experimentPoint, final String experimentId, final String reason,
 			final ResponseCallback<FailedExperiment> callbacks) {
-
-		// Check if request has a valid data
-		String validateData = validateRequestData(this.userId, this.apiService.getAuthToken(),
-				this.apiService.getBaseUrl());
-		if (validateData != "") {
-			callbacks.onError(new ErrorResponse(validateData));
-			return;
-		}
-
 		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId,
 				experimentPoint, experimentId, reason);
 		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
@@ -329,7 +272,7 @@ public class ExperimentClient {
 		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<FailedExperimentPointRequest>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
 				new InvocationCallback<Response>() {
 
 			@Override

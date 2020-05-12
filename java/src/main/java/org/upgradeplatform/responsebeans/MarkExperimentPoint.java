@@ -43,7 +43,7 @@ public class MarkExperimentPoint {
 		this.id = id;
 	}
 
-	public MarkExperimentPoint() {};
+	public MarkExperimentPoint() {}
 	
 	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint) {
 		super();
