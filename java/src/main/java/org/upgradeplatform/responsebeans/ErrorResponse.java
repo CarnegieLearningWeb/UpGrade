@@ -47,4 +47,9 @@ public class ErrorResponse {
 	public void setType(String type) {
 		this.type = type;
 	}
+
+    @Override
+    public String toString(){
+        return "ErrorResponse [errorCode=" + errorCode + ", message=" + message + ", type=" + type + "]";
+    }
 }
