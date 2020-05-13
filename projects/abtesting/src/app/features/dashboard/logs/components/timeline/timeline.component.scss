@@ -2,6 +2,7 @@ $red: #fff0f0;
 $light-blue: #e9f3ff;
 $yellow: #fff1de;
 $timeline-background-color: #eaf0f8;
+$action-msg-font-size: 15px;
 
 .timeline {
   position: relative;
@@ -10,8 +11,8 @@ $timeline-background-color: #eaf0f8;
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 5%;
-    margin-left: -3px;
+    left: 2%;
+    margin-left: -5px;
     background-color: $timeline-background-color;
     width: 1px;
     content: '';
@@ -19,14 +20,18 @@ $timeline-background-color: #eaf0f8;
 
   &-container {
     position: relative;
-    left: 5%;
+    left: 2%;
     margin-bottom: 30px;
     background-color: inherit;
-    padding: 0 15px 0 30px;
-    width: 95%;
+    padding: 0 0 0 30px;
+    width: 97%;
 
     &::after {
       left: -16px;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
     }
 
     .icon {
@@ -38,8 +43,8 @@ $timeline-background-color: #eaf0f8;
       justify-content: center;
       z-index: 1;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 25px;
+      height: 25px;
       content: '';
 
       &:first-of-type {
@@ -76,7 +81,9 @@ $timeline-background-color: #eaf0f8;
         padding-bottom: 3px;
         width: 125px;
         word-wrap: break-word;
+        color: var(--black);
         font-family: 'Open Sans';
+        font-size: var(--text-size-normal);
         font-weight: 600;
       }
 
@@ -91,16 +98,22 @@ $timeline-background-color: #eaf0f8;
 
         &-msg {
           margin-right: 5px;
+          color: var(--black);
+          font-family: 'Open Sans';
+          font-size: $action-msg-font-size;
+          font-weight: 600;
 
           &-error {
             word-break: break-all;
+            font-family: 'Open Sans';
+            font-size: $action-msg-font-size;
+            font-weight: 600;
           }
         }
       }
 
       .accordion {
         flex-grow: 1;
-        margin-top: 2px;
         max-width: 100%;
 
         .expansion-header {
@@ -110,11 +123,14 @@ $timeline-background-color: #eaf0f8;
         .view-diff {
           margin-left: 15px;
           color: var(--blue);
+          font-family: 'Open Sans';
           font-size: var(--text-size-x-small);
+          font-weight: 600;
         }
 
         .diff-container {
           color: var(--grey);
+          font-family: 'Open Sans';
         }
       }
 
@@ -123,6 +139,12 @@ $timeline-background-color: #eaf0f8;
         align-self: center;
         margin-left: 5px;
         text-align: right;
+        font-family: 'Open Sans';
+      }
+
+      .error-log-msg {
+        font-family: 'Open Sans';
+        font-weight: 400;
       }
     }
   }
