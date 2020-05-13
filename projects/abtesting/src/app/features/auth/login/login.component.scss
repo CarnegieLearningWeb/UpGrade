@@ -1,6 +1,6 @@
 $white-background: #f0f2f9;
 $app-title-font-size: 2.25rem;
-$login-info-text-color: #8f9bb3;
+$login-info-text-color: #6e6f72;
 
 .login-container {
   display: flex;
@@ -15,56 +15,65 @@ $login-info-text-color: #8f9bb3;
     align-items: center;
     border-radius: 6px;
     background-color: var(--white);
-    width: 720px;
-    height: 640px;
+    width: 653px;
+    height: 664px;
 
     &-info-container {
       display: flex;
       position: relative;
       justify-content: center;
-      height: 458px;
+      height: 489px;
 
       .login-info {
         position: absolute;
-        top: 10%;
+        top: 40px;
         text-align: center;
 
         &__title {
           display: block;
-          color: var(--black-2);
+          color: var(--white);
           font-family: 'Open Sans';
           font-size: $app-title-font-size;
-          font-weight: 700;
+          font-weight: 800;
         }
 
         &__description {
           display: block;
-          color: var(--black-2);
+          margin-top: 8px;
+          color: var(--white);
           font-family: 'Open Sans';
           font-size: var(--text-size-normal);
-          font-weight: 600;
+          font-weight: 700;
         }
       }
     }
 
     .google-sign-in-btn {
-      margin: 54px 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 49px 0 12px;
       border: solid 1px var(--blue);
       border-radius: 4px;
       background-color: var(--blue);
-      padding: 10px 30px;
+      padding: 0;
       width: 400px;
+      height: 48px;
       color: var(--white);
       font-family: 'Open Sans';
       font-size: var(--text-size-normal);
-      font-weight: 600;
+      font-weight: 700;
+
+      ::ng-deep svg {
+        margin-right: 11px;
+      }
     }
 
     .info {
       color: $login-info-text-color;
       font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 600;
+      font-size: var(--text-size-x-small);
+      font-weight: 700;
 
       &--terms {
         color: var(--blue);
