@@ -56,5 +56,9 @@ public class ExperimentsResponse {
 		this.assignedCondition = assignedCondition;
 	}
 
-	
+    @Override
+    public String toString(){
+        return "ExperimentsResponse [expId=" + expId + ", expPoint=" + expPoint + ", twoCharacterId=" + twoCharacterId
+               + ", assignedCondition=" + assignedCondition + "]";
+    }
 }
