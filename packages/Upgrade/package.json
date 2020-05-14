@@ -13,7 +13,8 @@
     "test:coverage": "npm start test.coverage",
     "seed": "npm start db.seed",
     "drop": "npm start db.drop",
-    "help": "npm start help"
+    "help": "npm start help",
+    "generate-data": "npm run build && node dist/src/dataGenerator/index.js"
   },
   "keywords": [],
   "author": "",
