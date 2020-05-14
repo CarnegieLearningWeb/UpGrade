@@ -180,5 +180,6 @@
   "profile.new-user.email-required-error.text": "Please enter email",
   "profile.new-user.email-exist-error.text": "Email is already exist",
   "profile.new-user.role-required-error.text": "Please choose user role",
-  "profile.new-user.add-btn.text": "ADD"
+  "profile.new-user.add-btn.text": "ADD",
+  "profile.authorization.text": "Authorization"
 }

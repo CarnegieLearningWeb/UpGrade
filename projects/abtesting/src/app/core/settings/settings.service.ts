@@ -6,7 +6,8 @@ import { Language } from './store/settings.model';
 import {
   selectSettingsStickyHeader,
   selectSettingsLanguage,
-  selectEffectiveTheme
+  selectEffectiveTheme,
+  selectToCheckAuth
 } from './store/settings.selectors';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class SettingsService {
   stickyHeader$ = this.store$.pipe(select(selectSettingsStickyHeader));
   language$ = this.store$.pipe(select(selectSettingsLanguage));
   theme$ = this.store$.pipe(select(selectEffectiveTheme));
+  toCheckAuth$ = this.store$.pipe(select(selectToCheckAuth));
 
   changeTheme(theme) {
     this.store$.dispatch(SettingsActions.actionSettingsChangeTheme({ theme }));
@@ -33,5 +35,9 @@ export class SettingsService {
     this.store$.dispatch(
       SettingsActions.actionSettingsChangeLanguage({ language })
     );
+  }
+
+  setToCheckAuth(value: boolean) {
+    this.store$.dispatch(SettingsActions.actionSetToCheckAuth({ toCheckAuth: value }));
   }
 }

@@ -7,7 +7,9 @@ import {
   actionSettingsChangeHour,
   actionSettingsChangeLanguage,
   actionSettingsChangeStickyHeader,
-  actionSettingsChangeTheme
+  actionSettingsChangeTheme,
+  actionSetToCheckAuthSuccess,
+  actionGetToCheckAuthSuccess
 } from './settings.actions';
 import { Action, createReducer, on } from '@ngrx/store';
 
@@ -20,7 +22,8 @@ export const initialState: SettingsState = {
   pageAnimations: true,
   pageAnimationsDisabled: false,
   elementsAnimations: true,
-  hour: 0
+  hour: 0,
+  toCheckAuth: null,
 };
 
 const reducer = createReducer(
@@ -41,6 +44,14 @@ const reducer = createReducer(
       ...state,
       pageAnimationsDisabled,
       pageAnimations: false
+    })
+  ),
+  on(
+    actionSetToCheckAuthSuccess,
+    actionGetToCheckAuthSuccess,
+    (state, { toCheckAuth }) => ({
+      ...state,
+      toCheckAuth
     })
   )
 );

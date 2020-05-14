@@ -49,6 +49,7 @@ $role-text-color: #0a7319;
       .user-info {
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
 
         .name {
           color: var(--black-2);
@@ -76,6 +77,15 @@ $role-text-color: #0a7319;
           font-size: var(--text-size-x-small);
           font-weight: 600;
         }
+      }
+
+      .authentication-toggle {
+        position: relative;
+        bottom: 17px;
+        align-self: center;
+        font-family: 'Open Sans';
+        font-size: var(--text-size-normal);
+        font-weight: 600;
       }
     }
 

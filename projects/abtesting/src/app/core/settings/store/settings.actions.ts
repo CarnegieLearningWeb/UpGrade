@@ -39,3 +39,31 @@ export const actionSettingsChangeHour = createAction(
   '[Settings] Change Hours',
   props<{ hour: number }>()
 );
+
+// TODO: Define proper place for this
+export const actionGetToCheckAuth = createAction(
+  '[Settings] Get To Check Auth',
+);
+
+export const actionGetToCheckAuthSuccess = createAction(
+  '[Settings] Get To Check Auth Success',
+  props<{ toCheckAuth: boolean }>()
+);
+
+export const actionGetToCheckAuthFailure = createAction(
+  '[Settings] Get To Check Auth Failure',
+);
+
+export const actionSetToCheckAuth = createAction(
+  '[Settings] Set To Check Auth',
+  props<{ toCheckAuth: boolean }>()
+);
+
+export const actionSetToCheckAuthSuccess = createAction(
+  '[Settings] Set To Check Auth Success',
+  props<{ toCheckAuth: boolean }>()
+);
+
+export const actionSetToCheckAuthFailure = createAction(
+  '[Settings] Set To Check Auth Failure',
+);

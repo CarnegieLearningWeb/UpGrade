@@ -5,6 +5,7 @@ import * as experimentUserActions from '../../experiment-users/store/experiment-
 import * as experimentActions from '../../experiments/store/experiments.actions';
 import * as previewUsersActions from '../../preview-users/store/preview-users.actions';
 import * as usersActions from '../../users/store/users.actions';
+import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
@@ -129,7 +130,8 @@ export class AuthEffects {
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
             usersActions.actionFetchUsers(),
-            experimentActions.actionFetchExperimentContext()
+            experimentActions.actionFetchExperimentContext(),
+            settingsActions.actionGetToCheckAuth()
           ];
           if (user.role) {
             this.authService.setUserPermissions(user.role);

@@ -7,6 +7,7 @@ import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { Subscription, Observable } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { NewUserComponent } from '../components/modals/new-user/new-user.component';
+import { SettingsService } from '../../../../core/settings/settings.service';
 
 @Component({
   selector: 'app-profile-root',
@@ -26,6 +27,7 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
   currentUser: User;
   currentUserSub: Subscription;
   searchString: string;
+  toCheckAuth$ = this.settingsService.toCheckAuth$;
 
   private paginator: MatPaginator;
   private sort: MatSort;
@@ -42,7 +44,8 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
     private usersService: UsersService,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private _matDialog: MatDialog
+    private _matDialog: MatDialog,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit() {
@@ -106,6 +109,10 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       // Do action after closing dialog
     });
+  }
+
+  changeAuthenticationFlag(event: any) {
+    this.settingsService.setToCheckAuth(event.checked);
   }
 
   ngOnDestroy() {
