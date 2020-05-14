@@ -29,7 +29,7 @@ module "aws_lambda_function" {
   prefix                = var.prefix 
   app_version           = var.app_version 
   lambda_path           = "../../packages/Schedular"  
-  output_path           = "../environments/lambda" 
+  output_path           = "../environments/${var.current_directory}/.terraform"  
   function_name         = "Schedule" 
   function_handler      = "schedule.schedule"
   runtime               =  "nodejs10.x"
