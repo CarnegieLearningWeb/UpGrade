@@ -1,7 +1,7 @@
 resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {  
   name                = "${var.environment}-${var.prefix}-experiment-app"
   application         = var.ebs_app_name
-  solution_stack_name = "64bit Amazon Linux 2018.03 v2.14.3 running Docker 18.09.9-ce"
+  solution_stack_name = "64bit Amazon Linux 2 v3.0.1 running Docker"
   setting {
     namespace = "aws:ec2:vpc"
     name      = "VPCId"
