@@ -1,8 +1,9 @@
 ### terraform script for creating infrastructure for upgrade and setting up CICD pipeline using AWS codepipeline
 
 
-# Before you use...
+# Pre-requsites...
 - Download and install [Terraform](https://www.terraform.io/downloads.html) on your system.
+- Make sure you know basic terraform commands like `plan`, `init`, `apply` passing variable file using `--var-file`. 
 - Install & Configure [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html) on your system.
 - Setup a aws provider profile using `aws configure`
 - Create a s3 Bucket to store `tfstate` files remotely. We recommend enable versioning on that bucket.
@@ -10,11 +11,11 @@
 
 >   aws s3api put-bucket-versioning --bucket YOUR_BACKEND_TF-STATE_BUCKET --versioning-configuration Status=Enabled
 
-`Note: Make sure to replace this bucket name with existing bucket inside environments/**/backend.tf & core/backend.tf`
+`Note: Make sure to replace this bucket name with existing bucket inside environments/**/backend.tf & core/backend.tf after cloning repo as shown below.`
 
 
 
-Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experiment-service.git` and then do `cd terraform`
+Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experiment-service.git` and then do `cd educational-experiment-service/terraform`
 
 
 ### `terraform` top-level directory layout explanation 
@@ -41,7 +42,7 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
           ├── tfvars.sample                 # sample variables file
           
  
- Generate ssh key using `ssh-keygen -f mykey` (if you generate it with a different name, make sure to replace variables accordingly )
+ Generate ssh key using `ssh-keygen` (if you generate it with a different name, make sure to replace variables accordingly inside main.tf of respective environment)
  
  
 ### You need to run this project in 2 phase.
@@ -51,17 +52,20 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
     
  
 ### CORE RESOURCES
-- under the `core` directory change the bucket name with the one you created for storing tfstate. 
+- inside the `core/backend.tf` file change the bucket name with the one you created for storing tfstate & change aws profile. 
+- Replace aws profile name in core.tf provider block.
 - add var.tfvars file using sample var file. 
-- use `terraform init`to initialize the project.
-- use `terraform apply`to create the core resources.
+- use `terraform init`to initialize the project inside `core` directory .
+- use `terraform apply`to create the core resources `core` directory.(You can pass .tfvars file using `--var-file` option with terraform apply command.) 
+- Terraform will show the list of resources its going to create.. Review them and enter `yes`.
 
 ### Env specific resources
  
-- under the `environment/**` directory change the bucket name with the one you created for storing tfstate. 
-- add var.tfvars file using sample var file. 
+- inside the `environment/**/backend.tf` file change the bucket name with the one you created for storing tfstate & change the aws profile. 
+- add var.tfvars file using sample var file. Description of [variables](#variables)
 - use `terraform init`to initialize the project.
 - use `terraform apply`to create the core resources. (You can pass .tfvars file using `--var-file` option with terraform apply command. ) 
+- Terraform will show the list of resources its going to create.. Review them and enter `yes`.
 
 **note: If you change the output_path, Make sure the path exist. Script will generate a zip of a serverless function and store it on output_path.**
  
@@ -87,7 +91,11 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
     - http://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html
     
  
- # variables
+ ### variables
+ `Note:  The variables marked as bold must be changed to create new environments.`
+ 
+ `Note:  The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using  comnbination of your org name with upgrade.`
+ 
  | Name | Description | Type |
 |------|-------------|-------------|
 | **current_directory** | name of the folder holding main.tf| varchar|
@@ -115,7 +123,6 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
 | build_compute_type | AWS CODEBUILD Compute type| varchar|
 | privileged_mode | codebuild priviledge mode | number|
 
-`Note:  The variables marked as bold must be changed to create new environments.`
 
 
 ## Outputs
