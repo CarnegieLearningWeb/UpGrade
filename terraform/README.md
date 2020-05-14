@@ -53,7 +53,7 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
  
 ### CORE RESOURCES
 - inside the `core/backend.tf` file change the bucket name with the one you created for storing tfstate & change aws profile. 
-- Replace aws proifle name in core.tf provider block.
+- Replace aws profile name in core.tf provider block.
 - add var.tfvars file using sample var file. 
 - use `terraform init`to initialize the project inside `core` directory .
 - use `terraform apply`to create the core resources `core` directory.(You can pass .tfvars file using `--var-file` option with terraform apply command.) 
@@ -94,7 +94,7 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
  ### variables
  `Note:  The variables marked as bold must be changed to create new environments.`
  
- `Note:  The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using  comnbination of your org name with updgrade.`
+ `Note:  The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using  comnbination of your org name with upgrade.`
  
  | Name | Description | Type |
 |------|-------------|-------------|
