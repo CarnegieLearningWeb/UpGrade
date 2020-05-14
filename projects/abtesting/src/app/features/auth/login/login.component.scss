@@ -1,5 +1,4 @@
 $white-background: #f0f2f9;
-$app-title-font-size: 2.25rem;
 $login-info-text-color: #6e6f72;
 
 .login-container {
@@ -32,18 +31,12 @@ $login-info-text-color: #6e6f72;
         &__title {
           display: block;
           color: var(--white);
-          font-family: 'Open Sans';
-          font-size: $app-title-font-size;
-          font-weight: 800;
         }
 
         &__description {
           display: block;
           margin-top: 8px;
           color: var(--white);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-normal);
-          font-weight: 700;
         }
       }
     }
@@ -60,9 +53,6 @@ $login-info-text-color: #6e6f72;
       width: 400px;
       height: 48px;
       color: var(--white);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-normal);
-      font-weight: 700;
 
       ::ng-deep svg {
         margin-right: 11px;
@@ -71,9 +61,6 @@ $login-info-text-color: #6e6f72;
 
     .info {
       color: $login-info-text-color;
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 700;
 
       &--terms {
         color: var(--blue);

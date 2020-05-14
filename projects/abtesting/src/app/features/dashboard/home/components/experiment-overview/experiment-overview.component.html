@@ -1,8 +1,8 @@
 <form class="experiment-overview" [formGroup]="overviewForm">
-  <mat-form-field class="name">
+  <mat-form-field class="ft-14-600 name">
     <input
       matInput
-      class="input"
+      class="ft-14-400"
       [placeholder]="
         'home.new-experiment.overview.name.placeHolder' | translate
       "
@@ -11,10 +11,10 @@
     />
   </mat-form-field>
 
-  <mat-form-field class="description">
+  <mat-form-field class="ft-14-600 description">
     <input
       matInput
-      class="input"
+      class="ft-14-400"
       [placeholder]="
         'home.new-experiment.overview.description.placeHolder' | translate
       "
@@ -23,9 +23,9 @@
   </mat-form-field>
 
   <div class="property-container">
-    <mat-form-field class="unit-of-assignment">
+    <mat-form-field class="ft-14-600 unit-of-assignment">
       <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
-      <mat-select class="input" formControlName="unitOfAssignment">
+      <mat-select class="ft-14-400" formControlName="unitOfAssignment">
         <mat-option
           *ngFor="let unitOfAssignment of unitOfAssignments"
           [value]="unitOfAssignment.value"
@@ -40,9 +40,9 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field class="group-type" *ngIf="unitOfAssignmentValue">
+    <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
       <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
-      <mat-select class="input" formControlName="groupType">
+      <mat-select class="ft-14-400" formControlName="groupType">
         <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value | titlecase }}</mat-option>
       </mat-select>
       <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
@@ -51,12 +51,12 @@
     </mat-form-field>
 
     <mat-form-field
-      class="group-type"
+      class="ft-14-600 group-type"
       *ngIf="groupTypeValue"
     >
       <input
         matInput
-        class="input"
+        class="ft-14-400"
         [placeholder]="
           'global.group-custom-type.placeHolder' | translate
         "
@@ -68,9 +68,9 @@
     </mat-form-field>
   </div>
 
-  <mat-form-field class="consistency-rule">
+  <mat-form-field class="ft-14-600 consistency-rule">
     <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
-    <mat-select class="input" formControlName="consistencyRule">
+    <mat-select class="ft-14-400" formControlName="consistencyRule">
       <mat-option
         *ngFor="let consistencyRule of consistencyRules"
         [value]="consistencyRule.value"
@@ -85,7 +85,7 @@
     </mat-error>
   </mat-form-field>
 
-  <mat-form-field class="chips">
+  <mat-form-field class="ft-14-600 chips">
     <mat-chip-list #contextList aria-label="Context" formControlName="context" >
       <mat-chip
         *ngFor="let context of contexts.value"
@@ -119,7 +119,7 @@
     </mat-error>
   </mat-form-field>
 
-  <mat-form-field class="chips">
+  <mat-form-field class="ft-14-600 chips">
     <mat-chip-list #tagsList aria-label="Tags">
       <mat-chip
         *ngFor="let experimentTag of tags.value"

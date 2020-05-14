@@ -1,5 +1,5 @@
 <div class="table-container">
-  <span class="title">{{ 'home.view-experiment.marked-experiment-point-by-condition.title.text' | translate }}</span>
+  <span class="ft-24-700 title">{{ 'home.view-experiment.marked-experiment-point-by-condition.title.text' | translate }}</span>
   <div class="data">
     <div class="enrollment-condition-table-container">
       <app-table-row
@@ -13,16 +13,16 @@
 
     <div class="enrollment-statistic">
       <div class="enrollment-statistic__unique">
-        <span class="title">
+        <span class="ft-14-600 title">
           {{ 'home.view-experiment.global.users-excluded.text' | translate }}
         </span>
-        <span class="numbers">{{ experiment.stat.userExcluded }}</span>
+        <span class="ft-30-700 numbers">{{ experiment.stat.userExcluded }}</span>
       </div>
       <div class="enrollment-statistic__class" *ngIf="experiment.assignmentUnit === AssignmentUnit.GROUP">
-        <span class="title">
+        <span class="ft-14-600 title">
           {{ 'home.view-experiment.global.group-excluded.text' | translate }}
         </span>
-        <span class="numbers">{{ experiment.stat.groupExcluded }}</span>
+        <span class="ft-30-700 numbers">{{ experiment.stat.groupExcluded }}</span>
       </div>
     </div>
   </div>

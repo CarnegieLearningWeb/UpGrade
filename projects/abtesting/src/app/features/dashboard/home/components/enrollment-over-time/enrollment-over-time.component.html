@@ -1,8 +1,8 @@
 <div class="enrollment-over-time">
-  <span class="enrollment-over-time__title">{{ 'home.view-experiment.marked-over-time.text' | translate }}</span>
+  <span class="ft-24-700 enrollment-over-time__title">{{ 'home.view-experiment.marked-over-time.text' | translate }}</span>
   <div class="enrollment-filters">
     <mat-form-field>
-      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
       <mat-select
         [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
         [(ngModel)]="selectedGroupFilter"
@@ -18,7 +18,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-conditions.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-conditions.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedCondition"
         multiple
@@ -43,7 +43,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedPartition"
         multiple
@@ -68,7 +68,7 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label class="dropdown-label">{{ 'home.view-experiment.graph-time.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-time.text' | translate }}</mat-label>
       <mat-select
         [(ngModel)]="selectedDateFilter"
         (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
@@ -109,16 +109,16 @@
 
       <div class="enrollment-statistic">
         <div class="enrollment-statistic__unique">
-          <span class="title">
+          <span class="ft-18-600 title">
             {{ 'home.view-experiment.enrollment-over-time.unique-enrolled.text' | translate }}
           </span>
-          <span class="numbers">{{ uniqueEnrolled }}</span>
+          <span class="ft-36-700 numbers">{{ uniqueEnrolled }}</span>
         </div>
         <div class="enrollment-statistic__class" [ngClass]="{'group-enabled': selectedGroupFilter !== 'Individual'}">
-          <span class="title">
+          <span class="ft-18-600 title">
             {{ 'home.view-experiment.enrollment-over-time.group-enrolled.text' | translate }}
           </span>
-          <span class="numbers">{{ groupEnrolled }}</span>
+          <span class="ft-36-700 numbers">{{ groupEnrolled }}</span>
         </div>
       </div>
     </div>

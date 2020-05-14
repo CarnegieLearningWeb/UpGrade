@@ -1,6 +1,7 @@
 <form class="experiment-schedule-form" [formGroup]="experimentScheduleForm">
 
   <mat-checkbox
+    class="ft-14-700"
     color="primary"
     formControlName="startExperimentAutomatically"
   >
@@ -9,12 +10,12 @@
 
   <div class="date-picker-container">
     <mat-label
-      class="starts-on-title"
+      class="ft-14-600 starts-on-title"
       [ngClass]="{'starts-on-title--disable': !experimentScheduleForm.get('startExperimentAutomatically').value}"
     >
       {{ 'home.new-experiment.schedule.start-on.text' | translate }}
     </mat-label>
-    <mat-form-field>
+    <mat-form-field class="ft-14-700">
       <input
         matInput
         readonly
@@ -28,17 +29,17 @@
     </mat-form-field>
   </div>
 
-  <mat-checkbox color="primary" formControlName="endExperimentAutomatically">
+  <mat-checkbox class="ft-14-700" color="primary" formControlName="endExperimentAutomatically">
     {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
   </mat-checkbox>
 
   <mat-radio-group formControlName="endCondition">
 
     <div class="date-picker-container">
-      <mat-radio-button [value]="EndExperimentCondition.END_ON_DATE" color="primary">
+      <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_ON_DATE" color="primary">
         {{ 'home.new-experiment.schedule.end-on.text' | translate }}
       </mat-radio-button>
-      <mat-form-field>
+      <mat-form-field class="ft-14-700">
           <input
             matInput
             readonly
@@ -53,11 +54,11 @@
     </div>
 
     <div class="experiment-end-criteria">
-      <mat-radio-button [value]="EndExperimentCondition.END_CRITERIA" color="primary">
+      <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_CRITERIA" color="primary">
         {{ 'home.new-experiment.schedule.end-criteria.text' | translate }}
       </mat-radio-button>
       <div class="end-criteria">
-        <mat-form-field>
+        <mat-form-field class="ft-14-700">
           <input
             type="number"
             matInput
@@ -67,7 +68,7 @@
           />
         </mat-form-field>
         <span
-          class="group-type"
+          class="ft-14-400 group-type"
           [innerHTML]="!!experimentScheduleForm.get('groupCount').value && groupType
             ? ('home.new-experiment.schedule.user-count-per-group.title.text' | translate: { groupType: groupType })
             : ('home.new-experiment.schedule.user-count.title.text' | translate)"
@@ -75,7 +76,7 @@
         ></span>
       </div>
       <div class="end-criteria" *ngIf="groupType">
-        <mat-form-field>
+        <mat-form-field class="ft-14-700">
           <input
             type="number"
             matInput
@@ -85,7 +86,7 @@
           />
         </mat-form-field>
         <span
-          class="group-type"
+          class="ft-14-400 group-type"
           [innerHTML]="'home.new-experiment.schedule.group-count.text' | translate: { groupType: groupType }"
           [ngClass]="groupTypeValue ? 'group-type--enable': 'group-type--disable'"
         ></span>
@@ -95,27 +96,27 @@
   </mat-radio-group>
 </form>
 <span
-  class="validation-message"
+  class="ft-14-600 validation-message"
   *ngIf="experimentScheduleForm.errors?.dateOfExperimentEndError"
   [innerHTML]="'home.new-experiment.schedule-end-date-and-time-error.text' | translate"
 ></span>
 <span
-  class="validation-message"
+  class="ft-14-600 validation-message"
   *ngIf="experimentScheduleForm.errors?.endCriteriaError"
   [innerHTML]="'home.new-experiment.schedule-end-criteria-error.text' | translate"
 ></span>
 <span
-  class="validation-message"
+  class="ft-14-600 validation-message"
   *ngIf="experimentScheduleForm.errors?.selectionError"
   [innerHTML]="'home.new-experiment.schedule-selection-error.text' | translate"
 ></span>
 <span
-  class="validation-message"
+  class="ft-14-600 validation-message"
   *ngIf="experimentScheduleForm.errors?.startOnSelectionError"
   [innerHTML]="'home.new-experiment.schedule-start-date-and-time-error.text' | translate"
 ></span>
 <span
-  class="validation-message"
+  class="ft-14-600 validation-message"
   *ngIf="experimentScheduleForm.errors?.wrongDateSelectionError"
   [innerHTML]="'home.new-experiment.schedule-wrong-date-and-time-error.text' | translate"
 ></span>

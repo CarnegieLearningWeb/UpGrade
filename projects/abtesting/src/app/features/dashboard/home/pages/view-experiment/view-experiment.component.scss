@@ -10,9 +10,6 @@ $font-size-small: 15px;
   .experiment-title,
   .experiment-link {
     color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-normal);
-    font-weight: 400;
   }
 
   .experiment-link {
@@ -38,16 +35,10 @@ $font-size-small: 15px;
           display: flex;
           flex-direction: column;
           color: var(--black-2);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-xxxxx-large);
-          font-weight: 700;
         }
 
         &-partitions {
           color: var(--grey-3);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-normal);
-          font-weight: 400;
         }
 
         .action-buttons {
@@ -62,9 +53,6 @@ $font-size-small: 15px;
             width: 85px;
             height: 40px;
             color: var(--blue);
-            font-family: 'Open Sans';
-            font-size: var(--text-size-small);
-            font-weight: 600;
 
             .icon {
               margin-right: 3px;
@@ -79,18 +67,12 @@ $font-size-small: 15px;
       display: block;
       margin: 14px 0 10px;
       color: var(--grey-3);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-normal);
-      font-weight: 400;
     }
 
     &-create-date {
       display: block;
       padding-bottom: 23px;
       color: var(--grey-5);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 700;
     }
 
     &-secondary-info {
@@ -136,9 +118,6 @@ $font-size-small: 15px;
             &.end-criteria-container {
               .end-criteria {
                 color: $dark-grey-text-color;
-                font-family: 'Open Sans';
-                font-size: var(--text-size-large);
-                font-weight: 700;
 
                 &--text {
                   display: unset;
@@ -157,16 +136,11 @@ $font-size-small: 15px;
             &-title {
               display: block;
               color: var(--grey-5);
-              font-family: 'Open Sans';
-              font-size: $font-size-small;
-              font-weight: 600;
+              font-size: $font-size-small !important;
             }
 
             &-value {
               color: $dark-grey-text-color;
-              font-family: 'Open Sans';
-              font-size: var(--text-size-large);
-              font-weight: 700;
 
               &--editable {
                 margin-right: 8px;
@@ -180,9 +154,6 @@ $font-size-small: 15px;
 
             &-group {
               color: var(--grey-2);
-              font-family: 'Open Sans';
-              font-size: var(--text-size-x-small);
-              font-weight: 400;
             }
           }
         }
@@ -197,9 +168,7 @@ $font-size-small: 15px;
           padding-top: 12px;
           width: 90px;
           color: var(--grey-5);
-          font-family: 'Open Sans';
-          font-size: $font-size-small;
-          font-weight: 600;
+          font-size: $font-size-small !important;
         }
 
         &-values {
@@ -212,7 +181,6 @@ $font-size-small: 15px;
             background-color: rgba(216, 216, 216, 0.6);
             padding: 7px 10px;
             color: var(--black-2);
-            font-size: var(--text-size-small);
 
             &:hover {
               cursor: pointer;
@@ -234,9 +202,6 @@ $font-size-small: 15px;
 
     .title {
       color: var(--black-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-xxx-large);
-      font-weight: 700;
     }
 
     .table {
@@ -246,18 +211,11 @@ $font-size-small: 15px;
         justify-content: center;
         padding: 10px;
         word-break: break-word;
-        font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
-      }
-
-      mat-cell {
-        font-weight: 600;
       }
 
       mat-header-cell {
         border-color: var(--light-grey);
         color: var(--grey-2);
-        font-weight: 700;
       }
     }
   }

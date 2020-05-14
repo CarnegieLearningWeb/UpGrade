@@ -2,9 +2,9 @@
   <mat-table [dataSource]="dataSource" multiTemplateDataRows>
     <!-- COLUMNS AND ROWS-->
     <ng-container *ngFor="let key of displayedColumns" [matColumnDef]="key">
-      <mat-header-cell *matHeaderCellDef>{{ key.includes('Icon') ? '' : columnHeaders[key] }}</mat-header-cell>
+      <mat-header-cell class="ft-12-700" *matHeaderCellDef>{{ key.includes('Icon') ? '' : columnHeaders[key] }}</mat-header-cell>
 
-      <mat-cell *matCellDef="let element; let i = dataIndex">
+      <mat-cell class="ft-12-600" *matCellDef="let element; let i = dataIndex">
         <span *ngIf="!key.includes('Icon'); else icon">{{ element.data[key] }}</span>
 
         <ng-template #icon>
@@ -21,6 +21,7 @@
     <!-- EXPANDABLE ROW -->
     <ng-container matColumnDef="expandedDetail">
       <mat-cell
+        class="ft-12-600"
         *matCellDef="let element"
         [@expandableRow]="element.data[referenceId] === expandedId ? 'expanded' : 'collapsed'"
       >
