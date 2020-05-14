@@ -93,6 +93,7 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
  
  ### variables
  `Note:  The variables marked as bold must be changed to create new environments.`
+ 
  `Note:  The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using  comnbination of your org name with updgrade.`
  
  | Name | Description | Type |
