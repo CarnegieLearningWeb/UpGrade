@@ -50,7 +50,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       if (error.message === 'jwt expired') {
         throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: error.message }));
       } else {
-        throw new Error(error.message);
+        throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Provided token is invalid' }));
       }
     }
   }
