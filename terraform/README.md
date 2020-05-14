@@ -65,7 +65,7 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
 
 **note: If you change the output_path, Make sure the path exist. Script will generate a zip of a serverless function and store it on output_path.**
  
-**note:`ebs_app_name` & `repository_name` variables in phase 2 are created in phase 1. Make sure their values are same in both the pahse.**
+**note:`ebs_app_name` & `repository_name` variables used in phase 2 are created in phase 1. Make sure their values are same in both phases.**
  
  
  AWS Resources that will be created by this script.
@@ -90,9 +90,9 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
  # variables
  | Name | Description | Type |
 |------|-------------|-------------|
-| current_directory | name of the folder holding main.tf| varchar|
+| **current_directory** | name of the folder holding main.tf| varchar|
 | aws_region | aws region | varchar|
-| environment | deployment environment name | varchar|
+| **environment** | deployment environment name | varchar|
 | prefix | prefix to be attached to all resources | varchar|
 | app_version | Application version| varchar|
 | aws_profile | aws profile name| varchar|
@@ -110,10 +110,12 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
 | MONITOR_PASSWORD | Monitor password for upgrade service| varchar|
 | SWAGGER_PASSWORD | Swagger password for upgrade service | varchar|
 | repository_name | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline| varchar|
-| branch_name | AWS CODE COMMIT branch name for CICD pipeline | varchar|
+| **branch_name** | AWS CODE COMMIT branch name for CICD pipeline | varchar|
 | build_image | build image for AWS CODEBUILD| varchar|
 | build_compute_type | AWS CODEBUILD Compute type| varchar|
 | privileged_mode | codebuild priviledge mode | number|
+
+`Note:  The variables marked as bold must be changed to create new environments.`
 
 
 ## Outputs
