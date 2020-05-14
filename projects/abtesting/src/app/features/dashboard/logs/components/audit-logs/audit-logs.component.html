@@ -1,24 +1,5 @@
 <mat-progress-bar mode="indeterminate" *ngIf="isAuditLoading$ | async"></mat-progress-bar>
 <div class="logs" #auditLogContainer>
-  <div class="logs__searching">
-    <!-- TODO: Add search audit log -->
-    <!-- <mat-form-field class="search-input">
-      <input
-        matInput
-        [(ngModel)]="searchValue"
-        (keyup)="searchLogs($event.target.value)"
-        [placeholder]="'logs.audit-logs-search.text' | translate"
-      />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field> -->
-    <mat-form-field class="audit-log-filter">
-      <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
-        <mat-option *ngFor="let option of logsOptions" [value]="option.value">
-          {{ option.viewValue }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
 
   <ng-container *ngIf="(auditLogData | json) != '{}'; else zeroStateAudit">
     <div class="timeline-container" *ngFor="let logData of auditLogData | keyvalue: valueDescOrder">

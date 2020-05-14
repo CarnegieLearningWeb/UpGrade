@@ -1,6 +1,28 @@
 @import '../../common/tabs-view.scss';
 
-.tabs-container {
+.logs-container {
   height: calc(100% - 50px); // Subtract header height
+
+  ::ng-deep .mat-tab-body-content {
+    padding: 10px 0 34px;
+  }
+
+  .tabs-wrapper {
+    position: relative;
+
+    .log-filter {
+      position: absolute;
+      top: 28px;
+      right: 34px;
+      z-index: 1;
+      width: 250px;
+
+      .input {
+        font-family: 'Open Sans';
+        font-size: var(--text-size-normal);
+        font-weight: 600;
+      }
+    }
+  }
 }
 

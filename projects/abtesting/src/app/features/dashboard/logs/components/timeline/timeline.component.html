@@ -8,8 +8,8 @@
       <!-- If user is null or Action is performed via CLI -->
       <ng-template #noUserLogTemplate>
         <app-shared-icons
-          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
-          [iconType]="'user-2'"
+          class="{{ 'icon icon--light-blue'}}"
+          [iconType]="'user-1'"
         ></app-shared-icons>
       </ng-template>
 
@@ -23,13 +23,13 @@
       <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
         <span class="user-name">
           <ng-container *ngIf="log.user">
-            <u *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
+            <span *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
               {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
-            </u>
+            </span>
             <ng-template #userNameEllipsis>
-              <u [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
+              <span [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
                 {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate: 30 }}
-              </u>
+              </span>
             </ng-template>
           </ng-container>
         </span>
@@ -101,9 +101,7 @@
 
       <ng-template #errorLogTemplate>
         <div class="content">
-          <span class="error-type"
-            ><u>{{ log.type }}</u></span
-          >
+          <span class="error-type">{{ log.type }}</span>
           <span> :</span>
           <div class="log-text">
             <mat-accordion class="accordion">
@@ -114,14 +112,16 @@
                       {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
                     </span>
                     <ng-template #errorFromClient>
-                      {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
+                      <span class="action-msg-error">
+                        {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
+                      </span>
                     </ng-template>
                     <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
                   <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
-                <pre>{{ log.message }}</pre>
+                <pre class="error-log-msg">{{ log.message }}</pre>
               </mat-expansion-panel>
             </mat-accordion>
           </div>

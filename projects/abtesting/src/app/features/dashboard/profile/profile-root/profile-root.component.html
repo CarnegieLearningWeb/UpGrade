@@ -3,38 +3,36 @@
   <span class="subtitle" [innerHTML]="'profile.sub-heading.text' | translate"></span>
 
   <div class="profile-wrapper">
-    <ng-container>
-      <div
-        class="personal-information"
-        *ngIf="currentUser"
-        [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
-      >
-        <img [src]="currentUser?.imageUrl" class="profile-pic" />
-        <div class="user-info">
-          <span class="name">{{ currentUser?.firstName + ' ' + currentUser?.lastName }}</span>
-          <span class="email">{{ '( ' + currentUser?.email + ' )' }}</span>
-          <span class="role">{{ currentUser?.role | titlecase }}</span>
-        </div>
+    <div
+      class="personal-information"
+      *ngIf="currentUser"
+      [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
+    >
+      <img [src]="currentUser?.imageUrl" class="profile-pic" />
+      <div class="user-info">
+        <span class="name">{{ currentUser?.firstName + ' ' + currentUser?.lastName }}</span>
+        <span class="email">{{ '( ' + currentUser?.email + ' )' }}</span>
+        <span class="role">{{ currentUser?.role | titlecase }}</span>
       </div>
-    </ng-container>
-    <ng-container *ngIf="(permissions$ | async)?.manageRoles.update">
-      <h3>{{ 'profile.manage-roles.heading.text' | translate }}</h3>
+    </div>
+    <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">
       <div class="header">
-        <mat-form-field>
-          <input
-            class="search-input"
-            matInput
-            [(ngModel)]="searchString"
-            (keyup)="applyFilter($event.target.value)"
-            [placeholder]="'global.search.text' | translate"
-          />
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+        <h3 class="header-title">{{ 'profile.manage-roles.heading.text' | translate }}</h3>
         <button mat-flat-button color="primary" (click)="openNewUserModal()">
           <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
           {{ 'profile.add-user.text' | translate }}
         </button>
       </div>
+      <mat-form-field>
+        <input
+          class="input"
+          matInput
+          [(ngModel)]="searchString"
+          (keyup)="applyFilter($event.target.value)"
+          [placeholder]="'global.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
       <form [formGroup]="userRoleForm">
         <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
         <table class="users-list" mat-table [dataSource]="allUsers" matSort (matSortChange)="resetForm()">
@@ -84,7 +82,7 @@
               <div *ngIf="editMode === index; else roleReadOnly">
                 <mat-form-field class="form-control">
                   <mat-label>{{ 'profile.form.role-control.text' | translate }}</mat-label>
-                  <mat-select formControlName="role">
+                  <mat-select class="input" formControlName="role">
                     <mat-option *ngFor="let role of userRoles" [value]="role">
                       {{ role | titlecase }}
                     </mat-option>
@@ -128,6 +126,6 @@
         </table>
       </form>
       <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="7"></mat-paginator>
-    </ng-container>
+    </div>
   </div>
 </div>

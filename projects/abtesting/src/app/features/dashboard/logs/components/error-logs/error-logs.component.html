@@ -1,29 +1,5 @@
 <mat-progress-bar mode="indeterminate" *ngIf="isErrorLogLoading$ | async"></mat-progress-bar>
 <div class="logs" #ErrorLogContainer>
-  <div class="logs__searching">
-    <!-- TODO: Add search error log -->
-    <!-- <mat-form-field class="search-input">
-      <input
-        matInput
-        [(ngModel)]="searchValue"
-        (keyup)="searchLogs($event.target.value)"
-        [placeholder]="'logs.error-logs-search.text' | translate"
-      />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field> -->
-    <mat-form-field class="error-log-filter">
-      <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
-        <mat-option *ngFor="let option of logsOptions" [value]="option.value">
-          <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
-          <ng-template #tooltipText>
-            <span [matTooltip]="option.viewValue" matTooltipPosition="above">
-              {{ option.viewValue | truncate: 35 }}
-            </span>
-          </ng-template>
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
 
   <ng-container *ngIf="(errorLogData | json) != '{}'; else zeroStateAudit">
     <div class="timeline-container" *ngFor="let logData of errorLogData | keyvalue: valueDescOrder">
