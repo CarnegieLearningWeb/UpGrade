@@ -1,4 +1,4 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -10,6 +10,7 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IExperimentAssignment } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
+import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 
 /**
  * @swagger
@@ -19,6 +20,7 @@ import { ExperimentError } from '../models/ExperimentError';
  */
 
 @JsonController('/')
+@UseBefore(ClientLibMiddleware)
 export class ExperimentClientController {
   constructor(
     public experimentService: ExperimentService,
