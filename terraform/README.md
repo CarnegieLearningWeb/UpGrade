@@ -6,9 +6,11 @@
 - Install & Configure [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html) on your system.
 - Setup a aws provider profile using `aws configure`
 - Create a s3 Bucket to store `tfstate` files remotely. We recommend enable versioning on that bucket.
->   aws s3api create-bucket --acl private --bucket terraform-artifacts-bucket
+>   aws s3api create-bucket --acl private --bucket YOUR_BACKEND_TF-STATE_BUCKET
 
->   aws s3api put-bucket-versioning --bucket terraform-artifacts-bucket --versioning-configuration Status=Enabled
+>   aws s3api put-bucket-versioning --bucket YOUR_BACKEND_TF-STATE_BUCKET --versioning-configuration Status=Enabled
+
+`Note: Make sure to replace this bucket name with existing bucket inside environments/**/backend.tf & core/backend.tf`
 
 
 
@@ -20,24 +22,50 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
     ├── aws-ebs-with-rds                   # terraform module to create ebs environment with POSTGRES installed
     ├── aws-lambda                         # terraform module to create Schedular lambda function
     ├── aws-step-fn                        # terraform module to create Schedular step function 
+    ├── core                       
+          ├── core.tf                      # Config file to create core resources.
+          ├── backend.tf                   # File that gives details of where to store tfstate files
+          ├── variables.tf                 # Gives info about varibles required
+          ├── tfvars.sample                # sample variables file
     ├── environments                        
         ├── dev                   
-          ├── dev.tf                       # Config file for dev environment.
+          ├── main.tf                       # Config file for dev environment.
           ├── backend.tf                   # File that gives details of where to store tfstate files
-          ├── variables.tf                 # Gives info about varibles required 
+          ├── variables.tf                 # Gives info about varibles required
+          ├── tfvars.sample                 # sample variables file
+            
         ├── staging                   
-          ├── staging.tf                   # Config file for staging environment.
+          ├── main.tf                   # Config file for staging environment.
           ├── backend.tf                   # File that gives details of where to store tfstate files
           ├── variables.tf                 # Gives info about varibles required 
-          
+          ├── tfvars.sample                 # sample variables file
           
  
  Generate ssh key using `ssh-keygen -f mykey` (if you generate it with a different name, make sure to replace variables accordingly )
  
  
- - use `terraform init`to initialize the project (Make sure you create a bucket with a name specified in backend.tf file before executing this command)
+### You need to run this project in 2 phase.
  
- - `terraform apply` inside `environment/dev` or `environment/staging`  to create dev and staging infrastructure respectively. You can pass .tfvars file using `--var-file` option.
+- Create core resources that will be shared by all the environments. This includes AWS Code Commit repository and EBS application name.(We will create multiple EBS env under same EBS application)
+- Create env specific resources.
+    
+ 
+### CORE RESOURCES
+- under the `core` directory change the bucket name with the one you created for storing tfstate. 
+- add var.tfvars file using sample var file. 
+- use `terraform init`to initialize the project.
+- use `terraform apply`to create the core resources.
+
+### Env specific resources
+ 
+- under the `environment/**` directory change the bucket name with the one you created for storing tfstate. 
+- add var.tfvars file using sample var file. 
+- use `terraform init`to initialize the project.
+- use `terraform apply`to create the core resources. (You can pass .tfvars file using `--var-file` option with terraform apply command. ) 
+
+**note: If you change the output_path, Make sure the path exist. Script will generate a zip of a serverless function and store it on output_path.**
+ 
+**note:`ebs_app_name` & `repository_name` variables used in phase 2 are created in phase 1. Make sure their values are same in both phases.**
  
  
  AWS Resources that will be created by this script.
@@ -58,95 +86,37 @@ The module gets the code from a ``AWS CODECOMMIT`` repository, builds a ``Docker
 pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker`` image to ``Elastic Beanstalk`` running ``Docker`` stack.
     - http://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html
     
-    
- # Sample code file to build infrastructure and setup CICD
  
- ```hcl
-# 1. Create lambda function 
-module "aws_lambda_function" {
+ # variables
+ | Name | Description | Type |
+|------|-------------|-------------|
+| **current_directory** | name of the folder holding main.tf| varchar|
+| aws_region | aws region | varchar|
+| **environment** | deployment environment name | varchar|
+| prefix | prefix to be attached to all resources | varchar|
+| app_version | Application version| varchar|
+| aws_profile | aws profile name| varchar|
+| allocated_storage | Storage for RDS instance| number in GBs|
+| engine_version | RDS engine version| number|
+| identifier | RDS DB identifier | varchar|
+| instance_class | RDS instance class| varchar|
+| storage_type | RDS Storage type | varchar|
+| multi_az | RDS instance multi_az value for high availabilty | boolean|
+| app_instance_type | EC2 instance that will be created in EBS environment| varchar|
+| ebs_app_name | EBS application name created in **core resources**| varchar|
+| autoscaling_min_size | Minimum number of instances that can be in running state | number|
+| autoscaling_max_size | Max number  of instances that can be in running state | number|
+| GOOGLE_CLIENT_ID | google project id for upgrade client app | varchar|
+| MONITOR_PASSWORD | Monitor password for upgrade service| varchar|
+| SWAGGER_PASSWORD | Swagger password for upgrade service | varchar|
+| repository_name | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline| varchar|
+| **branch_name** | AWS CODE COMMIT branch name for CICD pipeline | varchar|
+| build_image | build image for AWS CODEBUILD| varchar|
+| build_compute_type | AWS CODEBUILD Compute type| varchar|
+| privileged_mode | codebuild priviledge mode | number|
 
-  source                =  "../../aws-lambda"
+`Note:  The variables marked as bold must be changed to create new environments.`
 
-  environment           = var.environment 
-  prefix                = var.prefix 
-  app_version           = var.app_version 
-  lambda_path           = "../../packages/Schedular"  //Path of the lambda function 
-  output_path           = "../environments/dev/.terraform" 
-  function_name         = "Schedule" 
-  function_handler      = "schedule.schedule"
-  runtime               =  "nodejs10.x"
-}
-
-# 2. Create state machine 
-module "aws-state-machine" {
-
-  source                = "../../aws-step-fn"
-
-  environment           = var.environment 
-  prefix                = var.prefix 
-  app_version           = var.app_version 
-  aws_region            = var.aws_region
-  lambda_arn            = module.aws_lambda_function.lambda-arn[0] // uses lambda function created above
-}
-
-
-# 3. Create beanstalk application
-module "aws-ebs-app" {
-
-  source                = "../../aws-ebs-with-rds"
-
-  environment           = var.environment
-  prefix                = var.prefix 
-
-  # RDS
-  # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html
-  allocated_storage     = 100
-  engine_version        = var.engine_version    // "11.5"
-  identifier            = var.identifier
-  instance_class        = var.instance_class
-  storage_type          = var.storage_type
-  multi_az              = "false"
-  
-  # EBS config
-  # https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html
-  app_instance_type     = var.app_instance_type
-  autoscaling_min_size  = var.autoscaling_min_size
-  autoscaling_max_size  = var.autoscaling_max_size
-
-  # APP env config
-  GOOGLE_CLIENT_ID      = var.GOOGLE_CLIENT_ID
-  MONITOR_PASSWORD      = var.MONITOR_PASSWORD  
-  SWAGGER_PASSWORD      = var.SWAGGER_PASSWORD 
-  
-  SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
-  PATH_TO_PRIVATE_KEY     = "~/.ssh/id_rsa"
-  PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
-}
-
-module "aws-code-pipeline"{
-
-  source = "../../aws-codepipeline"
-
-  environment           = var.environment 
-  prefix                = var.prefix 
-  aws_region            = var.aws_region
-
-  # Application repository on AWS CODECOMMIT 
-  repository_name       = var.repository_name
-  branch_name           = var.branch_name
-
-  # CODE BUILD variables
-  # http://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref.html
-  # http://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html
-  build_image           = var.build_image
-  build_compute_type    = var.build_compute_type
-  privileged_mode       = var.privileged_mode
-
-  # Elastic Beanstalk app created aboce
-  ebs_app_name          = module.aws-ebs-app.ebs-env
-  ebs_env_name          = module.aws-ebs-app.application
-}
-```
 
 ## Outputs
 

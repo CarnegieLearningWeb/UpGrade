@@ -1,4 +1,5 @@
 # General variables
+current_directory       = "bsnl"
 aws_region              = "us-east-1"
 environment             = "bsnl"
 prefix                  = "upgrade" 
