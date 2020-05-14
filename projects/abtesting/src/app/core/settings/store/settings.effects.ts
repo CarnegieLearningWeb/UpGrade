@@ -11,7 +11,9 @@ import {
   map,
   distinctUntilChanged,
   mapTo,
-  filter
+  filter,
+  catchError,
+  switchMap
 } from 'rxjs/operators';
 
 import { LocalStorageService } from '../../local-storage/local-storage.service';
@@ -25,7 +27,13 @@ import {
   actionSettingsChangeLanguage,
   actionSettingsChangeTheme,
   actionSettingsChangeStickyHeader,
-  actionSettingsChangeHour
+  actionSettingsChangeHour,
+  actionGetToCheckAuth,
+  actionGetToCheckAuthSuccess,
+  actionGetToCheckAuthFailure,
+  actionSetToCheckAuth,
+  actionSetToCheckAuthSuccess,
+  actionSetToCheckAuthFailure
 } from './settings.actions';
 import {
   selectEffectiveTheme,
@@ -36,6 +44,7 @@ import {
 } from './settings.selectors';
 import { State } from './settings.model';
 import { AnimationsService } from '../../animations/animations.service';
+import { SettingsDataService } from '../settings.data.service';
 
 export const SETTINGS_KEY = 'SETTINGS';
 
@@ -51,7 +60,8 @@ export class SettingsEffects {
     private localStorageService: LocalStorageService,
     private titleService: TitleService,
     private animationsService: AnimationsService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private settingsDataService: SettingsDataService
   ) {}
 
   changeHour = createEffect(() =>
@@ -152,5 +162,30 @@ export class SettingsEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  getToCheckAuth$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(actionGetToCheckAuth),
+      switchMap(() => {
+        return this.settingsDataService.getSettings().pipe(
+          map((data: any) => actionGetToCheckAuthSuccess({ toCheckAuth: data.toCheck })),
+          catchError(() => [actionGetToCheckAuthFailure()])
+        )
+      })
+    )
+  );
+
+  setToCheckAuth$ = createEffect(
+    () => this.actions$.pipe(
+      ofType(actionSetToCheckAuth),
+      map(action => action.toCheckAuth),
+      switchMap((toCheckAuth) => {
+        return this.settingsDataService.setSettings(toCheckAuth).pipe(
+          map((data: any) => actionSetToCheckAuthSuccess({ toCheckAuth: data.toCheck })),
+          catchError(() => [actionSetToCheckAuthFailure()])
+        )
+      })
+    )
   );
 }

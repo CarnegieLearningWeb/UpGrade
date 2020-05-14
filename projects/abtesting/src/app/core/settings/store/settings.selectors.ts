@@ -63,3 +63,8 @@ export const selectEffectiveTheme = createSelector(
   selectIsNightHour,
   (theme, nightTheme, isNightHour) => (isNightHour ? nightTheme : theme)
 );
+
+export const selectToCheckAuth = createSelector(
+  selectSettings,
+  state => state.toCheckAuth
+)
