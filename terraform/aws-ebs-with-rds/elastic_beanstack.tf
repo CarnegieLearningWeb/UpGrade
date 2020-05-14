@@ -9,13 +9,13 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:ec2:vpc"
-    name      = "Subnets"
-    value     = "${aws_subnet.main-private-1.id},${aws_subnet.main-private-2.id}"
+    name      = "AssociatePublicIpAddress"
+    value     = "false"
   }
   setting {
     namespace = "aws:ec2:vpc"
-    name      = "AssociatePublicIpAddress"
-    value     = "false"
+    name      = "Subnets"
+    value     = "${aws_subnet.main-private-1.id},${aws_subnet.main-private-2.id}"
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
@@ -55,6 +55,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elb:loadbalancer"
     name      = "CrossZone"
+    value     = "true"
+  }
+   setting {
+    namespace = "aws:elasticbeanstalk:cloudwatch:logs"
+    name      = "StreamLogs"
     value     = "true"
   }
   setting {
