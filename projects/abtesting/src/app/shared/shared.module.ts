@@ -31,7 +31,6 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
@@ -70,7 +69,7 @@ import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
     MatProgressBarModule,
     MatAutocompleteModule,
   ],
-  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe, ExperimentStatePipe],
+  declarations: [SharedIconsComponent, TruncatePipe, ExperimentStatePipe],
   exports: [
     CommonModule,
     FormsModule,
@@ -103,7 +102,6 @@ import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
     MatStepperModule,
     MatRadioModule,
     MatExpansionModule,
-    RtlSupportDirective,
     MatProgressBarModule,
     MatAutocompleteModule,
 
