@@ -7,7 +7,10 @@ const routes: Routes = [
   {
     path: 'login',
     canActivate: [NegateAuthGuard],
-    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
+    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule),
+    data: {
+      title: 'app-header.title.login'
+    }
   },
   {
     path: '',

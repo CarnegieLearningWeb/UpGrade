@@ -5,7 +5,10 @@ import { ExperimentUsersRootComponent } from './experiment-users-root/experiment
 const routes: Routes = [
   {
     path: '',
-    component: ExperimentUsersRootComponent
+    component: ExperimentUsersRootComponent,
+    data: {
+      title: 'app-header.title.users'
+    }
   }
 ];
 

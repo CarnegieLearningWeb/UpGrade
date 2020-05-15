@@ -8,7 +8,8 @@ import {
   withLatestFrom,
   map,
   catchError,
-  switchMap
+  switchMap,
+  filter
 } from 'rxjs/operators';
 
 import { LocalStorageService } from '../../local-storage/local-storage.service';
@@ -19,7 +20,8 @@ import {
 } from './settings.selectors';
 import { State, SETTINGS_KEY } from './settings.model';
 import { SettingsDataService } from '../settings.data.service';
-
+import { ActivationEnd, Router } from '@angular/router';
+import { TitleService } from '../../title/title.service';
 
 
 const INIT = of('init-effect-trigger');
@@ -29,6 +31,8 @@ export class SettingsEffects {
   constructor(
     private actions$: Actions,
     private store: Store<State>,
+    private router: Router,
+    private titleService: TitleService,
     private overlayContainer: OverlayContainer,
     private localStorageService: LocalStorageService,
     private settingsDataService: SettingsDataService
@@ -88,5 +92,19 @@ export class SettingsEffects {
         )
       })
     )
+  );
+
+  setTitle = createEffect(
+    () =>
+      merge(
+        this.router.events.pipe(filter(event => event instanceof ActivationEnd))
+      ).pipe(
+        tap(() => {
+          this.titleService.setTitle(
+            this.router.routerState.snapshot.root
+          );
+        })
+      ),
+    { dispatch: false }
   );
 }
