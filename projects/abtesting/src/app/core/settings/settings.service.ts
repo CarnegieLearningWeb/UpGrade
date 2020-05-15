@@ -2,42 +2,34 @@ import { Injectable } from '@angular/core';
 import { AppState } from '../core.state';
 import { Store, select } from '@ngrx/store';
 import * as SettingsActions from './store/settings.actions';
-import { Language } from './store/settings.model';
 import {
-  selectSettingsStickyHeader,
-  selectSettingsLanguage,
-  selectEffectiveTheme,
-  selectToCheckAuth
+  selectToCheckAuth, selectTheme
 } from './store/settings.selectors';
+import { SETTINGS_KEY } from './store/settings.model';
+import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
 export class SettingsService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(
+    private store$: Store<AppState>,
+    private localStorageService: LocalStorageService
+  ) {}
 
-  stickyHeader$ = this.store$.pipe(select(selectSettingsStickyHeader));
-  language$ = this.store$.pipe(select(selectSettingsLanguage));
-  theme$ = this.store$.pipe(select(selectEffectiveTheme));
+  theme$ = this.store$.pipe(select(selectTheme));
   toCheckAuth$ = this.store$.pipe(select(selectToCheckAuth));
 
   changeTheme(theme) {
-    this.store$.dispatch(SettingsActions.actionSettingsChangeTheme({ theme }));
-  }
-
-  changeAnimationsPageDisabled(value: boolean) {
-    this.store$.dispatch(
-      SettingsActions.actionSettingsChangeAnimationsPageDisabled({
-        pageAnimationsDisabled: value
-      })
-    );
-  }
-
-  changeLanguage(language: Language) {
-    this.store$.dispatch(
-      SettingsActions.actionSettingsChangeLanguage({ language })
-    );
+    this.store$.dispatch(SettingsActions.actionChangeTheme({ theme }));
   }
 
   setToCheckAuth(value: boolean) {
     this.store$.dispatch(SettingsActions.actionSetToCheckAuth({ toCheckAuth: value }));
+  }
+
+  setLocalStorageTheme() {
+    const settings = this.localStorageService.getItem(SETTINGS_KEY);
+    if (settings && settings.theme) {
+      this.changeTheme(settings.theme);
+    }
   }
 }

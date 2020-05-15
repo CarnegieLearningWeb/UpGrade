@@ -9,10 +9,8 @@
 
 @import './styles/styles-variables';
 @import './styles/variables.css';
-@import './themes/default-theme';
 @import './themes/light-theme';
-@import './themes/black-theme';
-@import './themes/nature-theme';
+@import './themes/dark-theme';
 @import './app/features/dashboard/dashboard-root/dashboard.component.scss-theme';
 @import './styles/utility.scss';
 
@@ -20,24 +18,14 @@
   @include dashboard-component-theme($theme);
 }
 
-.default-theme {
+.light-theme {
   @include angular-material-theme($theme);
   @include custom-components-theme($theme);
 }
 
-.light-theme {
-  @include angular-material-theme($light-theme);
-  @include custom-components-theme($light-theme);
-}
-
-.black-theme {
-  @include angular-material-theme($black-theme);
-  @include custom-components-theme($black-theme);
-}
-
-.nature-theme {
-  @include angular-material-theme($nature-theme);
-  @include custom-components-theme($nature-theme);
+.dark-theme {
+  @include angular-material-theme($dark-theme);
+  @include custom-components-theme($dark-theme);
 }
 
 // TODO material specific style which cannot be changed by scope

@@ -11,10 +11,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 })
 export class DashboardRootComponent implements OnInit {
   themeOptions = [
-    { value: ThemeOptions.DEFAULT_THEME, viewValue: 'Default' },
-    { value: ThemeOptions.DARK_THEME, viewValue: 'Dark' },
     { value: ThemeOptions.LIGHT_THEME, viewValue: 'Light' },
-    { value: ThemeOptions.NATURE_THEME, viewValue: 'Nature' }
+    { value: ThemeOptions.DARK_THEME, viewValue: 'Dark' },
   ];
 
   theme$ = this.settingsService.theme$;
@@ -46,7 +44,7 @@ export class DashboardRootComponent implements OnInit {
 
   ngOnInit(): void {
     if (DashboardRootComponent.isIEorEdgeOrSafari()) {
-      this.settingsService.changeAnimationsPageDisabled(true);
+      // this.settingsService.changeAnimationsPageDisabled(true);
     }
   }
 
