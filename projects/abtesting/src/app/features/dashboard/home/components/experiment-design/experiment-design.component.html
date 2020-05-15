@@ -9,7 +9,7 @@
     >
       <!-- CONDITION NUMBER Column -->
       <ng-container matColumnDef="conditionNumber">
-        <mat-header-cell *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'global.number.text' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let element; let groupIndex = index">
@@ -20,7 +20,7 @@
 
       <!-- CONDITION NAME Column -->
       <ng-container matColumnDef="conditionCode">
-        <mat-header-cell *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'global.condition.text' | translate }}
         </mat-header-cell>
         <mat-cell
@@ -43,7 +43,7 @@
 
       <!-- ASSIGNMENT WEIGHT Column -->
       <ng-container matColumnDef="assignmentWeight">
-        <mat-header-cell *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home-global.assignment-weight.text' | translate }}
         </mat-header-cell>
         <mat-cell
@@ -66,7 +66,7 @@
 
       <!-- DESCRIPTION Column -->
       <ng-container matColumnDef="description">
-        <mat-header-cell *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home.new-experiment.design.description.text' | translate }}
         </mat-header-cell>
         <mat-cell
@@ -87,7 +87,7 @@
       </ng-container>
 
       <ng-container matColumnDef="removeCondition">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
@@ -109,18 +109,18 @@
       ></mat-row>
     </mat-table>
     <span
-      class="validation-message"
+      class="ft-14-600 validation-message"
       *ngIf="experimentDesignForm.errors?.assignmentWightsSumError && isAssignmentWeightControlDirty"
       [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
     ></span>
     <span
-      class="validation-message"
+      class="ft-14-600 validation-message"
       *ngIf="conditionCodeError"
       [innerHTML]="conditionCodeError"
     ></span>
     <button
       type="button"
-      class="add-condition"
+      class="ft-12-700 add-condition"
       (click)="addConditionOrPartition('condition')"
     >
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
@@ -138,7 +138,7 @@
 
      <!-- PARTITION NUMBER Column -->
      <ng-container matColumnDef="partitionNumber">
-      <mat-header-cell *matHeaderCellDef>
+      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'global.number.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index">
@@ -149,7 +149,7 @@
 
       <!-- PARTITION POINT Column -->
       <ng-container matColumnDef="expPoint">
-        <mat-header-cell *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home.new-experiment.design.partition-point.text' | translate }}
         </mat-header-cell>
         <mat-cell
@@ -171,7 +171,7 @@
 
       <!-- ID Column -->
       <ng-container matColumnDef="expId">
-        <mat-header-cell *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home.new-experiment.design.partition-id.text' | translate }}
         </mat-header-cell>
         <mat-cell
@@ -192,7 +192,7 @@
       </ng-container>
 
       <ng-container matColumnDef="removePartition">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
@@ -213,7 +213,7 @@
     </mat-table>
     <button
       type="button"
-      class="add-partition"
+      class="ft-12-700 add-partition"
       (click)="addConditionOrPartition('partition')"
     >
       +
@@ -222,7 +222,7 @@
   </ng-container>
 
   <span
-    class="validation-message"
+    class="ft-14-600 validation-message"
     *ngFor="let error of partitionPointErrors"
   >{{ error }} </span>
 

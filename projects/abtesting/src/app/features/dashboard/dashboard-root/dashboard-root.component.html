@@ -3,13 +3,13 @@
     <div class="drawer-container">
       <div class="logo">
         <!-- TODO: Replace with actual logo -->
-        <a class="logo-link" [routerLink]="['/home']">UpGrade</a>
+        <a class="logo-link ft-36-800" [routerLink]="['/home']">UpGrade</a>
       </div>
       <div class="list-item-container">
         <mat-list class="list">
           <mat-list-item *ngFor="let link of routeLinks">
             <a
-              class="nav-item"
+              class="nav-item ft-16-600"
               routerLinkActive="selected"
               [routerLink]="link.path"
               #linkInfo="routerLinkActive"
@@ -26,7 +26,7 @@
           <mat-list class="user-list">
             <a class="profile" [routerLink]="['/profile']">
             <mat-list-item
-              class="user-list--item"
+              class="user-list--item ft-16-600"
               *ngIf="currentUser$ | async as user"
               routerLinkActive="user-list--item-selected"
             >
@@ -34,7 +34,7 @@
                 <span>{{ user.firstName + ' ' + user.lastName }}</span>
               </mat-list-item>
             </a>
-            <mat-list-item class="user-list--item">
+            <mat-list-item class="user-list--item ft-16-600">
               <a role="presentation" class="logout-link" (click)="logout()">
                 <app-shared-icons [iconType]="'logout'"></app-shared-icons>
                 <span>{{ 'home-global.sign-out.text' | translate }}</span>
@@ -49,6 +49,7 @@
     <div class="drawer__main-content-header">
       <mat-form-field class="theme-selector">
         <mat-select
+          class="ft-16-600"
           [ngModel]="theme$ | async"
           (ngModelChange)="changeTheme($event)"
         >

@@ -1,24 +1,26 @@
-<span class="title">{{ 'profile.new-user.title' | translate }}</span>
+<span class="ft-24-700 title">{{ 'profile.new-user.title' | translate }}</span>
 <div class="content">
   <form class="user-form" [formGroup]="newUserForm">
-    <mat-form-field>
-      <input
-        matInput
-        class="input"
-        [placeholder]="'profile.global.email.text' | translate"
-        formControlName="email"
-      />
-      <mat-error *ngIf="newUserForm.controls.email.hasError('required')">
-        {{ 'profile.new-user.email-required-error.text' | translate }}
-      </mat-error>
-    </mat-form-field>
-    <span class="validation-message" *ngIf="isUserExist">
-      {{ 'profile.new-user.email-exist-error.text' | translate }}
-    </span>
+    <div class="email-container">
+      <mat-form-field class="ft-14-600">
+        <input
+          matInput
+          class="ft-14-600 input"
+          [placeholder]="'profile.global.email.text' | translate"
+          formControlName="email"
+        />
+        <mat-error *ngIf="newUserForm.controls.email.hasError('required')">
+          {{ 'profile.new-user.email-required-error.text' | translate }}
+        </mat-error>
+      </mat-form-field>
+      <span class="ft-14-600 validation-message" *ngIf="isUserExist">
+        {{ 'profile.new-user.email-exist-error.text' | translate }}
+      </span>
+    </div>
 
-    <mat-form-field>
+    <mat-form-field class="ft-14-600">
       <mat-label>{{ 'profile.global.role.text' | translate }}</mat-label>
-      <mat-select class="input" formControlName="role">
+      <mat-select class="ft-14-600 input" formControlName="role">
         <mat-option *ngFor="let role of userRole" [value]="role">
           {{ role | titlecase }}
         </mat-option>

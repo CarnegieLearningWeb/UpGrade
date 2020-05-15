@@ -4,9 +4,6 @@
   padding: 40px 40px 0;
   height: 108px;
   color: var(--black-2);
-  font-family: 'Open Sans';
-  font-size: var(--text-size-xxx-large);
-  font-weight: 700;
 }
 
 .content {
@@ -19,21 +16,24 @@
     mat-form-field {
       width: 45%;
       color: var(--black-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 600;
     }
 
     .input {
       line-height: 18px;
-      font-family: 'Open Sans';
+    }
+
+    .email-container {
+      width: 45%;
+
+      mat-form-field {
+        width: 100%;
+      }
     }
 
     .validation-message {
       display: block;
       margin-bottom: 10px;
       color: var(--red);
-      font-size: var(--text-size-small);
     }
   }
 }

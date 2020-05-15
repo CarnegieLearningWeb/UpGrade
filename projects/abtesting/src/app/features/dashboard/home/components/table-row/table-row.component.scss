@@ -15,15 +15,11 @@ div {
       padding: 10px;
       text-align: center;
       word-break: break-word;
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 600;
     }
 
     mat-header-cell {
       border-color: var(--light-grey);
       color: var(--grey-2);
-      font-weight: 700;
     }
 
     .mat-column-expandIcon {

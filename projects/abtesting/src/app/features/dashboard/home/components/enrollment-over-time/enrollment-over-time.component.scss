@@ -1,13 +1,8 @@
-$graph-text: 36px;
-
 .enrollment-over-time {
   padding: 0 34px 34px;
 
   &__title {
     color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-xxx-large);
-    font-weight: 700;
   }
 
   .enrollment-filters {
@@ -24,8 +19,6 @@ $graph-text: 36px;
 
     .dropdown-label {
       color: var(--grey-2);
-      font-family: 'Open Sans';
-      font-weight: 700;
     }
   }
 
@@ -88,18 +81,12 @@ $graph-text: 36px;
       .title {
         display: block;
         color: var(--grey-5);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-large);
-        font-weight: 600;
       }
 
       .numbers {
         display: block;
         margin-top: 10px;
         color: var(--blue);
-        font-family: 'Open Sans';
-        font-size: $graph-text;
-        font-weight: 700;
       }
     }
   }
