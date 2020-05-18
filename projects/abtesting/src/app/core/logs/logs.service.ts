@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.module';
 import * as logsActions from './store/logs.actions';
-import { selectIsAuditLogLoading, selectAllAuditLogs, selectIsErrorLogLoading, selectAllErrorLogs } from './store/logs.selectors';
+import { selectIsAuditLogLoading, selectAllAuditLogs, selectIsErrorLogLoading, selectAllErrorLogs, selectSkipAuditLog, selectTotalAuditLogs, selectTotalErrorLogs, selectSkipErrorLog } from './store/logs.selectors';
 import { combineLatest } from 'rxjs';
 import { selectAllExperiment } from '../experiments/store/experiments.selectors';
 import { map } from 'rxjs/operators';
@@ -37,6 +37,24 @@ export class LogsService {
           return log;
         })
       )
+    );
+  }
+
+  isAllAuditLogsFetched() {
+    return combineLatest(
+      this.store$.pipe(select(selectSkipAuditLog)),
+      this.store$.pipe(select(selectTotalAuditLogs))
+    ).pipe(
+      map(([skipAuditLogs, totalAuditLogs]) => skipAuditLogs === totalAuditLogs)
+    );
+  }
+
+  isAllErrorLogsFetched() {
+    return combineLatest(
+      this.store$.pipe(select(selectSkipErrorLog)),
+      this.store$.pipe(select(selectTotalErrorLogs))
+    ).pipe(
+      map(([skipErrorLogs, totalErrorLogs]) => skipErrorLogs === totalErrorLogs)
     );
   }
 

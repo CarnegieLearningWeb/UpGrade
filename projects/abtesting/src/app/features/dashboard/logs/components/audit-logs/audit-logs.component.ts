@@ -14,6 +14,7 @@ import { debounceTime } from 'rxjs/operators';
 export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   auditLogData: any;
   auditLogsSubscription: Subscription;
+  isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
   @ViewChild('auditLogContainer', { static: false }) auditLogContainer: ElementRef;
 
@@ -27,10 +28,6 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
         return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
-  }
-
-  ngOnDestroy() {
-    this.auditLogsSubscription.unsubscribe();
   }
 
   // Used for keyvalue pipe to sort data by key
@@ -52,14 +49,23 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.auditLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
+    let isAllAuditLogFetched = false;
+    this.isAllAuditLogFetchedSub = this.logsService.isAllAuditLogsFetched().subscribe(value => isAllAuditLogFetched = value);
     fromEvent(this.auditLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-      const height = this.auditLogContainer.nativeElement.clientHeight;
-      const scrollHeight = this.auditLogContainer.nativeElement.scrollHeight - height;
-      const scrollTop = this.auditLogContainer.nativeElement.scrollTop;
-      const percent = Math.floor(scrollTop / scrollHeight * 100);
-      if (percent > 80) {
-        this.logsService.fetchAuditLogs();
+      if (!isAllAuditLogFetched) {
+        const height = this.auditLogContainer.nativeElement.clientHeight;
+        const scrollHeight = this.auditLogContainer.nativeElement.scrollHeight - height;
+        const scrollTop = this.auditLogContainer.nativeElement.scrollTop;
+        const percent = Math.floor(scrollTop / scrollHeight * 100);
+        if (percent > 80) {
+          this.logsService.fetchAuditLogs();
+        }
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.auditLogsSubscription.unsubscribe();
+    this.isAllAuditLogFetchedSub.unsubscribe();
   }
 }
