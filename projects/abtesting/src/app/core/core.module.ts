@@ -24,6 +24,7 @@ import { LogsModule } from './logs/logs.module';
 import { ExperimentUsersModule } from './experiment-users/experiment-users.module';
 import { PreviewUsersModule } from './preview-users/preview-users.module';
 import { UsersModule } from './users/users.module';
+import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 
 export {
   TitleService,
@@ -74,6 +75,7 @@ export function HttpLoaderFactory(http: HttpClient) {
   declarations: [],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     { provide: RouterStateSerializer, useClass: CustomSerializer }
   ],
