@@ -40,6 +40,10 @@
       .group-type {
         margin-left: 30px;
 
+        &-control {
+          line-height: 18px;
+        }
+
         &--enable {
           color: var(--black-2);
         }

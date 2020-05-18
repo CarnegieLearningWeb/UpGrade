@@ -125,7 +125,7 @@
                 <button
                   mat-raised-button
                   *ngIf="permissions?.users.update"
-                  class="default-button form-control"
+                  class="default-button"
                   [ngClass]="{ 'default-button--disabled': !this.previewUserAssignConditionForm.valid }"
                   [disabled]="!this.previewUserAssignConditionForm.valid"
                   (click)="saveAssignedConditions(element?.id)"
