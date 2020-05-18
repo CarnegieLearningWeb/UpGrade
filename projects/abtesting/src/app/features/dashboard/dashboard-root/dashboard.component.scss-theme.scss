@@ -4,24 +4,4 @@
   $primary: map-get($theme, primary);
   $accent: map-get($theme, accent);
   $warn: map-get($theme, warn);
-
-  .error-notification-overlay {
-    background-color: mat-color($warn);
-    color: mat-color($warn, default-contrast);
-  }
-
-  .info-notification-overlay {
-    background-color: mat-color($accent);
-    color: mat-color($accent, default-contrast);
-  }
-
-  .success-notification-overlay {
-    background-color: mat-color($success-colors);
-    color: mat-color($success-colors, default-contrast);
-  }
-
-  .warning-notification-overlay {
-    background-color: mat-color($warning-colors);
-    color: mat-color($warning-colors, default-contrast);
-  }
 }

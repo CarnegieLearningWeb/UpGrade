@@ -13,7 +13,7 @@
     </mat-tab-group>
 
     <mat-form-field class="log-filter">
-      <mat-select class="ft-16-600" [(ngModel)]="selectedFilterOption" (ngModelChange)="changeLogOption($event)">
+      <mat-select class="ft-16-600 log-filter-selection" [(ngModel)]="selectedFilterOption" (ngModelChange)="changeLogOption($event)">
         <mat-option *ngFor="let option of filterOptions" [value]="option.value">
           <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
           <ng-template #tooltipText>

@@ -6,7 +6,7 @@ const routes: Routes = [
   {
     path: '',
     component: LoginComponent,
-    data: { title: 'login' }
+    data: { title: 'app-header.title.login' }
   }
 ];
 

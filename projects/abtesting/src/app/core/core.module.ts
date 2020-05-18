@@ -12,13 +12,10 @@ import { environment } from '../../environments/environment';
 
 import { AppState, reducers, metaReducers, selectRouterState } from './core.state';
 import { TitleService } from './title/title.service';
-import { ROUTE_ANIMATIONS_ELEMENTS, routeAnimations } from './animations/route.animations';
-import { AnimationsService } from './animations/animations.service';
 import { AppErrorHandler } from './error-handler/app-error-handler.service';
 import { CustomSerializer } from './router/custom-serializer';
 import { LocalStorageService } from './local-storage/local-storage.service';
 import { HttpErrorInterceptor } from './http-interceptors/http-error.interceptor';
-import { GoogleAnalyticsEffects } from './google-analytics/google-analytics.effects';
 import { NotificationService } from './notifications/notification.service';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { SettingsModule } from './settings/settings.module';
@@ -30,11 +27,8 @@ import { UsersModule } from './users/users.module';
 
 export {
   TitleService,
-  routeAnimations,
   AppState,
   LocalStorageService,
-  ROUTE_ANIMATIONS_ELEMENTS,
-  AnimationsService,
   selectRouterState,
   NotificationService
 };
@@ -61,7 +55,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
     StoreRouterConnectingModule.forRoot(),
-    EffectsModule.forRoot([GoogleAnalyticsEffects]),
+    EffectsModule.forRoot([]),
     environment.production
       ? []
       : StoreDevtoolsModule.instrument({

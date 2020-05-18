@@ -1,21 +1,18 @@
 import * as assert from 'assert';
 import { OverlayContainer } from '@angular/cdk/overlay';
-import { TranslateService } from '@ngx-translate/core';
 import { Actions, getEffectsMetadata } from '@ngrx/effects';
 import { TestScheduler } from 'rxjs/testing';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
 
 import {
-  AnimationsService,
   AppState,
-  LocalStorageService,
-  TitleService
-} from '../../core.module';
+  LocalStorageService} from '../../core.module';
 
-import { SettingsEffects, SETTINGS_KEY } from './settings.effects';
-import { SettingsState } from './settings.model';
-import { actionSettingsChangeTheme } from './settings.actions';
+import { SettingsEffects } from './settings.effects';
+import { SettingsState, ThemeOptions, SETTINGS_KEY } from './settings.model';
+import * as SettingsActions from './settings.actions';
+import { SettingsDataService } from '../settings.data.service';
 
 const scheduler = new TestScheduler((actual, expected) =>
   assert.deepStrictEqual(actual, expected)
@@ -25,9 +22,7 @@ describe('SettingsEffects', () => {
   let router: any;
   let localStorageService: jasmine.SpyObj<LocalStorageService>;
   let overlayContainer: jasmine.SpyObj<OverlayContainer>;
-  let titleService: jasmine.SpyObj<TitleService>;
-  let animationsService: jasmine.SpyObj<AnimationsService>;
-  let translateService: jasmine.SpyObj<TranslateService>;
+  let settingsDataService: jasmine.SpyObj<SettingsDataService>;
   let store: jasmine.SpyObj<Store<AppState>>;
 
   beforeEach(() => {
@@ -45,11 +40,9 @@ describe('SettingsEffects', () => {
     overlayContainer = jasmine.createSpyObj('OverlayContainer', [
       'getContainerElement'
     ]);
-    titleService = jasmine.createSpyObj('TitleService', ['setTitle']);
-    animationsService = jasmine.createSpyObj('AnimationsService', [
-      'updateRouteAnimationType'
+    settingsDataService = jasmine.createSpyObj('settingsDataService', [
+      'getSettings'
     ]);
-    translateService = jasmine.createSpyObj('TranslateService', ['use']);
     store = jasmine.createSpyObj('store', ['pipe']);
   });
 
@@ -59,12 +52,9 @@ describe('SettingsEffects', () => {
       const effect = new SettingsEffects(
         actions,
         store,
-        router,
         overlayContainer,
         localStorageService,
-        titleService,
-        animationsService,
-        translateService
+        settingsDataService
       );
       const metadata = getEffectsMetadata(effect);
 
@@ -77,29 +67,19 @@ describe('SettingsEffects', () => {
       const { cold } = helpers;
 
       const settings: SettingsState = {
-        language: 'en',
-        pageAnimations: true,
-        elementsAnimations: true,
-        theme: 'default',
-        nightTheme: 'default',
-        autoNightMode: false,
-        stickyHeader: false,
-        pageAnimationsDisabled: true,
-        hour: 12
+        theme: ThemeOptions.DARK_THEME,
+        toCheckAuth: false
       };
       store.pipe.and.returnValue(of(settings));
-      const persistAction = actionSettingsChangeTheme({ theme: 'DEFAULT' });
+      const persistAction = SettingsActions.actionChangeTheme({ theme: ThemeOptions.DARK_THEME });
       const source = cold('a', { a: persistAction });
       const actions = new Actions(source);
       const effect = new SettingsEffects(
         actions,
         store,
-        router,
         overlayContainer,
         localStorageService,
-        titleService,
-        animationsService,
-        translateService
+        settingsDataService
       );
 
       effect.persistSettings.subscribe(() => {

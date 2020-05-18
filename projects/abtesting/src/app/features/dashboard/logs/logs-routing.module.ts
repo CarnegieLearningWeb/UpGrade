@@ -6,7 +6,9 @@ const routes: Routes = [
   {
     path: '',
     component: LogsComponent,
-    data: { title: 'logs' }
+    data: {
+      title: 'app-header.title.logs'
+    }
   }
 ];
 

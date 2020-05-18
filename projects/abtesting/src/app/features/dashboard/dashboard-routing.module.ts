@@ -14,19 +14,31 @@ const routes: Routes = [
       },
       {
         path: 'home',
-        loadChildren: () => import('./home/home.module').then(m => m.HomeModule)
+        loadChildren: () => import('./home/home.module').then(m => m.HomeModule),
+        data: {
+          title: 'app-header.title.experiments'
+        }
       },
       {
         path: 'users',
-        loadChildren: () => import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule)
+        loadChildren: () => import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule),
+        data: {
+          title: 'app-header.title.users'
+        }
       },
       {
         path: 'logs',
-        loadChildren: () => import('./logs/logs.module').then(m => m.LogsModule)
+        loadChildren: () => import('./logs/logs.module').then(m => m.LogsModule),
+        data: {
+          title: 'app-header.title.logs'
+        }
       },
       {
         path: 'profile',
-        loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule)
+        loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule),
+        data: {
+          title: 'app-header.title.profile'
+        }
       },
       {
         path: '**',
