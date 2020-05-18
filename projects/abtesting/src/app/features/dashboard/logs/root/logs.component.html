@@ -1,6 +1,6 @@
 <div class="tabs-container logs-container">
-  <h1 class="title">{{ 'logs.main-heading.text' | translate }}</h1>
-  <span class="subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
+  <h1 class="ft-32-700 title">{{ 'logs.main-heading.text' | translate }}</h1>
+  <span class="ft-16-400 subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
 
   <div class="tabs-wrapper">
     <mat-tab-group disableRipple="true" (selectedIndexChange)="selectedIndexChange($event)">
@@ -13,7 +13,7 @@
     </mat-tab-group>
 
     <mat-form-field class="log-filter">
-      <mat-select class="input" [(ngModel)]="selectedFilterOption" (ngModelChange)="changeLogOption($event)">
+      <mat-select class="ft-16-600" [(ngModel)]="selectedFilterOption" (ngModelChange)="changeLogOption($event)">
         <mat-option *ngFor="let option of filterOptions" [value]="option.value">
           <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
           <ng-template #tooltipText>

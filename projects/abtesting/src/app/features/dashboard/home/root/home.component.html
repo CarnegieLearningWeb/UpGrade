@@ -1,7 +1,7 @@
 <div class="experiments-container">
-  <h1 class="title">{{ 'global.experiment.title' | translate }}</h1>
+  <h1 class="title ft-32-700">{{ 'global.experiment.title' | translate }}</h1>
   <span
-    class="subtitle"
+    class="subtitle ft-16-400"
     [innerHTML]="'home.experiment.text.subtitle' | translate"
   ></span>
 
@@ -12,13 +12,14 @@
     <ng-template #noExperimentTemplate>
       <div class="no-experiment-container">
         <span
-          class="text"
+          class="text ft-24-600"
           [innerHTML]="'home.no-experiment.text' | translate"
         ></span>
         <button
           (click)="openNewExperimentDialog()"
           mat-flat-button
           color="primary"
+          class="ft-14-700"
           *ngIf="(permissions$ | async)?.experiments.create"
         >
           <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>

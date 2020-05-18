@@ -1,3 +1,9 @@
+@mixin set-font($size, $weight) {
+  font-family: 'Open Sans' !important;
+  font-size: $size + px !important;
+  font-weight: $weight !important;
+}
+
 body {
   font-family: 'Open Sans';
   font-weight: 400;
@@ -35,3 +41,99 @@ button:focus {
 // For Open Sans ExtraBold Font
 //   font-family: 'Open Sans';
 //   font-weight: 800;
+
+.ft-10-400 {
+  @include set-font(10, 400)
+}
+
+.ft-12-400 {
+  @include set-font(12, 400);
+}
+
+.ft-12-600 {
+  @include set-font(12, 600);
+}
+
+.ft-12-700 {
+  @include set-font(12, 700);
+}
+
+.ft-14-400 {
+  @include set-font(14, 400);
+}
+
+.ft-14-600 {
+  @include set-font(14, 600);
+}
+
+.ft-14-700 {
+  @include set-font(14, 700);
+}
+
+.ft-16-400 {
+  @include set-font(16, 400);
+}
+
+.ft-16-600 {
+  @include set-font(16, 600);
+}
+
+.ft-16-700 {
+  @include set-font(16, 700);
+}
+
+.ft-18-400 {
+  @include set-font(18, 400);
+}
+
+.ft-18-600 {
+  @include set-font(18, 600);
+}
+
+.ft-18-700 {
+  @include set-font(18, 700);
+}
+
+.ft-20-400 {
+  @include set-font(20, 400);
+}
+
+.ft-20-600 {
+  @include set-font(20, 600);
+}
+
+.ft-20-700 {
+  @include set-font(20, 700);
+}
+
+.ft-22-700 {
+  @include set-font(22, 700);
+}
+
+.ft-24-400 {
+  @include set-font(24, 400);
+}
+
+.ft-24-600 {
+  @include set-font(24, 600);
+}
+
+.ft-24-700 {
+  @include set-font(24, 700);
+}
+
+.ft-30-700 {
+  @include set-font(30, 700);
+}
+
+.ft-32-700 {
+  @include set-font(32, 700);
+}
+
+.ft-36-700 {
+  @include set-font(36, 700);
+}
+
+.ft-36-800 {
+  @include set-font(36, 800);
+}

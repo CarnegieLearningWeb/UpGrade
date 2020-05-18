@@ -26,9 +26,6 @@ mat-drawer {
       margin-bottom: 22px;
       text-decoration: none;
       color: var(--blue);
-      font-family: 'Open Sans';
-      font-size: 36px;
-      font-weight: 800;
     }
   }
 
@@ -53,9 +50,6 @@ mat-drawer {
         text-align: inherit;
         text-decoration: none;
         color: var(--black-2);
-        font-family: 'Open Sans';
-        font-size: inherit;
-        font-weight: 600;
         user-select: none;
 
         .icon {
@@ -96,9 +90,6 @@ mat-drawer {
 
     &-list {
       &--item {
-        font-family: 'Open Sans';
-        font-weight: 600;
-
         &-selected {
           border-radius: 7px;
           background-color: var(--blue);

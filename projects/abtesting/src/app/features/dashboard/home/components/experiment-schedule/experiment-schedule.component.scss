@@ -3,9 +3,6 @@
   mat-radio-button,
   mat-form-field {
     color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-small);
-    font-weight: 700;
   }
 
   mat-checkbox {
@@ -20,10 +17,6 @@
   }
 
   .starts-on-title {
-    font-family: 'Open Sans';
-    font-size: var(--text-size-small);
-    font-weight: 600;
-
     &--disable {
       color: var(--grey-5);
     }
@@ -46,7 +39,6 @@
 
       .group-type {
         margin-left: 30px;
-        font-size: var(--text-size-small);
 
         &--enable {
           color: var(--black-2);
@@ -64,8 +56,6 @@
   display: block;
   padding: 5px 0 0 10px;
   color: var(--red);
-  font-size: var(--text-size-small);
-  font-weight: 600;
 }
 
 .button-container {

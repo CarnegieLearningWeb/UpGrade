@@ -7,11 +7,6 @@
     table {
       width: 100%;
 
-      .form-control {
-        font-family: 'Open Sans';
-        font-weight: 600;
-      }
-
       .mat-cell {
         position: relative;
         width: 15%;
@@ -68,9 +63,6 @@
           background-color: transparent;
           padding-left: 0;
           color: var(--blue);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-x-small);
-          font-weight: 700;
         }
 
         .assigned-condition-list {

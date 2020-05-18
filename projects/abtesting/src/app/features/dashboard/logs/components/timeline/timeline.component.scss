@@ -82,9 +82,6 @@ $action-msg-font-size: 15px;
         width: 125px;
         word-wrap: break-word;
         color: var(--black);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-normal);
-        font-weight: 600;
       }
 
       .link {
@@ -99,15 +96,11 @@ $action-msg-font-size: 15px;
         &-msg {
           margin-right: 5px;
           color: var(--black);
-          font-family: 'Open Sans';
-          font-size: $action-msg-font-size;
-          font-weight: 600;
+          font-size: $action-msg-font-size !important;
 
           &-error {
             word-break: break-all;
-            font-family: 'Open Sans';
-            font-size: $action-msg-font-size;
-            font-weight: 600;
+            font-size: $action-msg-font-size !important;
           }
         }
       }
@@ -123,14 +116,10 @@ $action-msg-font-size: 15px;
         .view-diff {
           margin-left: 15px;
           color: var(--blue);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-x-small);
-          font-weight: 600;
         }
 
         .diff-container {
           color: var(--grey);
-          font-family: 'Open Sans';
         }
       }
 
@@ -139,12 +128,6 @@ $action-msg-font-size: 15px;
         align-self: center;
         margin-left: 5px;
         text-align: right;
-        font-family: 'Open Sans';
-      }
-
-      .error-log-msg {
-        font-family: 'Open Sans';
-        font-weight: 400;
       }
     }
   }

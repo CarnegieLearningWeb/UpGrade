@@ -5,9 +5,6 @@
     padding: 40px 40px 0;
     height: 108px;
     color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-xxx-large);
-    font-weight: 700;
   }
 
   &-form {
@@ -26,6 +23,7 @@
   .error-msg {
     display: block;
     margin-bottom: 10px;
+    padding: 0 40px;
     color: var(--green);
   }
 

@@ -21,7 +21,7 @@
       </ng-template>
 
       <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
-        <span class="user-name">
+        <span class="ft-16-600 user-name">
           <ng-container *ngIf="log.user">
             <span *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
               {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
@@ -36,10 +36,10 @@
 
         <ng-container [ngSwitch]="log.type">
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
-            <span class="action action-msg">
+            <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
-            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
           <div
@@ -51,7 +51,7 @@
                 : ''
             "
           >
-            <span class="action action-msg">
+            <span class="ft-16-600 action action-msg">
               {{
                 (log.type
                   | experimentActionMessage
@@ -66,7 +66,7 @@
                 >{{ log.data.experimentName }}</a
               ></span
             >
-            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
           <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
@@ -74,7 +74,7 @@
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
-                    <span class="action-msg">
+                    <span class="ft-16-600 action-msg">
                       {{ (log.type | experimentActionMessage | translate) + ' ' }}
                       <a
                         class="link"
@@ -83,45 +83,45 @@
                         >{{ log.data.experimentName }}</a
                       ></span
                     >
-                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                    <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
-                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
-                <pre><div class="diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
+                <pre><div class="ft-14-400 diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
               </mat-expansion-panel>
             </mat-accordion>
           </div>
         </ng-container>
 
         <ng-template #experimentNotExist>
-          <span class="action-msg">{{ ' ' + log.data.experimentName }}</span>
+          <span class="ft-16-600 action-msg">{{ ' ' + log.data.experimentName }}</span>
         </ng-template>
       </div>
 
       <ng-template #errorLogTemplate>
         <div class="content">
-          <span class="error-type">{{ log.type }}</span>
+          <span class="ft-16-600 error-type">{{ log.type }}</span>
           <span> :</span>
           <div class="log-text">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
-                    <span *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient" class="action-msg-error">
+                    <span *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient" class="ft-16-600 action-msg-error">
                       {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
                     </span>
                     <ng-template #errorFromClient>
-                      <span class="action-msg-error">
+                      <span class="ft-16-600 action-msg-error">
                         {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
                       </span>
                     </ng-template>
-                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                    <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
-                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
-                <pre class="error-log-msg">{{ log.message }}</pre>
+                <pre class="ft-14-400">{{ log.message }}</pre>
               </mat-expansion-panel>
             </mat-accordion>
           </div>
