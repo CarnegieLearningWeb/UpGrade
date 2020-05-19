@@ -1,8 +1,21 @@
 @import '../../common/table-view.scss';
 
 .preview-users {
-  .preview-user-container {
+  .progress {
     margin-top: 30px;
+
+    &--visible {
+      visibility: visible;
+    }
+
+    &--hide {
+      visibility: hidden;
+    }
+  }
+
+  .preview-user-container {
+    max-height: 550px;
+    overflow: auto;
 
     table {
       width: 100%;
@@ -118,10 +131,6 @@
           }
         }
       }
-    }
-
-    .paginator {
-      width: 100%;
     }
   }
 }

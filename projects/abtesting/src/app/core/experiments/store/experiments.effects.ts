@@ -37,7 +37,7 @@ export class ExperimentEffects {
     private router: Router
   ) {}
 
-  getAllExperiment$ = createEffect(() =>
+  getPaginatedExperiment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionGetExperiments),
       map(action => action.fromStarting),

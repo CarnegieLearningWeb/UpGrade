@@ -46,6 +46,7 @@ export const environment = {
     excludeUsers: `${endpointApi}/exclude/user`,
     excludeGroups: `${endpointApi}/exclude/group`,
     previewUsers: `${endpointApi}/previewUsers`,
+    getAllPreviewUsers: `${endpointApi}/previewUsers/paginated`,
     previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,
     allPartitions: `${endpointApi}/experiments/partitions`,
     allExperimentNames: `${endpointApi}/experiments/names`,

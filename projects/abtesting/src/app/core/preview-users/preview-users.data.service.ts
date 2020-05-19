@@ -9,9 +9,9 @@ export class PreviewUsersDataService {
     private http: HttpClientService
   ) {}
 
-  fetchPreviewUsers() {
-    const url = environment.api.previewUsers;
-    return this.http.get(url);
+  fetchPreviewUsers(params: any) {
+    const url = environment.api.getAllPreviewUsers;
+    return this.http.post(url, params);
   }
 
   addPreviewUser(id: string) {
