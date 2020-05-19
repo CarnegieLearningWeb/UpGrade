@@ -191,6 +191,9 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    // subtract other component's height
+    const windowHeight = window.innerHeight;
+    this.previewUserTable.nativeElement.style.maxHeight = (windowHeight - 500) + 'px';
     let isAllPreviewUsersFetched = false;
     this.isAllPreviewUsersFetchedSub = this.previewUserService.isAllPreviewUsersFetched().subscribe(
       value => isAllPreviewUsersFetched = value

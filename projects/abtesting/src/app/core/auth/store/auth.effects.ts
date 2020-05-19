@@ -129,7 +129,7 @@ export class AuthEffects {
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
-            usersActions.actionFetchUsers(),
+            usersActions.actionFetchUsers({ fromStarting: true }),
             experimentActions.actionFetchExperimentContext(),
             settingsActions.actionGetToCheckAuth()
           ];

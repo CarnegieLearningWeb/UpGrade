@@ -131,7 +131,7 @@ export interface Experiment {
   partitions: ExperimentPartition[];
 }
 
-export const NUMBER_OF_EXPERIMENTS = 10;
+export const NUMBER_OF_EXPERIMENTS = 20;
 
 export interface ExperimentPaginationParams {
   skip: number;
