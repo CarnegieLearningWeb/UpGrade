@@ -60,4 +60,16 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .addSelect(['experimentCondition.id', 'experimentCondition.conditionCode'])
       .getMany();
   }
+
+  public async findPaginated(skip: number, take: number): Promise<PreviewUser[] | undefined> {
+    return this.createQueryBuilder('user')
+      .skip(skip)
+      .take(take)
+      .orderBy('user.createdAt', 'DESC')
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('PreviewUserRepository', 'findPaginated', { skip, take }, errorMsg);
+        throw new Error(errorMsgString);
+      });
+  }
 }

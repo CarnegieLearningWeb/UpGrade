@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsDefined, IsNumber } from 'class-validator';
-import { IExperimentSearchParams, IExperimentSortParams } from '../../models/Experiment';
+import { SORT_AS } from 'packages/Upgrade/src/types';
 
 export class PaginatedParamsValidator {
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class PaginatedParamsValidator {
   @IsDefined()
   public take: number;
 
-  public searchParams: IExperimentSearchParams;
+  public searchParams: { key: string, string: string };
 
-  public sortParams: IExperimentSortParams;
+  public sortParams: { key: string, sortAs: SORT_AS };
 }

@@ -38,6 +38,28 @@ export class PreviewUserService {
     return assignments ? assignments : previewUser;
   }
 
+  public getTotalCount(): Promise<number> {
+    this.log.info(`Find count of preview users`);
+    return this.userRepository.count();
+  }
+
+  public async findPaginated(
+    skip: number,
+    take: number
+  ): Promise<PreviewUser[]> {
+    this.log.info(`Find paginated preview users`);
+    const [previewUsers, assignments] = await Promise.all([
+      this.userRepository.findPaginated(skip, take),
+      this.userRepository.findWithNames(),
+    ]);
+    return previewUsers.map((user) => {
+      const doc = assignments.find((assignment) => {
+        return assignment.id === user.id;
+      });
+      return doc ? doc : user;
+    });
+  }
+
   public create(user: Partial<PreviewUser>): Promise<PreviewUser> {
     this.log.info('Create a new user => ', user);
     user.id = user.id || uuid();
