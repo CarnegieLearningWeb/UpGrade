@@ -17,6 +17,17 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
 import { ASSIGNMENT_TYPE } from '../../types';
 
+enum EXPERIMENT_ELEMENTS {
+  EXPERIMENT_INFORMATION = 'Experiment Information',
+  EXPERIMENT_CONDITIONS = 'Experiment Conditions',
+  EXPERIMENT_PARTITIONS = 'Experiment Partitions',
+  MARKED_EXPERIMENT_POINT = 'Marked Experiment Point',
+  EXPERIMENT_INDIVIDUAL_EXCLUSION = 'Experiment Individual Exclusion',
+  EXPERIMENT_GROUP_EXCLUSION = 'Experiment Group Exclusion',
+  EXPERIMENT_INDIVIDUAL_ASSIGNMENT = 'Experiment Individual Assignments',
+  EXPERIMENT_GROUP_ASSIGNMENTS = 'Experiment Group Assignments',
+}
+
 @Service()
 export class AnalyticsService {
   constructor(
@@ -32,7 +43,7 @@ export class AnalyticsService {
     private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository()
     private groupAssignmentRepository: GroupAssignmentRepository
-  ) {}
+  ) { }
 
   public async getStats(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
     return Promise.all(
@@ -188,139 +199,202 @@ export class AnalyticsService {
       this.groupAssignmentRepository.findGroupAssignmentsByExperimentId(experimentId),
     ]);
 
-    let monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
-    let individualExclusions: IndividualExclusion[] = promiseData[1] as any;
-    let groupExclusions: GroupExclusion[] = promiseData[2] as any;
-    let individualAssignments: IndividualAssignment[] = promiseData[3] as any;
-    let groupAssignments: GroupAssignment[] = promiseData[4] as any;
-    const mappedUserDefinition = new Map<string, ExperimentUser>();
+    const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
+    const individualExclusions: IndividualExclusion[] = promiseData[1] as any;
+    const groupExclusions: GroupExclusion[] = promiseData[2] as any;
+    const individualAssignments: IndividualAssignment[] = promiseData[3] as any;
+    const groupAssignments: GroupAssignment[] = promiseData[4] as any;
+    const csvRows = [];
 
-    // get user definition
-    monitoredExperimentPoints.map((monitoredPoint) => {
-      const user = this.getConvertedUserInfo(monitoredPoint.user);
-      mappedUserDefinition.set(user.id, user);
+    const csvRowFormat = {
+      experimentElement: '',
+      createdAt: '',
+      updatedAt: '',
+      versionNumber: '',
+      id: '',
+      name: '',
+      experimentDescription: '',
+      context: '',
+      state: '',
+      experimentStartOn: '',
+      consistencyRule: '',
+      assignmentUnit: '',
+      postExperimentRule: '',
+      enrollmentCompleteCondition: '',
+      experimentEndOn: '',
+      revertTo: '',
+      tags: '',
+      group: '',
+      twoCharacterId: '',
+      conditionName: '',
+      conditionDescription: '',
+      conditionCode: '',
+      assignmentWeight: '',
+      expPoint: '',
+      expId: '',
+      partitionDescription: '',
+      experimentId: '',
+      groupId: '',
+      userId: '',
+      userGroup: '',
+      userWorkingGroup: '',
+      assignmentType: '',
+      conditionId: '',
+    };
+
+    // Add experiment Information
+    const experimentRow = {
+      ...csvRowFormat,
+      experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_INFORMATION,
+      createdAt: experimentInfo.createdAt,
+      updatedAt: experimentInfo.updatedAt,
+      versionNumber: experimentInfo.versionNumber,
+      id: experimentInfo.id,
+      name: experimentInfo.name,
+      experimentDescription: experimentInfo.description,
+      context: experimentInfo.context,
+      state: experimentInfo.state,
+      experimentStartOn: experimentInfo.startOn,
+      consistencyRule: experimentInfo.consistencyRule,
+      assignmentUnit: experimentInfo.assignmentUnit,
+      postExperimentRule: experimentInfo.postExperimentRule,
+      enrollmentCompleteCondition: experimentInfo.enrollmentCompleteCondition ? JSON.stringify(experimentInfo.enrollmentCompleteCondition) : '',
+      experimentEndOn: experimentInfo.endOn,
+      revertTo: experimentInfo.revertTo,
+      tags: experimentInfo.tags,
+      group: experimentInfo.group,
+    };
+    csvRows.push(experimentRow);
+
+    // Add conditions
+    conditions.forEach(condition => {
+      const conditionRow = {
+        ...experimentRow,
+        experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_CONDITIONS,
+        createdAt: condition.createdAt,
+        updatedAt: condition.updatedAt,
+        versionNumber: condition.versionNumber,
+        id: condition.id,
+        twoCharacterId: condition.twoCharacterId,
+        conditionName: condition.name,
+        conditionCode: condition.conditionCode,
+        conditionDescription: condition.description,
+        assignmentWeight: condition.assignmentWeight,
+      };
+      csvRows.push(conditionRow);
     });
-    individualExclusions.map((individualExclusion) => {
-      if (!mappedUserDefinition.has(individualExclusion.user.id)) {
-        const user = this.getConvertedUserInfo(individualExclusion.user);
-        mappedUserDefinition.set(user.id, user);
-      }
+
+    // Add partitions
+    partitions.forEach(partition => {
+      const partitionRow = {
+        ...experimentRow,
+        experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_PARTITIONS,
+        createdAt: partition.createdAt,
+        updatedAt: partition.updatedAt,
+        versionNumber: partition.versionNumber,
+        id: partition.id,
+        twoCharacterId: partition.twoCharacterId,
+        expPoint: partition.expPoint,
+        expId: partition.expId,
+        partitionDescription: partition.description,
+      };
+      csvRows.push(partitionRow);
     });
-    individualAssignments.map((assignment) => {
-      if (!mappedUserDefinition.has(assignment.user.id)) {
-        const user = this.getConvertedUserInfo(assignment.user);
-        mappedUserDefinition.set(user.id, user);
-      }
-    });
 
-    const userDefinition = Array.from(mappedUserDefinition.values());
-    let csvData = '';
-    const tableHeadings = [
-      'Experiment Information',
-      'Experiment Conditions',
-      'Experiment Partitions',
-      'Monitor Experiment Point',
-      'Experiment Individual Exclusion',
-      'Experiment Group Exclusion',
-      'Experiment Individual Assignments',
-      'Experiment Group Assignments',
-      'Experiment Users',
-    ];
-    // Experiment Information
-    csvData += tableHeadings[0] + '\r\n\n';
-    csvData += this.convertArrayToCsvForm([experimentInfo]);
-
-    // Experiment Conditions
-    csvData += tableHeadings[1] + '\r\n\n';
-    csvData += this.convertArrayToCsvForm(conditions);
-
-    // Experiment Partitions
-    csvData += tableHeadings[2] + '\r\n\n';
-    csvData += this.convertArrayToCsvForm(partitions);
-
-    // Experiment Monitor Points
-    csvData += tableHeadings[3] + '\r\n\n';
+    // Add marked experiment points
     if (monitoredExperimentPoints.length) {
-      monitoredExperimentPoints = monitoredExperimentPoints.map((monitoredPoint) => {
-        const data = {
-          ...monitoredPoint,
+      monitoredExperimentPoints.map((monitoredPoint) => {
+        const monitoredPointRow = {
+          ...experimentRow,
+          experimentElement: EXPERIMENT_ELEMENTS.MARKED_EXPERIMENT_POINT,
+          createdAt: monitoredPoint.createdAt,
+          updatedAt: monitoredPoint.updatedAt,
+          versionNumber: monitoredPoint.versionNumber,
+          id: monitoredPoint.id,
+          experimentId: monitoredPoint.experimentId,
           userId: monitoredPoint.user.id,
+          userGroup: monitoredPoint.user.group ? JSON.stringify(monitoredPoint.user.group) : '',
+          userWorkingGroup: monitoredPoint.user.workingGroup ? JSON.stringify(monitoredPoint.user.workingGroup) : '',
         };
-        delete data.user;
-        return data;
+        csvRows.push(monitoredPointRow);
       });
     }
-    csvData += this.convertArrayToCsvForm(monitoredExperimentPoints);
 
-    // Experiment Individual Exclusions
-    csvData += tableHeadings[4] + '\r\n\n';
+    // Add individual exclusions
     if (individualExclusions.length) {
-      individualExclusions = individualExclusions.map((individualExclusion) => {
-        const data = {
-          ...individualExclusion,
+      individualExclusions.map((individualExclusion) => {
+        const individualExclusionRow = {
+          ...experimentRow,
+          experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_INDIVIDUAL_EXCLUSION,
+          createdAt: individualExclusion.createdAt,
+          updatedAt: individualExclusion.updatedAt,
+          versionNumber: individualExclusion.versionNumber,
+          id: individualExclusion.id,
           experimentId: individualExclusion.experiment.id,
           userId: individualExclusion.user.id,
+          userGroup: individualExclusion.user.group ? JSON.stringify(individualExclusion.user.group) : '',
+          userWorkingGroup: individualExclusion.user.workingGroup ? JSON.stringify(individualExclusion.user.workingGroup) : '',
         };
-        delete data.user;
-        delete data.experiment;
-        return data;
+        csvRows.push(individualExclusionRow);
       });
     }
-    csvData += this.convertArrayToCsvForm(individualExclusions);
 
-    // Experiment Group Exclusions
-    csvData += tableHeadings[5] + '\r\n\n';
+    // Add group exclusion
     if (groupExclusions.length) {
-      groupExclusions = groupExclusions.map((groupExclusion) => {
-        const data = {
-          ...groupExclusion,
+      groupExclusions.map((groupExclusion) => {
+        const groupExclusionRow = {
+          ...experimentRow,
+          experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_GROUP_EXCLUSION,
+          createdAt: groupExclusion.createdAt,
+          updatedAt: groupExclusion.updatedAt,
+          versionNumber: groupExclusion.versionNumber,
+          id: groupExclusion.id,
           experimentId: groupExclusion.experiment.id,
+          groupId: groupExclusion.groupId,
         };
-        delete data.experiment;
-        return data;
+        csvRows.push(groupExclusionRow);
       });
     }
-    csvData += this.convertArrayToCsvForm(groupExclusions);
 
-    // Experiment Individual Assignments
-    csvData += tableHeadings[6] + '\r\n\n';
+    // Add individual assignments
     if (individualAssignments.length) {
-      individualAssignments = individualAssignments.map((assignment) => {
-        const data = {
-          ...assignment,
+      individualAssignments.map((assignment) => {
+        const assignmentRow = {
+          ...experimentRow,
+          experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_INDIVIDUAL_ASSIGNMENT,
+          createdAt: assignment.createdAt,
+          updatedAt: assignment.updatedAt,
+          versionNumber: assignment.versionNumber,
+          id: assignment.id,
           experimentId: assignment.experiment.id,
+          conditionId: assignment.condition.id,
+          assignmentType: assignment.assignmentType,
           userId: assignment.user.id,
-          conditionId: assignment.condition.id,
+          userGroup: assignment.user.group ? JSON.stringify(assignment.user.group) : '',
+          userWorkingGroup: assignment.user.workingGroup ? JSON.stringify(assignment.user.workingGroup) : '',
         };
-        delete data.experiment;
-        delete data.user;
-        delete data.condition;
-        return data;
+        csvRows.push(assignmentRow);
       });
     }
-    csvData += this.convertArrayToCsvForm(individualAssignments);
 
-    // Experiment Group Assignments
-    csvData += tableHeadings[7] + '\r\n\n';
+    // Add group assignments
     if (groupAssignments.length) {
-      groupAssignments = groupAssignments.map((assignment) => {
-        const data = {
-          ...assignment,
+      groupAssignments.map((assignment) => {
+        const assignmentRow = {
+          ...experimentRow,
+          experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_GROUP_ASSIGNMENTS,
+          createdAt: assignment.createdAt,
+          updatedAt: assignment.updatedAt,
+          versionNumber: assignment.versionNumber,
+          id: assignment.id,
           experimentId: assignment.experiment.id,
           conditionId: assignment.condition.id,
+          groupId: assignment.groupId,
         };
-        delete data.experiment;
-        delete data.condition;
-        return data;
+        csvRows.push(assignmentRow);
       });
     }
-    csvData += this.convertArrayToCsvForm(groupAssignments);
-
-    // Experiment Users
-    csvData += tableHeadings[8] + '\r\n\n';
-    csvData += this.convertArrayToCsvForm(userDefinition);
-
-    return csvData;
+    return this.convertArrayToCsvForm(csvRows);
   }
 
   private getStatsData(
@@ -457,12 +531,6 @@ export class AnalyticsService {
       partitions: partitionStats,
       conditions: conditionStats,
     };
-  }
-
-  private getConvertedUserInfo(user: ExperimentUser): any {
-    user.workingGroup = user.workingGroup ? (JSON.stringify(user.workingGroup) as any) : '';
-    user.group = user.group ? (JSON.stringify(user.group) as any) : '';
-    return user;
   }
 
   private convertArrayToCsvForm(data: any[]): string {
