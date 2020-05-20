@@ -18,8 +18,7 @@ export class AuthService {
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getIdToken$ = this.store$.pipe(
     select(selectCurrentUser),
-    filter(currentUser => !!currentUser),
-    map(currentUser => currentUser['token'])
+    map(currentUser => !!currentUser ? currentUser['token'] : null)
   )
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
 
