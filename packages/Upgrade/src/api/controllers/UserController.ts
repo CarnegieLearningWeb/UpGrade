@@ -2,6 +2,13 @@ import { JsonController, Post, Body, Get, Param } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
 import { UserRoleValidator } from './validators/UserRoleValidator';
+import { UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
+import { SERVER_ERROR } from 'upgrade_types';
+import { PaginationResponse } from '../../types';
+
+interface UserPaginationInfo extends PaginationResponse {
+  nodes: User[];
+}
 
 /**
  * @swagger
@@ -36,20 +43,76 @@ export class UserController {
 
   /**
    * @swagger
-   * /users:
-   *    get:
-   *       description: Get all users
-   *       produces:
+   * /users/paginated:
+   *    post:
+   *       description: Get Paginated Users
+   *       consumes:
    *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
+   *               searchParams:
+   *                type: object
+   *                properties:
+   *                  key:
+   *                    type: string
+   *                    enum: [all, firstName, lastName, email, role]
+   *                  string:
+   *                    type: string
+   *               sortParams:
+   *                  type: object
+   *                  properties:
+   *                    key:
+   *                     type: string
+   *                     enum: [firstName, lastName, email, role]
+   *                    sortAs:
+   *                     type: string
+   *                     enum: [ASC, DESC]
    *       tags:
    *         - Users
+   *       produces:
+   *         - application/json
    *       responses:
    *          '200':
-   *            description: Experiment Name List
+   *            description: Get Paginated Users
    */
-  @Get()
-  public getAllUser(): Promise<User[]> {
-    return this.userService.findAll();
+  @Post('/paginated')
+  public async paginatedFind(
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: UserPaginatedParamsValidator
+  ): Promise<UserPaginationInfo> {
+    if (!paginatedParams) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
+        )
+      );
+    }
+
+    const [users, count] = await Promise.all([
+      this.userService.findPaginated(
+        paginatedParams.skip,
+        paginatedParams.take,
+        paginatedParams.searchParams,
+        paginatedParams.sortParams
+      ),
+      this.userService.getTotalCount(),
+    ]);
+    return {
+      total: count,
+      nodes: users,
+      ...paginatedParams,
+    };
   }
 
   /**
