@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
-import { HttpClientService } from '../http/http-client.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class ExperimentDataService {
-  constructor(private http: HttpClientService) {}
+  constructor(private http: HttpClient) {}
 
   getAllExperiment(params: ExperimentPaginationParams) {
     const url = environment.api.getAllExperiments;
@@ -63,7 +63,7 @@ export class ExperimentDataService {
 
   exportExperimentInfo(experimentId: string) {
     const url = `${environment.api.generateCsv}/${experimentId}`;
-    return this.http.get(url, 'text');
+    return this.http.get(url, { responseType: 'text' });
   }
 
   fetchExperimentGraphInfo(params: any) {

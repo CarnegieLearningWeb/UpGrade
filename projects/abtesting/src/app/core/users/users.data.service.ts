@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClientService } from '../http/http-client.service';
 import { environment } from '../../../environments/environment';
 import { UserRole } from './store/users.model';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class UsersDataService {
-  constructor(private http: HttpClientService) {}
+  constructor(private http: HttpClient) {}
 
   fetchUsers(params: any) {
     const url = environment.api.getAllUsers;

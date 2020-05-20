@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { HttpClientService } from '../http/http-client.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class SettingsDataService {
-  constructor(private http: HttpClientService) {}
+  constructor(private http: HttpClient) {}
 
   getSettings() {
     const url = environment.api.toCheckAuth;
