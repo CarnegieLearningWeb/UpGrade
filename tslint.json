@@ -1,12 +1,19 @@
 {
   "extends": "tslint:recommended",
   "rules": {
-    "max-line-length": [true, 160],
+    "max-line-length": [
+      true,
+      160
+    ],
     "no-unnecessary-initializer": false,
     "no-var-requires": true,
-    "no-null-keyword": true,
+    "no-null-keyword": false,
     "no-consecutive-blank-lines": true,
-    "quotemark": [true, "single", "avoid-escape"],
+    "quotemark": [
+      true,
+      "single",
+      "avoid-escape"
+    ],
     "interface-name": false,
     "no-empty-interface": false,
     "no-namespace": false,
@@ -35,10 +42,24 @@
         ]
       }
     ],
-    "no-console": [true, "debug", "info", "time", "timeEnd", "trace"],
-    "no-inferrable-types": [true, "ignore-params"],
+    "no-console": [
+      true,
+      "debug",
+      "info",
+      "time",
+      "timeEnd",
+      "trace"
+    ],
+    "no-inferrable-types": [
+      true,
+      "ignore-params"
+    ],
     "no-switch-case-fall-through": true,
-    "typedef": [true, "call-signature", "parameter"],
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter"
+    ],
     "trailing-comma": [
       true,
       {
@@ -51,7 +72,10 @@
         "singleline": "never"
       }
     ],
-    "align": [true, "parameters"],
+    "align": [
+      true,
+      "parameters"
+    ],
     "class-name": true,
     "curly": true,
     "eofline": true,
@@ -67,10 +91,20 @@
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
     "no-var-keyword": true,
-    "one-line": [true, "check-open-brace", "check-catch", "check-else", "check-finally", "check-whitespace"],
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-catch",
+      "check-else",
+      "check-finally",
+      "check-whitespace"
+    ],
     "semicolon": true,
     "switch-default": true,
-    "triple-equals": [true, "allow-null-check"],
+    "triple-equals": [
+      true,
+      "allow-null-check"
+    ],
     "typedef-whitespace": [
       true,
       {
@@ -82,9 +116,18 @@
       }
     ],
     "variable-name": false,
-    "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"]
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type"
+    ]
   },
   "linterOptions": {
-    "exclude": ["node_modules"]
+    "exclude": [
+      "node_modules"
+    ]
   }
 }
