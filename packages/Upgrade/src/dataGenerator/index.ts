@@ -1,4 +1,3 @@
-import fs from 'fs';
 import mocker from 'mocker-data-generator';
 import fetch from 'node-fetch';
 import * as faker from 'faker';
