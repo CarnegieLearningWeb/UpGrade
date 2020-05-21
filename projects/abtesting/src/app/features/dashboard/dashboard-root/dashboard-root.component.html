@@ -31,7 +31,7 @@
               routerLinkActive="user-list--item-selected"
             >
                 <img [src]="user.imageUrl" class="user-pic" />
-                <span>{{ user.firstName + ' ' + user.lastName }}</span>
+                <span>{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
               </mat-list-item>
             </a>
             <mat-list-item class="user-list--item ft-16-600">

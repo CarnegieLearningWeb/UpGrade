@@ -10,7 +10,7 @@
     >
       <img [src]="currentUser?.imageUrl" class="profile-pic" />
       <div class="user-info">
-        <span class="ft-22-700 name">{{ currentUser?.firstName + ' ' + currentUser?.lastName }}</span>
+        <span class="ft-22-700 name">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
         <span class="ft-12-600 email">{{ '( ' + currentUser?.email + ' )' }}</span>
         <span class="ft-12-600 role">{{ currentUser?.role | titlecase }}</span>
       </div>
