@@ -52,7 +52,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .where(
         new Brackets((qb) => {
           qb.where(
-          '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete OR experiment.state = :preview) AND :context ILIKE ANY (ARRAY[experiment.context])',
             {
               enrolling: 'enrolling',
               enrollmentComplete: 'enrollmentComplete',
@@ -114,6 +114,27 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'insertExperiment', { experimentDoc }, errorMsg);
+        throw new Error(errorMsgString);
+      });
+
+    return result.raw;
+  }
+
+  public async insertBatchExps(experimentDocs: Array<Partial<Experiment>>, entityManager: EntityManager): Promise<Experiment[]> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .insert()
+      .into(Experiment)
+      .values(experimentDocs)
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentRepository',
+          'insertExperiment',
+          { experimentDocs },
+          errorMsg
+        );
         throw new Error(errorMsgString);
       });
 

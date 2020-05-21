@@ -116,7 +116,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(public experimentService: ExperimentService) {}
+  constructor(public experimentService: ExperimentService) { }
 
   /**
    * @swagger
@@ -366,6 +366,38 @@ export class ExperimentController {
     @CurrentUser() currentUser: User
   ): Promise<Experiment> {
     return this.experimentService.create(experiment, currentUser);
+  }
+
+  /**
+   * @swagger
+   * /experiments/batch:
+   *    post:
+   *       description: Generate New Experiments
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: experiments
+   *           required: true
+   *           schema:
+   *             type: array
+   *             items:
+   *               $ref: '#/definitions/Experiment'
+   *           description: Experiment Structure
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: New Experiment is created
+   */
+
+  @Post('/batch')
+  public createMultipleExperiments(
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment[]
+  ): Promise<Experiment[]> {
+    return this.experimentService.createMultipleExperiments(experiment);
   }
 
   /**

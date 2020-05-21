@@ -18,6 +18,9 @@ src/api/schema.gql
 # Typing #
 typings/
 
+#Package lock json
+package-lock.json
+
 # Dist #
 dist/
 tsconfig.build.json
