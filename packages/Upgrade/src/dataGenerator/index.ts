@@ -147,11 +147,6 @@ const generateFakeExperiments = async (numberOfAssignemts: number, host: string)
 
         return { ...exp, group, conditions, partitions: currPartitions };
     });
-    fs.writeFile('experiments.json', JSON.stringify(experiments), (err) => {
-        if (err) { throw err; }
-        console.log('complete');
-    });
-    console.log('generated: ', experiments.length);
     try {
         const response = await fetch(host, {
             body: JSON.stringify(experiments),

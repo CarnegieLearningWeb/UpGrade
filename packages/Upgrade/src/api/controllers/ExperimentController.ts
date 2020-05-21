@@ -382,8 +382,9 @@ export class ExperimentController {
    *           name: experiments
    *           required: true
    *           schema:
-   *             type: Array of Experiment object
-   *             $ref: '#/definitions/Experiment'
+   *             type: array
+   *             items:
+   *               $ref: '#/definitions/Experiment'
    *           description: Experiment Structure
    *       tags:
    *         - Experiments
@@ -395,10 +396,10 @@ export class ExperimentController {
    */
 
   @Post('/batch')
-  public createTestExperiments(
+  public createMultipleExperiments(
     @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment[]
   ): Promise<Experiment[]> {
-    return this.experimentService.createTestExperiments(experiment);
+    return this.experimentService.createMultipleExperiments(experiment);
   }
 
   /**

@@ -109,7 +109,7 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment, currentUser);
   }
 
-  public createTestExperiments(experiment: Experiment[]): Promise<Experiment[]> {
+  public createMultipleExperiments(experiment: Experiment[]): Promise<Experiment[]> {
     this.log.info('Generating test experiments => ', experiment.toString());
     return this.addBulkExperiments(experiment);
   }
