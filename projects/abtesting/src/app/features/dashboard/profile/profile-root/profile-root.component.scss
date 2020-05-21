@@ -96,44 +96,54 @@ $role-text-color: #0a7319;
         }
       }
 
+      .filter-options {
+        margin-right: 10px;
+        width: 80px;
+
+        ::ng-deep .mat-form-field-underline,
+        ::ng-deep .mat-form-field-ripple {
+          background-color: unset;
+        }
+      }
+
       .input {
         line-height: 18px;
       }
 
-      .users-list {
-        width: 100%;
+      .users-list-container {
+        overflow: auto;
 
-        th,
-        td {
-          border-color: var(--light-grey);
-          padding: 10px 5px;
-        }
-
-        th {
-          color: var(--grey-2);
-        }
-
-        tr.mat-footer-row,
-        tr.mat-row {
-          height: 55px;
-        }
-
-        td {
-          color: var(--black);
-        }
-
-        .mat-cell {
-          width: 20%;
-          word-break: break-word;
-
-          &.cdk-column-email,
-          &.cdk-column-role {
-            width: 25%;
-          }
-        }
-
-        .paginator {
+        .users-list {
           width: 100%;
+
+          th,
+          td {
+            border-color: var(--light-grey);
+            padding: 10px 5px;
+          }
+
+          th {
+            color: var(--grey-2);
+          }
+
+          tr.mat-footer-row,
+          tr.mat-row {
+            height: 55px;
+          }
+
+          td {
+            color: var(--black);
+          }
+
+          .mat-cell {
+            width: 20%;
+            word-break: break-word;
+
+            &.cdk-column-email,
+            &.cdk-column-role {
+              width: 25%;
+            }
+          }
         }
       }
     }

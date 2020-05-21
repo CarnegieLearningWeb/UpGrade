@@ -37,10 +37,12 @@ export const environment = {
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/experiments/state`,
     users: `${endpointApi}/users`, // Used to create a new user after login
+    getAllUsers: `${endpointApi}/users/paginated`,
     userRole: `${endpointApi}/users/role`,
     excludeUsers: `${endpointApi}/exclude/user`,
     excludeGroups: `${endpointApi}/exclude/group`,
     previewUsers: `${endpointApi}/previewUsers`,
+    getAllPreviewUsers: `${endpointApi}/previewUsers/paginated`,
     previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,
     allPartitions: `${endpointApi}/experiments/partitions`,
     allExperimentNames: `${endpointApi}/experiments/names`,

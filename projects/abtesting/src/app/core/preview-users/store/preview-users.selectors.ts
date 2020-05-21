@@ -16,3 +16,13 @@ export const selectIsPreviewUserLoading = createSelector(
   selectPreviewUsersState,
   state => state.isLoading
 );
+
+export const selectSkipPreviewUsers = createSelector(
+  selectPreviewUsersState,
+  state => state.skipPreviewUsers
+);
+
+export const selectTotalPreviewUsers = createSelector(
+  selectPreviewUsersState,
+  state => state.totalPreviewUsers
+);

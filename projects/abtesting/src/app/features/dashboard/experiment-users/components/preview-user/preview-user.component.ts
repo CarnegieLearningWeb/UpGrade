@@ -1,21 +1,23 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { MatTableDataSource } from '@angular/material';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
-import { Subscription } from 'rxjs';
+import { Subscription, fromEvent } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'users-preview-user',
   templateUrl: './preview-user.component.html',
   styleUrls: ['./preview-user.component.scss']
 })
-export class PreviewUserComponent implements OnInit, OnDestroy {
+export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;
   permissionSub: Subscription;
+  isAllPreviewUsersFetchedSub: Subscription;
   currentUser$ = this.authService.currentUser$;
   displayedColumns = ['id', 'totalAssignedConditions', 'assignment', 'actions'];
 
@@ -34,20 +36,10 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
   allExperimentNamesView = [];
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
 
-  private paginator: MatPaginator;
-  private sort: MatSort;
-
   editMode = null;
   isFormPopulatedFromEditMode = false;
 
-  @ViewChild(MatPaginator, { static: false }) set matPaginator(mp: MatPaginator) {
-    this.paginator = mp;
-    this.allPreviewUsers.paginator = this.paginator;
-  }
-  @ViewChild(MatSort, { static: false }) set matSort(ms: MatSort) {
-    this.sort = ms;
-    this.allPreviewUsers.sort = this.sort;
-  }
+  @ViewChild('previewUserTable', { static: false }) previewUserTable: ElementRef;
   @ViewChild('assignCondition', { static: false, read: ElementRef }) assignCondition: ElementRef;
 
   constructor(
@@ -81,8 +73,6 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     this.allPreviewUsersSub = this.previewUserService.allPreviewUsers$.subscribe(previewUsers => {
       this.allPreviewUsers = new MatTableDataSource();
       this.allPreviewUsers.data = previewUsers;
-      this.allPreviewUsers.paginator = this.paginator;
-      this.allPreviewUsers.sort = this.sort;
     });
 
     this.previewUserAssignConditionForm.get('assignedConditions').valueChanges.subscribe((conditions) => {
@@ -200,10 +190,33 @@ export class PreviewUserComponent implements OnInit, OnDestroy {
     return UserRole;
   }
 
+  ngAfterViewInit() {
+    // subtract other component's height
+    const windowHeight = window.innerHeight;
+    this.previewUserTable.nativeElement.style.maxHeight = (windowHeight - 500) + 'px';
+    let isAllPreviewUsersFetched = false;
+    this.isAllPreviewUsersFetchedSub = this.previewUserService.isAllPreviewUsersFetched().subscribe(
+      value => isAllPreviewUsersFetched = value
+    );
+    // TODO: Make a common logic for this
+    fromEvent(this.previewUserTable.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
+      if (!isAllPreviewUsersFetched) {
+        const height = this.previewUserTable.nativeElement.clientHeight;
+        const scrollHeight = this.previewUserTable.nativeElement.scrollHeight - height;
+        const scrollTop = this.previewUserTable.nativeElement.scrollTop;
+        const percent = Math.floor(scrollTop / scrollHeight * 100);
+        if (percent > 80) {
+          this.previewUserService.fetchPreviewUsers();
+        }
+      }
+    });
+  }
+
   ngOnDestroy() {
     this.allPreviewUsersSub.unsubscribe();
     this.allExperimentNamesSub.unsubscribe();
     this.selectExperimentByIdSub.unsubscribe();
     this.permissionSub.unsubscribe();
+    this.isAllPreviewUsersFetchedSub.unsubscribe();
   }
 }

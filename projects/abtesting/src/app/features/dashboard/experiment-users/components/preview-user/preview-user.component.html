@@ -17,139 +17,143 @@
     </button>
   </form>
 
-  <div class="preview-user-container" *ngIf="allPreviewUsers.data.length; else zeroState">
-    <form [formGroup]="previewUserAssignConditionForm">
-      <mat-progress-bar mode="indeterminate" *ngIf="isPreviewUserLoading$ | async"></mat-progress-bar>
-      <table mat-table [dataSource]="allPreviewUsers" formArrayName="assignedConditions">
-        <!-- ID Column -->
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'users.table.id.text' | translate }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element">{{ element.id }}</td>
-        </ng-container>
+  <mat-progress-bar
+    class="progress"
+    mode="indeterminate"
+    [ngClass]="(isPreviewUserLoading$ | async) === true ? 'progress--visible' : 'progress--hide'"
+  ></mat-progress-bar>
+  <div #previewUserTable class="preview-user-container">
+    <ng-container  *ngIf="allPreviewUsers.data.length; else zeroState">
+      <form [formGroup]="previewUserAssignConditionForm">
+        <table mat-table [dataSource]="allPreviewUsers" formArrayName="assignedConditions">
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'users.table.id.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element">{{ element.id }}</td>
+          </ng-container>
 
-        <ng-container matColumnDef="totalAssignedConditions">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'users.preview-users.table-total-assigned-condition-heading.text' | translate | uppercase }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element">{{ element?.assignments?.length || 0 }}</td>
-        </ng-container>
+          <ng-container matColumnDef="totalAssignedConditions">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'users.preview-users.table-total-assigned-condition-heading.text' | translate | uppercase }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element">{{ element?.assignments?.length || 0 }}</td>
+          </ng-container>
 
-        <!-- Assignment Column -->
-        <ng-container matColumnDef="assignment">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            <div class="assignment-heading">
-              <span>{{ 'users.preview-users.table-experiment-name-heading.text' | translate | uppercase }} </span>
-              <span>{{ 'users.preview-users.table-assigned-condition-heading.text' | translate | uppercase }}</span>
-            </div>
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element; let i = index" class="assignment-list">
-            <div #assignCondition *ngIf="editMode === i" class="condition-selection">
-              <div class="condition-container" *ngFor="let control of assignedConditions.controls; let formIndex = index" [formGroupName]="formIndex">
-                <mat-form-field class="ft-14-600 form-control">
-                  <mat-label>{{ 'users.preview-users.experiment.text' | translate }}</mat-label>
-                  <mat-select class="ft-14-600 form-control" formControlName="experimentId">
-                    <mat-option
-                      *ngFor="let experiment of allExperimentNamesView[formIndex]"
-                      [value]="experiment.id"
-                    >
-                      {{ experiment.name | titlecase }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <div class="condition-container-selection">
+          <!-- Assignment Column -->
+          <ng-container matColumnDef="assignment">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              <div class="assignment-heading">
+                <span>{{ 'users.preview-users.table-experiment-name-heading.text' | translate | uppercase }} </span>
+                <span>{{ 'users.preview-users.table-assigned-condition-heading.text' | translate | uppercase }}</span>
+              </div>
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let i = index" class="assignment-list">
+              <div #assignCondition *ngIf="editMode === i" class="condition-selection">
+                <div class="condition-container" *ngFor="let control of assignedConditions.controls; let formIndex = index" [formGroupName]="formIndex">
                   <mat-form-field class="ft-14-600 form-control">
-                    <mat-label>{{ 'global.condition.text' | translate | titlecase }}</mat-label>
-                    <mat-select class="ft-14-600 form-control" formControlName="conditionId">
+                    <mat-label>{{ 'users.preview-users.experiment.text' | translate }}</mat-label>
+                    <mat-select class="ft-14-600 form-control" formControlName="experimentId">
                       <mat-option
-                        *ngFor="let condition of experimentConditions[formIndex]"
-                        [value]="condition?.id"
+                        *ngFor="let experiment of allExperimentNamesView[formIndex]"
+                        [value]="experiment.id"
                       >
-                        {{ condition?.conditionCode | titlecase }}
+                        {{ experiment.name | titlecase }}
                       </mat-option>
                     </mat-select>
                   </mat-form-field>
-                  <app-shared-icons
-                    [iconType]="'delete'"
-                    class="action-icon--small"
-                    (click)="removeExperimentCondition(formIndex)"
-                  ></app-shared-icons>
-                </div>
-              </div>
-            </div>
-            <ng-container *ngIf="editMode !== i">
-              <ng-container
-                  [ngTemplateOutlet]="editExperimentName"
-                  [ngTemplateOutletContext]="{element: element}">
-              </ng-container>
-            </ng-container>
-            <button
-              *ngIf="editMode === i && previewUserAssignConditionForm.get('assignedConditions').value.length !== allExperimentNames.length"
-              type="button"
-              class="ft-12-700 add-new-experiment"
-              (click)="addNewExperimentCondition()"
-            >
-              {{ 'users.preview-users.add-new-experiment.text' | translate }}
-            </button>
-          </td>
-
-          <ng-template #editExperimentName let-element="element">
-              <ng-container *ngIf="element.assignments">
-                <div class="assigned-condition-list">
-                  <div class="assigned-condition-info" *ngFor="let assignment of element.assignments">
-                    <span>{{ assignment.experiment?.name }}</span>
-                    <span>{{ assignment.experimentCondition?.conditionCode }}</span>
-                    <mat-divider></mat-divider>
+                  <div class="condition-container-selection">
+                    <mat-form-field class="ft-14-600 form-control">
+                      <mat-label>{{ 'global.condition.text' | translate | titlecase }}</mat-label>
+                      <mat-select class="ft-14-600 form-control" formControlName="conditionId">
+                        <mat-option
+                          *ngFor="let condition of experimentConditions[formIndex]"
+                          [value]="condition?.id"
+                        >
+                          {{ condition?.conditionCode | titlecase }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <app-shared-icons
+                      [iconType]="'delete'"
+                      class="action-icon--small"
+                      (click)="removeExperimentCondition(formIndex)"
+                    ></app-shared-icons>
                   </div>
                 </div>
+              </div>
+              <ng-container *ngIf="editMode !== i">
+                <ng-container
+                    [ngTemplateOutlet]="editExperimentName"
+                    [ngTemplateOutletContext]="{element: element}">
+                </ng-container>
               </ng-container>
-          </ng-template>
-        </ng-container>
+              <button
+                *ngIf="editMode === i && previewUserAssignConditionForm.get('assignedConditions').value.length !== allExperimentNames.length"
+                type="button"
+                class="ft-12-700 add-new-experiment"
+                (click)="addNewExperimentCondition()"
+              >
+                {{ 'users.preview-users.add-new-experiment.text' | translate }}
+              </button>
+            </td>
 
-        <!-- Delete Column -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-            <div [ngClass]="{'icons-container': editMode === index}">
-              <span class="edit-icon">
+            <ng-template #editExperimentName let-element="element">
+                <ng-container *ngIf="element.assignments">
+                  <div class="assigned-condition-list">
+                    <div class="assigned-condition-info" *ngFor="let assignment of element.assignments">
+                      <span>{{ assignment.experiment?.name }}</span>
+                      <span>{{ assignment.experimentCondition?.conditionCode }}</span>
+                      <mat-divider></mat-divider>
+                    </div>
+                  </div>
+                </ng-container>
+            </ng-template>
+          </ng-container>
+
+          <!-- Delete Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <div [ngClass]="{'icons-container': editMode === index}">
+                <span class="edit-icon">
+                  <app-shared-icons
+                    *ngIf="(permissions?.users.update && editMode !== index); else saveBtnTemplate"
+                    [iconType]="'edit'"
+                    class="action-icon"
+                    (click)="editAssignedConditions(index)"
+                  ></app-shared-icons>
+                </span>
+
+                <ng-template #saveBtnTemplate>
+                  <button
+                    mat-raised-button
+                    *ngIf="permissions?.users.update"
+                    class="default-button"
+                    [ngClass]="{ 'default-button--disabled': !this.previewUserAssignConditionForm.valid }"
+                    [disabled]="!this.previewUserAssignConditionForm.valid"
+                    (click)="saveAssignedConditions(element?.id)"
+                  >
+                    {{ 'users.preview-users.save.text' | translate }}
+                  </button>
+                </ng-template>
+
                 <app-shared-icons
-                  *ngIf="(permissions?.users.update && editMode !== index); else saveBtnTemplate"
-                  [iconType]="'edit'"
+                  *ngIf="permissions?.users.delete"
+                  [iconType]="'delete'"
                   class="action-icon"
-                  (click)="editAssignedConditions(index)"
+                  (click)="removePreviewUser(element)"
                 ></app-shared-icons>
-              </span>
+              </div>
+            </td>
+          </ng-container>
 
-              <ng-template #saveBtnTemplate>
-                <button
-                  mat-raised-button
-                  *ngIf="permissions?.users.update"
-                  class="default-button"
-                  [ngClass]="{ 'default-button--disabled': !this.previewUserAssignConditionForm.valid }"
-                  [disabled]="!this.previewUserAssignConditionForm.valid"
-                  (click)="saveAssignedConditions(element?.id)"
-                >
-                  {{ 'users.preview-users.save.text' | translate }}
-                </button>
-              </ng-template>
-
-              <app-shared-icons
-                *ngIf="permissions?.users.delete"
-                [iconType]="'delete'"
-                class="action-icon"
-                (click)="removePreviewUser(element)"
-              ></app-shared-icons>
-            </div>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-    </form>
-
-    <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="5"></mat-paginator>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </form>
+    </ng-container>
   </div>
 
   <ng-template #zeroState>

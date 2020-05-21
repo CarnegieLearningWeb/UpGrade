@@ -14,6 +14,7 @@ import { debounceTime } from 'rxjs/operators';
 export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   errorLogData: any;
   errorLogSubscription: Subscription;
+  isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
   @ViewChild('ErrorLogContainer', { static: false }) errorLogContainer: ElementRef;
 
@@ -27,10 +28,6 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
         return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
-  }
-
-  ngOnDestroy() {
-    this.errorLogSubscription.unsubscribe();
   }
 
   // Used for keyvalue pipe to sort data by key
@@ -52,14 +49,23 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.errorLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
+    let isAllErrorLogFetched = false;
+    this.isAllErrorLogFetchedSub = this.logsService.isAllAuditLogsFetched().subscribe(value => isAllErrorLogFetched = value);
     fromEvent(this.errorLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-      const height = this.errorLogContainer.nativeElement.clientHeight;
-      const scrollHeight = this.errorLogContainer.nativeElement.scrollHeight - height;
-      const scrollTop = this.errorLogContainer.nativeElement.scrollTop;
-      const percent = Math.floor(scrollTop / scrollHeight * 100);
-      if (percent > 80) {
-        this.logsService.fetchErrorLogs();
+      if (!isAllErrorLogFetched) {
+        const height = this.errorLogContainer.nativeElement.clientHeight;
+        const scrollHeight = this.errorLogContainer.nativeElement.scrollHeight - height;
+        const scrollTop = this.errorLogContainer.nativeElement.scrollTop;
+        const percent = Math.floor(scrollTop / scrollHeight * 100);
+        if (percent > 80) {
+          this.logsService.fetchErrorLogs();
+        }
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.errorLogSubscription.unsubscribe();
+    this.isAllErrorLogFetchedSub.unsubscribe();
   }
 }

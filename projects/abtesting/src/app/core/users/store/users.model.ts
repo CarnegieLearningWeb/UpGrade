@@ -4,10 +4,26 @@ import { UserRole } from 'upgrade_types';
 
 export { UserRole };
 
+// TODO: Move to upgrade types
+export enum USER_SEARCH_SORT_KEY {
+  ALL = 'all',
+  FIRST_NAME = 'firstName',
+  LAST_NAME = 'lastName',
+  EMAIL = 'email',
+  ROLE = 'role',
+}
+
+export enum SORT_AS {
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC'
+}
+
 export interface UpdateUser {
   email: string;
   role: UserRole;
 }
+
+export const NUMBER_OF_USERS = 20;
 
 export interface User {
   createdAt: string;
@@ -23,6 +39,12 @@ export interface User {
 
 export interface UserState extends EntityState<User> {
   isUsersLoading: boolean;
+  skipUsers: number;
+  totalUsers: number;
+  searchKey: USER_SEARCH_SORT_KEY;
+  searchString: string;
+  sortKey: USER_SEARCH_SORT_KEY;
+  sortAs: SORT_AS;
 }
 
 export interface State extends AppState {

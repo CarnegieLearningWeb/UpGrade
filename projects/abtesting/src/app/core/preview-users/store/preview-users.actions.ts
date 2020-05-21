@@ -2,12 +2,13 @@ import { createAction, props } from '@ngrx/store';
 import { PreviewUsers, PreviewUserAssignCondition } from './preview-users.model';
 
 export const actionFetchPreviewUsers = createAction(
-  '[Preview Users] Fetch Preview Users'
+  '[Preview Users] Fetch Preview Users',
+  props<{ fromStarting?: boolean }>()
 );
 
 export const actionFetchPreviewUsersSuccess = createAction(
   '[Preview Users] Fetch Preview Users Success',
-  props<{ data: PreviewUsers[] }>()
+  props<{ data: PreviewUsers[], totalPreviewUsers: number }>()
 );
 
 export const actionFetchPreviewUsersFailure = createAction(
@@ -54,4 +55,14 @@ export const actionAssignConditionToPreviewUserSuccess = createAction(
 
 export const actionAssignConditionToPreviewUserFailure = createAction(
   '[Preview User] Assign Condition To Preview User Failure',
+);
+
+export const actionSetIsPreviewUsersLoading = createAction(
+  '[Preview User] Set Is Preview Users Loading',
+  props<{ isPreviewUsersLoading: boolean }>()
+);
+
+export const actionSetSkipPreviewUsers = createAction(
+  '[Preview User] Set Skip Preview Users',
+  props<{ skipPreviewUsers: number }>()
 );

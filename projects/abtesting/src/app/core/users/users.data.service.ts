@@ -7,9 +7,9 @@ import { HttpClient } from '@angular/common/http';
 export class UsersDataService {
   constructor(private http: HttpClient) {}
 
-  fetchUsers() {
-    const url = environment.api.users;
-    return this.http.get(url);
+  fetchUsers(params: any) {
+    const url = environment.api.getAllUsers;
+    return this.http.post(url, params);
   }
 
   updateUserRole(email: string, role: UserRole) {

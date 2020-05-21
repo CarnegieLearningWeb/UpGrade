@@ -3,7 +3,6 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
 import * as experimentActions from '../../experiments/store/experiments.actions';
-import * as previewUsersActions from '../../preview-users/store/preview-users.actions';
 import * as usersActions from '../../users/store/users.actions';
 import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
@@ -127,11 +126,10 @@ export class AuthEffects {
         switchMap((user: User) => {
           const actions = [
             experimentActions.actionGetExperiments({ fromStarting: true }),
-            previewUsersActions.actionFetchPreviewUsers(),
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
-            usersActions.actionFetchUsers(),
+            usersActions.actionFetchUsers({ fromStarting: true }),
             experimentActions.actionFetchExperimentContext(),
             settingsActions.actionGetToCheckAuth()
           ];

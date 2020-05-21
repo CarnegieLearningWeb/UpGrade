@@ -2,9 +2,10 @@ import { Injectable } from '@angular/core';
 import { AppState } from '../core.state';
 import { Store, select } from '@ngrx/store';
 import * as previewUsersActions from './store/preview-users.actions';
-import { selectIsPreviewUserLoading, selectAllPreviewUsers } from './store/preview-users.selectors';
+import { selectIsPreviewUserLoading, selectAllPreviewUsers, selectSkipPreviewUsers, selectTotalPreviewUsers } from './store/preview-users.selectors';
 import { map } from 'rxjs/operators';
 import { PreviewUserAssignCondition } from './store/preview-users.model';
+import { combineLatest } from 'rxjs';
 
 @Injectable()
 export class PreviewUsersService {
@@ -20,8 +21,17 @@ export class PreviewUsersService {
   );
   constructor(private store$: Store<AppState>) {}
 
-  fetchPreviewUsers() {
-    this.store$.dispatch(previewUsersActions.actionFetchPreviewUsers());
+  isAllPreviewUsersFetched() {
+    return combineLatest(
+      this.store$.pipe(select(selectSkipPreviewUsers)),
+      this.store$.pipe(select(selectTotalPreviewUsers))
+    ).pipe(
+      map(([skipPreviewUsers, totalPreviewUsers]) => skipPreviewUsers === totalPreviewUsers)
+    );
+  }
+
+  fetchPreviewUsers(fromStarting?: boolean) {
+    this.store$.dispatch(previewUsersActions.actionFetchPreviewUsers({ fromStarting }));
   }
 
   addPreviewUser(id: string) {
