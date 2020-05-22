@@ -4,7 +4,6 @@ import static org.upgradeplatform.utils.Utils.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Entity;
@@ -141,67 +140,21 @@ public class ExperimentClient implements AutoCloseable {
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
-			Optional<ExperimentsResponse> optExperimentsResponse = allExperiments.stream()
-					.filter(t -> isStringNull(experimentId) == false
-					? t.getExpId().toString().equals(experimentId) && t.getExpPoint().equals(experimentPoint)
-							: t.getExpPoint().equals(experimentPoint) && isStringNull(t.getExpId().toString()))
-					.findFirst();
+			ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, allExperiments);
 
-			if( ! optExperimentsResponse.isPresent()) {
-				if (callbacks != null) {
-					callbacks.onSuccess(new ExperimentsResponse());
-			}
-				return;
-			}
-			ExperimentsResponse experimentsResponse = optExperimentsResponse.get();
-
-			AssignedCondition assignedCondition = new AssignedCondition(
-					experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-					experimentsResponse.getAssignedCondition().getConditionCode(),
-					experimentsResponse.getAssignedCondition().getDescription());
-
-			ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
-					experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
-
-			if (callbacks != null)
+			if (callbacks != null) {
 				callbacks.onSuccess(resultCondition);
+			}
 		} else {
 			getAllExperimentCondition("", new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-					if (experiments != null && experiments.size() > 0) {
+				    ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, experiments);
 
-						Optional<ExperimentsResponse> result = experiments.stream()
-								.filter(t -> isStringNull(experimentId) == false
-								? t.getExpId().toString().equals(experimentId)
-										&& t.getExpPoint().equals(experimentPoint)
-										: t.getExpPoint().equals(experimentPoint)
-										&& isStringNull(t.getExpId().toString()))
-								.findFirst();
-
-						if (result.isPresent()) {
-							ExperimentsResponse experimentsResponse = result.get();
-
-							AssignedCondition assignedCondition = new AssignedCondition(
-									experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-									experimentsResponse.getAssignedCondition().getConditionCode(),
-									experimentsResponse.getAssignedCondition().getDescription());
-
-							ExperimentsResponse resultCondition = new ExperimentsResponse(
-									experimentsResponse.getExpId().toString(), experimentsResponse.getExpPoint(),
-									experimentsResponse.getTwoCharacterId(), assignedCondition);
-
-							if (callbacks != null)
-								callbacks.onSuccess(resultCondition);
-						} else {
-							if (callbacks != null)
-								callbacks.onSuccess(new ExperimentsResponse());
-						}
-					} else {
-						if (callbacks != null)
-							callbacks.onSuccess(new ExperimentsResponse());
-					}
+				    if (callbacks != null) {
+				        callbacks.onSuccess(resultCondition);
+				    }
 				}
 
 				@Override
@@ -213,6 +166,28 @@ public class ExperimentClient implements AutoCloseable {
 			});
 		}
 	}
+
+    private ExperimentsResponse findExperimentResponse(String experimentPoint, String experimentId,
+                                                       List<ExperimentsResponse> experiments) {
+        return experiments.stream()
+                          .filter(t -> t.getExpPoint().equals(experimentPoint) &&
+                                       (isStringNull(experimentId) ? isStringNull(t.getExpId().toString())
+                                                                   : t.getExpId().toString().equals(experimentId)))
+                          .findFirst()
+                          .map(ExperimentClient::copyExperimentResponse)
+                          .orElse(new ExperimentsResponse());
+    }
+
+    private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
+        AssignedCondition assignedCondition = new AssignedCondition(
+        		experimentsResponse.getAssignedCondition().getTwoCharacterId(),
+        		experimentsResponse.getAssignedCondition().getConditionCode(),
+        		experimentsResponse.getAssignedCondition().getDescription());
+
+        ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
+        		experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+        return resultCondition;
+    }
 
 	public void markExperimentPoint(final String experimentPoint,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
