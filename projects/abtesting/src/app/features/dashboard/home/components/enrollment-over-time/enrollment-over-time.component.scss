@@ -1,10 +1,6 @@
 .enrollment-over-time {
   padding: 0 34px 34px;
 
-  &__title {
-    color: var(--black-2);
-  }
-
   .enrollment-filters {
     display: flex;
     justify-content: space-between;
@@ -90,16 +86,17 @@
       }
     }
   }
+
+  ::ng-deep .ngx-charts {
+    ::ng-deep text {
+      font-family: 'Open Sans';
+      font-weight: 600;
+    }
+  }
 }
 
-::ng-deep .mat-checkbox-layout,
-::ng-deep .mat-checkbox-label {
+::ng-deep .mat-option .mat-checkbox-layout,
+::ng-deep .mat-option .mat-checkbox-label {
   width: 100% !important;
 }
 
-::ng-deep .ngx-charts {
-  ::ng-deep text {
-    font-family: 'Open Sans';
-    font-weight: 600;
-  }
-}

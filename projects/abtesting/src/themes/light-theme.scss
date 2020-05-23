@@ -67,9 +67,24 @@ contrast: (
 )
 );
 
+// Background colors for light themes.
+$background-color: #f0f2f9;
+$shadow-color: rgba(0, 0, 0, 0.12);
+
+// Foreground colors for light themes.
+$icon-color: #646E7B;
+$text-color: #222b45;
 
 $primary: mat-palette($mat-blue);
 $accent: mat-palette($mat-light-blue);
 $warn: mat-palette($mat-red);
 
-$theme: mat-light-theme($primary, $accent, $warn);
+$light-theme: mat-light-theme($primary, $accent, $warn);
+
+// Insert and bind custom background and foreground colors
+$background: map-get($light-theme, background);
+$foreground: map-get($light-theme, foreground);
+$background: map_merge($background, (background: $background-color, shadow-color: $shadow-color));
+$foreground: map_merge($foreground, (text: $text-color, icon: $icon-color, icons: $icon-color));
+$light-theme: map_merge($light-theme, (background: $background));
+$light-theme: map_merge($light-theme, (foreground: $foreground));

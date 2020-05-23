@@ -81,7 +81,6 @@ $action-msg-font-size: 15px;
         padding-bottom: 3px;
         width: 125px;
         word-wrap: break-word;
-        color: var(--black);
       }
 
       .link {
@@ -95,7 +94,6 @@ $action-msg-font-size: 15px;
 
         &-msg {
           margin-right: 5px;
-          color: var(--black);
           font-size: $action-msg-font-size !important;
 
           &-error {

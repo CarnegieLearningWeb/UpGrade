@@ -75,11 +75,12 @@
                         </mat-option>
                       </mat-select>
                     </mat-form-field>
-                    <app-shared-icons
-                      [iconType]="'delete'"
+                    <mat-icon
                       class="action-icon--small"
                       (click)="removeExperimentCondition(formIndex)"
-                    ></app-shared-icons>
+                    >
+                      delete_outline
+                    </mat-icon>
                   </div>
                 </div>
               </div>
@@ -105,7 +106,6 @@
                     <div class="assigned-condition-info" *ngFor="let assignment of element.assignments">
                       <span>{{ assignment.experiment?.name }}</span>
                       <span>{{ assignment.experimentCondition?.conditionCode }}</span>
-                      <mat-divider></mat-divider>
                     </div>
                   </div>
                 </ng-container>
@@ -116,21 +116,20 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <div [ngClass]="{'icons-container': editMode === index}">
-                <span class="edit-icon">
-                  <app-shared-icons
-                    *ngIf="(permissions?.users.update && editMode !== index); else saveBtnTemplate"
-                    [iconType]="'edit'"
-                    class="action-icon"
-                    (click)="editAssignedConditions(index)"
-                  ></app-shared-icons>
-                </span>
+              <div class="icons-container" [ngClass]="{'icons-container--edit-mode': editMode === index}">
+                <mat-icon
+                  *ngIf="(permissions?.users.update && editMode !== index); else saveBtnTemplate"
+                  class="action-icon action-icon--edit"
+                  (click)="editAssignedConditions(index)"
+                >
+                  create
+                </mat-icon>
 
                 <ng-template #saveBtnTemplate>
                   <button
                     mat-raised-button
                     *ngIf="permissions?.users.update"
-                    class="default-button"
+                    class="save-btn default-button"
                     [ngClass]="{ 'default-button--disabled': !this.previewUserAssignConditionForm.valid }"
                     [disabled]="!this.previewUserAssignConditionForm.valid"
                     (click)="saveAssignedConditions(element?.id)"
@@ -139,12 +138,13 @@
                   </button>
                 </ng-template>
 
-                <app-shared-icons
+                <mat-icon
                   *ngIf="permissions?.users.delete"
-                  [iconType]="'delete'"
                   class="action-icon"
                   (click)="removePreviewUser(element)"
-                ></app-shared-icons>
+                >
+                  delete_outline
+                </mat-icon>
               </div>
             </td>
           </ng-container>

@@ -1,12 +1,9 @@
-$white-background: #f0f2f9;
-
 mat-drawer-container {
   width: 100%;
   height: 100%;
 }
 
 mat-drawer {
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
   width: 243px;
 }
 
@@ -18,7 +15,6 @@ mat-drawer {
   .logo {
     display: flex;
     align-items: flex-end;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     padding: 0 26px;
     height: 150px;
 
@@ -44,34 +40,23 @@ mat-drawer {
       }
 
       .nav-item {
+        display: flex;
+        align-items: center;
         cursor: pointer;
         padding: 0.75rem 1rem;
         width: 100%;
         text-align: inherit;
         text-decoration: none;
-        color: var(--black-2);
         user-select: none;
 
         .icon {
           margin-right: 5px;
-
-          &--activated {
-            margin-right: 5px;
-
-            ::ng-deep #Logs--Error {
-              fill: var(--white);
-            }
-          }
         }
 
         &.selected {
           border-radius: 7px;
           background-color: var(--blue);
           color: var(--white);
-
-          ::ng-deep svg {
-            fill: white;
-          }
         }
       }
     }
@@ -79,13 +64,11 @@ mat-drawer {
 
   .profile {
     text-decoration: none;
-    color: var(--black-2);
   }
 
   .user {
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     padding: 1rem;
 
     &-list {
@@ -110,30 +93,28 @@ mat-drawer {
     }
 
     .logout-link {
+      display: flex;
+      align-items: center;
       margin-top: 10px;
 
       &:hover {
         cursor: pointer;
       }
 
-      ::ng-deep svg {
+      .icon {
         transform: rotate(180deg);
         margin-right: 10px;
-        width: 26px;
-        height: 20px;
       }
     }
   }
 }
 
 .drawer__main-content {
-  background-color: $white-background;
-
   &-header {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    max-height: 50px;
+    height: 50px;
 
     .theme-selector {
       display: flex;

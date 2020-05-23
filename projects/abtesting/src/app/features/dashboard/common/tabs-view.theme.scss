@@ -1,0 +1,15 @@
+@import '~@angular/material/theming';
+
+@mixin tabs-view-theme($theme) {
+  $background: map-get($theme, background);
+
+  .tabs-container {
+    .tabs-wrapper {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+
+    .mat-tab-header {
+      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+    }
+  }
+}

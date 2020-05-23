@@ -92,12 +92,13 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <app-shared-icons
-            [iconType]="'delete'"
-            class="remove-icon"
+          <mat-icon
             *ngIf="groupIndex !== 0 && groupIndex !== 1"
+            class="remove-icon"
             (click)="removeConditionOrPartition('condition', groupIndex)"
-          ></app-shared-icons>
+          >
+            delete_outline
+          </mat-icon>
         </mat-cell>
       </ng-container>
 
@@ -197,12 +198,13 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-          <app-shared-icons
-            [iconType]="'delete'"
-            class="remove-icon"
+          <mat-icon
             *ngIf="groupIndex !== 0"
+            class="remove-icon"
             (click)="removeConditionOrPartition('partition', groupIndex)"
-          ></app-shared-icons>
+          >
+            delete_outline
+          </mat-icon>
         </mat-cell>
       </ng-container>
 

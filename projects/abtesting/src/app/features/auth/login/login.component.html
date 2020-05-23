@@ -1,20 +1,24 @@
-<div class="login-container">
-  <div class="login">
-    <div class="login-info-container">
-      <app-shared-icons [iconType]="'login-img'"></app-shared-icons>
-      <div class="login-info">
-        <span class="login-info__title ft-36-800">{{ 'global.app.name' | translate }}</span>
-        <span class="login-info__description ft-16-700">{{ 'global.app.description' | translate }}</span>
+<div [class]="(theme$ | async) + ' ' + 'login-theme'">
+  <div class="login-container">
+    <mat-card class="login">
+      <div class="login-info-container">
+        <app-shared-icons
+          [iconType]="(theme$ | async) === ThemeOptions.DARK_THEME ? 'login-dark' : 'login-light'"
+        ></app-shared-icons>
+        <div class="login-info">
+          <span class="login-info__title ft-36-800">{{ 'global.app.name' | translate }}</span>
+          <span class="login-info__description ft-16-700">{{ 'global.app.description' | translate }}</span>
+        </div>
       </div>
-    </div>
-    <button #googleBtn class="google-sign-in-btn ft-16-700" (click)="login()">
-      <app-shared-icons [iconType]="'google'"></app-shared-icons>
-      {{ 'login.sign-in-btn.text' | translate }}
-    </button>
-    <span class="info ft-12-700">
-      {{ 'login.description-1.text' | translate }}
-      <span class="info--terms">{{ 'login.description-2.text' | translate }}</span>
-      {{ 'login.description-3.text' | translate }}
-    </span>
+      <button #googleBtn class="google-sign-in-btn ft-16-700" (click)="login()">
+        <app-shared-icons [iconType]="'google'"></app-shared-icons>
+        {{ 'login.sign-in-btn.text' | translate }}
+      </button>
+      <span class="info ft-12-700">
+        {{ 'login.description-1.text' | translate }}
+        <span class="info--terms">{{ 'login.description-2.text' | translate }}</span>
+        {{ 'login.description-3.text' | translate }}
+      </span>
+    </mat-card>
   </div>
 </div>

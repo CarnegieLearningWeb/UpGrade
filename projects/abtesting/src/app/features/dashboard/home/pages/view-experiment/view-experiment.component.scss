@@ -1,16 +1,8 @@
-$white-background: #f0f2f9;
-$selected-range-color: #c2d1ff;
 $dark-grey-text-color: #646e7b;
 $font-size-small: 15px;
 
 .experiment-container {
-  background-color: $white-background;
   padding: 0 2.75rem 2.75rem;
-
-  .experiment-title,
-  .experiment-link {
-    color: var(--black-2);
-  }
 
   .experiment-link {
     text-decoration: none;
@@ -19,11 +11,9 @@ $font-size-small: 15px;
   .experiment {
     margin-top: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-    background-color: var(--white);
+    padding: 0;
 
     &-info {
-      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
       padding: 34px 34px 0;
 
       .experiment-overview {
@@ -34,7 +24,6 @@ $font-size-small: 15px;
         &-title {
           display: flex;
           flex-direction: column;
-          color: var(--black-2);
         }
 
         &-partitions {
@@ -49,7 +38,6 @@ $font-size-small: 15px;
           .button {
             margin-left: 24px !important;
             border: 1px solid var(--blue);
-            background: $white-background;
             width: 85px;
             height: 40px;
             color: var(--blue);
@@ -76,7 +64,6 @@ $font-size-small: 15px;
     }
 
     &-secondary-info {
-      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
       padding: 34px 34px 24px;
 
       &-container {
@@ -112,6 +99,12 @@ $font-size-small: 15px;
                   width: 15px;
                   height: 15px;
                 }
+              }
+
+              .edit-icon {
+                width: 18px;
+                height: 18px;
+                font-size: var(--text-size-x-large);
               }
             }
 
@@ -180,7 +173,6 @@ $font-size-small: 15px;
             border-radius: 14px;
             background-color: rgba(216, 216, 216, 0.6);
             padding: 7px 10px;
-            color: var(--black-2);
 
             &:hover {
               cursor: pointer;
@@ -197,11 +189,6 @@ $font-size-small: 15px;
 
     &-partition {
       margin-bottom: 24px;
-      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
-    }
-
-    .title {
-      color: var(--black-2);
     }
 
     .table {
@@ -214,7 +201,6 @@ $font-size-small: 15px;
       }
 
       mat-header-cell {
-        border-color: var(--light-grey);
         color: var(--grey-2);
       }
     }
@@ -225,11 +211,6 @@ $font-size-small: 15px;
   background-color: var(--blue);
 }
 
-::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-in-range {
-  background-color: $selected-range-color;
-}
-
-::ng-deep .owl-dt-container-info .owl-dt-container-info-active,
-::ng-deep .owl-dt-container-info .owl-dt-container-range:last-child {
+::ng-deep .owl-dt-container-info .owl-dt-container-info-active {
   color: var(--blue);
 }

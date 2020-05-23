@@ -1,0 +1,11 @@
+@import '~@angular/material/theming';
+
+@mixin experiment-status-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .experiment-status {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+  }
+}

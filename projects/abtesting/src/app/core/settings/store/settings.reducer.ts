@@ -11,7 +11,7 @@ const reducer = createReducer(
   initialState,
   on(
     SettingsActions.actionChangeTheme,
-    (state, action) => ({ ...state, ...action })
+    (state, { theme }) => ({ ...state, theme })
   ),
   on(
     SettingsActions.actionSetToCheckAuthSuccess,

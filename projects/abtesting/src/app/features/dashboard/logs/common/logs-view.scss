@@ -2,9 +2,8 @@
   padding-top: 10px;
   overflow: auto;
 
-  .timeline-container {
+  .timeline-section {
     display: flex;
-    box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
     padding: 16px 34px;
 
     .error-date {
@@ -13,7 +12,6 @@
 
       .date-info {
         display: block;
-        color: var(--black-2);
       }
 
       .day-info {
