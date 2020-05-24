@@ -174,7 +174,6 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
       this.isAllUsersFetchedSub = this.usersService.isAllUsersFetched().subscribe(
         value => isAllUsersFetched = value
       );
-      // TODO: Make a common logic for this
       fromEvent(usersTableContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
         if (!isAllUsersFetched) {
           const height = usersTableContainer.nativeElement.clientHeight;

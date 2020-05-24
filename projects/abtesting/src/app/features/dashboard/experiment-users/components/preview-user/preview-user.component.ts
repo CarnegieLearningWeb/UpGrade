@@ -198,7 +198,6 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isAllPreviewUsersFetchedSub = this.previewUserService.isAllPreviewUsersFetched().subscribe(
       value => isAllPreviewUsersFetched = value
     );
-    // TODO: Make a common logic for this
     fromEvent(this.previewUserTable.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
       if (!isAllPreviewUsersFetched) {
         const height = this.previewUserTable.nativeElement.clientHeight;

@@ -58,7 +58,6 @@ const reducer = createReducer(
   on(
     previewUsersActions.actionAssignConditionToPreviewUserSuccess,
     (state, { previewUser }) => {
-      // TODO: Check why Update One is not directly replacing entire entity
       const assignments = previewUser.assignments ? previewUser.assignments : [];
       return adapter.updateOne({ id: previewUser.id, changes: { ...previewUser, assignments}}, { ...state, isLoading: false });
     }

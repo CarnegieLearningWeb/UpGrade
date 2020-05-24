@@ -117,7 +117,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return !!isPartitionFound.length;
   }
 
-  // TODO: Update experiment filter logic
   applyFilter(filterValue: string) {
     this.filterExperimentPredicate(this.selectedExperimentFilterOption);
     if (filterValue !== undefined) {
@@ -192,7 +191,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
-    // TODO: should implement persist search
+
     this.experimentService.setSearchString(null);
     this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
     this.experimentService.setSortKey(null);
