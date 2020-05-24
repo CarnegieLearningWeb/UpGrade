@@ -50,7 +50,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     const windowHeight = window.innerHeight;
     this.errorLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
     let isAllErrorLogFetched = false;
-    this.isAllErrorLogFetchedSub = this.logsService.isAllAuditLogsFetched().subscribe(value => isAllErrorLogFetched = value);
+    this.isAllErrorLogFetchedSub = this.logsService.isAllErrorLogsFetched().subscribe(value => isAllErrorLogFetched = value);
     fromEvent(this.errorLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
       if (!isAllErrorLogFetched) {
         const height = this.errorLogContainer.nativeElement.clientHeight;
