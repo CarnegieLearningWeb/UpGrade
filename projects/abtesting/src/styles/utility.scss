@@ -4,11 +4,19 @@
   font-weight: $weight !important;
 }
 
-* {
-  outline: none;
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
+  margin: 0;
+  line-height: 1.5;
   font-family: 'Open Sans';
   font-weight: 400;
 }
@@ -26,6 +34,52 @@ button:focus {
   font-family: 'Open Sans';
   font-size: var(--text-size-xxx-large);
   font-weight: 700;
+}
+
+hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+pre {
+  // Remove browser default top margin
+  margin-top: 0;
+  // Reset browser default of `1em` to use `rem`s
+  margin-bottom: 1rem;
+  // Don't allow content to break outside
+  overflow: auto;
+}
+
+img {
+  border-style: none;
+  vertical-align: middle;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+button,
+[type='button'] {
+  &:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 // Styles for Fonts
@@ -47,7 +101,7 @@ button:focus {
 //   font-weight: 800;
 
 .ft-10-400 {
-  @include set-font(10, 400)
+  @include set-font(10, 400);
 }
 
 .ft-12-400 {
