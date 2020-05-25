@@ -5,6 +5,7 @@ import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
 import { Subscription, fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
   selector: 'error-logs',
@@ -16,9 +17,13 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   errorLogSubscription: Subscription;
   isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
+  theme$ = this.settingsService.theme$;
   @ViewChild('ErrorLogContainer', { static: false }) errorLogContainer: ElementRef;
 
-  constructor(private logsService: LogsService) {}
+  constructor(
+    private logsService: LogsService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit() {
     this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe(errorLogs => {

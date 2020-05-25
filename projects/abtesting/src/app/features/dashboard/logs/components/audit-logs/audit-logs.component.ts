@@ -5,6 +5,7 @@ import { Subscription, fromEvent } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { debounceTime } from 'rxjs/operators';
+import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
   selector: 'audit-logs',
@@ -16,9 +17,13 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   auditLogsSubscription: Subscription;
   isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
+  theme$ = this.settingsService.theme$;
   @ViewChild('auditLogContainer', { static: false }) auditLogContainer: ElementRef;
 
-  constructor(private logsService: LogsService) {}
+  constructor(
+    private logsService: LogsService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit() {
     this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe(logs => {
