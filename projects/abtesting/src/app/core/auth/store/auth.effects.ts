@@ -130,7 +130,6 @@ export class AuthEffects {
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
             usersActions.actionFetchUsers({ fromStarting: true }),
-            experimentActions.actionFetchExperimentContext(),
             settingsActions.actionGetToCheckAuth()
           ];
           // Set theme from localstorage if exist

@@ -1,10 +1,9 @@
-import { Component, ChangeDetectionStrategy, Inject, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject, ViewChild, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
-  EXPERIMENT_STATE,
   ExperimentVM
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
@@ -15,7 +14,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
   styleUrls: ['./new-experiment.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewExperimentComponent {
+export class NewExperimentComponent implements OnInit {
   newExperimentData: any = {};
   selectedStepperIndex = 0;
   experimentInfo: ExperimentVM;
@@ -29,6 +28,11 @@ export class NewExperimentComponent {
     if (this.data) {
       this.experimentInfo = this.data.experiment;
     }
+  }
+
+  ngOnInit() {
+    // Used to fetch context only once
+    this.experimentService.fetchExperimentContext();
   }
 
   onNoClick(): void {

@@ -36,7 +36,12 @@
     </button>
   </div>
 
-  <div class="experiment-list-table-container" #tableContainer>
+  <div
+    scroll
+    (scrolled)="fetchExperimentOnScroll()"
+    class="experiment-list-table-container"
+    #tableContainer
+  >
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
     <table
       class="experiment-list"

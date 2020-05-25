@@ -1,5 +1,10 @@
 <mat-progress-bar mode="indeterminate" *ngIf="isErrorLogLoading$ | async"></mat-progress-bar>
-<div class="logs" #ErrorLogContainer>
+<div
+  scroll
+  (scrolled)="fetchErrorLogOnScroll()"
+  class="logs"
+  #ErrorLogContainer
+>
 
   <ng-container *ngIf="(errorLogData | json) != '{}'; else zeroStateAudit">
     <div class="timeline-section" *ngFor="let logData of errorLogData | keyvalue: valueDescOrder">

@@ -27,6 +27,7 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
   isUsersLoadingSub: Subscription;
   currentUser: User;
   currentUserSub: Subscription;
+  isAllUsersFetched = false;
   isAllUsersFetchedSub: Subscription;
   searchString: string;
   toCheckAuth$ = this.settingsService.toCheckAuth$;
@@ -41,7 +42,8 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
 
   @ViewChild('usersTable', { static: false }) set content(content: ElementRef) {
     if (content) {
-       this.fetchUsersOnScroll(content);
+      const windowHeight = window.innerHeight;
+      content.nativeElement.style.maxHeight = (windowHeight - 523) + 'px';
     }
  }
  // Used to prevent execution of searchInput setter multiple times
@@ -88,6 +90,10 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
         this.applyFilter(this.searchString);
       }
     });
+
+    this.isAllUsersFetchedSub = this.usersService.isAllUsersFetched().subscribe(
+      value => this.isAllUsersFetched = value
+    );
   }
 
   // Modify angular material's table's default search behavior
@@ -166,25 +172,9 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
     this.usersService.setSearchString(searchString);
   }
 
-  fetchUsersOnScroll(usersTableContainer) {
-    if (!this.isAllUsersFetchedSub) {
-      const windowHeight = window.innerHeight;
-      usersTableContainer.nativeElement.style.maxHeight = (windowHeight - 523) + 'px';
-      let isAllUsersFetched = false;
-      this.isAllUsersFetchedSub = this.usersService.isAllUsersFetched().subscribe(
-        value => isAllUsersFetched = value
-      );
-      fromEvent(usersTableContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-        if (!isAllUsersFetched) {
-          const height = usersTableContainer.nativeElement.clientHeight;
-          const scrollHeight = usersTableContainer.nativeElement.scrollHeight - height;
-          const scrollTop = usersTableContainer.nativeElement.scrollTop;
-          const percent = Math.floor(scrollTop / scrollHeight * 100);
-          if (percent > 80) {
-            this.usersService.fetchUsers();
-          }
-        }
-      });
+  fetchUsersOnScroll() {
+    if (!this.isAllUsersFetched) {
+      this.usersService.fetchUsers();
     }
   }
 
