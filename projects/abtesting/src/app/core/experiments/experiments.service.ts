@@ -21,7 +21,9 @@ import {
   selectSearchString,
   selectSearchKey,
   selectExperimentContext,
-  selectExperimentGraphInfo
+  selectExperimentGraphInfo,
+  selectSkipExperiment,
+  selectTotalExperiment
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -63,6 +65,15 @@ export class ExperimentService {
       map(([isLoading, experiments]) => {
         return !isLoading || experiments.length;
       })
+    );
+  }
+
+  isAllExperimentsFetched() {
+    return combineLatest(
+      this.store$.pipe(select(selectSkipExperiment)),
+      this.store$.pipe(select(selectTotalExperiment))
+    ).pipe(
+      map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments)
     );
   }
 

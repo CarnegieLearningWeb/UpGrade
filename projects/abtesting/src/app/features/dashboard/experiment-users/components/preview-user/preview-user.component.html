@@ -22,7 +22,12 @@
     mode="indeterminate"
     [ngClass]="(isPreviewUserLoading$ | async) === true ? 'progress--visible' : 'progress--hide'"
   ></mat-progress-bar>
-  <div #previewUserTable class="preview-user-container">
+  <div
+    scroll
+    (scrolled)="fetchPreviewUserOnScroll()"
+    #previewUserTable
+    class="preview-user-container"
+  >
     <ng-container  *ngIf="allPreviewUsers.data.length; else zeroState">
       <form [formGroup]="previewUserAssignConditionForm">
         <table mat-table [dataSource]="allPreviewUsers" formArrayName="assignedConditions">
