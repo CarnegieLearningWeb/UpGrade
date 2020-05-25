@@ -35,6 +35,11 @@
       }
 
       .remove-icon {
+        display: flex;
+        width: 18px;
+        height: 18px;
+        font-size: var(--text-size-x-large);
+
         &:hover {
           cursor: pointer;
         }

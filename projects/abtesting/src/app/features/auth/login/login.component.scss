@@ -1,70 +1,73 @@
-$white-background: #f0f2f9;
 $login-info-text-color: #6e6f72;
 
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: $white-background;
+.login-theme {
   height: 100%;
 
-  .login {
+  .login-container {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    border-radius: 6px;
-    background-color: var(--white);
-    width: 653px;
-    height: 664px;
+    justify-content: center;
+    height: 100%;
 
-    &-info-container {
+    .login {
       display: flex;
-      position: relative;
-      justify-content: center;
-      height: 489px;
-
-      .login-info {
-        position: absolute;
-        top: 40px;
-        text-align: center;
-
-        &__title {
-          display: block;
-          color: var(--white);
-        }
-
-        &__description {
-          display: block;
-          margin-top: 8px;
-          color: var(--white);
-        }
-      }
-    }
-
-    .google-sign-in-btn {
-      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      margin: 49px 0 12px;
-      border: solid 1px var(--blue);
-      border-radius: 4px;
-      background-color: var(--blue);
+      border-radius: 6px;
       padding: 0;
-      width: 400px;
-      height: 48px;
-      color: var(--white);
+      width: 653px;
+      height: 664px;
 
-      ::ng-deep svg {
-        margin-right: 11px;
+      &-info-container {
+        display: flex;
+        position: relative;
+        justify-content: center;
+        height: 489px;
+
+        .login-info {
+          position: absolute;
+          top: 40px;
+          text-align: center;
+
+          &__title {
+            display: block;
+            color: var(--white);
+          }
+
+          &__description {
+            display: block;
+            margin-top: 8px;
+            color: var(--white);
+          }
+        }
       }
-    }
 
-    .info {
-      color: $login-info-text-color;
+      .google-sign-in-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 49px 0 12px;
+        border: solid 1px var(--blue);
+        border-radius: 4px;
+        background-color: var(--blue);
+        padding: 0;
+        width: 400px;
+        height: 48px;
+        color: var(--white);
 
-      &--terms {
-        color: var(--blue);
+        ::ng-deep svg {
+          margin-right: 11px;
+        }
+      }
+
+      .info {
+        color: $login-info-text-color;
+
+        &--terms {
+          color: var(--blue);
+        }
       }
     }
   }
 }
+

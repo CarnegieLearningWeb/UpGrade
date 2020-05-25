@@ -1,14 +1,8 @@
-$selected-range-color: #c2d1ff;
-
-.table-container {
+.condition-table-container {
   display: flex;
   flex-direction: column;
   padding: 0 34px 34px;
   width: 100%;
-
-  .title {
-    color: var(--black-2);
-  }
 
   .data {
     display: flex;

@@ -1,0 +1,11 @@
+@import '~@angular/material/theming';
+
+@mixin logs-view-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .logs {
+    .timeline-section {
+      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+    }
+  }
+}

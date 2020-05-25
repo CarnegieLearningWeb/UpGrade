@@ -1,7 +1,6 @@
 import { AppState } from '../../core.module';
 import { User } from '../../users/store/users.model';
 
-// TODO: Define proper place for this interface
 interface CRUD {
   create: boolean;
   read: boolean;

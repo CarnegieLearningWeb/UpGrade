@@ -1,4 +1,4 @@
-<div class="experiments-container">
+<mat-card class="experiments-container">
   <h1 class="title ft-32-700">{{ 'global.experiment.title' | translate }}</h1>
   <span
     class="subtitle ft-16-400"
@@ -6,11 +6,11 @@
   ></span>
 
   <ng-container *ngIf="isLoadingExperiments$ | async; else loadingExperimentState">
-    <div class="experiment-table" *ngIf="(experiments$ | async).length; else noExperimentTemplate">
+    <mat-card class="experiment-table" *ngIf="(experiments$ | async).length; else noExperimentTemplate">
       <home-experiment-list></home-experiment-list>
-    </div>
+    </mat-card>
     <ng-template #noExperimentTemplate>
-      <div class="no-experiment-container">
+      <mat-card class="no-experiment-container">
         <span
           class="text ft-24-600"
           [innerHTML]="'home.no-experiment.text' | translate"
@@ -22,13 +22,13 @@
           class="ft-14-700"
           *ngIf="(permissions$ | async)?.experiments.create"
         >
-          <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
-          {{ 'home.experiment.add-experiment.text' | translate }}
+          <mat-icon>add</mat-icon>
+          <span>{{ 'home.experiment.add-experiment.text' | translate }}</span>
         </button>
-      </div>
+      </mat-card>
     </ng-template>
   </ng-container>
-</div>
+</mat-card>
 
 <ng-template #loadingExperimentState>
   <div class="loading-container">

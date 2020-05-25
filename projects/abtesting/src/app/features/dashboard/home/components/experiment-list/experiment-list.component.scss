@@ -2,8 +2,8 @@ $experiment-state-light-color: #8f9bb3;
 
 .experiments-list-container {
   border-radius: 10px;
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-  background-color: var(--white);
+  box-shadow: unset !important;
+  padding: 0;
   height: 100%;
 
   .header {
@@ -11,7 +11,6 @@ $experiment-state-light-color: #8f9bb3;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.12);
     padding: 0 2.25rem;
     height: 94px;
 
@@ -33,11 +32,6 @@ $experiment-state-light-color: #8f9bb3;
       background-color: var(--blue);
       height: 40px;
       color: var(--white);
-
-      .icon {
-        margin-right: 5px;
-        vertical-align: unset;
-      }
     }
   }
 
@@ -62,7 +56,6 @@ $experiment-state-light-color: #8f9bb3;
     width: 100%;
 
     th {
-      border-color: var(--light-grey);
       color: var(--grey-2);
     }
 
@@ -72,9 +65,6 @@ $experiment-state-light-color: #8f9bb3;
     }
 
     td {
-      border-color: var(--light-grey);
-      color: var(--black-2);
-
       .enrollment-info {
         display: block;
       }
@@ -119,7 +109,6 @@ $experiment-state-light-color: #8f9bb3;
     .experiment {
       &-name {
         text-decoration: underline;
-        color: var(--black-2);
       }
 
       &-state {
@@ -153,7 +142,6 @@ $experiment-state-light-color: #8f9bb3;
 
     .chip {
       height: auto;
-      color: var(--black-2);
 
       &:hover {
         cursor: pointer;

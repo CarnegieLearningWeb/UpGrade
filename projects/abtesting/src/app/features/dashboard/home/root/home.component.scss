@@ -1,12 +1,13 @@
 .experiments-container {
   display: flex;
   flex-direction: column;
+  box-shadow: unset;
+  background: unset;
   padding: 0 2.75rem 2.75rem;
   height: calc(100% - 50px); // Subtract theme selector's height
 
   .title {
     margin-bottom: 0;
-    color: var(--black-2);
   }
 
   .subtitle {
@@ -17,6 +18,8 @@
 
   .experiment-table {
     flex-grow: 1;
+    border-radius: 10px;
+    padding: 0;
   }
 
   .no-experiment-container {
@@ -26,24 +29,16 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-    background-color: var(--white);
 
     .text {
       text-align: center;
       line-height: 60px;
-      color: var(--black-2);
     }
 
     button {
       margin-top: 30px;
       background-color: var(--blue);
       color: var(--white);
-
-      .icon {
-        margin-right: 5px;
-        vertical-align: unset;
-      }
     }
   }
 

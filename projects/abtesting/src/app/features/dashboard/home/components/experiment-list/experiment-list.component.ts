@@ -123,7 +123,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return !!isPartitionFound.length;
   }
 
-  // TODO: Update experiment filter logic
   applyFilter(filterValue: string) {
     this.filterExperimentPredicate(this.selectedExperimentFilterOption);
     if (filterValue !== undefined) {

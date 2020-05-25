@@ -4,11 +4,12 @@ $role-text-color: #0a7319;
 .profile-container {
   display: flex;
   flex-direction: column;
+  box-shadow: unset !important;
+  background: unset !important;
   padding: 0 2.75rem 2.75rem;
 
   .title {
     margin-bottom: 0;
-    color: var(--black-2);
   }
 
   .subtitle {
@@ -19,12 +20,10 @@ $role-text-color: #0a7319;
 
   .profile-wrapper {
     border-radius: 10px;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-    background-color: var(--white);
+    padding: 0;
 
     .personal-information {
       display: flex;
-      box-shadow: 0 8px 8px -8px rgba(0, 0, 0, 0.1);
       padding: 35px 34px 0;
       height: 148px;
 
@@ -44,10 +43,6 @@ $role-text-color: #0a7319;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
-
-        .name {
-          color: var(--black-2);
-        }
 
         .email {
           color: var(--grey-5);
@@ -88,11 +83,6 @@ $role-text-color: #0a7319;
           background-color: var(--blue);
           height: 40px;
           color: var(--white);
-
-          .icon {
-            margin-right: 5px;
-            vertical-align: unset;
-          }
         }
       }
 
@@ -118,7 +108,6 @@ $role-text-color: #0a7319;
 
           th,
           td {
-            border-color: var(--light-grey);
             padding: 10px 5px;
           }
 
@@ -129,10 +118,6 @@ $role-text-color: #0a7319;
           tr.mat-footer-row,
           tr.mat-row {
             height: 55px;
-          }
-
-          td {
-            color: var(--black);
           }
 
           .mat-cell {
@@ -150,6 +135,11 @@ $role-text-color: #0a7319;
   }
 
   .icon {
+    display: flex;
+    width: 18px;
+    height: 18px;
+    font-size: var(--text-size-x-large);
+
     &:hover {
       cursor: pointer;
     }
