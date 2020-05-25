@@ -1,9 +1,4 @@
 version: 0.2
-env:
-  variables:
-    PGDATABASE: 'postgres'
-    PGUSER: 'postgres'
-    PGPASSWORD: ''
 phases:
   install:
     runtime-versions:
@@ -14,7 +9,7 @@ phases:
   pre_build:
     commands:
       - echo Running postgres
-      - docker run -e PGPASSWORD -e PGUSER -e PGDATABASE -d -p 5432:5432 postgres
+      - docker run -p 5432:5432 --name postgres -e POSTGRES_PASSWORD='' -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres -d postgres >> container.txt
       - echo installing node packages
       - npm run install:all
       - echo Logging in to Amazon ECR...
@@ -24,6 +19,11 @@ phases:
       - IMAGE_TAG=$ENVIRONMENT
   build:
     commands:
+      - sleep 20s
+      - apt-get install -y telnet iproute2 net-tools
+      - docker inspect postgres >> container.txt
+      - ip addr show >> container.txt
+      - route >> container.txt
       - echo Building upgrade
       - npm run build:upgrade
       - echo running upgrade tests
