@@ -20,6 +20,7 @@ typings/
 
 #Package lock json
 package-lock.json
+yarn.lock
 
 # Dist #
 dist/
