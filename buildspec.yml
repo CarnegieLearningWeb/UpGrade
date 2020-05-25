@@ -1,9 +1,4 @@
 version: 0.2
-env:
-  variables:
-    PGDATABASE: 'postgres'
-    PGUSER: 'postgres'
-    PGPASSWORD: ''
 phases:
   install:
     runtime-versions:
