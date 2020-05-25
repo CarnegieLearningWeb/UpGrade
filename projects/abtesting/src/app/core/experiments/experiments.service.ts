@@ -117,6 +117,10 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
   }
 
+  fetchExperimentContext() {
+    this.store$.dispatch(experimentAction.actionFetchExperimentContext());
+  }
+
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
     this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
   }
