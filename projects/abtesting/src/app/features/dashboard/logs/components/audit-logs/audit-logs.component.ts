@@ -4,6 +4,7 @@ import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
+import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
   selector: 'audit-logs',
@@ -16,9 +17,13 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAllAuditLogFetched = false;
   isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
+  theme$ = this.settingsService.theme$;
   @ViewChild('auditLogContainer', { static: false }) auditLogContainer: ElementRef;
 
-  constructor(private logsService: LogsService) {}
+  constructor(
+    private logsService: LogsService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit() {
     this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe(logs => {

@@ -4,6 +4,7 @@ import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
   selector: 'error-logs',
@@ -16,9 +17,13 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAllErrorLogFetched = false;
   isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
+  theme$ = this.settingsService.theme$;
   @ViewChild('ErrorLogContainer', { static: false }) errorLogContainer: ElementRef;
 
-  constructor(private logsService: LogsService) {}
+  constructor(
+    private logsService: LogsService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit() {
     this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe(errorLogs => {
