@@ -16,7 +16,7 @@ phases:
       - echo Running postgres
       # - docker run -e PGPASSWORD -e PGUSER -e PGDATABASE -d -p 5432:5432 postgres
       - docker run --rm   --name pg-docker -e POSTGRES_PASSWORD='' -d -p 5432:5432  postgres
-      - psql -h localhost -U postgres -d postgres
+      - docker ps
       - echo installing node packages
       - npm run install:all
       - echo Logging in to Amazon ECR...
