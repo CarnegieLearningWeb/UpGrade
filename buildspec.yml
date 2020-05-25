@@ -1,17 +1,22 @@
 version: 0.2
+env:
+  variables:
+    PGDATABASE: 'postgres'
+    PGUSER: 'postgres'
+    PGPASSWORD: ''
 phases:
   install:
     runtime-versions:
       docker: 18
       nodejs: 10
+    commands:
+      - docker pull postgres:latest
   pre_build:
     commands:
+      - echo Running postgres
+      - docker run -e PGPASSWORD -e PGUSER -e PGDATABASE -d -p 5432:5432 postgres
       - echo installing node packages
       - npm run install:all
-      - echo Building upgrade
-      - npm run build:upgrade
-      - echo running upgrade tests
-      - npm run test:upgrade
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
@@ -19,6 +24,10 @@ phases:
       - IMAGE_TAG=$ENVIRONMENT
   build:
     commands:
+     - echo Building upgrade
+      - npm run build:upgrade
+      - echo running upgrade tests
+      - npm run test:upgrade
       - echo Build started on `date`
       - echo deploying serverless functions
       - echo Building docker config
