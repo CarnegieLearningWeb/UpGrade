@@ -3,8 +3,7 @@ import { LogType, ErrorLogs, LogDateFormatType } from '../../../../../core/logs/
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
-import { Subscription, fromEvent } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
@@ -15,6 +14,7 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
 export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   errorLogData: any;
   errorLogSubscription: Subscription;
+  isAllErrorLogFetched = false;
   isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
   theme$ = this.settingsService.theme$;
@@ -33,6 +33,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
         return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
+    this.isAllErrorLogFetchedSub = this.logsService.isAllErrorLogsFetched().subscribe(value => this.isAllErrorLogFetched = value);
   }
 
   // Used for keyvalue pipe to sort data by key
@@ -50,23 +51,16 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     return LogDateFormatType;
   }
 
+  fetchErrorLogOnScroll() {
+    if (!this.isAllErrorLogFetched) {
+      this.logsService.fetchErrorLogs();
+    }
+  }
+
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.errorLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
-    let isAllErrorLogFetched = false;
-    this.isAllErrorLogFetchedSub = this.logsService.isAllAuditLogsFetched().subscribe(value => isAllErrorLogFetched = value);
-    fromEvent(this.errorLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-      if (!isAllErrorLogFetched) {
-        const height = this.errorLogContainer.nativeElement.clientHeight;
-        const scrollHeight = this.errorLogContainer.nativeElement.scrollHeight - height;
-        const scrollTop = this.errorLogContainer.nativeElement.scrollTop;
-        const percent = Math.floor(scrollTop / scrollHeight * 100);
-        if (percent > 80) {
-          this.logsService.fetchErrorLogs();
-        }
-      }
-    });
   }
 
   ngOnDestroy() {

@@ -22,7 +22,8 @@ import {
   selectSortKey,
   selectTotalExperiment,
   selectSearchString,
-  selectExperimentGraphInfo
+  selectExperimentGraphInfo,
+  selectExperimentContext
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { saveAs } from 'file-saver';
@@ -331,6 +332,10 @@ export class ExperimentEffects {
   fetchExperimentContext$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchExperimentContext),
+      withLatestFrom(
+        this.store$.pipe(select(selectExperimentContext))
+      ),
+      filter(([, context]) => !context.length),
       switchMap(() =>
         this.experimentDataService.fetchExperimentContext().pipe(
           map((context: string[]) => experimentAction.actionFetchExperimentContextSuccess({ context })),

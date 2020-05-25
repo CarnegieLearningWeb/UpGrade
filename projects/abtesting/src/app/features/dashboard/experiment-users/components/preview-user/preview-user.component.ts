@@ -2,12 +2,11 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } fr
 import { MatTableDataSource } from '@angular/material';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
-import { Subscription, fromEvent } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
-import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'users-preview-user',
@@ -17,6 +16,7 @@ import { debounceTime } from 'rxjs/operators';
 export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;
   permissionSub: Subscription;
+  isAllPreviewUsersFetched = false;
   isAllPreviewUsersFetchedSub: Subscription;
   currentUser$ = this.authService.currentUser$;
   displayedColumns = ['id', 'totalAssignedConditions', 'assignment', 'actions'];
@@ -81,6 +81,10 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
         this.setFormControls(conditions);
       }
     });
+
+    this.isAllPreviewUsersFetchedSub = this.previewUserService.isAllPreviewUsersFetched().subscribe(
+      value => this.isAllPreviewUsersFetched = value
+    );
   }
 
   addPreviewUser() {
@@ -190,26 +194,16 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
     return UserRole;
   }
 
+  fetchPreviewUserOnScroll() {
+    if (!this.isAllPreviewUsersFetched) {
+      this.previewUserService.fetchPreviewUsers();
+    }
+  }
+
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.previewUserTable.nativeElement.style.maxHeight = (windowHeight - 500) + 'px';
-    let isAllPreviewUsersFetched = false;
-    this.isAllPreviewUsersFetchedSub = this.previewUserService.isAllPreviewUsersFetched().subscribe(
-      value => isAllPreviewUsersFetched = value
-    );
-    // TODO: Make a common logic for this
-    fromEvent(this.previewUserTable.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-      if (!isAllPreviewUsersFetched) {
-        const height = this.previewUserTable.nativeElement.clientHeight;
-        const scrollHeight = this.previewUserTable.nativeElement.scrollHeight - height;
-        const scrollTop = this.previewUserTable.nativeElement.scrollTop;
-        const percent = Math.floor(scrollTop / scrollHeight * 100);
-        if (percent > 80) {
-          this.previewUserService.fetchPreviewUsers();
-        }
-      }
-    });
   }
 
   ngOnDestroy() {
