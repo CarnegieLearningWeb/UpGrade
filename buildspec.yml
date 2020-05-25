@@ -20,6 +20,7 @@ phases:
   build:
     commands:
       - sleep 20s
+      - sudo apt-get update
       - apt-get install -y telnet iproute2 net-tools
       - docker inspect postgres >> container.txt
       - ip addr show >> container.txt
