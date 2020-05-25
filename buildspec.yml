@@ -15,8 +15,7 @@ phases:
     commands:
       - echo Running postgres
       # - docker run -e PGPASSWORD -e PGUSER -e PGDATABASE -d -p 5432:5432 postgres
-      - docker run --rm  --name pg-docker -e POSTGRES_PASSWORD='' -d -p 5432:5432  postgres
-      - docker exec -it pg-docker createdb -U postgres postgres
+      - docker run --rm --name postgres -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 postgres
       - docker ps
       - echo installing node packages
       - npm run install:all
