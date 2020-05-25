@@ -1,4 +1,9 @@
 version: 0.2
+env:
+  variables:
+    PGDATABASE: 'postgres'
+    PGUSER: 'postgres'
+    PGPASSWORD: ''
 phases:
   install:
     runtime-versions:
@@ -9,7 +14,8 @@ phases:
   pre_build:
     commands:
       - echo Running postgres
-      - docker run -p 5432:5432 --name postgres -e POSTGRES_PASSWORD='' -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres -d postgres >> container.txt
+      # - docker run -e PGPASSWORD -e PGUSER -e PGDATABASE -d -p 5432:5432 postgres
+      - docker run -p 5432:5432 --name postgres -e POSTGRES_PASSWORD='' -d postgres
       - echo installing node packages
       - npm run install:all
       - echo Logging in to Amazon ECR...
@@ -17,22 +23,16 @@ phases:
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
       # - REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
       - IMAGE_TAG=$ENVIRONMENT
-  build:
-    commands:
-      - sleep 20s
-      - sudo apt-get update
-      - apt-get install -y telnet iproute2 net-tools
-      - docker inspect postgres >> container.txt
-      - ip addr show >> container.txt
-      - route >> container.txt
       - echo Building upgrade
       - npm run build:upgrade
       - echo running upgrade tests
       - npm run test:upgrade
+  build:
+    commands:
       - echo Build started on `date`
       - echo deploying serverless functions
       - echo Building docker config
-      #- added extra params to docker config
+      # - added extra params to docker config
       - npm run dockerConfig $IMAGE_TAG $AWS_ACCOUNT_ID $AWS_DEFAULT_REGION $IMAGE_REPO_NAME
       - echo Building the Docker image...
       #- docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
