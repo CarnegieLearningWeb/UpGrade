@@ -1,7 +1,7 @@
 resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {  
   name                = "${var.environment}-${var.prefix}-experiment-app"
   application         = var.ebs_app_name
-  solution_stack_name = "64bit Amazon Linux 2018.03 v2.14.3 running Docker 18.09.9-ce"
+  solution_stack_name = "64bit Amazon Linux 2018.03 v2.15.0 running Docker 19.03.6-ce"
   setting {
     namespace = "aws:ec2:vpc"
     name      = "VPCId"
@@ -9,13 +9,13 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:ec2:vpc"
-    name      = "Subnets"
-    value     = "${aws_subnet.main-private-1.id},${aws_subnet.main-private-2.id}"
+    name      = "AssociatePublicIpAddress"
+    value     = "false"
   }
   setting {
     namespace = "aws:ec2:vpc"
-    name      = "AssociatePublicIpAddress"
-    value     = "false"
+    name      = "Subnets"
+    value     = "${aws_subnet.main-private-1.id},${aws_subnet.main-private-2.id}"
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
@@ -55,6 +55,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elb:loadbalancer"
     name      = "CrossZone"
+    value     = "true"
+  }
+   setting {
+    namespace = "aws:elasticbeanstalk:cloudwatch:logs"
+    name      = "StreamLogs"
     value     = "true"
   }
   setting {

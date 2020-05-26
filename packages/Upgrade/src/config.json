@@ -88,5 +88,12 @@
     "multiplication hard",
     "division hard",
     "fraction"
-  ]
+  ],
+
+  "clientApi": {
+    "secret": "carnegilearning",
+    "data": {
+      "APIKey": "494ae733-53cb-4c64-a24e-dab23d55eeb4"
+    }
+  }
 }

@@ -43,7 +43,7 @@ export class ExperimentService {
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
-  ) {}
+  ) { }
 
   public find(): Promise<Experiment[]> {
     this.log.info(`Find all experiments`);
@@ -107,6 +107,11 @@ export class ExperimentService {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
     return this.addExperimentInDB(experiment, currentUser);
+  }
+
+  public createMultipleExperiments(experiment: Experiment[]): Promise<Experiment[]> {
+    this.log.info('Generating test experiments => ', experiment.toString());
+    return this.addBulkExperiments(experiment);
   }
 
   public async delete(experimentId: string, currentUser: User): Promise<Experiment | undefined> {
@@ -539,7 +544,6 @@ export class ExperimentService {
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
       }
-
       // creating condition docs
       const conditionDocsToSave =
         conditions &&
@@ -571,17 +575,14 @@ export class ExperimentService {
       } catch (error) {
         throw new Error(`Error in creating conditions and partitions "addExperimentInDB" ${error}`);
       }
-
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
         const { experimentId, ...rest } = conditionDoc as any;
         return rest;
       });
-
       const partitionDocToReturn = partitionDocs.map((partitionDoc) => {
         const { experimentId, ...rest } = partitionDoc as any;
         return rest;
       });
-
       return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
     });
 
@@ -625,5 +626,112 @@ export class ExperimentService {
     const stringConcat = searchString.join(',');
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
+  }
+
+  private arrayGroupBy(docsArray: any, key: string): any {
+    return docsArray.reduce((result, currentValue) => {
+      (result[currentValue[key]] = result[currentValue[key]] || []).push(
+        currentValue
+      );
+      return result;
+    }, {});
+  }
+
+  private async addBulkExperiments(experiments: Experiment[]): Promise<Experiment[]> {
+
+    // Create data to be entered in experiments table
+    const expDocs = experiments.map((experiment) => {
+      experiment.id = experiment.id || uuid();
+      experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
+
+      // adding a experiment id to experiment conditions
+      experiment.conditions =
+        experiment.conditions &&
+        experiment.conditions.length > 0 &&
+        experiment.conditions.map((condition: ExperimentCondition) => {
+          condition.id = condition.id || uuid();
+          condition.experiment = experiment;
+          return condition;
+        });
+
+      // adding a experiment id to experiment partitions
+      experiment.partitions =
+        experiment.partitions &&
+        experiment.partitions.length > 0 &&
+        experiment.partitions.map((partition) => {
+          partition.id = partition.expId ? `${partition.expId}_${partition.expPoint}` : `${partition.expPoint}`;
+          partition.experiment = experiment;
+          return partition;
+        });
+
+      return experiment;
+    });
+
+    // Fetch all the conditions from array of experiments and flatten it to get new conditions
+    const allConditionDocs = expDocs.map((experiment => {
+      return experiment.conditions;
+    }));
+    let conditionDocsToSave = [].concat(...allConditionDocs);
+
+    // Fetch all the partitions from array of experiments and flatten it to get new partitions
+    const allPartitionDocs = expDocs.map((experiment => {
+      return experiment.partitions;
+    }));
+    let partitionDocsToSave = [].concat(...allPartitionDocs);
+
+    // add ubique twoCharacterIds to experiment conditions and partitions
+    let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+    if (conditionDocsToSave.length) {
+      const response = this.setConditionOrPartitionIdentifiers(conditionDocsToSave, uniqueIdentifiers);
+      conditionDocsToSave = response[0];
+      uniqueIdentifiers = response[1];
+    }
+    if (partitionDocsToSave.length) {
+      const response = this.setConditionOrPartitionIdentifiers(partitionDocsToSave, uniqueIdentifiers);
+      partitionDocsToSave = response[0];
+      uniqueIdentifiers = response[1];
+    }
+
+    // create a transaction and add experiments, conditions & partitions
+    const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
+      let experimentDoc: Experiment[];
+      try {
+        // Saving experiment
+        experimentDoc = (
+          await this.experimentRepository.insertBatchExps(expDocs as any, transactionalEntityManager)
+        );
+      } catch (error) {
+        throw new Error(`Error in creating experiment document "addBulkExperiments" ${error}`);
+      }
+      // saving conditions and saving partitions
+      let conditionDocs: ExperimentCondition[];
+      let partitionDocs: ExperimentPartition[];
+      try {
+        [conditionDocs, partitionDocs] = await Promise.all([
+          this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
+          this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
+        ]);
+
+        const conditionDocToReturn = this.arrayGroupBy(conditionDocs, 'experimentId');
+        const partitionDocToReturn = this.arrayGroupBy(partitionDocs, 'experimentId');
+
+        const experimentsToReturn = experimentDoc.map((experiment) => {
+          const conditions = conditionDocToReturn[experiment.id].map((conditionDoc) => {
+            const { experimentId, ...rest } = conditionDoc as any;
+            return rest;
+          });
+          const partitions = partitionDocToReturn[experiment.id].map((partitionDoc) => {
+            const { experimentId, ...rest } = partitionDoc as any;
+            return rest;
+          });
+          return { ...experiment, conditions, partitions };
+        });
+        return experimentsToReturn;
+      } catch (error) {
+        throw new Error(`Error in creating conditions and partitions "addBulkExperiments" ${error}`);
+      }
+    });
+
+    return createdExperiment;
   }
 }

@@ -29,7 +29,7 @@ module "aws_lambda_function" {
   prefix                = var.prefix 
   app_version           = var.app_version 
   lambda_path           = "../../packages/Schedular"  
-  output_path           = "../environments/lambda" 
+  output_path           = "../environments/${var.current_directory}/.terraform"  
   function_name         = "Schedule" 
   function_handler      = "schedule.schedule"
   runtime               =  "nodejs10.x"
@@ -79,8 +79,8 @@ module "aws-ebs-app" {
   SWAGGER_PASSWORD      = var.SWAGGER_PASSWORD 
 
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
-  PATH_TO_PRIVATE_KEY     = "~/.ssh/id_rsa"
-  PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
+  PATH_TO_PRIVATE_KEY     = "id_rsa"
+  PATH_TO_PUBLIC_KEY      = "id_rsa.pub"
 }
 
 resource "null_resource" "update-ebs-env" { 
@@ -103,26 +103,26 @@ module "aws_cloudwatch_event" {
     environment           = var.environment 
 }
 
-module "aws-code-pipeline"{
+# module "aws-code-pipeline"{
 
-  source = "../../aws-codepipeline"
+#   source = "../../aws-codepipeline"
 
-  environment           = var.environment 
-  prefix                = var.prefix 
-  aws_region            = var.aws_region
+#   environment           = var.environment 
+#   prefix                = var.prefix 
+#   aws_region            = var.aws_region
 
-  /* CODE COMMIT variables*/
-  repository_name       = var.repository_name
-  branch_name           = var.branch_name
+#   /* CODE COMMIT variables*/
+#   repository_name       = var.repository_name
+#   branch_name           = var.branch_name
 
-  /* CODE BUILD variables*/
-  build_image           = var.build_image
-  build_compute_type    = var.build_compute_type
-  privileged_mode       = var.privileged_mode
+#   /* CODE BUILD variables*/
+#   build_image           = var.build_image
+#   build_compute_type    = var.build_compute_type
+#   privileged_mode       = var.privileged_mode
 
-  ebs_app_name          = module.aws-ebs-app.application 
-  ebs_env_name          = module.aws-ebs-app.ebs-env
-}
+#   ebs_app_name          = module.aws-ebs-app.application 
+#   ebs_env_name          = module.aws-ebs-app.ebs-env
+# }
 
 output "ebs-cname" {
   value = module.aws-ebs-app.ebs-cname

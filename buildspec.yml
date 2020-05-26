@@ -4,8 +4,14 @@ phases:
     runtime-versions:
       docker: 18
       nodejs: 10
+    commands:
+      - docker pull postgres:latest
   pre_build:
     commands:
+      - echo Running postgres
+      # - docker run -e PGPASSWORD -e PGUSER -e PGDATABASE -d -p 5432:5432 postgres
+      - docker run --rm --name postgres -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 postgres
+      - docker ps
       - echo installing node packages
       - npm run install:all
       - echo Logging in to Amazon ECR...
@@ -13,6 +19,8 @@ phases:
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
       #- REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
       - IMAGE_TAG=$ENVIRONMENT
+      - echo running upgrade tests
+      - npm run test:upgrade
   build:
     commands:
       - echo Build started on `date`
@@ -25,7 +33,7 @@ phases:
       - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION .
       #- docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       - docker tag $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      
+
   post_build:
     commands:
       - echo Build completed on `date`

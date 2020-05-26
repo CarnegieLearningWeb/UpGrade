@@ -6,7 +6,7 @@ import { SupportService } from '../services/SupportService';
 /**
  * @swagger
  * tags:
- *   - name: Support
+ *   - name: Support Endpoint
  *     description: Support Endpoint
  */
 

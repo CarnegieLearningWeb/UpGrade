@@ -1,8 +1,8 @@
 terraform {
   backend "s3"{
-      bucket = "upgrade-terraform-tfstate"
-      key  =  "terraform"
+      bucket = "cli-terraform-artifacts-bucket"
+      key  =  "upgrade.core.tfstate"
       region = "us-east-1"
-      profile = "playpower"
+      profile = "upgrade-terraform"
   }
 }

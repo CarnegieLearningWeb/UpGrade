@@ -4,7 +4,7 @@ resource "aws_cloudwatch_event_target" "clear_logs_after_twelve_hours" {
     arn = var.lambda_arn
     input = <<DOC
     {
-        "url": "${var.host_url}/api/scheduledJobs/clearLogs",
+        "url": "http://${var.host_url}/api/scheduledJobs/clearLogs",
         "body": {
             "logTypes": [
             "audit-logs",
