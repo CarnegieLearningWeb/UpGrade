@@ -1,18 +1,45 @@
-.content {
-  .user-form {
-    display: flex;
-    flex-direction: column;
+.new-user {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
 
-    .validation-message {
-      display: block;
-      margin-bottom: 10px;
-      color: var(--red);
-      font-size: var(--text-size-small);
+  .content {
+    .user-form {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 15px 40px 0;
+
+      mat-form-field {
+        width: 45%;
+        color: var(--black-2);
+      }
+
+      .input {
+        line-height: 18px;
+      }
+
+      .email-container {
+        width: 45%;
+
+        mat-form-field {
+          width: 100%;
+        }
+      }
+
+      .validation-message {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--red);
+      }
     }
   }
-}
 
-.mat-dialog-actions {
-  justify-content: flex-end;
-  margin-bottom: -8px;
+  .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 40px 34px;
+  }
 }

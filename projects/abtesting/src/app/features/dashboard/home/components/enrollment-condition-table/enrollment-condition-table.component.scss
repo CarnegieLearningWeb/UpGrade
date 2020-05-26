@@ -1,17 +1,8 @@
-$selected-range-color: #c2d1ff;
-
-.container {
+.condition-table-container {
   display: flex;
   flex-direction: column;
   padding: 0 34px 34px;
   width: 100%;
-
-  .title {
-    color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-xxx-large);
-    font-weight: 700;
-  }
 
   .data {
     display: flex;
@@ -41,17 +32,11 @@ $selected-range-color: #c2d1ff;
       .title {
         display: block;
         color: var(--grey-5);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-small);
-        font-weight: 600;
       }
 
       .numbers {
         align-self: center;
         color: var(--blue);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-xxxx-large);
-        font-weight: 700;
       }
     }
   }

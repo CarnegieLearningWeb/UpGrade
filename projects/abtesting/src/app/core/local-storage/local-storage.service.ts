@@ -51,19 +51,11 @@ export class LocalStorageService {
     localStorage.removeItem(`${APP_PREFIX}${key}`);
   }
 
-  /** Tests that localStorage exists, can be written to, and read from. */
-  testLocalStorage() {
-    const testValue = 'testValue';
-    const testKey = 'testKey';
-    let retrievedValue: string;
-    const errorMessage = 'localStorage did not return expected value';
-
-    this.setItem(testKey, testValue);
-    retrievedValue = this.getItem(testKey);
-    this.removeItem(testKey);
-
-    if (retrievedValue !== testValue) {
-      throw new Error(errorMessage);
-    }
-  }
+  clear() {
+    Object.keys(sessionStorage).forEach(key => {
+        if (key.includes(APP_PREFIX)) {
+            sessionStorage.removeItem(key);
+        }
+    });
+}
 }

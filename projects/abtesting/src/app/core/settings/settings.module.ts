@@ -5,6 +5,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { SettingsEffects } from './store/settings.effects';
 import { settingsReducer } from './store/settings.reducer';
 import { SettingsService } from './settings.service';
+import { SettingsDataService } from './settings.data.service';
 
 @NgModule({
   declarations: [],
@@ -13,6 +14,6 @@ import { SettingsService } from './settings.service';
     EffectsModule.forFeature([SettingsEffects]),
     StoreModule.forFeature('settings', settingsReducer)
   ],
-  providers: [SettingsService]
+  providers: [SettingsService, SettingsDataService]
 })
 export class SettingsModule {}

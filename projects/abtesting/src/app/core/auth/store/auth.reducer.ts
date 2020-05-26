@@ -35,6 +35,7 @@ const reducer = createReducer(
     }
   ),
   on(
+    authActions.actionSetUserInfo,
     authActions.actionSetUserInfoSuccess,
     (state, { user }) => ({ ...state, user })
   ),

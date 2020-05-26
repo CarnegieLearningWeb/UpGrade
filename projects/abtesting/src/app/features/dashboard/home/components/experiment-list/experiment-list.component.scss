@@ -1,10 +1,9 @@
 $experiment-state-light-color: #8f9bb3;
-$extra-small-font-size: 10px;
 
 .experiments-list-container {
   border-radius: 10px;
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-  background-color: var(--white);
+  box-shadow: unset !important;
+  padding: 0;
   height: 100%;
 
   .header {
@@ -12,7 +11,6 @@ $extra-small-font-size: 10px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     padding: 0 2.25rem;
     height: 94px;
 
@@ -27,21 +25,13 @@ $extra-small-font-size: 10px;
     }
 
     .search-input {
-      font-family: 'Open Sans';
-      font-weight: 400;
+      line-height: 20px;
     }
 
     button {
       background-color: var(--blue);
       height: 40px;
       color: var(--white);
-      font-family: 'Open Sans';
-      font-weight: 700;
-
-      .icon {
-        margin-right: 5px;
-        vertical-align: unset;
-      }
     }
   }
 
@@ -66,11 +56,7 @@ $extra-small-font-size: 10px;
     width: 100%;
 
     th {
-      border-color: var(--light-grey);
       color: var(--grey-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 700;
     }
 
     tr.mat-footer-row,
@@ -79,12 +65,6 @@ $extra-small-font-size: 10px;
     }
 
     td {
-      border-color: var(--light-grey);
-      color: var(--black-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 600;
-
       .enrollment-info {
         display: block;
       }
@@ -101,12 +81,10 @@ $extra-small-font-size: 10px;
 
       &.cdk-column-postExperimentRule {
         width: 16%;
-        text-align: center;
       }
 
       &.cdk-column-enrollment {
         width: 9%;
-        text-align: center;
       }
 
       &.cdk-column-createdAt {
@@ -131,7 +109,6 @@ $extra-small-font-size: 10px;
     .experiment {
       &-name {
         text-decoration: underline;
-        color: var(--black-2);
       }
 
       &-state {
@@ -160,27 +137,15 @@ $extra-small-font-size: 10px;
       &-schedule,
       &-revertTo {
         color: var(--grey-3);
-        font-family: 'Open Sans';
-        font-size: $extra-small-font-size;
-        font-weight: 400;
       }
     }
 
     .chip {
       height: auto;
-      color: var(--black-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 400;
 
       &:hover {
         cursor: pointer;
       }
-    }
-
-    .mat-form-field {
-      width: 40%;
-      font-size: var(--text-size-small);
     }
   }
 }

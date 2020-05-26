@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { HttpClientService } from '../http/http-client.service';
 import { AuditLogParams, ErrorLogParams } from './store/logs.model';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class LogsDataService {
-  constructor(private http: HttpClientService) {}
+  constructor(private http: HttpClient) {}
 
   getAllAuditLogs(params: AuditLogParams) {
     const url = environment.api.getAllAuditLogs;

@@ -8,12 +8,16 @@ const routes: Routes = [
   {
     path: '',
     component: HomeComponent,
-    data: { title: 'home' }
+    data: {
+      title: 'app-header.title.experiments'
+    }
   },
   {
     path: 'detail/:experimentId',
     component: ViewExperimentComponent,
-    data: { title: 'View Experiment' }
+    data: {
+      title: 'app-header.title.experiment-dashboard'
+    }
   }
 ];
 

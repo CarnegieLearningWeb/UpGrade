@@ -1,7 +1,9 @@
 $red: #fff0f0;
 $light-blue: #e9f3ff;
 $yellow: #fff1de;
+$black: #111111;
 $timeline-background-color: #eaf0f8;
+$action-msg-font-size: 15px;
 
 .timeline {
   position: relative;
@@ -10,8 +12,8 @@ $timeline-background-color: #eaf0f8;
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 5%;
-    margin-left: -3px;
+    left: 2%;
+    margin-left: -5px;
     background-color: $timeline-background-color;
     width: 1px;
     content: '';
@@ -19,27 +21,31 @@ $timeline-background-color: #eaf0f8;
 
   &-container {
     position: relative;
-    left: 5%;
+    left: 2%;
     margin-bottom: 30px;
     background-color: inherit;
-    padding: 0 15px 0 30px;
-    width: 95%;
+    padding: 0 0 0 30px;
+    width: 97%;
 
     &::after {
       left: -16px;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
     }
 
     .icon {
       display: flex;
       position: absolute;
       top: 15px;
-      left: -17px;
+      left: -18px;
       align-items: center;
       justify-content: center;
       z-index: 1;
       border-radius: 50%;
-      width: 30px;
-      height: 30px;
+      width: 27px;
+      height: 27px;
       content: '';
 
       &:first-of-type {
@@ -56,6 +62,10 @@ $timeline-background-color: #eaf0f8;
 
       &--yellow {
         background-color: $yellow;
+      }
+
+      &--black {
+        background-color: $black;
       }
     }
 
@@ -76,8 +86,6 @@ $timeline-background-color: #eaf0f8;
         padding-bottom: 3px;
         width: 125px;
         word-wrap: break-word;
-        font-family: 'Open Sans';
-        font-weight: 600;
       }
 
       .link {
@@ -91,16 +99,17 @@ $timeline-background-color: #eaf0f8;
 
         &-msg {
           margin-right: 5px;
+          font-size: $action-msg-font-size !important;
 
           &-error {
             word-break: break-all;
+            font-size: $action-msg-font-size !important;
           }
         }
       }
 
       .accordion {
         flex-grow: 1;
-        margin-top: 2px;
         max-width: 100%;
 
         .expansion-header {
@@ -110,7 +119,6 @@ $timeline-background-color: #eaf0f8;
         .view-diff {
           margin-left: 15px;
           color: var(--blue);
-          font-size: var(--text-size-x-small);
         }
 
         .diff-container {

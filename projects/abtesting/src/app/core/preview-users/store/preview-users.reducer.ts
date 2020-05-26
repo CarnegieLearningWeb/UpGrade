@@ -13,13 +13,14 @@ export const {
 } = adapter.getSelectors();
 
 export const initialState: PreviewUsersState = adapter.getInitialState({
-  isLoading: false
+  isLoading: false,
+  skipPreviewUsers: 0,
+  totalPreviewUsers: null
 });
 
 const reducer = createReducer(
   initialState,
   on(
-    previewUsersActions.actionFetchPreviewUsers,
     previewUsersActions.actionAddPreviewUser,
     previewUsersActions.actionDeletePreviewUser,
     previewUsersActions.actionAssignConditionToPreviewUser,
@@ -27,8 +28,13 @@ const reducer = createReducer(
   ),
   on(
     previewUsersActions.actionFetchPreviewUsersSuccess,
-    (state, { data }) => {
-      return adapter.addAll(data, { ...state, isLoading: false });
+    (state, { data, totalPreviewUsers }) => {
+      const newState = {
+        ...state,
+        totalPreviewUsers,
+        skipPreviewUsers: state.skipPreviewUsers + data.length
+      };
+      return adapter.upsertMany(data, { ...newState, isLoading: false });
     }
   ),
   on(
@@ -52,10 +58,17 @@ const reducer = createReducer(
   on(
     previewUsersActions.actionAssignConditionToPreviewUserSuccess,
     (state, { previewUser }) => {
-      // TODO: Check why Update One is not directly replacing entire entity
       const assignments = previewUser.assignments ? previewUser.assignments : [];
       return adapter.updateOne({ id: previewUser.id, changes: { ...previewUser, assignments}}, { ...state, isLoading: false });
     }
+  ),
+  on(
+    previewUsersActions.actionSetIsPreviewUsersLoading,
+    (state, { isPreviewUsersLoading }) => ({ ...state, isLoading: isPreviewUsersLoading })
+  ),
+  on(
+    previewUsersActions.actionSetSkipPreviewUsers,
+    (state, { skipPreviewUsers }) => ({ ...state, skipPreviewUsers })
   )
 )
 

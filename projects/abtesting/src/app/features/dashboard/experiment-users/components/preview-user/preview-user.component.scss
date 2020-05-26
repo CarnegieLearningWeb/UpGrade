@@ -1,16 +1,23 @@
 @import '../../common/table-view.scss';
 
 .preview-users {
-  .preview-user-container {
+  .progress {
     margin-top: 30px;
+
+    &--visible {
+      visibility: visible;
+    }
+
+    &--hide {
+      visibility: hidden;
+    }
+  }
+
+  .preview-user-container {
+    overflow: auto;
 
     table {
       width: 100%;
-
-      .form-control {
-        font-family: 'Open Sans';
-        font-weight: 600;
-      }
 
       .mat-cell {
         position: relative;
@@ -30,6 +37,10 @@
         &.mat-column-totalAssignedConditions {
           text-align: center;
         }
+      }
+
+      .form-control {
+        line-height: 18px;
       }
 
       .assignment-heading {
@@ -68,9 +79,6 @@
           background-color: transparent;
           padding-left: 0;
           color: var(--blue);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-x-small);
-          font-weight: 700;
         }
 
         .assigned-condition-list {
@@ -93,39 +101,42 @@
       }
 
       .icons-container {
-        position: absolute;
-        bottom: 15px;
-      }
+        display: flex;
+        align-items: center;
 
-      .edit-icon {
-        display: inline-block;
-        width: 80px;
+        &--edit-mode {
+          position: absolute;
+          bottom: 15px;
+        }
+
+        .save-btn {
+          margin-right: 15px;
+        }
       }
 
       .action-icon {
         margin-right: 5px;
+        width: 18px;
+        height: 18px;
+        font-size: var(--text-size-x-large);
 
         &:hover {
           cursor: pointer;
         }
 
+        &--edit {
+          margin-right: 62px;
+        }
+
         &--small {
           margin-left: 10px;
+          font-size: var(--text-size-normal);
 
           &:hover {
             cursor: pointer;
           }
-
-          ::ng-deep svg {
-            width: 10px;
-            height: 13px;
-          }
         }
       }
-    }
-
-    .paginator {
-      width: 100%;
     }
   }
 }

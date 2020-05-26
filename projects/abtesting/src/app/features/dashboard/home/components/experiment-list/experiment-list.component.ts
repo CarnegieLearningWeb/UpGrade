@@ -48,6 +48,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   contextVisibility = [];
   tagsVisibility = [];
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
+  isAllExperimentsFetched = false;
+  isAllExperimentsFetchedSub: Subscription;
   @ViewChild('tableContainer', { static: false }) experimentTableContainer: ElementRef;
   @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
 
@@ -76,6 +78,10 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       this.selectedExperimentFilterOption = searchParams.searchKey;
       this.applyFilter(searchParams.searchString);
     });
+
+    this.isAllExperimentsFetchedSub = this.experimentService.isAllExperimentsFetched().subscribe(
+      value => this.isAllExperimentsFetched = value
+    );
   }
 
   // Modify angular material's table's default search behavior
@@ -117,7 +123,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return !!isPartitionFound.length;
   }
 
-  // TODO: Update experiment filter logic
   applyFilter(filterValue: string) {
     this.filterExperimentPredicate(this.selectedExperimentFilterOption);
     if (filterValue !== undefined) {
@@ -190,32 +195,30 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return !!experimentFound ? '(' + experimentFound.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
   }
 
-  ngOnDestroy() {
-    this.allExperimentsSub.unsubscribe();
-    // TODO: should implement persist search
-    this.experimentService.setSearchString(null);
-    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
-    this.experimentService.setSortKey(null);
-    this.experimentService.setSortingType(null);
+  fetchExperimentOnScroll() {
+    if (!this.isAllExperimentsFetched) {
+      this.experimentService.loadExperiments();
+    }
   }
 
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.experimentTableContainer.nativeElement.style.maxHeight = (windowHeight - 350) + 'px';
-    fromEvent(this.experimentTableContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-      const height = this.experimentTableContainer.nativeElement.clientHeight;
-      const scrollHeight = this.experimentTableContainer.nativeElement.scrollHeight - height;
-      const scrollTop = this.experimentTableContainer.nativeElement.scrollTop;
-      const percent = Math.floor(scrollTop / scrollHeight * 100);
-      if (percent > 80) {
-        this.experimentService.loadExperiments();
-      }
-    });
 
     fromEvent(this.searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(searchInput => {
       this.setSearchString((searchInput as any).target.value);
     });
+  }
+
+  ngOnDestroy() {
+    this.allExperimentsSub.unsubscribe();
+    this.isAllExperimentsFetchedSub.unsubscribe();
+    // TODO: should implement persist search
+    this.experimentService.setSearchString(null);
+    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
+    this.experimentService.setSortKey(null);
+    this.experimentService.setSortingType(null);
   }
 
   get ExperimentStatePipeTypes() {

@@ -1,6 +1,7 @@
 <mat-horizontal-stepper
   labelPosition="bottom"
   #stepper
+  class="experiment-stepper"
   (selectionChange)="stepChanged($event)"
   (animationDone)="animationDone()"
 >
@@ -9,7 +10,7 @@
   </ng-template>
   <mat-step>
     <ng-template matStepLabel>
-      <span class="step-label">
+      <span class="step-label ft-18-400">
         {{ 'home.new-experiment.overview.text' | translate }}
       </span>
     </ng-template>
@@ -21,7 +22,7 @@
 
   <mat-step>
     <ng-template matStepLabel>
-      <span class="step-label">
+      <span class="step-label ft-18-400">
         {{ 'home.new-experiment.experiment-design.text' | translate }}
       </span>
     </ng-template>
@@ -34,7 +35,7 @@
 
   <mat-step>
     <ng-template matStepLabel>
-      <span class="step-label">
+      <span class="step-label ft-18-400">
         {{ 'home.new-experiment.schedule.text' | translate }}
       </span>
     </ng-template>
@@ -47,7 +48,7 @@
 
   <mat-step>
     <ng-template matStepLabel>
-      <span class="step-label">
+      <span class="step-label ft-18-400">
         {{ 'home.new-experiment.post-condition-rule.text' | translate }}
       </span>
     </ng-template>

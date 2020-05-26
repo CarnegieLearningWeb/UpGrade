@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LogType, ErrorLogs, LogDateFormatType, SERVER_ERROR } from '../../../../../core/logs/store/logs.model';
+import { LogType, ErrorLogs, LogDateFormatType } from '../../../../../core/logs/store/logs.model';
 import { LogsService } from '../../../../../core/logs/logs.service';
 import * as groupBy from 'lodash.groupby';
 import { KeyValue } from '@angular/common';
-import { Subscription, fromEvent } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { SettingsService } from '../../../../../core/settings/settings.service';
 
 @Component({
   selector: 'error-logs',
@@ -14,27 +14,16 @@ import { debounceTime } from 'rxjs/operators';
 export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   errorLogData: any;
   errorLogSubscription: Subscription;
-  searchValue: string;
-  logsOptions = [
-    { value: 'all', viewValue: 'All' },
-    { value: SERVER_ERROR.DB_AUTH_FAIL, viewValue: SERVER_ERROR.DB_AUTH_FAIL },
-    { value: SERVER_ERROR.ASSIGNMENT_ERROR, viewValue: SERVER_ERROR.ASSIGNMENT_ERROR },
-    { value: SERVER_ERROR.MISSING_PARAMS, viewValue: SERVER_ERROR.MISSING_PARAMS },
-    { value: SERVER_ERROR.INCORRECT_PARAM_FORMAT, viewValue: SERVER_ERROR.INCORRECT_PARAM_FORMAT },
-    { value: SERVER_ERROR.USER_NOT_FOUND, viewValue: SERVER_ERROR.USER_NOT_FOUND },
-    { value: SERVER_ERROR.QUERY_FAILED, viewValue: SERVER_ERROR.QUERY_FAILED },
-    { value: SERVER_ERROR.REPORTED_ERROR, viewValue: SERVER_ERROR.REPORTED_ERROR },
-    { value: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED },
-    { value: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED },
-    { value: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP, viewValue: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP },
-    { value: SERVER_ERROR.INVALID_TOKEN, viewValue: SERVER_ERROR.INVALID_TOKEN },
-    { value: SERVER_ERROR.TOKEN_NOT_PRESENT, viewValue: SERVER_ERROR.TOKEN_NOT_PRESENT },
-  ];
-  selectedLogOption = this.logsOptions[0].value;
+  isAllErrorLogFetched = false;
+  isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
+  theme$ = this.settingsService.theme$;
   @ViewChild('ErrorLogContainer', { static: false }) errorLogContainer: ElementRef;
 
-  constructor(private logsService: LogsService) {}
+  constructor(
+    private logsService: LogsService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit() {
     this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe(errorLogs => {
@@ -44,10 +33,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
         return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
-  }
-
-  ngOnDestroy() {
-    this.errorLogSubscription.unsubscribe();
+    this.isAllErrorLogFetchedSub = this.logsService.isAllErrorLogsFetched().subscribe(value => this.isAllErrorLogFetched = value);
   }
 
   // Used for keyvalue pipe to sort data by key
@@ -57,11 +43,6 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   };
 
-  changeLogOption(value: any) {
-    value = value === 'all' ? null : value
-    this.logsService.setErrorLogFilter(value);
-  }
-
   get LogType() {
     return LogType;
   }
@@ -70,18 +51,20 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
     return LogDateFormatType;
   }
 
+  fetchErrorLogOnScroll() {
+    if (!this.isAllErrorLogFetched) {
+      this.logsService.fetchErrorLogs();
+    }
+  }
+
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.errorLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
-    fromEvent(this.errorLogContainer.nativeElement, 'scroll').pipe(debounceTime(500)).subscribe(value => {
-      const height = this.errorLogContainer.nativeElement.clientHeight;
-      const scrollHeight = this.errorLogContainer.nativeElement.scrollHeight - height;
-      const scrollTop = this.errorLogContainer.nativeElement.scrollTop;
-      const percent = Math.floor(scrollTop / scrollHeight * 100);
-      if (percent > 80) {
-        this.logsService.fetchErrorLogs();
-      }
-    });
+  }
+
+  ngOnDestroy() {
+    this.errorLogSubscription.unsubscribe();
+    this.isAllErrorLogFetchedSub.unsubscribe();
   }
 }

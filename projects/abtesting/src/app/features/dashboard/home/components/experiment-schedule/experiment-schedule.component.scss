@@ -1,99 +1,73 @@
-.experiment-schedule-form {
-  mat-checkbox,
-  mat-radio-button,
-  mat-form-field {
-    color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-small);
-    font-weight: 700;
-  }
-
-  mat-checkbox {
-    &.mat-checkbox-checked {
-      color: var(--blue);
+.experiment-schedule-container {
+  .experiment-schedule-form {
+    mat-checkbox {
+      &.mat-checkbox-checked {
+        color: var(--blue);
+      }
     }
-  }
 
-  .mat-radio-button,
-  .input {
-    font-weight: 600;
-  }
-
-  .starts-on-title {
-    font-family: 'Open Sans';
-    font-size: var(--text-size-small);
-    font-weight: 600;
-
-    &--disable {
-      color: var(--grey-5);
+    .mat-radio-button,
+    .input {
+      font-weight: 600;
     }
-  }
 
-  .date-picker-container {
-    margin: 0 0 30px 25px;
-
-    mat-form-field {
-      margin-left: 16px;
-      width: 200px;
+    .starts-on-title {
+      &--disable {
+        color: var(--grey-5);
+      }
     }
-  }
 
-  .experiment-end-criteria {
-    margin-left: 25px;
+    .date-picker-container {
+      margin: 0 0 30px 25px;
 
-    .end-criteria {
-      margin-left: 30px;
+      mat-form-field {
+        margin-left: 16px;
+        width: 200px;
+      }
+    }
 
-      .group-type {
+    .experiment-end-criteria {
+      margin-left: 25px;
+
+      .end-criteria {
         margin-left: 30px;
-        font-size: var(--text-size-small);
 
-        &--enable {
-          color: var(--black-2);
-        }
+        .group-type {
+          margin-left: 30px;
 
-        &--disable {
-          color: var(--grey-5);
+          &-control {
+            line-height: 18px;
+          }
+
+          &--disable {
+            color: var(--grey-5);
+          }
         }
       }
     }
   }
-}
 
-.validation-message {
-  display: block;
-  padding: 5px 0 0 10px;
-  color: var(--red);
-  font-size: var(--text-size-small);
-  font-weight: 600;
-}
-
-.button-container {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-
-  .btn-back {
-    margin-left: 0 !important;
+  .validation-message {
+    display: block;
+    padding: 5px 0 0 10px;
+    color: var(--red);
   }
-}
 
-::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
-  background-color: var(--blue) !important;
-}
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
 
-::ng-deep .mat-radio-button.mat-primary.mat-radio-checked .mat-radio-outer-circle {
-  border-color: var(--blue) !important;
-}
+    .btn-back {
+      margin-left: 0 !important;
+    }
+  }
 
-::ng-deep .mat-radio-button.mat-primary .mat-radio-inner-circle {
-  background-color: var(--blue) !important;
-}
+  ::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
+    background-color: var(--blue);
+  }
 
-::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {
-  background-color: var(--blue);
-}
-
-::ng-deep .owl-dt-control .owl-dt-control-content {
-  color: var(--blue);
+  ::ng-deep .owl-dt-control .owl-dt-control-content {
+    color: var(--blue);
+  }
 }

@@ -1,9 +1,9 @@
-<div class="tabs-container">
-  <h1 class="title">{{ 'logs.main-heading.text' | translate }}</h1>
-  <span class="subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
+<mat-card class="tabs-container logs-container">
+  <h1 class="ft-32-700 title">{{ 'logs.main-heading.text' | translate }}</h1>
+  <span class="ft-16-400 subtitle" [innerHTML]="'logs.sub-heading.text' | translate"></span>
 
-  <div class="tabs-wrapper">
-    <mat-tab-group disableRipple="true">
+  <mat-card class="tabs-wrapper">
+    <mat-tab-group disableRipple="true" (selectedIndexChange)="selectedIndexChange($event)">
       <mat-tab [label]="'logs.audit-logs-tab.text' | translate">
         <audit-logs></audit-logs>
       </mat-tab>
@@ -11,5 +11,18 @@
         <error-logs></error-logs>
       </mat-tab>
     </mat-tab-group>
-  </div>
-</div>
+
+    <mat-form-field class="log-filter">
+      <mat-select class="ft-16-600 log-filter-selection" [(ngModel)]="selectedFilterOption" (ngModelChange)="changeLogOption($event)">
+        <mat-option *ngFor="let option of filterOptions" [value]="option.value">
+          <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
+          <ng-template #tooltipText>
+            <span [matTooltip]="option.viewValue" matTooltipPosition="above">
+              {{ option.viewValue | truncate: 35 }}
+            </span>
+          </ng-template>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-card>
+</mat-card>

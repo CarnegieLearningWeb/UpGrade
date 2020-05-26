@@ -12,13 +12,10 @@ import { environment } from '../../environments/environment';
 
 import { AppState, reducers, metaReducers, selectRouterState } from './core.state';
 import { TitleService } from './title/title.service';
-import { ROUTE_ANIMATIONS_ELEMENTS, routeAnimations } from './animations/route.animations';
-import { AnimationsService } from './animations/animations.service';
 import { AppErrorHandler } from './error-handler/app-error-handler.service';
 import { CustomSerializer } from './router/custom-serializer';
 import { LocalStorageService } from './local-storage/local-storage.service';
 import { HttpErrorInterceptor } from './http-interceptors/http-error.interceptor';
-import { GoogleAnalyticsEffects } from './google-analytics/google-analytics.effects';
 import { NotificationService } from './notifications/notification.service';
 import { ExperimentsModule } from './experiments/experiments.module';
 import { SettingsModule } from './settings/settings.module';
@@ -28,14 +25,12 @@ import { ExperimentUsersModule } from './experiment-users/experiment-users.modul
 import { PreviewUsersModule } from './preview-users/preview-users.module';
 import { UsersModule } from './users/users.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
+import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 
 export {
   TitleService,
-  routeAnimations,
   AppState,
   LocalStorageService,
-  ROUTE_ANIMATIONS_ELEMENTS,
-  AnimationsService,
   selectRouterState,
   NotificationService
 };
@@ -63,7 +58,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     // ngrx
     StoreModule.forRoot(reducers, { metaReducers }),
     StoreRouterConnectingModule.forRoot(),
-    EffectsModule.forRoot([GoogleAnalyticsEffects]),
+    EffectsModule.forRoot([]),
     environment.production
       ? []
       : StoreDevtoolsModule.instrument({
@@ -82,6 +77,7 @@ export function HttpLoaderFactory(http: HttpClient) {
   declarations: [],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     { provide: RouterStateSerializer, useClass: CustomSerializer }
   ],

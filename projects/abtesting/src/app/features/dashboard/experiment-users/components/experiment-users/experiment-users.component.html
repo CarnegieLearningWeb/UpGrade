@@ -1,7 +1,7 @@
 <div class="exclude-entities">
-  <h3 class="exclude-entities--title">{{ 'users.excluded-entity.text' | translate }}</h3>
+  <h3 class="ft-22-700">{{ 'users.excluded-entity.text' | translate }}</h3>
   <form class="exclude-form" [formGroup]="excludeEntitiesForm" *ngIf="(permissions$ | async)?.users.create">
-    <mat-form-field class="form-control">
+    <mat-form-field class="ft-14-600 form-control">
       <mat-select class="input" formControlName="entityType">
         <mat-option *ngFor="let entity of entityTypes" [value]="entity.value">
           {{ entity.value }}
@@ -9,7 +9,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field class="form-control" *ngIf="entityTypeValue">
+    <mat-form-field class="ft-14-600 form-control" *ngIf="entityTypeValue">
       <mat-select class="input" formControlName="groupType">
         <mat-option *ngFor="let groupType of groupTypes" [value]="groupType.value">
           {{ groupType.value | titlecase }}
@@ -17,7 +17,7 @@
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field class="form-control input" *ngIf="groupTypeValue">
+    <mat-form-field class="ft-14-600 form-control input" *ngIf="groupTypeValue">
       <input
         matInput
         [placeholder]="'global.group-custom-type.placeHolder' | translate"
@@ -25,7 +25,7 @@
       />
     </mat-form-field>
 
-    <mat-form-field class="form-control input">
+    <mat-form-field class="ft-14-600 form-control input">
       <input matInput [placeholder]="'users-global.form-id-placeholder.text' | translate" formControlName="id" />
     </mat-form-field>
 
@@ -45,36 +45,37 @@
     <table mat-table [dataSource]="allExcludedEntities" matSort>
       <!-- TYPE Column -->
       <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="table table-heading">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="ft-12-700">
           <span [matTooltip]="'users.table.type.text' | translate" matTooltipPosition="above">
             {{ 'users.table.type.text' | translate }}
           </span>
         </th>
-        <td mat-cell *matCellDef="let element">
+        <td class="ft-12-600" mat-cell *matCellDef="let element">
           {{ element.type ? (element.type | titlecase) : ('users-global.text' | translate) }}
         </td>
       </ng-container>
 
       <!-- ID Column -->
       <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="table table-heading">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="ft-12-700">
           <span [matTooltip]="'users.table.id.text' | translate" matTooltipPosition="above">
             {{ 'users.table.id.text' | translate }}
           </span>
         </th>
-        <td mat-cell *matCellDef="let element">{{ element.type ? element.groupId : element.userId }}</td>
+        <td class="ft-12-600" mat-cell *matCellDef="let element">{{ element.type ? element.groupId : element.userId }}</td>
       </ng-container>
 
       <!-- Delete Column -->
       <ng-container matColumnDef="removeEntity">
-        <th mat-header-cell *matHeaderCellDef class="table table-heading"></th>
-        <td mat-cell *matCellDef="let element">
-          <app-shared-icons
+        <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
+        <td class="ft-12-600" mat-cell *matCellDef="let element">
+          <mat-icon
             *ngIf="(permissions$ | async)?.users.delete"
-            [iconType]="'delete'"
             class="remove-icon"
             (click)="removeExcludedEntity(element)"
-          ></app-shared-icons>
+          >
+            delete_outline
+          </mat-icon>
         </td>
       </ng-container>
 

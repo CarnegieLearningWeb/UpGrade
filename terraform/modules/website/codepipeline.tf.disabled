@@ -3,7 +3,7 @@ resource "aws_codepipeline" "prod_pipeline" {
   role_arn = aws_iam_role.codepipeline_role.arn
 
   depends_on = [aws_s3_bucket.bucket_site, aws_s3_bucket.source]
-  
+
   artifact_store {
     location = aws_s3_bucket.source.bucket
     type     = "S3"

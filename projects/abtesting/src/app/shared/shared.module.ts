@@ -31,11 +31,11 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-import { RtlSupportDirective } from './rtl-support/rtl-support.directive';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
+import { ScrollDirective } from './directives/scroll.directive';
 
 @NgModule({
   imports: [
@@ -71,7 +71,7 @@ import { FormatDatePipe } from './pipes/format-date.pipe';
     MatProgressBarModule,
     MatAutocompleteModule,
   ],
-  declarations: [RtlSupportDirective, SharedIconsComponent, TruncatePipe, ExperimentStatePipe, FormatDatePipe],
+  declarations: [SharedIconsComponent, TruncatePipe, ExperimentStatePipe, ScrollDirective, FormatDatePipe],
   exports: [
     CommonModule,
     FormsModule,
@@ -104,14 +104,14 @@ import { FormatDatePipe } from './pipes/format-date.pipe';
     MatStepperModule,
     MatRadioModule,
     MatExpansionModule,
-    RtlSupportDirective,
     MatProgressBarModule,
     MatAutocompleteModule,
 
     SharedIconsComponent,
     TruncatePipe,
     ExperimentStatePipe,
-    FormatDatePipe
+    FormatDatePipe,
+    ScrollDirective
   ]
 })
 export class SharedModule {}

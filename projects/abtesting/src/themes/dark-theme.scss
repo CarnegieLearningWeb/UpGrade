@@ -67,9 +67,18 @@ contrast: (
 )
 );
 
+// Background palette for dark themes.
+$background-color: #111111;
+$card-dialog-color: #1d1d1d;
+$shadow-color: #000000;
 
 $primary: mat-palette($mat-blue);
 $accent: mat-palette($mat-light-blue);
 $warn: mat-palette($mat-red);
 
-$theme: mat-light-theme($primary, $accent, $warn);
+$dark-theme: mat-dark-theme($primary, $accent, $warn);
+
+// Insert and bind custom background color
+$background: map-get($dark-theme, background);
+$background: map_merge($background, (background: $background-color, card: $card-dialog-color, dialog: $card-dialog-color, shadow-color: $shadow-color));
+$dark-theme: map_merge($dark-theme, (background: $background));

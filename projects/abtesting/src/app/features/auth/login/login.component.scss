@@ -1,74 +1,73 @@
-$white-background: #f0f2f9;
-$app-title-font-size: 2.25rem;
-$login-info-text-color: #8f9bb3;
+$login-info-text-color: #6e6f72;
 
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: $white-background;
+.login-theme {
   height: 100%;
 
-  .login {
+  .login-container {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    border-radius: 6px;
-    background-color: var(--white);
-    width: 720px;
-    height: 640px;
+    justify-content: center;
+    height: 100%;
 
-    &-info-container {
+    .login {
       display: flex;
-      position: relative;
-      justify-content: center;
-      height: 458px;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 6px;
+      padding: 0;
+      width: 653px;
+      height: 664px;
 
-      .login-info {
-        position: absolute;
-        top: 10%;
-        text-align: center;
+      &-info-container {
+        display: flex;
+        position: relative;
+        justify-content: center;
+        height: 489px;
 
-        &__title {
-          display: block;
-          color: var(--black-2);
-          font-family: 'Open Sans';
-          font-size: $app-title-font-size;
-          font-weight: 700;
-        }
+        .login-info {
+          position: absolute;
+          top: 40px;
+          text-align: center;
 
-        &__description {
-          display: block;
-          color: var(--black-2);
-          font-family: 'Open Sans';
-          font-size: var(--text-size-normal);
-          font-weight: 600;
+          &__title {
+            display: block;
+            color: var(--white);
+          }
+
+          &__description {
+            display: block;
+            margin-top: 8px;
+            color: var(--white);
+          }
         }
       }
-    }
 
-    .google-sign-in-btn {
-      margin: 54px 0 24px;
-      border: solid 1px var(--blue);
-      border-radius: 4px;
-      background-color: var(--blue);
-      padding: 10px 30px;
-      width: 400px;
-      color: var(--white);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-normal);
-      font-weight: 600;
-    }
+      .google-sign-in-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 49px 0 12px;
+        border: solid 1px var(--blue);
+        border-radius: 4px;
+        background-color: var(--blue);
+        padding: 0;
+        width: 400px;
+        height: 48px;
+        color: var(--white);
 
-    .info {
-      color: $login-info-text-color;
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 600;
+        ::ng-deep svg {
+          margin-right: 11px;
+        }
+      }
 
-      &--terms {
-        color: var(--blue);
+      .info {
+        color: $login-info-text-color;
+
+        &--terms {
+          color: var(--blue);
+        }
       }
     }
   }
 }
+

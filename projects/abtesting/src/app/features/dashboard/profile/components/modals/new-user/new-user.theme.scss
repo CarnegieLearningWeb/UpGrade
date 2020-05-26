@@ -1,0 +1,20 @@
+@import '~@angular/material/theming';
+
+@mixin new-user-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .new-user {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+
+    .content {
+      .user-form {
+        .input {
+          color: mat-color($foreground, text);
+        }
+      }
+    }
+  }
+}

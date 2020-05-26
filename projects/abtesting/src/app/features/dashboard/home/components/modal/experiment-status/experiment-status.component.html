@@ -1,18 +1,18 @@
 <div class="experiment-status">
-  <span class="title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
+  <span class="ft-24-700 title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
   <form [formGroup]="statusForm" class="experiment-status-form">
-    <mat-form-field>
+    <mat-form-field class="ft-16-400">
       <mat-label>{{ 'home.change-experiment-status.current-status.text' | translate }}</mat-label>
-      <mat-select disabled="true" [(value)]="experimentInfo.state">
+      <mat-select class="ft-16-400" disabled="true" [(value)]="experimentInfo.state">
         <mat-option *ngFor="let status of experimentStatus" [value]="status.value">
           {{ status.value | experimentState }}
         </mat-option>
       </mat-select>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field class="ft-16-400">
       <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
-      <mat-select formControlName="newStatus">
+      <mat-select class="ft-16-400" formControlName="newStatus">
         <ng-container *ngFor="let status of experimentStatus">
           <mat-option *ngIf="status.value === ExperimentStatus.SCHEDULED || status.value !== experimentInfo?.state" [value]="status">
             {{ status.value | experimentState }}

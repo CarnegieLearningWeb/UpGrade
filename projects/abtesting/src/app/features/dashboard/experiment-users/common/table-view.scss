@@ -1,23 +1,15 @@
 .exclude-entities,
 .preview-users {
-  &--title {
-    font-family: 'Open Sans';
-    font-size: var(--text-size-xx-large);
-    font-weight: 700;
-  }
-
   .exclude-form,
   .preview-user-form {
     .form-control,
     .input {
       margin-right: 45px;
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 600;
     }
 
     .input {
       line-height: 18px;
+      font-family: 'Open Sans';
     }
   }
 
@@ -35,20 +27,19 @@
       .mat-cell {
         padding: 5px;
         width: 50%;
-        font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
-        font-weight: 600;
       }
 
       .mat-header-cell {
         padding: 5px;
         color: var(--grey-2);
-        font-family: 'Open Sans';
-        font-size: var(--text-size-x-small);
-        font-weight: 700;
       }
 
       .remove-icon {
+        display: flex;
+        width: 18px;
+        height: 18px;
+        font-size: var(--text-size-x-large);
+
         &:hover {
           cursor: pointer;
         }

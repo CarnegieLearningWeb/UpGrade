@@ -15,22 +15,19 @@ export class TitleService {
     private title: Title
   ) {}
 
-  setTitle(
-    snapshot: ActivatedRouteSnapshot,
-    lazyTranslateService?: TranslateService
-  ) {
+  setTitle(snapshot: ActivatedRouteSnapshot) {
     let lastChild = snapshot;
     while (lastChild.children.length) {
       lastChild = lastChild.children[0];
     }
     const { title } = lastChild.data;
-    const translate = lazyTranslateService || this.translateService;
+    const translate = this.translateService;
     if (title) {
       translate
         .get(title)
         .pipe(filter(translatedTitle => translatedTitle !== title))
         .subscribe(translatedTitle =>
-          this.title.setTitle(`${translatedTitle} - ${env.appName}`)
+          this.title.setTitle(`${env.appName} - ${translatedTitle}`)
         );
     } else {
       this.title.setTitle(env.appName);

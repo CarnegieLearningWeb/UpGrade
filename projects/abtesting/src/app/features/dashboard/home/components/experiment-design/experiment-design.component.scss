@@ -17,9 +17,6 @@
       justify-content: center;
       margin-right: 15px;
       color: var(--grey-6);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 700;
     }
 
     mat-cell {
@@ -49,6 +46,9 @@
     .remove-icon {
       position: relative;
       top: -3px;
+      width: 18px;
+      height: 18px;
+      font-size: var(--text-size-x-large);
 
       &:hover {
         cursor: pointer;
@@ -72,18 +72,12 @@
     border: 0;
     background-color: transparent;
     color: var(--blue);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-x-small);
-    font-weight: 700;
   }
 
   .validation-message {
     display: block;
     padding: 5px 0 0 10px;
     color: var(--red);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-small);
-    font-weight: 600;
   }
 
   .partition-table {

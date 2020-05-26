@@ -6,7 +6,9 @@ const routes: Routes = [
   {
     path: '',
     component: ProfileRootComponent,
-    data: { title: 'Profile' }
+    data: {
+      title: 'app-header.title.profile'
+    }
   }
 ];
 

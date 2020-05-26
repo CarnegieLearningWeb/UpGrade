@@ -2,14 +2,23 @@
   <ng-container *ngFor="let log of logData; let index = index">
     <div class="timeline-container">
       <ng-container *ngIf="logType === LogType.AUDIT_LOG; else errorLogIconTemplate">
-        <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else noUserLogTemplate" />
+        <app-shared-icons
+          class="icon icon--black"
+          [iconType]="'dark-setting'"
+          *ngIf="theme === ThemeOptions.DARK_THEME && log.user?.email === systemUserEmail; else userIconTemplate"
+        ></app-shared-icons>
+
+        <ng-template #userIconTemplate>
+          <img [src]="log.user.imageUrl" class="icon" *ngIf="log.user?.imageUrl; else noUserLogTemplate" />
+        </ng-template>
       </ng-container>
 
-      <!-- If user is null or Action is performed via CLI -->
+      <!-- If user is null or Action is performed via CLI tool-->
       <ng-template #noUserLogTemplate>
         <app-shared-icons
-          class="{{ 'icon icon--' + (log.value | errorLog: 'class') }}"
-          [iconType]="'user-2'"
+          class="icon"
+          [ngClass]="theme === ThemeOptions.DARK_THEME ? 'icon--black' : 'icon--light-blue'"
+          [iconType]="theme === ThemeOptions.DARK_THEME ? 'dark-user' : 'user-1'"
         ></app-shared-icons>
       </ng-template>
 
@@ -21,25 +30,25 @@
       </ng-template>
 
       <div class="content" *ngIf="logType === LogType.AUDIT_LOG; else errorLogTemplate">
-        <span class="user-name">
+        <span class="ft-16-600 user-name">
           <ng-container *ngIf="log.user">
-            <u *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
+            <span *ngIf="(log['user']['firstName'] + ' ' + log['user']['lastName']).length < 30; else userNameEllipsis">
               {{ log['user']['firstName'] + ' ' + log['user']['lastName'] }}
-            </u>
+            </span>
             <ng-template #userNameEllipsis>
-              <u [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
+              <span [matTooltip]="log['user']['firstName'] + ' ' + log['user']['lastName']" matTooltipPosition="above">
                 {{ log['user']['firstName'] + ' ' + log['user']['lastName'] | truncate: 30 }}
-              </u>
+              </span>
             </ng-template>
           </ng-container>
         </span>
 
         <ng-container [ngSwitch]="log.type">
           <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DELETED" class="log-text">
-            <span class="action action-msg">
+            <span class="ft-16-600 action action-msg">
               {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
             </span>
-            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
           <div
@@ -51,7 +60,7 @@
                 : ''
             "
           >
-            <span class="action action-msg">
+            <span class="ft-16-600 action action-msg">
               {{
                 (log.type
                   | experimentActionMessage
@@ -66,7 +75,7 @@
                 >{{ log.data.experimentName }}</a
               ></span
             >
-            <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
           <div class="log-text" *ngSwitchCase="ExperimentLogType.EXPERIMENT_UPDATED">
@@ -74,7 +83,7 @@
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
-                    <span class="action-msg">
+                    <span class="ft-16-600 action-msg">
                       {{ (log.type | experimentActionMessage | translate) + ' ' }}
                       <a
                         class="link"
@@ -83,45 +92,45 @@
                         >{{ log.data.experimentName }}</a
                       ></span
                     >
-                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                    <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
-                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
-                <pre><div class="diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
+                <pre><div class="ft-14-400 diff-container" [id]="log.id">{{ getHtmlFormedLogData(log.id, log.data.diff) }}</div></pre>
               </mat-expansion-panel>
             </mat-accordion>
           </div>
         </ng-container>
 
         <ng-template #experimentNotExist>
-          <span class="action-msg">{{ ' ' + log.data.experimentName }}</span>
+          <span class="ft-16-600 action-msg">{{ ' ' + log.data.experimentName }}</span>
         </ng-template>
       </div>
 
       <ng-template #errorLogTemplate>
         <div class="content">
-          <span class="error-type"
-            ><u>{{ log.type }}</u></span
-          >
+          <span class="ft-16-600 error-type">{{ log.type }}</span>
           <span> :</span>
           <div class="log-text">
             <mat-accordion class="accordion">
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
-                    <span *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient" class="action-msg-error">
+                    <span *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient" class="ft-16-600 action-msg-error">
                       {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
                     </span>
                     <ng-template #errorFromClient>
-                      {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
+                      <span class="ft-16-600 action-msg-error">
+                        {{ 'logs.error-logs-failed-experimentPoint.text' | translate }}
+                      </span>
                     </ng-template>
-                    <span class="view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
+                    <span class="ft-12-600 view-diff" [innerHTML]="'logs-global.log-view-diff.text' | translate"></span>
                   </mat-panel-title>
-                  <span class="log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+                  <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
                 </mat-expansion-panel-header>
 
-                <pre>{{ log.message }}</pre>
+                <pre class="ft-14-400">{{ log.message }}</pre>
               </mat-expansion-panel>
             </mat-accordion>
           </div>

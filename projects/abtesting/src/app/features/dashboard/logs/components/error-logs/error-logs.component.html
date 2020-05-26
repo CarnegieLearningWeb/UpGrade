@@ -1,38 +1,24 @@
 <mat-progress-bar mode="indeterminate" *ngIf="isErrorLogLoading$ | async"></mat-progress-bar>
-<div class="logs" #ErrorLogContainer>
-  <div class="logs__searching">
-    <!-- TODO: Add search error log -->
-    <!-- <mat-form-field class="search-input">
-      <input
-        matInput
-        [(ngModel)]="searchValue"
-        (keyup)="searchLogs($event.target.value)"
-        [placeholder]="'logs.error-logs-search.text' | translate"
-      />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field> -->
-    <mat-form-field class="error-log-filter">
-      <mat-select [ngModel]="selectedLogOption" (ngModelChange)="changeLogOption($event)">
-        <mat-option *ngFor="let option of logsOptions" [value]="option.value">
-          <span *ngIf="option.viewValue.length <= 35; else tooltipText">{{ option.viewValue }}</span>
-          <ng-template #tooltipText>
-            <span [matTooltip]="option.viewValue" matTooltipPosition="above">
-              {{ option.viewValue | truncate: 35 }}
-            </span>
-          </ng-template>
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
+<div
+  scroll
+  (scrolled)="fetchErrorLogOnScroll()"
+  class="logs"
+  #ErrorLogContainer
+>
 
   <ng-container *ngIf="(errorLogData | json) != '{}'; else zeroStateAudit">
-    <div class="timeline-container" *ngFor="let logData of errorLogData | keyvalue: valueDescOrder">
+    <div class="timeline-section" *ngFor="let logData of errorLogData | keyvalue: valueDescOrder">
       <div class="error-date">
-        <span class="date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
-        <span class="day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
+        <span class="ft-24-700 date-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.DATE_MONTH }}</span>
+        <span class="ft-12-600 day-info">{{ logData.key | logDateFormatPipe: LogDateFormatTypes.YEAR_DAY }}</span>
       </div>
 
-      <logs-timeline class="timeline" [logData]="logData.value" [logType]="LogType.ERROR_LOG"></logs-timeline>
+      <logs-timeline
+        class="timeline"
+        [logData]="logData.value"
+        [logType]="LogType.ERROR_LOG"
+        [theme]="theme$ | async"
+      ></logs-timeline>
     </div>
   </ng-container>
   <ng-template #zeroStateAudit>

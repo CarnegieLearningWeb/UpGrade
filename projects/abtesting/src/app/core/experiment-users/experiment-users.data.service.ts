@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClientService } from '../http/http-client.service';
 import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class ExperimentUsersDataService {
-  constructor(private http: HttpClientService) {}
+  constructor(private http: HttpClient) {}
 
   fetchExcludedUsers() {
     const url = environment.api.excludeUsers;

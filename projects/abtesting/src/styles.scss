@@ -1,28 +1,48 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
 @import '~@angular/material/theming';
-@import '~bootstrap/scss/bootstrap-reboot';
-@import '~bootstrap/scss/bootstrap-grid';
 @import '~ng-pick-datetime/assets/style/picker.min.css';
 
 @include mat-core();
 
-@import './styles/styles-variables';
 @import './styles/variables.css';
-@import './themes/default-theme';
 @import './themes/light-theme';
-@import './themes/black-theme';
-@import './themes/nature-theme';
-@import './app/features/dashboard/dashboard-root/dashboard.component.scss-theme';
+@import './themes/dark-theme';
 @import './styles/utility.scss';
+@import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
+@import './app/features/dashboard/home/root/home.theme.scss';
+@import './app/features/dashboard/home/components/experiment-list/experiment-list.theme.scss';
+@import './app/features/dashboard/home/pages/view-experiment/view-experiment.theme.scss';
+@import './app/features/dashboard/home/components/modal/experiment-status/experiment-status.theme.scss';
+@import './app/features/dashboard/home/components/modal/post-experiment-rule/post-experiment-rule.theme.scss';
+@import './app/features/dashboard/home/components/experiment-design/experiment-design.theme.scss';
+@import './app/features/dashboard/home/components/enrollment-over-time/enrollment-over-time.theme.scss';
+@import './app/features/dashboard/home/components/modal/new-experiment/new-experiment.theme.scss';
+@import './app/features/dashboard/profile/profile-root/profile-root.theme.scss';
+@import './app/features/dashboard/profile/components/modals/new-user/new-user.theme.scss';
+@import './app/features/dashboard/experiment-users/components/experiment-users/experiment-users.theme.scss';
+@import './app/features/dashboard/experiment-users/components/preview-user/preview-user.theme.scss';
+@import './app/features/dashboard/logs/common/logs-view.theme.scss';
+@import './app/features/dashboard/common/tabs-view.theme.scss';
+@import './app/features/auth/login/login.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
-}
-
-.default-theme {
-  @include angular-material-theme($theme);
-  @include custom-components-theme($theme);
+  @include home-component-theme($theme);
+  @include experiment-list-component-theme($theme);
+  @include view-experiment-component-theme($theme);
+  @include experiment-status-component-theme($theme);
+  @include post-experiment-rule-component-theme($theme);
+  @include experiment-design-component-theme($theme);
+  @include enrollment-over-time-component-theme($theme);
+  @include new-experiment-component-theme($theme);
+  @include experiment-users-component-theme($theme);
+  @include profile-root-component-theme($theme);
+  @include new-user-component-theme($theme);
+  @include preview-user-component-theme($theme);
+  @include logs-view-component-theme($theme);
+  @include tabs-view-theme($theme);
+  @include login-component-theme($theme);
 }
 
 .light-theme {
@@ -30,14 +50,9 @@
   @include custom-components-theme($light-theme);
 }
 
-.black-theme {
-  @include angular-material-theme($black-theme);
-  @include custom-components-theme($black-theme);
-}
-
-.nature-theme {
-  @include angular-material-theme($nature-theme);
-  @include custom-components-theme($nature-theme);
+.dark-theme {
+  @include angular-material-theme($dark-theme);
+  @include custom-components-theme($dark-theme);
 }
 
 // TODO material specific style which cannot be changed by scope
@@ -63,36 +78,37 @@
 .delete-modal,
 .experiment-general-modal,
 .new-experiment-modal,
-.new-flag-modal {
+.new-flag-modal,
+.new-user-modal {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
   .mat-dialog-container {
-    padding: 40px;
+    padding: 0px;
   }
 }
 
 .delete-modal {
   width: 350px;
   min-height: 192px;
+
+  .mat-dialog-container {
+    padding: 40px;
+  }
 }
 
 .experiment-general-modal {
   width: 804px;
   min-height: 294px;
-
-  .mat-dialog-container {
-    padding: 0;
-  }
 }
 
 .new-experiment-modal,
 .new-flag-modal {
   width: 844px;
+}
 
-  .mat-dialog-container {
-    padding: 0;
-  }
+.new-user-modal {
+  width: 805px;
 }
 
 // Common style for modal button

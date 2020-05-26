@@ -6,6 +6,7 @@ import {
   SERVER_ERROR
 } from '../../../../../core/logs/store/logs.model';
 import * as Convert from 'ansi-to-html';
+import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 
 @Component({
   selector: 'logs-timeline',
@@ -16,6 +17,9 @@ import * as Convert from 'ansi-to-html';
 export class TimelineComponent {
   @Input() logData;
   @Input() logType: LogType;
+  @Input() theme: ThemeOptions;
+  // Used to change setting icon based on theme
+  systemUserEmail = 'system@gmail.com';
   endPoint = env.environment.endpointApi.substring(0, env.environment.endpointApi.lastIndexOf('/'));
 
   get LogType() {
@@ -28,6 +32,10 @@ export class TimelineComponent {
 
   get ServerErrors() {
     return SERVER_ERROR;
+  }
+
+  get ThemeOptions() {
+    return ThemeOptions;
   }
 
   getHtmlFormedLogData(id: string, diff) {

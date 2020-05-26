@@ -1,46 +1,24 @@
 import { SettingsState, ThemeOptions } from './settings.model';
-import {
-  actionSettingsChangeAnimationsElements,
-  actionSettingsChangeAnimationsPage,
-  actionSettingsChangeAnimationsPageDisabled,
-  actionSettingsChangeAutoNightMode,
-  actionSettingsChangeHour,
-  actionSettingsChangeLanguage,
-  actionSettingsChangeStickyHeader,
-  actionSettingsChangeTheme
-} from './settings.actions';
+import * as SettingsActions from './settings.actions';
 import { Action, createReducer, on } from '@ngrx/store';
 
 export const initialState: SettingsState = {
-  language: 'en',
-  theme: ThemeOptions.DEFAULT_THEME,
-  autoNightMode: false,
-  nightTheme: ThemeOptions.DARK_THEME,
-  stickyHeader: true,
-  pageAnimations: true,
-  pageAnimationsDisabled: false,
-  elementsAnimations: true,
-  hour: 0
+  theme: ThemeOptions.LIGHT_THEME,
+  toCheckAuth: null,
 };
 
 const reducer = createReducer(
   initialState,
   on(
-    actionSettingsChangeLanguage,
-    actionSettingsChangeTheme,
-    actionSettingsChangeAutoNightMode,
-    actionSettingsChangeStickyHeader,
-    actionSettingsChangeAnimationsPage,
-    actionSettingsChangeAnimationsElements,
-    actionSettingsChangeHour,
-    (state, action) => ({ ...state, ...action })
+    SettingsActions.actionChangeTheme,
+    (state, { theme }) => ({ ...state, theme })
   ),
   on(
-    actionSettingsChangeAnimationsPageDisabled,
-    (state, { pageAnimationsDisabled }) => ({
+    SettingsActions.actionSetToCheckAuthSuccess,
+    SettingsActions.actionGetToCheckAuthSuccess,
+    (state, { toCheckAuth }) => ({
       ...state,
-      pageAnimationsDisabled,
-      pageAnimations: false
+      toCheckAuth
     })
   )
 );

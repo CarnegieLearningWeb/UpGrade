@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
-import { HttpClientService } from '../http/http-client.service';
 import { environment } from '../../../environments/environment';
 import { PreviewUserAssignCondition } from './store/preview-users.model';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class PreviewUsersDataService {
   constructor(
-    private http: HttpClientService
+    private http: HttpClient
   ) {}
 
-  fetchPreviewUsers() {
-    const url = environment.api.previewUsers;
-    return this.http.get(url);
+  fetchPreviewUsers(params: any) {
+    const url = environment.api.getAllPreviewUsers;
+    return this.http.post(url, params);
   }
 
   addPreviewUser(id: string) {

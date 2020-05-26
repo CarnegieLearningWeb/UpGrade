@@ -89,6 +89,7 @@ const reducer = createReducer(
     }
   ),
   on(
+    experimentsAction.actionUpsertExperiment,
     experimentsAction.actionGetExperimentById,
     (state) => ({ ...state, isLoadingExperiment: true })
   ),

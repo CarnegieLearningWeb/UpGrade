@@ -3,9 +3,9 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
 import * as experimentActions from '../../experiments/store/experiments.actions';
-import * as previewUsersActions from '../../preview-users/store/preview-users.actions';
 import * as usersActions from '../../users/store/users.actions';
 import * as featureFlagsActions from '../../feature-flags/store/feature-flags.actions';
+import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select } from '@ngrx/store';
@@ -15,6 +15,7 @@ import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
 import { AuthService } from '../auth.service';
 import { User } from '../../users/store/users.model';
+import { SettingsService } from '../../settings/settings.service';
 
 declare const gapi: any;
 
@@ -32,7 +33,8 @@ export class AuthEffects {
     private router: Router,
     private ngZone: NgZone,
     private authDataService: AuthDataService,
-    private authService: AuthService
+    private authService: AuthService,
+    private settingsService: SettingsService
   ) {}
 
   initializeGapi$ = createEffect(
@@ -125,14 +127,15 @@ export class AuthEffects {
         switchMap((user: User) => {
           const actions = [
             experimentActions.actionGetExperiments({ fromStarting: true }),
-            previewUsersActions.actionFetchPreviewUsers(),
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
-            usersActions.actionFetchUsers(),
-            experimentActions.actionFetchExperimentContext(),
+            usersActions.actionFetchUsers({ fromStarting: true }),
+            settingsActions.actionGetToCheckAuth(),
             featureFlagsActions.actionFetchAllFeatureFlags()
           ];
+          // Set theme from localstorage if exist
+          this.settingsService.setLocalStorageTheme();
           if (user.role) {
             this.authService.setUserPermissions(user.role);
             return [
