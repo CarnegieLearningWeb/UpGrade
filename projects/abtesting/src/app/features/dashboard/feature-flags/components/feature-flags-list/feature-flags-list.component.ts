@@ -57,7 +57,6 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
     });
   }
 
-  // TODO: Update experiment filter logic
   applyFilter(filterValue: string) {
     if (filterValue !== undefined) {
       this.allFeatureFlags.filter = filterValue.trim().toLowerCase();

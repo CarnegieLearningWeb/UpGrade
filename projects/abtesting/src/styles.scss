@@ -25,6 +25,11 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
+@import './app/features/dashboard/feature-flags/feature-flags-root/feature-flags-root.theme.scss';
+@import './app/features/dashboard/feature-flags/components/feature-flags-list/feature-flags-list.theme.scss';
+@import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
+@import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
+@import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -43,6 +48,11 @@
   @include logs-view-component-theme($theme);
   @include tabs-view-theme($theme);
   @include login-component-theme($theme);
+  @include feature-flags-root-component-theme($theme);
+  @include feature-flags-list-component-theme($theme);
+  @include new-flag-component-theme($theme);
+  @include flag-variations-component-theme($theme);
+  @include view-feature-flag-component-theme($theme);
 }
 
 .light-theme {

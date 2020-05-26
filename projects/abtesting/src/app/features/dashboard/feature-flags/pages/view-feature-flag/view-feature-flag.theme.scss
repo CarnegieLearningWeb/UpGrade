@@ -1,0 +1,32 @@
+@import '~@angular/material/theming';
+
+@mixin view-feature-flag-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .flag-container {
+    background-color: mat-color($background, background);
+
+    .flag-link {
+      color: mat-color($foreground, text)
+    }
+
+    .flag {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+
+      &-info {
+        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+
+        .action-buttons {
+          .button {
+            background-color: mat-color($background, background);
+          }
+        }
+      }
+
+      &-secondary-info {
+        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+      }
+    }
+  }
+}

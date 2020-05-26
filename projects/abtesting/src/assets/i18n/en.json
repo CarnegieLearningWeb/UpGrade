@@ -198,7 +198,7 @@
   "feature-flags.subtitle.text": "Manage feature flags",
   "feature-flags.no-flags.text": "Welcome! <br> Let's start by creating a new flag!",
   "feature-flags.delete-flag.message.text": "Are you sure you want to delete {{ flagName }} flag ?",
-  "feature-flags.add-flag.text": "Add Flag",
+  "feature-flags.add-flag.text": "ADD FLAG",
   "feature-flags.table-variation-type.text": "Variation type",
   "feature-flags.overview.flag-variation-type.text": "Flag Variation Type",
   "feature-flags.overview.flag-variation-type-error.text": "Please choose a flag variation type",

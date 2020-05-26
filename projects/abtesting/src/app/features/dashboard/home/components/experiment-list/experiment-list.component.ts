@@ -214,7 +214,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     this.isAllExperimentsFetchedSub.unsubscribe();
-    // TODO: should implement persist search
+
     this.experimentService.setSearchString(null);
     this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
     this.experimentService.setSortKey(null);

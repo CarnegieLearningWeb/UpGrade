@@ -1,29 +1,29 @@
 <form class="flag-overview" [formGroup]="overviewForm">
-  <mat-form-field class="name">
+  <mat-form-field class="ft-14-600 name">
     <input
-      class="input"
       matInput
+      class="ft-14-400"
       [placeholder]="'feature-flags.global-name.text' | translate"
       formControlName="name"
       cdkFocusInitial
     />
   </mat-form-field>
 
-  <mat-form-field class="key">
+  <mat-form-field class="ft-14-600 key">
     <input
-      class="input"
       matInput
+      class="ft-14-400"
       [placeholder]="'feature-flags.global-key.text' | translate"
       formControlName="key"
     />
   </mat-form-field>
-  <mat-error class="error-message" *ngIf="keyError">
+  <mat-error class="ft-14-600 validation-message" *ngIf="keyError">
     {{ keyError }}
   </mat-error>
 
-  <mat-form-field class="variationType">
+  <mat-form-field class="ft-14-600 variationType">
     <mat-label>{{ 'feature-flags.overview.flag-variation-type.text' | translate }}</mat-label>
-    <mat-select class="input" formControlName="variationType">
+    <mat-select class="ft-14-400" formControlName="variationType">
       <mat-option
         *ngFor="let type of variationTypes"
         [value]="type"
@@ -38,9 +38,9 @@
     </mat-error>
   </mat-form-field>
 
-  <mat-form-field class="description">
+  <mat-form-field class="ft-14-600 description">
     <input
-      class="input"
+      class="ft-14-400"
       matInput
       [placeholder]="'feature-flags.overview.flag-description.text' | translate"
       formControlName="description"

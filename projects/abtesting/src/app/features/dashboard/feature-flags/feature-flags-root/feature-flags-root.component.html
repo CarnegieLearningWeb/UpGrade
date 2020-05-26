@@ -1,32 +1,34 @@
-<div class="feature-flags-container">
-  <h1 class="title">{{ 'feature-flags.title.text' | translate }}</h1>
+<mat-card class="feature-flags-container">
+  <h1 class="title ft-32-700">{{ 'feature-flags.title.text' | translate }}</h1>
   <span
-    class="subtitle"
+    class="subtitle ft-16-400"
     [innerHTML]="'feature-flags.subtitle.text' | translate"
   ></span>
 
   <ng-container *ngIf="isLoadingFeatureFlags$ | async; else loadingFeatureFlagState">
-    <div class="flags-table" *ngIf="(featureFlags$ | async).length; else noFeatureFlagsTemplate">
+    <mat-card class="flags-table" *ngIf="(featureFlags$ | async).length; else noFeatureFlagsTemplate">
       <feature-flags-list></feature-flags-list>
-    </div>
+    </mat-card>
     <ng-template #noFeatureFlagsTemplate>
-      <div class="no-flags-container">
+      <mat-card class="no-flags-container">
         <span
-          class="text"
+          class="text ft-24-600"
           [innerHTML]="'feature-flags.no-flags.text' | translate"
         ></span>
         <button
           mat-flat-button
           color="primary"
+          class="ft-14-700"
           (click)="openNewFlagDialog()"
+          *ngIf="(permissions$ | async)?.featureFlags.create"
         >
-          <app-shared-icons class="icon" [iconType]="'plus'"></app-shared-icons>
-          {{ 'feature-flags.add-flag.text' | translate }}
+          <mat-icon>add</mat-icon>
+          <span>{{ 'feature-flags.add-flag.text' | translate }}</span>
         </button>
-      </div>
+      </mat-card>
     </ng-template>
   </ng-container>
-</div>
+</mat-card>
 
 <ng-template #loadingFeatureFlagState>
   <div class="loading-container">

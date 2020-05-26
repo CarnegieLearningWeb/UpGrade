@@ -1,11 +1,4 @@
-.dialog {
-  &-message {
-    color: var(--black-2);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-normal);
-    font-weight: 600;
-  }
-
+.delete-flag-dialog {
   &-actions {
     justify-content: flex-end;
     margin: 0;

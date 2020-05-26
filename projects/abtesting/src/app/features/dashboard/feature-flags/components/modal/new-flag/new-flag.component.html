@@ -1,5 +1,6 @@
 <mat-horizontal-stepper
   labelPosition="bottom"
+  class="flag-stepper"
   #stepper
 >
   <ng-template matStepperIcon="edit">
@@ -7,7 +8,7 @@
   </ng-template>
   <mat-step>
     <ng-template matStepLabel>
-      <span class="step-label">
+      <span class="step-label ft-18-400">
         {{ 'feature-flags.new-flag-overview-stepper.text' | translate }}
       </span>
     </ng-template>
@@ -19,7 +20,7 @@
 
   <mat-step>
     <ng-template matStepLabel>
-      <span class="step-label">
+      <span class="step-label ft-18-400">
         {{ 'feature-flags.new-flag-variations-stepper.text' | translate }}
       </span>
     </ng-template>

@@ -1,11 +1,11 @@
-import { HttpClientService } from '../http/http-client.service';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { FeatureFlag } from './store/feature-flags.model';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class FeatureFlagsDataService {
-  constructor(private http: HttpClientService) { }
+  constructor(private http: HttpClient) { }
 
   fetchAllFeatureFlags() {
     const url = environment.api.featureFlag;

@@ -1,9 +1,7 @@
-$extra-small-font-size: 10px;
-
 .flags-list-container {
   border-radius: 10px;
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
-  background-color: var(--white);
+  box-shadow: unset;
+  padding: 0;
   height: 100%;
 
   .header {
@@ -11,26 +9,17 @@ $extra-small-font-size: 10px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);
     padding: 0 2.25rem;
     height: 94px;
 
     .search-input {
-      font-family: 'Open Sans';
-      font-weight: 400;
+      line-height: 20px;
     }
 
     button {
       background-color: var(--blue);
       height: 40px;
       color: var(--white);
-      font-family: 'Open Sans';
-      font-weight: 700;
-
-      .icon {
-        margin-right: 5px;
-        vertical-align: unset;
-      }
     }
   }
 
@@ -55,24 +44,12 @@ $extra-small-font-size: 10px;
     width: 100%;
 
     th {
-      border-color: var(--light-grey);
       color: var(--grey-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 700;
     }
 
     tr.mat-footer-row,
     tr.mat-row {
       height: 55px;
-    }
-
-    td {
-      border-color: var(--light-grey);
-      color: var(--black-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-x-small);
-      font-weight: 600;
     }
 
     .mat-cell,
@@ -89,20 +66,15 @@ $extra-small-font-size: 10px;
     .flag {
       &-name {
         text-decoration: underline;
-        color: var(--black-2);
       }
 
       &-description {
         color: var(--grey-3);
-        font-family: 'Open Sans';
-        font-size: $extra-small-font-size;
-        font-weight: 400;
       }
     }
 
     .mat-form-field {
       width: 40%;
-      font-size: var(--text-size-small);
     }
   }
 }

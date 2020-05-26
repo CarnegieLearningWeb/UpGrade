@@ -40,7 +40,7 @@ export class ViewFeatureFlagComponent implements OnInit, OnDestroy {
 
   openEditFlagDialog() {
     const dialogRef = this.dialog.open(NewFlagComponent as any, {
-      width: '55%',
+      panelClass: 'new-flag-modal',
       data: { flagInfo: clonedeep(this.flag) }
     });
 

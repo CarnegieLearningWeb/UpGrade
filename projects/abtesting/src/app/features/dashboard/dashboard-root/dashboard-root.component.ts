@@ -21,7 +21,7 @@ export class DashboardRootComponent {
     {
       path: ['/featureFlags'],
       text: 'Feature flags',
-      iconType: 'featureFlag'
+      iconType: 'toggle_on'
     },
     {
       path: ['/users'],

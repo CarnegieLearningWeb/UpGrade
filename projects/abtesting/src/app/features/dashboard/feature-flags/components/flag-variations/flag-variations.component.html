@@ -8,7 +8,7 @@
   >
     <!-- VARIATION NUMBER Column -->
     <ng-container matColumnDef="variationNumber">
-      <mat-header-cell *matHeaderCellDef>
+      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'global.number.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let element; let groupIndex = index">
@@ -19,7 +19,7 @@
 
     <!-- VARIATION VALUE Column -->
     <ng-container matColumnDef="value">
-      <mat-header-cell *matHeaderCellDef>
+      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'feature-flags.global-variation-value.text' | translate }}
       </mat-header-cell>
       <mat-cell
@@ -38,7 +38,7 @@
 
     <!-- VARIATION NAME Column -->
     <ng-container matColumnDef="name">
-      <mat-header-cell *matHeaderCellDef>
+      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'feature-flags.global-name.text' | translate }}
       </mat-header-cell>
       <mat-cell
@@ -57,7 +57,7 @@
 
     <!-- DESCRIPTION Column -->
     <ng-container matColumnDef="description">
-      <mat-header-cell *matHeaderCellDef>
+      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'feature-flags.variation-description.text' | translate }}
       </mat-header-cell>
       <mat-cell
@@ -75,17 +75,30 @@
     </ng-container>
 
     <ng-container matColumnDef="removeVariation">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
       <mat-cell
         *matCellDef="let element; let groupIndex = index"
         [formGroupName]="groupIndex"
       >
-        <app-shared-icons
-          [iconType]="'delete'"
-          class="remove-icon"
+      <!-- As conditions are different for both variation types make ng-template for another -->
+      <ng-container *ngIf="variationType === variationTypes.BOOLEAN; else customVariation">
+        <mat-icon
           *ngIf="groupIndex !== 0 && groupIndex !== 1"
+          class="remove-icon"
           (click)="removeVariation(groupIndex)"
-        ></app-shared-icons>
+        >
+          delete_outline
+        </mat-icon>
+      </ng-container>
+      <ng-template #customVariation>
+        <mat-icon
+          *ngIf="groupIndex !== 0"
+          class="remove-icon"
+          (click)="removeVariation(groupIndex)"
+        >
+          delete_outline
+        </mat-icon>
+      </ng-template>
       </mat-cell>
     </ng-container>
 
@@ -93,13 +106,13 @@
     <mat-row *matRowDef="let row; columns: variationDisplayedColumns"></mat-row>
   </mat-table>
   <mat-error
-    class="validation-message"
+    class="ft-14-600 validation-message"
     *ngIf="variationError"
   >{{ variationError }}</mat-error>
 
   <button
     type="button"
-    class="add-variation"
+    class="ft-12-700 add-variation"
     *ngIf="variationType !== variationTypes.BOOLEAN"
     (click)="addVariation()"
   >
@@ -107,7 +120,7 @@
   </button>
 
   <div class="property-container">
-    <mat-label class="label">{{ 'feature-flags.variation-default-variation.text' | translate }}</mat-label>
+    <mat-label class="ft-16-600 label">{{ 'feature-flags.variation-default-variation.text' | translate }}</mat-label>
     <mat-form-field class="default-on-variation">
       <mat-label>{{ 'feature-flags.variation-on.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOnVariation">
@@ -151,8 +164,8 @@
     </button>
     <div>
       <button
-        class="modal-btn"
         mat-raised-button
+        class="modal-btn"
         (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)"
       >
         {{ 'global.cancel.text' | translate }}

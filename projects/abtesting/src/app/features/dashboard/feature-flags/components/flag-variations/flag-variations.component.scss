@@ -16,9 +16,6 @@
       justify-content: center;
       margin-right: 15px;
       color: var(--grey-6);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-small);
-      font-weight: 700;
     }
 
     mat-cell {
@@ -40,6 +37,9 @@
     .remove-icon {
       position: relative;
       top: -3px;
+      width: 18px;
+      height: 18px;
+      font-size: var(--text-size-x-large);
 
       &:hover {
         cursor: pointer;
@@ -49,8 +49,6 @@
     mat-form-field {
       width: 100%;
       text-align: center;
-      font-family: 'Open Sans';
-      font-weight: 400;
     }
   }
 
@@ -60,18 +58,6 @@
     border: 0;
     background-color: transparent;
     color: var(--blue);
-    font-family: 'Open Sans';
-    font-size: var(--text-size-x-small);
-    font-weight: 700;
-  }
-
-  // TODO: Make a common class for validation-message
-  .validation-message {
-    display: block;
-    padding: 5px 0 0 10px;
-    color: var(--red);
-    font-size: var(--text-size-small);
-    font-weight: 600;
   }
 
   .property-container {
@@ -80,10 +66,6 @@
     .label {
       display: block;
       margin: 20px 0 5px;
-      color: var(--black-2);
-      font-family: 'Open Sans';
-      font-size: var(--text-size-normal);
-      font-weight: 600;
     }
 
     .default-on-variation {
