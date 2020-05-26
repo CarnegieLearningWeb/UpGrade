@@ -21,7 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatSliderModule, MatAutocompleteModule } from '@angular/material/';
+import { MatSliderModule, MatAutocompleteModule, MatTreeModule } from '@angular/material/';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -69,6 +69,7 @@ import { ScrollDirective } from './directives/scroll.directive';
     MatExpansionModule,
     MatProgressBarModule,
     MatAutocompleteModule,
+    MatTreeModule,
   ],
   declarations: [SharedIconsComponent, TruncatePipe, ExperimentStatePipe, ScrollDirective],
   exports: [
@@ -105,6 +106,7 @@ import { ScrollDirective } from './directives/scroll.directive';
     MatExpansionModule,
     MatProgressBarModule,
     MatAutocompleteModule,
+    MatTreeModule,
 
     SharedIconsComponent,
     TruncatePipe,

@@ -25,6 +25,8 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
+@import './app/features/dashboard/home/components/modal/tree-node-dialog/tree-node-dialog.theme.scss';
+@import './app/features/dashboard/home/components/modal/metric-modal/metric-modal.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -43,6 +45,8 @@
   @include logs-view-component-theme($theme);
   @include tabs-view-theme($theme);
   @include login-component-theme($theme);
+  @include tree-node-dialog-component-theme($theme);
+  @include metric-modal-component-theme($theme);
 }
 
 .light-theme {
@@ -78,7 +82,9 @@
 .delete-modal,
 .experiment-general-modal,
 .new-experiment-modal,
-.new-user-modal {
+.new-user-modal,
+.tree-modal,
+.metric-modal {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
@@ -101,12 +107,18 @@
   min-height: 294px;
 }
 
-.new-experiment-modal {
-  width: 844px;
+.new-experiment-modal,
+.metric-modal {
+  width: 925px;
 }
 
 .new-user-modal {
   width: 805px;
+}
+
+.tree-modal {
+  width: 450px;
+  min-height: 192px;
 }
 
 // Common style for modal button

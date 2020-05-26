@@ -1,0 +1,25 @@
+<div mat-dialog-content class="tree-dialog">
+  <span class="ft-24-700 title">{{ 'metric.tree-node-dialog.title.text' | translate: { action: data.component } }}</span>
+  <mat-form-field class="ft-16-600">
+    <input matInput placeholder="Key Name" [(ngModel)]="data.name">
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="tree-dialog-actions">
+  <button
+    class="modal-btn"
+    mat-flat-button
+    (click)="onCancelClick()"
+  >
+    {{ 'global.cancel.text' | translate }}
+  </button>
+  <button
+    class="modal-btn default-button"
+    mat-flat-button
+    [disabled]="!(data.name)"
+    [ngClass]="{'default-button--disabled': !(data.name)}"
+    [mat-dialog-close]="{nodeName: data.name}"
+  >
+    {{ data.component | uppercase }}
+  </button>
+</div>
+
