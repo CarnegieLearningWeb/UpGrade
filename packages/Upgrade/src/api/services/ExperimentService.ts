@@ -28,6 +28,9 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
 import * as config from '../../config.json';
+import { ExperimentInput, MetricUnit } from '../../types/ExperimentInput';
+import { Metric } from '../models/Metric';
+import { MetricRepository } from '../repositories/MetricRepository';
 
 @Service()
 export class ExperimentService {
@@ -40,14 +43,20 @@ export class ExperimentService {
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository() private userRepository: ExperimentUserRepository,
+    @OrmRepository() private metricRepository: MetricRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
-  ) { }
+  ) {}
 
-  public find(): Promise<Experiment[]> {
+  public async find(): Promise<Experiment[]> {
     this.log.info(`Find all experiments`);
-    return this.experimentRepository.findAllExperiments();
+    const experimentDocument = await this.experimentRepository.findAllExperiments();
+    return experimentDocument.map((experiment) => {
+      const { metrics, ...rest } = experiment;
+      const metricJson = this.metricDocumentToJson(metrics);
+      return { ...rest, metrics: metricJson } as any;
+    });
   }
 
   public findAllName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
@@ -103,13 +112,13 @@ export class ExperimentService {
     return config.context;
   }
 
-  public create(experiment: Experiment, currentUser: User): Promise<Experiment> {
+  public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
     return this.addExperimentInDB(experiment, currentUser);
   }
 
-  public createMultipleExperiments(experiment: Experiment[]): Promise<Experiment[]> {
+  public createMultipleExperiments(experiment: ExperimentInput[]): Promise<Experiment[]> {
     this.log.info('Generating test experiments => ', experiment.toString());
     return this.addBulkExperiments(experiment);
   }
@@ -147,6 +156,13 @@ export class ExperimentService {
 
         const promiseResult = await Promise.all(promiseArray);
 
+        // deleting
+        const data = await transactionalEntityManager.query('SELECT "metricKey" FROM experiment_metric;');
+        const metricKeys: string[] = data.map((val) => {
+          return val.metricKey;
+        });
+        await this.metricRepository.deleteExceptByIds(metricKeys, transactionalEntityManager);
+
         return promiseResult[1];
       }
 
@@ -157,7 +173,7 @@ export class ExperimentService {
   public update(id: string, experiment: Experiment, currentUser: User): Promise<Experiment> {
     this.log.info('Update an experiment => ', experiment.toString());
     // TODO add entry in audit log of updating experiment
-    return this.updateExperimentInDB(experiment, currentUser);
+    return this.updateExperimentInDB(experiment as any, currentUser);
   }
 
   public async getExperimentalConditions(experimentId: string): Promise<ExperimentCondition[]> {
@@ -303,14 +319,14 @@ export class ExperimentService {
     }
   }
 
-  private async updateExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
+  private async updateExperimentInDB(experiment: ExperimentInput, user: User): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
     const oldConditions = oldExperiment.conditions;
     const oldPartitions = oldExperiment.partitions;
 
     // create schedules to start experiment and end experiment
-    this.scheduledJobService.updateExperimentSchedules(experiment);
+    this.scheduledJobService.updateExperimentSchedules(experiment as any);
 
     return getConnection().transaction(async (transactionalEntityManager) => {
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -325,10 +341,28 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+      const { conditions, partitions, metrics, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+      let newExpDoc: any = expDoc;
+      if (experiment.metrics && experiment.metrics.length) {
+        // transform metrics to document
+        const keyArray = this.metricJsonToDocument(experiment.metrics);
+        const metricDoc: any[] = keyArray.map((metric) => ({
+          key: metric,
+        }));
+
+        newExpDoc = { ...expDoc, metrics: metricDoc };
+      }
+
       let experimentDoc: Experiment;
       try {
-        experimentDoc = (await this.experimentRepository.updateExperiment(expDoc, transactionalEntityManager))[0];
+        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(newExpDoc);
+        // soft delete metrics
+        // TODO not a good place to write query
+        const data = await transactionalEntityManager.query('SELECT "metricKey" FROM experiment_metric;');
+        const metricKeys: string[] = data.map((val) => {
+          return val.metricKey;
+        });
+        await this.metricRepository.deleteExceptByIds(metricKeys, transactionalEntityManager);
       } catch (error) {
         throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
       }
@@ -519,7 +553,7 @@ export class ExperimentService {
     return [updatedData, uniqueIdentifiers];
   }
 
-  private async addExperimentInDB(experiment: Experiment, user: User): Promise<Experiment> {
+  private async addExperimentInDB(experiment: ExperimentInput, user: User): Promise<Experiment> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -534,13 +568,22 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, ...expDoc } = experiment;
-      // saving experiment doc
+      const { conditions, partitions, metrics, ...expDoc } = experiment;
+      let newExpDoc: any = expDoc;
+      if (experiment.metrics && experiment.metrics.length) {
+        // transform metrics to document
+        const keyArray = this.metricJsonToDocument(experiment.metrics);
+        const metricDoc: any[] = keyArray.map((metric) => ({
+          key: metric,
+        }));
+
+        newExpDoc = { ...expDoc, metrics: metricDoc };
+      }
+
+      // saving experiment docs
       let experimentDoc: Experiment;
       try {
-        experimentDoc = (
-          await this.experimentRepository.insertExperiment(expDoc as any, transactionalEntityManager)
-        )[0];
+        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(newExpDoc);
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
       }
@@ -630,15 +673,66 @@ export class ExperimentService {
 
   private arrayGroupBy(docsArray: any, key: string): any {
     return docsArray.reduce((result, currentValue) => {
-      (result[currentValue[key]] = result[currentValue[key]] || []).push(
-        currentValue
-      );
+      (result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
       return result;
     }, {});
   }
 
-  private async addBulkExperiments(experiments: Experiment[]): Promise<Experiment[]> {
+  private metricJsonToDocument(metricUnitArray: MetricUnit[]): string[] {
+    const keyArray = [];
 
+    function returnKeyArray(metricUnit: MetricUnit, keyName: string): void {
+      if (metricUnit.children.length === 0) {
+        // exit condition
+        const leafPath = keyName === '' ? metricUnit.key : `${keyName}_${metricUnit.key}`;
+        keyArray.push(leafPath);
+        return;
+      }
+
+      metricUnit.children.forEach((unit) => {
+        const newKey = keyName === '' ? metricUnit.key : `${keyName}_${metricUnit.key}`;
+        return `${returnKeyArray(unit, newKey)}`;
+      });
+    }
+
+    metricUnitArray.forEach((metricUnit) => {
+      return returnKeyArray(metricUnit, '');
+    });
+
+    return keyArray;
+  }
+
+  private metricDocumentToJson(metrics: Metric[]): MetricUnit[] {
+    const metricUnitArray: MetricUnit[] = [];
+
+    metrics.forEach((metric) => {
+      const keyArray = metric.key.split('_');
+      let metricPointer = metricUnitArray;
+      keyArray.forEach((key, index) => {
+        const keyExist = metricPointer.reduce((aggregator, unit) => {
+          const isKey = unit && unit.key === key ? true : false;
+          if (isKey) {
+            metricPointer = unit.children;
+          }
+          return aggregator || isKey;
+        }, false);
+
+        if (keyExist === false) {
+          // create the key
+          const newMetric = {
+            key,
+            children: [],
+          };
+          metricPointer.push(newMetric);
+
+          metricPointer = newMetric.children;
+        }
+      });
+    });
+    return metricUnitArray;
+  }
+
+  private async addBulkExperiments(experiments: ExperimentInput[]): Promise<Experiment[]> {
     // Create data to be entered in experiments table
     const expDocs = experiments.map((experiment) => {
       experiment.id = experiment.id || uuid();
@@ -650,7 +744,7 @@ export class ExperimentService {
         experiment.conditions.length > 0 &&
         experiment.conditions.map((condition: ExperimentCondition) => {
           condition.id = condition.id || uuid();
-          condition.experiment = experiment;
+          condition.experiment = experiment as any;
           return condition;
         });
 
@@ -660,7 +754,7 @@ export class ExperimentService {
         experiment.partitions.length > 0 &&
         experiment.partitions.map((partition) => {
           partition.id = partition.expId ? `${partition.expId}_${partition.expPoint}` : `${partition.expPoint}`;
-          partition.experiment = experiment;
+          partition.experiment = experiment as any;
           return partition;
         });
 
@@ -668,18 +762,18 @@ export class ExperimentService {
     });
 
     // Fetch all the conditions from array of experiments and flatten it to get new conditions
-    const allConditionDocs = expDocs.map((experiment => {
+    const allConditionDocs = expDocs.map((experiment) => {
       return experiment.conditions;
-    }));
+    });
     let conditionDocsToSave = [].concat(...allConditionDocs);
 
     // Fetch all the partitions from array of experiments and flatten it to get new partitions
-    const allPartitionDocs = expDocs.map((experiment => {
+    const allPartitionDocs = expDocs.map((experiment) => {
       return experiment.partitions;
-    }));
+    });
     let partitionDocsToSave = [].concat(...allPartitionDocs);
 
-    // add ubique twoCharacterIds to experiment conditions and partitions
+    // add unique twoCharacterIds to experiment conditions and partitions
     let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
     if (conditionDocsToSave.length) {
       const response = this.setConditionOrPartitionIdentifiers(conditionDocsToSave, uniqueIdentifiers);
@@ -697,9 +791,7 @@ export class ExperimentService {
       let experimentDoc: Experiment[];
       try {
         // Saving experiment
-        experimentDoc = (
-          await this.experimentRepository.insertBatchExps(expDocs as any, transactionalEntityManager)
-        );
+        experimentDoc = await this.experimentRepository.insertBatchExps(expDocs as any, transactionalEntityManager);
       } catch (error) {
         throw new Error(`Error in creating experiment document "addBulkExperiments" ${error}`);
       }

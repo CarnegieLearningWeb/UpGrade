@@ -7,8 +7,9 @@ import repositoryError from './utils/repositoryError';
 export class ExperimentRepository extends Repository<Experiment> {
   public async findAllExperiments(): Promise<Experiment[]> {
     return this.createQueryBuilder('experiment')
-      .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.metrics', 'metrics')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
@@ -32,14 +33,18 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .where(
         new Brackets((qb) => {
-          qb.where('(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])', {
-            enrolling: 'enrolling',
-            enrollmentComplete: 'enrollmentComplete',
-            context,
-          });
+          qb.where(
+            '(experiment.state = :enrolling OR experiment.state = :enrollmentComplete) AND :context ILIKE ANY (ARRAY[experiment.context])',
+            {
+              enrolling: 'enrolling',
+              enrollmentComplete: 'enrollmentComplete',
+              context,
+            }
+          );
         })
       )
-      .getMany().catch((errorMsg: any) => {
+      .getMany()
+      .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments', {}, errorMsg);
         throw new Error(errorMsgString);
       });
@@ -62,7 +67,8 @@ export class ExperimentRepository extends Repository<Experiment> {
           );
         })
       )
-      .getMany().catch((errorMsg: any) => {
+      .getMany()
+      .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperimentsWithPreview', {}, errorMsg);
         throw new Error(errorMsgString);
       });
@@ -120,7 +126,10 @@ export class ExperimentRepository extends Repository<Experiment> {
     return result.raw;
   }
 
-  public async insertBatchExps(experimentDocs: Array<Partial<Experiment>>, entityManager: EntityManager): Promise<Experiment[]> {
+  public async insertBatchExps(
+    experimentDocs: Array<Partial<Experiment>>,
+    entityManager: EntityManager
+  ): Promise<Experiment[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()

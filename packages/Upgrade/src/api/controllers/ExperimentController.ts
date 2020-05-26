@@ -22,6 +22,7 @@ import { ExperimentPartition } from '../models/ExperimentPartition';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { PaginationResponse } from '../../types';
+import { ExperimentInput } from '../../types/ExperimentInput';
 const validator = new Validator();
 
 interface ExperimentPaginationInfo extends PaginationResponse {
@@ -105,6 +106,10 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               type: string
  *             description:
  *               type: string
+ *       metrics:
+ *         type: array
+ *         items:
+ *           type: object
  */
 
 /**
@@ -116,7 +121,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(public experimentService: ExperimentService) { }
+  constructor(public experimentService: ExperimentService) {}
 
   /**
    * @swagger
@@ -220,7 +225,8 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: ExperimentPaginatedParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } })
+    paginatedParams: ExperimentPaginatedParamsValidator
   ): Promise<ExperimentPaginationInfo> {
     if (!paginatedParams) {
       return Promise.reject(
@@ -362,7 +368,7 @@ export class ExperimentController {
 
   @Post()
   public create(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment,
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput,
     @CurrentUser() currentUser: User
   ): Promise<Experiment> {
     return this.experimentService.create(experiment, currentUser);
@@ -395,7 +401,7 @@ export class ExperimentController {
 
   @Post('/batch')
   public createMultipleExperiments(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment[]
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput[]
   ): Promise<Experiment[]> {
     return this.experimentService.createMultipleExperiments(experiment);
   }

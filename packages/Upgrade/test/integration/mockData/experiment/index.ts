@@ -74,6 +74,29 @@ export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssign
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
+export const individualExperimentWithMetric = {
+  ...individualAssignmentExperiment,
+  metrics: [
+    {
+      key: 'time',
+      children: [],
+    },
+    {
+      key: 'w',
+      children: [
+        {
+          key: 'time',
+          children: [],
+        },
+        {
+          key: 'completion',
+          children: [],
+        },
+      ],
+    },
+  ],
+};
+
 export const scheduleJobStartExperiment = { ...experiment, state: EXPERIMENT_STATE.SCHEDULED };
 
 export const scheduleJobEndExperiment = {
