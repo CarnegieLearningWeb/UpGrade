@@ -64,7 +64,7 @@ export class ExperimentService {
     return this.experimentRepository.findAllName();
   }
 
-  public findPaginated(
+  public async findPaginated(
     skip: number,
     take: number,
     searchParams?: IExperimentSearchParams,
@@ -75,7 +75,8 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.partitions', 'partitions');
+      .innerJoinAndSelect('experiment.partitions', 'partitions')
+      .innerJoinAndSelect('experiment.metrics', 'metrics');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -91,17 +92,30 @@ export class ExperimentService {
 
     queryBuilder = queryBuilder.skip(skip).take(take);
 
-    return queryBuilder.getMany();
+    let experiments = await queryBuilder.getMany();
+    experiments = experiments.map((experiment) => {
+      const { metrics, ...rest } = experiment;
+      const metricJson = this.metricDocumentToJson(metrics);
+      return { ...rest, metrics: metricJson } as any;
+    });
+    return experiments;
   }
 
-  public findOne(id: string): Promise<Experiment | undefined> {
+  public async findOne(id: string): Promise<Experiment | undefined> {
     this.log.info(`Find experiment by id => ${id}`);
-    return this.experimentRepository
+    const experiment = await this.experimentRepository
       .createQueryBuilder('experiment')
       .innerJoinAndSelect('experiment.conditions', 'conditions')
       .innerJoinAndSelect('experiment.partitions', 'partitions')
+      .innerJoinAndSelect('experiment.metrics', 'metrics')
       .where({ id })
       .getOne();
+    if (experiment) {
+      const { metrics, ...rest } = experiment;
+      const metricJson = this.metricDocumentToJson(metrics);
+      return { ...rest, metrics: metricJson } as any;
+    }
+    return experiment;
   }
 
   public getTotalCount(): Promise<number> {
@@ -519,7 +533,9 @@ export class ExperimentService {
       };
 
       await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
-      return newExperiment;
+      const { metrics: experimentMetric, ...rest } = newExperiment;
+      const metricJson = this.metricDocumentToJson(experimentMetric);
+      return { ...rest, metrics: metricJson } as any;
     });
   }
 
@@ -639,7 +655,9 @@ export class ExperimentService {
     };
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
 
-    return createdExperiment;
+    const { metrics, ...rest } = createdExperiment;
+    const metricJson = this.metricDocumentToJson(metrics);
+    return { ...rest, metrics: metricJson } as any;
   }
 
   private postgresSearchString(type: string): string {
