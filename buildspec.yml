@@ -17,7 +17,7 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-      #- REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
+      # - REPOSITORY_URI=656500730782.dkr.ecr.us-east-1.amazonaws.com/ees-backend
       - IMAGE_TAG=$ENVIRONMENT
       - echo running upgrade tests
       - npm run test:upgrade
@@ -26,7 +26,7 @@ phases:
       - echo Build started on `date`
       - echo deploying serverless functions
       - echo Building docker config
-      # added extra params to docker config
+      # - added extra params to docker config
       - npm run dockerConfig $IMAGE_TAG $AWS_ACCOUNT_ID $AWS_DEFAULT_REGION $IMAGE_REPO_NAME
       - echo Building the Docker image...
       #- docker build --build-arg ENVIRONMENT=$IMAGE_TAG -t $REPOSITORY_URI:latest .
