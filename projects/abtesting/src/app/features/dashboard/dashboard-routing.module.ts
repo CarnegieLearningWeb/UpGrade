@@ -34,6 +34,10 @@ const routes: Routes = [
         }
       },
       {
+        path: 'featureFlags',
+        loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule)
+      },
+      {
         path: 'profile',
         loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule),
         data: {

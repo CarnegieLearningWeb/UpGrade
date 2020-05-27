@@ -1,0 +1,147 @@
+<mat-card class="flags-list-container">
+  <div class="header">
+    <div>
+      <mat-form-field class="filter-options">
+        <mat-select
+          class="ft-16-600"
+          [(ngModel)]="selectedFlagFilterOption"
+          (selectionChange)="applyFilter(searchValue); setSearchKey()"
+        >
+          <mat-option
+            *ngFor="let filterOption of flagsFilterOptions"
+            [value]="filterOption.value"
+          >
+            {{ filterOption.viewValue | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          class="search-input ft-16-400"
+          matInput
+          #searchInput
+          [(ngModel)]="searchValue"
+          (keyup)="applyFilter($event.target.value)"
+          [placeholder]="'global.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    <button
+      mat-flat-button
+      color="primary"
+      class="ft-14-700"
+      (click)="openNewFlagDialog()"
+      *ngIf="(permissions$ | async)?.featureFlags.create"
+    >
+      <mat-icon>add</mat-icon>
+      <span>{{ 'feature-flags.add-flag.text' | translate }}</span>
+    </button>
+  </div>
+
+  <div
+    scroll
+    (scrolled)="fetchFlagsOnScroll()"
+    class="flags-list-table-container"
+    #tableContainer
+  >
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingFeatureFlags$ | async"></mat-progress-bar>
+    <table
+      class="flags-list"
+      mat-table
+      [dataSource]="allFeatureFlags"
+      matSort
+      (matSortChange)="changeSorting($event)"
+    >
+      <ng-container matColumnDef="name">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'feature-flags.global-name.text' | translate" matTooltipPosition="above">
+            {{ 'feature-flags.global-name.text' | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <a [routerLink]="['/featureFlags', 'detail', flag.id]" *ngIf="flag.name?.length < 30; else flagNameEllipsis" class="flag-name">
+            {{ flag.name }}
+          </a>
+          <ng-template #flagNameEllipsis>
+            <a [routerLink]="['/flag', 'detail', flag.id]" [matTooltip]="flag.name" class="flag-name" matTooltipPosition="above">
+              {{ flag.name | truncate: 30 }}
+            </a>
+          </ng-template>
+          <br />
+          <span
+            class="flag-description ft-10-400"
+            *ngIf="flag.description?.length < 30; else flagDescription">
+            {{ flag.description }}
+          </span>
+          <ng-template #flagDescription>
+            <span
+              class="flag-description ft-10-400"
+              [matTooltip]="flag.description"
+              matTooltipPosition="above"
+            >
+              {{ flag.description | truncate: 35 }}
+            </span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="key">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'feature-flags.global-key.text' | translate" matTooltipPosition="above">
+            {{ 'feature-flags.global-key.text' | translate | uppercase }}
+          </span>
+        </th>
+        <td
+          class="ft-12-600"
+          mat-cell
+          *matCellDef="let flag"
+        >
+          <span>{{ flag.key }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="variationType">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'feature-flags.table-variation-type.text' | translate" matTooltipPosition="above">
+            {{ 'feature-flags.table-variation-type.text' | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <span>{{ flag.variationType | titlecase }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="activeVariant">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef>
+          <span [matTooltip]="'feature-flags.global-active-variation.text' | translate" matTooltipPosition="above">
+            {{ 'feature-flags.global-active-variation.text' | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <span>{{ getActiveVariation(flag) }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'feature-flags.global-status.text' | translate" matTooltipPosition="above">
+            {{ 'feature-flags.global-status.text' | translate | uppercase }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
+          <mat-slide-toggle
+            color="primary"
+            [checked]="flag.status"
+            [disabled]="!(permissions$ | async).featureFlags.update"
+            (change)="changeFlagStatus(flag.id, $event)"
+          >
+          </mat-slide-toggle>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+</mat-card>

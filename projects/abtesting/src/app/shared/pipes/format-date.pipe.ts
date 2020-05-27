@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DateType } from '../../../../core/experiments/store/experiments.model';
+import { DateType } from '../../core/experiments/store/experiments.model';
 
 @Pipe({
   name: 'formatDate'

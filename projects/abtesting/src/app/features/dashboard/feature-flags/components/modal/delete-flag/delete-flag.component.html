@@ -1,0 +1,22 @@
+<div mat-dialog-content class="delete-flag-dialog">
+  <p class="ft-16-600">
+    {{ 'feature-flags.delete-flag.message.text' | translate: { flagName: data.flagName } }}
+  </p>
+</div>
+<div mat-dialog-actions class="delete-flag-dialog-actions">
+  <button
+    class="modal-btn"
+    mat-flat-button
+    (click)="onCancelClick()"
+  >
+    {{ 'global.cancel.text' | translate }}
+  </button>
+  <button
+    class="modal-btn default-button"
+    mat-flat-button
+    cdkFocusInitial
+    (click)="deleteFlag()"
+  >
+    {{ 'home.delete-experiment.button.text' | translate }}
+  </button>
+</div>

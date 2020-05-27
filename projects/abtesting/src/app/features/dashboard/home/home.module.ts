@@ -23,13 +23,11 @@ import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 import { DeleteExperimentComponent } from './components/modal/delete-experiment/delete-experiment.component';
 import { TableRowComponent } from './components/table-row/table-row.component';
-import { FormatDatePipe } from './pipes/format-date.pipe';
 
 @NgModule({
   declarations: [
     HomeComponent,
     ExperimentListComponent,
-    FormatDatePipe,
     NewExperimentComponent,
     ExperimentOverviewComponent,
     ExperimentDesignComponent,

@@ -46,6 +46,9 @@ export const environment = {
     previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,
     allPartitions: `${endpointApi}/experiments/partitions`,
     allExperimentNames: `${endpointApi}/experiments/names`,
+    featureFlag: `${endpointApi}/flags`,
+    updateFlagStatus: `${endpointApi}/flags/status`,
+    getPaginatedFlags: `${endpointApi}/flags/paginated`,
     toCheckAuth: `${endpointApi}/setting`
   }
 };

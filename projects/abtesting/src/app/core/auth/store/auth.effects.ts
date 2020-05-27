@@ -4,6 +4,7 @@ import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
 import * as experimentActions from '../../experiments/store/experiments.actions';
 import * as usersActions from '../../users/store/users.actions';
+import * as featureFlagsActions from '../../feature-flags/store/feature-flags.actions';
 import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
@@ -125,12 +126,11 @@ export class AuthEffects {
         filter(user => !!user.email),
         switchMap((user: User) => {
           const actions = [
-            experimentActions.actionGetExperiments({ fromStarting: true }),
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
             usersActions.actionFetchUsers({ fromStarting: true }),
-            settingsActions.actionGetToCheckAuth()
+            settingsActions.actionGetToCheckAuth(),
           ];
           // Set theme from localstorage if exist
           this.settingsService.setLocalStorageTheme();

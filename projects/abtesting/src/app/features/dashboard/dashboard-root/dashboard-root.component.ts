@@ -19,6 +19,11 @@ export class DashboardRootComponent {
       iconType: 'assignment'
     },
     {
+      path: ['/featureFlags'],
+      text: 'Feature flags',
+      iconType: 'toggle_on'
+    },
+    {
       path: ['/users'],
       text: 'global.experiment-user.title',
       iconType: 'supervisor_account'

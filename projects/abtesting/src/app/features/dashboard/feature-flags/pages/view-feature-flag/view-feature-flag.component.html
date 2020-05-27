@@ -1,0 +1,142 @@
+<mat-card class="flag-container" *ngIf="flag">
+  <span class="ft-16-400">
+    <a [routerLink]="['/featureFlags']" class="ft-16-400 flag-link">{{ 'feature-flags.title.text' | translate }} </a>
+    > <b> {{ flag?.name }} </b>
+  </span>
+  <mat-card class="flag">
+    <div class="flag-info">
+      <div class="flag-overview">
+        <span class="ft-32-700 flag-overview-title">
+          {{ flag?.name }}
+        </span>
+
+        <div class="action-buttons">
+          <button
+            mat-flat-button
+            class="ft-14-600 button"
+            (click)="openEditFlagDialog()"
+            *ngIf="permissions?.featureFlags.update"
+          >
+            {{ 'home.view-experiment.edit-button.text' | translate }}
+          </button>
+          <button
+            mat-flat-button
+            class="ft-14-600 button"
+            (click)="deleteFlag()"
+            *ngIf="permissions?.featureFlags.delete"
+          >
+            {{ 'home.view-experiment.delete-button.text' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <span class="ft-16-400 flag-description">
+        {{ flag.description }}
+      </span>
+
+      <span class="ft-14-700 flag-create-date">
+        {{
+          ('home.view-experiment.created-on.text' | translate) + (flag.createdAt | formatDate: 'medium date')
+        }}
+      </span>
+    </div>
+
+    <div class="flag-secondary-info">
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-status.text' | translate | uppercase }}</span>
+        <mat-slide-toggle
+            color="primary"
+            [checked]="flag.status"
+            [disabled]="!permissions.featureFlags.update"
+            (change)="changeFlagStatus(flag.id, $event)"
+          >
+          </mat-slide-toggle>
+      </div>
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-key.text' | translate | uppercase }}</span>
+        <span class="ft-18-700 section-data-value">
+          {{ flag.key }}
+        </span>
+      </div>
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'feature-flags.view-flag.variation-type.text' | translate | uppercase }}</span>
+        <span class="ft-18-700 section-data-value">
+          {{ flag.variationType | titlecase }}
+        </span>
+      </div>
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-active-variation.text' | translate | uppercase }}</span>
+        <span class="ft-18-700 section-data-value">
+          {{ getActiveVariation(flag) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Flag Variations Table -->
+    <div class="table-container">
+      <span class="ft-24-700">{{ 'feature-flags.view-flag.table-flag-variations.text' | translate }}</span>
+      <mat-table [dataSource]="flag.variations" class="table">
+        <!-- Number Column -->
+        <ng-container matColumnDef="variationNumber">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            <span [matTooltip]="'global.number.text' | translate" matTooltipPosition="above">
+              {{ 'global.number.text' | translate }}
+            </span>
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
+        </ng-container>
+
+        <!-- 'value' Column -->
+        <ng-container matColumnDef="value">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            <span [matTooltip]="'feature-flags.global-variation-value.text' | translate" matTooltipPosition="above">
+              {{ 'feature-flags.global-variation-value.text' | translate | uppercase }}
+            </span>
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.value }} </mat-cell>
+        </ng-container>
+
+        <!-- name Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            <span [matTooltip]="'feature-flags.global-name.text' | translate" matTooltipPosition="above">
+              {{ 'feature-flags.global-name.text' | translate | uppercase }}
+            </span>
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            <span *ngIf="data.name?.length < 50; else conditionCode">
+              {{ data.name }}
+            </span>
+            <ng-template #conditionCode>
+              <span [matTooltip]="data.name" matTooltipPosition="above">
+                {{ data.name | truncate: 50 }}
+              </span>
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            <span [matTooltip]="'global.description.text' | translate" matTooltipPosition="above">
+              {{ 'global.description.text' | translate | uppercase }}
+            </span>
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            <span *ngIf="data.description?.length < 50; else conditionDescription">
+              {{ data.description }}
+            </span>
+            <ng-template #conditionDescription>
+              <span [matTooltip]="data.description" matTooltipPosition="above">
+                {{ data.description | truncate: 50 }}
+              </span>
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedVariationColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedVariationColumns"></mat-row>
+      </mat-table>
+    </div>
+  </mat-card>
+</mat-card>
