@@ -117,6 +117,9 @@ pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker``
 | GOOGLE_CLIENT_ID | google project id for upgrade client app | varchar|
 | MONITOR_PASSWORD | Monitor password for upgrade service| varchar|
 | SWAGGER_PASSWORD | Swagger password for upgrade service | varchar|
+| TYPEORM_SYNCHRONIZE | Sync models on every instance of application start? | boolean|
+| TOKEN_SECRET_KEY | Bearer token for auth | varchar|
+| AUTH_CHECK | Auth check | boolean|
 | repository_name | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline| varchar|
 | **branch_name** | AWS CODE COMMIT branch name for CICD pipeline | varchar|
 | build_image | build image for AWS CODEBUILD| varchar|
