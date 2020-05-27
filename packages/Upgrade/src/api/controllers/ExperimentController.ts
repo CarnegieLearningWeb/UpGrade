@@ -16,17 +16,15 @@ import { ExperimentService } from '../services/ExperimentService';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator, validate } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
+import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
 import { User } from '../models/User';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
+import { PaginationResponse } from '../../types';
 const validator = new Validator();
 
-interface ExperimentPaginationInfo {
-  total: number;
-  skip: number;
-  take: number;
+interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
 }
 
@@ -222,7 +220,7 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: PaginatedParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: ExperimentPaginatedParamsValidator
   ): Promise<ExperimentPaginationInfo> {
     if (!paginatedParams) {
       return Promise.reject(

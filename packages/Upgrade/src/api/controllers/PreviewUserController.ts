@@ -4,8 +4,14 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { PreviewUserService } from '../services/PreviewUserService';
 import { PreviewUser } from '../models/PreviewUser';
 import { Validator } from 'class-validator';
+import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
+import { PaginationResponse } from '../../types';
 
 const validator = new Validator();
+
+interface PreviewUserPaginationInfo extends PaginationResponse {
+  nodes: PreviewUser[];
+}
 
 /**
  * @swagger
@@ -46,18 +52,57 @@ export class PreviewUserController {
 
   /**
    * @swagger
-   * /previewusers:
-   *    get:
-   *       description: Get all the users
+   * /previewusers/paginated:
+   *    post:
+   *       description: Get Paginated Preview Users
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
    *       tags:
    *         - Preview Users
+   *       produces:
+   *         - application/json
    *       responses:
    *          '200':
-   *            description: Successful
+   *            description: Get Paginated Preview Users
    */
-  @Get()
-  public find(): Promise<PreviewUser[]> {
-    return this.previewUserService.find();
+  @Post('/paginated')
+  public async paginatedFind(
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: PaginatedParamsValidator
+  ): Promise<PreviewUserPaginationInfo> {
+    if (!paginatedParams) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
+        )
+      );
+    }
+
+    const [previewUsers, count] = await Promise.all([
+      this.previewUserService.findPaginated(
+        paginatedParams.skip,
+        paginatedParams.take
+      ),
+      this.previewUserService.getTotalCount(),
+    ]);
+    return {
+      total: count,
+      nodes: previewUsers,
+      ...paginatedParams,
+    };
   }
 
   /**

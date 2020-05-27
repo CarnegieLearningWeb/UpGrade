@@ -2,9 +2,9 @@
 current_directory       = "dev"
 aws_region              = "us-east-1"
 environment             = "development"
-prefix                  = "upgrade" 
+prefix                  = "cli-upgrade" 
 app_version             = "1.0.0"
-aws_profile             = "default"
+aws_profile             = "upgrade-terraform"
 
 # RDS related details 
 allocated_storage       = 100
@@ -34,3 +34,6 @@ branch_name             = "develop"
 build_image             = "aws/codebuild/standard:1.0"
 build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
+
+# Real values for secrets for this environment are stored in vault at
+#   internal/upgrade-experiment-service/environments/dev
