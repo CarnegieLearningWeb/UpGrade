@@ -12,6 +12,16 @@
     padding: 0 2.25rem;
     height: 94px;
 
+    .filter-options {
+      margin-right: 10px;
+      width: 80px;
+
+      ::ng-deep .mat-form-field-underline,
+      ::ng-deep .mat-form-field-ripple {
+        background-color: unset;
+      }
+    }
+
     .search-input {
       line-height: 20px;
     }

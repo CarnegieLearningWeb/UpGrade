@@ -48,6 +48,7 @@ export const environment = {
     allExperimentNames: `${endpointApi}/experiments/names`,
     featureFlag: `${endpointApi}/flags`,
     updateFlagStatus: `${endpointApi}/flags/status`,
+    getPaginatedFlags: `${endpointApi}/flags/paginated`,
     toCheckAuth: `${endpointApi}/setting`
   }
 };

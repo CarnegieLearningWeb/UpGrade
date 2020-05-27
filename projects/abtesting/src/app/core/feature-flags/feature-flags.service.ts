@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
-import { selectIsLoadingFeatureFlags, selectAllFeatureFlags, selectSelectedFeatureFlag } from './store/feature-flags.selectors';
-import { FeatureFlag, UpsertFeatureFlagType } from './store/feature-flags.model';
+import { selectIsLoadingFeatureFlags, selectAllFeatureFlags, selectSelectedFeatureFlag, selectTotalFlags, selectSkipFlags } from './store/feature-flags.selectors';
+import { FeatureFlag, UpsertFeatureFlagType, FLAG_SEARCH_SORT_KEY, SORT_AS } from './store/feature-flags.model';
 import { filter, map } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 
@@ -41,8 +41,17 @@ export class FeatureFlagsService {
     );
   }
 
-  fetchAllFeatureFlags() {
-    this.store$.dispatch(FeatureFlagsActions.actionFetchAllFeatureFlags());
+  isAllFlagsFetched() {
+    return combineLatest(
+      this.store$.pipe(select(selectSkipFlags)),
+      this.store$.pipe(select(selectTotalFlags))
+    ).pipe(
+      map(([skipFlags, totalFlags]) => skipFlags === totalFlags)
+    );
+  }
+
+  fetchFeatureFlags(fromStarting?: boolean) {
+    this.store$.dispatch(FeatureFlagsActions.actionFetchFeatureFlags({ fromStarting }));
   }
 
   createNewFeatureFlag(flag: FeatureFlag) {
@@ -69,5 +78,21 @@ export class FeatureFlagsService {
       }
     })[0];
     return  existedVariation ? existedVariation.value : '';
+  }
+
+  setSearchKey(searchKey: FLAG_SEARCH_SORT_KEY) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
+  }
+
+  setSearchString(searchString: string) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetSearchString({ searchString }));
+  }
+
+  setSortKey(sortKey: FLAG_SEARCH_SORT_KEY) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetSortKey({ sortKey }));
+  }
+
+  setSortingType(sortingType: SORT_AS) {
+    this.store$.dispatch(FeatureFlagsActions.actionSetSortingType({ sortingType }));
   }
 }

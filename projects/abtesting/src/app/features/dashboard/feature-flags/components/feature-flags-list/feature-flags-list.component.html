@@ -1,10 +1,26 @@
 <mat-card class="flags-list-container">
   <div class="header">
     <div>
+      <mat-form-field class="filter-options">
+        <mat-select
+          class="ft-16-600"
+          [(ngModel)]="selectedFlagFilterOption"
+          (selectionChange)="applyFilter(searchValue); setSearchKey()"
+        >
+          <mat-option
+            *ngFor="let filterOption of flagsFilterOptions"
+            [value]="filterOption.value"
+          >
+            {{ filterOption.viewValue | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
       <mat-form-field>
         <input
           class="search-input ft-16-400"
           matInput
+          #searchInput
+          [(ngModel)]="searchValue"
           (keyup)="applyFilter($event.target.value)"
           [placeholder]="'global.search.text' | translate"
         />
@@ -23,13 +39,19 @@
     </button>
   </div>
 
-  <div class="flags-list-table-container" #tableContainer>
+  <div
+    scroll
+    (scrolled)="fetchFlagsOnScroll()"
+    class="flags-list-table-container"
+    #tableContainer
+  >
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingFeatureFlags$ | async"></mat-progress-bar>
     <table
       class="flags-list"
       mat-table
       [dataSource]="allFeatureFlags"
       matSort
+      (matSortChange)="changeSorting($event)"
     >
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -91,7 +113,7 @@
       </ng-container>
 
       <ng-container matColumnDef="activeVariant">
-        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef>
           <span [matTooltip]="'feature-flags.global-active-variation.text' | translate" matTooltipPosition="above">
             {{ 'feature-flags.global-active-variation.text' | translate | uppercase }}
           </span>
@@ -121,6 +143,5 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-    <mat-paginator class="paginator" [hidePageSize]="true" [pageSize]="10"></mat-paginator>
   </div>
 </mat-card>

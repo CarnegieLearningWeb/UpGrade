@@ -24,7 +24,7 @@ export class FeatureFlagsRootComponent implements OnInit {
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.featureFlagsService.fetchAllFeatureFlags();
+    this.featureFlagsService.fetchFeatureFlags(true);
   }
 
   openNewFlagDialog() {

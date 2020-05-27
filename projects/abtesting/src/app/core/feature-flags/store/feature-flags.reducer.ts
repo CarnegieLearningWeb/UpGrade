@@ -1,6 +1,6 @@
 import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { FeatureFlagState, FeatureFlag } from './feature-flags.model';
+import { FeatureFlagState, FeatureFlag, FLAG_SEARCH_SORT_KEY } from './feature-flags.model';
 import * as FeatureFlagsActions from './feature-flags.actions';
 
 export const adapter: EntityAdapter<FeatureFlag> = createEntityAdapter<
@@ -16,24 +16,34 @@ export const {
 
 export const initialState: FeatureFlagState = adapter.getInitialState({
   isLoadingFeatureFlags: false,
+  skipFlags: 0,
+  totalFlags: 0,
+  searchKey: FLAG_SEARCH_SORT_KEY.ALL,
+  searchString: null,
+  sortKey: null,
+  sortAs: null
 });
 
 const reducer = createReducer(
   initialState,
   on(
-    FeatureFlagsActions.actionFetchAllFeatureFlags,
     FeatureFlagsActions.actionUpdateFlagStatus,
     FeatureFlagsActions.actionUpsertFeatureFlag,
     (state) => ({ ...state, isLoadingFeatureFlags: true })
   ),
   on(
-    FeatureFlagsActions.actionFetchAllFeatureFlagsSuccess,
-    (state, { flags }) => {
-      return adapter.upsertMany(flags, { ...state, isLoadingFeatureFlags: false });
+    FeatureFlagsActions.actionFetchFeatureFlagsSuccess,
+    (state, { flags, totalFlags }) => {
+      const newState = {
+        ...state,
+        totalFlags,
+        skipFlags: state.skipFlags + flags.length
+      };
+      return adapter.upsertMany(flags, { ...newState, isLoadingFeatureFlags: false });
     }
   ),
   on(
-    FeatureFlagsActions.actionFetchAllFeatureFlagsFailure,
+    FeatureFlagsActions.actionFetchFeatureFlagsFailure,
     FeatureFlagsActions.actionUpdateFlagStatusFailure,
     FeatureFlagsActions.actionUpsertFeatureFlagFailure,
     (state) => ({ ...state, isLoadingFeatureFlags: false })
@@ -55,7 +65,31 @@ const reducer = createReducer(
     (state, { flag }) => {
       return adapter.removeOne(flag.id, state);
     }
-  )
+  ),
+  on(
+    FeatureFlagsActions.actionSetIsLoadingFeatureFlags,
+    (state, { isLoadingFeatureFlags }) => ({ ...state, isLoadingFeatureFlags })
+  ),
+  on(
+    FeatureFlagsActions.actionSetSkipFlags,
+    (state, { skipFlags }) => ({ ...state, skipFlags })
+  ),
+  on(
+    FeatureFlagsActions.actionSetSearchKey,
+    (state, { searchKey }) => ({ ...state, searchKey })
+  ),
+  on(
+    FeatureFlagsActions.actionSetSearchString,
+    (state, { searchString }) => ({ ...state, searchString })
+  ),
+  on(
+    FeatureFlagsActions.actionSetSortKey,
+    (state, { sortKey }) => ({ ...state, sortKey })
+  ),
+  on(
+    FeatureFlagsActions.actionSetSortingType,
+    (state, { sortingType }) => ({ ...state, sortAs: sortingType })
+  ),
 );
 
 export function featureFlagsReducer(

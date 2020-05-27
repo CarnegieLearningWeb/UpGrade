@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { FeatureFlag } from './store/feature-flags.model';
+import { FeatureFlag, FeatureFlagsPaginationParams } from './store/feature-flags.model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class FeatureFlagsDataService {
   constructor(private http: HttpClient) { }
 
-  fetchAllFeatureFlags() {
-    const url = environment.api.featureFlag;
-    return this.http.get(url);
+  fetchFeatureFlags(params: FeatureFlagsPaginationParams) {
+    const url = environment.api.getPaginatedFlags;
+    return this.http.post(url, params);
   }
 
   createNewFeatureFlag(flag: FeatureFlag) {

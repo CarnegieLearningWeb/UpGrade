@@ -126,13 +126,11 @@ export class AuthEffects {
         filter(user => !!user.email),
         switchMap((user: User) => {
           const actions = [
-            experimentActions.actionGetExperiments({ fromStarting: true }),
             experimentUserActions.actionFetchExcludedUsers(),
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
             usersActions.actionFetchUsers({ fromStarting: true }),
             settingsActions.actionGetToCheckAuth(),
-            featureFlagsActions.actionFetchAllFeatureFlags()
           ];
           // Set theme from localstorage if exist
           this.settingsService.setLocalStorageTheme();

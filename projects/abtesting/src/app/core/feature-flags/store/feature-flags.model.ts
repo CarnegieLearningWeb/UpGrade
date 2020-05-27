@@ -1,6 +1,39 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 
+// TODO: Move to upgrade types
+export enum FLAG_SEARCH_SORT_KEY {
+  ALL = 'all',
+  NAME = 'name',
+  KEY = 'key',
+  STATUS = 'status',
+  VARIATION_TYPE = 'variationType',
+}
+
+export enum SORT_AS {
+  ASCENDING = 'ASC',
+  DESCENDING = 'DESC'
+}
+
+interface IFeatureFlagsSearchParams {
+  key: FLAG_SEARCH_SORT_KEY;
+  string: string
+}
+
+interface IFeatureFlagsSortParams {
+  key: FLAG_SEARCH_SORT_KEY;
+  sortAs: SORT_AS;
+}
+
+export interface FeatureFlagsPaginationParams {
+  skip: number;
+  take: number;
+  searchParams?: IFeatureFlagsSearchParams;
+  sortParams?: IFeatureFlagsSortParams;
+}
+
+export const NUMBER_OF_FLAGS = 20;
+
 export enum NewFlagDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
@@ -54,6 +87,12 @@ export interface FeatureFlag {
 
 export interface FeatureFlagState extends EntityState<FeatureFlag> {
   isLoadingFeatureFlags: boolean;
+  skipFlags: number;
+  totalFlags: number;
+  searchKey: FLAG_SEARCH_SORT_KEY;
+  searchString: FLAG_SEARCH_SORT_KEY;
+  sortKey: FLAG_SEARCH_SORT_KEY;
+  sortAs: SORT_AS;
 }
 
 export interface State extends AppState {
