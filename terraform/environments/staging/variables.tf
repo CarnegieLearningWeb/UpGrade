@@ -24,6 +24,9 @@ variable "autoscaling_max_size"{}
 variable "GOOGLE_CLIENT_ID"{}
 variable "MONITOR_PASSWORD"{}
 variable "SWAGGER_PASSWORD"{}
+variable "TYPEORM_SYNCHRONIZE"{}
+variable "TOKEN_SECRET_KEY"{}
+variable "AUTH_CHECK"{}
 
 # CICD variables
 variable "repository_name"{}

@@ -80,7 +80,7 @@ variable "APP_NAME" { default = "A/B Testing Backend" }
 variable "APP_PORT" { default = 3030 }
 variable "APP_ROUTE_PREFIX" { default = "/api" }
 variable "APP_SCHEMA" { default = "http" }
-variable "AUTH_CHECK" { default = false }
+variable "AUTH_CHECK" {}
 variable "AWS_REGION" { default = "us-east-1" }
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
 variable "GOOGLE_CLIENT_ID" { }
@@ -99,7 +99,7 @@ variable "SWAGGER_FILE" { default = "api/swagger.json" }
 variable "SWAGGER_PASSWORD" {}
 variable "SWAGGER_ROUTE" { default = "/swagger" }
 variable "SWAGGER_USERNAME" { default = "admin" }
-variable "TOKEN_SECRET_KEY" { default = "carnegielearning" }
+variable "TOKEN_SECRET_KEY" { }
 variable "TYPEORM_CONNECTION" { default = "postgres" }
 variable "TYPEORM_ENTITIES" { default = "src/api/models/**/*.ts" }
 variable "TYPEORM_ENTITIES_DIR" { default = "src/api/models" }
@@ -109,7 +109,7 @@ variable "TYPEORM_LOGGING" { default = "all" }
 variable "TYPEORM_MIGRATIONS" { default = "src/database/migrations/**/*.ts" }
 variable "TYPEORM_MIGRATIONS_DIR" { default = "src/database/migrations" }
 variable "TYPEORM_SEED" { default = "src/database/seeds/**/*.seed.ts" }
-variable "TYPEORM_SYNCHRONIZE" { default = true }
+variable "TYPEORM_SYNCHRONIZE" {}
 
 
 variable "SCHEDULER_STEP_FUNCTION" {}
