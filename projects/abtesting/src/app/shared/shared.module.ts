@@ -34,6 +34,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedIconsComponent } from './components/shared-icons/shared-icons.component';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
+import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 
 @NgModule({
@@ -71,7 +72,7 @@ import { ScrollDirective } from './directives/scroll.directive';
     MatAutocompleteModule,
     MatTreeModule,
   ],
-  declarations: [SharedIconsComponent, TruncatePipe, ExperimentStatePipe, ScrollDirective],
+  declarations: [SharedIconsComponent, TruncatePipe, ExperimentStatePipe, ScrollDirective, FormatDatePipe],
   exports: [
     CommonModule,
     FormsModule,
@@ -111,6 +112,7 @@ import { ScrollDirective } from './directives/scroll.directive';
     SharedIconsComponent,
     TruncatePipe,
     ExperimentStatePipe,
+    FormatDatePipe,
     ScrollDirective
   ]
 })

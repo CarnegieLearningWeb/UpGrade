@@ -16,7 +16,7 @@ mat-drawer {
     display: flex;
     align-items: flex-end;
     padding: 0 26px;
-    height: 150px;
+    height: 125px;
 
     &-link {
       margin-bottom: 22px;
@@ -114,12 +114,6 @@ mat-drawer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    height: 50px;
-
-    .theme-selector {
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 2.75rem;
-    }
+    height: 25px;
   }
 }

@@ -204,7 +204,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.experimentTableContainer.nativeElement.style.maxHeight = (windowHeight - 350) + 'px';
+    this.experimentTableContainer.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
 
     fromEvent(this.searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(searchInput => {
       this.setSearchString((searchInput as any).target.value);
@@ -214,7 +214,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     this.isAllExperimentsFetchedSub.unsubscribe();
-    // TODO: should implement persist search
+
     this.experimentService.setSearchString(null);
     this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
     this.experimentService.setSortKey(null);

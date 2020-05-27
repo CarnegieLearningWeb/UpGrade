@@ -1,0 +1,12 @@
+@import '~@angular/material/theming';
+
+@mixin feature-flags-root-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .feature-flags-container {
+    .flags-table,
+    .no-flags-container {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+  }
+}

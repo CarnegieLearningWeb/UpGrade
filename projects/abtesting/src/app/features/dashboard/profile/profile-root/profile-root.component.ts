@@ -9,6 +9,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { NewUserComponent } from '../components/modals/new-user/new-user.component';
 import { SettingsService } from '../../../../core/settings/settings.service';
 import { debounceTime } from 'rxjs/operators';
+import { ThemeOptions } from '../../../../core/settings/store/settings.model';
 
 @Component({
   selector: 'app-profile-root',
@@ -17,6 +18,7 @@ import { debounceTime } from 'rxjs/operators';
 })
 export class ProfileRootComponent implements OnInit, OnDestroy {
   permissions$: Observable<UserPermission>;
+  theme$ = this.settingsService.theme$;
   displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit'];
   userRoleForm: FormGroup;
   editMode = null;
@@ -43,7 +45,7 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
   @ViewChild('usersTable', { static: false }) set content(content: ElementRef) {
     if (content) {
       const windowHeight = window.innerHeight;
-      content.nativeElement.style.maxHeight = (windowHeight - 523) + 'px';
+      content.nativeElement.style.maxHeight = (windowHeight - 498) + 'px';
     }
  }
  // Used to prevent execution of searchInput setter multiple times
@@ -184,6 +186,11 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
     this.usersService.fetchUsers(true);
   }
 
+  changeTheme(event) {
+    const theme = event.checked ? ThemeOptions.DARK_THEME : ThemeOptions.LIGHT_THEME;
+    this.settingsService.changeTheme(theme);
+  }
+
   ngOnDestroy() {
     this.allUsersSub.unsubscribe();
     this.currentUserSub.unsubscribe();
@@ -199,5 +206,9 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
 
   get UserRole() {
     return UserRole;
+  }
+
+  get ThemeOptions() {
+    return ThemeOptions;
   }
 }

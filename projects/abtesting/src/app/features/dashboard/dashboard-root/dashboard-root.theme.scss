@@ -23,9 +23,5 @@
 
   .drawer__main-content {
     background-color: mat-color($background, background);
-
-    .theme-selector {
-      color: mat-color($foreground, text);
-    }
   }
 }
