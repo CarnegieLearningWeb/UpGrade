@@ -14,16 +14,27 @@
         <span class="ft-12-600 email">{{ '( ' + currentUser?.email + ' )' }}</span>
         <span class="ft-12-600 role">{{ currentUser?.role | titlecase }}</span>
       </div>
-      <mat-slide-toggle
-        *ngIf="(permissions$ | async)?.manageRoles.update"
-        class="ft-16-600 authentication-toggle"
-        color="primary"
-        [checked]="toCheckAuth$ | async"
-        (change)="changeAuthenticationFlag($event)"
-        labelPosition="before"
-      >
-        {{ 'profile.authorization.text' | translate }}
+      <div class="toggle-container">
+        <mat-slide-toggle
+          *ngIf="(permissions$ | async)?.manageRoles.update"
+          class="ft-16-600 toggle"
+          color="primary"
+          [checked]="toCheckAuth$ | async"
+          (change)="changeAuthenticationFlag($event)"
+          labelPosition="before"
+        >
+          {{ 'profile.authorization.text' | translate }}
+        </mat-slide-toggle>
+        <mat-slide-toggle
+          class="ft-16-600"
+          color="primary"
+          [checked]="(theme$ | async) === ThemeOptions.DARK_THEME"
+          labelPosition="before"
+          (change)="changeTheme($event)"
+        >
+        {{ 'theme.dark-mode.text' | translate }}
       </mat-slide-toggle>
+      </div>
     </div>
     <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">
       <div class="header">
