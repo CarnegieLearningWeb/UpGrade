@@ -48,7 +48,7 @@ export default async function CreateLog(): Promise<void> {
   };
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, JSON.stringify(jsonData));
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
 
   let logData = await logRepository.find({
     relations: ['metrics'],
