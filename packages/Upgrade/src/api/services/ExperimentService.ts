@@ -76,9 +76,9 @@ export class ExperimentService {
 
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
-      .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.partitions', 'partitions')
-      .innerJoinAndSelect('experiment.metrics', 'metrics');
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.metrics', 'metrics');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -107,9 +107,9 @@ export class ExperimentService {
     this.log.info(`Find experiment by id => ${id}`);
     const experiment = await this.experimentRepository
       .createQueryBuilder('experiment')
-      .innerJoinAndSelect('experiment.conditions', 'conditions')
-      .innerJoinAndSelect('experiment.partitions', 'partitions')
-      .innerJoinAndSelect('experiment.metrics', 'metrics')
+      .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.metrics', 'metrics')
       .where({ id })
       .getOne();
     if (experiment) {
@@ -367,7 +367,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, metrics, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+      const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
       let newExpDoc: any = expDoc;
       if (experiment.metrics && experiment.metrics.length) {
         // transform metrics to document
@@ -541,9 +541,13 @@ export class ExperimentService {
       };
 
       await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
-      const { metrics: experimentMetric, ...rest } = newExperiment;
-      const metricJson = this.metricDocumentToJson(experimentMetric);
-      return { ...rest, metrics: metricJson } as any;
+      const { metrics, ...rest } = newExperiment;
+      if (metrics) {
+        const metricJson = this.metricDocumentToJson(metrics);
+        return { ...rest, metrics: metricJson } as any;
+      }
+
+      return rest as any;
     });
   }
 
@@ -592,7 +596,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, metrics, ...expDoc } = experiment;
+      const { conditions, partitions, ...expDoc } = experiment;
       let newExpDoc: any = expDoc;
       if (experiment.metrics && experiment.metrics.length) {
         // transform metrics to document
@@ -643,12 +647,12 @@ export class ExperimentService {
         throw new Error(`Error in creating conditions and partitions "addExperimentInDB" ${error}`);
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
-        const { experimentId, ...rest } = conditionDoc as any;
-        return rest;
+        const { experimentId, ...restDoc } = conditionDoc as any;
+        return restDoc;
       });
       const partitionDocToReturn = partitionDocs.map((partitionDoc) => {
-        const { experimentId, ...rest } = partitionDoc as any;
-        return rest;
+        const { experimentId, ...restDoc } = partitionDoc as any;
+        return restDoc;
       });
       return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
     });
@@ -664,8 +668,11 @@ export class ExperimentService {
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
 
     const { metrics, ...rest } = createdExperiment;
-    const metricJson = this.metricDocumentToJson(metrics);
-    return { ...rest, metrics: metricJson } as any;
+    if (metrics) {
+      const metricJson = this.metricDocumentToJson(metrics);
+      return { ...rest, metrics: metricJson } as any;
+    }
+    return rest as any;
   }
 
   private postgresSearchString(type: string): string {
