@@ -204,7 +204,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.experimentTableContainer.nativeElement.style.maxHeight = (windowHeight - 350) + 'px';
+    this.experimentTableContainer.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
 
     fromEvent(this.searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(searchInput => {
       this.setSearchString((searchInput as any).target.value);

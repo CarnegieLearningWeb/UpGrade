@@ -7,6 +7,7 @@ $role-text-color: #0a7319;
   box-shadow: unset !important;
   background: unset !important;
   padding: 0 2.75rem 2.75rem;
+  height: calc(100% - 25px); // subtract header height
 
   .title {
     margin-bottom: 0;
@@ -59,10 +60,14 @@ $role-text-color: #0a7319;
         }
       }
 
-      .authentication-toggle {
-        position: relative;
-        bottom: 17px;
-        align-self: center;
+      .toggle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+
+        .toggle {
+          margin-bottom: 10px;
+        }
       }
     }
 

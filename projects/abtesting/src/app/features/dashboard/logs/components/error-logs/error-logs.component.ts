@@ -60,7 +60,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.errorLogContainer.nativeElement.style.height = (windowHeight - 350) + 'px';
+    this.errorLogContainer.nativeElement.style.height = (windowHeight - 325) + 'px';
   }
 
   ngOnDestroy() {

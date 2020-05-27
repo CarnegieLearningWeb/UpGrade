@@ -43,15 +43,6 @@
   </mat-drawer>
   <mat-drawer-content class="drawer__main-content">
     <div class="drawer__main-content-header">
-      <mat-slide-toggle
-        class="ft-16-400 theme-selector"
-        color="primary"
-        [checked]="(theme$ | async) === ThemeOptions.DARK_THEME"
-        labelPosition="before"
-        (change)="changeTheme($event)"
-      >
-        {{ 'dashboard.dark-mode.text' | translate }}
-      </mat-slide-toggle>
     </div>
     <router-outlet></router-outlet>
   </mat-drawer-content>
