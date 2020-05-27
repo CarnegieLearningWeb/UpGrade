@@ -1,8 +1,15 @@
-import { JsonController, Get, Authorized, Post, Body, CurrentUser, Delete, Param, Put } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { User } from '../models/User';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
+import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
+import { PaginationResponse } from '../../types';
+import { SERVER_ERROR } from 'upgrade_types';
+
+interface FeatureFlagsPaginationInfo extends PaginationResponse {
+  nodes: FeatureFlag[];
+}
 
 /**
  * @swagger
@@ -58,20 +65,76 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags:
-   *    get:
-   *       description: Get all feature flags
-   *       produces:
+   * /flags/paginated:
+   *    post:
+   *       description: Get Paginated Feature Flags
+   *       consumes:
    *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - skip
+   *               - take
+   *             properties:
+   *               skip:
+   *                type: integer
+   *               take:
+   *                type: integer
+   *               searchParams:
+   *                type: object
+   *                properties:
+   *                  key:
+   *                    type: string
+   *                    enum: [all, name, key, status, variation Type]
+   *                  string:
+   *                    type: string
+   *               sortParams:
+   *                  type: object
+   *                  properties:
+   *                    key:
+   *                     type: string
+   *                     enum: [name, key, status, variationType]
+   *                    sortAs:
+   *                     type: string
+   *                     enum: [ASC, DESC]
    *       tags:
    *         - Feature flags
+   *       produces:
+   *         - application/json
    *       responses:
    *          '200':
-   *            description: Feature flags list
+   *            description: Get Paginated Experiments
    */
-  @Get()
-  public getAllFlags(): Promise<FeatureFlag[]> {
-    return this.featureFlagService.find();
+  @Post('/paginated')
+  public async paginatedFind(
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: FeatureFlagPaginatedParamsValidator
+  ): Promise<FeatureFlagsPaginationInfo> {
+    if (!paginatedParams) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
+        )
+      );
+    }
+
+    const [featureFlags, count] = await Promise.all([
+      this.featureFlagService.findPaginated(
+        paginatedParams.skip,
+        paginatedParams.take,
+        paginatedParams.searchParams,
+        paginatedParams.sortParams
+      ),
+      this.featureFlagService.getTotalCount(),
+    ]);
+    return {
+      total: count,
+      nodes: featureFlags,
+      ...paginatedParams,
+    };
   }
 
   /**
@@ -107,7 +170,7 @@ export class FeatureFlagsController {
 
   /**
    * @swagger
-   * /flags/state:
+   * /flags/status:
    *    post:
    *       description: Update Feature flag State
    *       consumes:

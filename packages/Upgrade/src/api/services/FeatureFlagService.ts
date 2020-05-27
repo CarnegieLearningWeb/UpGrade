@@ -8,6 +8,7 @@ import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { FlagVariation } from '../models/FlagVariation';
 import { FlagVariationRepository } from '../repositories/FlagVariationRepository';
+import { IFeatureFlagSearchParams, IFeatureFlagSortParams, FLAG_SEARCH_SORT_KEY } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 
 @Service()
 export class FeatureFlagService {
@@ -27,6 +28,38 @@ export class FeatureFlagService {
     return this.addFeatureFlagInDB(flag, currentUser);
   }
 
+  public getTotalCount(): Promise<number> {
+    return this.featureFlagRepository.count();
+  }
+
+  public findPaginated(
+    skip: number,
+    take: number,
+    searchParams?: IFeatureFlagSearchParams,
+    sortParams?: IFeatureFlagSortParams
+  ): Promise<FeatureFlag[]> {
+    this.log.info('Find paginated Feature flags');
+
+    let queryBuilder = this.featureFlagRepository
+      .createQueryBuilder('feature_flag')
+      .innerJoinAndSelect('feature_flag.variations', 'variations');
+    if (searchParams) {
+      const customSearchString = searchParams.string.split(' ').join(`:*&`);
+      // add search query
+      const postgresSearchString = this.postgresSearchString(searchParams.key);
+      queryBuilder = queryBuilder
+        .addSelect(`ts_rank_cd(to_tsvector('english',${postgresSearchString}), to_tsquery(:query))`, 'rank')
+        .addOrderBy('rank', 'DESC')
+        .setParameter('query', `${customSearchString}:*`);
+    }
+    if (sortParams) {
+      queryBuilder = queryBuilder.addOrderBy(`feature_flag.${sortParams.key}`, sortParams.sortAs);
+    }
+
+    queryBuilder = queryBuilder.skip(skip).take(take);
+    return queryBuilder.getMany();
+  }
+
   public async delete(featureFlagId: string, currentUser: User): Promise<FeatureFlag | undefined> {
     this.log.info('Delete Feature Flag => ', featureFlagId);
     const featureFlag = await this.featureFlagRepository.find({
@@ -40,7 +73,6 @@ export class FeatureFlagService {
       // TODO: Add entry in audit log for delete feature flag
       return deletedFlag;
     }
-
     return undefined;
   }
 
@@ -80,8 +112,6 @@ export class FeatureFlagService {
           return variation;
         });
 
-        console.log('Variation doc', variationDocsToSave);
-
       // saving variations
       let variationDocs: FlagVariation[];
       try {
@@ -94,12 +124,10 @@ export class FeatureFlagService {
         const { featureFlagId, ...rest } = variationDoc as any;
         return rest;
       });
-
       return { ...featureFlagDoc, variations: variationDocToReturn as any };
     });
 
     // TODO: Add log for feature flag creation
-
     return createdFeatureFlag;
   }
 
@@ -178,5 +206,36 @@ export class FeatureFlagService {
       // add log of diff of new and old feature flag doc
       return newFeatureFlag;
     });
+  }
+
+  private postgresSearchString(type: FLAG_SEARCH_SORT_KEY): string {
+    const searchString: string[] = [];
+    switch (type) {
+      case FLAG_SEARCH_SORT_KEY.NAME:
+        searchString.push("coalesce(feature_flag.name::TEXT,'')");
+        searchString.push("coalesce(variations.value::TEXT,'')");
+        break;
+      case FLAG_SEARCH_SORT_KEY.KEY:
+        searchString.push("coalesce(feature_flag.key::TEXT,'')");
+        break;
+      case FLAG_SEARCH_SORT_KEY.STATUS:
+        searchString.push("coalesce(feature_flag.status::TEXT,'')");
+        break;
+      case FLAG_SEARCH_SORT_KEY.VARIATION_TYPE:
+        // TODO: Update column name
+        // searchString.push("coalesce(feature_flag.variationType::TEXT,'')");
+        break;
+      default:
+        searchString.push("coalesce(feature_flag.name::TEXT,'')");
+        searchString.push("coalesce(variations.value::TEXT,'')");
+        searchString.push("coalesce(feature_flag.key::TEXT,'')");
+        searchString.push("coalesce(feature_flag.status::TEXT,'')");
+        // TODO: Update column name
+        // searchString.push("coalesce(feature_flag.variationType::TEXT,'')");
+        break;
+    }
+    const stringConcat = searchString.join(',');
+    const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
+    return searchStringConcatenated;
   }
 }
