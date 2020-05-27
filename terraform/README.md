@@ -22,26 +22,26 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
     .
     ├── aws-ebs-with-rds                   # terraform module to create ebs environment with POSTGRES installed
     ├── aws-lambda                         # terraform module to create Schedular lambda function
-    ├── aws-step-fn                        # terraform module to create Schedular step function 
-    ├── core                       
+    ├── aws-step-fn                        # terraform module to create Schedular step function
+    ├── core
           ├── core.tf                      # Config file to create core resources.
           ├── backend.tf                   # File that gives details of where to store tfstate files
           ├── variables.tf                 # Gives info about varibles required
           ├── tfvars.sample                # sample variables file
-    ├── environments                        
-        ├── dev                   
+    ├── environments
+        ├── dev
           ├── main.tf                       # Config file for dev environment.
           ├── backend.tf                   # File that gives details of where to store tfstate files
           ├── variables.tf                 # Gives info about varibles required
           ├── tfvars.sample                 # sample variables file
-            
-        ├── staging                   
+
+        ├── staging
           ├── main.tf                   # Config file for staging environment.
           ├── backend.tf                   # File that gives details of where to store tfstate files
-          ├── variables.tf                 # Gives info about varibles required 
+          ├── variables.tf                 # Gives info about varibles required
           ├── tfvars.sample                 # sample variables file
 
- Generate ssh key using `ssh-keygen` (if you generate it with a different name, make sure to replace variables accordingly inside main.tf of respective environment)
+Generate ssh key using `ssh-keygen` (if you generate it with a different name, make sure to replace variables accordingly inside main.tf of respective environment)
 
     # Generate a key pair with no passphrase
     ssh-keygen -f id_rsa -N ""
@@ -56,7 +56,7 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
 - Change Directory - `cd terraform/core`
 - Edit - `backend.tf` - replace the tfstate bucket, path, and aws profile name.
 - Edit - `core.tf` - replace aws profile name.
-- Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All *.auto.tfvars are used automatically by terraform.
+- Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
 - Run - `terraform init` to initialize the project.
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
@@ -65,7 +65,7 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
 
 - Change Directory - `cd terraform/environments/<envname>`
 - Edit - `backend.tf` - replace the tfstate bucket, path, and aws profile name.
-- Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All *.auto.tfvars are used automatically by terraform.
+- Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
 - Run - `terraform init` to initialize the project.
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
@@ -74,7 +74,7 @@ Clone this repo using `https://github.com/CarnegieLearningWeb/educational-experi
 
 **note:`ebs_app_name` & `repository_name` variables used in phase 2 are created in phase 1. Make sure their values are same in both phases.**
 
- AWS Resources that will be created by this script.
+AWS Resources that will be created by this script.
 
 - Elastic beanstalk environment
 - RDS (Postgres)
@@ -90,42 +90,73 @@ NB: We're using github and jenkins rather than the codecommit pipeline.
 
 **CICD Pipeline info: AWS Code Commit -> ECR (Docker image) -> Elastic Beanstalk**.
 
-The module gets the code from a ``AWS CODECOMMIT`` repository, builds a ``Docker`` image from it by executing the ``buildspec.yml`` and ``Dockerfile`` files from the repository,
-pushes the ``Docker`` image to an ``ECR`` repository, and deploys the ``Docker`` image to ``Elastic Beanstalk`` running ``Docker`` stack.
-    - <http://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html>
+The module gets the code from a `AWS CODECOMMIT` repository, builds a `Docker` image from it by executing the `buildspec.yml` and `Dockerfile` files from the repository,
+pushes the `Docker` image to an `ECR` repository, and deploys the `Docker` image to `Elastic Beanstalk` running `Docker` stack. - <http://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html>
 
 ### variables
 
- `Note:  The variables marked as bold must be changed to create new environments.`
+`Note: The variables marked as bold must be changed to create new environments.`
 
- `Note:  The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using  comnbination of your org name with upgrade.`
+`Note: The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using comnbination of your org name with upgrade.`
 
- | Name                  | Description                                                                     | Type          |
- | --------------------- | ------------------------------------------------------------------------------- | ------------- |
- | **current_directory** | name of the folder holding main.tf                                              | varchar       |
- | aws_region            | aws region                                                                      | varchar       |
- | **environment**       | deployment environment name                                                     | varchar       |
- | prefix                | prefix to be attached to all resources                                          | varchar       |
- | app_version           | Application version                                                             | varchar       |
- | aws_profile           | aws profile name                                                                | varchar       |
- | allocated_storage     | Storage for RDS instance                                                        | number in GBs |
- | engine_version        | RDS engine version                                                              | number        |
- | identifier            | RDS DB identifier                                                               | varchar       |
- | instance_class        | RDS instance class                                                              | varchar       |
- | storage_type          | RDS Storage type                                                                | varchar       |
- | multi_az              | RDS instance multi_az value for high availabilty                                | boolean       |
- | app_instance_type     | EC2 instance that will be created in EBS environment                            | varchar       |
- | ebs_app_name          | EBS application name created in **core resources**                              | varchar       |
- | autoscaling_min_size  | Minimum number of instances that can be in running state                        | number        |
- | autoscaling_max_size  | Max number  of instances that can be in running state                           | number        |
- | GOOGLE_CLIENT_ID      | google project id for upgrade client app                                        | varchar       |
- | MONITOR_PASSWORD      | Monitor password for upgrade service                                            | varchar       |
- | SWAGGER_PASSWORD      | Swagger password for upgrade service                                            | varchar       |
- | repository_name       | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline | varchar       |
- | **branch_name**       | AWS CODE COMMIT branch name for CICD pipeline                                   | varchar       |
- | build_image           | build image for AWS CODEBUILD                                                   | varchar       |
- | build_compute_type    | AWS CODEBUILD Compute type                                                      | varchar       |
- | privileged_mode       | codebuild priviledge mode                                                       | number        |
+| Name                  | Description                                                                     | Type          |
+| --------------------- | ------------------------------------------------------------------------------- | ------------- |
+| **current_directory** | name of the folder holding main.tf                                              | varchar       |
+| aws_region            | aws region                                                                      | varchar       |
+| **environment**       | deployment environment name                                                     | varchar       |
+| prefix                | prefix to be attached to all resources                                          | varchar       |
+| app_version           | Application version                                                             | varchar       |
+| aws_profile           | aws profile name                                                                | varchar       |
+| allocated_storage     | Storage for RDS instance                                                        | number in GBs |
+| engine_version        | RDS engine version                                                              | number        |
+| identifier            | RDS DB identifier                                                               | varchar       |
+| instance_class        | RDS instance class                                                              | varchar       |
+| storage_type          | RDS Storage type                                                                | varchar       |
+| multi_az              | RDS instance multi_az value for high availabilty                                | boolean       |
+| app_instance_type     | EC2 instance that will be created in EBS environment                            | varchar       |
+| ebs_app_name          | EBS application name created in **core resources**                              | varchar       |
+| autoscaling_min_size  | Minimum number of instances that can be in running state                        | number        |
+| autoscaling_max_size  | Max number of instances that can be in running state                            | number        |
+| GOOGLE_CLIENT_ID      | google project id for upgrade client app                                        | varchar       |
+| MONITOR_PASSWORD      | Monitor password for upgrade service                                            | varchar       |
+| SWAGGER_PASSWORD      | Swagger password for upgrade service                                            | varchar       |
+| TYPEORM_SYNCHRONIZE   | Sync models on every instance of application start?                             | boolean       |
+| TOKEN_SECRET_KEY      | Bearer token for auth                                                           | varchar       |
+| AUTH_CHECK            | Auth check                                                                      | boolean       |
+| repository_name       | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline | varchar       |
+| **branch_name**       | AWS CODE COMMIT branch name for CICD pipeline                                   | varchar       |
+| build_image           | build image for AWS CODEBUILD                                                   | varchar       |
+| build_compute_type    | AWS CODEBUILD Compute type                                                      | varchar       |
+| privileged_mode       | codebuild priviledge mode                                                       | number        |
+
+`Note: The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using comnbination of your org name with upgrade.`
+
+| Name                  | Description                                                                     | Type          |
+| --------------------- | ------------------------------------------------------------------------------- | ------------- |
+| **current_directory** | name of the folder holding main.tf                                              | varchar       |
+| aws_region            | aws region                                                                      | varchar       |
+| **environment**       | deployment environment name                                                     | varchar       |
+| prefix                | prefix to be attached to all resources                                          | varchar       |
+| app_version           | Application version                                                             | varchar       |
+| aws_profile           | aws profile name                                                                | varchar       |
+| allocated_storage     | Storage for RDS instance                                                        | number in GBs |
+| engine_version        | RDS engine version                                                              | number        |
+| identifier            | RDS DB identifier                                                               | varchar       |
+| instance_class        | RDS instance class                                                              | varchar       |
+| storage_type          | RDS Storage type                                                                | varchar       |
+| multi_az              | RDS instance multi_az value for high availabilty                                | boolean       |
+| app_instance_type     | EC2 instance that will be created in EBS environment                            | varchar       |
+| ebs_app_name          | EBS application name created in **core resources**                              | varchar       |
+| autoscaling_min_size  | Minimum number of instances that can be in running state                        | number        |
+| autoscaling_max_size  | Max number of instances that can be in running state                            | number        |
+| GOOGLE_CLIENT_ID      | google project id for upgrade client app                                        | varchar       |
+| MONITOR_PASSWORD      | Monitor password for upgrade service                                            | varchar       |
+| SWAGGER_PASSWORD      | Swagger password for upgrade service                                            | varchar       |
+| repository_name       | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline | varchar       |
+| **branch_name**       | AWS CODE COMMIT branch name for CICD pipeline                                   | varchar       |
+| build_image           | build image for AWS CODEBUILD                                                   | varchar       |
+| build_compute_type    | AWS CODEBUILD Compute type                                                      | varchar       |
+| privileged_mode       | codebuild priviledge mode                                                       | number        |
 
 ## Outputs
 
