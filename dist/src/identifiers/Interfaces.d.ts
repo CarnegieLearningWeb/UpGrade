@@ -1,34 +1,57 @@
 import { SERVER_ERROR } from 'upgrade_types';
 export declare namespace Interfaces {
-    interface IConfig {
+    export interface IConfig {
         hostURL: string;
         userId: string;
         api: any;
     }
-    interface IResponse {
+    export interface IResponse {
         status: boolean;
         data?: any;
         message?: any;
     }
-    interface IUserGroup {
+    export interface IUserGroup {
         group?: Map<string, Array<string>>;
         workingGroup?: Map<string, string>;
     }
-    interface IUser {
+    export interface IUser {
         id: string;
         group?: Map<string, Array<string>>;
         workingGroup?: Map<string, string>;
     }
-    interface IMarkExperimentPoint {
+    export interface IMarkExperimentPoint {
         experimentId: string;
         experimentPoint: string;
         userId: string;
     }
-    interface IFailedExperimentPoint {
+    export interface IFailedExperimentPoint {
         type: SERVER_ERROR;
         message: string;
     }
-    interface FlagVariation {
+    export interface ILog {
+        createdAt: string;
+        updatedAt: string;
+        versionNumber: number;
+        id: string;
+        data: any;
+        metric: IMetric[];
+        user: IExperimentUser;
+    }
+    interface IMetric {
+        createdAt: string;
+        updatedAt: string;
+        versionNumber: number;
+        key: string;
+    }
+    interface IExperimentUser {
+        createdAt: string;
+        updatedAt: string;
+        versionNumber: number;
+        id: string;
+        group: object;
+        workingGroup: object;
+    }
+    export interface FlagVariation {
         createdAt: string;
         updatedAt: string;
         versionNumber: number;
@@ -38,7 +61,7 @@ export declare namespace Interfaces {
         description: string;
         defaultVariation: boolean[];
     }
-    interface FeatureFlag {
+    export interface FeatureFlag {
         createdAt: string;
         updatedAt: string;
         versionNumber: number;
@@ -50,4 +73,5 @@ export declare namespace Interfaces {
         status: boolean;
         variations: FlagVariation[];
     }
+    export {};
 }

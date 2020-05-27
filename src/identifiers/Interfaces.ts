@@ -35,6 +35,32 @@ export namespace Interfaces {
     message: string;
   }
 
+  export interface ILog {
+    createdAt: string;
+    updatedAt: string;
+    versionNumber: number;
+    id: string;
+    data: any;
+    metric: IMetric[];
+    user: IExperimentUser;
+  }
+
+  interface IMetric {
+    createdAt: string;
+    updatedAt: string;
+    versionNumber: number;
+    key: string;
+  }
+
+  interface IExperimentUser {
+    createdAt: string;
+    updatedAt: string;
+    versionNumber: number;
+    id: string;
+    group: object;
+    workingGroup: object;
+  }
+
   // TODO: Move to upgrade type later
   export interface FlagVariation {
     createdAt: string;
