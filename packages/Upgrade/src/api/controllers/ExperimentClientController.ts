@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -10,6 +10,8 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IExperimentAssignment } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
+import { FeatureFlag } from '../models/FeatureFlag';
+import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 
 /**
@@ -25,7 +27,8 @@ export class ExperimentClientController {
   constructor(
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
-    public experimentUserService: ExperimentUserService
+    public experimentUserService: ExperimentUserService,
+    public featureFlagService: FeatureFlagService
   ) {}
 
   /**
@@ -287,5 +290,23 @@ export class ExperimentClientController {
       errorBody.userId,
       errorBody.experimentId
     );
+  }
+
+  /**
+   * @swagger
+   * /featureflags:
+   *    get:
+   *       description: Get all feature flags using SDK
+   *       produces:
+   *         - application/json
+   *       tags:
+   *         - Experiment Point
+   *       responses:
+   *          '200':
+   *            description: Feature flags list
+   */
+  @Get('featureflag')
+  public getAllFlags(): Promise<FeatureFlag[]> {
+    return this.featureFlagService.find();
   }
 }
