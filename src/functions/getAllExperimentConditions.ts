@@ -1,5 +1,6 @@
 import fetchDataService from '../common/fetchDataService';
 import { IExperimentAssignment } from 'upgrade_types';
+import { Types } from '../identifiers';
 
 export default async function getAllExperimentConditions(url: string, userId: string, token: string, context: string): Promise<IExperimentAssignment[]> {
   try {
@@ -7,7 +8,7 @@ export default async function getAllExperimentConditions(url: string, userId: st
       userId,
       context
     };
-    const experimentConditionResponse = await fetchDataService(url, token, params);
+    const experimentConditionResponse = await fetchDataService(url, token, params, Types.REQUEST_TYPES.POST);
     if (experimentConditionResponse.status) {
       if (Array.isArray(experimentConditionResponse.data)) {
         experimentConditionResponse.data = experimentConditionResponse.data.map(data => {

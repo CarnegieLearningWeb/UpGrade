@@ -28,4 +28,26 @@ export declare namespace Interfaces {
         type: SERVER_ERROR;
         message: string;
     }
+    interface FlagVariation {
+        createdAt: string;
+        updatedAt: string;
+        versionNumber: number;
+        id: string;
+        value: string;
+        name: string;
+        description: string;
+        defaultVariation: boolean[];
+    }
+    interface FeatureFlag {
+        createdAt: string;
+        updatedAt: string;
+        versionNumber: number;
+        id: string;
+        name: string;
+        key: string;
+        description: string;
+        variationType: string;
+        status: boolean;
+        variations: FlagVariation[];
+    }
 }
