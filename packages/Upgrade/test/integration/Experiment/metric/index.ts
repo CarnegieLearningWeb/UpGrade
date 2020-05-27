@@ -1,3 +1,3 @@
-import AddingMetric from './AddingMetric';
+import MetricCRUD from '././MetricCRUD';
 
-export { AddingMetric };
+export { MetricCRUD };

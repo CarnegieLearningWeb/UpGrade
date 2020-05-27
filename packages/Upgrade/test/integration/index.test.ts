@@ -54,7 +54,8 @@ import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { GetAssignments } from './Support/index';
 import { StatsIndividualExperimentWithDateRange } from './ExperimentStats/index';
-import { AddingMetric } from './Experiment/metric';
+import { MetricCRUD } from './Experiment/metric';
+import { CreateLog } from './Experiment/dataLog';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -316,7 +317,12 @@ describe('Integration Tests', () => {
   });
 
   test('Metric CRUD', async (done) => {
-    await AddingMetric();
+    await MetricCRUD();
+    done();
+  });
+
+  test('Create Log', async (done) => {
+    await CreateLog();
     done();
   });
 });

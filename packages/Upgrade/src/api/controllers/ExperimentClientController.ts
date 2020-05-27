@@ -11,6 +11,8 @@ import { IExperimentAssignment } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
+import { LogValidator } from './validators/LogValidator';
+import { Log } from '../models/Log';
 
 /**
  * @swagger
@@ -219,33 +221,38 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /failed:
+   * /log:
    *    post:
-   *       description: Add error from client end
+   *       description: Post log data
    *       consumes:
    *         - application/json
    *       parameters:
-   *         - in: body
-   *           name: experimentUser
-   *           required: true
-   *           schema:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            schema:
    *             type: object
    *             properties:
-   *               id:
+   *               userId:
    *                 type: string
-   *               group:
-   *                 type: object
-   *               workingGroup:
-   *                 type: object
-   *           description: ExperimentUser
+   *               value:
+   *                 type: string
+   *            description: User Document
    *       tags:
    *         - Experiment Point
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Set Group Membership
+   *            description: Log data
    */
+  @Post('log')
+  public log(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    logData: LogValidator
+  ): Promise<Log | any> {
+    return this.experimentAssignmentService.dataLog(logData.userId, logData.value);
+  }
 
   /**
    * @swagger

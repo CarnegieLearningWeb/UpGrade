@@ -14,7 +14,7 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In } from 'typeorm';
+import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE } from 'upgrade_types';
@@ -31,6 +31,7 @@ import * as config from '../../config.json';
 import { ExperimentInput, MetricUnit } from '../../types/ExperimentInput';
 import { Metric } from '../models/Metric';
 import { MetricRepository } from '../repositories/MetricRepository';
+import { LogRepository } from '../repositories/LogRepository';
 
 @Service()
 export class ExperimentService {
@@ -44,6 +45,7 @@ export class ExperimentService {
     @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
+    @OrmRepository() private logRepository: LogRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
@@ -157,11 +159,7 @@ export class ExperimentService {
         const promiseResult = await Promise.all(promiseArray);
 
         // deleting
-        const data = await transactionalEntityManager.query('SELECT "metricKey" FROM experiment_metric;');
-        const metricKeys: string[] = data.map((val) => {
-          return val.metricKey;
-        });
-        await this.metricRepository.deleteExceptByIds(metricKeys, transactionalEntityManager);
+        await this.sanitizeMetricsAndLog(transactionalEntityManager);
 
         return promiseResult[1];
       }
@@ -227,6 +225,20 @@ export class ExperimentService {
     await this.updateExperimentSchedules(experimentId);
 
     return updatedState;
+  }
+
+  private async sanitizeMetricsAndLog(transactionalEntityManager: EntityManager): Promise<void> {
+    // TODO change this into sub query
+    const metricData = await transactionalEntityManager.query('SELECT "metricKey" FROM experiment_metric;');
+    const metricKeys: string[] = metricData.map((val) => {
+      return val.metricKey;
+    });
+    await this.metricRepository.deleteExceptByIds(metricKeys, transactionalEntityManager);
+    const logData = await transactionalEntityManager.query('SELECT "logId" FROM metric_log;');
+    const logKeys: string[] = logData.map((val) => {
+      return val.logId;
+    });
+    await this.logRepository.deleteExceptByIds(logKeys, transactionalEntityManager);
   }
 
   private async updateExperimentSchedules(experimentId: string): Promise<void> {
@@ -356,13 +368,9 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(newExpDoc);
-        // soft delete metrics
-        // TODO not a good place to write query
-        const data = await transactionalEntityManager.query('SELECT "metricKey" FROM experiment_metric;');
-        const metricKeys: string[] = data.map((val) => {
-          return val.metricKey;
-        });
-        await this.metricRepository.deleteExceptByIds(metricKeys, transactionalEntityManager);
+
+        // delete redundant data
+        await this.sanitizeMetricsAndLog(transactionalEntityManager);
       } catch (error) {
         throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
       }

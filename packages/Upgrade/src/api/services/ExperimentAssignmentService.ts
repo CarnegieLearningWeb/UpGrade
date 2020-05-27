@@ -36,6 +36,10 @@ import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from './ErrorService';
 import { ASSIGNMENT_TYPE } from '../../types';
+import { Log } from '../models/Log';
+import { LogRepository } from '../repositories/LogRepository';
+import { MetricRepository } from '../repositories/MetricRepository';
+import { Metric } from '../models/Metric';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -60,6 +64,10 @@ export class ExperimentAssignmentService {
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
     @OrmRepository()
     private errorRepository: ErrorRepository,
+    @OrmRepository()
+    private logRepository: LogRepository,
+    @OrmRepository()
+    private metricRepository: MetricRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -346,6 +354,77 @@ export class ExperimentAssignmentService {
     } catch (error) {
       throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));
     }
+  }
+
+  public async dataLog(userId: string, value: string): Promise<Log | any> {
+    this.log.info(`Add data log userId ${userId} and value ${value}`);
+
+    // expand data logs and generate matrix id
+    const jsonLog = JSON.parse(value);
+
+    const stringIds: string[] = [];
+
+    function getMetricIds(jsonData: JSON, keyString: string): void {
+      const keys = Object.keys(jsonData);
+
+      if (typeof jsonData !== 'object') {
+        // push inside the array
+        stringIds.push(keyString);
+        return;
+      }
+
+      keys.forEach((key) => {
+        const newKey = keyString !== '' ? `${keyString}_${key}` : key;
+        getMetricIds(jsonData[key], newKey);
+      });
+      return;
+    }
+
+    getMetricIds(jsonLog, '');
+
+    const promiseArray = [];
+    // get user document
+    promiseArray.push(this.experimentUserService.findOne(userId));
+    promiseArray.push(this.metricRepository.findByIds(stringIds));
+
+    const result = await Promise.all(promiseArray);
+
+    const userDoc: ExperimentUser = result[0];
+    const metricDocs: Metric[] = result[1];
+
+    // filter json data if metric exist
+    stringIds.forEach((metricId) => {
+      const document = metricDocs.find((doc) => {
+        return doc.key === metricId;
+      });
+
+      if (!document) {
+        const keyArray = metricId.split('_');
+        const toPop = keyArray.pop();
+        // delete json data
+        const jsonPointer: any = keyArray.reduce((accumulator, key) => {
+          return accumulator[key];
+        }, jsonLog);
+
+        delete jsonPointer[toPop];
+      }
+    });
+
+    const toLog: boolean = Object.keys(jsonLog).length !== 0;
+
+    // check all matrix id exist
+    // save log with valid matrix ids
+    if (toLog) {
+      return this.logRepository.save({
+        user: userDoc,
+        data: jsonLog,
+        metrics: metricDocs,
+      });
+    } else {
+      return {};
+    }
+
+    // return log data
   }
 
   public clientFailedExperimentPoint(

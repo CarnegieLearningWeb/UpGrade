@@ -6,7 +6,7 @@ import { systemUser } from '../../mockData/user/index';
 import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
 
-export default async function AddingMetric(): Promise<void> {
+export default async function MetricCRUD(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentObject = individualExperimentWithMetric;
   const userService = Container.get<UserService>(UserService);
