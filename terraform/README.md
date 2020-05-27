@@ -129,35 +129,6 @@ pushes the `Docker` image to an `ECR` repository, and deploys the `Docker` image
 | build_compute_type    | AWS CODEBUILD Compute type                                                      | varchar       |
 | privileged_mode       | codebuild priviledge mode                                                       | number        |
 
-`Note: The variable prefix is used to prefix all resource name including s3 buckets for deploy phase. We recommend using comnbination of your org name with upgrade.`
-
-| Name                  | Description                                                                     | Type          |
-| --------------------- | ------------------------------------------------------------------------------- | ------------- |
-| **current_directory** | name of the folder holding main.tf                                              | varchar       |
-| aws_region            | aws region                                                                      | varchar       |
-| **environment**       | deployment environment name                                                     | varchar       |
-| prefix                | prefix to be attached to all resources                                          | varchar       |
-| app_version           | Application version                                                             | varchar       |
-| aws_profile           | aws profile name                                                                | varchar       |
-| allocated_storage     | Storage for RDS instance                                                        | number in GBs |
-| engine_version        | RDS engine version                                                              | number        |
-| identifier            | RDS DB identifier                                                               | varchar       |
-| instance_class        | RDS instance class                                                              | varchar       |
-| storage_type          | RDS Storage type                                                                | varchar       |
-| multi_az              | RDS instance multi_az value for high availabilty                                | boolean       |
-| app_instance_type     | EC2 instance that will be created in EBS environment                            | varchar       |
-| ebs_app_name          | EBS application name created in **core resources**                              | varchar       |
-| autoscaling_min_size  | Minimum number of instances that can be in running state                        | number        |
-| autoscaling_max_size  | Max number of instances that can be in running state                            | number        |
-| GOOGLE_CLIENT_ID      | google project id for upgrade client app                                        | varchar       |
-| MONITOR_PASSWORD      | Monitor password for upgrade service                                            | varchar       |
-| SWAGGER_PASSWORD      | Swagger password for upgrade service                                            | varchar       |
-| repository_name       | AWS CODE COMMIT repository name created in **core resources** for CICD pipeline | varchar       |
-| **branch_name**       | AWS CODE COMMIT branch name for CICD pipeline                                   | varchar       |
-| build_image           | build image for AWS CODEBUILD                                                   | varchar       |
-| build_compute_type    | AWS CODEBUILD Compute type                                                      | varchar       |
-| privileged_mode       | codebuild priviledge mode                                                       | number        |
-
 ## Outputs
 
 | Name          | Description               |
