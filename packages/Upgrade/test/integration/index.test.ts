@@ -56,6 +56,7 @@ import { GetAssignments } from './Support/index';
 import { StatsIndividualExperimentWithDateRange } from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog } from './Experiment/dataLog';
+import { LogSum } from './Experiment/dataLog/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -323,6 +324,11 @@ describe('Integration Tests', () => {
 
   test('Create Log', async (done) => {
     await CreateLog();
+    done();
+  });
+
+  test('Log Sum', async (done) => {
+    await LogSum();
     done();
   });
 });

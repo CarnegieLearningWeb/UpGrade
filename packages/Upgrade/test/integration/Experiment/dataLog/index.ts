@@ -1,4 +1,5 @@
 import CreateLogTestCase from './CreateLog';
+import LogSumTestCase from './LogSum';
 import Container from 'typedi';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
@@ -20,4 +21,9 @@ const initialChecks = async () => {
 export const CreateLog = async () => {
   await initialChecks();
   await CreateLogTestCase();
+};
+
+export const LogSum = async () => {
+  await initialChecks();
+  await LogSumTestCase();
 };

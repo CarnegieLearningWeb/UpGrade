@@ -33,6 +33,8 @@ import { Metric } from '../models/Metric';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { LogRepository } from '../repositories/LogRepository';
 
+// const METRIC_KEY_DIVIDER = "_@%@_";
+
 @Service()
 export class ExperimentService {
   constructor(
