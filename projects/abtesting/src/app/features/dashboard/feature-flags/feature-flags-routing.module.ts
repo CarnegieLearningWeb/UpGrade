@@ -7,12 +7,12 @@ const routes: Routes = [
   {
     path: '',
     component: FeatureFlagsRootComponent,
-    data: { title: 'Feature Flags' }
+    data: { title: 'app-header.title.feature-flag' }
   },
   {
     path: 'detail/:flagId',
     component: ViewFeatureFlagComponent,
-    data: { title: 'View Feature Flag' }
+    data: { title: 'app-header.title.view-feature-flag' }
   }
 ];
 

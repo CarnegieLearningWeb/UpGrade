@@ -32,6 +32,7 @@
 @import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
 @import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
+@import './app/features/dashboard/analysis/analysis-root/analysis-root.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -57,6 +58,7 @@
   @include new-flag-component-theme($theme);
   @include flag-variations-component-theme($theme);
   @include view-feature-flag-component-theme($theme);
+  @include analysis-root-component-theme($theme);
 }
 
 .light-theme {

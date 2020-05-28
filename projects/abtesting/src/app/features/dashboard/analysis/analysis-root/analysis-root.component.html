@@ -1,0 +1,27 @@
+<mat-card class="analysis-container">
+  <h1 class="title ft-32-700">{{ 'Analysis' }}</h1>
+  <span
+    class="subtitle ft-16-400"
+    [innerHTML]="'View experiment analysis here'"
+  ></span>
+
+  <ng-container *ngIf="isLoadingExperiments$ | async; else loadingExperimentState">
+    <mat-card class="analysis-view" *ngIf="(experiments$ | async).length; else noExperimentTemplate">
+      <experiment-analysis></experiment-analysis>
+    </mat-card>
+    <ng-template #noExperimentTemplate>
+      <mat-card class="no-experiment-container">
+        <span
+          class="text ft-24-600"
+          [innerHTML]="'No experiments to analyze'"
+        ></span>
+      </mat-card>
+    </ng-template>
+  </ng-container>
+</mat-card>
+
+<ng-template #loadingExperimentState>
+  <div class="loading-container">
+    <mat-spinner diameter="60"></mat-spinner>
+  </div>
+</ng-template>

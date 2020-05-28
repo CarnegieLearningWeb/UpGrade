@@ -1,0 +1,119 @@
+<mat-card class="experiment-analysis">
+  <div>
+      <h3 class="ft-24-600">Experiment Analysis</h3>
+      <form class="form" [formGroup]="analyticsForm">
+        <mat-form-field class="ft-14-600 form-control">
+          <mat-label>{{ 'Experiment' | translate }}</mat-label>
+          <mat-select class="ft-14-600 form-control" formControlName="experimentId">
+            <mat-option
+              *ngFor="let experiment of allExperimentsInfo$ | async"
+              [value]="experiment.id"
+            >
+              {{ experiment.name | titlecase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="ft-14-600 form-control">
+          <mat-label>{{ 'Operation' | translate }}</mat-label>
+          <mat-select class="ft-14-600 form-control" formControlName="operation">
+            <mat-option
+              *ngFor="let operation of queryOperations"
+              [value]="operation"
+            >
+              {{ operation }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-label
+          *ngIf="selectedKey"
+          class="ft-14-600 form-control"
+        >{{ 'Selected Key: ' + selectedKey?.key }}</mat-label>
+
+        <ng-container>
+          <h4 class="ft-14-600">Experiment Metrics</h4>
+          <mat-tree
+            [dataSource]="nestedDataSource"
+            [treeControl]="nestedTreeControl"
+            class="node-tree mat-tree-position"
+          >
+            <!-- Without Children -->
+            <mat-tree-node *matTreeNodeDef="let node">
+              <li class="mat-tree-node">
+                <button mat-icon-button disabled></button>
+                <span (click)="selectKey(node)" class="ft-14-600 key-name">{{ node.key }}</span>
+              </li>
+            </mat-tree-node>
+
+            <!-- With Children -->
+            <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
+              <li>
+                <div class="mat-tree-node">
+                  <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
+                    <mat-icon class="mat-icon-rtl-mirror">
+                      {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                    </mat-icon>
+                  </button>
+                  <span
+                    (click)="selectKey(node)"
+                    class="ft-14-600 key-name"
+                    [ngClass]="{'node-selected': selectedKey?.id === node.id}"
+                  >
+                    {{ node.key }}
+                  </span>
+                </div>
+                <ul [class.node-tree-invisible]="!nestedTreeControl.isExpanded(node)">
+                  <ng-container matTreeNodeOutlet></ng-container>
+                </ul>
+              </li>
+            </mat-nested-tree-node>
+          </mat-tree>
+        </ng-container>
+
+        <button
+          mat-raised-button
+          class="default-button"
+          [ngClass]="{'default-button--disabled': !analyticsForm.valid || !selectedKey}"
+          [disabled]="!analyticsForm.valid || !selectedKey"
+          (click)="fetchExperimentAnalysis()"
+        >
+          Send
+        </button>
+      </form>
+
+      <mat-table *ngIf="analysisData?.length" [dataSource]="analysisData" class="table">
+        <!-- Number Column -->
+        <ng-container matColumnDef="no">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            {{ 'global.number.text' | translate }}
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
+        </ng-container>
+
+        <!-- 'twoCharacterId' Column -->
+        <ng-container matColumnDef="conditionName">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            Condition Name
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            {{ getConditionName(data.conditionId) }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Condition Code Column -->
+        <ng-container matColumnDef="result">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            Result
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            {{ data.result }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedConditionColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
+      </mat-table>
+
+  </div>
+</mat-card>
