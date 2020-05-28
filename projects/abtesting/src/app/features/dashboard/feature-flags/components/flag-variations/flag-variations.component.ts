@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-import { uuid } from 'uuidv4';
 import { NewFlagDialogData, FeatureFlag, NewFlagDialogEvents, NewFlagPaths, VariationTypes } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 
@@ -134,7 +133,7 @@ export class FlagVariationsComponent implements OnChanges {
               }
               return this.flagInfo
                 ? ({ ...this.flagInfo.variations[index], ...variation })
-                : ({ id: uuid(), ...variation });
+                : ({ ...variation });
             }
           );
           this.emitFlagDialogEvent.emit({
