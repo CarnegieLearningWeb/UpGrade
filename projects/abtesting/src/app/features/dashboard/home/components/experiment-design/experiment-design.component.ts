@@ -14,7 +14,6 @@ import {
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition } from '../../../../../core/experiments/store/experiments.model';
-import { uuid } from 'uuidv4';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -218,7 +217,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             (condition, index) => {
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition })
-                : ({ id: uuid(), ...condition, name: ''});
+                : ({ ...condition, name: ''});
             }
           );
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
