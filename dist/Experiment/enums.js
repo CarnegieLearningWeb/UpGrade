@@ -75,4 +75,12 @@ var UserRole;
     UserRole["USER_MANAGER"] = "user manager";
     UserRole["READER"] = "reader";
 })(UserRole = exports.UserRole || (exports.UserRole = {}));
+var OPERATION_TYPES;
+(function (OPERATION_TYPES) {
+    OPERATION_TYPES["SUM"] = "sum";
+    OPERATION_TYPES["COUNT"] = "count";
+    OPERATION_TYPES["AVERAGE"] = "avg";
+    OPERATION_TYPES["MIN"] = "min";
+    OPERATION_TYPES["MAX"] = "max";
+})(OPERATION_TYPES = exports.OPERATION_TYPES || (exports.OPERATION_TYPES = {}));
 //# sourceMappingURL=enums.js.map

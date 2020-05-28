@@ -36,7 +36,7 @@ export enum SERVER_ERROR {
   EXPERIMENT_USER_GROUP_NOT_DEFINED = 'Experiment user group not defined',
   WORKING_GROUP_NOT_SUBSET_OF_GROUP = 'Working group is not a subset of user group',
   INVALID_TOKEN = 'Invalid token',
-  TOKEN_NOT_PRESENT = 'Token is not present in request'
+  TOKEN_NOT_PRESENT = 'Token is not present in request',
 }
 
 export enum EXPERIMENT_LOG_TYPE {
@@ -51,7 +51,7 @@ export enum EXPERIMENT_SEARCH_KEY {
   NAME = 'name',
   STATUS = 'status',
   TAG = 'tag',
-  CONTEXT = 'context'
+  CONTEXT = 'context',
 }
 
 export enum EXPERIMENT_SORT_KEY {
@@ -70,5 +70,13 @@ export enum UserRole {
   ADMIN = 'admin',
   CREATOR = 'creator',
   USER_MANAGER = 'user manager',
-  READER = 'reader'
+  READER = 'reader',
+}
+
+export enum OPERATION_TYPES {
+  SUM = 'sum',
+  COUNT = 'count',
+  AVERAGE = 'avg',
+  MIN = 'min',
+  MAX = 'max',
 }

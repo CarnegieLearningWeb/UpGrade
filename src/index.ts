@@ -9,6 +9,7 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   UserRole,
+  OPERATION_TYPES,
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -17,7 +18,7 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   AuditLogData,
-  IExperimentDateStat
+  IExperimentDateStat,
 } from './Experiment/interfaces';
 
 export {
@@ -37,5 +38,6 @@ export {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   UserRole,
-  IExperimentDateStat
+  IExperimentDateStat,
+  OPERATION_TYPES,
 };

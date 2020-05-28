@@ -63,3 +63,10 @@ export declare enum UserRole {
     USER_MANAGER = "user manager",
     READER = "reader"
 }
+export declare enum OPERATION_TYPES {
+    SUM = "sum",
+    COUNT = "count",
+    AVERAGE = "avg",
+    MIN = "min",
+    MAX = "max"
+}
