@@ -356,11 +356,8 @@ export class ExperimentAssignmentService {
     }
   }
 
-  public async dataLog(userId: string, value: string): Promise<Log | any> {
-    this.log.info(`Add data log userId ${userId} and value ${value}`);
-
-    // expand data logs and generate matrix id
-    const jsonLog = JSON.parse(value);
+  public async dataLog(userId: string, jsonLog: any): Promise<Log | any> {
+    this.log.info(`Add data log userId ${userId} and value ${jsonLog}`);
 
     const stringIds: string[] = [];
 
