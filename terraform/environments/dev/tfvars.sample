@@ -24,6 +24,9 @@ autoscaling_max_size    =  4
 GOOGLE_CLIENT_ID        = "google-project-id"
 MONITOR_PASSWORD        = "password"
 SWAGGER_PASSWORD        = "password"
+TYPEORM_SYNCHRONIZE     = true
+TOKEN_SECRET_KEY        = carnegielearning
+AUTH_CHECK              = true
 
 # CICD variables
 repository_name         = "educational-experiment-service"

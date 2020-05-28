@@ -5,18 +5,13 @@ import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from '../services/ErrorService';
 import { ErrorLogParamsValidator } from './validators/ErrorLogParamsValidator';
 import { AuditLogParamsValidator } from './validators/AuditLogParamsValidators';
+import { PaginationResponse } from '../../types';
 
-interface ExperimentAuditPaginationInfo {
-  total: number;
-  skip: number;
-  take: number;
+interface ExperimentAuditPaginationInfo extends PaginationResponse {
   nodes: ExperimentAuditLog[];
 }
 
-interface ExperimentErrorPaginatedInfo {
-  total: number;
-  skip: number;
-  take: number;
+interface ExperimentErrorPaginatedInfo extends PaginationResponse {
   nodes: ExperimentError[];
 }
 
