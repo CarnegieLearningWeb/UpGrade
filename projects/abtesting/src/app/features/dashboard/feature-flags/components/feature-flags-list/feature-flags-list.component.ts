@@ -160,7 +160,7 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.featureFlagsTableContainer.nativeElement.style.maxHeight = (windowHeight - 350) + 'px';
+    this.featureFlagsTableContainer.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
 
     fromEvent(this.searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(searchInput => {
       this.setSearchString((searchInput as any).target.value);

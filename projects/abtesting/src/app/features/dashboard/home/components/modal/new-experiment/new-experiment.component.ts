@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Inject, ViewChild, OnInit } from '@angular/core';
+import { Component, Inject, ViewChild, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import {
   NewExperimentDialogEvents,
@@ -12,7 +12,6 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
   selector: 'home-new-experiment',
   templateUrl: './new-experiment.component.html',
   styleUrls: ['./new-experiment.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewExperimentComponent implements OnInit {
   newExperimentData: any = {};
@@ -51,7 +50,7 @@ export class NewExperimentComponent implements OnInit {
           ...formData
         };
         this.stepper.next();
-        if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
+        if (path === NewExperimentPaths.METRIC) {
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }

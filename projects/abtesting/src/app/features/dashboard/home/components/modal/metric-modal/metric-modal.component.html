@@ -1,0 +1,23 @@
+<div class="metric-modal">
+  <span class="ft-24-700 title">{{ 'metric.title.text' | translate }}</span>
+  <div class="metric-container">
+    <experiment-metric-common
+      [experimentInfo]="experimentInfo"
+      (metricUpdationEvent)="metricUpdationEvent($event)"
+    >
+    </experiment-metric-common>
+  </div>
+  <div class="button-container">
+    <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      (click)="updateMetric()"
+    >
+      {{ 'global.update.text' | translate }}
+    </button>
+  </div>
+
+</div>
