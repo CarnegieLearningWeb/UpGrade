@@ -20,6 +20,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'analysis',
+        loadChildren: () => import('./analysis/analysis.module').then(m => m.AnalysisModule),
+        data: {
+          title: 'app-header.title.analysis'
+        }
+      },
+      {
         path: 'users',
         loadChildren: () => import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule),
         data: {
@@ -35,7 +42,10 @@ const routes: Routes = [
       },
       {
         path: 'featureFlags',
-        loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule)
+        loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule),
+        data: {
+          title: 'app-header.title.feature-flag'
+        }
       },
       {
         path: 'profile',

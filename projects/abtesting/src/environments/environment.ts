@@ -54,6 +54,7 @@ export const environment = {
     featureFlag: `${endpointApi}/flags`,
     updateFlagStatus: `${endpointApi}/flags/status`,
     getPaginatedFlags: `${endpointApi}/flags/paginated`,
-    toCheckAuth: `${endpointApi}/setting`
+    toCheckAuth: `${endpointApi}/setting`,
+    fetchAnalysis: `${endpointApi}/datalog/analyse`
   }
 };

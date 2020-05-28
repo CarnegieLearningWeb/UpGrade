@@ -1,0 +1,12 @@
+@import '~@angular/material/theming';
+
+@mixin analysis-root-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .analysis-container {
+    .analysis-view,
+    .no-experiment-container {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+  }
+}
