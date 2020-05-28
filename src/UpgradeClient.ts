@@ -7,18 +7,19 @@ import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
+import log from './functions/log';
 
 export default class UpgradeClient {
     private static hostUrl: string;
     // Endpoints URLs
     private static api = {
-        init: null,
         getAllExperimentConditions: null,
         markExperimentPoint: null,
         setGroupMemberShip: null,
         setWorkingGroup: null,
         failedExperimentPoint: null,
-        getAllFeatureFlag: null
+        getAllFeatureFlag: null,
+        log: null,
     };
     private userId: string;
     // Use token if it is given in constructor
@@ -36,13 +37,13 @@ export default class UpgradeClient {
     static setHostUrl(url: string) {
         this.hostUrl = url;
         this.api = {
-            init: `${url}/api/init`,
             getAllExperimentConditions: `${url}/api/assign`,
             markExperimentPoint: `${url}/api/mark`,
             setGroupMemberShip: `${url}/api/groupmembership`,
             setWorkingGroup: `${url}/api/workinggroup`,
             failedExperimentPoint: `${url}/api/failed`,
-            getAllFeatureFlag: `${url}/api/featureflag`
+            getAllFeatureFlag: `${url}/api/featureflag`,
+            log: `${url}/api/log`,
         }
     }
 
@@ -113,5 +114,10 @@ export default class UpgradeClient {
     async getAllFeatureFlags(): Promise<Interfaces.FeatureFlag[]> {
         this.validateClient();
         return await getAllFeatureFlags(UpgradeClient.api.getAllFeatureFlag, this.token);
+    }
+
+    async log(key: string, value: any): Promise<Interfaces.ILog> {
+        this.validateClient();
+        return await log(UpgradeClient.api.log, this.userId, this.token, key, value);
     }
 }

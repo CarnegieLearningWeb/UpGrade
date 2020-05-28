@@ -18,4 +18,5 @@ export default class UpgradeClient {
     markExperimentPoint(experimentPoint: string, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint>;
     failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint>;
     getAllFeatureFlags(): Promise<Interfaces.FeatureFlag[]>;
+    log(key: string, value: any): Promise<Interfaces.ILog>;
 }
