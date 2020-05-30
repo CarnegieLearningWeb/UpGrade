@@ -12,6 +12,18 @@
 
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <script src="./assets/js/gapi.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $.ajaxSetup({
+        async: false
+      });
+      $.getJSON('./environment.json', (envInfo) => {
+          window.upgrade_env = envInfo;
+        }).fail(() => {
+          window.upgrade_env = null;
+        });
+    </script>
+
     <style type="text/css">
       body,
       html {
