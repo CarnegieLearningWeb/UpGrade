@@ -1,9 +1,9 @@
 <mat-card class="experiment-analysis">
   <div>
-      <h3 class="ft-24-600">Experiment Analysis</h3>
+      <h3 class="ft-24-600">{{ 'analysis.view-analysis.experiment-analysis.text' | translate }}</h3>
       <form class="form" [formGroup]="analyticsForm">
         <mat-form-field class="ft-14-600 form-control">
-          <mat-label>{{ 'Experiment' | translate }}</mat-label>
+          <mat-label>{{ 'analysis.view-analysis.experiment.text' | translate }}</mat-label>
           <mat-select class="ft-14-600 form-control" formControlName="experimentId">
             <mat-option
               *ngFor="let experiment of allExperimentsInfo$ | async"
@@ -15,7 +15,7 @@
         </mat-form-field>
 
         <mat-form-field class="ft-14-600 form-control">
-          <mat-label>{{ 'Operation' | translate }}</mat-label>
+          <mat-label>{{ 'analysis.view-analysis.operation.text' | translate }}</mat-label>
           <mat-select class="ft-14-600 form-control" formControlName="operation">
             <mat-option
               *ngFor="let operation of queryOperations"
@@ -29,10 +29,10 @@
         <mat-label
           *ngIf="selectedKey"
           class="ft-14-600 form-control"
-        >{{ 'Selected Key: ' + selectedKey?.key }}</mat-label>
+        >{{ ('analysis.view-analysis.selected-key.text' | translate) + selectedKey?.key }}</mat-label>
 
         <ng-container>
-          <h4 class="ft-14-600">Experiment Metrics</h4>
+          <h4 class="ft-14-600">{{ 'analysis.view-analysis.experiment-metrics.text' | translate }}</h4>
           <mat-tree
             [dataSource]="nestedDataSource"
             [treeControl]="nestedTreeControl"
@@ -78,7 +78,7 @@
           [disabled]="!analyticsForm.valid || !selectedKey"
           (click)="fetchExperimentAnalysis()"
         >
-          Send
+          {{ 'analysis.view-analysis.send.text' | translate }}
         </button>
       </form>
 
@@ -91,20 +91,20 @@
           <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
         </ng-container>
 
-        <!-- 'twoCharacterId' Column -->
-        <ng-container matColumnDef="conditionName">
+        <!-- 'Condition Code' Column -->
+        <ng-container matColumnDef="conditionCode">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            Condition Name
+            {{ 'analysis.view-analysis.condition-code.text' | translate }}
           </mat-header-cell>
           <mat-cell class="ft-12-600" *matCellDef="let data">
             {{ getConditionName(data.conditionId) }}
           </mat-cell>
         </ng-container>
 
-        <!-- Condition Code Column -->
+        <!-- Result Column -->
         <ng-container matColumnDef="result">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            Result
+            {{ 'analysis.view-analysis.result.text' | translate }}
           </mat-header-cell>
           <mat-cell class="ft-12-600" *matCellDef="let data">
             {{ data.result }}

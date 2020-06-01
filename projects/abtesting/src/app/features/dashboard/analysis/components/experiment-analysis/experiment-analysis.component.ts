@@ -8,13 +8,7 @@ import { MetricUnit, ExperimentVM } from '../../../../../core/experiments/store/
 import { Subscription, of } from 'rxjs';
 import { OPERATION_TYPES } from 'upgrade_types';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
-
-// TODO: Move to model if required
-export interface TreeData {
-  id: number;
-  key: string;
-  children: TreeData[];
-}
+import { TreeData } from '../../../../../core/analysis/store/analysis.models';
 
 @Component({
   selector: 'experiment-analysis',
@@ -23,7 +17,6 @@ export interface TreeData {
 })
 export class ExperimentAnalysisComponent implements OnInit, OnDestroy {
 
-  // TODO: Refactor whole code
   allExperimentsInfo$ = this.experimentService.allExperimentNames$;
   analyticsForm: FormGroup;
   // For tree
@@ -34,7 +27,7 @@ export class ExperimentAnalysisComponent implements OnInit, OnDestroy {
   selectedKey: TreeData;
   analysisData = [];
   analysisDataSub: Subscription;
-  displayedConditionColumns = ['no', 'conditionName', 'result'];
+  displayedConditionColumns = ['no', 'conditionCode', 'result'];
 
   selectedExperiment: ExperimentVM;
   selectExperimentByIdSub = new Subscription();
@@ -84,6 +77,7 @@ export class ExperimentAnalysisComponent implements OnInit, OnDestroy {
   private _getChildren = (node: TreeData) => of(node.children);
   hasNestedChild = (_: number, nodeData: TreeData) => nodeData.children.length > 0;
 
+  // TODO: Can be moved to  tree functions service
   createTree(metrics: MetricUnit[]): void {
     const tree = metrics.map(metric => this.insertNode(metric));
     this._dataChange.next(tree);
@@ -139,10 +133,10 @@ export class ExperimentAnalysisComponent implements OnInit, OnDestroy {
     // process the nodes in this tree array
     if (Array.isArray(node.children)) {
 
-      for (let treeNode of node.children) {
+      for (const treeNode of node.children) {
 
         // Recursively process treeNode. If an array result is
-        // returned, then add the treeNode.name to that result
+        // returned, then add the treeNode.key to that result
         // and return recursively
         const childResult = this.findParents(treeNode, searchForKey)
 

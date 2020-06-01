@@ -19,7 +19,7 @@ export class DashboardRootComponent {
     },
     {
       path: ['/analysis'],
-      text: 'Analysis',
+      text: 'global.analysis.title',
       iconType: 'analytics'
     },
     {
