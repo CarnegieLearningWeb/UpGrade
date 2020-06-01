@@ -5,6 +5,7 @@
   "global.logs.title": "Logs",
   "global.profile.title": "Profile",
   "global.experiment-user.title": "Users",
+  "global.analysis.title": "Analysis",
   "global.username.title": "User Name",
   "global.back.text": "BACK",
   "global.next.text": "NEXT",
@@ -223,5 +224,15 @@
   "feature-flags.new-flag-overview-stepper.text": "Overview",
   "feature-flags.new-flag-variations-stepper.text": "Variations",
   "feature-flags.view-flag.variation-type.text": "Variation Type",
-  "feature-flags.view-flag.table-flag-variations.text": "Flag Variations"
+  "feature-flags.view-flag.table-flag-variations.text": "Flag Variations",
+  "analysis.subtitle.text": "View experiment analysis here",
+  "analysis.zero-experiment.text": "No experiments to analyze",
+  "analysis.view-analysis.experiment-analysis.text": "Experiment Analysis",
+  "analysis.view-analysis.experiment.text": "Experiment",
+  "analysis.view-analysis.operation.text": "Operation",
+  "analysis.view-analysis.selected-key.text": "Selected Key: ",
+  "analysis.view-analysis.experiment-metrics.text": "Experiment Metrics",
+  "analysis.view-analysis.send.text": "Send",
+  "analysis.view-analysis.condition-code.text": "Condition Code",
+  "analysis.view-analysis.result.text": "Result"
 }

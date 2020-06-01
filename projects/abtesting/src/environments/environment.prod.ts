@@ -1,5 +1,3 @@
-const packageJson = require('../../../../package.json');
-
 const env = window['upgrade_env'];
 const endpointApi = env && env.endpointApi || 'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
 
@@ -11,19 +9,6 @@ export const environment = {
   test: env && env.test || false,
   i18nPrefix: '',
   gapiClientId: env && env.gapiClientId || '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
-  versions: {
-    app: packageJson.version,
-    angular: packageJson.dependencies['@angular/core'],
-    ngrx: packageJson.dependencies['@ngrx/store'],
-    material: packageJson.dependencies['@angular/material'],
-    bootstrap: packageJson.dependencies.bootstrap,
-    rxjs: packageJson.dependencies.rxjs,
-    ngxtranslate: packageJson.dependencies['@ngx-translate/core'],
-    fontAwesome: packageJson.dependencies['@fortawesome/fontawesome-free-webfonts'],
-    angularCli: packageJson.devDependencies['@angular/cli'],
-    typescript: packageJson.devDependencies['typescript'],
-    cypress: packageJson.devDependencies['cypress']
-  },
   api: {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,

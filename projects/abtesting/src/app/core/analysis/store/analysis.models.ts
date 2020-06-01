@@ -5,6 +5,12 @@ export {
   OPERATION_TYPES
 };
 
+export interface TreeData {
+  id: number;
+  key: string;
+  children: TreeData[];
+}
+
 export interface IQueryBuilder {
   experimentId: string;
   metric: string[];
