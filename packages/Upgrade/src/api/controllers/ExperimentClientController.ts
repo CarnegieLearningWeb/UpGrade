@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get, BodyParam } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -15,6 +15,8 @@ import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
 import { Log } from '../models/Log';
+import { MetricUnit } from '../../types/ExperimentInput';
+import { MetricService } from '../services/MetricService';
 
 /**
  * @swagger
@@ -30,7 +32,8 @@ export class ExperimentClientController {
     public experimentService: ExperimentService,
     public experimentAssignmentService: ExperimentAssignmentService,
     public experimentUserService: ExperimentUserService,
-    public featureFlagService: FeatureFlagService
+    public featureFlagService: FeatureFlagService,
+    public metricService: MetricService
   ) {}
 
   /**
@@ -315,5 +318,34 @@ export class ExperimentClientController {
   @Get('featureflag')
   public getAllFlags(): Promise<FeatureFlag[]> {
     return this.featureFlagService.find();
+  }
+
+  /**
+   * @swagger
+   * /metric:
+   *    post:
+   *       description: Add filter metrics
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: params
+   *            schema:
+   *             type: object
+   *             properties:
+   *              metricUnit:
+   *                type: object
+   *            description: Filtered Metrics
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Filtered Metrics
+   */
+  @Post('metric')
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: MetricUnit[]): Promise<MetricUnit[]> {
+    return this.metricService.saveAllMetrics(metricUnit);
   }
 }

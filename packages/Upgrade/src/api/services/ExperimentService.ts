@@ -14,7 +14,7 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In, EntityManager } from 'typeorm';
+import { getConnection, In } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE } from 'upgrade_types';
@@ -28,10 +28,7 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
 import * as config from '../../config.json';
-import { ExperimentInput, MetricUnit } from '../../types/ExperimentInput';
-import { Metric } from '../models/Metric';
-import { MetricRepository } from '../repositories/MetricRepository';
-import { LogRepository } from '../repositories/LogRepository';
+import { ExperimentInput } from '../../types/ExperimentInput';
 
 // const METRIC_KEY_DIVIDER = "_@%@_";
 
@@ -46,8 +43,6 @@ export class ExperimentService {
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository() private userRepository: ExperimentUserRepository,
-    @OrmRepository() private metricRepository: MetricRepository,
-    @OrmRepository() private logRepository: LogRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
@@ -55,12 +50,7 @@ export class ExperimentService {
 
   public async find(): Promise<Experiment[]> {
     this.log.info(`Find all experiments`);
-    const experimentDocument = await this.experimentRepository.findAllExperiments();
-    return experimentDocument.map((experiment) => {
-      const { metrics, ...rest } = experiment;
-      const metricJson = this.metricDocumentToJson(metrics);
-      return { ...rest, metrics: metricJson } as any;
-    });
+    return this.experimentRepository.findAllExperiments();
   }
 
   public findAllName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
@@ -79,8 +69,7 @@ export class ExperimentService {
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.metrics', 'metrics');
+      .leftJoinAndSelect('experiment.partitions', 'partitions');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -96,13 +85,7 @@ export class ExperimentService {
 
     queryBuilder = queryBuilder.skip(skip).take(take);
 
-    let experiments = await queryBuilder.getMany();
-    experiments = experiments.map((experiment) => {
-      const { metrics, ...rest } = experiment;
-      const metricJson = this.metricDocumentToJson(metrics);
-      return { ...rest, metrics: metricJson } as any;
-    });
-    return experiments;
+    return queryBuilder.getMany();
   }
 
   public async findOne(id: string): Promise<Experiment | undefined> {
@@ -111,14 +94,9 @@ export class ExperimentService {
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.metrics', 'metrics')
       .where({ id })
       .getOne();
-    if (experiment) {
-      const { metrics, ...rest } = experiment;
-      const metricJson = this.metricDocumentToJson(metrics);
-      return { ...rest, metrics: metricJson } as any;
-    }
+
     return experiment;
   }
 
@@ -173,9 +151,6 @@ export class ExperimentService {
         );
 
         const promiseResult = await Promise.all(promiseArray);
-
-        // deleting
-        await this.sanitizeMetricsAndLog(transactionalEntityManager);
 
         return promiseResult[1];
       }
@@ -241,20 +216,6 @@ export class ExperimentService {
     await this.updateExperimentSchedules(experimentId);
 
     return updatedState;
-  }
-
-  private async sanitizeMetricsAndLog(transactionalEntityManager: EntityManager): Promise<void> {
-    // TODO change this into sub query
-    const metricData = await transactionalEntityManager.query('SELECT "metricKey" FROM experiment_metric;');
-    const metricKeys: string[] = metricData.map((val) => {
-      return val.metricKey;
-    });
-    await this.metricRepository.deleteExceptByIds(metricKeys, transactionalEntityManager);
-    const logData = await transactionalEntityManager.query('SELECT "logId" FROM metric_log;');
-    const logKeys: string[] = logData.map((val) => {
-      return val.logId;
-    });
-    await this.logRepository.deleteExceptByIds(logKeys, transactionalEntityManager);
   }
 
   private async updateExperimentSchedules(experimentId: string): Promise<void> {
@@ -370,23 +331,10 @@ export class ExperimentService {
         uniqueIdentifiers = response[1];
       }
       const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
-      let newExpDoc: any = expDoc;
-      if (experiment.metrics && experiment.metrics.length) {
-        // transform metrics to document
-        const keyArray = this.metricJsonToDocument(experiment.metrics);
-        const metricDoc: any[] = keyArray.map((metric) => ({
-          key: metric,
-        }));
-
-        newExpDoc = { ...expDoc, metrics: metricDoc };
-      }
 
       let experimentDoc: Experiment;
       try {
-        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(newExpDoc);
-
-        // delete redundant data
-        await this.sanitizeMetricsAndLog(transactionalEntityManager);
+        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {
         throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
       }
@@ -543,13 +491,7 @@ export class ExperimentService {
       };
 
       await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
-      const { metrics, ...rest } = newExperiment;
-      if (metrics) {
-        const metricJson = this.metricDocumentToJson(metrics);
-        return { ...rest, metrics: metricJson } as any;
-      }
-
-      return rest as any;
+      return newExperiment;
     });
   }
 
@@ -599,21 +541,11 @@ export class ExperimentService {
         uniqueIdentifiers = response[1];
       }
       const { conditions, partitions, ...expDoc } = experiment;
-      let newExpDoc: any = expDoc;
-      if (experiment.metrics && experiment.metrics.length) {
-        // transform metrics to document
-        const keyArray = this.metricJsonToDocument(experiment.metrics);
-        const metricDoc: any[] = keyArray.map((metric) => ({
-          key: metric,
-        }));
-
-        newExpDoc = { ...expDoc, metrics: metricDoc };
-      }
 
       // saving experiment docs
       let experimentDoc: Experiment;
       try {
-        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(newExpDoc);
+        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
       }
@@ -668,13 +600,7 @@ export class ExperimentService {
       experimentName: createdExperiment.name,
     };
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
-
-    const { metrics, ...rest } = createdExperiment;
-    if (metrics) {
-      const metricJson = this.metricDocumentToJson(metrics);
-      return { ...rest, metrics: metricJson } as any;
-    }
-    return rest as any;
+    return createdExperiment;
   }
 
   private postgresSearchString(type: string): string {
@@ -711,60 +637,6 @@ export class ExperimentService {
       (result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
       return result;
     }, {});
-  }
-
-  private metricJsonToDocument(metricUnitArray: MetricUnit[]): string[] {
-    const keyArray = [];
-
-    function returnKeyArray(metricUnit: MetricUnit, keyName: string): void {
-      if (metricUnit.children.length === 0) {
-        // exit condition
-        const leafPath = keyName === '' ? metricUnit.key : `${keyName}_${metricUnit.key}`;
-        keyArray.push(leafPath);
-        return;
-      }
-
-      metricUnit.children.forEach((unit) => {
-        const newKey = keyName === '' ? metricUnit.key : `${keyName}_${metricUnit.key}`;
-        return `${returnKeyArray(unit, newKey)}`;
-      });
-    }
-
-    metricUnitArray.forEach((metricUnit) => {
-      return returnKeyArray(metricUnit, '');
-    });
-
-    return keyArray;
-  }
-
-  private metricDocumentToJson(metrics: Metric[]): MetricUnit[] {
-    const metricUnitArray: MetricUnit[] = [];
-
-    metrics.forEach((metric) => {
-      const keyArray = metric.key.split('_');
-      let metricPointer = metricUnitArray;
-      keyArray.forEach((key, index) => {
-        const keyExist = metricPointer.reduce((aggregator, unit) => {
-          const isKey = unit && unit.key === key ? true : false;
-          if (isKey) {
-            metricPointer = unit.children;
-          }
-          return aggregator || isKey;
-        }, false);
-
-        if (keyExist === false) {
-          // create the key
-          const newMetric = {
-            key,
-            children: [],
-          };
-          metricPointer.push(newMetric);
-
-          metricPointer = newMetric.children;
-        }
-      });
-    });
-    return metricUnitArray;
   }
 
   private async addBulkExperiments(experiments: ExperimentInput[]): Promise<Experiment[]> {

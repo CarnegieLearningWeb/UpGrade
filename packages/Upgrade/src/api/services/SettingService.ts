@@ -16,8 +16,8 @@ export class SettingService {
     const settingDoc: Setting = await this.settingRepository.findOne();
     const newDoc = {
       ...settingDoc,
-      toCheckAuth: checkAuth || settingDoc.toCheckAuth || false,
-      toFilterMetric: filterMetric || settingDoc.toFilterMetric || false,
+      toCheckAuth: checkAuth === undefined ? (settingDoc && settingDoc.toCheckAuth) || false : checkAuth,
+      toFilterMetric: filterMetric === undefined ? (settingDoc && settingDoc.toFilterMetric) || false : filterMetric,
     };
     return this.settingRepository.save(newDoc);
   }

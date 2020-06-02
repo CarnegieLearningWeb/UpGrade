@@ -56,9 +56,6 @@ export class ExperimentInput {
   @ValidateNested()
   public partitions: ExperimentPartition[];
 
-  @ValidateNested()
-  public metrics: MetricUnit[];
-
   public createdAt: Date;
   public updatedAt: Date;
   public versionNumber: number;

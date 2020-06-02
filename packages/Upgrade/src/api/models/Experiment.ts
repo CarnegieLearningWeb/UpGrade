@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentPartition } from './ExperimentPartition';
@@ -16,7 +16,6 @@ import {
   IExperimentSortParams,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
-import { Metric } from './Metric';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -101,12 +100,4 @@ export class Experiment extends BaseModel {
   @ValidateNested()
   @Type(() => ExperimentPartition)
   public partitions: ExperimentPartition[];
-
-  @ManyToMany((type) => Metric, (metric) => metric.experiments, {
-    cascade: true,
-  })
-  @JoinTable({
-    name: 'experiment_metric',
-  })
-  public metrics: Metric[];
 }

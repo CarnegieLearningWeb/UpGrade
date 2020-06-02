@@ -5,85 +5,46 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
+import { MetricService } from '../../../../src/api/services/MetricService';
+import { SettingService } from '../../../../src/api/services/SettingService';
 
 export default async function MetricCRUD(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentObject = individualExperimentWithMetric;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
+  const metricService = Container.get<MetricService>(MetricService);
+  const settingService = Container.get<SettingService>(SettingService);
 
   const user = await userService.create(systemUser as any);
 
-  // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: experimentObject.state,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-        metrics: expect.arrayContaining(
-          experimentObject.metrics.map((matrix) => {
-            return expect.objectContaining(matrix);
-          })
-        ),
-      }),
-    ])
-  );
+  await settingService.setClientCheck(false, true);
 
-  let totalMetrics = await metricRepository.count();
-  expect(totalMetrics).toEqual(3);
+  // create metrics service
+  const metricUnit = [
+    {
+      key: 'time',
+      children: [],
+    },
+    {
+      key: 'w',
+      children: [
+        {
+          key: 'time',
+          children: [],
+          operations: ['mean', 'count'],
+        },
+        {
+          key: 'completion',
+          children: [],
+          operations: ['mean'],
+        },
+      ],
+    },
+  ];
 
-  // edited matrix
-  const editedMetrics = experiments[0].metrics.map((matrix) => {
-    return {
-      ...matrix,
-      key: `Matrix ${matrix.key}`,
-    };
-  });
+  await metricService.saveAllMetrics(metricUnit);
 
-  // delete one condition
-  editedMetrics.pop();
-
-  const experimentUpdated = {
-    ...experiments[0],
-    metrics: editedMetrics,
-  };
-
-  // update matrix
-  await experimentService.update(experimentUpdated.id, experimentUpdated as any, user);
-  experiments = await experimentService.find();
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: experimentObject.state,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-        metrics: expect.arrayContaining(
-          editedMetrics.map((matrix) => {
-            return expect.objectContaining(matrix);
-          })
-        ),
-      }),
-    ])
-  );
-
-  expect(experiments[0].metrics.length).toEqual(experimentUpdated.metrics.length);
-
-  totalMetrics = await metricRepository.count();
-  expect(totalMetrics).toEqual(1);
-
-  // delete the experiment and matrix should be deleted
-  await experimentService.delete(experiments[0].id, user);
-
-  experiments = await experimentService.find();
-  expect(experiments.length).toEqual(0);
-
-  totalMetrics = await metricRepository.count();
-  expect(totalMetrics).toEqual(0);
+  const findMetric = await metricRepository.find();
+  expect(findMetric.length).toEqual(3);
 }
