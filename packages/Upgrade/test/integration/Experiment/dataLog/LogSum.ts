@@ -94,20 +94,11 @@ export default async function CreateLog(): Promise<void> {
     })
   );
 
-  await experimentAssignmentService.dataLog(
-    experimentUsers[1].id,
-    JSON.stringify({ time: 200, w: { time: 20, completion: 100 } })
-  );
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, { time: 200, w: { time: 20, completion: 100 } });
 
-  await experimentAssignmentService.dataLog(
-    experimentUsers[2].id,
-    JSON.stringify({ time: 100, w: { time: 40, completion: 100 } })
-  );
+  await experimentAssignmentService.dataLog(experimentUsers[2].id, { time: 100, w: { time: 40, completion: 100 } });
 
-  await experimentAssignmentService.dataLog(
-    experimentUsers[3].id,
-    JSON.stringify({ time: 50, w: { time: 60, completion: 100 } })
-  );
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 100 } });
 
   let data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.SUM, '');
   console.log('Sum time', data);
