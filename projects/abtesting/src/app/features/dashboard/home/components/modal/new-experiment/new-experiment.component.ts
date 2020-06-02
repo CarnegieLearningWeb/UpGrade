@@ -50,7 +50,8 @@ export class NewExperimentComponent implements OnInit {
           ...formData
         };
         this.stepper.next();
-        if (path === NewExperimentPaths.METRIC) {
+        if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
+          this.newExperimentData.metrics = [];
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }

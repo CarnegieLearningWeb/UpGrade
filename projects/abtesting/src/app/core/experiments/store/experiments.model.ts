@@ -45,8 +45,7 @@ export enum NewExperimentPaths {
   EXPERIMENT_OVERVIEW = 'Experiment Overview',
   EXPERIMENT_DESIGN = 'Experiment Design',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
-  POST_EXPERIMENT_RULE = 'Post Experiment Rule',
-  METRIC = 'Metric'
+  POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
 
 export interface NewExperimentDialogData {

@@ -69,7 +69,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
         revertTo = null;
       }
       this.emitExperimentDialogEvent.emit({
-        type: eventType,
+        type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
         formData: { postExperimentRule, revertTo: revertTo !== 'default' ? revertTo : null },
         path: NewExperimentPaths.POST_EXPERIMENT_RULE
       });
