@@ -5,8 +5,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --open",
-    "cl:build": "npm run build:prod && npm run cl:create-package-json",
-    "cl:create-package-json": "echo {\"name\": \"abtesting\", \"version\": \"1.0.0\"} > dist/abtesting/package.json",
+    "cl:build": "npm run build:prod && npm run cl:copy-package-json",
+    "cl:copy-package-json": "cp projects/abtesting/package.json dist/abtesting/",
     "start:prod": "npm run build:prod && npm run server",
     "build": "ng build",
     "build:prod": "ng build --prod",
