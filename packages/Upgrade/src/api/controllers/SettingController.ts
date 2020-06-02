@@ -27,7 +27,7 @@ export class SettingController {
    *          '200':
    *            description: Project settings
    */
-  @Get('')
+  @Get()
   public getSetting(): Promise<Setting> {
     return this.settingService.getClientCheck();
   }
@@ -44,27 +44,27 @@ export class SettingController {
    *           name: params
    *           required: true
    *           schema:
-   *             type: objects
-   *             required:
-   *                - toCheckAuth
+   *             type: object
    *             properties:
    *                toCheckAuth:
    *                    type: boolean
-   *           description: To check Authorization
+   *                toFilterMetric:
+   *                    type: boolean
+   *           description: Set settings
    *       tags:
    *         - Setting
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Create/Update Authorization
+   *            description: Create/Update settings
    */
-  @Post('')
+  @Post()
   public upsertSetting(
     @Body({ validate: { validationError: { target: true, value: true } } })
     settingParams: SettingParamsValidator
   ): Promise<Setting> {
     console.log('settingParams', settingParams);
-    return this.settingService.setClientCheck(settingParams.toCheckAuth);
+    return this.settingService.setClientCheck(settingParams.toCheckAuth, settingParams.toFilterMetric);
   }
 }

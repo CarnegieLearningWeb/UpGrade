@@ -7,5 +7,8 @@ export class Setting extends BaseModel {
   public id: string;
 
   @Column()
-  public toCheck: boolean;
+  public toCheckAuth: boolean;
+
+  @Column()
+  public toFilterMetric: boolean;
 }

@@ -11,10 +11,14 @@ export class SettingService {
     @OrmRepository() private settingRepository: SettingRepository
   ) {}
 
-  public async setClientCheck(value: boolean): Promise<Setting> {
-    this.log.info('Update project setting: value', value);
+  public async setClientCheck(checkAuth: boolean | null, filterMetric: boolean | null): Promise<Setting> {
+    this.log.info(`Update project setting: checkAuth ${checkAuth}, filterMetric ${filterMetric}`);
     const settingDoc: Setting = await this.settingRepository.findOne();
-    const newDoc = { ...settingDoc, toCheck: value };
+    const newDoc = {
+      ...settingDoc,
+      toCheckAuth: checkAuth || settingDoc.toCheckAuth || false,
+      toFilterMetric: filterMetric || settingDoc.toFilterMetric || false,
+    };
     return this.settingRepository.save(newDoc);
   }
 
@@ -23,7 +27,8 @@ export class SettingService {
     const setting = await this.settingRepository.find();
     if (setting.length === 0) {
       const defaultSetting = new Setting();
-      defaultSetting.toCheck = false;
+      defaultSetting.toCheckAuth = false;
+      defaultSetting.toFilterMetric = false;
       return defaultSetting;
     }
     return setting[0];

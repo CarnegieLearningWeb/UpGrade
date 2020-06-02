@@ -22,7 +22,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       //   const tokenSigned = jwt.sign(data, 'carnegilearning');
       //   console.log('tokenSigned', tokenSigned);
 
-      if (setting.toCheck) {
+      if (setting.toCheckAuth) {
         // throw error if no token
         if (!token) {
           this.log.warn('Token is not present in request header');
