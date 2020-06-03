@@ -17,6 +17,7 @@ import { LogValidator } from './validators/LogValidator';
 import { Log } from '../models/Log';
 import { MetricUnit } from '../../types/ExperimentInput';
 import { MetricService } from '../services/MetricService';
+import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 
 /**
  * @swagger
@@ -347,5 +348,40 @@ export class ExperimentClientController {
   @Post('metric')
   public filterMetrics(@BodyParam('metricUnit') metricUnit: MetricUnit[]): Promise<MetricUnit[]> {
     return this.metricService.saveAllMetrics(metricUnit);
+  }
+
+ /**
+  * @swagger
+  * /useraliases:
+  *    post:
+  *       description: Set aliases for current user
+  *       consumes:
+  *         - application/json
+  *       parameters:
+  *          - in: body
+  *            name: user aliases
+  *            required: true
+  *            schema:
+  *             type: object
+  *             required:
+  *               - userId
+  *               - aliases
+  *             properties:
+  *              userId:
+  *                type: string
+  *              aliases:
+  *                type: array
+  *            description: Set user aliases
+  *       tags:
+  *         - Experiment Point
+  *       produces:
+  *         - application/json
+  *       responses:
+  *          '200':
+  *            description: Experiment User aliases added
+  */
+  @Post('useraliases')
+  public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
+    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases);
   }
 }
