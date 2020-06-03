@@ -35,6 +35,5 @@ export const environment = {
     updateFlagStatus: `${endpointApi}/flags/status`,
     getPaginatedFlags: `${endpointApi}/flags/paginated`,
     setting: `${endpointApi}/setting`,
-    fetchAnalysis: `${endpointApi}/datalog/analyse`
   }
 };

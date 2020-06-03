@@ -11,8 +11,4 @@ export const selectIsAnalysisLoading = createSelector(
   (state: AnalysisState) => state.isAnalysisLoading
 );
 
-export const selectAnalysisData = createSelector(
-  selectAnalysisState,
-  (state: AnalysisState) => state.data
-);
 

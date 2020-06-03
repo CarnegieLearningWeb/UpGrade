@@ -25,8 +25,6 @@
 @import './app/features/dashboard/logs/common/logs-view.theme.scss';
 @import './app/features/dashboard/common/tabs-view.theme.scss';
 @import './app/features/auth/login/login.theme.scss';
-@import './app/features/dashboard/home/components/modal/tree-node-dialog/tree-node-dialog.theme.scss';
-@import './app/features/dashboard/home/components/modal/metric-modal/metric-modal.theme.scss';
 @import './app/features/dashboard/feature-flags/feature-flags-root/feature-flags-root.theme.scss';
 @import './app/features/dashboard/feature-flags/components/feature-flags-list/feature-flags-list.theme.scss';
 @import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
@@ -51,8 +49,6 @@
   @include logs-view-component-theme($theme);
   @include tabs-view-theme($theme);
   @include login-component-theme($theme);
-  @include tree-node-dialog-component-theme($theme);
-  @include metric-modal-component-theme($theme);
   @include feature-flags-root-component-theme($theme);
   @include feature-flags-list-component-theme($theme);
   @include new-flag-component-theme($theme);
@@ -94,8 +90,6 @@
 .delete-modal,
 .experiment-general-modal,
 .new-experiment-modal,
-.tree-modal,
-.metric-modal,
 .new-flag-modal,
 .new-user-modal {
   border-radius: 7px;
@@ -120,8 +114,7 @@
   min-height: 294px;
 }
 
-.new-experiment-modal,
-.metric-modal {
+.new-experiment-modal {
   width: 900px;
 }
 
@@ -131,11 +124,6 @@
 
 .new-user-modal {
   width: 805px;
-}
-
-.tree-modal {
-  width: 450px;
-  min-height: 192px;
 }
 
 // Common style for modal button
