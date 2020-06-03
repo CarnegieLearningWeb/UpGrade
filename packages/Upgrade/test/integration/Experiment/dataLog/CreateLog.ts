@@ -1,49 +1,52 @@
 import Container from 'typedi';
-import { ExperimentService } from '../../../../src/api/services/ExperimentService';
-import { individualExperimentWithMetric } from '../../mockData/experiment/index';
-import { UserService } from '../../../../src/api/services/UserService';
 import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
+import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
+import { SettingService } from '../../../../src/api/services/SettingService';
 import { Log } from '../../../../src/api/models/Log';
-import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 
 export default async function CreateLog(): Promise<void> {
-  const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-  const experimentObject = individualExperimentWithMetric;
-  const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
+  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const metricService = Container.get<MetricService>(MetricService);
+  const settingService = Container.get<SettingService>(SettingService);
   const logRepository = getRepository(Log);
 
-  const user = await userService.create(systemUser as any);
+  await settingService.setClientCheck(false, true);
 
-  // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: experimentObject.state,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-        metrics: expect.arrayContaining(
-          experimentObject.metrics.map((matrix) => {
-            return expect.objectContaining(matrix);
-          })
-        ),
-      }),
-    ])
-  );
+  // create metrics service
+  const metricUnit = [
+    {
+      key: 'time',
+      children: [],
+    },
+    {
+      key: 'w',
+      children: [
+        {
+          key: 'time',
+          children: [],
+          operations: ['mean', 'count'],
+        },
+        {
+          key: 'completion',
+          children: [],
+          operations: ['mean'],
+        },
+      ],
+    },
+  ];
 
-  let totalMetrics = await metricRepository.count();
-  expect(totalMetrics).toEqual(3);
+  await metricService.saveAllMetrics(metricUnit);
 
+  const findMetric = await metricRepository.find();
+  expect(findMetric.length).toEqual(3);
+
+  // create log
   const experimentUser = experimentUsers[0];
-  const jsonData = {
+  let jsonData: any = {
     w: { time: 200, completion: 50, name: 'Vivek' },
   };
 
@@ -61,25 +64,42 @@ export default async function CreateLog(): Promise<void> {
         data: { w: { time: 200, completion: 50 } },
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: 'w_time',
+            key: `w${METRICS_JOIN_TEXT}time`,
           }),
           expect.objectContaining({
-            key: 'w_completion',
+            key: `w${METRICS_JOIN_TEXT}completion`,
           }),
         ]),
       }),
     ])
   );
 
-  // delete experiment
-  await experimentService.delete(experiments[0].id, user);
+  // switching off filter metrics
+  await settingService.setClientCheck(false, false);
 
-  experiments = await experimentService.find();
-  expect(experiments.length).toEqual(0);
+  jsonData = {
+    p: { time: 200, completion: 50 },
+  };
 
-  totalMetrics = await metricRepository.count();
-  expect(totalMetrics).toEqual(0);
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
 
-  logData = await logRepository.find({});
-  expect(logData.length).toEqual(0);
+  logData = await logRepository.find({
+    relations: ['metrics'],
+  });
+
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        data: { p: { time: 200, completion: 50 } },
+        metrics: expect.arrayContaining([
+          expect.objectContaining({
+            key: `p${METRICS_JOIN_TEXT}time`,
+          }),
+          expect.objectContaining({
+            key: `p${METRICS_JOIN_TEXT}completion`,
+          }),
+        ]),
+      }),
+    ])
+  );
 }

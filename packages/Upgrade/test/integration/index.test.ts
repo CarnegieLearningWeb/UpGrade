@@ -322,10 +322,10 @@ describe('Integration Tests', () => {
     done();
   });
 
-  // test('Create Log', async (done) => {
-  //   await CreateLog();
-  //   done();
-  // });
+  test('Create Log', async (done) => {
+    await CreateLog();
+    done();
+  });
 
   // test('Log Sum', async (done) => {
   //   await LogSum();

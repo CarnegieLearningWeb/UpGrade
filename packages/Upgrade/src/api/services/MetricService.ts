@@ -7,7 +7,7 @@ import { MetricUnit } from '../../types/ExperimentInput';
 import { SERVER_ERROR } from 'upgrade_types';
 import { SettingService } from './SettingService';
 
-const METRICS_JOIN_TEXT = '@__@';
+export const METRICS_JOIN_TEXT = '@__@';
 
 @Service()
 export class MetricService {

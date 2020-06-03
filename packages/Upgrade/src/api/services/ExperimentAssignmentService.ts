@@ -40,6 +40,9 @@ import { Log } from '../models/Log';
 import { LogRepository } from '../repositories/LogRepository';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
+import { METRICS_JOIN_TEXT } from './MetricService';
+import { SettingService } from './SettingService';
+import { Setting } from '../models/Setting';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -73,6 +76,7 @@ export class ExperimentAssignmentService {
     public experimentUserService: ExperimentUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
+    public settingService: SettingService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
@@ -371,7 +375,7 @@ export class ExperimentAssignmentService {
       }
 
       keys.forEach((key) => {
-        const newKey = keyString !== '' ? `${keyString}_${key}` : key;
+        const newKey = keyString !== '' ? `${keyString}${METRICS_JOIN_TEXT}${key}` : key;
         getMetricIds(jsonData[key], newKey);
       });
       return;
@@ -383,29 +387,41 @@ export class ExperimentAssignmentService {
     // get user document
     promiseArray.push(this.experimentUserService.findOne(userId));
     promiseArray.push(this.metricRepository.findByIds(stringIds));
+    promiseArray.push(this.settingService.getClientCheck());
 
     const result = await Promise.all(promiseArray);
 
     const userDoc: ExperimentUser = result[0];
-    const metricDocs: Metric[] = result[1];
+    let metricDocs: Metric[] = result[1];
+    const settingDocs: Setting = result[2];
 
     // filter json data if metric exist
-    stringIds.forEach((metricId) => {
-      const document = metricDocs.find((doc) => {
-        return doc.key === metricId;
+    if (settingDocs.toFilterMetric) {
+      stringIds.forEach((metricId) => {
+        const document = metricDocs.find((doc) => {
+          return doc.key === metricId;
+        });
+
+        if (!document) {
+          const keyArray = metricId.split(METRICS_JOIN_TEXT);
+          const toPop = keyArray.pop();
+          // delete json data
+          const jsonPointer: any = keyArray.reduce((accumulator, key) => {
+            return accumulator[key];
+          }, jsonLog);
+
+          delete jsonPointer[toPop];
+        }
       });
-
-      if (!document) {
-        const keyArray = metricId.split('_');
-        const toPop = keyArray.pop();
-        // delete json data
-        const jsonPointer: any = keyArray.reduce((accumulator, key) => {
-          return accumulator[key];
-        }, jsonLog);
-
-        delete jsonPointer[toPop];
-      }
-    });
+    } else {
+      // save the metrics keys
+      const metricDocument = stringIds.map((stringKey) => {
+        return {
+          key: stringKey,
+        };
+      });
+      metricDocs = await this.metricRepository.save(metricDocument);
+    }
 
     const toLog: boolean = Object.keys(jsonLog).length !== 0;
 
