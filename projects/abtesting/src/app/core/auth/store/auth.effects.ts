@@ -130,7 +130,7 @@ export class AuthEffects {
             experimentUserActions.actionFetchExcludedGroups(),
             experimentActions.actionFetchAllPartitions(),
             usersActions.actionFetchUsers({ fromStarting: true }),
-            settingsActions.actionGetToCheckAuth(),
+            settingsActions.actionGetSetting(),
           ];
           // Set theme from localstorage if exist
           this.settingsService.setLocalStorageTheme();

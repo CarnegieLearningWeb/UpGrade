@@ -20,10 +20,20 @@
           class="ft-16-600 toggle"
           color="primary"
           [checked]="toCheckAuth$ | async"
-          (change)="changeAuthenticationFlag($event)"
+          (change)="setToCheckAuth($event)"
           labelPosition="before"
         >
-          {{ 'profile.authorization.text' | translate }}
+          {{ 'profile.action.authorization.text' | translate }}
+        </mat-slide-toggle>
+        <mat-slide-toggle
+          *ngIf="(permissions$ | async)?.manageRoles.update"
+          class="ft-16-600 toggle"
+          color="primary"
+          [checked]="toFilterMetric$ | async"
+          (change)="setToFilterMetric($event)"
+          labelPosition="before"
+        >
+          {{ 'profile.action.filter-metric.text' | translate }}
         </mat-slide-toggle>
         <mat-slide-toggle
           class="ft-16-600"
@@ -32,7 +42,7 @@
           labelPosition="before"
           (change)="changeTheme($event)"
         >
-        {{ 'theme.dark-mode.text' | translate }}
+        {{ 'profile.action.dark-theme.text' | translate }}
       </mat-slide-toggle>
       </div>
     </div>

@@ -33,6 +33,7 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
   isAllUsersFetchedSub: Subscription;
   searchString: string;
   toCheckAuth$ = this.settingsService.toCheckAuth$;
+  toFilterMetric$ = this.settingsService.toFilterMetric$;
   userFilterOptions = [
     { value: USER_SEARCH_SORT_KEY.ALL, viewValue: 'All'},
     { value: USER_SEARCH_SORT_KEY.FIRST_NAME, viewValue: 'First Name'},
@@ -156,14 +157,14 @@ export class ProfileRootComponent implements OnInit, OnDestroy {
       disableClose: false,
       data: { users: this.allUsers.data }
     });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Do action after closing dialog
-    });
   }
 
-  changeAuthenticationFlag(event: any) {
+  setToCheckAuth(event: any) {
     this.settingsService.setToCheckAuth(event.checked);
+  }
+
+  setToFilterMetric(event: any) {
+    this.settingsService.setToFilterMetric(event.checked);
   }
 
   setSearchKey() {

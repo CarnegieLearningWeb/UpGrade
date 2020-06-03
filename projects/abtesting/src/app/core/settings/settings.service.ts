@@ -3,7 +3,7 @@ import { AppState } from '../core.state';
 import { Store, select } from '@ngrx/store';
 import * as SettingsActions from './store/settings.actions';
 import {
-  selectToCheckAuth, selectTheme
+  selectToCheckAuth, selectTheme, selectToFilterMetric
 } from './store/settings.selectors';
 import { SETTINGS_KEY } from './store/settings.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
@@ -17,13 +17,18 @@ export class SettingsService {
 
   theme$ = this.store$.pipe(select(selectTheme));
   toCheckAuth$ = this.store$.pipe(select(selectToCheckAuth));
+  toFilterMetric$ = this.store$.pipe(select(selectToFilterMetric));
 
   changeTheme(theme) {
     this.store$.dispatch(SettingsActions.actionChangeTheme({ theme }));
   }
 
-  setToCheckAuth(value: boolean) {
-    this.store$.dispatch(SettingsActions.actionSetToCheckAuth({ toCheckAuth: value }));
+  setToCheckAuth(toCheckAuth: boolean) {
+    this.store$.dispatch(SettingsActions.actionSetSetting({ setting: { toCheckAuth } }));
+  }
+
+  setToFilterMetric(toFilterMetric: boolean) {
+    this.store$.dispatch(SettingsActions.actionSetSetting({ setting: { toFilterMetric } }));
   }
 
   setLocalStorageTheme() {

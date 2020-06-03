@@ -7,9 +7,15 @@ export enum ThemeOptions {
   DARK_THEME = 'dark-theme'
 }
 
+export interface SettingParams {
+  toCheckAuth?: boolean;
+  toFilterMetric?: boolean;
+}
+
 export interface SettingsState {
   theme: ThemeOptions;
   toCheckAuth: boolean;
+  toFilterMetric: boolean;
 }
 
 export interface State extends AppState {
