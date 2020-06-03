@@ -55,12 +55,61 @@ export class ExperimentUserService {
     return updatedUsers;
   }
 
+  public async setAliasesForUser(userId: string, aliases: string[]): Promise<ExperimentUser[]> {
+    this.log.info('Set aliases for experiment user => ', userId);
+    let userExist = await this.getOriginalUserDoc(userId);
+    if (!userExist) {
+      // Create experiment user if it does not exist
+      userExist = await this.userRepository.save({ id: userId });
+    }
+    const promiseArray = [];
+    aliases.map(aliasId => {
+      promiseArray.push(this.userRepository.findOne({
+        where: { id: aliasId },
+        relations: ['originalUser'],
+      }));
+    });
+    const promiseResult = await Promise.all(promiseArray);
+    const aliasesUserIds = [];
+    const aliasesLinkedWithOtherUser = [];
+    const alreadyLinkedAliases = [];
+    promiseResult.map((result, index) => {
+      if (result) {
+        if (result.originalUser && result.originalUser.id === userExist.id) {
+          // If alias Id is already linked with user
+          alreadyLinkedAliases.push(result);
+        } else {
+          // If alias Id is associated with other user
+          aliasesLinkedWithOtherUser.push(aliases[index]);
+        }
+      } else {
+        // If alias id is not associated with any user
+        aliasesUserIds.push(aliases[index]);
+      }
+    });
+    if (aliasesLinkedWithOtherUser.length) {
+      throw new Error(`Users with ids ${aliasesLinkedWithOtherUser} already associated with other users`);
+    }
+    const userAliasesDocs = aliasesUserIds.map((aliasId) => {
+      const aliasUser: any = {
+        id: aliasId,
+      };
+      aliasUser.originalUser = userExist;
+      return aliasUser;
+    });
+    if (userAliasesDocs.length) {
+      const aliasesUsers = await this.userRepository.save(userAliasesDocs);
+      return [...aliasesUsers, ...alreadyLinkedAliases];
+    }
+    return alreadyLinkedAliases;
+  }
+
   public async updateWorkingGroup(userId: string, workingGroup: any): Promise<ExperimentUser> {
     this.log.info('Update working group => ', userId, workingGroup);
-    const userExist = await this.userRepository.findOne({ id: userId });
+    const userExist = await this.getOriginalUserDoc(userId);
 
     // TODO check if workingGroup is the subset of group membership
-    const newDocument = userExist ? { ...userExist, id: userId, workingGroup } : { id: userId, workingGroup };
+    const newDocument = userExist ? { ...userExist, workingGroup } : { id: userId, workingGroup };
     return this.userRepository.save(newDocument);
   }
 
@@ -76,19 +125,39 @@ export class ExperimentUserService {
       `Set Group Membership => userId ${userId} and Group membership ${JSON.stringify(groupMembership, undefined, 2)}`
     );
 
-    const userExist = await this.userRepository.findOne({ id: userId });
+    const userExist = await this.getOriginalUserDoc(userId);
 
     // update assignments
     if (userExist && userExist.group) {
-      await this.removeAssignments(userId, groupMembership, userExist.group);
+      await this.removeAssignments(userExist.id, groupMembership, userExist.group);
     }
 
     const newDocument = userExist
-      ? { ...userExist, id: userId, group: groupMembership }
+      ? { ...userExist, group: groupMembership }
       : { id: userId, group: groupMembership };
 
     // update group membership
     return this.userRepository.save(newDocument);
+  }
+
+  public async getOriginalUserDoc(userId: string): Promise<ExperimentUser | null> {
+    this.log.info(`Find original user for userId ${userId}`);
+    const userDoc = await this.userRepository.find({
+      where: { id: userId },
+      relations: ['originalUser'],
+    });
+    if (userDoc.length) {
+      if (userDoc[0].originalUser) {
+        // If user is alias user
+        return userDoc[0].originalUser;
+      } else {
+        // If user is original user
+        const { originalUser, ...rest } = userDoc[0];
+        return rest as any;
+      }
+    } else {
+      return null;
+    }
   }
 
   private async removeAssignments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {

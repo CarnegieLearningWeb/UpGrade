@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToOne } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { IsNotEmpty, IsDefined } from 'class-validator';
 import { Log } from './Log';
@@ -15,6 +15,12 @@ export class ExperimentUser extends BaseModel {
 
   @Column({ type: 'json', nullable: true })
   public workingGroup: object | undefined;
+
+  @OneToMany((type) => ExperimentUser, (user) => user.originalUser)
+  public aliases: ExperimentUser[];
+
+  @ManyToOne((type) => ExperimentUser, (user) => user.aliases, { onDelete: 'CASCADE' })
+  public originalUser: ExperimentUser;
 
   @OneToMany((type) => Log, (log) => log.user)
   public logs: Log[];

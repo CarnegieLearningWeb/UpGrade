@@ -15,6 +15,7 @@ import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
 import { Log } from '../models/Log';
+import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 
 /**
  * @swagger
@@ -315,5 +316,40 @@ export class ExperimentClientController {
   @Get('featureflag')
   public getAllFlags(): Promise<FeatureFlag[]> {
     return this.featureFlagService.find();
+  }
+
+ /**
+  * @swagger
+  * /useraliases:
+  *    post:
+  *       description: Set aliases for current user
+  *       consumes:
+  *         - application/json
+  *       parameters:
+  *          - in: body
+  *            name: user aliases
+  *            required: true
+  *            schema:
+  *             type: object
+  *             required:
+  *               - userId
+  *               - aliases
+  *             properties:
+  *              userId:
+  *                type: string
+  *              aliases:
+  *                type: array
+  *            description: Set user aliases
+  *       tags:
+  *         - Experiment Point
+  *       produces:
+  *         - application/json
+  *       responses:
+  *          '200':
+  *            description: Experiment User aliases added
+  */
+  @Post('useraliases')
+  public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
+    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases);
   }
 }
