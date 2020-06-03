@@ -89,7 +89,7 @@ export class ExperimentAssignmentService {
     );
 
     // find working group for user
-    const userDoc = await this.userRepository.findOne({ id: userId });
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
 
     // adding experiment error when user is not defined
     if (!userDoc) {
@@ -143,7 +143,7 @@ export class ExperimentAssignmentService {
   ): Promise<IExperimentAssignment[]> {
     this.log.info(`Get all experiment for User Id ${userId}`);
     const usersData: any[] = await Promise.all([
-      this.experimentUserService.findOne(userId),
+      this.experimentUserService.getOriginalUserDoc(userId),
       this.previewUserService.findOne(userId),
     ]);
 
@@ -235,7 +235,7 @@ export class ExperimentAssignmentService {
       });
 
       const [userExcluded, groupExcluded] = await Promise.all([
-        this.explicitIndividualExclusionRepository.find({ userId }),
+        this.explicitIndividualExclusionRepository.find({ userId: experimentUser.id }),
         userGroup.length > 0 ? this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }) : [],
       ]);
 
@@ -266,11 +266,11 @@ export class ExperimentAssignmentService {
       // ============ query assignment/exclusion for user
       const allGroupIds: string[] = (experimentUser.workingGroup && Object.values(experimentUser.workingGroup)) || [];
       const promiseAssignmentExclusion: any[] = [
-        experimentIds.length > 0 ? this.individualAssignmentRepository.findAssignment(userId, experimentIds) : [],
+        experimentIds.length > 0 ? this.individualAssignmentRepository.findAssignment(experimentUser.id, experimentIds) : [],
         allGroupIds.length > 0 && experimentIds.length > 0
           ? this.groupAssignmentRepository.findExperiment(allGroupIds, experimentIds)
           : [],
-        experimentIds.length > 0 ? this.individualExclusionRepository.findExcluded(userId, experimentIds) : [],
+        experimentIds.length > 0 ? this.individualExclusionRepository.findExcluded(experimentUser.id, experimentIds) : [],
         allGroupIds.length > 0 && experimentIds.length > 0
           ? this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds)
           : [],
@@ -385,7 +385,7 @@ export class ExperimentAssignmentService {
 
     const promiseArray = [];
     // get user document
-    promiseArray.push(this.experimentUserService.findOne(userId));
+    promiseArray.push(this.experimentUserService.getOriginalUserDoc(userId));
     promiseArray.push(this.metricRepository.findByIds(stringIds));
     promiseArray.push(this.settingService.getClientCheck());
 
@@ -440,18 +440,19 @@ export class ExperimentAssignmentService {
     // return log data
   }
 
-  public clientFailedExperimentPoint(
+  public async clientFailedExperimentPoint(
     reason: string,
     experimentPoint: string,
     userId: string,
     experimentId: string
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({
       experimentPoint,
       experimentId,
-      userId,
+      userId: userDoc.id,
       reason,
     });
     return this.errorRepository.saveRawJson(error);
