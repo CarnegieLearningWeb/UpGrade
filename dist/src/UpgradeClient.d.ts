@@ -19,4 +19,5 @@ export default class UpgradeClient {
     failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint>;
     getAllFeatureFlags(): Promise<Interfaces.FeatureFlag[]>;
     log(key: string, value: any): Promise<Interfaces.ILog>;
+    setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUser[]>;
 }
