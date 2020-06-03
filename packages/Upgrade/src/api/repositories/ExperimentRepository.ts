@@ -9,7 +9,6 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
-      .leftJoinAndSelect('experiment.metrics', 'metrics')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
