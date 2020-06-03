@@ -52,7 +52,7 @@ export namespace Interfaces {
     key: string;
   }
 
-  interface IExperimentUser {
+  export interface IExperimentUser {
     createdAt: string;
     updatedAt: string;
     versionNumber: number;

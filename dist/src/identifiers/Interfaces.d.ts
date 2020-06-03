@@ -43,7 +43,7 @@ export declare namespace Interfaces {
         versionNumber: number;
         key: string;
     }
-    interface IExperimentUser {
+    export interface IExperimentUser {
         createdAt: string;
         updatedAt: string;
         versionNumber: number;

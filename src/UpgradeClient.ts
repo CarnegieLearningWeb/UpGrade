@@ -8,6 +8,7 @@ import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
+import setAltUserIds from './functions/setAltUserIds';
 
 export default class UpgradeClient {
     private static hostUrl: string;
@@ -20,6 +21,7 @@ export default class UpgradeClient {
         failedExperimentPoint: null,
         getAllFeatureFlag: null,
         log: null,
+        altUserIds: null,
     };
     private userId: string;
     // Use token if it is given in constructor
@@ -44,6 +46,7 @@ export default class UpgradeClient {
             failedExperimentPoint: `${url}/api/failed`,
             getAllFeatureFlag: `${url}/api/featureflag`,
             log: `${url}/api/log`,
+            altUserIds: `${url}/api/useraliases`
         }
     }
 
@@ -119,5 +122,10 @@ export default class UpgradeClient {
     async log(key: string, value: any): Promise<Interfaces.ILog> {
         this.validateClient();
         return await log(UpgradeClient.api.log, this.userId, this.token, key, value);
+    }
+
+    async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUser[]> {
+        this.validateClient();
+        return await setAltUserIds(UpgradeClient.api.altUserIds, this.userId, this.token, altUserIds);
     }
 }

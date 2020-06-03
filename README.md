@@ -8,9 +8,13 @@ UpgradeClient named class is exported from this library
 This is a static method to set host URL which can be accessed by  
 ```UpgradeClient.setHostUrl(url)```
 
-# Initialize User
+## Initialize User
 To initialize user call UpgradeClient constructor with userId  
 ``` const upClient = UpgradeClient('userId', 'token');```
+
+## setAltUserIds(altUserIds: string[])
+Set alternative user ids for current user  
+``` upClient.setAltUserIds(altUserIds)```
 
 ## setGroupMembership (group: Map<string, Array<string>>)
 Updates/Set the group membership of the initialized user  
