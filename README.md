@@ -47,6 +47,25 @@ Use this function to report failure with given reason
 Use this function to log data
 ```upClient.log(key, value)```
 
+## addMetrics(metrics: MetricUnit[])
+Use this function to add metrics in upgrade system
+Interface
+```
+interface MetricUnit {
+    key: string;
+    children: MetricUnit[];
+    operations: OPERATION_TYPES[];
+  }
+ enum OPERATION_TYPES {
+    SUM = "sum",
+    COUNT = "count",
+    AVERAGE = "avg",
+    MIN = "min",
+    MAX = "max"
+}
+upClient.addMetrics(metrics)
+```
+
 ## getAllFeatureFlags()
 Use this function to get feature flags list  
 ```upClient.getAllFeatureFlags()```  

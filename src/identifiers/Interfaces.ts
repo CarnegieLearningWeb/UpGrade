@@ -1,4 +1,4 @@
-import { SERVER_ERROR } from 'upgrade_types';
+import { SERVER_ERROR, OPERATION_TYPES } from 'upgrade_types';
 
 export namespace Interfaces {
   export interface IConfig {
@@ -45,7 +45,7 @@ export namespace Interfaces {
     user: IExperimentUser;
   }
 
-  interface IMetric {
+  export interface IMetric {
     createdAt: string;
     updatedAt: string;
     versionNumber: number;
@@ -59,6 +59,13 @@ export namespace Interfaces {
     id: string;
     group: object;
     workingGroup: object;
+  }
+
+  // TODO: Move to upgrade type
+  export interface MetricUnit {
+    key: string;
+    children: MetricUnit[];
+    operations: OPERATION_TYPES[];
   }
 
   // TODO: Move to upgrade type later
