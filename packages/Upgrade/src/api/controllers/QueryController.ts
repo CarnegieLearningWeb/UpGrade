@@ -2,6 +2,8 @@ import { Authorized, JsonController, Get, Post, Body } from 'routing-controllers
 import { QueryService } from '../services/QueryService';
 import { Query } from '../models/Query';
 import { QueryValidator } from './validators/QueryValidator';
+import { DataLogAnalysisValidator } from './validators/DataLogAnalysisValidator';
+import { DataLogService } from '../services/DataLogService';
 
 /**
  * @swagger
@@ -12,7 +14,7 @@ import { QueryValidator } from './validators/QueryValidator';
 @Authorized()
 @JsonController('/query')
 export class QueryController {
-  constructor(public queryService: QueryService) {}
+  constructor(public queryService: QueryService, public dataLogService: DataLogService) {}
 
   /**
    * @swagger
@@ -65,5 +67,38 @@ export class QueryController {
     queryValidator: QueryValidator
   ): Promise<Query> {
     return this.queryService.saveQuery(queryValidator.query, queryValidator.metric, queryValidator.experimentId);
+  }
+
+  /**
+   * @swagger
+   * /query/analyse:
+   *    post:
+   *       description: Data log analysis
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: params
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *               queryId:
+   *                 type: string
+   *           description: Data analysis
+   *       tags:
+   *         - Query
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get data analysis
+   */
+  @Post('/analyse')
+  public analyse(
+    @Body({ validate: { validationError: { target: true, value: true } } })
+    dataLogParams: DataLogAnalysisValidator
+  ): Promise<any> {
+    return this.queryService.analyse(dataLogParams.queryId);
   }
 }

@@ -38,23 +38,23 @@ export class LogRepository extends Repository<Log> {
 
   public async analysis(
     experimentId: string,
-    metric: string[],
+    metric: string,
     operationTypes: OPERATION_TYPES,
     timeRange: any
   ): Promise<any> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
-    const metricId = metric.join('_');
-    const metricString = metric.reduce((accumulator: string, value: string) => {
-      return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
-    }, '');
+    // const metricId = metric.split('_');
+    // const metricString = metric.reduce((accumulator: string, value: string) => {
+    //   return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
+    // }, '');
 
     // SUM operation
     return experimentRepo
       .createQueryBuilder('experiment')
       .select([
         '"individualAssignment"."conditionId"',
-        `${operationTypes}(cast(logs.data -> ${metricString} as decimal)) as result`,
+        `${operationTypes}(cast(logs.data -> ${metric} as decimal)) as result`,
       ])
       .innerJoin('experiment.metrics', 'metrics')
       .innerJoin('metrics.logs', 'logs')
@@ -63,7 +63,7 @@ export class LogRepository extends Repository<Log> {
         'individualAssignment',
         'experiment.id = "individualAssignment"."experimentId" AND logs."userId" = "individualAssignment"."userId"'
       )
-      .where('metrics.key = :metric', { metric: metricId })
+      .where('metrics.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
       .groupBy('"individualAssignment"."conditionId"')
       .getRawMany();
