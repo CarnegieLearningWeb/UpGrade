@@ -4,12 +4,16 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
+import { ExperimentService } from './ExperimentService';
+import { Experiment } from '../models/Experiment';
+import { Metric } from '../models/Metric';
 
 @Service()
 export class QueryService {
   constructor(
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private metricRepository: MetricRepository,
+    private experimentService: ExperimentService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -20,13 +24,19 @@ export class QueryService {
     });
   }
 
-  public async saveQuery(query: any, metric: string): Promise<Query | any> {
+  public async saveQuery(query: any, metric: string, experimentId: string): Promise<Query | any> {
     this.log.info('Save all query');
-    const metricDoc = this.metricRepository.findOne(metric);
+    const promiseResult = await Promise.all([
+      this.experimentService.findOne(experimentId),
+      this.metricRepository.findOne(metric),
+    ]);
+
+    const experiment: Experiment = promiseResult[0];
+    const metricDoc: Metric = promiseResult[1];
     const queryDoc: any = {
       query,
       metric: metricDoc,
-      experiments: [],
+      experiment,
     };
     return this.queryRepository.save(queryDoc);
   }

@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany, ManyToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentPartition } from './ExperimentPartition';
@@ -102,6 +102,6 @@ export class Experiment extends BaseModel {
   @Type(() => ExperimentPartition)
   public partitions: ExperimentPartition[];
 
-  @ManyToMany((type) => Query, (query) => query.experiments)
+  @OneToMany((type) => Query, (query) => query.experiment)
   public queries: Query[];
 }

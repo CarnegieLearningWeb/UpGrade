@@ -8,4 +8,8 @@ export class QueryValidator {
   @IsString()
   @IsDefined()
   public metric: string;
+
+  @IsString()
+  @IsDefined()
+  public experimentId: string;
 }

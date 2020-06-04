@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, ManyToMany, Column, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Metric } from './Metric';
 import { Experiment } from './Experiment';
@@ -14,9 +14,6 @@ export class Query extends BaseModel {
   @ManyToOne((type) => Metric)
   public metric: Metric;
 
-  @ManyToMany((type) => Experiment, (experiment) => experiment.queries)
-  @JoinTable({
-    name: 'query_experiments',
-  })
-  public experiments: Experiment[];
+  @ManyToOne((type) => Experiment, (experiment) => experiment.queries)
+  public experiment: Experiment;
 }
