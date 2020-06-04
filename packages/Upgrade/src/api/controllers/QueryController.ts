@@ -52,7 +52,7 @@ export class QueryController {
    *              experimentId:
    *                type: string
    *       tags:
-   *         - Experiment Point
+   *         - Query
    *       produces:
    *         - application/json
    *       responses:

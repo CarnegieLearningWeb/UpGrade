@@ -9,6 +9,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
+      .leftJoinAndSelect('experiment.queries', 'queries')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
@@ -30,6 +31,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.queries', 'queries')
       .where(
         new Brackets((qb) => {
           qb.where(
@@ -53,6 +55,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
+      .leftJoinAndSelect('experiment.queries', 'queries')
       .where(
         new Brackets((qb) => {
           qb.where(
