@@ -1,0 +1,75 @@
+.create-query-container {
+  min-height: 500px;
+  max-height: 500px;
+  overflow: auto;
+
+  table {
+    width: 100%;
+
+    .mat-cell {
+      position: relative;
+
+      &.mat-column-id {
+        width: 10%;
+      }
+
+      &.mat-column-metric {
+        width: 90%;
+      }
+    }
+
+    .mat-header-cell {
+      &.mat-column-metric {
+        padding-left: 20px;
+      }
+    }
+
+    .tree-view {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .node-tree {
+        max-height: 400px;
+        overflow: scroll;
+
+        &-invisible {
+          display: none;
+        }
+
+        ul,
+        li {
+          margin-top: 0;
+          margin-bottom: 0;
+          list-style-type: none;
+        }
+
+        .mat-tree-node {
+          min-height: 40px;
+        }
+      }
+
+      .key-name {
+        &:hover {
+          cursor: pointer;
+        }
+
+        &.node-selected {
+          color: var(--blue);
+        }
+      }
+    }
+
+    .form-control {
+      padding-top: 10px;
+
+      .input {
+        line-height: 20px;
+      }
+    }
+  }
+
+  .zero-state {
+    min-height: 250px;
+  }
+}

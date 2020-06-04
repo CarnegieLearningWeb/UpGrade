@@ -17,6 +17,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
+import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -81,6 +82,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(DeleteExperimentComponent, {
       panelClass: 'delete-modal',
       data: { experimentName: this.experiment.name, experimentId: this.experiment.id }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after deleting experiment
+    });
+  }
+
+  openQueriesModal() {
+    const dialogRef = this.dialog.open(QueriesModalComponent, {
+      panelClass: 'queries-modal',
+      data: { experimentId: this.experiment.id }
     });
 
     dialogRef.afterClosed().subscribe(result => {

@@ -1,0 +1,42 @@
+.queries-modal-container {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .query-view {
+    margin: 20px 0;
+    padding: 0 40px;
+
+    .query-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .search-input {
+        line-height: 20px;
+      }
+    }
+
+    .queries-table-container {
+      min-height: 500px;
+      max-height: 500px;
+      overflow: auto;
+
+      .table {
+        width: 100%;
+      }
+    }
+
+    .icon {
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .zero-state {
+      min-height: 200px;
+    }
+  }
+}

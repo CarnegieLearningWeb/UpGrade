@@ -1,0 +1,33 @@
+.queries-container {
+  .search-input {
+    line-height: 20px;
+  }
+
+  .queries-table-container {
+    overflow: auto;
+
+    table {
+      width: 100%;
+
+      .mat-cell {
+        position: relative;
+
+        &.mat-column-id {
+          width: 10%;
+        }
+
+        &.mat-column-metric {
+          width: 30%;
+        }
+
+        &.mat-column-operation {
+          width: 20%;
+        }
+      }
+
+      .icon:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}

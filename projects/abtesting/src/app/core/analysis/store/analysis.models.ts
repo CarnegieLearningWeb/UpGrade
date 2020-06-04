@@ -5,9 +5,20 @@ export {
   OPERATION_TYPES
 };
 
+export interface MetricUnit {
+  key: string;
+  children: MetricUnit[];
+}
+
 export interface AnalysisState {
-  isAnalysisLoading: boolean;
-  data: any
+  isMetricsLoading: boolean;
+  isQueriesLoading: boolean;
+  isQueryExecuting: boolean;
+  metrics: MetricUnit[];
+  metricsFilter: string;
+  queries: any[];
+  queriesFilter: string;
+  queryResult: any;
 }
 
 export interface State extends AppState {

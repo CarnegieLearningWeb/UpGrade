@@ -1,0 +1,104 @@
+<div
+  #metricsTable
+  class="create-query-container"
+>
+  <ng-container  *ngIf="allMetrics.data?.length; else zeroState">
+      <table mat-table [dataSource]="allMetrics">
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            {{ 'users.table.id.text' | translate }}
+          </th>
+          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
+        </ng-container>
+
+        <!-- Metric Column -->
+        <ng-container matColumnDef="metric">
+          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            Metric
+          </th>
+          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+            <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">
+              <button mat-icon-button (click)="setTreeForMetric(index)">
+                <mat-icon class="mat-icon-rtl-mirror">chevron_right</mat-icon>
+              </button>
+              <span>{{ element.key }}</span>
+            </ng-container>
+            <ng-template #metricTreeTemplate>
+              <div class="tree-view">
+                <mat-tree
+                  [dataSource]="nestedDataSource"
+                  [treeControl]="nestedTreeControl"
+                  class="node-tree mat-tree-position"
+                >
+                  <!-- Without Children -->
+                  <mat-tree-node *matTreeNodeDef="let node">
+                    <li class="mat-tree-node">
+                      <button mat-icon-button disabled></button>
+                      <span
+                        (click)="selectKey(node)"
+                        class="ft-14-600 key-name"
+                        [ngClass]="{'node-selected': selectedKey === node.key}"
+                      >{{ node.key }}</span>
+                    </li>
+                  </mat-tree-node>
+
+                  <!-- With Children -->
+                  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
+                    <li>
+                        <button mat-icon-button matTreeNodeToggle>
+                          <mat-icon class="mat-icon-rtl-mirror">
+                            {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                          </mat-icon>
+                        </button>
+                        <span (click)="selectKey(node)" class="ft-14-600 key-name">
+                          {{ node.key }}
+                        </span>
+                      <ul [class.node-tree-invisible]="!nestedTreeControl.isExpanded(node)">
+                        <ng-container matTreeNodeOutlet></ng-container>
+                      </ul>
+                    </li>
+                  </mat-nested-tree-node>
+                </mat-tree>
+
+                <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
+                  <mat-label>Operation</mat-label>
+                  <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
+                    <mat-option
+                      *ngFor="let operation of queryOperations"
+                      [value]="operation"
+                    >
+                      {{ operation }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <button
+                  mat-flat-button
+                  *ngIf="selectedKey"
+                  color="primary"
+                  class="ft-14-700 default-button"
+                  [ngClass]="{ 'default-button--disabled': !selectedKey || !selectedOperation }"
+                  [disabled]="!selectedKey || !selectedOperation"
+                  (click)="saveQuery()"
+                >
+                  <span>Save</span>
+                </button>
+              </div>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+  </ng-container>
+</div>
+
+<ng-template #zeroState>
+  <span
+    *ngIf="!(isAnalysisMetricsLoading$ | async)"
+    class="zero-state"
+    [innerHTML]="'analysis.no-metrics.text' | translate"
+  >
+  </span>
+</ng-template>

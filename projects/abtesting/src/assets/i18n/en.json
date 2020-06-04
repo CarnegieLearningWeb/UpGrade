@@ -219,5 +219,10 @@
   "feature-flags.new-flag-overview-stepper.text": "Overview",
   "feature-flags.new-flag-variations-stepper.text": "Variations",
   "feature-flags.view-flag.variation-type.text": "Variation Type",
-  "feature-flags.view-flag.table-flag-variations.text": "Flag Variations"
+  "feature-flags.view-flag.table-flag-variations.text": "Flag Variations",
+  "analysis.subtitle.text": "View experiment analysis here",
+  "analysis.metrics-tabs.text": "Metrics",
+  "analysis.no-metrics.text": "No Metrics",
+  "analysis.queries-tabs.text": "Queries",
+  "analysis.no-queries-tabs.text": "No Queries"
 }

@@ -1,0 +1,15 @@
+<mat-card class="tabs-container">
+  <h1 class="ft-32-700 title">{{ 'global.analysis.title' | translate }}</h1>
+  <span class="ft-16-400 subtitle" [innerHTML]="'analysis.subtitle.text' | translate"></span>
+
+  <mat-card class="tabs-wrapper">
+    <mat-tab-group disableRipple="true">
+      <mat-tab [label]="'analysis.metrics-tabs.text' | translate">
+        <analysis-metrics></analysis-metrics>
+      </mat-tab>
+      <mat-tab [label]="'analysis.queries-tabs.text' | translate">
+        <analysis-queries></analysis-queries>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</mat-card>

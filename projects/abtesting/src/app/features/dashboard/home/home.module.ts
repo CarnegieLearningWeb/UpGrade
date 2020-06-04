@@ -23,6 +23,9 @@ import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 import { DeleteExperimentComponent } from './components/modal/delete-experiment/delete-experiment.component';
 import { TableRowComponent } from './components/table-row/table-row.component';
+import { QueriesModalComponent } from './components/modal/queries-modal/queries-modal.component';
+import { CreateQueryComponent } from './components/create-query/create-query.component';
+import { QueryResultComponent } from './components/modal/query-result/query-result.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +44,9 @@ import { TableRowComponent } from './components/table-row/table-row.component';
     ExperimentPostConditionComponent,
     DeleteExperimentComponent,
     TableRowComponent,
+    QueriesModalComponent,
+    CreateQueryComponent,
+    QueryResultComponent,
   ],
   imports: [
     CommonModule,
@@ -58,6 +64,8 @@ import { TableRowComponent } from './components/table-row/table-row.component';
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
     DeleteExperimentComponent,
+    QueriesModalComponent,
+    QueryResultComponent
   ]
 })
 export class HomeModule {}

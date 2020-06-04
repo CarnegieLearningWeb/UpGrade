@@ -30,7 +30,9 @@
 @import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
 @import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
-@import './app/features/dashboard/analysis/analysis-root/analysis-root.theme.scss';
+@import './app/features/dashboard/analysis/components/queries/queries.theme.scss';
+@import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
+@import './app/features/dashboard/home/components/modal/query-result/query-result.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -54,7 +56,9 @@
   @include new-flag-component-theme($theme);
   @include flag-variations-component-theme($theme);
   @include view-feature-flag-component-theme($theme);
-  @include analysis-root-component-theme($theme);
+  @include queries-component-theme($theme);
+  @include queries-modal-component-theme($theme);
+  @include query-result-component-theme($theme);
 }
 
 .light-theme {
@@ -91,7 +95,9 @@
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
-.new-user-modal {
+.new-user-modal,
+.queries-modal,
+.query-result {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
@@ -114,7 +120,13 @@
   min-height: 294px;
 }
 
-.new-experiment-modal {
+.query-result {
+  width: 600px;
+  min-height: 300px;
+}
+
+.new-experiment-modal,
+.queries-modal {
   width: 900px;
 }
 
