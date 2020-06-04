@@ -12,6 +12,8 @@ import {
 export interface MetricUnit {
   key: string;
   children: MetricUnit[];
+  metadata: { type: string };
+  allowedData: string[];
 }
 
 export class ExperimentInput {

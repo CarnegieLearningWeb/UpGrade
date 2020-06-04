@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
-import { Metric } from '../models/Metric';
+import { Metric, METRIC_TYPE } from '../models/Metric';
 import { MetricUnit } from '../../types/ExperimentInput';
 import { SERVER_ERROR } from 'upgrade_types';
 import { SettingService } from './SettingService';
@@ -34,7 +34,9 @@ export class MetricService {
     // create query for metrics
     const keyArray = this.metricJsonToDocument(metrics);
     const metricDoc: any[] = keyArray.map((metric) => ({
-      key: metric,
+      key: metric.key,
+      type: metric.type,
+      allowedData: metric.allowedData,
     }));
     return this.metricRepository.save(metricDoc);
   }
@@ -44,14 +46,20 @@ export class MetricService {
     return setting.toFilterMetric;
   }
 
-  private metricJsonToDocument(metricUnitArray: MetricUnit[]): string[] {
-    const keyArray = [];
+  private metricJsonToDocument(
+    metricUnitArray: MetricUnit[]
+  ): Array<{ key: string; type: METRIC_TYPE; allowedData: string[] }> {
+    const keyArrayAndMeta = [];
 
     function returnKeyArray(metricUnit: MetricUnit, keyName: string): void {
       if (metricUnit.children.length === 0) {
         // exit condition
         const leafPath = keyName === '' ? metricUnit.key : `${keyName}${METRICS_JOIN_TEXT}${metricUnit.key}`;
-        keyArray.push(leafPath);
+        keyArrayAndMeta.push({
+          key: leafPath,
+          type: metricUnit.metadata.type === 'categorical' ? METRIC_TYPE.CATEGORICAL : METRIC_TYPE.CONTINUOUS,
+          allowedData: metricUnit.allowedData,
+        });
         return;
       }
 
@@ -65,7 +73,7 @@ export class MetricService {
       return returnKeyArray(metricUnit, '');
     });
 
-    return keyArray;
+    return keyArrayAndMeta;
   }
 
   private metricDocumentToJson(metrics: Metric[]): MetricUnit[] {
@@ -88,6 +96,8 @@ export class MetricService {
           const newMetric = {
             key,
             children: [],
+            metadata: { type: metric.type },
+            allowedData: metric.allowedData,
           };
           metricPointer.push(newMetric);
 
