@@ -66,7 +66,10 @@ export declare enum UserRole {
 export declare enum OPERATION_TYPES {
     SUM = "sum",
     COUNT = "count",
-    AVERAGE = "avg",
     MIN = "min",
-    MAX = "max"
+    MAX = "max",
+    AVERAGE = "avg",
+    MODE = "mode",
+    MEDIAN = "median",
+    STDEV = "stddev"
 }
