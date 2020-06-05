@@ -90,6 +90,11 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
+  test('Log Sum', async (done) => {
+    await LogSum();
+    done();
+  });
+
   test('Support Get Assignments', async (done) => {
     await GetAssignments();
     done();
@@ -327,11 +332,6 @@ describe('Integration Tests', () => {
     await CreateLog();
     done();
   });
-
-  // test('Log Sum', async (done) => {
-  //   await LogSum();
-  //   done();
-  // });
 
   test('Query CRUD operation', async (done) => {
     await QueryCRUD();

@@ -11,7 +11,7 @@ export class Query extends BaseModel {
   @Column('jsonb')
   public query: any;
 
-  @ManyToOne((type) => Metric)
+  @ManyToOne((type) => Metric, (metric) => metric.key)
   public metric: Metric;
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.queries)

@@ -48,11 +48,12 @@ export class QueryService {
     const query = await this.queryRepository.findOne(queryId, {
       relations: ['metric', 'experiment'],
     });
+
     // convert metric json into string
     return await this.logRepository.analysis(
       query.experiment.id,
       query.metric.key,
-      query.query.operationTypes,
+      query.query.operationType,
       query as any
     );
   }

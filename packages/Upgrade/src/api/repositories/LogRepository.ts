@@ -4,6 +4,7 @@ import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { OPERATION_TYPES } from 'upgrade_types';
+import { METRICS_JOIN_TEXT } from '../services/MetricService';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -39,31 +40,32 @@ export class LogRepository extends Repository<Log> {
   public async analysis(
     experimentId: string,
     metric: string,
-    operationTypes: OPERATION_TYPES,
+    operationType: OPERATION_TYPES,
     timeRange: any
   ): Promise<any> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
-    // const metricId = metric.split('_');
-    // const metricString = metric.reduce((accumulator: string, value: string) => {
-    //   return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
-    // }, '');
+    const metricId = metric.split(METRICS_JOIN_TEXT);
+    const metricString = metricId.reduce((accumulator: string, value: string) => {
+      return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
+    }, '');
 
     // SUM operation
     return experimentRepo
       .createQueryBuilder('experiment')
       .select([
         '"individualAssignment"."conditionId"',
-        `${operationTypes}(cast(logs.data -> ${metric} as decimal)) as result`,
+        `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
       ])
-      .innerJoin('experiment.metrics', 'metrics')
-      .innerJoin('metrics.logs', 'logs')
+      .innerJoin('experiment.queries', 'queries')
+      .innerJoin('queries.metric', 'metric')
+      .innerJoin('metric.logs', 'logs')
       .innerJoin(
         IndividualAssignment,
         'individualAssignment',
         'experiment.id = "individualAssignment"."experimentId" AND logs."userId" = "individualAssignment"."userId"'
       )
-      .where('metrics.key = :metric', { metric })
+      .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
       .groupBy('"individualAssignment"."conditionId"')
       .getRawMany();

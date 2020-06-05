@@ -12,6 +12,9 @@ import { EXPERIMENT_STATE, OPERATION_TYPES } from 'upgrade_types';
 import { getAllExperimentCondition } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { DataLogService } from '../../../../src/api/services/DataLogService';
+import { MetricService } from '../../../../src/api/services/MetricService';
+import { SettingService } from '../../../../src/api/services/SettingService';
+import { QueryService } from '../../../../src/api/services/QueryService';
 
 export default async function CreateLog(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -19,6 +22,9 @@ export default async function CreateLog(): Promise<void> {
   const experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
+  const metricService = Container.get<MetricService>(MetricService);
+  const settingService = Container.get<SettingService>(SettingService);
+  const queryService = Container.get<QueryService>(QueryService);
   const logRepository = getRepository(Log);
   const logDataService = Container.get<DataLogService>(DataLogService);
 
@@ -26,77 +32,133 @@ export default async function CreateLog(): Promise<void> {
 
   // create experiment
   await experimentService.create(experimentObject as any, user);
-  // let experiments = await experimentService.find();
-  // expect(experiments).toEqual(
-  //   expect.arrayContaining([
-  //     expect.objectContaining({
-  //       name: experimentObject.name,
-  //       state: experimentObject.state,
-  //       postExperimentRule: experimentObject.postExperimentRule,
-  //       assignmentUnit: experimentObject.assignmentUnit,
-  //       consistencyRule: experimentObject.consistencyRule,
-  //     }),
-  //   ])
-  // );
+  let experiments = await experimentService.find();
+  expect(experiments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        name: experimentObject.name,
+        state: experimentObject.state,
+        postExperimentRule: experimentObject.postExperimentRule,
+        assignmentUnit: experimentObject.assignmentUnit,
+        consistencyRule: experimentObject.consistencyRule,
+      }),
+    ])
+  );
 
-  // const experimentName = experimentObject.partitions[0].expId;
-  // const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].expId;
+  const experimentPoint = experimentObject.partitions[0].expPoint;
 
-  // let totalMetrics = await metricRepository.count();
-  // expect(totalMetrics).toEqual(3);
+  await settingService.setClientCheck(false, true);
 
-  // // change experiment state to enrolling
-  // // change experiment status to Enrolling
-  // const experimentId = experiments[0].id;
-  // await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  const metricUnit = [
+    {
+      key: 'time',
+      children: [],
+      metadata: {
+        type: 'continuous',
+      },
+      allowedData: [],
+    },
+    {
+      key: 'w',
+      children: [
+        {
+          key: 'time',
+          children: [],
+          metadata: {
+            type: 'continuous',
+          },
+          allowedData: [],
+        },
+        {
+          key: 'completion',
+          children: [],
+          metadata: {
+            type: 'categorical',
+          },
+          allowedData: ['InProgress', 'Complete'],
+        },
+      ],
+    },
+  ];
 
-  // // fetch experiment
-  // experiments = await experimentService.find();
-  // expect(experiments).toEqual(
-  //   expect.arrayContaining([
-  //     expect.objectContaining({
-  //       name: experimentObject.name,
-  //       state: EXPERIMENT_STATE.ENROLLING,
-  //       postExperimentRule: experimentObject.postExperimentRule,
-  //       assignmentUnit: experimentObject.assignmentUnit,
-  //       consistencyRule: experimentObject.consistencyRule,
-  //     }),
-  //   ])
-  // );
+  await metricService.saveAllMetrics(metricUnit as any);
 
-  // // get all experiment condition for user 1
-  // let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
-  // checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  const findMetric = await metricRepository.find();
+  expect(findMetric.length).toEqual(3);
 
-  // // get all experiment condition for user 2
-  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
-  // checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  // change experiment status to Enrolling
+  const experimentId = experiments[0].id;
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
-  // // get all experiment condition for user 3
-  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
-  // checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  // fetch experiment
+  experiments = await experimentService.find();
+  expect(experiments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        name: experimentObject.name,
+        state: EXPERIMENT_STATE.ENROLLING,
+        postExperimentRule: experimentObject.postExperimentRule,
+        assignmentUnit: experimentObject.assignmentUnit,
+        consistencyRule: experimentObject.consistencyRule,
+      }),
+    ])
+  );
 
-  // // get all experiment condition for user 4
-  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
-  // checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  // get all experiment condition for user 1
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // // log data here
-  // await experimentAssignmentService.dataLog(
-  //   experimentUsers[0].id,
-  //   JSON.stringify({
-  //     time: 20,
-  //     w: { time: 0, completion: 100 },
-  //   })
-  // );
+  // get all experiment condition for user 2
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // await experimentAssignmentService.dataLog(experimentUsers[1].id, { time: 200, w: { time: 20, completion: 100 } });
+  // get all experiment condition for user 3
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // await experimentAssignmentService.dataLog(experimentUsers[2].id, { time: 100, w: { time: 40, completion: 100 } });
+  // get all experiment condition for user 4
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 100 } });
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUsers[0].id, {
+    time: 20,
+    w: { time: 0, completion: 100 },
+  });
 
-  // let data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.SUM, '');
-  // console.log('Sum time', data);
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, { time: 200, w: { time: 20, completion: 100 } });
+
+  await experimentAssignmentService.dataLog(experimentUsers[2].id, { time: 100, w: { time: 40, completion: 100 } });
+
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 100 } });
+
+  const query = {
+    query: {
+      operationType: OPERATION_TYPES.SUM,
+    },
+    metric: 'time',
+    experimentId: experiments[0].id,
+  };
+
+  await queryService.saveQuery(query.query, query.metric, query.experimentId);
+
+  const allQuery = await queryService.find();
+  expect(allQuery).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        query: { operationType: 'sum' },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: [],
+        }),
+      }),
+    ])
+  );
+
+  let data = await queryService.analyse(allQuery[0].id);
+  console.log('Sum time', data);
   // data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.COUNT, '');
   // console.log('Count time', data);
   // data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.AVERAGE, '');
