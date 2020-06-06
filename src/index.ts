@@ -10,6 +10,7 @@ import {
   EXPERIMENT_SORT_AS,
   UserRole,
   OPERATION_TYPES,
+  IMetricMetaData
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -19,6 +20,7 @@ import {
   IExperimentSortParams,
   AuditLogData,
   IExperimentDateStat,
+  IMetricUnit
 } from './Experiment/interfaces';
 
 export {
@@ -40,4 +42,6 @@ export {
   UserRole,
   IExperimentDateStat,
   OPERATION_TYPES,
+  IMetricMetaData,
+  IMetricUnit
 };

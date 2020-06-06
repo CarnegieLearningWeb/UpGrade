@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OPERATION_TYPES = exports.UserRole = exports.EXPERIMENT_SORT_AS = exports.EXPERIMENT_SORT_KEY = exports.EXPERIMENT_SEARCH_KEY = exports.EXPERIMENT_LOG_TYPE = exports.SERVER_ERROR = exports.EXPERIMENT_STATE = exports.POST_EXPERIMENT_RULE = exports.ASSIGNMENT_UNIT = exports.CONSISTENCY_RULE = void 0;
+exports.IMetricMetaData = exports.OPERATION_TYPES = exports.UserRole = exports.EXPERIMENT_SORT_AS = exports.EXPERIMENT_SORT_KEY = exports.EXPERIMENT_SEARCH_KEY = exports.EXPERIMENT_LOG_TYPE = exports.SERVER_ERROR = exports.EXPERIMENT_STATE = exports.POST_EXPERIMENT_RULE = exports.ASSIGNMENT_UNIT = exports.CONSISTENCY_RULE = void 0;
 const enums_1 = require("./Experiment/enums");
 Object.defineProperty(exports, "CONSISTENCY_RULE", { enumerable: true, get: function () { return enums_1.CONSISTENCY_RULE; } });
 Object.defineProperty(exports, "ASSIGNMENT_UNIT", { enumerable: true, get: function () { return enums_1.ASSIGNMENT_UNIT; } });
@@ -13,4 +13,5 @@ Object.defineProperty(exports, "EXPERIMENT_SORT_KEY", { enumerable: true, get: f
 Object.defineProperty(exports, "EXPERIMENT_SORT_AS", { enumerable: true, get: function () { return enums_1.EXPERIMENT_SORT_AS; } });
 Object.defineProperty(exports, "UserRole", { enumerable: true, get: function () { return enums_1.UserRole; } });
 Object.defineProperty(exports, "OPERATION_TYPES", { enumerable: true, get: function () { return enums_1.OPERATION_TYPES; } });
+Object.defineProperty(exports, "IMetricMetaData", { enumerable: true, get: function () { return enums_1.IMetricMetaData; } });
 //# sourceMappingURL=index.js.map
