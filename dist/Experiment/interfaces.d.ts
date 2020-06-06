@@ -1,4 +1,4 @@
-import { EXPERIMENT_STATE, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS } from './enums';
+import { EXPERIMENT_STATE, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_AS, IMetricMetaData } from './enums';
 export interface IEnrollmentCompleteCondition {
     userCount: number;
     groupCount: number;
@@ -68,5 +68,13 @@ export interface IExperimentDateStat {
     conditionId: string;
     partitionIds: string[];
     createdAt: any;
+}
+export interface IMetricUnit {
+    key: string | string[];
+    children?: IMetricUnit[];
+    metadata?: {
+        type: IMetricMetaData;
+    };
+    allowedData?: string[];
 }
 export {};

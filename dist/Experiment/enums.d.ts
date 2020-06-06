@@ -73,3 +73,7 @@ export declare enum OPERATION_TYPES {
     MEDIAN = "median",
     STDEV = "stddev"
 }
+export declare enum IMetricMetaData {
+    CONTINUOUS = "continuous",
+    CATEGORICAL = "categorical"
+}
