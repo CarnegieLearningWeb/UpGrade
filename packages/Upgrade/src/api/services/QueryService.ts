@@ -50,11 +50,6 @@ export class QueryService {
     });
 
     // convert metric json into string
-    return await this.logRepository.analysis(
-      query.experiment.id,
-      query.metric.key,
-      query.query.operationType,
-      query as any
-    );
+    return await this.logRepository.analysis(query);
   }
 }
