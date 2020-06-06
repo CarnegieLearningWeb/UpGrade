@@ -18,6 +18,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
+import * as uuid from 'uuid';
 
 @Component({
   selector: 'home-experiment-design',
@@ -217,7 +218,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             (condition, index) => {
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition })
-                : ({ ...condition, name: ''});
+                : ({ id: uuid.v4(), ...condition, name: ''});
             }
           );
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(

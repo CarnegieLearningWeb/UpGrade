@@ -3,6 +3,7 @@ import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '
 import { BehaviorSubject } from 'rxjs';
 import { NewFlagDialogData, FeatureFlag, NewFlagDialogEvents, NewFlagPaths, VariationTypes } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
+import * as uuid from 'uuid';
 
 @Component({
   selector: 'feature-flag-variations',
@@ -133,7 +134,7 @@ export class FlagVariationsComponent implements OnChanges {
               }
               return this.flagInfo
                 ? ({ ...this.flagInfo.variations[index], ...variation })
-                : ({ ...variation });
+                : ({ id: uuid.v4(), ...variation });
             }
           );
           this.emitFlagDialogEvent.emit({
