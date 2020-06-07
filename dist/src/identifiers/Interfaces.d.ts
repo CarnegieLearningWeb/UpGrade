@@ -1,4 +1,4 @@
-import { SERVER_ERROR, OPERATION_TYPES } from 'upgrade_types';
+import { SERVER_ERROR, IMetricMetaData } from 'upgrade_types';
 export declare namespace Interfaces {
     interface IConfig {
         hostURL: string;
@@ -38,10 +38,9 @@ export declare namespace Interfaces {
         user: IExperimentUser;
     }
     interface IMetric {
-        createdAt: string;
-        updatedAt: string;
-        versionNumber: number;
         key: string;
+        type: IMetricMetaData;
+        allowedData: string[];
     }
     interface IExperimentUser {
         createdAt: string;
@@ -50,11 +49,6 @@ export declare namespace Interfaces {
         id: string;
         group: object;
         workingGroup: object;
-    }
-    interface MetricUnit {
-        key: string;
-        children: MetricUnit[];
-        operations: OPERATION_TYPES[];
     }
     interface FlagVariation {
         createdAt: string;

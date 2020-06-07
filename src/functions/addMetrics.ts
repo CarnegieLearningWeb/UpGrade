@@ -1,15 +1,20 @@
 import { Types, Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
+import { IMetricUnit } from 'upgrade_types';
 
 export default async function addMetrics(
   url: string,
   token: string,
-  metrics: Interfaces.MetricUnit[]
+  metrics: IMetricUnit[]
 ): Promise<Interfaces.IMetric[]> {
   try {
     const response = await fetchDataService(url, token, { metricUnit: metrics }, Types.REQUEST_TYPES.POST);
     if (response.status) {
       if (Array.isArray(response.data)) {
+        response.data =  response.data.map(metric => {
+          const { createdAt, updatedAt, versionNumber, ...rest } = metric;
+          return rest;
+        });
         return response.data;
       }
       // If type is not array then it is an error
