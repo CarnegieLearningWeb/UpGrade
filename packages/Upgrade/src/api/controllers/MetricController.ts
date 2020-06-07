@@ -1,6 +1,6 @@
 import { Authorized, JsonController, Get } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
-import { MetricUnit } from '../../types/ExperimentInput';
+import { IMetricUnit } from 'upgrade_types';
 
 /**
  * @swagger
@@ -27,7 +27,7 @@ export class MetricController {
    *            description: Get all Metrics
    */
   @Get()
-  public getAllMetrics(): Promise<MetricUnit[]> {
+  public getAllMetrics(): Promise<IMetricUnit[]> {
     return this.metricService.getAllMetrics();
   }
 }

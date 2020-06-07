@@ -2,9 +2,8 @@ import { Service } from 'typedi';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
-import { Metric, METRIC_TYPE } from '../models/Metric';
-import { MetricUnit } from '../../types/ExperimentInput';
-import { SERVER_ERROR } from 'upgrade_types';
+import { Metric } from '../models/Metric';
+import { SERVER_ERROR, IMetricUnit, IMetricMetaData } from 'upgrade_types';
 import { SettingService } from './SettingService';
 
 export const METRICS_JOIN_TEXT = '@__@';
@@ -17,14 +16,14 @@ export class MetricService {
     public settingService: SettingService
   ) {}
 
-  public async getAllMetrics(): Promise<MetricUnit[]> {
+  public async getAllMetrics(): Promise<IMetricUnit[]> {
     this.log.info('Get all metrics');
     // check permission for metrics
     const metricData = await this.metricRepository.find();
     return this.metricDocumentToJson(metricData);
   }
 
-  public async saveAllMetrics(metrics: MetricUnit[]): Promise<MetricUnit[]> {
+  public async saveAllMetrics(metrics: IMetricUnit[]): Promise<IMetricUnit[]> {
     this.log.info('Save all metrics');
     // check permission for metrics
     const isAllowed = await this.checkMetricsPermission();
@@ -47,25 +46,45 @@ export class MetricService {
   }
 
   private metricJsonToDocument(
-    metricUnitArray: MetricUnit[]
-  ): Array<{ key: string; type: METRIC_TYPE; allowedData: string[] }> {
+    metricUnitArray: IMetricUnit[]
+  ): Array<{ key: string; type: IMetricMetaData; allowedData: string[] }> {
     const keyArrayAndMeta = [];
 
-    function returnKeyArray(metricUnit: MetricUnit, keyName: string): void {
+    function returnKeyArray(metricUnit: IMetricUnit, keyName: string): void {
+      if (!metricUnit.children) {
+        metricUnit.children = [];
+      }
+
       if (metricUnit.children.length === 0) {
         // exit condition
-        const leafPath = keyName === '' ? metricUnit.key : `${keyName}${METRICS_JOIN_TEXT}${metricUnit.key}`;
-        keyArrayAndMeta.push({
-          key: leafPath,
-          type: metricUnit.metadata.type === 'categorical' ? METRIC_TYPE.CATEGORICAL : METRIC_TYPE.CONTINUOUS,
-          allowedData: metricUnit.allowedData,
+        let keys = [];
+        if (typeof metricUnit.key === 'string') {
+          keys = [metricUnit.key];
+        } else if (Array.isArray(metricUnit.key)) {
+          keys = metricUnit.key;
+        }
+        keys.forEach(key => {
+          const leafPath = keyName === '' ? key : `${keyName}${METRICS_JOIN_TEXT}${key}`;
+          keyArrayAndMeta.push({
+            key: leafPath,
+            type: metricUnit.metadata && metricUnit.metadata.type || IMetricMetaData.CONTINUOUS,
+            allowedData: metricUnit.allowedData,
+          });
         });
         return;
       }
 
       metricUnit.children.forEach((unit) => {
-        const newKey = keyName === '' ? metricUnit.key : `${keyName}${METRICS_JOIN_TEXT}${metricUnit.key}`;
-        return `${returnKeyArray(unit, newKey)}`;
+        let keys = [];
+        if (typeof metricUnit.key === 'string') {
+          keys = [metricUnit.key];
+        } else if (Array.isArray(metricUnit.key)) {
+          keys = metricUnit.key;
+        }
+        keys.forEach(key => {
+          const newKey = keyName === '' ? key : `${keyName}${METRICS_JOIN_TEXT}${key}`;
+          return `${returnKeyArray(unit, newKey as any)}`;
+        });
       });
     }
 
@@ -76,8 +95,8 @@ export class MetricService {
     return keyArrayAndMeta;
   }
 
-  private metricDocumentToJson(metrics: Metric[]): MetricUnit[] {
-    const metricUnitArray: MetricUnit[] = [];
+  private metricDocumentToJson(metrics: Metric[]): IMetricUnit[] {
+    const metricUnitArray: IMetricUnit[] = [];
 
     metrics.forEach((metric) => {
       const keyArray = metric.key.split(METRICS_JOIN_TEXT);
@@ -96,7 +115,7 @@ export class MetricService {
           const newMetric = {
             key,
             children: [],
-            metadata: { type: metric.type },
+            metadata: { type: metric.type as any },
             allowedData: metric.allowedData,
           };
           metricPointer.push(newMetric);

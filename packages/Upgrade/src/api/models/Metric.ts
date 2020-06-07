@@ -1,11 +1,7 @@
 import { BaseModel } from './base/BaseModel';
 import { Entity, PrimaryColumn, ManyToMany, JoinTable, Column } from 'typeorm';
 import { Log } from './Log';
-
-export enum METRIC_TYPE {
-  CONTINUOUS = 'continuous',
-  CATEGORICAL = 'categorical',
-}
+import { IMetricMetaData } from 'upgrade_types';
 
 @Entity()
 export class Metric extends BaseModel {
@@ -14,10 +10,10 @@ export class Metric extends BaseModel {
 
   @Column({
     type: 'enum',
-    enum: METRIC_TYPE,
-    default: METRIC_TYPE.CONTINUOUS,
+    enum: IMetricMetaData,
+    default: IMetricMetaData.CONTINUOUS,
   })
-  public type: METRIC_TYPE;
+  public type: IMetricMetaData;
 
   @Column({ type: 'simple-array', nullable: true })
   public allowedData: string[];
