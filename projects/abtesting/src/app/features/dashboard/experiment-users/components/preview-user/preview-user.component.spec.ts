@@ -1,6 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PreviewUserComponent } from './preview-user.component';
+import { TestingModule } from '../../../../../../testing/testing.module';
+import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 describe('PreviewUserComponent', () => {
   let component: PreviewUserComponent;
@@ -8,7 +12,9 @@ describe('PreviewUserComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PreviewUserComponent ]
+      declarations: [ PreviewUserComponent ],
+      imports: [TestingModule],
+      providers: [PreviewUsersService, ExperimentService, AuthService]
     })
     .compileComponents();
   }));

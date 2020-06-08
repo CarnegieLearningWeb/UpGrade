@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TableRowComponent } from './table-row.component';
+import { TestingModule } from '../../../../../../testing/testing.module';
+import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-partition-table/enrollment-point-partition-table.component';
 
 describe('TableRowComponent', () => {
   let component: TableRowComponent;
@@ -8,7 +10,8 @@ describe('TableRowComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TableRowComponent ]
+      declarations: [ TableRowComponent, EnrollmentPointPartitionTableComponent ],
+      imports: [TestingModule]
     })
     .compileComponents();
   }));

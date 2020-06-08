@@ -18,12 +18,6 @@ describe('LocalStorageService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('testLocalStorage should be executable', () => {
-    spyOn(service, 'testLocalStorage');
-    service.testLocalStorage();
-    expect(service.testLocalStorage).toHaveBeenCalled();
-  });
-
   it('should get, set, and remove the item', () => {
     service.setItem('TEST', 'item');
     expect(service.getItem('TEST')).toBe('item');
