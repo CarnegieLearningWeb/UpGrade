@@ -19,10 +19,14 @@ export class QueryService {
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public find(): Promise<Query[]> {
+  public async find(): Promise<Query[]> {
     this.log.info('Find all query');
-    return this.queryRepository.find({
-      relations: ['metric'],
+    const queries = await this.queryRepository.find({
+      relations: ['metric', 'experiment'],
+    });
+    return queries.map(query => {
+      const { experiment, ...rest } = query;
+      return { ...rest, experiment: { id: experiment.id, name: experiment.name } } as any;
     });
   }
 

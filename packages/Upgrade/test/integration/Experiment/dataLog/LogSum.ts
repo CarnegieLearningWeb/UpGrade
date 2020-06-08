@@ -316,41 +316,54 @@ export default async function CreateLog(): Promise<void> {
 
   // Test results
   allQuery.forEach( async (query) => {
-    let res;
+    const queryResult = await queryService.analyse(query.id);
+    const res = reduceResult(queryResult);
+    let expectedValue;
     // Used for console output
     const consoleString = query.metric.key === 'time' ? query.query.operationType + ' ' : query.query.operationType + ' deep';
+
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        const sum = res.reduce((accu, data) => {
+          return accu + data;
+        }, 0);
+        expectedValue = 420;
+        if (query.metric.key !== 'time') {
+          expectedValue = 1500; // For completion metric
+        }
+        expect(sum).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.MIN:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        const minValue = Math.min(...res);
+        expectedValue = 20;
+        if (query.metric.key !== 'time') {
+          expectedValue = 100; // For completion metric
+        }
+        expect(minValue).toEqual(expectedValue);
         break;
       case OPERATION_TYPES.MAX:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        const maxValue = Math.max(...res);
+        expectedValue = 200;
+        if (query.metric.key !== 'time') {
+          expectedValue = 500; // For completion metric
+        }
+        expect(maxValue).toEqual(expectedValue);
         break;
+      // Can not check exact values for below operations
       case OPERATION_TYPES.COUNT:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        console.log(consoleString, queryResult);
         break;
       case OPERATION_TYPES.AVERAGE:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        console.log(consoleString, queryResult);
         break;
       case OPERATION_TYPES.MODE:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        console.log(consoleString, queryResult);
         break;
       case OPERATION_TYPES.MEDIAN:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        console.log(consoleString, queryResult);
         break;
       case OPERATION_TYPES.STDEV:
-        res = await queryService.analyse(query.id);
-        console.log(consoleString, res);
+        console.log(consoleString, queryResult);
         break;
       default:
         break;
@@ -366,4 +379,12 @@ function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId:
     metric,
     experimentId,
   };
+}
+
+function reduceResult(result: any): number[] {
+  const resultSet = [];
+  result.forEach(data => {
+    resultSet.push(parseInt(data.result, 10));
+  });
+  return resultSet;
 }
