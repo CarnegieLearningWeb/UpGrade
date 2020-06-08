@@ -1,5 +1,5 @@
 import { Interfaces } from './identifiers';
-import { IExperimentAssignment } from 'upgrade_types';
+import { IExperimentAssignment, IMetricUnit } from 'upgrade_types';
 export default class UpgradeClient {
     private static hostUrl;
     private static api;
@@ -20,4 +20,5 @@ export default class UpgradeClient {
     getAllFeatureFlags(): Promise<Interfaces.FeatureFlag[]>;
     log(key: string, value: any): Promise<Interfaces.ILog>;
     setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUser[]>;
+    addMetrics(metrics: IMetricUnit[]): Promise<Interfaces.IMetric[]>;
 }

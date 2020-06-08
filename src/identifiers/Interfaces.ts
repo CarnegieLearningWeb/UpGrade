@@ -1,4 +1,4 @@
-import { SERVER_ERROR } from 'upgrade_types';
+import { SERVER_ERROR, IMetricMetaData } from 'upgrade_types';
 
 export namespace Interfaces {
   export interface IConfig {
@@ -45,11 +45,10 @@ export namespace Interfaces {
     user: IExperimentUser;
   }
 
-  interface IMetric {
-    createdAt: string;
-    updatedAt: string;
-    versionNumber: number;
+  export interface IMetric {
     key: string;
+    type: IMetricMetaData,
+    allowedData: string[]
   }
 
   export interface IExperimentUser {

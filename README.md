@@ -47,6 +47,25 @@ Use this function to report failure with given reason
 Use this function to log data
 ```upClient.log(key, value)```
 
+## addMetrics(metrics: IMetricUnit[])
+Use this function to add metrics in upgrade system
+Interface
+```
+interface IMetricUnit {
+    key: string | string[];
+    children?: IMetricUnit[];
+    metadata?: {
+        type: IMetricMetaData;
+    };
+    allowedData?: string[];
+  }
+enum IMetricMetaData {
+  CONTINUOUS = 'continuous',
+  CATEGORICAL = 'categorical'
+}
+upClient.addMetrics(metrics)
+```
+
 ## getAllFeatureFlags()
 Use this function to get feature flags list  
 ```upClient.getAllFeatureFlags()```  
