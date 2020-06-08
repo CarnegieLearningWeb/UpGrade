@@ -32,7 +32,7 @@
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 @import './app/features/dashboard/analysis/components/queries/queries.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
-@import './app/features/dashboard/home/components/modal/query-result/query-result.theme.scss';
+@import './app/shared/components/query-result/query-result.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);

@@ -36,6 +36,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissionsSub: Subscription;
   experiment: ExperimentVM;
   experimentSub: Subscription;
+
+  // If Experiment is not loaded
+  expIdRouterSub: Subscription;
+  expByIdSub: Subscription;
   displayedConditionColumns: string[] = ['no', 'twoCharacterId', 'conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['no', 'twoCharacterId', 'partitionPoint', 'partitionId'];
 
@@ -55,6 +59,19 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       .subscribe(experiment => {
         this.experiment = experiment;
       });
+
+    // If experiment is not loaded
+    this.expIdRouterSub = this.experimentService.selectExperimentIdFromRouter$.pipe(
+      filter(expId => !!expId)
+    ).subscribe(expId => {
+        this.selectExpById(expId);
+    });
+  }
+
+  selectExpById(expId: string) {
+    this.expByIdSub = this.experimentService.selectExperimentById(expId).subscribe(exp => {
+      this.experiment = exp;
+    });
   }
 
   openDialog(dialogType: DialogType) {
@@ -111,6 +128,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+    this.expIdRouterSub.unsubscribe();
+    if (this.expByIdSub) {
+      this.expByIdSub.unsubscribe();
+    }
   }
 
   get ExperimentState() {

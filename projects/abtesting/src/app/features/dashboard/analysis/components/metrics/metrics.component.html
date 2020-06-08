@@ -21,7 +21,7 @@
           <!-- ID Column -->
           <ng-container matColumnDef="id">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'users.table.id.text' | translate }}
+              {{ 'query.table-id.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
           </ng-container>
@@ -29,7 +29,7 @@
           <!-- Metric Column -->
           <ng-container matColumnDef="metric">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Metric
+              {{ 'query.table-metric.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">
@@ -83,7 +83,7 @@
     <span
       *ngIf="!(isAnalysisMetricsLoading$ | async)"
       class="zero-state"
-      [innerHTML]="'analysis.no-metrics.text' | translate"
+      [innerHTML]="'global.no-metrics.text' | translate"
     >
     </span>
   </ng-template>

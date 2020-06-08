@@ -36,6 +36,8 @@ import { TruncatePipe } from './pipes/truncate.pipe';
 import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
+import { OperationPipe } from './pipes/operation.pipe';
+import { QueryResultComponent } from './components/query-result/query-result.component';
 
 @NgModule({
   imports: [
@@ -72,7 +74,15 @@ import { ScrollDirective } from './directives/scroll.directive';
     MatAutocompleteModule,
     MatTreeModule,
   ],
-  declarations: [SharedIconsComponent, TruncatePipe, ExperimentStatePipe, ScrollDirective, FormatDatePipe],
+  declarations: [
+    SharedIconsComponent,
+    TruncatePipe,
+    ExperimentStatePipe,
+    ScrollDirective,
+    FormatDatePipe,
+    OperationPipe,
+    QueryResultComponent
+  ],
   exports: [
     CommonModule,
     FormsModule,
@@ -113,7 +123,10 @@ import { ScrollDirective } from './directives/scroll.directive';
     TruncatePipe,
     ExperimentStatePipe,
     FormatDatePipe,
-    ScrollDirective
-  ]
+    ScrollDirective,
+    OperationPipe,
+    QueryResultComponent
+  ],
+  entryComponents: [QueryResultComponent]
 })
 export class SharedModule {}

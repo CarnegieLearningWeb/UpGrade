@@ -25,7 +25,7 @@ import { DeleteExperimentComponent } from './components/modal/delete-experiment/
 import { TableRowComponent } from './components/table-row/table-row.component';
 import { QueriesModalComponent } from './components/modal/queries-modal/queries-modal.component';
 import { CreateQueryComponent } from './components/create-query/create-query.component';
-import { QueryResultComponent } from './components/modal/query-result/query-result.component';
+import { OperationPipe } from '../../../shared/pipes/operation.pipe';
 
 @NgModule({
   declarations: [
@@ -46,7 +46,6 @@ import { QueryResultComponent } from './components/modal/query-result/query-resu
     TableRowComponent,
     QueriesModalComponent,
     CreateQueryComponent,
-    QueryResultComponent,
   ],
   imports: [
     CommonModule,
@@ -58,14 +57,13 @@ import { QueryResultComponent } from './components/modal/query-result/query-resu
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
   ],
-  providers: [],
+  providers: [OperationPipe],
   entryComponents: [
     NewExperimentComponent,
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
     DeleteExperimentComponent,
-    QueriesModalComponent,
-    QueryResultComponent
+    QueriesModalComponent
   ]
 })
 export class HomeModule {}

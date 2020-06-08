@@ -23,7 +23,8 @@ import {
   selectExperimentContext,
   selectExperimentGraphInfo,
   selectSkipExperiment,
-  selectTotalExperiment
+  selectTotalExperiment,
+  selectExperimentIdFromRouter
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -51,6 +52,7 @@ export class ExperimentService {
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   experimentContext$ = this.store$.pipe(select(selectExperimentContext));
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
+  selectExperimentIdFromRouter$ = this.store$.pipe(select(selectExperimentIdFromRouter));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(

@@ -1,7 +1,9 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource, MatDialog } from '@angular/material';
+import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
+import { QueryResultComponent } from '../../../../../shared/components/query-result/query-result.component';
 
 @Component({
   selector: 'analysis-queries',
@@ -11,7 +13,7 @@ import { MatTableDataSource } from '@angular/material';
 })
 export class QueriesComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  displayedColumns = ['id', 'metric', 'operation', 'execute'];
+  displayedColumns = ['id', 'experimentName', 'metric', 'operation', 'execute'];
 
   // Used for displaying metrics
   allQueries: any;
@@ -19,10 +21,10 @@ export class QueriesComponent implements OnInit, AfterViewInit, OnDestroy {
   isAnalysisQueriesLoading$ = this.analysisService.isQueriesLoading$;
 
   @ViewChild('queriesTable', { static: false }) metricsTable: ElementRef;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
 
   constructor(
     private analysisService: AnalysisService,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit() {
@@ -36,9 +38,15 @@ export class QueriesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.analysisService.setQueriesFilterValue(filterValue);
   }
 
-  executeQuery(query) {
-    console.log('Query', query);
-    this.analysisService.executeQuery(query);
+  executeQuery(query: any) {
+    const dialogRef = this.dialog.open(QueryResultComponent, {
+      panelClass: 'query-result',
+      data: { experiment: null, query }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after deleting experiment
+    });
   }
 
   ngAfterViewInit() {
@@ -50,5 +58,9 @@ export class QueriesComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.analysisService.setQueriesFilterValue(null);
     this.allQueriesSub.unsubscribe();
+  }
+
+  get METRICS_JOIN_TEXT() {
+    return METRICS_JOIN_TEXT;
   }
 }

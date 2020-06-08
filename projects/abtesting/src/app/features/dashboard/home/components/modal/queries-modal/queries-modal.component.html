@@ -1,12 +1,13 @@
 <div class="queries-modal-container">
-  <span class="ft-24-700 title">Queries</span>
+  <span class="ft-24-700 title">{{ 'global.queries-tabs.text' | translate }}</span>
   <div class="query-view">
     <div class="query-actions">
       <mat-form-field>
         <input
           class="ft-16-400 search-input"
+          [(ngModel)]="searchInput"
           matInput
-          (keyup)="applyFilter($event.target.value)"
+          (keyup)="applyFilter()"
           [placeholder]="'global.search.text' | translate"
         />
         <mat-icon matSuffix>search</mat-icon>
@@ -19,7 +20,7 @@
         *ngIf="!createQueryMode; else closeCreateQueryMode"
       >
         <mat-icon>add</mat-icon>
-        <span>Create Query</span>
+        <span>{{ 'home.query.create-query.text' | translate }}</span>
       </button>
       <ng-template #closeCreateQueryMode>
         <button
@@ -29,7 +30,7 @@
           (click)="setCreateQueryMode()"
         >
           <mat-icon style="margin-right: 5px">list</mat-icon>
-          <span>Query List</span>
+          <span>{{ 'home.query.query-list.text' | translate }}</span>
         </button>
       </ng-template>
     </div>
@@ -43,7 +44,7 @@
           <!-- ID Column -->
           <ng-container matColumnDef="id">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'users.table.id.text' | translate }}
+              {{ 'query.table-id.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
           </ng-container>
@@ -51,27 +52,27 @@
           <!-- Metric Column -->
           <ng-container matColumnDef="metric">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Metric
+              {{ 'query.table-metric.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span>{{ element.metric?.key?.split('@__@').join(' ') }}</span>
+              <span>{{ element.metric?.key?.split(METRICS_JOIN_TEXT).join(' ') }}</span>
             </td>
           </ng-container>
 
           <!-- operation Column -->
           <ng-container matColumnDef="operation">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Operation
+              {{ 'query.table-operation.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span>{{ element.query?.operationType }}</span>
+              <span>{{ element.query?.operationType | operationType }}</span>
             </td>
           </ng-container>
 
           <!-- Execute Column -->
           <ng-container matColumnDef="execute">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Execute
+              {{ 'query.table-execute.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <mat-icon
@@ -94,7 +95,7 @@
     <ng-template #zeroState>
       <span
         class="zero-state"
-        [innerHTML]="'analysis.no-queries-tabs.text' | translate"
+        [innerHTML]="'global.no-queries-tabs.text' | translate"
       >
       </span>
     </ng-template>

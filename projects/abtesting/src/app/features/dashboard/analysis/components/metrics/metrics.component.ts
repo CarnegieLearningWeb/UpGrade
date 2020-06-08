@@ -28,7 +28,6 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedMetricIndex = null;
 
   @ViewChild('metricsTable', { static: false }) metricsTable: ElementRef;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
 
   constructor(
     private analysisService: AnalysisService,

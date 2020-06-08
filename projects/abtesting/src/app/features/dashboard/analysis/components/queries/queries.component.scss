@@ -9,15 +9,29 @@
     table {
       width: 100%;
 
+      .experiment-link {
+        color: unset;
+      }
+
+      .mat-header-cell {
+        padding-right: 10px;
+      }
+
       .mat-cell {
         position: relative;
+        padding-right: 10px;
 
-        &.mat-column-id {
+        &.mat-column-id,
+        &.mat-column-execute {
           width: 10%;
         }
 
         &.mat-column-metric {
-          width: 30%;
+          width: 35%;
+        }
+
+        &.mat-column-experimentName {
+          width: 25%;
         }
 
         &.mat-column-operation {

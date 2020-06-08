@@ -5,6 +5,8 @@ export {
   OPERATION_TYPES
 };
 
+export const METRICS_JOIN_TEXT = '@__@';
+
 export interface MetricUnit {
   key: string;
   children: MetricUnit[];

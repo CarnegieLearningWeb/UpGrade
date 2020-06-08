@@ -21,6 +21,11 @@ export const selectAllExperiment = createSelector(
     )
 );
 
+export const selectExperimentIdFromRouter = createSelector(
+  selectRouterState,
+  ({ state: { params } }) => params.experimentId || null
+);
+
 export const selectIsLoadingExperiment = createSelector(
   selectExperimentState,
   state => state.isLoadingExperiment

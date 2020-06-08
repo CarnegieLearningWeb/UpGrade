@@ -26,6 +26,15 @@
 
       .table {
         width: 100%;
+
+        .mat-column-id,
+        .mat-column-execute {
+          width: 15%;
+        }
+
+        .mat-column-operation {
+          width: 20%;
+        }
       }
     }
 
