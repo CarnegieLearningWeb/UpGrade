@@ -1,6 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DashboardRootComponent } from './dashboard-root.component';
+import { TestingModule } from '../../../../testing/testing.module';
+import { SettingsService } from '../../../core/settings/settings.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 describe('DashboardRootComponent', () => {
   let component: DashboardRootComponent;
@@ -8,7 +11,9 @@ describe('DashboardRootComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DashboardRootComponent ]
+      declarations: [ DashboardRootComponent ],
+      imports: [TestingModule],
+      providers: [SettingsService, AuthService]
     })
     .compileComponents();
   }));

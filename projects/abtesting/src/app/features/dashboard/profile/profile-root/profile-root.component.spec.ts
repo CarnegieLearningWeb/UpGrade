@@ -1,6 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileRootComponent } from './profile-root.component';
+import { TestingModule } from '../../../../../testing/testing.module';
+import { UsersService } from '../../../../core/users/users.service';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { SettingsService } from '../../../../core/settings/settings.service';
 
 describe('ProfileRootComponent', () => {
   let component: ProfileRootComponent;
@@ -8,7 +12,9 @@ describe('ProfileRootComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileRootComponent ]
+      declarations: [ ProfileRootComponent ],
+      imports: [TestingModule],
+      providers: [UsersService, AuthService, SettingsService]
     })
     .compileComponents();
   }));
