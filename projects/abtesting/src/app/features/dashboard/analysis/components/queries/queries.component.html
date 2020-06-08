@@ -32,9 +32,7 @@
               {{ 'query.table-experiment.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <a class="experiment-link" [routerLink]="['/home','detail', element.experiment.id]" routerLinkActive="router-link-active" >
-                {{ element.experiment?.name || '' }}
-              </a>
+              {{ element.experiment?.name || '' }}
             </td>
           </ng-container>
 
