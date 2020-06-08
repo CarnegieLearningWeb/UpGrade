@@ -1,0 +1,48 @@
+
+<div class="query-result-container">
+  <span class="ft-24-700 title">Query Result</span>
+  <div class="query-result-view">
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="isQueryExecuting$ | async"
+    ></mat-progress-bar>
+    <mat-table *ngIf="(queryResult$ | async)?.length" [dataSource]="queryResult$ | async" class="table">
+      <!-- Number Column -->
+      <ng-container matColumnDef="no">
+        <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+          {{ 'global.number.text' | translate }}
+        </mat-header-cell>
+        <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
+      </ng-container>
+
+      <!-- 'Condition Code' Column -->
+      <ng-container matColumnDef="conditionCode">
+        <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+          Condition Code
+        </mat-header-cell>
+        <mat-cell class="ft-12-600" *matCellDef="let data">
+          {{ getConditionName(data.conditionId) }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Result Column -->
+      <ng-container matColumnDef="result">
+        <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+          Result
+        </mat-header-cell>
+        <mat-cell class="ft-12-600" *matCellDef="let data">
+          {{ data.result }}
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedConditionColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
+    </mat-table>
+  </div>
+
+  <div class="button-container">
+    <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+  </div>
+</div>

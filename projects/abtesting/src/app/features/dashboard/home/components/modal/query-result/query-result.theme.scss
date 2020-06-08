@@ -1,11 +1,10 @@
 @import '~@angular/material/theming';
 
-@mixin analysis-root-component-theme($theme) {
+@mixin query-result-component-theme($theme) {
   $background: map-get($theme, background);
 
-  .analysis-container {
-    .analysis-view,
-    .no-experiment-container {
+  .query-result-container {
+    .title {
       box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
     }
   }

@@ -1,35 +1,35 @@
 import { createAction, props } from '@ngrx/store';
 
-import { ThemeOptions } from './settings.model';
+import { ThemeOptions, SettingParams } from './settings.model';
 
 export const actionChangeTheme = createAction(
   '[Settings] Change Theme',
   props<{ theme: ThemeOptions }>()
 );
 
-export const actionGetToCheckAuth = createAction(
-  '[Settings] Get To Check Auth',
+export const actionGetSetting = createAction(
+  '[Settings] Get Setting',
 );
 
-export const actionGetToCheckAuthSuccess = createAction(
-  '[Settings] Get To Check Auth Success',
-  props<{ toCheckAuth: boolean }>()
+export const actionGetSettingSuccess = createAction(
+  '[Settings] Get Setting Success',
+  props<{ setting: SettingParams }>()
 );
 
-export const actionGetToCheckAuthFailure = createAction(
-  '[Settings] Get To Check Auth Failure',
+export const actionGetSettingFailure = createAction(
+  '[Settings] Get Setting Failure',
 );
 
-export const actionSetToCheckAuth = createAction(
-  '[Settings] Set To Check Auth',
-  props<{ toCheckAuth: boolean }>()
+export const actionSetSetting = createAction(
+  '[Settings] Set Setting',
+  props<{ setting: SettingParams }>()
 );
 
-export const actionSetToCheckAuthSuccess = createAction(
-  '[Settings] Set To Check Auth Success',
-  props<{ toCheckAuth: boolean }>()
+export const actionSetSettingSuccess = createAction(
+  '[Settings] Set Setting Success',
+  props<{ setting: boolean }>()
 );
 
-export const actionSetToCheckAuthFailure = createAction(
-  '[Settings] Set To Check Auth Failure',
+export const actionSetSettingFailure = createAction(
+  '[Settings] Set Setting Failure',
 );

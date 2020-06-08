@@ -42,6 +42,10 @@ $font-size-small: 15px;
             height: 40px;
             color: var(--blue);
 
+            &--query {
+              width: auto;
+            }
+
             .icon {
               margin-right: 3px;
               vertical-align: unset;

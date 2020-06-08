@@ -58,17 +58,4 @@
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-post-condition>
   </mat-step>
-
-  <mat-step>
-    <ng-template matStepLabel>
-      <span class="step-label ft-18-400">
-        {{ 'global.metrics.text' | translate }}
-      </span>
-    </ng-template>
-    <home-experiment-metric
-      [experimentInfo]="experimentInfo"
-      (emitExperimentDialogEvent)="getExperimentData($event)"
-    >
-    </home-experiment-metric>
-  </mat-step>
 </mat-horizontal-stepper>

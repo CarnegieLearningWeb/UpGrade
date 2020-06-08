@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreeNodeDialogComponent } from './tree-node-dialog.component';
+import { MetricsComponent } from './metrics.component';
 
-describe('TreeNodeDialogComponent', () => {
-  let component: TreeNodeDialogComponent;
-  let fixture: ComponentFixture<TreeNodeDialogComponent>;
+describe('MetricsComponent', () => {
+  let component: MetricsComponent;
+  let fixture: ComponentFixture<MetricsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TreeNodeDialogComponent ]
+      declarations: [ MetricsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TreeNodeDialogComponent);
+    fixture = TestBed.createComponent(MetricsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

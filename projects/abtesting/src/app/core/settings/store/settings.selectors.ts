@@ -20,3 +20,8 @@ export const selectToCheckAuth = createSelector(
   selectSettings,
   state => state.toCheckAuth
 )
+
+export const selectToFilterMetric = createSelector(
+  selectSettings,
+  state => state.toFilterMetric
+)

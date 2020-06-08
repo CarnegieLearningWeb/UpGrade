@@ -1,31 +1,71 @@
-import { createReducer, on, Action } from '@ngrx/store';
-import * as AnalysisActions from './analysis.actions';
+import { createReducer, Action, on } from '@ngrx/store';
 import { AnalysisState } from './analysis.models';
+import * as AnalysisActions from './analysis.actions';
 
 export const initialState: AnalysisState = {
-  isAnalysisLoading: false,
-  data: null,
+  isMetricsLoading: false,
+  isQueriesLoading: false,
+  isQueryExecuting: false,
+  metrics: [],
+  metricsFilter: null,
+  queries: [],
+  queriesFilter: null,
+  queryResult: null
 };
 
 const reducer = createReducer(
   initialState,
   on(
-    AnalysisActions.actionFetchAnalysis,
-    (state => ({ ...state, isAnalysisLoading: true }))
+    AnalysisActions.actionFetchMetrics,
+    (state) => ({ ...state, isMetricsLoading: true })
   ),
   on(
-    AnalysisActions.actionFetchAnalysisSuccess,
-    (state, { data }) => {
-      return { ...state, data, isAnalysisLoading: false }
-    }
+    AnalysisActions.actionFetchMetricsSuccess,
+    (state, { metrics }) => ({ ...state, metrics, isMetricsLoading: false })
   ),
   on(
-    AnalysisActions.actionFetchAnalysisFailure,
-    (state => ({ ...state, isAnalysisLoading: false }))
+    AnalysisActions.actionFetchMetricsFailure,
+    (state) => ({ ...state, isMetricsLoading: false })
   ),
   on(
-    AnalysisActions.actionSetData,
-    (state, { data }) => ({ ...state, data })
+    AnalysisActions.actionFetchQueries,
+    (state) => ({ ...state, isQueriesLoading: true })
+  ),
+  on(
+    AnalysisActions.actionFetchQueriesSuccess,
+    (state, { queries }) => ({ ...state, queries, isQueriesLoading: false })
+  ),
+  on(
+    AnalysisActions.actionFetchQueriesFailure,
+    (state) => ({ ...state, isQueriesLoading: false })
+  ),
+  on(
+    AnalysisActions.actionSetMetricsFilterValue,
+    (state, { filterString }) => ({ ...state, metricsFilter: filterString })
+  ),
+  on(
+    AnalysisActions.actionSetQueriesFilterValue,
+    (state, { filterString }) => ({ ...state, queriesFilter: filterString })
+  ),
+  on(
+    AnalysisActions.actionExecuteQuery,
+    (state) => ({ ...state, isQueryExecuting: true })
+  ),
+  on(
+    AnalysisActions.actionExecuteQuerySuccess,
+    (state, { queryResult }) => ({ ...state, queryResult, isQueryExecuting: false })
+  ),
+  on(
+    AnalysisActions.actionExecuteQueryFailure,
+    (state) => ({ ...state, isQueryExecuting: false })
+  ),
+  on(
+    AnalysisActions.actionSaveQuerySuccess,
+    (state, { query }) => ({ ...state, queries: [ ...state.queries, query ] })
+  ),
+  on(
+    AnalysisActions.actionSetQueryResult,
+    (state, { queryResult }) => ({ ...state, queryResult })
   ),
 );
 

@@ -1,0 +1,76 @@
+<div class="queries-container">
+  <mat-form-field>
+    <input
+      class="ft-16-400 search-input"
+      matInput
+      (keyup)="applyFilter($event.target.value)"
+      [placeholder]="'global.search.text' | translate"
+    />
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+  <mat-progress-bar
+    mode="indeterminate"
+    *ngIf="isAnalysisQueriesLoading$ | async"
+  ></mat-progress-bar>
+  <div
+    #queriesTable
+    class="queries-table-container"
+  >
+    <ng-container  *ngIf="allQueries.data?.length; else zeroState">
+        <table mat-table [dataSource]="allQueries">
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'users.table.id.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
+          </ng-container>
+
+          <!-- Metric Column -->
+          <ng-container matColumnDef="metric">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              Metric
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span>{{ element.metric.key?.split('@__@').join(' ') }}</span>
+            </td>
+          </ng-container>
+
+          <!-- operation Column -->
+          <ng-container matColumnDef="operation">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              Operation
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span>{{ element.query?.operationType }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Execute Column -->
+          <ng-container matColumnDef="execute">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              Execute
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                class="icon"
+                (click)="executeQuery(element)"
+              >send</mat-icon>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+    </ng-container>
+  </div>
+
+  <ng-template #zeroState>
+    <span
+      *ngIf="!(isAnalysisQueriesLoading$ | async)"
+      class="zero-state"
+      [innerHTML]="'analysis.no-queries-tabs.text' | translate"
+    >
+    </span>
+  </ng-template>
+</div>

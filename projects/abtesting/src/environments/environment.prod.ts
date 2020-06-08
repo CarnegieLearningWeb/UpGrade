@@ -35,7 +35,9 @@ export const environment = {
     featureFlag: `${endpointApi}/flags`,
     updateFlagStatus: `${endpointApi}/flags/status`,
     getPaginatedFlags: `${endpointApi}/flags/paginated`,
-    toCheckAuth: `${endpointApi}/setting`,
-    fetchAnalysis: `${endpointApi}/datalog/analyse`
+    setting: `${endpointApi}/setting`,
+    metrics: `${endpointApi}/metric`,
+    query: `${endpointApi}/query`,
+    queryResult: `${endpointApi}/query/analyse`
   }
 };

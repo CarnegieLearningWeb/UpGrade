@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
+import { selectMetrics, selectQueries, selectIsMetricsLoading, selectIsQueriesLoading, selectQueryResult, selectIsQueryExecuting } from './store/analysis.selectors';
 import * as AnalysisActions from './store/analysis.actions';
-import { selectIsAnalysisLoading, selectAnalysisData } from './store/analysis.selectors';
-import { IQueryBuilder } from './store/analysis.models';
 
 @Injectable()
 export class AnalysisService {
@@ -12,14 +11,30 @@ export class AnalysisService {
     private store$: Store<AppState>
   ) {}
 
-  isAnalysisDataLoading$ = this.store$.pipe(select(selectIsAnalysisLoading));
-  analysisData$ = this.store$.pipe(select(selectAnalysisData));
+  isMetricsLoading$ = this.store$.pipe(select(selectIsMetricsLoading));
+  isQueriesLoading$ = this.store$.pipe(select(selectIsQueriesLoading));
+  isQueryExecuting$ = this.store$.pipe(select(selectIsQueryExecuting));
+  allMetrics$ = this.store$.pipe(select(selectMetrics));
+  allQueries$ = this.store$.pipe(select(selectQueries));
+  queryResult$ = this.store$.pipe(select(selectQueryResult));
 
-  fetchExperimentAnalysis(query: IQueryBuilder) {
-    this.store$.dispatch(AnalysisActions.actionFetchAnalysis({ query }));
+  setMetricsFilterValue(filterString: string) {
+    this.store$.dispatch(AnalysisActions.actionSetMetricsFilterValue({ filterString }));
   }
 
-  setData(data: any) {
-    this.store$.dispatch(AnalysisActions.actionSetData(data));
+  setQueriesFilterValue(filterString: string) {
+    this.store$.dispatch(AnalysisActions.actionSetQueriesFilterValue({ filterString }));
+  }
+
+  executeQuery(queryId: string) {
+    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryId }));
+  }
+
+  saveQuery(query: any) {
+    this.store$.dispatch(AnalysisActions.actionSaveQuery({ query }));
+  }
+
+  setQueryResult(queryResult: any) {
+    this.store$.dispatch(AnalysisActions.actionSetQueryResult({ queryResult }));
   }
 }

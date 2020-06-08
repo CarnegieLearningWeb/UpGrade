@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MetricModalComponent } from './metric-modal.component';
+import { QueriesModalComponent } from './queries-modal.component';
 
-describe('MetricModalComponent', () => {
-  let component: MetricModalComponent;
-  let fixture: ComponentFixture<MetricModalComponent>;
+describe('QueriesModalComponent', () => {
+  let component: QueriesModalComponent;
+  let fixture: ComponentFixture<QueriesModalComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MetricModalComponent ]
+      declarations: [ QueriesModalComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MetricModalComponent);
+    fixture = TestBed.createComponent(QueriesModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

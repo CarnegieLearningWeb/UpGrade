@@ -69,26 +69,39 @@ export class SettingsEffects {
     { dispatch: false }
   );
 
-  getToCheckAuth$ = createEffect(
+  getSetting$ = createEffect(
     () => this.actions$.pipe(
-      ofType(SettingsActions.actionGetToCheckAuth),
+      ofType(SettingsActions.actionGetSetting),
       switchMap(() => {
         return this.settingsDataService.getSettings().pipe(
-          map((data: any) => SettingsActions.actionGetToCheckAuthSuccess({ toCheckAuth: data.toCheck })),
-          catchError(() => [SettingsActions.actionGetToCheckAuthFailure()])
+          map((data: any) => SettingsActions.actionGetSettingSuccess({ setting: data })),
+          catchError(() => [SettingsActions.actionGetSettingFailure()])
         )
       })
     )
   );
 
-  setToCheckAuth$ = createEffect(
+  setSetting$ = createEffect(
     () => this.actions$.pipe(
-      ofType(SettingsActions.actionSetToCheckAuth),
-      map(action => action.toCheckAuth),
-      switchMap((toCheckAuth) => {
-        return this.settingsDataService.setSettings(toCheckAuth).pipe(
-          map((data: any) => SettingsActions.actionSetToCheckAuthSuccess({ toCheckAuth: data.toCheck })),
-          catchError(() => [SettingsActions.actionSetToCheckAuthFailure()])
+      ofType(SettingsActions.actionSetSetting),
+      map(action => action.setting),
+      switchMap(({ toCheckAuth, toFilterMetric }) => {
+        let settingParams: any = {};
+        if (toCheckAuth !== undefined) {
+          settingParams = {
+            ...settingParams,
+            toCheckAuth
+          }
+        }
+        if (toFilterMetric !== undefined) {
+          settingParams = {
+            ...settingParams,
+            toFilterMetric
+          }
+        }
+        return this.settingsDataService.setSettings(settingParams).pipe(
+          map((data: any) => SettingsActions.actionSetSettingSuccess({ setting: data })),
+          catchError(() => [SettingsActions.actionSetSettingFailure()])
         )
       })
     )

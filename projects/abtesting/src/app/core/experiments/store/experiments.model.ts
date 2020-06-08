@@ -45,8 +45,7 @@ export enum NewExperimentPaths {
   EXPERIMENT_OVERVIEW = 'Experiment Overview',
   EXPERIMENT_DESIGN = 'Experiment Design',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
-  POST_EXPERIMENT_RULE = 'Post Experiment Rule',
-  METRIC = 'Metric'
+  POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
 
 export interface NewExperimentDialogData {
@@ -111,11 +110,6 @@ export interface ExperimentNameVM {
   name: string;
 }
 
-export interface MetricUnit {
-  key: string;
-  children: MetricUnit[];
-}
-
 export interface Experiment {
   id: string;
   name: string;
@@ -135,7 +129,7 @@ export interface Experiment {
   group: string;
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
-  metrics: MetricUnit[];
+  queries: any[];
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;

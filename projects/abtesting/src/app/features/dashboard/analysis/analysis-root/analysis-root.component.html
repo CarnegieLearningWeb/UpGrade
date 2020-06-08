@@ -1,27 +1,15 @@
-<mat-card class="analysis-container">
-  <h1 class="title ft-32-700">{{ 'global.analysis.title' | translate }}</h1>
-  <span
-    class="subtitle ft-16-400"
-    [innerHTML]="'analysis.subtitle.text' | translate"
-  ></span>
+<mat-card class="tabs-container">
+  <h1 class="ft-32-700 title">{{ 'global.analysis.title' | translate }}</h1>
+  <span class="ft-16-400 subtitle" [innerHTML]="'analysis.subtitle.text' | translate"></span>
 
-  <ng-container *ngIf="isLoadingExperiments$ | async; else loadingExperimentState">
-    <mat-card class="analysis-view" *ngIf="(experiments$ | async).length; else noExperimentTemplate">
-      <experiment-analysis></experiment-analysis>
-    </mat-card>
-    <ng-template #noExperimentTemplate>
-      <mat-card class="no-experiment-container">
-        <span
-          class="text ft-24-600"
-          [innerHTML]="'analysis.zero-experiment.text' | translate"
-        ></span>
-      </mat-card>
-    </ng-template>
-  </ng-container>
+  <mat-card class="tabs-wrapper">
+    <mat-tab-group disableRipple="true">
+      <mat-tab [label]="'analysis.metrics-tabs.text' | translate">
+        <analysis-metrics></analysis-metrics>
+      </mat-tab>
+      <mat-tab [label]="'analysis.queries-tabs.text' | translate">
+        <analysis-queries></analysis-queries>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
 </mat-card>
-
-<ng-template #loadingExperimentState>
-  <div class="loading-container">
-    <mat-spinner diameter="60"></mat-spinner>
-  </div>
-</ng-template>

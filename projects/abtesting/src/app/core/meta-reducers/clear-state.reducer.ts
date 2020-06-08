@@ -7,7 +7,8 @@ export function clearState(reducer) {
     if (action.type === AuthActions.actionLogoutSuccess.type) {
       const settingState: SettingsState = {
         theme: state.settings.theme,
-        toCheckAuth: false
+        toCheckAuth: null,
+        toFilterMetric: null
       };
 
       state = {
