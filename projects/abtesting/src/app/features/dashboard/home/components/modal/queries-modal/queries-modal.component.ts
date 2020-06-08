@@ -22,6 +22,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   createQueryMode = false;
   experimentQueries = [];
   searchInput = null;
+  isExperimentLoading$ = this.experimentService.isLoadingExperiment$;
   constructor(
     private experimentService: ExperimentService,
     private analysisService: AnalysisService,

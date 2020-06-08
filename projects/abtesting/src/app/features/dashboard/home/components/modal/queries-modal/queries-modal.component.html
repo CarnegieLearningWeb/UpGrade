@@ -35,6 +35,10 @@
       </ng-template>
     </div>
 
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="isExperimentLoading$ | async"
+    ></mat-progress-bar>
     <div
       class="queries-table-container"
       *ngIf="!createQueryMode; else createQueryTemplate"

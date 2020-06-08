@@ -186,7 +186,7 @@
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
           <mat-chip-list>
-            <ng-container *ngFor="let tag of experiment.tags; let tagIndex = index">
+            <ng-container *ngFor="let tag of experiment?.tags; let tagIndex = index">
               <mat-chip
                 *ngIf="tagIndex < 2; else moreTagsTemplate"
                 class="chip ft-12-600"
@@ -205,7 +205,7 @@
               </ng-template>
             </ng-container>
             <mat-chip
-              *ngIf="experiment.tags.length > 2 && !isAllChipsVisible(experiment.id, 'tagsVisibility')"
+              *ngIf="experiment.tags?.length > 2 && !isAllChipsVisible(experiment.id, 'tagsVisibility')"
               class="chip ft-12-600"
               (click)="setChipsVisible(experiment.id, 'tagsVisibility')"
             >
