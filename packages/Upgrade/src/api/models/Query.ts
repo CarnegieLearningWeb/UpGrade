@@ -14,6 +14,6 @@ export class Query extends BaseModel {
   @ManyToOne((type) => Metric, (metric) => metric.key)
   public metric: Metric;
 
-  @ManyToOne((type) => Experiment, (experiment) => experiment.queries)
+  @ManyToOne((type) => Experiment, (experiment) => experiment.queries, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 }
