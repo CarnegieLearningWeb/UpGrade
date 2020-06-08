@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FlagOverviewComponent } from './flag-overview.component';
+import { TestingModule } from '../../../../../../testing/testing.module';
+import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 
 describe('FlagOverviewComponent', () => {
   let component: FlagOverviewComponent;
@@ -8,7 +10,9 @@ describe('FlagOverviewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FlagOverviewComponent ]
+      declarations: [ FlagOverviewComponent ],
+      imports: [TestingModule],
+      providers: [FeatureFlagsService]
     })
     .compileComponents();
   }));

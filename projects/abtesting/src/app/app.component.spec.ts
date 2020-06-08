@@ -7,6 +7,8 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { SharedModule } from './shared/shared.module';
 
 import { AppComponent } from './app.component';
+import { TestingModule } from '../testing/testing.module';
+import { AuthService } from './core/auth/auth.service';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -15,7 +17,8 @@ describe('AppComponent', () => {
         SharedModule,
         RouterTestingModule,
         NoopAnimationsModule,
-        TranslateModule.forRoot()
+        TranslateModule.forRoot(),
+        TestingModule
       ],
       providers: [
         provideMockStore({
@@ -23,7 +26,8 @@ describe('AppComponent', () => {
             settings: {},
             auth: {}
           }
-        })
+        }),
+        AuthService
       ],
       declarations: [AppComponent]
     }).compileComponents();
