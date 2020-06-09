@@ -59,29 +59,4 @@ export namespace Interfaces {
     group: object;
     workingGroup: object;
   }
-
-  // TODO: Move to upgrade type later
-  export interface FlagVariation {
-    createdAt: string;
-    updatedAt: string;
-    versionNumber: number;
-    id: string;
-    value: string;
-    name: string;
-    description: string;
-    defaultVariation: boolean[];
-  }
-  
-  export interface FeatureFlag {
-    createdAt: string;
-    updatedAt: string;
-    versionNumber: number;
-    id: string;
-    name: string;
-    key: string;
-    description: string;
-    variationType: string;
-    status: boolean;
-    variations: FlagVariation[];
-  }
 }

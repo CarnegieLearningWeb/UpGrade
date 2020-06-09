@@ -70,6 +70,10 @@ upClient.addMetrics(metrics)
 Use this function to get feature flags list  
 ```upClient.getAllFeatureFlags()```  
 
+## getFeatureFlag(key: string)
+Use this function to get feature flag matched to given key
+```upClient.getFeatureFlag(key)```  
+
 # Example
 [Sample Code](https://gist.github.com/JD2455/819b178bd43fc3da376eb2d6ddc55c3b "Sample Code")
 

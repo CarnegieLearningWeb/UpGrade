@@ -1,2 +1,2 @@
-import { Interfaces } from '../identifiers';
-export default function getAllFeatureFlags(url: string, token: string): Promise<Interfaces.FeatureFlag[]>;
+import { IFeatureFlag } from 'upgrade_types';
+export default function getAllFeatureFlags(url: string, token: string): Promise<IFeatureFlag[]>;
