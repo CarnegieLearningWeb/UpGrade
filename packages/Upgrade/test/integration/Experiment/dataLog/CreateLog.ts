@@ -21,6 +21,10 @@ export default async function CreateLog(): Promise<void> {
     {
       key: 'time',
       children: [],
+      metadata: {
+        type: 'continuous',
+      },
+      allowedData: [],
     },
     {
       key: 'w',
@@ -28,21 +32,46 @@ export default async function CreateLog(): Promise<void> {
         {
           key: 'time',
           children: [],
-          operations: ['mean', 'count'],
+          metadata: {
+            type: 'continuous',
+          },
+          allowedData: [],
         },
         {
           key: 'completion',
           children: [],
-          operations: ['mean'],
+          metadata: {
+            type: 'categorical',
+          },
+          allowedData: ['InProgress', 'Complete'],
         },
       ],
     },
   ];
 
-  await metricService.saveAllMetrics(metricUnit);
+  await metricService.saveAllMetrics(metricUnit as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
+  expect(findMetric).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        key: `w${METRICS_JOIN_TEXT}time`,
+        type: 'continuous',
+        allowedData: [],
+      }),
+      expect.objectContaining({
+        key: `time`,
+        type: 'continuous',
+        allowedData: [],
+      }),
+      expect.objectContaining({
+        key: `w${METRICS_JOIN_TEXT}completion`,
+        type: 'categorical',
+        allowedData: ['InProgress', 'Complete'],
+      }),
+    ])
+  );
 
   // create log
   const experimentUser = experimentUsers[0];

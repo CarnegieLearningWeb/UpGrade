@@ -4,6 +4,7 @@ import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { OPERATION_TYPES } from 'upgrade_types';
+import { METRICS_JOIN_TEXT } from '../services/MetricService';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -36,36 +37,49 @@ export class LogRepository extends Repository<Log> {
     }
   }
 
-  public async analysis(
-    experimentId: string,
-    metric: string[],
-    operationTypes: OPERATION_TYPES,
-    timeRange: any
-  ): Promise<any> {
+  public async analysis(query: any): Promise<any> {
+
+    const experimentId = query.experiment.id;
+    const metric = query.metric.key;
+    const operationType = query.query.operationType;
+    const { id: queryId } = query;
+
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
-    const metricId = metric.join('_');
-    const metricString = metric.reduce((accumulator: string, value: string) => {
+    const metricId = metric.split(METRICS_JOIN_TEXT);
+    const metricString = metricId.reduce((accumulator: string, value: string) => {
       return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
 
-    // SUM operation
-    return experimentRepo
+    let executeQuery = experimentRepo
       .createQueryBuilder('experiment')
-      .select([
-        '"individualAssignment"."conditionId"',
-        `${operationTypes}(cast(logs.data -> ${metricString} as decimal)) as result`,
-      ])
-      .innerJoin('experiment.metrics', 'metrics')
-      .innerJoin('metrics.logs', 'logs')
+      .innerJoin('experiment.queries', 'queries')
+      .innerJoin('queries.metric', 'metric')
+      .innerJoin('metric.logs', 'logs')
       .innerJoin(
         IndividualAssignment,
         'individualAssignment',
         'experiment.id = "individualAssignment"."experimentId" AND logs."userId" = "individualAssignment"."userId"'
       )
-      .where('metrics.key = :metric', { metric: metricId })
+      .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
-      .groupBy('"individualAssignment"."conditionId"')
-      .getRawMany();
+      .andWhere('queries.id = :queryId', { queryId })
+      .groupBy('"individualAssignment"."conditionId"');
+
+    if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
+      const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
+      executeQuery = executeQuery
+        .select([
+          '"individualAssignment"."conditionId"',
+          `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
+        ]);
+    } else {
+      executeQuery = executeQuery
+        .select([
+          '"individualAssignment"."conditionId"',
+          `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
+        ]);
+    }
+    return executeQuery.getRawMany();
   }
 }

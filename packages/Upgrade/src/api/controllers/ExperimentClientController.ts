@@ -7,7 +7,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { IExperimentAssignment } from 'upgrade_types';
+import { IExperimentAssignment, IMetricUnit } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -15,7 +15,6 @@ import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
 import { Log } from '../models/Log';
-import { MetricUnit } from '../../types/ExperimentInput';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 
@@ -346,7 +345,7 @@ export class ExperimentClientController {
    *            description: Filtered Metrics
    */
   @Post('metric')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: MetricUnit[]): Promise<MetricUnit[]> {
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: IMetricUnit[]): Promise<IMetricUnit[]> {
     return this.metricService.saveAllMetrics(metricUnit);
   }
 

@@ -57,6 +57,7 @@ import { StatsIndividualExperimentWithDateRange } from './ExperimentStats/index'
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog } from './Experiment/dataLog';
 import { LogSum } from './Experiment/dataLog/index';
+import { QueryCRUD } from './Experiment/query';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -88,6 +89,11 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('Log Sum', async (done) => {
+    await LogSum();
+    done();
+  });
 
   test('Support Get Assignments', async (done) => {
     await GetAssignments();
@@ -327,8 +333,8 @@ describe('Integration Tests', () => {
     done();
   });
 
-  // test('Log Sum', async (done) => {
-  //   await LogSum();
-  //   done();
-  // });
+  test('Query CRUD operation', async (done) => {
+    await QueryCRUD();
+    done();
+  });
 });

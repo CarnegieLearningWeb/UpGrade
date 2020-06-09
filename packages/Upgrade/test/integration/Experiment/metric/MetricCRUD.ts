@@ -16,6 +16,10 @@ export default async function MetricCRUD(): Promise<void> {
     {
       key: 'time',
       children: [],
+      metadata: {
+        type: 'continuous',
+      },
+      allowedData: [],
     },
     {
       key: 'w',
@@ -23,18 +27,24 @@ export default async function MetricCRUD(): Promise<void> {
         {
           key: 'time',
           children: [],
-          operations: ['mean', 'count'],
+          metadata: {
+            type: 'continuous',
+          },
+          allowedData: [],
         },
         {
           key: 'completion',
           children: [],
-          operations: ['mean'],
+          metadata: {
+            type: 'categorical',
+          },
+          allowedData: ['InProgress', 'Complete'],
         },
       ],
     },
   ];
 
-  await metricService.saveAllMetrics(metricUnit);
+  await metricService.saveAllMetrics(metricUnit as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);

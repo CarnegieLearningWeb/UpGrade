@@ -16,6 +16,7 @@ import {
   IExperimentSortParams,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
+import { Query } from './Query';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -100,4 +101,7 @@ export class Experiment extends BaseModel {
   @ValidateNested()
   @Type(() => ExperimentPartition)
   public partitions: ExperimentPartition[];
+
+  @OneToMany((type) => Query, (query) => query.experiment)
+  public queries: Query[];
 }

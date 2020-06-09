@@ -9,11 +9,6 @@ import {
   IEnrollmentCompleteCondition,
 } from 'upgrade_types';
 
-export interface MetricUnit {
-  key: string;
-  children: MetricUnit[];
-}
-
 export class ExperimentInput {
   public id: string;
 
