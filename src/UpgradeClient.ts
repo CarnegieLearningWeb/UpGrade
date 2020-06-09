@@ -2,7 +2,7 @@ import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
-import { IExperimentAssignment, IMetricUnit } from 'upgrade_types';
+import { IExperimentAssignment, IMetricUnit, IFeatureFlag } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
@@ -10,6 +10,7 @@ import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
 import setAltUserIds from './functions/setAltUserIds';
 import addMetrics from './functions/addMetrics';
+import getFeatureFlag from './functions/getFeatureFlag';
 
 export default class UpgradeClient {
     private static hostUrl: string;
@@ -32,6 +33,7 @@ export default class UpgradeClient {
     private group: Map<string, Array<string>> = null;
     private workingGroup: Map<string, string> = null;
     private experimentConditionData: IExperimentAssignment[] = null;
+    private featureFlags: IFeatureFlag[] = null;
 
     constructor(userId: string, token: string) {
         this.userId = userId;
@@ -117,9 +119,18 @@ export default class UpgradeClient {
         return await failedExperimentPoint(UpgradeClient.api.failedExperimentPoint, this.token, experimentPoint, reason, this.userId, experimentId);
     }
     
-    async getAllFeatureFlags(): Promise<Interfaces.FeatureFlag[]> {
+    async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
         this.validateClient();
-        return await getAllFeatureFlags(UpgradeClient.api.getAllFeatureFlag, this.token);
+        const response = await getAllFeatureFlags(UpgradeClient.api.getAllFeatureFlag, this.token);
+        if (response.length) {
+            this.featureFlags = response;
+        }
+        return response;
+    }
+
+    getFeatureFlag(key: string): IFeatureFlag {
+        this.validateClient();
+        return getFeatureFlag(this.featureFlags, key);
     }
 
     async log(key: string, value: any): Promise<Interfaces.ILog> {

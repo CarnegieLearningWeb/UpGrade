@@ -50,26 +50,4 @@ export declare namespace Interfaces {
         group: object;
         workingGroup: object;
     }
-    interface FlagVariation {
-        createdAt: string;
-        updatedAt: string;
-        versionNumber: number;
-        id: string;
-        value: string;
-        name: string;
-        description: string;
-        defaultVariation: boolean[];
-    }
-    interface FeatureFlag {
-        createdAt: string;
-        updatedAt: string;
-        versionNumber: number;
-        id: string;
-        name: string;
-        key: string;
-        description: string;
-        variationType: string;
-        status: boolean;
-        variations: FlagVariation[];
-    }
 }
