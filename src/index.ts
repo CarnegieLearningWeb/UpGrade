@@ -20,7 +20,9 @@ import {
   IExperimentSortParams,
   AuditLogData,
   IExperimentDateStat,
-  IMetricUnit
+  IMetricUnit,
+  IFeatureFlag,
+  IFlagVariation
 } from './Experiment/interfaces';
 
 export {
@@ -43,5 +45,7 @@ export {
   IExperimentDateStat,
   OPERATION_TYPES,
   IMetricMetaData,
-  IMetricUnit
+  IMetricUnit,
+  IFeatureFlag,
+  IFlagVariation
 };

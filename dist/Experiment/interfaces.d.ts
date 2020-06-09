@@ -77,4 +77,20 @@ export interface IMetricUnit {
     };
     allowedData?: string[];
 }
+export interface IFlagVariation {
+    id: string;
+    value: string;
+    name: string;
+    description: string;
+    defaultVariation: boolean[];
+}
+export interface IFeatureFlag {
+    id: string;
+    name: string;
+    key: string;
+    description: string;
+    variationType: string;
+    status: boolean;
+    variations: IFlagVariation[];
+}
 export {};
