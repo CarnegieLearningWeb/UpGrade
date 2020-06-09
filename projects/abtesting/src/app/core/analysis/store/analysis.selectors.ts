@@ -1,5 +1,6 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { AnalysisState, State } from './analysis.models';
+import { AnalysisState, State, METRICS_JOIN_TEXT } from './analysis.models';
+import { OperationPipe } from '../../../shared/pipes/operation.pipe';
 
 export const selectAnalysisState = createFeatureSelector<
 State,
@@ -27,7 +28,7 @@ export const selectMetrics = createSelector(
     if (!state.metricsFilter) {
       return state.metrics;
     } else {
-      return state.metrics.filter(metric => metric.key.includes(state.metricsFilter));
+      return state.metrics.filter(metric => metric.key.toLowerCase().includes(state.metricsFilter.toLowerCase()));
     }
   }
 );
@@ -39,7 +40,13 @@ export const selectQueries = createSelector(
       return state.queries;
     } else {
       return state.queries.filter(query => {
-        return query.metric.key.split('@__@').join(' ').includes(state.queriesFilter)
+        let { queriesFilter } = state;
+        queriesFilter = queriesFilter.toLowerCase();
+        const operationPipe = new OperationPipe();
+        const operationPipedValue = operationPipe.transform(query.query.operationType).toLowerCase();
+        return query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(queriesFilter)
+          || operationPipedValue.includes(queriesFilter)
+          || query.experiment.name.toLowerCase().includes(queriesFilter);
       });
     }
   }

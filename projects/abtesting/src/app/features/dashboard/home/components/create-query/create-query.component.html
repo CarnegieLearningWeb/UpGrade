@@ -7,7 +7,7 @@
         <!-- ID Column -->
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'users.table.id.text' | translate }}
+            {{ 'query.table-id.text' | translate }}
           </th>
           <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
         </ng-container>
@@ -15,7 +15,7 @@
         <!-- Metric Column -->
         <ng-container matColumnDef="metric">
           <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            Metric
+            {{ 'query.table-metric.text' | translate }}
           </th>
           <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
             <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">
@@ -62,13 +62,13 @@
                 </mat-tree>
 
                 <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                  <mat-label>Operation</mat-label>
+                  <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
                   <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
                     <mat-option
                       *ngFor="let operation of queryOperations"
-                      [value]="operation"
+                      [value]="operation.value"
                     >
-                      {{ operation }}
+                      {{ operation.viewValue }}
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -81,7 +81,7 @@
                   [disabled]="!selectedKey || !selectedOperation"
                   (click)="saveQuery()"
                 >
-                  <span>Save</span>
+                  <span>{{ 'global.save.text' | translate }}</span>
                 </button>
               </div>
             </ng-template>
@@ -98,7 +98,7 @@
   <span
     *ngIf="!(isAnalysisMetricsLoading$ | async)"
     class="zero-state"
-    [innerHTML]="'analysis.no-metrics.text' | translate"
+    [innerHTML]="'global.no-metrics.text' | translate"
   >
   </span>
 </ng-template>

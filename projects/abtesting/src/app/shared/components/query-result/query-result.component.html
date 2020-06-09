@@ -1,12 +1,12 @@
 
 <div class="query-result-container">
-  <span class="ft-24-700 title">Query Result</span>
+  <span class="ft-24-700 title">{{ 'query.result-title.text' | translate }}</span>
   <div class="query-result-view">
     <mat-progress-bar
       mode="indeterminate"
       *ngIf="isQueryExecuting$ | async"
     ></mat-progress-bar>
-    <mat-table *ngIf="(queryResult$ | async)?.length" [dataSource]="queryResult$ | async" class="table">
+    <mat-table *ngIf="(queryResult$ | async)?.length; else emptyResult" [dataSource]="queryResult$ | async" class="table">
       <!-- Number Column -->
       <ng-container matColumnDef="no">
         <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -18,7 +18,7 @@
       <!-- 'Condition Code' Column -->
       <ng-container matColumnDef="conditionCode">
         <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-          Condition Code
+          {{ 'query.result.condition-code.text' | translate }}
         </mat-header-cell>
         <mat-cell class="ft-12-600" *matCellDef="let data">
           {{ getConditionName(data.conditionId) }}
@@ -28,7 +28,7 @@
       <!-- Result Column -->
       <ng-container matColumnDef="result">
         <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-          Result
+          {{ 'query.result.result.text' | translate }}
         </mat-header-cell>
         <mat-cell class="ft-12-600" *matCellDef="let data">
           {{ data.result }}
@@ -46,3 +46,13 @@
     </button>
   </div>
 </div>
+
+<ng-template #emptyResult>
+  <span
+    *ngIf="!(isQueryExecuting$ | async)"
+    class="zero-state"
+    [innerHTML]="'query.result.empty-result.text' | translate"
+  >
+  </span>
+</ng-template>
+

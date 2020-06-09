@@ -28,7 +28,7 @@
             {{ 'home.view-experiment.edit-button.text' | translate }}
           </button>
           <button mat-flat-button class="ft-14-600 button button--query" (click)="openQueriesModal()" *ngIf="permissions?.experiments.update">
-            QUERIES
+            {{ 'global.queries-tabs.text' | translate | uppercase }}
           </button>
           <button mat-flat-button class="ft-14-600 button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
             {{ 'home.view-experiment.delete-button.text' | translate }}
@@ -178,7 +178,7 @@
       </div>
 
       <!-- Experiment Tags -->
-      <div class="experiment-chips" *ngIf="experiment.tags.length">
+      <div class="experiment-chips" *ngIf="experiment.tags?.length">
         <span class="ft-16-600 experiment-chips-title">{{ 'global.tags.text' | translate }}</span>
         <div class="experiment-chips-values">
           <span

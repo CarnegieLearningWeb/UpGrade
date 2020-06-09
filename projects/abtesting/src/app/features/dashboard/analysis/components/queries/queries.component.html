@@ -21,35 +21,45 @@
           <!-- ID Column -->
           <ng-container matColumnDef="id">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'users.table.id.text' | translate }}
+              {{ 'query.table-id.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
+          </ng-container>
+
+          <!-- ExperimentName Column -->
+          <ng-container matColumnDef="experimentName">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-experiment.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              {{ element.experiment?.name || '' }}
+            </td>
           </ng-container>
 
           <!-- Metric Column -->
           <ng-container matColumnDef="metric">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Metric
+              {{ 'query.table-metric.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span>{{ element.metric.key?.split('@__@').join(' ') }}</span>
+              <span>{{ element.metric.key?.split(METRICS_JOIN_TEXT).join(' ') }}</span>
             </td>
           </ng-container>
 
           <!-- operation Column -->
           <ng-container matColumnDef="operation">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Operation
+              {{ 'query.table-operation.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span>{{ element.query?.operationType }}</span>
+              <span>{{ element.query?.operationType | operationType }}</span>
             </td>
           </ng-container>
 
           <!-- Execute Column -->
           <ng-container matColumnDef="execute">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              Execute
+              {{ 'query.table-execute.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <mat-icon
@@ -69,7 +79,7 @@
     <span
       *ngIf="!(isAnalysisQueriesLoading$ | async)"
       class="zero-state"
-      [innerHTML]="'analysis.no-queries-tabs.text' | translate"
+      [innerHTML]="'global.no-queries-tabs.text' | translate"
     >
     </span>
   </ng-template>

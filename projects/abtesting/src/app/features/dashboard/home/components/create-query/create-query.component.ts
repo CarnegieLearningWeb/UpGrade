@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy, Input } from '@angular/core';
 import { Subscription, BehaviorSubject, of } from 'rxjs';
-import { MetricUnit, OPERATION_TYPES } from '../../../../../core/analysis/store/analysis.models';
+import { MetricUnit, OPERATION_TYPES, METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource, MatTableDataSource } from '@angular/material';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
@@ -29,13 +29,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   selectedKey: string;
   selectedOperation: string;
 
-  queryOperations = [
-    OPERATION_TYPES.SUM,
-    OPERATION_TYPES.MIN,
-    OPERATION_TYPES.MAX,
-    OPERATION_TYPES.AVERAGE,
-    OPERATION_TYPES.COUNT
-  ];
+  queryOperations = [];
 
   @ViewChild('metricsTable', { static: false }) metricsTable: ElementRef;
 
@@ -68,12 +62,12 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   insertNode(metrics: any): MetricUnit {
     if (!metrics.children.length) {
-      const data = { id: this.insertNodeIndex, key: metrics.key, children: metrics.children };
+      const data = { id: this.insertNodeIndex, ...metrics };
       this.insertNodeIndex += 1;
       return data;
     }
     metrics = {
-      id: this.insertNodeIndex, key: metrics.key, children: metrics.children.map(data => {
+      id: this.insertNodeIndex, ...metrics, children: metrics.children.map(data => {
         this.insertNodeIndex += 1;
         data = this.insertNode(data);
         return data;
@@ -85,6 +79,23 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   selectKey(node) {
     if (!node.children.length) {
       this.selectedKey = node.key;
+      if (node.metadata && node.metadata.type === 'continuous') {
+        this.queryOperations = [
+          { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
+          { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
+          { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
+          { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+          { value: OPERATION_TYPES.AVERAGE, viewValue: 'Average' },
+          { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
+          { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
+          { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' }
+        ];
+      } else if (node.metadata && node.metadata.type === 'categorical') {
+        this.queryOperations = [
+          { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+          { value: 'percent', viewValue: 'Percent' }
+        ];
+      }
     } else {
       this.selectedKey = null;
     }
@@ -92,8 +103,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   setTreeForMetric(index: number) {
     this.selectedMetricIndex = index;
-    this.selectedKey = null;
-    this.selectedOperation = null;
+    this.resetVariables();
     this.insertNodeIndex = 0;
     this.createTree([this.allMetrics.data[index]]);
   }
@@ -133,13 +143,17 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       query: {
         operationType: this.selectedOperation
       },
-      metric: key.join('@__@'),
+      metric: key.join(METRICS_JOIN_TEXT),
       experimentId: this.experimentId
     };
     this.analysisService.saveQuery(queryObj);
+    this.selectedMetricIndex = null;
+    this.resetVariables();
+  }
+
+  resetVariables() {
     this.selectedKey = null;
     this.selectedOperation = null;
-    this.selectedMetricIndex = null;
   }
 
   ngOnDestroy() {
