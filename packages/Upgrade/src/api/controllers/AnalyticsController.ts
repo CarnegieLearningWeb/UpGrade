@@ -45,7 +45,7 @@ export class AnalyticsController {
   public async analyticsService(
     @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
-    return this.auditService.getStats(auditParams.experimentIds);
+    return this.auditService.getEnrollments(auditParams.experimentIds);
   }
 
   /**
