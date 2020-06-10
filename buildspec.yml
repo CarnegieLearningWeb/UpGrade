@@ -9,7 +9,6 @@ phases:
   build:
     commands:
       - npm run build -- -c=$stage
-      - npm run test
       - aws s3 sync --delete 'dist/abtesting/' s3://$bucket_name --cache-control max-age=3600
   post_build:
     commands:
