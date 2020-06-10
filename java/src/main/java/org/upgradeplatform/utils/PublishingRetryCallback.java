@@ -1,10 +1,10 @@
 package org.upgradeplatform.utils;
+import static org.upgradeplatform.utils.Utils.*;
 
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
-
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 
@@ -14,12 +14,14 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 	private final Entity<T> message;
 	private final InvocationCallback<Response> callback;
 	private int retries;
+	private String type; // Request type
 
-	public PublishingRetryCallback(AsyncInvoker invoker, Entity<T> message, int retries, InvocationCallback<Response> callback) {
+	public PublishingRetryCallback(AsyncInvoker invoker, Entity<T> message, int retries, String type ,InvocationCallback<Response> callback) {
 		this.invoker = invoker;
 		this.message = message;
 		this.retries = retries;
 		this.callback = callback;
+		this.type = type;
 	}
 
 	@Override
@@ -42,7 +44,17 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 
 	private void retry() {
 		retries--;
-		invoker.post(message, this);
+		switch(this.type) {
+			case REQUEST_TYPES_POST:
+				invoker.post(message, this);
+				break;
+			case REQUEST_TYPES_GET:
+				invoker.get(this);
+				break;
+			default:
+				break;
+		}
+		
 	}
 
 

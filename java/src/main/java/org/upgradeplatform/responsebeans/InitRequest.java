@@ -12,10 +12,18 @@ public class InitRequest
 	private String id;
 	private Map<String, List<String>> group;
 	private Map<String, String> workingGroup;
-	
+	private InitRequest originalUser;
 	public InitRequest() {}
 	
-	public InitRequest(String id, Map<String, List<String>> group, Map<String, String> workingGroup) {
+	public InitRequest(String id, Map<String, List<String>> group, Map<String, String> workingGroup, InitRequest originalUser) {
+		super();
+		this.id = id;
+		this.group = group;
+		this.workingGroup = workingGroup;
+		this.originalUser = originalUser;
+	}
+	
+	public InitRequest(String id, Map<String, List<String>> group, Map<String, String> workingGroup ) {
 		super();
 		this.id = id;
 		this.group = group;
@@ -57,6 +65,14 @@ public class InitRequest
 	}
 	public void setWorkingGroup(Map<String, String> workingGroup) {
 		this.workingGroup = workingGroup;
+	}
+
+	public InitRequest getOriginalUser() {
+		return originalUser;
+	}
+
+	public void setOriginalUser(InitRequest originalUser) {
+		this.originalUser = originalUser;
 	}
 	
 

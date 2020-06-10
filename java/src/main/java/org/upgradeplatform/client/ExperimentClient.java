@@ -2,6 +2,7 @@ package org.upgradeplatform.client;
 
 import static org.upgradeplatform.utils.Utils.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,36 +16,45 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
 import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
+import org.upgradeplatform.requestbeans.Log;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
+import org.upgradeplatform.requestbeans.MetricUnit;
+import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.FailedExperiment;
+import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.InitRequest;
+import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.responsebeans.Metric;
+import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
+
 
 public class ExperimentClient implements AutoCloseable {
 
 	private List<ExperimentsResponse> allExperiments;
+	private List<FeatureFlag> allFeatureFlag;
 	private final String userId;
 	private final APIService apiService;
 
 	public ExperimentClient(String userId, String authToken, String baseUrl) {
-        if (isStringNull(userId)) {
-            throw new IllegalArgumentException(INVALID_STUDENT_ID);
+		if (isStringNull(userId)) {
+			throw new IllegalArgumentException(INVALID_STUDENT_ID);
 		}
 		this.userId = userId;
 
 		this.apiService = new APIService(baseUrl, authToken);
 	}
 
-    // To close jax-rs client connection open when calling ExperimentClient constructor;
-    @Override
-    public void close() {
-        this.apiService.close();
-    }
+	// To close jax-rs client connection open when calling ExperimentClient constructor;
+	@Override
+	public void close() {
+		this.apiService.close();
+	}
 
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
 		// Build a request object and prepare invocation method
@@ -53,7 +63,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,REQUEST_TYPES_POST, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -80,7 +90,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -107,7 +117,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -150,11 +160,11 @@ public class ExperimentClient implements AutoCloseable {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
-				    ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, experiments);
+					ExperimentsResponse resultCondition = findExperimentResponse(experimentPoint, experimentId, experiments);
 
-				    if (callbacks != null) {
-				        callbacks.onSuccess(resultCondition);
-				    }
+					if (callbacks != null) {
+						callbacks.onSuccess(resultCondition);
+					}
 				}
 
 				@Override
@@ -167,27 +177,27 @@ public class ExperimentClient implements AutoCloseable {
 		}
 	}
 
-    private ExperimentsResponse findExperimentResponse(String experimentPoint, String experimentId,
-                                                       List<ExperimentsResponse> experiments) {
-        return experiments.stream()
-                          .filter(t -> t.getExpPoint().equals(experimentPoint) &&
-                                       (isStringNull(experimentId) ? isStringNull(t.getExpId().toString())
-                                                                   : t.getExpId().toString().equals(experimentId)))
-                          .findFirst()
-                          .map(ExperimentClient::copyExperimentResponse)
-                          .orElse(new ExperimentsResponse());
-    }
+	private ExperimentsResponse findExperimentResponse(String experimentPoint, String experimentId,
+			List<ExperimentsResponse> experiments) {
+		return experiments.stream()
+				.filter(t -> t.getExpPoint().equals(experimentPoint) &&
+						(isStringNull(experimentId) ? isStringNull(t.getExpId().toString())
+								: t.getExpId().toString().equals(experimentId)))
+				.findFirst()
+				.map(ExperimentClient::copyExperimentResponse)
+				.orElse(new ExperimentsResponse());
+	}
 
-    private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
-        AssignedCondition assignedCondition = new AssignedCondition(
-        		experimentsResponse.getAssignedCondition().getTwoCharacterId(),
-        		experimentsResponse.getAssignedCondition().getConditionCode(),
-        		experimentsResponse.getAssignedCondition().getDescription());
+	private static ExperimentsResponse copyExperimentResponse(ExperimentsResponse experimentsResponse) {
+		AssignedCondition assignedCondition = new AssignedCondition(
+				experimentsResponse.getAssignedCondition().getTwoCharacterId(),
+				experimentsResponse.getAssignedCondition().getConditionCode(),
+				experimentsResponse.getAssignedCondition().getDescription());
 
-        ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
-        		experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
-        return resultCondition;
-    }
+		ExperimentsResponse resultCondition = new ExperimentsResponse(experimentsResponse.getExpId().toString(),
+				experimentsResponse.getExpPoint(), experimentsResponse.getTwoCharacterId(), assignedCondition);
+		return resultCondition;
+	}
 
 	public void markExperimentPoint(final String experimentPoint,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
@@ -203,7 +213,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -247,7 +257,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -269,4 +279,158 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 
 	}
+
+	public void getAllFeatureFlags(final ResponseCallback<List<FeatureFlag>> callbacks) {
+
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_FEATURE_FLAGS);
+
+		invocation.get(new PublishingRetryCallback<>(invocation, Entity.json(""), MAX_RETRIES, REQUEST_TYPES_GET,
+				new InvocationCallback<Response>() {
+
+			@Override
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					allFeatureFlag = response.readEntity(new GenericType<List<FeatureFlag>>() {});
+					callbacks.onSuccess(allFeatureFlag);
+
+				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
+					if (callbacks != null)
+						callbacks.onError(error);
+				}
+			}
+
+			@Override
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
+			}
+		}));
+
+	}
+
+	public void getFeatureFlag(String key, final ResponseCallback<FeatureFlag> callbacks) {
+		if (this.allFeatureFlag != null) {
+
+			FeatureFlag result = findFeatureFlag(key, allFeatureFlag);
+
+			if (callbacks != null) {
+				callbacks.onSuccess(result);
+			}
+		} else {
+			throw new IllegalArgumentException(FEATURE_FLAGS_EMPTY);
+		}
+	}
+
+	private FeatureFlag findFeatureFlag(String key, List<FeatureFlag> featureFlags) {
+		return featureFlags.stream()
+				.filter(t -> t.getKey().equals(key))
+				.findFirst()
+				.map(ExperimentClient::getActiveVariation)
+				.orElse(new FeatureFlag());
+	}
+
+	private static FeatureFlag getActiveVariation(FeatureFlag featureFlag) {
+		if(featureFlag.getVariations().size() > 0) {
+			List<Variation> variations = featureFlag.getVariations();
+			Variation activeVariation;
+
+			activeVariation = variations.stream()
+					.filter(t -> t.getDefaultVariation().contains(featureFlag.getStatus()))
+					.findFirst()
+					.orElse(new Variation());
+
+
+			List<Variation> result = new ArrayList<>();
+			result.add(activeVariation);
+
+			featureFlag.setVariations(result);
+		} 
+		return featureFlag;
+	}
+
+	public void setAltUserIds(final String[] altUserIds, final ResponseCallback<List<InitRequest>> callbacks) {
+
+		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
+
+		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
+		Entity<UserAlias> requestContent = Entity.json(userAlias);
+
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+				new InvocationCallback<Response>() {
+
+			@Override
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					callbacks.onSuccess(response.readEntity(new GenericType<List<InitRequest>>() {}));
+				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
+					if (callbacks != null)
+						callbacks.onError(error);
+				}
+			}
+
+			@Override
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
+			}
+		}));
+	}
+
+	public void addMetrics(final MetricUnit[] metrics, final ResponseCallback<List<Metric>> callbacks) {
+		MetricUnit metricUnit = new MetricUnit( metrics );
+
+		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
+		Entity<MetricUnit> requestContent = Entity.json(metricUnit);
+
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+				new InvocationCallback<Response>() {
+
+			@Override
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					callbacks.onSuccess(response.readEntity(new GenericType<List<Metric>>() {}));
+				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
+					if (callbacks != null)
+						callbacks.onError(error);
+				}
+			}
+
+			@Override
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
+			}
+		}));	
+	}
+
+	public void log(final String key, final Object value,  final ResponseCallback<LogEventResponse> callbacks) {
+
+		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
+		Entity<Log> requestContent = Entity.json(new Log( key, value ));
+
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+				new InvocationCallback<Response>() {
+
+			@Override
+			public void completed(Response response) {
+				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					callbacks.onSuccess(response.readEntity(LogEventResponse.class));
+				} else {
+					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
+					if (callbacks != null)
+						callbacks.onError(error);
+				}
+			}
+
+			@Override
+			public void failed(Throwable throwable) {
+				callbacks.onError(new ErrorResponse(throwable.getMessage()));
+			}
+		}));	
+	}
+
 }
