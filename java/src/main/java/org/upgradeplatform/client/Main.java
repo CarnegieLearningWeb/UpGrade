@@ -9,12 +9,9 @@ import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
-import org.upgradeplatform.requestbeans.MetricUnit;
 import org.upgradeplatform.responsebeans.ErrorResponse;
-import org.upgradeplatform.responsebeans.FeatureFlag;
+import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.InitRequest;
-import org.upgradeplatform.responsebeans.Metric;
-import org.upgradeplatform.utils.Utils.MetricMetaData;
 
 
 
@@ -27,33 +24,41 @@ public class Main {
 		
 		String[] classList = {"1","2","3","4","5"};
 		String[] teacherList = {"1","2","7"};
-		String[] aliases = {"user1alias1","user1alias2","user1alias3","user1alias4","user1alias5"};
-		
 		
 		HashMap<String, List<String>> group = new HashMap<>();
 		group.put("classes", Arrays.asList(classList));
 		group.put("teachers", Arrays.asList(teacherList));
-		
-		String [] allowedData= {"InProgress", "Complete"};
-		String [] key= {"hellow", "completion2"};
-		MetricUnit[] children = {};
-		
-		MetricUnit metricUnit = new MetricUnit( key,children, MetricMetaData.continuous.toString(), allowedData);
-	
-		 MetricUnit[] metrics = {metricUnit};
-		
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl)){
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
-            
-		    experimentClient.addMetrics( metrics, new ResponseCallback<List<Metric>>(){
+		    experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
 		        @Override
-		        public void onSuccess(List<Metric> data){
-		        	result.complete(prefix() + "retrieved " + data.size() + 
-                    		" FeatureFlag responses; theme response: " + 
-                    		data.get(0).getKey().toString() + "  type:  "+ data.get(0).getType());
+		        public void onSuccess(InitRequest __){
+		            experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
+
+		                @Override
+		                public void onSuccess(@NonNull List<ExperimentsResponse> ers) {
+		                    experimentClient.getExperimentCondition("foo", new ResponseCallback<ExperimentsResponse>(){
+
+                                @Override
+                                public void onSuccess(@NonNull ExperimentsResponse er){
+                                    result.complete(prefix() + "retrieved " + ers.size() + " experiment responses; foo response: " + er);
+                                }
+
+                                @Override
+                                public void onError(@NonNull ErrorResponse error){
+                                    result.completeExceptionally(new Exception(prefix() + error.toString()));
+                                }
+                            });
+		                }
+
+		                @Override
+		                public void onError(@NonNull ErrorResponse error) {
+                            result.completeExceptionally(new Exception(prefix() + error.toString()));
+		                }
+		            });
 		        }
 
 		        @Override
