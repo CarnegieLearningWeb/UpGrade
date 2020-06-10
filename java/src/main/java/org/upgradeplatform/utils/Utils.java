@@ -33,7 +33,7 @@ public class Utils
 	public static final String REQUEST_TYPES_GET = "GET";
 	public static final String REQUEST_TYPES_POST = "POST";
 	
-	public static final int MAX_RETRIES = 0;
+	public static final int MAX_RETRIES = 3;
 
 
 	public static enum MetricMetaData {
