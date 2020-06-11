@@ -3,7 +3,7 @@ import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { OPERATION_TYPES } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 
 @EntityRepository(Log)
@@ -41,14 +41,14 @@ export class LogRepository extends Repository<Log> {
 
     const experimentId = query.experiment.id;
     const metric = query.metric.key;
-    const operationType = query.query.operationType;
+    const { operationType, compareFn, compareValue } = query.query;
     const { id: queryId } = query;
 
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
     const metricId = metric.split(METRICS_JOIN_TEXT);
     const metricString = metricId.reduce((accumulator: string, value: string) => {
-      return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
+      return accumulator !== '' ? `${accumulator} ->> '${value}'` : `'${value}'`;
     }, '');
 
     let executeQuery = experimentRepo
@@ -63,9 +63,17 @@ export class LogRepository extends Repository<Log> {
       )
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
-      .andWhere('queries.id = :queryId', { queryId })
-      .groupBy('"individualAssignment"."conditionId"');
+      .andWhere('queries.id = :queryId', { queryId });
 
+    if (compareFn) {
+      executeQuery = executeQuery.andWhere(`(cast(logs.data -> ${metricString} as text)) ${compareFn} :compareValue`, { compareValue });
+    }
+    // TODO: Form properly
+    executeQuery = executeQuery .groupBy('"individualAssignment"."conditionId"');
+    let castType = 'decimal';
+    if (query.metric.type === IMetricMetaData.CATEGORICAL) {
+      castType = 'text';
+    }
     if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
       const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
       executeQuery = executeQuery
@@ -77,7 +85,7 @@ export class LogRepository extends Repository<Log> {
       executeQuery = executeQuery
         .select([
           '"individualAssignment"."conditionId"',
-          `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
+          `${operationType}(cast(logs.data -> ${metricString} as ${castType})) as result`,
         ]);
     }
     return executeQuery.getRawMany();
