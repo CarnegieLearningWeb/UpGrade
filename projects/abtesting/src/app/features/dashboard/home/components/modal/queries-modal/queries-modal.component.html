@@ -53,6 +53,26 @@
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
           </ng-container>
 
+          <!-- Name Column -->
+          <ng-container matColumnDef="queryName">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-name.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span *ngIf="selectedQueryId !== element.id; else nameTemplate">{{ element?.name }}</span>
+              <ng-template #nameTemplate>
+                <mat-form-field class="ft-14-600 form-control">
+                  <input
+                    matInput
+                    [(ngModel)]="queryName"
+                    class="ft-14-600"
+                    [placeholder]="'query.table-query-name.text' | translate"
+                  />
+                </mat-form-field>
+              </ng-template>
+            </td>
+          </ng-container>
+
           <!-- Metric Column -->
           <ng-container matColumnDef="metric">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
@@ -69,7 +89,23 @@
               {{ 'query.table-operation.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span>{{ element.query?.operationType | operationType }}</span>
+              <span *ngIf="selectedQueryId !== element.id; else operationTemplate">
+                {{ element.query?.operationType | operationType }}
+              </span>
+
+              <ng-template #operationTemplate>
+                <mat-form-field class="ft-14-600 form-control">
+                  <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
+                  <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
+                    <mat-option
+                      *ngFor="let operation of queryOperations"
+                      [value]="operation.value"
+                    >
+                      {{ operation.viewValue }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </ng-template>
             </td>
           </ng-container>
 
@@ -86,6 +122,44 @@
             </td>
           </ng-container>
 
+          <!-- Edit Column -->
+          <ng-container matColumnDef="edit">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                *ngIf="selectedQueryId !== element.id; else saveBtnTemplate"
+                class="icon"
+                (click)="editQuery(element)"
+              >create</mat-icon>
+
+              <ng-template #saveBtnTemplate>
+                <button
+                  mat-flat-button
+                  color="primary"
+                  class="ft-14-700 default-button"
+                  [ngClass]="{ 'default-button--disabled': !selectedOperation || !queryName }"
+                  [disabled]="!selectedOperation || !queryName"
+                  (click)="updateQuery(element)"
+                >
+                  <span>{{ 'global.save.text' | translate }}</span>
+                </button>
+              </ng-template>
+            </td>
+          </ng-container>
+
+          <!-- Delete Column -->
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                class="icon"
+                (click)="deleteQuery(element)"
+              >delete_outline</mat-icon>
+            </td>
+          </ng-container>
+
           <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
@@ -93,7 +167,7 @@
     </div>
 
     <ng-template #createQueryTemplate>
-      <app-create-query [experimentId]="experimentId"></app-create-query>
+      <app-create-query [experimentInfo]="experimentInfo"></app-create-query>
     </ng-template>
 
     <ng-template #zeroState>

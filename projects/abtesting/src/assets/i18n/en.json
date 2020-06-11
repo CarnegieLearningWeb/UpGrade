@@ -229,6 +229,8 @@
   "analysis.subtitle.text": "View experiment analysis here",
   "query.table-id.text": "ID",
   "query.table-metric.text": "METRIC",
+  "query.table-name.text": "NAME",
+  "query.table-query-name.text": "Query Name",
   "query.table-operation.text": "OPERATION",
   "query.table-experiment.text": "EXPERIMENT",
   "query.table-execute.text": "EXECUTE",

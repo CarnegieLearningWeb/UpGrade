@@ -3,6 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { CreateQueryComponent } from './create-query.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 describe('CreateQueryComponent', () => {
   let component: CreateQueryComponent;
@@ -12,7 +13,7 @@ describe('CreateQueryComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ CreateQueryComponent ],
       imports: [TestingModule],
-      providers: [AnalysisService]
+      providers: [AnalysisService, ExperimentService]
     })
     .compileComponents();
   }));

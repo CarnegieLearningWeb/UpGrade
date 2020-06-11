@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription } from 'rxjs';
 import { MatTableDataSource, MatDialog } from '@angular/material';
@@ -8,12 +8,11 @@ import { QueryResultComponent } from '../../../../../shared/components/query-res
 @Component({
   selector: 'analysis-queries',
   templateUrl: './queries.component.html',
-  styleUrls: ['./queries.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./queries.component.scss']
 })
 export class QueriesComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  displayedColumns = ['id', 'experimentName', 'metric', 'operation', 'execute'];
+  displayedColumns = ['id', 'queryName', 'experimentName', 'metric', 'operation', 'execute', 'edit', 'delete'];
 
   // Used for displaying metrics
   allQueries: any;
@@ -47,6 +46,14 @@ export class QueriesComponent implements OnInit, AfterViewInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       // Add code of further actions after deleting experiment
     });
+  }
+
+  editQuery(query: any) {
+    console.log('Edit query', query);
+  }
+
+  deleteQuery(query: any) {
+    this.analysisService.deleteQuery(query.id);
   }
 
   ngAfterViewInit() {

@@ -13,6 +13,7 @@ export const initialState: AnalysisState = {
   queryResult: null
 };
 
+// TODO: Analysis query
 const reducer = createReducer(
   initialState,
   on(
@@ -29,6 +30,7 @@ const reducer = createReducer(
   ),
   on(
     AnalysisActions.actionFetchQueries,
+    AnalysisActions.actionDeleteQuery,
     (state) => ({ ...state, isQueriesLoading: true })
   ),
   on(
@@ -37,6 +39,7 @@ const reducer = createReducer(
   ),
   on(
     AnalysisActions.actionFetchQueriesFailure,
+    AnalysisActions.actionDeleteQueryFailure,
     (state) => ({ ...state, isQueriesLoading: false })
   ),
   on(
@@ -62,6 +65,13 @@ const reducer = createReducer(
   on(
     AnalysisActions.actionSaveQuerySuccess,
     (state, { query }) => ({ ...state, queries: [ ...state.queries, query ] })
+  ),
+  on(
+    AnalysisActions.actionDeleteQuerySuccess,
+    (state, { query }) => {
+      state.queries = state.queries.filter(data => data.id !== query.id);
+      return ({ ...state, queries: state.queries, isQueriesLoading: false });
+    }
   ),
   on(
     AnalysisActions.actionSetQueryResult,

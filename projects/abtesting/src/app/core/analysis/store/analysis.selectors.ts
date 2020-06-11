@@ -33,6 +33,7 @@ export const selectMetrics = createSelector(
   }
 );
 
+// TODO: Remove selectors
 export const selectQueries = createSelector(
   selectAnalysisState,
   (state: AnalysisState) => {
@@ -46,7 +47,8 @@ export const selectQueries = createSelector(
         const operationPipedValue = operationPipe.transform(query.query.operationType).toLowerCase();
         return query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(queriesFilter)
           || operationPipedValue.includes(queriesFilter)
-          || query.experiment.name.toLowerCase().includes(queriesFilter);
+          || query.experiment.name.toLowerCase().includes(queriesFilter)
+          || query.name.toLowerCase().includes(queriesFilter) ;
       });
     }
   }

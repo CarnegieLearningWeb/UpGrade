@@ -93,7 +93,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   openQueriesModal() {
     const dialogRef = this.dialog.open(QueriesModalComponent, {
       panelClass: 'queries-modal',
-      data: { experimentId: this.experiment.id }
+      data: { experiment: clonedeep(this.experiment) }
     });
 
     dialogRef.afterClosed().subscribe(result => {

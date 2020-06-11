@@ -37,22 +37,40 @@ export class AnalysisEffects {
     )
   );
 
-  saveQueries$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AnalysisActions.actionSaveQuery),
-      map(action => action.query),
-      filter(query => !!query),
-      switchMap((query) =>
-        this.analysisDataService.saveQueries(query).pipe(
-          switchMap((data: any) => [
-            AnalysisActions.actionSaveQuerySuccess({ query: data }),
-            ExperimentsActions.actionGetExperimentById({ experimentId: query.experimentId })
-          ]),
-          catchError(() => [AnalysisActions.actionSaveQueryFailure()])
-        )
-      )
-    )
-  );
+  // TODO: Analysis query
+  // saveQueries$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(AnalysisActions.actionSaveQuery),
+  //     map(action => action.query),
+  //     filter(query => !!query),
+  //     switchMap((query) =>
+  //       this.analysisDataService.saveQueries(query).pipe(
+  //         switchMap((data: any) => [
+  //           AnalysisActions.actionSaveQuerySuccess({ query: data }),
+  //           ExperimentsActions.actionGetExperimentById({ experimentId: query.experimentId })
+  //         ]),
+  //         catchError(() => [AnalysisActions.actionSaveQueryFailure()])
+  //       )
+  //     )
+  //   )
+  // );
+
+  // deleteQuery$ = createEffect(() =>
+  //   this.actions$.pipe(
+  //     ofType(AnalysisActions.actionDeleteQuery),
+  //     map(action => action.queryId),
+  //     filter(queryId => !!queryId),
+  //     switchMap((queryId) =>
+  //       this.analysisDataService.deleteQuery(queryId).pipe(
+  //         switchMap((data: any) => [
+  //           AnalysisActions.actionDeleteQuerySuccess({ query: data[0] }),
+  //           ExperimentsActions.actionGetExperimentById({ experimentId: data[0].experimentId })
+  //         ]),
+  //         catchError(() => [AnalysisActions.actionDeleteQueryFailure()])
+  //       )
+  //     )
+  //   )
+  // );
 
   executeQuery$ = createEffect(() =>
     this.actions$.pipe(

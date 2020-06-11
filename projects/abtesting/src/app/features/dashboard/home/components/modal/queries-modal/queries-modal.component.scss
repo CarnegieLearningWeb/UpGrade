@@ -27,14 +27,37 @@
       .table {
         width: 100%;
 
-        .mat-column-id,
         .mat-column-execute {
-          width: 15%;
+          width: 10%;
         }
 
-        .mat-column-operation {
+        .mat-column-operation,
+        .mat-column-queryName {
           width: 20%;
         }
+
+        .mat-column-delete {
+          width: 5%;
+        }
+
+        .mat-column-id {
+          padding-left: 0;
+          width: 8%;
+        }
+
+        .mat-column-edit {
+          width: 10%;
+        }
+      }
+
+      .form-control {
+        padding-top: 10px;
+        width: 140px;
+        line-height: 20px;
+      }
+
+      .default-button {
+        font-size: var(--text-size-x-small);
       }
     }
 
@@ -45,7 +68,7 @@
     }
 
     .zero-state {
-      min-height: 200px;
+      min-height: 250px;
     }
   }
 }
