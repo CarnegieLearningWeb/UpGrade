@@ -29,10 +29,20 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   selectedMetricIndex = null;
   selectedKey: string;
+  // TODO: Update type
+  selectedKeyMeta: any;
   selectedOperation: string;
   queryName: string;
 
   queryOperations = [];
+
+  // Where clause
+  comparisonFns = [
+    { value: '=', viewValue: 'equal' },
+    { value: '<>', viewValue: 'not equal' }
+  ];
+  compareFn: string;
+  compareValue: string;
 
   @ViewChild('metricsTable', { static: false }) metricsTable: ElementRef;
 
@@ -83,6 +93,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   selectKey(node) {
     if (!node.children.length) {
       this.selectedKey = node.key;
+      this.selectedKeyMeta = node;
       if (node.metadata && node.metadata.type === 'continuous') {
         this.queryOperations = [
           { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
@@ -102,6 +113,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       }
     } else {
       this.selectedKey = null;
+      this.selectedKeyMeta = null;
     }
   }
 
@@ -143,7 +155,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       children: this.nestedDataSource.data
     };
     const key = this.findParents(data, this.selectedKey);
-    const queryObj: Query = {
+    let queryObj: Query = {
       name: this.queryName,
       query: {
         operationType: this.selectedOperation
@@ -152,6 +164,16 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
         key: key.join(METRICS_JOIN_TEXT)
       },
     };
+    if (this.compareFn) {
+      queryObj = {
+        ...queryObj,
+        query: {
+          ...queryObj.query,
+          compareFn: this.compareFn,
+          compareValue: this.compareValue
+        }
+      }
+    }
     this.experimentInfo.queries = [ ...this.experimentInfo.queries, queryObj];
     this.experimentService.updateExperiment(this.experimentInfo);
     this.selectedMetricIndex = null;
@@ -162,6 +184,9 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     this.selectedKey = null;
     this.selectedOperation = null;
     this.queryName = null;
+    this.compareFn = null;
+    this.compareValue = null;
+    this.selectedKeyMeta = null;
   }
 
   ngOnDestroy() {

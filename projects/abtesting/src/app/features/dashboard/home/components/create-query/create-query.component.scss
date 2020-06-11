@@ -30,6 +30,8 @@
       justify-content: space-between;
 
       .node-tree {
+        flex-shrink: 0;
+        margin-right: 25px;
         max-height: 400px;
         overflow: scroll;
 
@@ -46,6 +48,17 @@
 
         .mat-tree-node {
           min-height: 40px;
+        }
+      }
+
+      .query-formation {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+
+        div {
+          display: flex;
+          justify-content: space-around;
         }
       }
 

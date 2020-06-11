@@ -61,26 +61,57 @@
                   </mat-nested-tree-node>
                 </mat-tree>
 
-                <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                  <input
-                    matInput
-                    [(ngModel)]="queryName"
-                    class="ft-14-600"
-                    [placeholder]="'query.table-query-name.text' | translate"
-                  />
-                </mat-form-field>
+                <div class="query-formation">
+                  <div>
+                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
+                      <input
+                        matInput
+                        [(ngModel)]="queryName"
+                        class="ft-14-600"
+                        [placeholder]="'query.table-query-name.text' | translate"
+                      />
+                    </mat-form-field>
 
-                <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                  <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
-                  <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
-                    <mat-option
-                      *ngFor="let operation of queryOperations"
-                      [value]="operation.value"
-                    >
-                      {{ operation.viewValue }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
+                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
+                      <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
+                      <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
+                        <mat-option
+                          *ngFor="let operation of queryOperations"
+                          [value]="operation.value"
+                        >
+                          {{ operation.viewValue }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+
+                  <!-- TODO: User enum of categorical -->
+                  <div *ngIf="selectedKeyMeta?.metadata?.type === 'categorical'">
+                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
+                      <mat-label>Comparison Function</mat-label>
+                      <mat-select [(ngModel)]="compareFn" class="ft-14-600 input">
+                        <mat-option
+                          *ngFor="let cmpFn of comparisonFns"
+                          [value]="cmpFn.value"
+                        >
+                          {{ cmpFn.viewValue | titlecase }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
+                      <mat-label>Value</mat-label>
+                      <mat-select [(ngModel)]="compareValue" class="ft-14-600 input">
+                        <mat-option
+                          *ngFor="let data of selectedKeyMeta?.allowedData"
+                          [value]="data"
+                        >
+                          {{ data }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
 
                 <button
                   mat-flat-button
