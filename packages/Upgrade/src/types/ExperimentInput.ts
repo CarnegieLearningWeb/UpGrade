@@ -8,6 +8,7 @@ import {
   POST_EXPERIMENT_RULE,
   IEnrollmentCompleteCondition,
 } from 'upgrade_types';
+import { Query } from '../api/models/Query';
 
 export class ExperimentInput {
   public id: string;
@@ -50,6 +51,9 @@ export class ExperimentInput {
 
   @ValidateNested()
   public partitions: ExperimentPartition[];
+
+  @ValidateNested()
+  public queries: Query[];
 
   public createdAt: Date;
   public updatedAt: Date;

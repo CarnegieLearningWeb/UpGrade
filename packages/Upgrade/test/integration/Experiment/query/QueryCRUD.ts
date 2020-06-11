@@ -81,7 +81,9 @@ export default async function QueryCRUD(): Promise<void> {
   expect(findMetric.length).toEqual(3);
 
   // three query need to be generated
+  // TODO: Remove test case of save query
   const query = {
+    name: 'timeAverage',
     query: {
       operationType: OPERATION_TYPES.AVERAGE,
     },

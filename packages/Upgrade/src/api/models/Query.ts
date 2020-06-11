@@ -1,12 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
+import { Entity, ManyToOne, Column, PrimaryColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Metric } from './Metric';
 import { Experiment } from './Experiment';
+import { IsDefined } from 'class-validator';
 
 @Entity()
 export class Query extends BaseModel {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn('uuid')
   public id: string;
+
+  @IsDefined()
+  @Column('text')
+  public name: string;
 
   @Column('jsonb')
   public query: any;

@@ -29,6 +29,9 @@ import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
 import * as config from '../../config.json';
 import { ExperimentInput } from '../../types/ExperimentInput';
+import { Query } from '../models/Query';
+import { MetricRepository } from '../repositories/MetricRepository';
+import { QueryRepository } from '../repositories/QueryRepository';
 
 // const METRIC_KEY_DIVIDER = "_@%@_";
 
@@ -43,6 +46,8 @@ export class ExperimentService {
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository() private userRepository: ExperimentUserRepository,
+    @OrmRepository() private metricRepository: MetricRepository,
+    @OrmRepository() private queryRepository: QueryRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
@@ -317,6 +322,7 @@ export class ExperimentService {
     const oldExperiment = await this.findOne(experiment.id);
     const oldConditions = oldExperiment.conditions;
     const oldPartitions = oldExperiment.partitions;
+    const oldQueries = oldExperiment.queries;
 
     // create schedules to start experiment and end experiment
     this.scheduledJobService.updateExperimentSchedules(experiment as any);
@@ -334,7 +340,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+      const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
 
       let experimentDoc: Experiment;
       try {
@@ -374,6 +380,29 @@ export class ExperimentService {
           })) ||
         [];
 
+      // creating queries docs
+      const promiseArray = [];
+      let queriesDocToSave =
+        (queries &&
+          queries.length > 0 &&
+          queries.map((query: any) => {
+            promiseArray.push(this.metricRepository.findOne(query.metric.key));
+            // tslint:disable-next-line:no-shadowed-variable
+            const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
+            rest.experiment = experimentDoc;
+            rest.id = rest.id || uuid();
+            return rest;
+          })) ||
+        [];
+
+      if (promiseArray.length) {
+        const metricsDocs = await Promise.all([...promiseArray]);
+        queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
+          queryDoc.metric = metricsDocs[index];
+          return queryDoc;
+        });
+      }
+
       // delete conditions which don't exist in new experiment document
       const toDeleteConditions = [];
       oldConditions.forEach(({ id }) => {
@@ -398,14 +427,27 @@ export class ExperimentService {
         }
       });
 
-      // delete old partitions and conditions
-      await Promise.all([...toDeleteConditions, ...toDeletePartitions]);
+       // delete queries which don't exist in new experiment document
+       const toDeleteQueries = [];
+       oldQueries.forEach(({ id }) => {
+         if (
+           !queriesDocToSave.find((doc) => {
+             return doc.id === id;
+           })
+         ) {
+           toDeleteQueries.push(this.queryRepository.deleteQuery(id, transactionalEntityManager));
+         }
+       });
 
-      // saving conditions and saving partitions
+      // delete old partitions, conditions and queries
+      await Promise.all([...toDeleteConditions, ...toDeletePartitions, ...toDeleteQueries]);
+
+      // saving conditions, saving partitions and saving queries
       let conditionDocs: ExperimentCondition[];
       let partitionDocs: ExperimentPartition[];
+      let queryDocs: Query[];
       try {
-        [conditionDocs, partitionDocs] = await Promise.all([
+        [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
           Promise.all(
             conditionDocToSave.map(async (conditionDoc) => {
               return this.experimentConditionRepository.upsertExperimentCondition(
@@ -422,9 +464,17 @@ export class ExperimentService {
               );
             })
           ) as any,
+          Promise.all(
+            queriesDocToSave.map(async (queryDoc) => {
+              return this.queryRepository.upsertQuery(
+                queryDoc,
+                transactionalEntityManager
+              );
+            })
+          ) as any,
         ]);
       } catch (error) {
-        throw new Error(`Error in creating conditions and partitions "updateExperimentInDB" ${error}`);
+        throw new Error(`Error in creating conditions, partitions, queries "updateExperimentInDB" ${error}`);
       }
 
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
@@ -435,10 +485,16 @@ export class ExperimentService {
         return { ...partitionDoc, experiment: partitionDoc.experiment };
       });
 
+      const queryDocToReturn = !!queryDocs && queryDocs.map((queryDoc, index) => {
+        const { metricKey, ...rest } = queryDoc as any;
+        return { ...rest, metric: queriesDocToSave[index].metric };
+      });
+
       const newExperiment = {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: partitionDocToReturn as any,
+        queries: queryDocToReturn as any || [],
       };
 
       // removing unwanted params for diff
@@ -446,6 +502,7 @@ export class ExperimentService {
       delete oldExperimentClone.versionNumber;
       delete oldExperimentClone.updatedAt;
       delete oldExperimentClone.createdAt;
+      delete oldExperimentClone.queries; // TODO: Remove comment if we want to consider queries in diff
 
       // Sort based on createdAt to make correct diff
       oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -469,6 +526,7 @@ export class ExperimentService {
       delete newExperimentClone.versionNumber;
       delete newExperimentClone.updatedAt;
       delete newExperimentClone.createdAt;
+      delete newExperimentClone.queries;
 
       // Sort based on createdAt to make correct diff
       newExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
