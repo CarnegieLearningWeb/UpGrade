@@ -9,6 +9,7 @@ export const experiment = {
   startOn: new Date().toISOString(),
   group: 'teacher',
   context: ['home'],
+  tags: [],
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -59,6 +60,7 @@ export const experimentSecond = {
   startOn: new Date().toISOString(),
   group: 'teacher',
   context: ['home'],
+  tags: [],
   conditions: [
     {
       id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',

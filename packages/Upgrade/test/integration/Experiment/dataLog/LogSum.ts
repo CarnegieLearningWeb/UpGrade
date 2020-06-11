@@ -53,26 +53,21 @@ export default async function CreateLog(): Promise<void> {
   const metricUnit = [
     {
       key: 'time',
-      children: [],
       metadata: {
         type: 'continuous',
       },
-      allowedData: [],
     },
     {
       key: 'w',
       children: [
         {
           key: 'time',
-          children: [],
           metadata: {
             type: 'continuous',
           },
-          allowedData: [],
         },
         {
           key: 'completion',
-          children: [],
           metadata: {
             type: 'categorical',
           },
@@ -127,48 +122,269 @@ export default async function CreateLog(): Promise<void> {
     w: { time: 0, completion: 100 },
   });
 
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, { time: 200, w: { time: 20, completion: 100 } });
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, { time: 200, w: { time: 20, completion: 200 } });
 
-  await experimentAssignmentService.dataLog(experimentUsers[2].id, { time: 100, w: { time: 40, completion: 100 } });
+  await experimentAssignmentService.dataLog(experimentUsers[2].id, { time: 100, w: { time: 40, completion: 300 } });
 
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 100 } });
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 400 } });
 
-  const query = {
-    query: {
-      operationType: OPERATION_TYPES.SUM,
-    },
-    metric: 'time',
-    experimentId: experiments[0].id,
-  };
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 500 } });
 
-  await queryService.saveQuery(query.query, query.metric, query.experimentId);
+  // Save queries for various operations
+  const querySum = makeQuery('time', OPERATION_TYPES.SUM, experiments[0].id);
+  await queryService.saveQuery(querySum.query, querySum.metric, querySum.experimentId);
+
+  const queryMin = makeQuery('time', OPERATION_TYPES.MIN, experiments[0].id);
+  await queryService.saveQuery(queryMin.query, queryMin.metric, queryMin.experimentId);
+
+  const queryMax = makeQuery('time', OPERATION_TYPES.MAX, experiments[0].id);
+  await queryService.saveQuery(queryMax.query, queryMax.metric, queryMax.experimentId);
+
+  const queryAvg = makeQuery('time', OPERATION_TYPES.AVERAGE, experiments[0].id);
+  await queryService.saveQuery(queryAvg.query, queryAvg.metric, queryAvg.experimentId);
+
+  const queryCount = makeQuery('time', OPERATION_TYPES.COUNT, experiments[0].id);
+  await queryService.saveQuery(queryCount.query, queryCount.metric, queryCount.experimentId);
+
+  const queryMode = makeQuery('time', OPERATION_TYPES.MODE, experiments[0].id);
+  await queryService.saveQuery(queryMode.query, queryMode.metric, queryMode.experimentId);
+
+  const queryMedian = makeQuery('time', OPERATION_TYPES.MEDIAN, experiments[0].id);
+  await queryService.saveQuery(queryMedian.query, queryMedian.metric, queryMedian.experimentId);
+
+  const queryStddev = makeQuery('time', OPERATION_TYPES.STDEV, experiments[0].id);
+  await queryService.saveQuery(queryStddev.query, queryStddev.metric, queryStddev.experimentId);
+
+  // Deep state qeuries
+  const deepQuerySum = makeQuery('w@__@completion', OPERATION_TYPES.SUM, experiments[0].id);
+  await queryService.saveQuery(deepQuerySum.query, deepQuerySum.metric, deepQuerySum.experimentId);
+
+  const deepQueryMin = makeQuery('w@__@completion', OPERATION_TYPES.MIN, experiments[0].id);
+  await queryService.saveQuery(deepQueryMin.query, deepQueryMin.metric, deepQueryMin.experimentId);
+
+  const deepQueryMax = makeQuery('w@__@completion', OPERATION_TYPES.MAX, experiments[0].id);
+  await queryService.saveQuery(deepQueryMax.query, deepQueryMax.metric, deepQueryMax.experimentId);
+
+  const deepQueryAvg = makeQuery('w@__@completion', OPERATION_TYPES.AVERAGE, experiments[0].id);
+  await queryService.saveQuery(deepQueryAvg.query, deepQueryAvg.metric, deepQueryAvg.experimentId);
+
+  const deepQueryCount = makeQuery('w@__@completion', OPERATION_TYPES.COUNT, experiments[0].id);
+  await queryService.saveQuery(deepQueryCount.query, deepQueryCount.metric, deepQueryCount.experimentId);
+
+  const deepQueryMode = makeQuery('w@__@completion', OPERATION_TYPES.MODE, experiments[0].id);
+  await queryService.saveQuery(deepQueryMode.query, deepQueryMode.metric, deepQueryMode.experimentId);
+
+  const deepQueryMedian = makeQuery('w@__@completion', OPERATION_TYPES.MEDIAN, experiments[0].id);
+  await queryService.saveQuery(deepQueryMedian.query, deepQueryMedian.metric, deepQueryMedian.experimentId);
+
+  const deepQueryStddev = makeQuery('w@__@completion', OPERATION_TYPES.STDEV, experiments[0].id);
+  await queryService.saveQuery(deepQueryStddev.query, deepQueryStddev.metric, deepQueryStddev.experimentId);
 
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        query: { operationType: 'sum' },
+        query: { operationType: OPERATION_TYPES.SUM },
         metric: expect.objectContaining({
           key: 'time',
           type: 'continuous',
-          allowedData: [],
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.AVERAGE },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.COUNT },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MAX },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MIN },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MEDIAN },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MODE },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.STDEV },
+        metric: expect.objectContaining({
+          key: 'time',
+          type: 'continuous',
+          allowedData: null,
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.SUM },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.AVERAGE },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.COUNT },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MAX },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MIN },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MEDIAN },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.MODE },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
+        }),
+      }),
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.STDEV },
+        metric: expect.objectContaining({
+          key: 'w@__@completion',
+          type: 'categorical',
+          allowedData: ['InProgress', 'Complete'],
         }),
       }),
     ])
   );
 
-  let data = await queryService.analyse(allQuery[0].id);
-  console.log('Sum time', data);
-  // data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.COUNT, '');
-  // console.log('Count time', data);
-  // data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.AVERAGE, '');
-  // console.log('Average time', data);
-  // data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.MAX, '');
-  // console.log('Maximum time', data);
-  // data = await logDataService.analyse(experimentId, ['time'], OPERATION_TYPES.MIN, '');
-  // console.log('Minimum time', data);
+  // Test results
+  allQuery.forEach( async (query) => {
+    const queryResult = await queryService.analyse(query.id);
+    const res = reduceResult(queryResult);
+    let expectedValue;
+    // Used for console output
+    const consoleString = query.metric.key === 'time' ? query.query.operationType + ' ' : query.query.operationType + ' deep';
 
-  // // deep stats
-  // data = await logDataService.analyse(experimentId, ['w', 'time'], OPERATION_TYPES.SUM, '');
-  // console.log('Sum time deep', data);
+    switch (query.query.operationType) {
+      case OPERATION_TYPES.SUM:
+        const sum = res.reduce((accu, data) => {
+          return accu + data;
+        }, 0);
+        expectedValue = 420;
+        if (query.metric.key !== 'time') {
+          expectedValue = 1500; // For completion metric
+        }
+        expect(sum).toEqual(expectedValue);
+        break;
+      case OPERATION_TYPES.MIN:
+        const minValue = Math.min(...res);
+        expectedValue = 20;
+        if (query.metric.key !== 'time') {
+          expectedValue = 100; // For completion metric
+        }
+        expect(minValue).toEqual(expectedValue);
+        break;
+      case OPERATION_TYPES.MAX:
+        const maxValue = Math.max(...res);
+        expectedValue = 200;
+        if (query.metric.key !== 'time') {
+          expectedValue = 500; // For completion metric
+        }
+        expect(maxValue).toEqual(expectedValue);
+        break;
+      // Can not check exact values for below operations
+      case OPERATION_TYPES.COUNT:
+        console.log(consoleString, queryResult);
+        break;
+      case OPERATION_TYPES.AVERAGE:
+        console.log(consoleString, queryResult);
+        break;
+      case OPERATION_TYPES.MODE:
+        console.log(consoleString, queryResult);
+        break;
+      case OPERATION_TYPES.MEDIAN:
+        console.log(consoleString, queryResult);
+        break;
+      case OPERATION_TYPES.STDEV:
+        console.log(consoleString, queryResult);
+        break;
+      default:
+        break;
+    }
+  });
+}
+
+function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId: string): any {
+  return {
+    query: {
+      operationType,
+    },
+    metric,
+    experimentId,
+  };
+}
+
+function reduceResult(result: any): number[] {
+  const resultSet = [];
+  result.forEach(data => {
+    resultSet.push(parseInt(data.result, 10));
+  });
+  return resultSet;
 }

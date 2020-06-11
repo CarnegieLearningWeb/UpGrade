@@ -37,12 +37,13 @@ export class LogRepository extends Repository<Log> {
     }
   }
 
-  public async analysis(
-    experimentId: string,
-    metric: string,
-    operationType: OPERATION_TYPES,
-    timeRange: any
-  ): Promise<any> {
+  public async analysis(query: any): Promise<any> {
+
+    const experimentId = query.experiment.id;
+    const metric = query.metric.key;
+    const operationType = query.query.operationType;
+    const { id: queryId } = query;
+
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
     const metricId = metric.split(METRICS_JOIN_TEXT);
@@ -50,13 +51,8 @@ export class LogRepository extends Repository<Log> {
       return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
 
-    // SUM operation
-    return experimentRepo
+    let executeQuery = experimentRepo
       .createQueryBuilder('experiment')
-      .select([
-        '"individualAssignment"."conditionId"',
-        `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
-      ])
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
       .innerJoin('metric.logs', 'logs')
@@ -67,7 +63,23 @@ export class LogRepository extends Repository<Log> {
       )
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
-      .groupBy('"individualAssignment"."conditionId"')
-      .getRawMany();
+      .andWhere('queries.id = :queryId', { queryId })
+      .groupBy('"individualAssignment"."conditionId"');
+
+    if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
+      const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
+      executeQuery = executeQuery
+        .select([
+          '"individualAssignment"."conditionId"',
+          `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
+        ]);
+    } else {
+      executeQuery = executeQuery
+        .select([
+          '"individualAssignment"."conditionId"',
+          `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
+        ]);
+    }
+    return executeQuery.getRawMany();
   }
 }
