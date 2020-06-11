@@ -157,17 +157,6 @@ resource "aws_iam_role_policy" "app-attach1" {
          ]
       },
       {
-         "Sid":"CloudWatchLogsAccess",
-         "Action":[
-            "logs:PutLogEvents",
-            "logs:CreateLogStream"
-         ],
-         "Effect":"Allow",
-         "Resource":[
-            "arn:aws:logs:*:*:log-group:/aws/elasticbeanstalk*"
-         ]
-      },
-      {
          "Effect":"Allow",
          "Action":[
             "ecr:GetAuthorizationToken",
