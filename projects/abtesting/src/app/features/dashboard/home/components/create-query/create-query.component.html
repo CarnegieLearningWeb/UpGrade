@@ -62,6 +62,15 @@
                 </mat-tree>
 
                 <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
+                  <input
+                    matInput
+                    [(ngModel)]="queryName"
+                    class="ft-14-600"
+                    [placeholder]="'query.table-query-name.text' | translate"
+                  />
+                </mat-form-field>
+
+                <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
                   <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
                   <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
                     <mat-option
@@ -72,13 +81,14 @@
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
+
                 <button
                   mat-flat-button
                   *ngIf="selectedKey"
                   color="primary"
                   class="ft-14-700 default-button"
-                  [ngClass]="{ 'default-button--disabled': !selectedKey || !selectedOperation }"
-                  [disabled]="!selectedKey || !selectedOperation"
+                  [ngClass]="{ 'default-button--disabled': !selectedKey || !selectedOperation || !queryName }"
+                  [disabled]="!selectedKey || !selectedOperation || !queryName"
                   (click)="saveQuery()"
                 >
                   <span>{{ 'global.save.text' | translate }}</span>

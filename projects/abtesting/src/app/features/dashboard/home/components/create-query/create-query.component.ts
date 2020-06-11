@@ -1,9 +1,11 @@
 import { Component, OnInit, ViewChild, ElementRef, OnDestroy, Input } from '@angular/core';
 import { Subscription, BehaviorSubject, of } from 'rxjs';
-import { MetricUnit, OPERATION_TYPES, METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
+import { MetricUnit, OPERATION_TYPES, METRICS_JOIN_TEXT, Query } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource, MatTableDataSource } from '@angular/material';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'app-create-query',
@@ -11,7 +13,7 @@ import { AnalysisService } from '../../../../../core/analysis/analysis.service';
   styleUrls: ['./create-query.component.scss'],
 })
 export class CreateQueryComponent implements OnInit, OnDestroy {
-  @Input() experimentId: string;
+  @Input() experimentInfo: ExperimentVM;
   displayedColumns = ['id', 'metric'];
 
   // Used for displaying metrics
@@ -28,6 +30,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   selectedMetricIndex = null;
   selectedKey: string;
   selectedOperation: string;
+  queryName: string;
 
   queryOperations = [];
 
@@ -35,6 +38,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   constructor(
     private analysisService: AnalysisService,
+    private experimentService: ExperimentService
   ) { }
 
   ngOnInit() {
@@ -113,7 +117,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     // If current node name matches the search name, return
     // empty array which is the beginning of our parent result
     if (node.key === searchForKey) {
-      return []
+      return [];
     }
 
     // Otherwise, if this node has a tree field/value, recursively
@@ -139,14 +143,17 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       children: this.nestedDataSource.data
     };
     const key = this.findParents(data, this.selectedKey);
-    const queryObj = {
+    const queryObj: Query = {
+      name: this.queryName,
       query: {
         operationType: this.selectedOperation
       },
-      metric: key.join(METRICS_JOIN_TEXT),
-      experimentId: this.experimentId
+      metric: {
+        key: key.join(METRICS_JOIN_TEXT)
+      },
     };
-    this.analysisService.saveQuery(queryObj);
+    this.experimentInfo.queries = [ ...this.experimentInfo.queries, queryObj];
+    this.experimentService.updateExperiment(this.experimentInfo);
     this.selectedMetricIndex = null;
     this.resetVariables();
   }
@@ -154,6 +161,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   resetVariables() {
     this.selectedKey = null;
     this.selectedOperation = null;
+    this.queryName = null;
   }
 
   ngOnDestroy() {

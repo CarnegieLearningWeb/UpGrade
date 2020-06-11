@@ -1,3 +1,4 @@
+<!-- TODO: Analysis query -->
 <div class="queries-container">
   <mat-form-field>
     <input
@@ -24,6 +25,16 @@
               {{ 'query.table-id.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
+          </ng-container>
+
+          <!-- Query Name Column -->
+          <ng-container matColumnDef="queryName">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-name.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              {{ element?.name || '' }}
+            </td>
           </ng-container>
 
           <!-- ExperimentName Column -->
@@ -66,6 +77,30 @@
                 class="icon"
                 (click)="executeQuery(element)"
               >send</mat-icon>
+            </td>
+          </ng-container>
+
+          <!-- Edit Column -->
+          <ng-container matColumnDef="edit">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                class="icon"
+                (click)="editQuery(element)"
+              >create</mat-icon>
+            </td>
+          </ng-container>
+
+          <!-- Delete Column -->
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                class="icon"
+                (click)="deleteQuery(element)"
+              >delete_outline</mat-icon>
             </td>
           </ng-container>
 

@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { MetricUnit } from './analysis.models';
+import { MetricUnit, Query } from './analysis.models';
 
 export const actionFetchMetrics = createAction(
   '[Analysis] Fetch Metrics'
@@ -19,6 +19,7 @@ export const actionSetMetricsFilterValue = createAction(
   props<{ filterString: string }>()
 );
 
+// TODO: Analysis query
 export const actionFetchQueries = createAction(
   '[Analysis] Fetch Queries'
 );
@@ -53,7 +54,7 @@ export const actionExecuteQueryFailure = createAction(
 
 export const actionSaveQuery = createAction(
   '[Analysis] Save Query',
-  props<{ query: any }>()
+  props<{ query: Query }>()
 );
 
 export const actionSaveQuerySuccess = createAction(
@@ -63,6 +64,20 @@ export const actionSaveQuerySuccess = createAction(
 
 export const actionSaveQueryFailure = createAction(
   '[Analysis] Save Query Failure',
+);
+
+export const actionDeleteQuery = createAction(
+  '[Analysis] Delete Query',
+  props<{ queryId: string }>()
+);
+
+export const actionDeleteQuerySuccess = createAction(
+  '[Analysis] Delete Query Success',
+  props<{ query: any }>()
+);
+
+export const actionDeleteQueryFailure = createAction(
+  '[Analysis] Delete Query Failure',
 );
 
 export const actionSetQueryResult = createAction(

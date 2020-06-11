@@ -22,14 +22,15 @@
           width: 10%;
         }
 
-        &.mat-column-metric {
-          width: 35%;
+        &.mat-column-queryName {
+          width: 15%;
         }
 
-        &.mat-column-experimentName {
+        &.mat-column-metric {
           width: 25%;
         }
 
+        &.mat-column-experimentName,
         &.mat-column-operation {
           width: 20%;
         }

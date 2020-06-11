@@ -12,12 +12,21 @@ export interface MetricUnit {
   children: MetricUnit[];
 }
 
+export interface Query {
+  name: string;
+  query: any;
+  metric: {
+    key: string;
+  }
+}
+
 export interface AnalysisState {
   isMetricsLoading: boolean;
   isQueriesLoading: boolean;
   isQueryExecuting: boolean;
   metrics: MetricUnit[];
   metricsFilter: string;
+  // TODO: Analysis query
   queries: any[];
   queriesFilter: string;
   queryResult: any;

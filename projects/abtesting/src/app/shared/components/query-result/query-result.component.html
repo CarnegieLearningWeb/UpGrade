@@ -31,7 +31,7 @@
           {{ 'query.result.result.text' | translate }}
         </mat-header-cell>
         <mat-cell class="ft-12-600" *matCellDef="let data">
-          {{ data.result }}
+          {{ data.result | number }}
         </mat-cell>
       </ng-container>
 
