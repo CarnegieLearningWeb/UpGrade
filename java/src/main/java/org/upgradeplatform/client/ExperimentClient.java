@@ -19,6 +19,7 @@ import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
 import org.upgradeplatform.requestbeans.Log;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
 import org.upgradeplatform.requestbeans.MetricUnit;
+import org.upgradeplatform.requestbeans.MetricUnitBody;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
@@ -385,11 +386,11 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	public void addMetrics(final MetricUnit[] metrics, final ResponseCallback<List<Metric>> callbacks) {
-		MetricUnit metricUnit = new MetricUnit( metrics );
-
+	public void addMetrics(final List<MetricUnit> metrics, final ResponseCallback<List<Metric>> callbacks) {
+		
+		MetricUnitBody metricUnit = new MetricUnitBody( metrics );
 		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
-		Entity<MetricUnit> requestContent = Entity.json(metricUnit);
+		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {

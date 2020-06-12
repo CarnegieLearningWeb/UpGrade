@@ -8,14 +8,7 @@ public class MetricUnit {
 	private MetricUnit[] children;
 	private Metadata metadata;
 	private String[] allowedData;
-	
-	private MetricUnit[]  metricUnit;
-	
-	
-	public MetricUnit(MetricUnit[]  metricUnit) {
-		this.metricUnit = metricUnit;
-	}
-	
+
 	public MetricUnit(Object key, MetricUnit[] children, String metadataType, String[] allowedData) {
 		super();
 		
@@ -53,13 +46,4 @@ public class MetricUnit {
 	public void setAllowedData(String[] allowedData) {
 		this.allowedData = allowedData;
 	}
-
-	public MetricUnit[] getMetricUnit() {
-		return metricUnit;
-	}
-
-	public void setMetricUnit(MetricUnit[] metricUnit) {
-		this.metricUnit = metricUnit;
-	}
-	
 }
