@@ -7,6 +7,7 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { ExperimentService } from './ExperimentService';
 import { Experiment } from '../models/Experiment';
 import { Metric } from '../models/Metric';
+import uuid from 'uuid/v4';
 import { LogRepository } from '../repositories/LogRepository';
 
 @Service()
@@ -30,6 +31,7 @@ export class QueryService {
     });
   }
 
+  // TODO: Remove save query method
   public async saveQuery(query: any, metric: string, experimentId: string): Promise<Query | any> {
     this.log.info('Save all query');
     const promiseResult = await Promise.all([
@@ -40,6 +42,8 @@ export class QueryService {
     const experiment: Experiment = promiseResult[0];
     const metricDoc: Metric = promiseResult[1];
     const queryDoc: any = {
+      id: uuid(),
+      name: '', // TODO: Fix this
       query,
       metric: metricDoc,
       experiment,

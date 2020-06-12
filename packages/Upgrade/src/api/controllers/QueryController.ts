@@ -34,6 +34,7 @@ export class QueryController {
     return this.queryService.find();
   }
 
+  // TODO: Remove save query endpoint
   /**
    * @swagger
    * /query:
