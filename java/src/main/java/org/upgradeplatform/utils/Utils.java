@@ -17,6 +17,7 @@ public class Utils
 	public static final String INVALID_MARK_EXPERIMENT_DATA = "Invalid mark experiment data";
 	public static final String INVALID_FAILED_EXPERIMENT_DATA = "Invalid failed experiment data";
 	public static final String FEATURE_FLAGS_EMPTY= "No active feature flags found";
+	public static final String INVALID_FEATURE_FLAG_KEY= "Feature flag with given key not found";
 	public static final String INVALID_METRIC_META_DATA= "Invalid metadata type provided. It should be of MetricMetaData enum type";
 
 	
@@ -29,13 +30,15 @@ public class Utils
 	public static final String LOG_EVENT= "api/log";
 	public static final String SET_ALT_USER_IDS= "api/useraliases";
 	public static final String ADD_MATRIC= "api/metric";
-
-	public static final String REQUEST_TYPES_GET = "GET";
-	public static final String REQUEST_TYPES_POST = "POST";
 	
 	public static final int MAX_RETRIES = 3;
 
 
+	public static enum REQUEST_TYPES {
+		GET,
+		POST
+	}
+	
 	public static enum MetricMetaData {
 		continuous,
 		categorical

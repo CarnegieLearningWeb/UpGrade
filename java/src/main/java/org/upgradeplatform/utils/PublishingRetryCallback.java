@@ -11,12 +11,21 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 public class PublishingRetryCallback<T> implements InvocationCallback<Response> {
 
 	private final AsyncInvoker invoker;
-	private final Entity<T> message;
+	private Entity<T> message;
 	private final InvocationCallback<Response> callback;
 	private int retries;
-	private String type; // Request type
+	private REQUEST_TYPES type; // Request type
 
-	public PublishingRetryCallback(AsyncInvoker invoker, Entity<T> message, int retries, String type ,InvocationCallback<Response> callback) {
+	
+	public PublishingRetryCallback(AsyncInvoker invoker, int retries, REQUEST_TYPES type ,InvocationCallback<Response> callback) {
+		this.invoker = invoker;
+		this.retries = retries;
+		this.callback = callback;
+		this.type = type;
+	}
+	
+	public PublishingRetryCallback(AsyncInvoker invoker, Entity<T> message, int retries, REQUEST_TYPES type ,InvocationCallback<Response> callback) {
+		this.message = null;
 		this.invoker = invoker;
 		this.message = message;
 		this.retries = retries;
@@ -45,10 +54,10 @@ public class PublishingRetryCallback<T> implements InvocationCallback<Response> 
 	private void retry() {
 		retries--;
 		switch(this.type) {
-			case REQUEST_TYPES_POST:
+			case POST:
 				invoker.post(message, this);
 				break;
-			case REQUEST_TYPES_GET:
+			case GET:
 				invoker.get(this);
 				break;
 			default:

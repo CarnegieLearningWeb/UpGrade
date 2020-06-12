@@ -63,7 +63,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,REQUEST_TYPES_POST, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,REQUEST_TYPES.POST, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -90,7 +90,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -117,7 +117,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -213,7 +213,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -257,7 +257,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -284,8 +284,7 @@ public class ExperimentClient implements AutoCloseable {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_FEATURE_FLAGS);
 
-		invocation.get(new PublishingRetryCallback<>(invocation, Entity.json(""), MAX_RETRIES, REQUEST_TYPES_GET,
-				new InvocationCallback<Response>() {
+		invocation.get(new PublishingRetryCallback<>(invocation, MAX_RETRIES, REQUEST_TYPES.GET,new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
@@ -323,14 +322,22 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	private FeatureFlag findFeatureFlag(String key, List<FeatureFlag> featureFlags) {
-		return featureFlags.stream()
+		FeatureFlag featureFlag = featureFlags.stream()
 				.filter(t -> t.getKey().equals(key))
 				.findFirst()
-				.map(ExperimentClient::getActiveVariation)
 				.orElse(new FeatureFlag());
+
+		return getActiveVariation(featureFlag);
 	}
 
-	private static FeatureFlag getActiveVariation(FeatureFlag featureFlag) {
+	private FeatureFlag getActiveVariation(FeatureFlag featureFlag) {
+
+		if(isStringNull(featureFlag.getId())) {
+			return featureFlag;
+		}
+
+		FeatureFlag resultFeatureFlag = new FeatureFlag(featureFlag);
+
 		if(featureFlag.getVariations().size() > 0) {
 			List<Variation> variations = featureFlag.getVariations();
 			Variation activeVariation;
@@ -340,23 +347,23 @@ public class ExperimentClient implements AutoCloseable {
 					.findFirst()
 					.orElse(new Variation());
 
-
 			List<Variation> result = new ArrayList<>();
 			result.add(activeVariation);
 
-			featureFlag.setVariations(result);
+			resultFeatureFlag.setVariations(result);
 		} 
-		return featureFlag;
+
+		return resultFeatureFlag;
 	}
 
-	public void setAltUserIds(final String[] altUserIds, final ResponseCallback<List<InitRequest>> callbacks) {
+	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<List<InitRequest>> callbacks) {
 
 		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -384,7 +391,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
 		Entity<MetricUnit> requestContent = Entity.json(metricUnit);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -411,7 +418,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
 		Entity<Log> requestContent = Entity.json(new Log( key, value ));
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES_POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
 				new InvocationCallback<Response>() {
 
 			@Override

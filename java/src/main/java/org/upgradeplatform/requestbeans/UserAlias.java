@@ -1,23 +1,25 @@
 package org.upgradeplatform.requestbeans;
 
+import java.util.List;
+
 public class UserAlias {
 
-	private String[] aliases;
+	private List<String> aliases;
 	private String userId;
 	
 	public UserAlias(){}
 	
-	public UserAlias( String userId, String[] aliases) {
+	public UserAlias( String userId, List<String> aliases) {
 		super();
 		this.aliases = aliases;
 		this.userId = userId;
 	}
 
-	public String[] getAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 
-	public void setAliases(String[] aliases) {
+	public void setAliases(List<String> aliases) {
 		this.aliases = aliases;
 	}
 
