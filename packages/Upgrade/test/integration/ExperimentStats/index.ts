@@ -1,6 +1,7 @@
 import IndividualExperimentWithDateRange from './individualExperimentWithDateRange';
 import IndividualEnrollment from './IndividualEnrollment';
 import GroupEnrollment from './GroupEnrollment';
+import DetailExperiment from './DetailExperiment';
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -43,6 +44,11 @@ const initialChecks = async () => {
 export const StatsIndividualExperimentWithDateRange = async () => {
   await initialChecks();
   await IndividualExperimentWithDateRange();
+};
+
+export const StatsDetailExperiment = async () => {
+  await initialChecks();
+  await DetailExperiment();
 };
 
 export const StatsIndividualEnrollment = async () => {

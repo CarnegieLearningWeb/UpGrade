@@ -50,6 +50,95 @@ export class AnalyticsService {
     return this.analyticsRepository.getEnrollments(experimentIds);
   }
 
+  public async getDetailEnrolment(experimentId: string, from: Date, to: Date): Promise<any> {
+    const [
+      individualEnrollment,
+      groupEnrollment,
+      individualExclusion,
+      groupExclusion,
+    ] = await this.analyticsRepository.getDetailEnrollment(experimentId, from, to);
+
+    // total individual users
+    const userIds: string[] = individualEnrollment.map((enrollment) => enrollment.userId);
+    const uniqueUsers = new Set(userIds);
+    const totalUsers = uniqueUsers.size;
+
+    // total groups
+    const groupIds: string[] = groupEnrollment.map((enrollment) => enrollment.groupId);
+    const uniqueGroups = new Set(groupIds);
+    const totalGroups = uniqueGroups.size;
+
+    const returningData = {
+      users: totalUsers,
+      groups: totalGroups,
+      usersExcluded: parseInt(individualExclusion[0].count, 10),
+      groupsExcluded: parseInt(groupExclusion[0].count, 10),
+      partitions: {},
+      conditions: {},
+    };
+
+    // populate individual user data
+    individualEnrollment.forEach(({ conditions_id, partitions_id }) => {
+      // initializing partitionIds
+      returningData.partitions[partitions_id] = returningData.partitions[partitions_id] || {
+        users: 0,
+        groups: 0,
+        conditions: {},
+      };
+      // console.log('returningData.partitions[partitions_id]', returningData.partitions[partitions_id]);
+      returningData.partitions[partitions_id].users++;
+
+      returningData.partitions[partitions_id].conditions[conditions_id] = returningData.partitions[partitions_id]
+        .conditions[conditions_id] || { users: 0, groups: 0 };
+
+      returningData.partitions[partitions_id].conditions[conditions_id].users++;
+
+      // initializing conditionIds
+      returningData.conditions[conditions_id] = returningData.conditions[conditions_id] || {
+        users: 0,
+        groups: 0,
+        partitions: {},
+      };
+      returningData.conditions[conditions_id].users++;
+
+      returningData.conditions[conditions_id].partitions[partitions_id] = returningData.conditions[conditions_id]
+        .partitions[partitions_id] || { users: 0, groups: 0 };
+
+      returningData.conditions[conditions_id].partitions[partitions_id].users++;
+    });
+
+    // populate group data
+    groupEnrollment.forEach(({ conditions_id, partitions_id }) => {
+      // initializing partitionIds
+      returningData.partitions[partitions_id] = returningData.partitions[partitions_id] || {
+        users: 0,
+        groups: 0,
+        conditions: {},
+      };
+      returningData.partitions[partitions_id].groups++;
+
+      returningData.partitions[partitions_id].conditions[conditions_id] = returningData.partitions[partitions_id]
+        .conditions[conditions_id] || { users: 0, groups: 0 };
+
+      returningData.partitions[partitions_id].conditions[conditions_id].groups++;
+
+      // initializing conditionIds
+      returningData.conditions[conditions_id] = returningData.partitions[partitions_id] || {
+        users: 0,
+        groups: 0,
+        partitions: {},
+      };
+      returningData.conditions[conditions_id].groups++;
+
+      returningData.conditions[conditions_id].partitions[partitions_id] = returningData.conditions[conditions_id]
+        .partitions[partitions_id] || { users: 0, groups: 0 };
+
+      returningData.conditions[conditions_id].partitions[partitions_id].groups++;
+    });
+
+    return returningData;
+  }
+
   public async getEnrolmentStatsByDate(experimentId: string, from: Date, to: Date): Promise<IExperimentDateStat[]> {
     const experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
