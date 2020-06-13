@@ -64,7 +64,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,REQUEST_TYPES.POST, 
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,RequestType.POST, 
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -91,7 +91,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<InitRequest> requestContent = Entity.json(initRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -118,7 +118,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -214,7 +214,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -258,7 +258,7 @@ public class ExperimentClient implements AutoCloseable {
 		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
 
 		// Invoke the method
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -285,7 +285,7 @@ public class ExperimentClient implements AutoCloseable {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_FEATURE_FLAGS);
 
-		invocation.get(new PublishingRetryCallback<>(invocation, MAX_RETRIES, REQUEST_TYPES.GET,new InvocationCallback<Response>() {
+		invocation.get(new PublishingRetryCallback<>(invocation, MAX_RETRIES, RequestType.GET,new InvocationCallback<Response>() {
 
 			@Override
 			public void completed(Response response) {
@@ -364,7 +364,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -392,7 +392,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
 		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override
@@ -419,7 +419,7 @@ public class ExperimentClient implements AutoCloseable {
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
 		Entity<Log> requestContent = Entity.json(new Log( key, value ));
 
-		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, REQUEST_TYPES.POST,
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
 
 			@Override

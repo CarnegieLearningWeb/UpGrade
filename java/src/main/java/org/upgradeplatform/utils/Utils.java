@@ -34,7 +34,7 @@ public class Utils
 	public static final int MAX_RETRIES = 3;
 
 
-	public static enum REQUEST_TYPES {
+	public static enum RequestType {
 		GET,
 		POST
 	}
