@@ -36,7 +36,6 @@ export const environment = {
     getPaginatedFlags: `${endpointApi}/flags/paginated`,
     setting: `${endpointApi}/setting`,
     metrics: `${endpointApi}/metric`,
-    query: `${endpointApi}/query`,
     queryResult: `${endpointApi}/query/analyse`
   }
 };

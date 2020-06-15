@@ -5,10 +5,9 @@ import { AnalysisRoutingModule } from './analysis-routing.module';
 import { AnalysisRootComponent } from './analysis-root/analysis-root.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { MetricsComponent } from './components/metrics/metrics.component';
-import { QueriesComponent } from './components/queries/queries.component';
 
 @NgModule({
-  declarations: [AnalysisRootComponent, MetricsComponent, QueriesComponent],
+  declarations: [AnalysisRootComponent, MetricsComponent],
   imports: [
     CommonModule,
     AnalysisRoutingModule,
