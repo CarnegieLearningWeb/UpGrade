@@ -3,7 +3,7 @@ import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
+import { OPERATION_TYPES } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 
 @EntityRepository(Log)
@@ -38,7 +38,6 @@ export class LogRepository extends Repository<Log> {
   }
 
   public async analysis(query: any): Promise<any> {
-
     const experimentId = query.experiment.id;
     const metric = query.metric.key;
     const { operationType, compareFn, compareValue } = query.query;
@@ -66,27 +65,32 @@ export class LogRepository extends Repository<Log> {
       .andWhere('queries.id = :queryId', { queryId });
 
     if (compareFn) {
-      executeQuery = executeQuery.andWhere(`(cast(logs.data -> ${metricString} as text)) ${compareFn} :compareValue`, { compareValue });
+      executeQuery = executeQuery.andWhere(`(cast(logs.data -> ${metricString} as text)) ${compareFn} :compareValue`, {
+        compareValue,
+      });
     }
     // TODO: Form properly
-    executeQuery = executeQuery .groupBy('"individualAssignment"."conditionId"');
-    let castType = 'decimal';
-    if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-      castType = 'text';
-    }
+    executeQuery = executeQuery.groupBy('"individualAssignment"."conditionId"');
+    // let castType = 'decimal';
+    // if (query.metric.type === IMetricMetaData.CATEGORICAL) {
+    //   castType = 'text';
+    // }
     if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
       const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
-      executeQuery = executeQuery
-        .select([
-          '"individualAssignment"."conditionId"',
-          `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
-        ]);
+      executeQuery = executeQuery.select([
+        '"individualAssignment"."conditionId"',
+        `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
+      ]);
+    } else if (operationType === OPERATION_TYPES.COUNT) {
+      executeQuery = executeQuery.select([
+        '"individualAssignment"."conditionId"',
+        `${operationType}(cast(logs.data -> ${metricString} as text)) as result`,
+      ]);
     } else {
-      executeQuery = executeQuery
-        .select([
-          '"individualAssignment"."conditionId"',
-          `${operationType}(cast(logs.data -> ${metricString} as ${castType})) as result`,
-        ]);
+      executeQuery = executeQuery.select([
+        '"individualAssignment"."conditionId"',
+        `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
+      ]);
     }
     return executeQuery.getRawMany();
   }

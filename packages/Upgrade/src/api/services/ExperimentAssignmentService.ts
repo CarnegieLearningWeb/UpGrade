@@ -8,6 +8,7 @@ import {
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
   IExperimentAssignment,
+  IMetricMetaData,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -266,11 +267,15 @@ export class ExperimentAssignmentService {
       // ============ query assignment/exclusion for user
       const allGroupIds: string[] = (experimentUser.workingGroup && Object.values(experimentUser.workingGroup)) || [];
       const promiseAssignmentExclusion: any[] = [
-        experimentIds.length > 0 ? this.individualAssignmentRepository.findAssignment(experimentUser.id, experimentIds) : [],
+        experimentIds.length > 0
+          ? this.individualAssignmentRepository.findAssignment(experimentUser.id, experimentIds)
+          : [],
         allGroupIds.length > 0 && experimentIds.length > 0
           ? this.groupAssignmentRepository.findExperiment(allGroupIds, experimentIds)
           : [],
-        experimentIds.length > 0 ? this.individualExclusionRepository.findExcluded(experimentUser.id, experimentIds) : [],
+        experimentIds.length > 0
+          ? this.individualExclusionRepository.findExcluded(experimentUser.id, experimentIds)
+          : [],
         allGroupIds.length > 0 && experimentIds.length > 0
           ? this.groupExclusionRepository.findExcluded(allGroupIds, experimentIds)
           : [],
@@ -402,29 +407,98 @@ export class ExperimentAssignmentService {
           return doc.key === metricId;
         });
 
+        const keyArray = metricId.split(METRICS_JOIN_TEXT);
+        const toPop = keyArray.pop();
+        // delete json data
+        const jsonPointer: any = keyArray.reduce((accumulator, key) => {
+          return accumulator[key];
+        }, jsonLog);
         if (!document) {
-          const keyArray = metricId.split(METRICS_JOIN_TEXT);
-          const toPop = keyArray.pop();
-          // delete json data
-          const jsonPointer: any = keyArray.reduce((accumulator, key) => {
-            return accumulator[key];
-          }, jsonLog);
-
           delete jsonPointer[toPop];
+        } else {
+          // change data according to the type
+          if (document.type === IMetricMetaData.CONTINUOUS) {
+            if (parseInt(jsonPointer[toPop], 10)) {
+              jsonPointer[toPop] = parseInt(jsonPointer[toPop], 10);
+            } else {
+              delete jsonPointer[toPop];
+            }
+          } else if (document.type === IMetricMetaData.CATEGORICAL) {
+            const stringValue = jsonPointer[toPop].toString();
+            if (document.allowedData.includes(stringValue)) {
+              jsonPointer[toPop] = stringValue;
+            } else {
+              delete jsonPointer[toPop];
+            }
+          }
         }
       });
     } else {
-      // save the metrics keys
-      const metricDocument = stringIds.map((stringKey) => {
-        return {
-          key: stringKey,
-        };
+      // metrics document already exist
+      const metricsDocsAlreadyExist = await this.metricRepository.findByIds(stringIds);
+
+      // filter json document
+      metricsDocsAlreadyExist.map(({ key, type, allowedData }) => {
+        // type of metric document to determine
+        const keyArray = key.split(METRICS_JOIN_TEXT);
+        const toPop = keyArray.pop();
+        // delete json data
+        const jsonPointer: any = keyArray.reduce((accumulator, jsonKey) => {
+          return accumulator[jsonKey];
+        }, jsonLog);
+
+        if (type === IMetricMetaData.CONTINUOUS) {
+          if (parseInt(jsonPointer[toPop], 10)) {
+            jsonPointer[toPop] = parseInt(jsonPointer[toPop], 10);
+          } else {
+            delete jsonPointer[toPop];
+          }
+        } else if (type === IMetricMetaData.CATEGORICAL) {
+          const stringValue = jsonPointer[toPop].toString();
+          if (!allowedData) {
+            delete jsonPointer[toPop];
+          } else if (allowedData.length > 0 && allowedData.includes(stringValue)) {
+            jsonPointer[toPop] = stringValue;
+          } else {
+            delete jsonPointer[toPop];
+          }
+        }
+      });
+
+      // save new metrics keys
+      const metricDocumentToCreate = stringIds.filter((stringKey) => {
+        return !metricsDocsAlreadyExist.find(({ key }) => {
+          return key === stringKey;
+        });
+      });
+
+      const metricDocument = metricDocumentToCreate.map((stringKey) => {
+        // type of metric document to determine
+        const keyArray = stringKey.split(METRICS_JOIN_TEXT);
+        const toPop = keyArray.pop();
+        // delete json data
+        const jsonPointer: any = keyArray.reduce((accumulator, key) => {
+          return accumulator[key];
+        }, jsonLog);
+        const value = jsonPointer[toPop];
+
+        if (parseInt(value, 10)) {
+          return {
+            key: stringKey,
+            type: IMetricMetaData.CONTINUOUS,
+          };
+        } else {
+          return {
+            key: stringKey,
+            type: IMetricMetaData.CATEGORICAL,
+          };
+        }
       });
       metricDocs = await this.metricRepository.save(metricDocument);
+      metricDocs = [...metricDocs, ...metricsDocsAlreadyExist];
     }
 
     const toLog: boolean = Object.keys(jsonLog).length !== 0;
-
     // check all matrix id exist
     // save log with valid matrix ids
     if (toLog) {

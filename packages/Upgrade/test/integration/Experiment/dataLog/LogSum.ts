@@ -4,15 +4,13 @@ import { individualAssignmentExperiment } from '../../mockData/experiment/index'
 import { UserService } from '../../../../src/api/services/UserService';
 import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
-import { Log } from '../../../../src/api/models/Log';
 import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE, OPERATION_TYPES } from 'upgrade_types';
 import { getAllExperimentCondition } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
-import { DataLogService } from '../../../../src/api/services/DataLogService';
-import { MetricService } from '../../../../src/api/services/MetricService';
+import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 
@@ -25,8 +23,6 @@ export default async function CreateLog(): Promise<void> {
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   const queryService = Container.get<QueryService>(QueryService);
-  const logRepository = getRepository(Log);
-  const logDataService = Container.get<DataLogService>(DataLogService);
 
   const user = await userService.create(systemUser as any);
 
@@ -119,16 +115,28 @@ export default async function CreateLog(): Promise<void> {
   // log data here
   await experimentAssignmentService.dataLog(experimentUsers[0].id, {
     time: 20,
-    w: { time: 0, completion: 100 },
+    w: { time: '100', completion: 'InProgress' },
   });
 
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, { time: 200, w: { time: 20, completion: 200 } });
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, {
+    time: 200,
+    w: { time: 200, completion: 'InProgress' },
+  });
 
-  await experimentAssignmentService.dataLog(experimentUsers[2].id, { time: 100, w: { time: 40, completion: 300 } });
+  await experimentAssignmentService.dataLog(experimentUsers[2].id, {
+    time: 100,
+    w: { time: 300, completion: 'Complete' },
+  });
 
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 400 } });
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
+    time: 50,
+    w: { time: 400, completion: 'InProgress' },
+  });
 
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, { time: 50, w: { time: 60, completion: 500 } });
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
+    time: 50,
+    w: { time: 500, completion: 'Complete' },
+  });
 
   // Save queries for various operations
   const querySum = makeQuery('time', OPERATION_TYPES.SUM, experiments[0].id);
@@ -155,30 +163,34 @@ export default async function CreateLog(): Promise<void> {
   const queryStddev = makeQuery('time', OPERATION_TYPES.STDEV, experiments[0].id);
   await queryService.saveQuery(queryStddev.query, queryStddev.metric, queryStddev.experimentId);
 
-  // Deep state qeuries
-  const deepQuerySum = makeQuery('w@__@completion', OPERATION_TYPES.SUM, experiments[0].id);
+  // Deep state queries
+  const deepQuerySum = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.SUM, experiments[0].id);
   await queryService.saveQuery(deepQuerySum.query, deepQuerySum.metric, deepQuerySum.experimentId);
 
-  const deepQueryMin = makeQuery('w@__@completion', OPERATION_TYPES.MIN, experiments[0].id);
-  await queryService.saveQuery(deepQueryMin.query, deepQueryMin.metric, deepQueryMin.experimentId);
-
-  const deepQueryMax = makeQuery('w@__@completion', OPERATION_TYPES.MAX, experiments[0].id);
-  await queryService.saveQuery(deepQueryMax.query, deepQueryMax.metric, deepQueryMax.experimentId);
-
-  const deepQueryAvg = makeQuery('w@__@completion', OPERATION_TYPES.AVERAGE, experiments[0].id);
+  const deepQueryAvg = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.AVERAGE, experiments[0].id);
   await queryService.saveQuery(deepQueryAvg.query, deepQueryAvg.metric, deepQueryAvg.experimentId);
 
-  const deepQueryCount = makeQuery('w@__@completion', OPERATION_TYPES.COUNT, experiments[0].id);
+  const deepQueryMin = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MIN, experiments[0].id);
+  await queryService.saveQuery(deepQueryMin.query, deepQueryMin.metric, deepQueryMin.experimentId);
+
+  const deepQueryMax = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MAX, experiments[0].id);
+  await queryService.saveQuery(deepQueryMax.query, deepQueryMax.metric, deepQueryMax.experimentId);
+
+  const deepQueryCount = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.COUNT, experiments[0].id);
   await queryService.saveQuery(deepQueryCount.query, deepQueryCount.metric, deepQueryCount.experimentId);
 
-  const deepQueryMode = makeQuery('w@__@completion', OPERATION_TYPES.MODE, experiments[0].id);
-  await queryService.saveQuery(deepQueryMode.query, deepQueryMode.metric, deepQueryMode.experimentId);
-
-  const deepQueryMedian = makeQuery('w@__@completion', OPERATION_TYPES.MEDIAN, experiments[0].id);
+  const deepQueryMedian = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MEDIAN, experiments[0].id);
   await queryService.saveQuery(deepQueryMedian.query, deepQueryMedian.metric, deepQueryMedian.experimentId);
 
-  const deepQueryStddev = makeQuery('w@__@completion', OPERATION_TYPES.STDEV, experiments[0].id);
+  const deepQueryMode = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MODE, experiments[0].id);
+  await queryService.saveQuery(deepQueryMode.query, deepQueryMode.metric, deepQueryMode.experimentId);
+
+  const deepQueryStddev = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.STDEV, experiments[0].id);
   await queryService.saveQuery(deepQueryStddev.query, deepQueryStddev.metric, deepQueryStddev.experimentId);
+
+  // Deep state queries for categorical data
+  const deepQueryCatSum = makeQuery(`w${METRICS_JOIN_TEXT}completion`, OPERATION_TYPES.COUNT, experiments[0].id);
+  await queryService.saveQuery(deepQueryCatSum.query, deepQueryCatSum.metric, deepQueryCatSum.experimentId);
 
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(
@@ -250,63 +262,64 @@ export default async function CreateLog(): Promise<void> {
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.SUM },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.AVERAGE },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.MAX },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.MIN },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.MEDIAN },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.MODE },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
-          type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
         }),
       }),
       expect.objectContaining({
         query: { operationType: OPERATION_TYPES.STDEV },
         metric: expect.objectContaining({
-          key: 'w@__@completion',
+          key: `w${METRICS_JOIN_TEXT}time`,
+          type: 'continuous',
+        }),
+      }),
+
+      expect.objectContaining({
+        query: { operationType: OPERATION_TYPES.COUNT },
+        metric: expect.objectContaining({
+          key: `w${METRICS_JOIN_TEXT}completion`,
           type: 'categorical',
           allowedData: ['InProgress', 'Complete'],
         }),
@@ -315,12 +328,15 @@ export default async function CreateLog(): Promise<void> {
   );
 
   // Test results
-  allQuery.forEach( async (query) => {
+  // tslint:disable-next-line:prefer-for-of
+  for (let i = 0; i < allQuery.length; i++) {
+    const query = allQuery[i];
     const queryResult = await queryService.analyse(query.id);
     const res = reduceResult(queryResult);
     let expectedValue;
     // Used for console output
-    const consoleString = query.metric.key === 'time' ? query.query.operationType + ' ' : query.query.operationType + ' deep';
+    const consoleString =
+      query.metric.key === 'time' ? query.query.operationType + ' ' : query.query.operationType + ' deep';
 
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM:
@@ -352,6 +368,11 @@ export default async function CreateLog(): Promise<void> {
       // Can not check exact values for below operations
       case OPERATION_TYPES.COUNT:
         console.log(consoleString, queryResult);
+
+        const count = res.reduce((accu, data) => {
+          return accu + data;
+        }, 0);
+        expect(count).toEqual(5);
         break;
       case OPERATION_TYPES.AVERAGE:
         console.log(consoleString, queryResult);
@@ -368,7 +389,7 @@ export default async function CreateLog(): Promise<void> {
       default:
         break;
     }
-  });
+  }
 }
 
 function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId: string): any {
@@ -383,7 +404,7 @@ function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId:
 
 function reduceResult(result: any): number[] {
   const resultSet = [];
-  result.forEach(data => {
+  result.forEach((data) => {
     resultSet.push(parseInt(data.result, 10));
   });
   return resultSet;
