@@ -9,9 +9,12 @@ import { GroupExclusion } from '../models/GroupExclusion';
 
 @EntityRepository()
 export class AnalyticsRepository {
-  constructor(private manager: EntityManager) {}
+  constructor(private manager: EntityManager) { }
 
   public async getEnrollments(experimentIds: string[]): Promise<any> {
+    if (!experimentIds.length) {
+      return [];
+    }
     const experimentRepository: ExperimentRepository = this.manager.getCustomRepository(ExperimentRepository);
 
     // for calculating individual enrollments
@@ -67,10 +70,22 @@ export class AnalyticsRepository {
     // const groupResult = await this.manager.query(groupSQL, experimentIds);
     // console.log('groupResult', groupResult);
 
-    return this.manager.query(
+    let result = await this.manager.query(
       `SELECT cast(COUNT(DISTINCT(i."userId")) as int) as user, cast(COUNT( DISTINCT(g."groupId")) as int) as group, i."experimentId" FROM (${individualSQL}) i LEFT JOIN (${groupSQL}) as g ON i."experimentId" = g."experimentId" GROUP BY i."experimentId"`,
       experimentIds
     );
+    result = experimentIds.map(id => {
+      const expDataFound = result.find(exp => exp.experimentId === id);
+      if (!expDataFound) {
+        return {
+          user: 0,
+          group: 0,
+          experimentId: id,
+        };
+      }
+      return expDataFound;
+    });
+    return result;
   }
 
   public async getDetailEnrollment(experimentId: string, from: Date, to: Date): Promise<any> {
@@ -85,7 +100,7 @@ export class AnalyticsRepository {
     }
 
     // get individual enrollment
-    const individualEnrollment = experimentRepository
+    let individualEnrollment = experimentRepository
       .createQueryBuilder('experiment')
       .select(['"individualAssignment"."userId"', 'conditions.id', 'partitions.id'])
       .innerJoin('experiment.conditions', 'conditions')
@@ -100,9 +115,12 @@ export class AnalyticsRepository {
         'monitoredExperimentPoint',
         '"monitoredExperimentPoint"."experimentId" = partitions.id AND "individualAssignment"."userId" = "monitoredExperimentPoint"."userId"'
       )
-      .where('experiment.id = :id', { id: experimentId })
-      .andWhere(searchText, { from, to })
-      .execute();
+      .where('experiment.id = :id', { id: experimentId });
+
+    if (searchText) {
+      individualEnrollment = individualEnrollment.andWhere(searchText, { from, to });
+    }
+    individualEnrollment = individualEnrollment.execute() as any;
 
     const individualExcluded = experimentRepository
       .createQueryBuilder('experiment')
@@ -111,7 +129,7 @@ export class AnalyticsRepository {
       .where('experiment.id = :id', { id: experimentId })
       .execute();
 
-    const groupEnrollment = experimentRepository
+    let groupEnrollment = experimentRepository
       .createQueryBuilder('experiment')
       .select(['"groupAssignment"."groupId"', 'conditions.id', 'partitions.id'])
       .innerJoin('experiment.conditions', 'conditions')
@@ -128,9 +146,12 @@ export class AnalyticsRepository {
       )
       .innerJoin(ExperimentUser, 'experimentUser', '"monitoredExperimentPoint"."userId" = "experimentUser".id')
       .where('experiment.id = :id', { id: experimentId })
-      .andWhere(`"experimentUser"."workingGroup" -> experiment.group #>> '{}' = "groupAssignment"."groupId"`)
-      .andWhere(searchText, { from, to })
-      .execute();
+      .andWhere(`"experimentUser"."workingGroup" -> experiment.group #>> '{}' = "groupAssignment"."groupId"`);
+
+    if (searchText) {
+      groupEnrollment = groupEnrollment.andWhere(searchText, { from, to });
+    }
+    groupEnrollment = groupEnrollment.execute() as any;
 
     const groupExcluded = experimentRepository
       .createQueryBuilder('experiment')
