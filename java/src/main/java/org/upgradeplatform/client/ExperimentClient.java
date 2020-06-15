@@ -34,6 +34,8 @@ import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
 
+import io.vavr.control.Either;
+
 
 public class ExperimentClient implements AutoCloseable {
 
@@ -387,7 +389,7 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
 	public void addMetrics(final List<MetricUnit> metrics, final ResponseCallback<List<Metric>> callbacks) {
-		
+
 		MetricUnitBody metricUnit = new MetricUnitBody( metrics );
 		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
 		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
@@ -414,10 +416,16 @@ public class ExperimentClient implements AutoCloseable {
 		}));	
 	}
 
-	public void log(final String key, final Object value,  final ResponseCallback<LogEventResponse> callbacks) {
+	public <T> void log(final String key, final Either<Integer, Either<String, T >> value,  @SuppressWarnings("rawtypes") final ResponseCallback<LogEventResponse> callbacks) {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
-		Entity<Log> requestContent = Entity.json(new Log( key, value ));
+
+		// get data from Either field to pass in request object
+		Object data =  value.isLeft() ? value.getLeft() : value.get().isRight() ? value.get().get() : value.get().getLeft();
+
+		Log log = new Log( key,data);
+		Entity<Log> requestContent = Entity.json(log);
+
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
@@ -425,7 +433,12 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(LogEventResponse.class));
+					try {
+						callbacks.onSuccess(response.readEntity(LogEventResponse.class));
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
+
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -440,5 +453,4 @@ public class ExperimentClient implements AutoCloseable {
 			}
 		}));	
 	}
-
 }

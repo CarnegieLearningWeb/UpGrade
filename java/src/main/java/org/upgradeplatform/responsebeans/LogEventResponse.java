@@ -1,12 +1,14 @@
 package org.upgradeplatform.responsebeans;
 
-public class LogEventResponse {
+import io.vavr.control.Either;
+
+public class LogEventResponse<T> {
 
 	private String createdAt;
 	private String updatedAt;
 	private int versionNumber;
 	private int id;
-	private Object data;
+	private Either<Integer, Either<String, T >>  data;
 	private Metric[] metrics;
 	private InitRequest user;
 
@@ -19,10 +21,11 @@ public class LogEventResponse {
 		this.updatedAt = updatedAt;
 		this.versionNumber = versionNumber;
 		this.id = id;
-		this.data = data;
+		this.data = getEitherData(data);
 		this.metrics = metrics;
 		this.user = user;
 	}
+
 	public String getCreatedAt() {
 		return createdAt;
 	}
@@ -47,11 +50,11 @@ public class LogEventResponse {
 	public void setId(int id) {
 		this.id = id;
 	}
-	public Object getData() {
+	public Either<Integer, Either<String, T >>  getData() {
 		return data;
 	}
 	public void setData(Object data) {
-		this.data = data;
+		this.data = getEitherData(data);
 	}
 	public Metric[] getMetrics() {
 		return metrics;
@@ -67,5 +70,13 @@ public class LogEventResponse {
 	}
 
 
+	// This method constructs Either type for the field data in response returned by server. 
+	@SuppressWarnings("unchecked")
+	private Either<Integer, Either<String, T>> getEitherData(Object value) {
+		return (value instanceof Integer) ? 
+				Either.left((int) value) : 
+					value instanceof String ? Either.right(Either.left(value.toString())) :
+						Either.right(Either.right((T)value));
+	}
 
 }
