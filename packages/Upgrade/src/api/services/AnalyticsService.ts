@@ -9,12 +9,13 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { IExperimentDateStat } from 'upgrade_types';
+import { IExperimentDateStat, IExperimentEnrollmentDetailStats } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { ASSIGNMENT_TYPE } from '../../types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
+import { Experiment } from '../models/Experiment';
 
 enum EXPERIMENT_ELEMENTS {
   EXPERIMENT_INFORMATION = 'Experiment Information',
@@ -48,6 +49,73 @@ export class AnalyticsService {
 
   public async getEnrollments(experimentIds: string[]): Promise<any> {
     return this.analyticsRepository.getEnrollments(experimentIds);
+  }
+
+  public async getDetailEnrolment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
+    const promiseArray = await Promise.all([
+      this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
+      this.analyticsRepository.getDetailEnrollment(experimentId),
+    ]);
+    const experiment: Experiment = promiseArray[0];
+    const [
+      individualEnrollmentByCondition,
+      individualEnrollmentConditionAndPartition,
+      groupEnrollmentByCondition,
+      groupEnrollmentConditionAndPartition,
+      individualExclusion,
+      groupExclusion,
+    ] = promiseArray[1];
+
+    // console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
+    // console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
+    // console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
+    // console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
+    // console.log('individualExclusion', individualExclusion);
+    // console.log('groupExclusion', groupExclusion);
+
+    return {
+      id: experimentId,
+      users:
+        individualEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
+          return accumulator + parseInt(count, 10);
+        }, 0) || 0,
+      groups:
+        groupEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
+          return accumulator + parseInt(count, 10);
+        }, 0) || 0,
+      usersExcluded: parseInt(individualExclusion[0].count, 10) || 0,
+      groupsExcluded: parseInt(groupExclusion[0].count, 10) || 0,
+      conditions: experiment.conditions.map(({ id }) => {
+        const userInCondition = individualEnrollmentByCondition.find(({ conditions_id }) => {
+          return conditions_id === id;
+        });
+        const groupInCondition = groupEnrollmentByCondition.find(({ conditions_id }) => {
+          return conditions_id === id;
+        });
+        return {
+          id,
+          users: (userInCondition && parseInt(userInCondition.count, 10)) || 0,
+          groups: (groupInCondition && parseInt(groupInCondition.count, 10)) || 0,
+          partitions: experiment.partitions.map((partitionDoc) => {
+            const userInConditionPartition = individualEnrollmentConditionAndPartition.find(
+              ({ conditions_id, partitions_id }) => {
+                return partitions_id === partitionDoc.id && conditions_id === id;
+              }
+            );
+            const groupInConditionPartition = groupEnrollmentConditionAndPartition.find(
+              ({ conditions_id, partitions_id }) => {
+                return partitions_id === partitionDoc.id && conditions_id === id;
+              }
+            );
+            return {
+              id: partitionDoc.id,
+              users: (userInConditionPartition && parseInt(userInConditionPartition.count, 10)) || 0,
+              groups: (groupInConditionPartition && parseInt(groupInConditionPartition.count, 10)) || 0,
+            };
+          }),
+        };
+      }),
+    };
   }
 
   public async getEnrolmentStatsByDate(experimentId: string, from: Date, to: Date): Promise<IExperimentDateStat[]> {

@@ -1,8 +1,9 @@
 import { JsonController, Get, Post, Body, Authorized, ContentType, Param, Header } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
-import { IExperimentEnrollmentStats } from 'upgrade_types';
+import { IExperimentEnrollmentStats, IExperimentEnrollmentDetailStats } from 'upgrade_types';
 import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsValidator';
 import { EnrollmentAnalyticsDateValidator } from './validators/EnrollmentAnalyticsDateValidator';
+import { EnrollmentDetailAnalyticsValidator } from './validators/EnrollmentDetailAnalyticsValidator';
 
 /**
  * @swagger
@@ -46,6 +47,38 @@ export class AnalyticsController {
     @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
     return this.auditService.getEnrollments(auditParams.experimentIds);
+  }
+
+  /**
+   * @swagger
+   * /stats/enrolment/detail:
+   *    post:
+   *       description: Get Enrollment Analytics Detail
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: props
+   *           required: true
+   *           schema:
+   *             type: object
+   *             properties:
+   *              experimentId:
+   *               type: string
+   *       tags:
+   *         - Analytics
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Analytics For Experiment Enrollment Detail
+   */
+  @Post('/enrolment/detail')
+  public async analyticsDetailService(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    auditParams: EnrollmentDetailAnalyticsValidator
+  ): Promise<IExperimentEnrollmentDetailStats> {
+    return this.auditService.getDetailEnrolment(auditParams.experimentId);
   }
 
   /**
