@@ -5,23 +5,27 @@ export interface IEnrollmentCompleteCondition {
 }
 interface IConditionEnrollmentStats {
     id: string;
-    user: number;
-    group: number;
+    users: number;
+    groups: number;
+    partitions: IPartitionEnrollmentStats[];
 }
 interface IPartitionEnrollmentStats {
     id: string;
-    user: number;
-    group: number;
-    conditions: IConditionEnrollmentStats[];
+    users: number;
+    groups: number;
 }
 export interface IExperimentEnrollmentStats {
+    user: number;
+    group: number;
+    experimentId: string;
+}
+export interface IExperimentEnrollmentDetailStats {
     id: string;
     users: number;
-    group: number;
-    userExcluded: number;
-    groupExcluded?: number;
+    groups: number;
+    usersExcluded: number;
+    groupsExcluded: number;
     conditions: IConditionEnrollmentStats[];
-    partitions: IPartitionEnrollmentStats[];
 }
 export interface IExperimentAssignment {
     expId: string;

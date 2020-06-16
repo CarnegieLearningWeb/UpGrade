@@ -10,11 +10,12 @@ import {
   EXPERIMENT_SORT_AS,
   UserRole,
   OPERATION_TYPES,
-  IMetricMetaData
+  IMetricMetaData,
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
   IExperimentEnrollmentStats,
+  IExperimentEnrollmentDetailStats,
   IExperimentAssignment,
   IExperimentSearchParams,
   IExperimentSortParams,
@@ -22,12 +23,13 @@ import {
   IExperimentDateStat,
   IMetricUnit,
   IFeatureFlag,
-  IFlagVariation
+  IFlagVariation,
 } from './Experiment/interfaces';
 
 export {
   IEnrollmentCompleteCondition,
   IExperimentEnrollmentStats,
+  IExperimentEnrollmentDetailStats,
   IExperimentAssignment,
   IExperimentSearchParams,
   IExperimentSortParams,
@@ -47,5 +49,5 @@ export {
   IMetricMetaData,
   IMetricUnit,
   IFeatureFlag,
-  IFlagVariation
+  IFlagVariation,
 };
