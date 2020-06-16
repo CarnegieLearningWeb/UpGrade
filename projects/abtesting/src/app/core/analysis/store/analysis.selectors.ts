@@ -1,6 +1,5 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
-import { AnalysisState, State, METRICS_JOIN_TEXT } from './analysis.models';
-import { OperationPipe } from '../../../shared/pipes/operation.pipe';
+import { AnalysisState, State } from './analysis.models';
 
 export const selectAnalysisState = createFeatureSelector<
 State,
@@ -10,11 +9,6 @@ AnalysisState
 export const selectIsMetricsLoading = createSelector(
   selectAnalysisState,
   (state: AnalysisState) => state.isMetricsLoading
-);
-
-export const selectIsQueriesLoading = createSelector(
-  selectAnalysisState,
-  (state: AnalysisState) => state.isQueriesLoading
 );
 
 export const selectIsQueryExecuting = createSelector(
@@ -29,27 +23,6 @@ export const selectMetrics = createSelector(
       return state.metrics;
     } else {
       return state.metrics.filter(metric => metric.key.toLowerCase().includes(state.metricsFilter.toLowerCase()));
-    }
-  }
-);
-
-// TODO: Remove selectors
-export const selectQueries = createSelector(
-  selectAnalysisState,
-  (state: AnalysisState) => {
-    if (!state.queriesFilter) {
-      return state.queries;
-    } else {
-      return state.queries.filter(query => {
-        let { queriesFilter } = state;
-        queriesFilter = queriesFilter.toLowerCase();
-        const operationPipe = new OperationPipe();
-        const operationPipedValue = operationPipe.transform(query.query.operationType).toLowerCase();
-        return query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(queriesFilter)
-          || operationPipedValue.includes(queriesFilter)
-          || query.experiment.name.toLowerCase().includes(queriesFilter)
-          || query.name.toLowerCase().includes(queriesFilter) ;
-      });
     }
   }
 );

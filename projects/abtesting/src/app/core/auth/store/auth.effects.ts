@@ -131,9 +131,7 @@ export class AuthEffects {
             experimentActions.actionFetchAllPartitions(),
             usersActions.actionFetchUsers({ fromStarting: true }),
             settingsActions.actionGetSetting(),
-            analysisActions.actionFetchMetrics(),
-            // TODO: Analysis query
-            // analysisActions.actionFetchQueries()
+            analysisActions.actionFetchMetrics()
           ];
           // Set theme from localstorage if exist
           this.settingsService.setLocalStorageTheme();
