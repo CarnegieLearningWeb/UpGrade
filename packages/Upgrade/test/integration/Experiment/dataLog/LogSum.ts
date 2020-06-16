@@ -17,7 +17,7 @@ import { QueryService } from '../../../../src/api/services/QueryService';
 export default async function CreateLog(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-  const experimentObject = individualAssignmentExperiment;
+  let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
   const metricService = Container.get<MetricService>(MetricService);
@@ -140,62 +140,56 @@ export default async function CreateLog(): Promise<void> {
 
   // Save queries for various operations
   const querySum = makeQuery('time', OPERATION_TYPES.SUM, experiments[0].id);
-  await queryService.saveQuery(querySum.query, querySum.metric, querySum.experimentId);
 
   const queryMin = makeQuery('time', OPERATION_TYPES.MIN, experiments[0].id);
-  await queryService.saveQuery(queryMin.query, queryMin.metric, queryMin.experimentId);
 
   const queryMax = makeQuery('time', OPERATION_TYPES.MAX, experiments[0].id);
-  await queryService.saveQuery(queryMax.query, queryMax.metric, queryMax.experimentId);
 
   const queryAvg = makeQuery('time', OPERATION_TYPES.AVERAGE, experiments[0].id);
-  await queryService.saveQuery(queryAvg.query, queryAvg.metric, queryAvg.experimentId);
 
   const queryCount = makeQuery('time', OPERATION_TYPES.COUNT, experiments[0].id);
-  await queryService.saveQuery(queryCount.query, queryCount.metric, queryCount.experimentId);
 
   const queryMode = makeQuery('time', OPERATION_TYPES.MODE, experiments[0].id);
-  await queryService.saveQuery(queryMode.query, queryMode.metric, queryMode.experimentId);
 
   const queryMedian = makeQuery('time', OPERATION_TYPES.MEDIAN, experiments[0].id);
-  await queryService.saveQuery(queryMedian.query, queryMedian.metric, queryMedian.experimentId);
 
   const queryStddev = makeQuery('time', OPERATION_TYPES.STDEV, experiments[0].id);
-  await queryService.saveQuery(queryStddev.query, queryStddev.metric, queryStddev.experimentId);
 
   // Deep state queries
   const deepQuerySum = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.SUM, experiments[0].id);
-  await queryService.saveQuery(deepQuerySum.query, deepQuerySum.metric, deepQuerySum.experimentId);
 
   const deepQueryAvg = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.AVERAGE, experiments[0].id);
-  await queryService.saveQuery(deepQueryAvg.query, deepQueryAvg.metric, deepQueryAvg.experimentId);
 
   const deepQueryMin = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MIN, experiments[0].id);
-  await queryService.saveQuery(deepQueryMin.query, deepQueryMin.metric, deepQueryMin.experimentId);
 
   const deepQueryMax = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MAX, experiments[0].id);
-  await queryService.saveQuery(deepQueryMax.query, deepQueryMax.metric, deepQueryMax.experimentId);
 
   const deepQueryCount = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.COUNT, experiments[0].id);
-  await queryService.saveQuery(deepQueryCount.query, deepQueryCount.metric, deepQueryCount.experimentId);
 
   const deepQueryMedian = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MEDIAN, experiments[0].id);
-  await queryService.saveQuery(deepQueryMedian.query, deepQueryMedian.metric, deepQueryMedian.experimentId);
 
   const deepQueryMode = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MODE, experiments[0].id);
-  await queryService.saveQuery(deepQueryMode.query, deepQueryMode.metric, deepQueryMode.experimentId);
 
   const deepQueryStddev = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.STDEV, experiments[0].id);
-  await queryService.saveQuery(deepQueryStddev.query, deepQueryStddev.metric, deepQueryStddev.experimentId);
 
   // Deep state queries for categorical data
   const deepQueryCatSum = makeQuery(`w${METRICS_JOIN_TEXT}completion`, OPERATION_TYPES.COUNT, experiments[0].id);
-  await queryService.saveQuery(deepQueryCatSum.query, deepQueryCatSum.metric, deepQueryCatSum.experimentId);
+
+  experimentObject = {
+    ...experimentObject,
+    queries: [
+      querySum, queryMin, queryMax, queryAvg, queryCount, queryMode, queryMedian, queryStddev,
+      deepQuerySum, deepQueryAvg, deepQueryMin, deepQueryMax, deepQueryCount, deepQueryMedian, deepQueryMode, deepQueryStddev, deepQueryCatSum,
+    ],
+  };
+
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
 
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.SUM },
         metric: expect.objectContaining({
           key: 'time',
@@ -204,6 +198,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.AVERAGE },
         metric: expect.objectContaining({
           key: 'time',
@@ -212,6 +207,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
           key: 'time',
@@ -220,6 +216,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MAX },
         metric: expect.objectContaining({
           key: 'time',
@@ -228,6 +225,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MIN },
         metric: expect.objectContaining({
           key: 'time',
@@ -236,6 +234,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MEDIAN },
         metric: expect.objectContaining({
           key: 'time',
@@ -244,6 +243,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MODE },
         metric: expect.objectContaining({
           key: 'time',
@@ -252,6 +252,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.STDEV },
         metric: expect.objectContaining({
           key: 'time',
@@ -260,6 +261,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.SUM },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -267,6 +269,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.AVERAGE },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -274,6 +277,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -281,6 +285,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MAX },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -288,6 +293,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MIN },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -295,6 +301,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MEDIAN },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -302,6 +309,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.MODE },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -309,6 +317,7 @@ export default async function CreateLog(): Promise<void> {
         }),
       }),
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.STDEV },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}time`,
@@ -317,6 +326,7 @@ export default async function CreateLog(): Promise<void> {
       }),
 
       expect.objectContaining({
+        name: 'query',
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
           key: `w${METRICS_JOIN_TEXT}completion`,
@@ -394,10 +404,13 @@ export default async function CreateLog(): Promise<void> {
 
 function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId: string): any {
   return {
+    name: 'query',
     query: {
       operationType,
     },
-    metric,
+    metric: {
+      key: metric,
+    },
     experimentId,
   };
 }
