@@ -67,7 +67,15 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   let stats = await analyticsService.getEnrollments([experimentId]);
-  expect(stats.length).toEqual(0);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        user: 0,
+        group: 0,
+        experimentId,
+      }),
+    ])
+  );
 
   // change experiment state to enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
@@ -79,7 +87,15 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   stats = await analyticsService.getEnrollments([experimentId]);
-  expect(stats.length).toEqual(0);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        user: 0,
+        group: 0,
+        experimentId,
+      }),
+    ])
+  );
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
@@ -88,7 +104,15 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   stats = await analyticsService.getEnrollments([experimentId]);
-  expect(stats.length).toEqual(0);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        user: 0,
+        group: 0,
+        experimentId,
+      }),
+    ])
+  );
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1);
