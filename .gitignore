@@ -60,3 +60,5 @@ terraform/environments/lambda/*
 
 # Serverless compiled files
 packages/Schedular/lib
+id_rsa
+id_rsa.pub
