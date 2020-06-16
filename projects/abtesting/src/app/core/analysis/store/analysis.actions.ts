@@ -19,6 +19,20 @@ export const actionSetMetricsFilterValue = createAction(
   props<{ filterString: string }>()
 );
 
+export const actionDeleteMetric = createAction(
+  '[Analysis] Delete Metric',
+  props<{ key: string }>()
+);
+
+export const actionDeleteMetricSuccess = createAction(
+  '[Analysis] Delete Metric Success',
+  props<{ metrics: MetricUnit[], key?: string }>()
+);
+
+export const actionDeleteMetricFailure = createAction(
+  '[Analysis] Delete Metric Failure',
+);
+
 export const actionExecuteQuery = createAction(
   '[Analysis] Execute Query',
   props<{ queryId: string }>()

@@ -31,7 +31,7 @@
             {{ 'global.queries-tabs.text' | translate | uppercase }}
           </button>
           <button mat-flat-button class="ft-14-600 button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
-            {{ 'home.view-experiment.delete-button.text' | translate }}
+            {{ 'global.delete.text' | translate }}
           </button>
           <button mat-flat-button class="ft-14-600 button" (click)="exportExperimentInfo(experiment.id, experiment.name)">
             {{ 'home.view-experiment.export-button.text' | translate }}

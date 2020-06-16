@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { Subscription, BehaviorSubject, of } from 'rxjs';
-import { MatTableDataSource, MatTreeNestedDataSource } from '@angular/material';
+import { MatTableDataSource, MatTreeNestedDataSource, MatDialog } from '@angular/material';
 import { MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
+import { DeleteMetricComponent } from '../modal/delete-metric/delete-metric.component';
+import { AuthService } from '../../../../../core/auth/auth.service';
+import { UserPermission } from '../../../../../core/auth/store/auth.models';
 
 @Component({
   selector: 'analysis-metrics',
@@ -11,8 +14,11 @@ import { NestedTreeControl } from '@angular/cdk/tree';
   styleUrls: ['./metrics.component.scss']
 })
 export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
+  permissions: UserPermission;
+  permissionSub: Subscription;
 
   displayedColumns = ['id', 'metric'];
+  keyEditMode = true;
 
   // Used for displaying metrics
   allMetrics: any;
@@ -31,9 +37,15 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private analysisService: AnalysisService,
+    private authService: AuthService,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit() {
+    this.permissionSub = this.authService.userPermissions$.subscribe(permission => {
+      this.permissions = permission;
+    });
+
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe(metrics => {
       this.allMetrics = new MatTableDataSource();
       this.allMetrics.data = metrics;
@@ -57,18 +69,34 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   insertNode(metrics: any): MetricUnit {
     if (!metrics.children.length) {
-      const data = { id: this.insertNodeIndex, key: metrics.key, children: metrics.children };
+      const data = { id: this.insertNodeIndex, ...metrics };
       this.insertNodeIndex += 1;
       return data;
     }
     metrics = {
-      id: this.insertNodeIndex, key: metrics.key, children: metrics.children.map(data => {
+      id: this.insertNodeIndex, ...metrics, children: metrics.children.map(data => {
         this.insertNodeIndex += 1;
         data = this.insertNode(data);
         return data;
       })
     };
     return metrics;
+  }
+
+  deleteNode(nodeToBeDeleted: any) {
+    const data = {
+      children: this.nestedDataSource.data
+    }
+    const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
+    this.selectedMetricIndex = null;
+    const dialogRef = this.dialog.open(DeleteMetricComponent, {
+      panelClass: 'delete-modal',
+      data: { key }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after deleting metric
+    });
   }
 
   setTreeForMetric(index: number) {
@@ -82,14 +110,19 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.analysisService.setMetricsFilterValue(filterValue);
   }
 
+  changeMetricMode(event) {
+    this.keyEditMode = !event.checked;
+  }
+
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.metricsTable.nativeElement.style.maxHeight = (windowHeight - 402) + 'px';
+    this.metricsTable.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
   }
 
   ngOnDestroy() {
     this.analysisService.setMetricsFilterValue(null);
     this.allMetricsSub.unsubscribe();
+    this.permissionSub.unsubscribe();
   }
 }

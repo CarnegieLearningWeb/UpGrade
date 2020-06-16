@@ -24,6 +24,28 @@ export class AnalysisEffects {
     )
   );
 
+  deleteMetrics$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AnalysisActions.actionDeleteMetric),
+      map(action => action.key),
+      filter(key => !!key),
+      switchMap((key) =>
+        this.analysisDataService.deleteMetric(key).pipe(
+          map((data: any) => {
+            if (data.length) {
+              // If data is present then update tree
+              return AnalysisActions.actionDeleteMetricSuccess({ metrics: data })
+            } else {
+              // if data length is 0 then it does not have any children so remove existing tree
+              return AnalysisActions.actionDeleteMetricSuccess({ metrics: data, key })
+            }
+          }),
+          catchError(() => [AnalysisActions.actionDeleteMetricFailure()])
+        )
+      )
+    )
+  );
+
   executeQuery$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionExecuteQuery),

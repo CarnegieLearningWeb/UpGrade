@@ -112,6 +112,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     this.createTree([this.allMetrics.data[index]]);
   }
 
+  // TODO: Make common
   findParents(node, searchForKey) {
 
     // If current node name matches the search name, return
