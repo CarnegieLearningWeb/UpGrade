@@ -1,35 +1,33 @@
 import { Metric } from '../models/Metric';
-import { EntityRepository, Repository, EntityManager } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 
 @EntityRepository(Metric)
 export class MetricRepository extends Repository<Metric> {
-  public async deleteExceptByIds(values: string[], entityManager: EntityManager): Promise<Metric[]> {
-    if (values.length > 0) {
-      const result = await entityManager
-        .createQueryBuilder()
-        .delete()
-        .from(Metric)
-        .where('key NOT IN (:...values)', { values })
-        .execute()
-        .catch((errorMsg: any) => {
-          const errorMsgString = repositoryError(this.constructor.name, 'deleteExceptByIds', { values }, errorMsg);
-          throw new Error(errorMsgString);
-        });
+  public async deleteMetricsByKeys(key: string, metricJoinText: string): Promise<Metric[]> {
+    const result = await this
+      .createQueryBuilder()
+      .delete()
+      .from(Metric)
+      .where('key LIKE :key OR key = :keyValue', { key: key + metricJoinText + '%', keyValue: key })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'deleteMetricsByKeys', { key }, errorMsg);
+        throw new Error(errorMsgString);
+      });
 
-      return result.raw;
-    } else {
-      const result = await entityManager
-        .createQueryBuilder()
-        .delete()
-        .from(Metric)
-        .execute()
-        .catch((errorMsg: any) => {
-          const errorMsgString = repositoryError(this.constructor.name, 'deleteExceptByIds', { values }, errorMsg);
-          throw new Error(errorMsgString);
-        });
+    return result.raw;
+  }
 
-      return result.raw;
-    }
+  public async getMetricsByKeys(key: string, metricJoinText: string): Promise<Metric[]> {
+    return await this
+      .createQueryBuilder()
+      .where('key LIKE :key OR key = :keyValue', { key: key + metricJoinText + '%', keyValue: key })
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'getMetricsByKeys', { key }, errorMsg);
+        throw new Error(errorMsgString);
+      });
   }
 }
