@@ -59,7 +59,11 @@ const reducer = createReducer(
   on(
     experimentsAction.actionStoreExperimentStats,
     (state, { stats }) => {
-      return { ...state, stats: { ...state.stats, ...stats }, isLoadingExperiment: false };
+      const newStats = {};
+      stats = Object.keys(stats).map(key => {
+        newStats[key] = { ...state.stats[key], ...stats[key] };
+      });
+      return { ...state, stats: { ...state.stats, ...newStats }, isLoadingExperiment: false };
     }
   ),
   on(
@@ -152,6 +156,13 @@ const reducer = createReducer(
   on(
     experimentsAction.actionFetchExperimentContextSuccess,
     (state, { context }) => ({ ...state, context })
+  ),
+  on(
+    experimentsAction.actionFetchExperimentDetailStatSuccess,
+    (state, { stat }) => {
+      state.stats[stat.id] = stat;
+      return state;
+    }
   )
 );
 

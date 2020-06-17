@@ -11,7 +11,8 @@ import {
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams,
-  IExperimentDateStat
+  IExperimentDateStat,
+  IExperimentEnrollmentDetailStats
 } from 'upgrade_types';
 
 export {
@@ -25,7 +26,8 @@ export {
   EXPERIMENT_SORT_AS,
   IExperimentSearchParams,
   IExperimentSortParams,
-  IExperimentDateStat
+  IExperimentDateStat,
+  IExperimentEnrollmentDetailStats
 };
 
 export enum GroupTypes {
@@ -156,7 +158,7 @@ export interface IExperimentGraphInfo {
 }
 
 export interface ExperimentVM extends Experiment {
-  stat: IExperimentEnrollmentStats;
+  stat: IExperimentEnrollmentDetailStats;
 }
 
 export interface ExperimentState extends EntityState<Experiment> {
@@ -168,7 +170,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   sortKey: EXPERIMENT_SORT_KEY;
   sortAs: EXPERIMENT_SORT_AS;
   stats: {
-    [key: string]: IExperimentEnrollmentStats;
+    [key: string]: IExperimentEnrollmentDetailStats;
   };
   graphInfo: IExperimentGraphInfo,
   graphRange: ExperimentGraphDateFilterOptions;

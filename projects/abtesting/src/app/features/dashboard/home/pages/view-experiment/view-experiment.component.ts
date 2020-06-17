@@ -54,6 +54,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.experimentSub = this.experimentService.selectedExperiment$
       .pipe(filter(experiment => !!experiment))
       .subscribe(experiment => {
+        if (!this.experiment) {
+          this.experimentService.fetchExperimentDetailStat(experiment.id);
+        }
         this.experiment = experiment;
       });
   }
