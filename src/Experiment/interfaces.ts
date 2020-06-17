@@ -24,9 +24,9 @@ interface IPartitionEnrollmentStats {
 }
 
 export interface IExperimentEnrollmentStats {
-  user: number;
-  group: number;
-  experimentId: string;
+  users: number;
+  groups: number;
+  id: string;
 }
 
 export interface IExperimentEnrollmentDetailStats {
