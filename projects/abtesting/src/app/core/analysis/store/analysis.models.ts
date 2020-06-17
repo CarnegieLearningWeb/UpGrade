@@ -1,8 +1,9 @@
 import { AppState } from '../../core.module';
-import { OPERATION_TYPES } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
 
 export {
-  OPERATION_TYPES
+  OPERATION_TYPES,
+  IMetricMetaData
 };
 
 export const METRICS_JOIN_TEXT = '@__@';

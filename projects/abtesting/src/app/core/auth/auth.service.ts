@@ -44,6 +44,7 @@ export class AuthService {
 
   setUserPermissions(role: UserRole) {
     switch (role) {
+      // Permissions for managing queries will be same as experiments
       case UserRole.ADMIN:
         this.userPermissions$.next({
           experiments: { create: true, read: true, update: true, delete: true },

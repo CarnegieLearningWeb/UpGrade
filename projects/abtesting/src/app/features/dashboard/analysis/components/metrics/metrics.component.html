@@ -40,7 +40,7 @@
           <!-- Metric Column -->
           <ng-container matColumnDef="metric">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'query.table-metric.text' | translate }}
+              {{ 'query.metric.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">

@@ -2,136 +2,113 @@
   #metricsTable
   class="create-query-container"
 >
-  <ng-container  *ngIf="allMetrics.data?.length; else zeroState">
-      <table mat-table [dataSource]="allMetrics">
-        <!-- ID Column -->
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'query.table-id.text' | translate }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
-        </ng-container>
-
-        <!-- Metric Column -->
-        <ng-container matColumnDef="metric">
-          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            {{ 'query.table-metric.text' | translate }}
-          </th>
-          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-            <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">
-              <button mat-icon-button (click)="setTreeForMetric(index)">
-                <mat-icon class="mat-icon-rtl-mirror">chevron_right</mat-icon>
-              </button>
-              <span>{{ element.key }}</span>
+  <ng-container *ngIf="options[0]?.length; else zeroState">
+    <span class="ft-16-400">{{ 'query.metric.text' | translate | titlecase }}</span>
+    <form class="key-selection-form" [formGroup]="queryForm">
+      <div class="auto-complete-container">
+        <ng-container formArrayName="keys">
+          <div *ngFor="let key of keys.controls; let formIndex = index">
+            <ng-container [formGroupName]="formIndex">
+              <mat-form-field class="auto-complete">
+                <input
+                  type="text"
+                  placeholder="Key"
+                  matInput
+                  formControlName="metricKey"
+                  [matAutocomplete]="auto"
+                  >
+                <mat-autocomplete (optionSelected)="selectedOption($event)" #auto="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
+                    {{option.key}}
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
             </ng-container>
-            <ng-template #metricTreeTemplate>
-              <div class="tree-view">
-                <mat-tree
-                  [dataSource]="nestedDataSource"
-                  [treeControl]="nestedTreeControl"
-                  class="node-tree mat-tree-position"
-                >
-                  <!-- Without Children -->
-                  <mat-tree-node *matTreeNodeDef="let node">
-                    <li class="mat-tree-node">
-                      <button mat-icon-button disabled></button>
-                      <span
-                        (click)="selectKey(node)"
-                        class="ft-14-600 key-name"
-                        [ngClass]="{'node-selected': selectedKey === node.key}"
-                      >{{ node.key }}</span>
-                    </li>
-                  </mat-tree-node>
-
-                  <!-- With Children -->
-                  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
-                    <li>
-                        <button mat-icon-button matTreeNodeToggle>
-                          <mat-icon class="mat-icon-rtl-mirror">
-                            {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
-                          </mat-icon>
-                        </button>
-                        <span (click)="selectKey(node)" class="ft-14-600 key-name">
-                          {{ node.key }}
-                        </span>
-                      <ul [class.node-tree-invisible]="!nestedTreeControl.isExpanded(node)">
-                        <ng-container matTreeNodeOutlet></ng-container>
-                      </ul>
-                    </li>
-                  </mat-nested-tree-node>
-                </mat-tree>
-
-                <div class="query-formation">
-                  <div>
-                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                      <input
-                        matInput
-                        [(ngModel)]="queryName"
-                        class="ft-14-600"
-                        [placeholder]="'query.table-query-name.text' | translate"
-                      />
-                    </mat-form-field>
-
-                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                      <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
-                      <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
-                        <mat-option
-                          *ngFor="let operation of queryOperations"
-                          [value]="operation.value"
-                        >
-                          {{ operation.viewValue }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-
-                  <!-- TODO: User enum of categorical -->
-                  <div *ngIf="selectedKeyMeta?.metadata?.type === 'categorical'">
-                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                      <mat-label>Comparison Function</mat-label>
-                      <mat-select [(ngModel)]="compareFn" class="ft-14-600 input">
-                        <mat-option
-                          *ngFor="let cmpFn of comparisonFns"
-                          [value]="cmpFn.value"
-                        >
-                          {{ cmpFn.viewValue | titlecase }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field class="ft-14-600 form-control" *ngIf="selectedKey">
-                      <mat-label>Value</mat-label>
-                      <mat-select [(ngModel)]="compareValue" class="ft-14-600 input">
-                        <mat-option
-                          *ngFor="let data of selectedKeyMeta?.allowedData"
-                          [value]="data"
-                        >
-                          {{ data }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <button
-                  mat-flat-button
-                  *ngIf="selectedKey"
-                  color="primary"
-                  class="ft-14-700 default-button"
-                  [ngClass]="{ 'default-button--disabled': !selectedKey || !selectedOperation || !queryName }"
-                  [disabled]="!selectedKey || !selectedOperation || !queryName"
-                  (click)="saveQuery()"
-                >
-                  <span>{{ 'global.save.text' | translate }}</span>
-                </button>
-              </div>
-            </ng-template>
-          </td>
+            <mat-icon *ngIf="(formIndex + 1) !== keys.controls.length" class="icon">arrow_right_alt</mat-icon>
+          </div>
         </ng-container>
+      </div>
+      <button
+        mat-flat-button
+        color="primary"
+        class="ft-12-600 btn"
+        (click)="resetForm()"
+        type="button"
+        >
+        <span>{{ 'query.clear-btn.text' | translate }}</span>
+      </button>
+      <div class="secondary-form" *ngIf="selectedNode">
+        <mat-form-field class="ft-14-600 form-control">
+          <input
+            matInput
+            class="ft-14-400"
+            [placeholder]="'query.query-name.text' | translate"
+            formControlName="queryName"
+          />
+        </mat-form-field>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
+        <mat-form-field class="ft-14-600 form-control">
+          <mat-label>{{ 'query.operation.text' | translate | titlecase }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="operationType">
+            <mat-option
+              *ngFor="let operation of queryOperations"
+              [value]="operation.value"
+            >
+              {{ operation.viewValue | titlecase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="ft-14-600 form-control">
+          <mat-label>{{ 'query.form-compareFn.text' | translate | titlecase }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="compareFn">
+            <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
+            <mat-option
+              *ngFor="let fn of comparisonFns"
+              [value]="fn.value"
+            >
+              {{ fn.viewValue | titlecase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field
+          class="ft-14-600 form-control"
+          *ngIf="selectedNode?.metadata?.type === IMetricMetadata.CONTINUOUS; else allowedValuesTemplate"
+        >
+          <input
+            matInput
+            class="ft-14-400"
+            [placeholder]="'query.form-compare-value.text' | translate"
+            formControlName="compareValue"
+          />
+        </mat-form-field>
+        <ng-template #allowedValuesTemplate>
+          <mat-form-field class="ft-14-600 form-control">
+            <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
+            <mat-select class="ft-14-400" formControlName="compareValue">
+              <mat-option
+                *ngFor="let value of selectedNode?.allowedData"
+                [value]="value"
+              >
+                {{ value | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </ng-template>
+      </div>
+      <button
+        *ngIf="selectedNode"
+        mat-flat-button
+        color="primary"
+        class="ft-12-600 default-button btn btn--save"
+        [ngClass]="{ 'default-button--disabled': !this.queryForm.valid }"
+        [disabled]="!this.queryForm.valid"
+        (click)="saveQuery()"
+      >
+        <span>{{ 'global.save.text' | translate }}</span>
+      </button>
+    </form>
   </ng-container>
 </div>
 

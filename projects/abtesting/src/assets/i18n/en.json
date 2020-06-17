@@ -228,14 +228,18 @@
   "metric.delete-metric.message.text": "Are you sure you want to delete {{ metricName }} metric ?",
   "metric.read-mode.text": "Read mode",
   "query.table-id.text": "ID",
-  "query.table-metric.text": "METRIC",
+  "query.metric.text": "METRIC",
   "query.table-name.text": "NAME",
-  "query.table-query-name.text": "Query Name",
-  "query.table-operation.text": "OPERATION",
+  "query.query-name.text": "Query Name",
+  "query.operation.text": "OPERATION",
+  "query.form-compareFn.text": "Compare Function",
+  "query.form-compare-value.text": "Compare Value",
   "query.table-experiment.text": "EXPERIMENT",
   "query.table-execute.text": "EXECUTE",
   "query.result-title.text": "Query Result",
   "query.result.condition-code.text": "Condition Code",
   "query.result.result.text": "Result",
-  "query.result.empty-result.text": "No Data"
+  "query.result.empty-result.text": "No Data",
+  "query.clear-btn.text": "CLEAR",
+  "query.none-option.text": "-- None --"
 }
