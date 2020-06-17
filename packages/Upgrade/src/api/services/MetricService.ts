@@ -40,6 +40,14 @@ export class MetricService {
     return this.metricRepository.save(metricDoc);
   }
 
+  public async deleteMetric(key: string): Promise<IMetricUnit[]> {
+    this.log.info('Delete metric by key ', key);
+    await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
+    const rootKey = key.split(METRICS_JOIN_TEXT);
+    const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
+    return this.metricDocumentToJson(updatedMetric);
+  }
+
   private async checkMetricsPermission(): Promise<boolean> {
     const setting = await this.settingService.getClientCheck();
     return setting.toFilterMetric;
