@@ -86,19 +86,22 @@ export class AnalyticsRepository {
     // console.log('groupResult', groupResult);
 
     let result = await this.manager.query(
-      `SELECT cast(COUNT(DISTINCT(i."userId")) as int) as user, cast(COUNT( DISTINCT(g."groupId")) as int) as group, i."experimentId" FROM (${individualSQL}) i LEFT JOIN (${groupSQL}) as g ON i."experimentId" = g."experimentId" GROUP BY i."experimentId"`,
+      `SELECT cast(COUNT(DISTINCT(i."userId")) as int) as users, cast(COUNT( DISTINCT(g."groupId")) as int) as groups, i."experimentId" FROM (${individualSQL}) i LEFT JOIN (${groupSQL}) as g ON i."experimentId" = g."experimentId" GROUP BY i."experimentId"`,
       experimentIds
     );
     result = experimentIds.map((id) => {
       const expDataFound = result.find((exp) => exp.experimentId === id);
       if (!expDataFound) {
         return {
-          user: 0,
-          group: 0,
-          experimentId: id,
+          users: 0,
+          groups: 0,
+          id,
         };
+      } else {
+        const response = { ...expDataFound, id: expDataFound.experimentId };
+        delete response.experimentId;
+        return response;
       }
-      return expDataFound;
     });
     return result;
   }
