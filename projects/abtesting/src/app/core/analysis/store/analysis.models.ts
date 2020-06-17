@@ -22,13 +22,9 @@ export interface Query {
 
 export interface AnalysisState {
   isMetricsLoading: boolean;
-  isQueriesLoading: boolean;
   isQueryExecuting: boolean;
   metrics: MetricUnit[];
   metricsFilter: string;
-  // TODO: Analysis query
-  queries: any[];
-  queriesFilter: string;
   queryResult: any;
 }
 

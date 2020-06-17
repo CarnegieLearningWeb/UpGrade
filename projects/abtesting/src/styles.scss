@@ -30,7 +30,6 @@
 @import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
 @import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
-@import './app/features/dashboard/analysis/components/queries/queries.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 
@@ -56,7 +55,6 @@
   @include new-flag-component-theme($theme);
   @include flag-variations-component-theme($theme);
   @include view-feature-flag-component-theme($theme);
-  @include queries-component-theme($theme);
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
 }
