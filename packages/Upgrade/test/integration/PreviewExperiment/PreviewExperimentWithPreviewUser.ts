@@ -8,7 +8,6 @@ import { systemUser } from '../mockData/user/index';
 import { previewIndividualAssignmentExperiment } from '../mockData/experiment';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
-import { experimentUsers } from '../mockData/experimentUsers/index';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);

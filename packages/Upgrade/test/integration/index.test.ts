@@ -272,12 +272,12 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Stats from Individual Experiment with Date Range', async (done) => {
+  test('Stats from Individual Experiment for table', async (done) => {
     await StatsDetailIndividualExperiment();
     done();
   });
 
-  test('Stats from Individual Experiment with Date Range', async (done) => {
+  test('Stats from Group Experiment with for table', async (done) => {
     await StatsDetailGroupExperiment();
     done();
   });
