@@ -148,9 +148,9 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        user: 1,
-        group: 0,
-        experimentId,
+        users: 1,
+        groups: 0,
+        id: experimentId,
       }),
     ])
   );
