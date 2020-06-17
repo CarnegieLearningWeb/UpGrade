@@ -77,3 +77,9 @@ export declare enum IMetricMetaData {
     CONTINUOUS = "continuous",
     CATEGORICAL = "categorical"
 }
+export declare enum DATE_RANGE {
+    LAST_SEVEN_DAYS = "last_seven_days",
+    LAST_THREE_MONTHS = "last_three_months",
+    LAST_SIX_MONTHS = "last_six_months",
+    LAST_TWELVE_MONTHS = "last_twelve_months"
+}

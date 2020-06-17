@@ -13,4 +13,5 @@ exports.EXPERIMENT_SORT_AS = enums_1.EXPERIMENT_SORT_AS;
 exports.UserRole = enums_1.UserRole;
 exports.OPERATION_TYPES = enums_1.OPERATION_TYPES;
 exports.IMetricMetaData = enums_1.IMetricMetaData;
+exports.DATE_RANGE = enums_1.DATE_RANGE;
 //# sourceMappingURL=index.js.map

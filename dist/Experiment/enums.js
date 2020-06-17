@@ -91,4 +91,11 @@ var IMetricMetaData;
     IMetricMetaData["CONTINUOUS"] = "continuous";
     IMetricMetaData["CATEGORICAL"] = "categorical";
 })(IMetricMetaData = exports.IMetricMetaData || (exports.IMetricMetaData = {}));
+var DATE_RANGE;
+(function (DATE_RANGE) {
+    DATE_RANGE["LAST_SEVEN_DAYS"] = "last_seven_days";
+    DATE_RANGE["LAST_THREE_MONTHS"] = "last_three_months";
+    DATE_RANGE["LAST_SIX_MONTHS"] = "last_six_months";
+    DATE_RANGE["LAST_TWELVE_MONTHS"] = "last_twelve_months";
+})(DATE_RANGE = exports.DATE_RANGE || (exports.DATE_RANGE = {}));
 //# sourceMappingURL=enums.js.map

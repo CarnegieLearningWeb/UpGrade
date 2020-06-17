@@ -11,6 +11,7 @@ import {
   UserRole,
   OPERATION_TYPES,
   IMetricMetaData,
+  DATE_RANGE,
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -47,6 +48,7 @@ export {
   IExperimentDateStat,
   OPERATION_TYPES,
   IMetricMetaData,
+  DATE_RANGE,
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,
