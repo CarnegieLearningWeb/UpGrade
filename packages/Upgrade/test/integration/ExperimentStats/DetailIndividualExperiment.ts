@@ -9,12 +9,18 @@ import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
+import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
+import { previewUsers } from '../mockData/previewUsers/index';
 
 export default async function testCase(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const analyticsService = Container.get<AnalyticsService>(AnalyticsService);
   const userService = Container.get<UserService>(UserService);
+  const previewService = Container.get<PreviewUserService>(PreviewUserService);
+
+  // creating preview user
+  const previewUser = await previewService.create(previewUsers[0]);
 
   // creating new user
   const user = await userService.create(systemUser as any);
@@ -188,6 +194,23 @@ export default async function testCase(): Promise<void> {
       groupsExcluded: 0,
     })
   );
+
+  // when preview user is assigned an experiment condition
+  experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
+  expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
+
+  checkData = await analyticsService.getDetailEnrolment(experimentId);
+  expect(checkData).toEqual(
+    expect.objectContaining({
+      users: 1,
+      groups: 0,
+      usersExcluded: 1,
+      groupsExcluded: 0,
+    })
+  );
+
+  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2);
+  checkMarkExperimentPointForUser(markedExperimentPoint, previewUser.id, experimentName2, experimentPoint2);
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);

@@ -6,6 +6,7 @@ import { GroupAssignment } from '../models/GroupAssignment';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
+import { PreviewUser } from '../models/PreviewUser';
 
 export interface IEnrollmentByCondition {
   conditions_id: string;
@@ -43,6 +44,10 @@ export class AnalyticsRepository {
         '"monitoredExperimentPoint"."experimentId" = partitions.id'
       )
       .where('experiment.id IN (:...ids)', { ids: experimentIds })
+      .andWhere((qb) => {
+        const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+        return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
+      })
       .getSql();
 
     const assignment = await experimentRepository
@@ -134,6 +139,10 @@ export class AnalyticsRepository {
       )
       .groupBy('conditions.id')
       .where('experiment.id = :id', { id: experimentId })
+      .andWhere((qb) => {
+        const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+        return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
+      })
       .execute() as any;
 
     // get individual enrollment
@@ -155,6 +164,10 @@ export class AnalyticsRepository {
       .groupBy('conditions.id')
       .addGroupBy('partitions.id')
       .where('experiment.id = :id', { id: experimentId })
+      .andWhere((qb) => {
+        const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+        return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
+      })
       .execute() as any;
 
     const individualExcluded = experimentRepository

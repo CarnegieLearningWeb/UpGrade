@@ -13,13 +13,18 @@ import {
   checkExperimentAssignedIsDefault,
 } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
+import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
+import { previewUsers } from '../mockData/previewUsers/index';
 
 export default async function testCase(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const analyticsService = Container.get<AnalyticsService>(AnalyticsService);
-
+  const previewService = Container.get<PreviewUserService>(PreviewUserService);
   const userService = Container.get<UserService>(UserService);
+
+  // creating preview user
+  const previewUser = await previewService.create(previewUsers[0]);
 
   // creating new user
   const user = await userService.create(systemUser as any);
@@ -118,6 +123,26 @@ export default async function testCase(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
 
+  stats = await analyticsService.getEnrollments([experimentId]);
+  expect(stats.length).toEqual(1);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        user: 1,
+        group: 0,
+        experimentId,
+      }),
+    ])
+  );
+
+  // when preview user is assigned an experiment condition
+  experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
+  expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
+
+  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2);
+  checkMarkExperimentPointForUser(markedExperimentPoint, previewUser.id, experimentName2, experimentPoint2);
+
+  // number of users should not increase
   stats = await analyticsService.getEnrollments([experimentId]);
   expect(stats.length).toEqual(1);
   expect(stats).toEqual(
