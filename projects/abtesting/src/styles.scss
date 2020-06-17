@@ -32,6 +32,7 @@
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
+@import './app/features/dashboard/analysis/components/metrics/metrics.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -57,6 +58,7 @@
   @include view-feature-flag-component-theme($theme);
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
+  @include metrics-component-theme($theme);
 }
 
 .light-theme {

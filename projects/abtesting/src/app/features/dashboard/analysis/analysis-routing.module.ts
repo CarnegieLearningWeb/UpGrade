@@ -7,7 +7,7 @@ const routes: Routes = [
     path: '',
     component: AnalysisRootComponent,
     data: {
-      title: 'app-header.title.analysis'
+      title: 'app-header.title.metrics'
     }
   }
 ];
