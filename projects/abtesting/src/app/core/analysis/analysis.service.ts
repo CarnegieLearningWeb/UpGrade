@@ -3,6 +3,7 @@ import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
 import { selectMetrics, selectIsMetricsLoading, selectQueryResult, selectIsQueryExecuting } from './store/analysis.selectors';
 import * as AnalysisActions from './store/analysis.actions';
+import { UpsertMetrics } from './store/analysis.models';
 
 @Injectable()
 export class AnalysisService {
@@ -18,6 +19,10 @@ export class AnalysisService {
 
   setMetricsFilterValue(filterString: string) {
     this.store$.dispatch(AnalysisActions.actionSetMetricsFilterValue({ filterString }));
+  }
+
+  upsertMetrics(metrics: UpsertMetrics) {
+    this.store$.dispatch(AnalysisActions.actionUpsertMetrics({ metrics }));
   }
 
   deleteMetric(key: string) {

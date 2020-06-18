@@ -7,6 +7,7 @@ import { NestedTreeControl } from '@angular/cdk/tree';
 import { DeleteMetricComponent } from '../modal/delete-metric/delete-metric.component';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
+import { AddMetricsComponent } from '../modal/add-metrics/add-metrics.component';
 
 @Component({
   selector: 'analysis-metrics',
@@ -99,6 +100,17 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  openAddMetricDialog() {
+    this.selectedMetricIndex = null;
+    const dialogRef = this.dialog.open(AddMetricsComponent, {
+      panelClass: 'add-metric-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Code will be executed after closing dialog
+    });
+  }
+
   setTreeForMetric(index: number) {
     this.selectedMetricIndex = index;
     this.insertNodeIndex = 0;
@@ -117,7 +129,7 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.metricsTable.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
+    this.metricsTable.nativeElement.style.maxHeight = (windowHeight - 365) + 'px';
   }
 
   ngOnDestroy() {

@@ -227,6 +227,7 @@
   "metrics.subtitle.text": "Manage metrics here",
   "metric.delete-metric.message.text": "Are you sure you want to delete {{ metricName }} metric ?",
   "metric.read-mode.text": "Read mode",
+  "metric.add-metrics.text": "ADD METRICS",
   "query.table-id.text": "ID",
   "query.metric.text": "METRIC",
   "query.table-name.text": "NAME",
