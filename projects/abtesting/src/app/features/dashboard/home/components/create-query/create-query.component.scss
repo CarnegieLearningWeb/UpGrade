@@ -1,72 +1,50 @@
 .create-query-container {
-  min-height: 500px;
-  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  min-height: 480px;
+  max-height: 480px;
   overflow: auto;
 
-  table {
-    width: 100%;
+  .key-selection-form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
 
-    .mat-cell {
-      position: relative;
-
-      &.mat-column-id {
-        width: 10%;
-      }
-
-      &.mat-column-metric {
-        width: 90%;
-      }
-    }
-
-    .mat-header-cell {
-      &.mat-column-metric {
-        padding-left: 20px;
-      }
-    }
-
-    .tree-view {
+    .auto-complete-container {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       justify-content: space-between;
 
-      .node-tree {
-        max-height: 400px;
-        overflow: scroll;
+      div {
+        flex: 0 0 50%;
 
-        &-invisible {
-          display: none;
-        }
-
-        ul,
-        li {
-          margin-top: 0;
-          margin-bottom: 0;
-          list-style-type: none;
-        }
-
-        .mat-tree-node {
-          min-height: 40px;
-        }
-      }
-
-      .key-name {
-        &:hover {
-          cursor: pointer;
-        }
-
-        &.node-selected {
-          color: var(--blue);
+        .auto-complete {
+          width: 90%;
         }
       }
     }
+  }
+
+  .btn {
+    margin-right: 10px;
+    width: 80px;
+
+    &--save {
+      margin-top: 20px;
+    }
+  }
+
+  .secondary-form {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 20px;
 
     .form-control {
-      padding-top: 10px;
+      flex: 0 0 45%;
       line-height: 20px;
-
-      .input {
-        line-height: 20px;
-      }
     }
   }
 
