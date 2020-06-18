@@ -1,4 +1,4 @@
-import { Authorized, JsonController, Get, Delete, Param } from 'routing-controllers';
+import { Authorized, JsonController, Get, Delete, Param, Post, BodyParam } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
 import { IMetricUnit, SERVER_ERROR } from 'upgrade_types';
 
@@ -29,6 +29,35 @@ export class MetricController {
   @Get()
   public getAllMetrics(): Promise<IMetricUnit[]> {
     return this.metricService.getAllMetrics();
+  }
+
+  /**
+   * @swagger
+   * /metric/save:
+   *    post:
+   *       description: Add filter metrics
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: params
+   *            schema:
+   *             type: object
+   *             properties:
+   *              metricUnit:
+   *                type: object
+   *            description: Filtered Metrics
+   *       tags:
+   *         - Experiment Point
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Filtered Metrics
+   */
+  @Post('/save')
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: IMetricUnit[]): Promise<IMetricUnit[]> {
+    return this.metricService.upsertAllMetrics(metricUnit);
   }
 
   /**
