@@ -24,6 +24,20 @@ export class AnalysisEffects {
     )
   );
 
+  upsertMetrics$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(AnalysisActions.actionUpsertMetrics),
+      map(action => action.metrics),
+      filter(metrics => !!metrics),
+      switchMap(metrics =>
+        this.analysisDataService.upsertMetrics(metrics).pipe(
+          map((data: any) => AnalysisActions.actionFetchMetrics()),
+          catchError(() => [ AnalysisActions.actionUpsertMetricsFailure()])
+        )
+      )
+    )
+  )
+
   deleteMetrics$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionDeleteMetric),

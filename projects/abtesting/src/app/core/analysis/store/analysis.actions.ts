@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { MetricUnit } from './analysis.models';
+import { MetricUnit, UpsertMetrics } from './analysis.models';
 
 export const actionFetchMetrics = createAction(
   '[Analysis] Fetch Metrics'
@@ -31,6 +31,20 @@ export const actionDeleteMetricSuccess = createAction(
 
 export const actionDeleteMetricFailure = createAction(
   '[Analysis] Delete Metric Failure',
+);
+
+export const actionUpsertMetrics = createAction(
+  '[Analysis] Upsert Metrics ',
+  props<{ metrics: UpsertMetrics }>()
+);
+
+export const actionUpsertMetricsSuccess = createAction(
+  '[Analysis] Upsert Metrics Success',
+  props<{ metrics: any[] }>()
+);
+
+export const actionUpsertMetricsFailure = createAction(
+  '[Analysis] Upsert Metrics Failure',
 );
 
 export const actionExecuteQuery = createAction(

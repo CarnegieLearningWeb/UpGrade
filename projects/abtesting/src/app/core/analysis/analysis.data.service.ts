@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { UpsertMetrics } from './store/analysis.models';
 
 @Injectable()
 export class AnalysisDataService {
@@ -10,6 +11,11 @@ export class AnalysisDataService {
   fetchMetrics() {
     const url = environment.api.metrics;
     return this.http.get(url);
+  }
+
+  upsertMetrics(metrics: UpsertMetrics) {
+    const url = environment.api.metricsSave;
+    return this.http.post(url, metrics);
   }
 
   deleteMetric(key: string) {
