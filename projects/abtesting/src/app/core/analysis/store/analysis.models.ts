@@ -1,5 +1,5 @@
 import { AppState } from '../../core.module';
-import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData, IMetricUnit } from 'upgrade_types';
 
 export {
   OPERATION_TYPES,
@@ -11,6 +11,10 @@ export const METRICS_JOIN_TEXT = '@__@';
 export interface MetricUnit {
   key: string;
   children: MetricUnit[];
+}
+
+export interface UpsertMetrics {
+  metricUnit: IMetricUnit[];
 }
 
 export interface Query {

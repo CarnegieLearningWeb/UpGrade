@@ -9,6 +9,18 @@
       />
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
+    <button
+      mat-flat-button
+      color="primary"
+      class="ft-14-700"
+      (click)="openAddMetricDialog()"
+      *ngIf="permissions?.metrics.create"
+    >
+      <mat-icon>add</mat-icon>
+      <span>{{ 'metric.add-metrics.text' | translate }}</span>
+    </button>
+  </div>
+  <div class="read-mode-container">
     <mat-slide-toggle
       class="ft-16-400"
       color="primary"

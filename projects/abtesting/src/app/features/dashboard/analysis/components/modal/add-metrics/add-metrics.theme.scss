@@ -1,0 +1,42 @@
+@import '~@angular/material/theming';
+
+@mixin add-metrics-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .add-metrics {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+
+    .ace-jsoneditor .ace_scroller {
+      background-color: mat-color($background, background);
+    }
+
+    .ace-jsoneditor .ace_gutter {
+      background-color: mat-color($background, background);
+      color: mat-color($foreground, text);
+    }
+
+    .ace-jsoneditor .ace_text-layer {
+      color: mat-color($foreground, text);
+    }
+
+    .ace-jsoneditor .ace_variable {
+      color: mat-color($foreground, text);
+    }
+
+    .ace-jsoneditor .ace_gutter-active-line {
+      color: mat-color($foreground, text);
+    }
+
+    .ace-jsoneditor .ace_marker-layer .ace_active-line {
+      color: mat-color($foreground, text);
+    }
+
+    .ace-jsoneditor .ace_string {
+      color: mat-color($foreground, text);
+    }
+
+  }
+}
