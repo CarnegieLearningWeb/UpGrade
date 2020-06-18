@@ -54,7 +54,7 @@ export class ViewFeatureFlagComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      // Add code of further actions after deleting experiment
+      // Add code of further actions after deleting feature flag
     });
   }
 

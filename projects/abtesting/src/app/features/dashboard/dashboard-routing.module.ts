@@ -20,10 +20,10 @@ const routes: Routes = [
         }
       },
       {
-        path: 'analysis',
+        path: 'metrics',
         loadChildren: () => import('./analysis/analysis.module').then(m => m.AnalysisModule),
         data: {
-          title: 'app-header.title.analysis'
+          title: 'app-header.title.metrics'
         }
       },
       {

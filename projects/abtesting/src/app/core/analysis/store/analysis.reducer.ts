@@ -1,5 +1,5 @@
 import { createReducer, Action, on } from '@ngrx/store';
-import { AnalysisState } from './analysis.models';
+import { AnalysisState, METRICS_JOIN_TEXT } from './analysis.models';
 import * as AnalysisActions from './analysis.actions';
 
 export const initialState: AnalysisState = {
@@ -14,6 +14,7 @@ const reducer = createReducer(
   initialState,
   on(
     AnalysisActions.actionFetchMetrics,
+    AnalysisActions.actionDeleteMetric,
     (state) => ({ ...state, isMetricsLoading: true })
   ),
   on(
@@ -22,7 +23,25 @@ const reducer = createReducer(
   ),
   on(
     AnalysisActions.actionFetchMetricsFailure,
+    AnalysisActions.actionDeleteMetricFailure,
     (state) => ({ ...state, isMetricsLoading: false })
+  ),
+  on(
+    AnalysisActions.actionDeleteMetricSuccess,
+    (state, { metrics, key }) => {
+      let filteredMetrics;
+      if (key) {
+        filteredMetrics = state.metrics.filter(metric => metric.key !== key.split(METRICS_JOIN_TEXT)[0]);
+      } else {
+        filteredMetrics = state.metrics.map(metric => {
+          if (metric.key === metrics[0].key) {
+            return metrics[0];
+          }
+          return metric;
+        });
+      }
+      return { ...state, metrics: filteredMetrics, isMetricsLoading: false };
+    }
   ),
   on(
     AnalysisActions.actionSetMetricsFilterValue,
