@@ -9,7 +9,8 @@ import {
   Experiment,
   NUMBER_OF_EXPERIMENTS,
   ExperimentPaginationParams,
-  ExperimentGraphDateFilterOptions
+  ExperimentGraphDateFilterOptions,
+  IExperimentEnrollmentDetailStats
 } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -193,6 +194,20 @@ export class ExperimentEffects {
           )
         )
       )
+    )
+  );
+
+  getExperimentDetailStat$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchExperimentDetailStat),
+      map(action => action.experimentId),
+      filter(experimentId => !!experimentId),
+      switchMap((experimentId) => {
+        return this.experimentDataService.getExperimentDetailStat(experimentId).pipe(
+          map((data: IExperimentEnrollmentDetailStats) => experimentAction.actionFetchExperimentDetailStatSuccess({ stat: data })),
+          catchError(() => [experimentAction.actionFetchExperimentDetailStatFailure()])
+        )
+      })
     )
   );
 

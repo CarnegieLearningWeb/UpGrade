@@ -23,7 +23,8 @@ import {
   selectExperimentContext,
   selectExperimentGraphInfo,
   selectSkipExperiment,
-  selectTotalExperiment
+  selectTotalExperiment,
+  selectExperimentStatById
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -51,6 +52,7 @@ export class ExperimentService {
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   experimentContext$ = this.store$.pipe(select(selectExperimentContext));
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
+  experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
@@ -147,5 +149,9 @@ export class ExperimentService {
 
   setGraphRange(range: ExperimentGraphDateFilterOptions, experimentId: string) {
     this.store$.dispatch(experimentAction.actionSetGraphRange({ range, experimentId }));
+  }
+
+  fetchExperimentDetailStat(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionFetchExperimentDetailStat({ experimentId }));
   }
 }

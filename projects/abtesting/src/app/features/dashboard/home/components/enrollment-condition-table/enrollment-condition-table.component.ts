@@ -1,12 +1,13 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { ASSIGNMENT_UNIT, ExperimentVM, EnrollmentByConditionOrPartitionData } from '../../../../../core/experiments/store/experiments.model';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'home-enrollment-condition-table',
   templateUrl: './enrollment-condition-table.component.html',
   styleUrls: ['./enrollment-condition-table.component.scss']
 })
-export class EnrollmentConditionTableComponent implements OnChanges {
+export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
 
   @Input() experiment: ExperimentVM;
   experimentData: any[] = [];
@@ -18,6 +19,8 @@ export class EnrollmentConditionTableComponent implements OnChanges {
   ];
   displayedColumns: string[] = [];
 
+  constructor(private experimentService: ExperimentService) {}
+
   ngOnChanges(changes: SimpleChanges) {
     if (this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
       this.displayedColumns = this.commonColumns;
@@ -25,40 +28,48 @@ export class EnrollmentConditionTableComponent implements OnChanges {
       this.displayedColumns = [...this.commonColumns, 'groupEnrolled'];
     }
     if (changes.experiment) {
-      this.experimentData = [];
-      this.experiment.stat.conditions.forEach(condition => {
-
-        const conditionObj: EnrollmentByConditionOrPartitionData = {
-          condition: this.getConditionData(condition.id, 'conditionCode'),
-          weight: this.getConditionData(condition.id, 'assignmentWeight'),
-          userEnrolled: condition.user,
-          groupEnrolled: condition.group,
-        };
-        let experimentObj: any = {
-          'data': conditionObj
-        };
-
-        const partitions = [];
-        this.experiment.stat.partitions.forEach(partition => {
-          const currentCondition = partition.conditions.find(assignedCondition => condition.id === assignedCondition.id);
-          const partitionObj: EnrollmentByConditionOrPartitionData = {
-            experimentPoint: this.getPartitionData(partition.id, 'expPoint'),
-            experimentId: this.getPartitionData(partition.id, 'expId') || '',
-            userEnrolled: currentCondition.user,
-            groupEnrolled: currentCondition.group,
-          };
-          partitions.push({
-            'data': partitionObj
-          });
-        });
-        experimentObj = {
-          ...experimentObj,
-          partitions
-        }
-        this.experimentData.push(experimentObj);
-
+      // TODO: Remove
+      this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
       });
     }
+  }
+
+  ngOnInit() {
+    this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
+      this.experimentData = [];
+      if (stat.conditions) {
+        stat.conditions.forEach(condition => {
+
+          const conditionObj: EnrollmentByConditionOrPartitionData = {
+            condition: this.getConditionData(condition.id, 'conditionCode'),
+            weight: this.getConditionData(condition.id, 'assignmentWeight'),
+            userEnrolled: condition.users,
+            groupEnrolled: condition.groups,
+          };
+          let experimentObj: any = {
+            'data': conditionObj
+          };
+
+          const partitions = [];
+          (condition as any).partitions.forEach(partition => {
+            const partitionObj: EnrollmentByConditionOrPartitionData = {
+              experimentPoint: this.getPartitionData(partition.id, 'expPoint'),
+              experimentId: this.getPartitionData(partition.id, 'expId') || '',
+              userEnrolled: partition.users,
+              groupEnrolled: partition.groups,
+            };
+            partitions.push({
+              'data': partitionObj
+            });
+          });
+          experimentObj = {
+            ...experimentObj,
+            partitions
+          }
+          this.experimentData.push(experimentObj);
+        });
+      }
+    });
   }
 
   getPartitionData(partitionId: string, key: string) {

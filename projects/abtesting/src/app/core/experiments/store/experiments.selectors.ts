@@ -106,3 +106,10 @@ export const selectExperimentGraphInfo = createSelector(
       return null;
   }
 );
+
+export const selectExperimentStatById = createSelector(
+  selectExperimentState,
+  (state, { experimentId }) => {
+    return state.stats[experimentId];
+  }
+);

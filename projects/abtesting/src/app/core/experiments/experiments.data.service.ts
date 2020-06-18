@@ -17,6 +17,11 @@ export class ExperimentDataService {
     return this.http.post(url, { experimentIds: experimentIds });
   }
 
+  getExperimentDetailStat(experimentId: string) {
+    const url = environment.api.experimentDetailStat;
+    return this.http.post(url, { experimentId });
+  }
+
   createNewExperiment(experiment: Experiment) {
     const url = environment.api.createNewExperiments;
     return this.http.post(url, { ...experiment });

@@ -16,13 +16,13 @@
         <span class="ft-14-600 title">
           {{ 'home.view-experiment.global.users-excluded.text' | translate }}
         </span>
-        <span class="ft-30-700 numbers">{{ experiment.stat.userExcluded }}</span>
+        <span class="ft-30-700 numbers">{{ experiment.stat.usersExcluded }}</span>
       </div>
       <div class="enrollment-statistic__class" *ngIf="experiment.assignmentUnit === AssignmentUnit.GROUP">
         <span class="ft-14-600 title">
           {{ 'home.view-experiment.global.group-excluded.text' | translate }}
         </span>
-        <span class="ft-30-700 numbers">{{ experiment.stat.groupExcluded }}</span>
+        <span class="ft-30-700 numbers">{{ experiment.stat.groupsExcluded }}</span>
       </div>
     </div>
   </div>
