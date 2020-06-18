@@ -18,8 +18,8 @@ export class DashboardRootComponent {
       iconType: 'assignment'
     },
     {
-      path: ['/analysis'],
-      text: 'global.analysis.title',
+      path: ['/metrics'],
+      text: 'global.metrics.text',
       iconType: 'analytics'
     },
     {

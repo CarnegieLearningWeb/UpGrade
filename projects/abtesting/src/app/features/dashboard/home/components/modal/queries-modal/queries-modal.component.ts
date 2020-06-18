@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
@@ -8,6 +8,8 @@ import { METRICS_JOIN_TEXT, OPERATION_TYPES } from '../../../../../../core/analy
 import { OperationPipe } from '../../../../../../shared/pipes/operation.pipe';
 import { QueryResultComponent } from '../../../../../../shared/components/query-result/query-result.component';
 import * as clonedeep from 'lodash.clonedeep';
+import { UserPermission } from '../../../../../../core/auth/store/auth.models';
+import { AuthService } from '../../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-queries-modal',
@@ -15,6 +17,9 @@ import * as clonedeep from 'lodash.clonedeep';
   styleUrls: ['./queries-modal.component.scss'],
 })
 export class QueriesModalComponent implements OnInit, OnDestroy {
+
+  permissions: UserPermission;
+  permissionSub: Subscription;
 
   experimentInfo: ExperimentVM;
   experimentSub: Subscription;
@@ -33,15 +38,16 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   constructor(
     private experimentService: ExperimentService,
     private analysisService: AnalysisService,
-    private dialogRef: MatDialogRef<QueriesModalComponent>,
     private dialog: MatDialog,
     private operationPipe: OperationPipe,
+    private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {
     this.experimentInfo = this.data.experiment;
   }
 
   ngOnInit() {
+    this.permissionSub = this.authService.userPermissions$.subscribe(permission => this.permissions = permission);
     this.experimentSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe(experiment => {
       this.experimentInfo = experiment;
       this.experimentQueries = experiment.queries;
@@ -51,19 +57,15 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   applyFilter(filterValue?: string) {
     this.resetVariables();
     const searchValue = filterValue && filterValue.toLowerCase() || this.searchInput.toLowerCase();
-    if (this.createQueryMode) {
-      this.analysisService.setMetricsFilterValue(searchValue);
+    if (searchValue) {
+      this.experimentQueries = this.experimentInfo.queries.filter(query => {
+        const operationPipedValue = this.operationPipe.transform(query.query.operationType).toLowerCase();
+        return query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(searchValue)
+          || operationPipedValue.includes(searchValue)
+          || query.name.toLowerCase().includes(searchValue);
+      });
     } else {
-      if (searchValue) {
-        this.experimentQueries = this.experimentInfo.queries.filter(query => {
-          const operationPipedValue = this.operationPipe.transform(query.query.operationType).toLowerCase();
-          return query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(searchValue)
-            || operationPipedValue.includes(searchValue)
-            || query.name.toLowerCase().includes(searchValue);
-        });
-      } else {
-        this.experimentQueries = this.experimentInfo.queries;
-      }
+      this.experimentQueries = this.experimentInfo.queries;
     }
   }
 
@@ -75,7 +77,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after deleting experiment
+      // Add code of further actions after query result
     });
   }
 
@@ -136,9 +138,14 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
     this.selectedOperation = null;
   }
 
+  createdQueryEvent() {
+    this.createQueryMode = !this.createQueryMode;
+  }
+
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.analysisService.setMetricsFilterValue(null);
+    this.permissionSub.unsubscribe();
   }
 
   get METRICS_JOIN_TEXT() {

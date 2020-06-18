@@ -1,9 +1,9 @@
-<div mat-dialog-content class="dialog">
+<div mat-dialog-content class="metric-delete-dialog">
   <p class="ft-16-600">
-    {{ 'home.delete-experiment.message.text' | translate: { experimentName: data.experimentName } }}
+    {{ 'metric.delete-metric.message.text' | translate: { metricName: data.key.join(' ') } }}
   </p>
 </div>
-<div mat-dialog-actions class="dialog-actions">
+<div mat-dialog-actions class="metric-delete-dialog-actions">
   <button
     class="modal-btn"
     mat-flat-button
@@ -15,7 +15,7 @@
     class="modal-btn default-button"
     mat-flat-button
     cdkFocusInitial
-    (click)="deleteExperiment()"
+    (click)="deleteMetric()"
   >
     {{ 'global.delete.text' | translate }}
   </button>

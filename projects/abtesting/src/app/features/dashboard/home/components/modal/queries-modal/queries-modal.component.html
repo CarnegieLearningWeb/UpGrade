@@ -2,7 +2,9 @@
   <span class="ft-24-700 title">{{ 'global.queries-tabs.text' | translate }}</span>
   <div class="query-view">
     <div class="query-actions">
-      <mat-form-field>
+
+      <!-- Do not shows search bar in create query view -->
+      <mat-form-field *ngIf="!createQueryMode; else queryModeTemplate">
         <input
           class="ft-16-400 search-input"
           [(ngModel)]="searchInput"
@@ -12,27 +14,33 @@
         />
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
-      <button
-        mat-flat-button
-        color="primary"
-        class="ft-14-700"
-        (click)="setCreateQueryMode()"
-        *ngIf="!createQueryMode; else closeCreateQueryMode"
-      >
-        <mat-icon>add</mat-icon>
-        <span>{{ 'home.query.create-query.text' | translate }}</span>
-      </button>
-      <ng-template #closeCreateQueryMode>
+      <ng-template #queryModeTemplate>
+        <h3>{{ 'home.query.create-query.text' | translate | titlecase }}</h3>
+      </ng-template>
+
+      <ng-container *ngIf="permissions?.experiments.create">
         <button
           mat-flat-button
           color="primary"
           class="ft-14-700"
           (click)="setCreateQueryMode()"
+          *ngIf="!createQueryMode; else queryListBtnTemplate"
         >
-          <mat-icon style="margin-right: 5px">list</mat-icon>
-          <span>{{ 'home.query.query-list.text' | translate }}</span>
+          <mat-icon>add</mat-icon>
+          <span>{{ 'home.query.create-query.text' | translate }}</span>
         </button>
-      </ng-template>
+        <ng-template #queryListBtnTemplate>
+          <button
+            mat-flat-button
+            color="primary"
+            class="ft-14-700"
+            (click)="setCreateQueryMode()"
+          >
+            <mat-icon style="margin-right: 5px">list</mat-icon>
+            <span>{{ 'home.query.query-list.text' | translate }}</span>
+          </button>
+        </ng-template>
+      </ng-container>
     </div>
 
     <mat-progress-bar
@@ -66,7 +74,7 @@
                     matInput
                     [(ngModel)]="queryName"
                     class="ft-14-600"
-                    [placeholder]="'query.table-query-name.text' | translate"
+                    [placeholder]="'query.query-name.text' | translate"
                   />
                 </mat-form-field>
               </ng-template>
@@ -76,7 +84,7 @@
           <!-- Metric Column -->
           <ng-container matColumnDef="metric">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'query.table-metric.text' | translate }}
+              {{ 'query.metric.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <span>{{ element.metric?.key?.split(METRICS_JOIN_TEXT).join(' ') }}</span>
@@ -86,7 +94,7 @@
           <!-- operation Column -->
           <ng-container matColumnDef="operation">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'query.table-operation.text' | translate }}
+              {{ 'query.operation.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <span *ngIf="selectedQueryId !== element.id; else operationTemplate">
@@ -95,7 +103,7 @@
 
               <ng-template #operationTemplate>
                 <mat-form-field class="ft-14-600 form-control">
-                  <mat-label>{{ 'query.table-operation.text' | translate | titlecase }}</mat-label>
+                  <mat-label>{{ 'query.operation.text' | translate | titlecase }}</mat-label>
                   <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
                     <mat-option
                       *ngFor="let operation of queryOperations"
@@ -127,11 +135,13 @@
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <mat-icon
-                *ngIf="selectedQueryId !== element.id; else saveBtnTemplate"
-                class="icon"
-                (click)="editQuery(element)"
-              >create</mat-icon>
+              <ng-container *ngIf="permissions?.experiments.update">
+                <mat-icon
+                  *ngIf="selectedQueryId !== element.id; else saveBtnTemplate"
+                  class="icon"
+                  (click)="editQuery(element)"
+                >create</mat-icon>
+              </ng-container>
 
               <ng-template #saveBtnTemplate>
                 <button
@@ -154,6 +164,7 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <mat-icon
+                *ngIf="permissions?.experiments.delete"
                 class="icon"
                 (click)="deleteQuery(element)"
               >delete_outline</mat-icon>
@@ -167,7 +178,10 @@
     </div>
 
     <ng-template #createQueryTemplate>
-      <app-create-query [experimentInfo]="experimentInfo"></app-create-query>
+      <app-create-query
+        [experimentInfo]="experimentInfo"
+        (createdQueryEvent)="createdQueryEvent($event)"
+      ></app-create-query>
     </ng-template>
 
     <ng-template #zeroState>

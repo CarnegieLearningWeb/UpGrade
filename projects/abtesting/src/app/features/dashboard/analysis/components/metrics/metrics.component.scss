@@ -1,9 +1,33 @@
 .metrics-container {
-  .search-input {
-    line-height: 20px;
+  border-radius: 10px;
+  box-shadow: unset !important;
+  padding: 0;
+  height: 100%;
+
+  .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2.25rem;
+    height: 94px;
+
+    .search-input {
+      line-height: 20px;
+    }
+  }
+
+  .spinner {
+    position: sticky;
+    top: 0;
+    z-index: 1111;
+    margin-top: 8px;
   }
 
   .metrics-table-container {
+    position: relative;
+    margin-top: 8px;
+    padding: 0 2.25rem;
     overflow: auto;
 
     table {
@@ -45,7 +69,22 @@
         .mat-tree-node {
           min-height: 40px;
         }
+
+        .icon {
+          position: relative;
+          top: 4px;
+          margin-left: 10px;
+          font-size: var(--text-size-normal);
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
       }
     }
+  }
+
+  .zero-state {
+    min-height: 250px;
   }
 }

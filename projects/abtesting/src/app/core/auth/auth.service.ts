@@ -44,13 +44,15 @@ export class AuthService {
 
   setUserPermissions(role: UserRole) {
     switch (role) {
+      // Permissions for managing queries will be same as experiments
       case UserRole.ADMIN:
         this.userPermissions$.next({
           experiments: { create: true, read: true, update: true, delete: true },
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: true, read: true, update: true, delete: true },
           manageRoles: { create: true, read: true, update: true, delete: true },
-          featureFlags: { create: true, read: true, update: true, delete: true }
+          featureFlags: { create: true, read: true, update: true, delete: true },
+          metrics: { create: true, read: true, update: true, delete: true }
         });
         break;
       case UserRole.CREATOR:
@@ -59,7 +61,8 @@ export class AuthService {
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: false, update: false, delete: false },
-          featureFlags: { create: false, read: true, update: false, delete: false }
+          featureFlags: { create: false, read: true, update: false, delete: false },
+          metrics: { create: false, read: false, update: false, delete: false }
         });
         break;
       case UserRole.USER_MANAGER:
@@ -68,7 +71,8 @@ export class AuthService {
           users: { create: true, read: true, update: true, delete: true },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: false, update: false, delete: false },
-          featureFlags: { create: false, read: true, update: false, delete: false }
+          featureFlags: { create: false, read: true, update: false, delete: false },
+          metrics: { create: false, read: false, update: false, delete: false }
         });
         break;
       case UserRole.READER:
@@ -77,7 +81,8 @@ export class AuthService {
           users: { create: false, read: true, update: false, delete: false },
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: false, update: false, delete: false },
-          featureFlags: { create: false, read: true, update: false, delete: false }
+          featureFlags: { create: false, read: true, update: false, delete: false },
+          metrics: { create: false, read: false, update: false, delete: false }
         });
         break;
     }

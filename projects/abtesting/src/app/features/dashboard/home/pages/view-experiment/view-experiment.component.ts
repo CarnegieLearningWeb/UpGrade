@@ -100,7 +100,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after deleting experiment
+      // Add code of further actions after opening query modal
     });
   }
 

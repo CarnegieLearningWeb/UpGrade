@@ -12,6 +12,11 @@ export class AnalysisDataService {
     return this.http.get(url);
   }
 
+  deleteMetric(key: string) {
+    const url = `${environment.api.metrics}/${key}`;
+    return this.http.delete(url);
+  }
+
   executeQuery(queryId: string) {
     const url = environment.api.queryResult;
     return this.http.post(url, { queryId });
