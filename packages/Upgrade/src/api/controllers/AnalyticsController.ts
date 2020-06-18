@@ -114,11 +114,7 @@ export class AnalyticsController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     auditParams: EnrollmentAnalyticsDateValidator
   ): Promise<any> {
-    return this.auditService.getEnrolmentStatsByDate(
-      auditParams.experimentId,
-      auditParams.fromDate,
-      auditParams.toDate
-    );
+    return this.auditService.getEnrolmentStatsByDate(auditParams.experimentId, auditParams.dateEnum);
   }
 
   /**

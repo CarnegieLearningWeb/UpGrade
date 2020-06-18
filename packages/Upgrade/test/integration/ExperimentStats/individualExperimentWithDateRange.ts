@@ -5,7 +5,7 @@ import { individualExperimentStats } from '../mockData/experiment/index';
 import { AnalyticsService } from '../../../src/api/services/AnalyticsService';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, DATE_RANGE } from 'upgrade_types';
 import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -65,10 +65,14 @@ export default async function testCase(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
+  // change experiment state to enrolling
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+
   // user 2 logs in experiment
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
-  expect(experimentConditionAssignments).toHaveLength(0);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1);
@@ -76,61 +80,57 @@ export default async function testCase(): Promise<void> {
 
   // const fromDate = new Date().toISOString();
   // var d1 = new Date();
-  let fromDate = new Date();
-  let toDate = new Date();
 
   // check stats
-  let checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.length).toEqual(0);
+  let checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, DATE_RANGE.LAST_SEVEN_DAYS);
+  console.log('checkData', JSON.stringify(checkData, null, 2));
+  // expect(checkData.length).toEqual(0);
 
-  // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  // await new Promise((r) => setTimeout(r, 100));
+  // toDate = new Date();
 
-  await new Promise((r) => setTimeout(r, 100));
-  toDate = new Date();
+  // checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
+  // expect(checkData.length).toEqual(0);
 
-  checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.length).toEqual(0);
+  // await new Promise((r) => setTimeout(r, 100));
+  // fromDate = new Date();
+  // toDate = new Date();
+  // checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
+  // expect(checkData.length).toEqual(0);
 
-  await new Promise((r) => setTimeout(r, 100));
-  fromDate = new Date();
-  toDate = new Date();
-  checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.length).toEqual(0);
+  // // check state
 
-  // check state
+  // fromDate = new Date();
+  // await new Promise((r) => setTimeout(r, 100));
+  // // user 3 logs in experiment
+  // // get all experiment condition for user 3
+  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  // checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
+  // checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
-  fromDate = new Date();
-  await new Promise((r) => setTimeout(r, 100));
-  // user 3 logs in experiment
-  // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
-  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
+  // // mark experiment point
+  // markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName2, experimentPoint2);
+  // checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
 
-  // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName2, experimentPoint2);
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
+  // await new Promise((r) => setTimeout(r, 100));
+  // toDate = new Date();
 
-  await new Promise((r) => setTimeout(r, 100));
-  toDate = new Date();
+  // checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
+  // expect(checkData.length).toEqual(1);
 
-  checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.length).toEqual(1);
+  // // change experiment state to enrolling
+  // await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
 
-  // change experiment state to enrolling
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
+  // fromDate = new Date();
+  // await new Promise((r) => setTimeout(r, 100));
 
-  fromDate = new Date();
-  await new Promise((r) => setTimeout(r, 100));
+  // // mark experiment point
+  // markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1);
+  // checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
-  // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1);
-  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
+  // await new Promise((r) => setTimeout(r, 100));
+  // toDate = new Date();
 
-  await new Promise((r) => setTimeout(r, 100));
-  toDate = new Date();
-
-  checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
-  expect(checkData.length).toEqual(1);
+  // checkData = await analyticsService.getEnrolmentStatsByDate(experimentId, fromDate, toDate);
+  // expect(checkData.length).toEqual(1);
 }

@@ -9,7 +9,7 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { IExperimentDateStat, IExperimentEnrollmentDetailStats } from 'upgrade_types';
+import { IExperimentEnrollmentDetailStats, DATE_RANGE } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
@@ -26,6 +26,11 @@ enum EXPERIMENT_ELEMENTS {
   EXPERIMENT_GROUP_EXCLUSION = 'Experiment Group Exclusion',
   EXPERIMENT_INDIVIDUAL_ASSIGNMENT = 'Experiment Individual Assignments',
   EXPERIMENT_GROUP_ASSIGNMENTS = 'Experiment Group Assignments',
+}
+
+interface IEnrollmentStatByDate {
+  date: string;
+  stats: IExperimentEnrollmentDetailStats;
 }
 
 @Service()
@@ -118,63 +123,127 @@ export class AnalyticsService {
     };
   }
 
-  public async getEnrolmentStatsByDate(experimentId: string, from: Date, to: Date): Promise<IExperimentDateStat[]> {
-    const experiment = await this.experimentRepository.findOne({
-      where: { id: experimentId },
-      relations: ['partitions', 'conditions'],
-    });
-    // when experiment is not defined
-    if (!experiment) {
-      return {} as any;
+  public async getEnrolmentStatsByDate(experimentId: string, dateRange: DATE_RANGE): Promise<IEnrollmentStatByDate[]> {
+    const keyToReturn = {};
+    switch (dateRange) {
+      case DATE_RANGE.LAST_SEVEN_DAYS:
+        for (let i = 0; i < 7; i++) {
+          const date = new Date();
+          date.setHours(0, 0, 0, 0);
+          date.setDate(date.getDate() - i);
+          const newDate = new Date(date).toISOString();
+          keyToReturn[newDate] = {};
+        }
+        break;
+      case DATE_RANGE.LAST_THREE_MONTHS:
+        for (let i = 0; i < 3; i++) {
+          const date = new Date();
+          date.setHours(0, 0, 0, 0);
+          date.setDate(date.getMonth() - i);
+          const newDate = new Date(date).toISOString();
+          keyToReturn[newDate] = {};
+        }
+        break;
+      case DATE_RANGE.LAST_SIX_MONTHS:
+        for (let i = 0; i < 6; i++) {
+          const date = new Date();
+          date.setHours(0, 0, 0, 0);
+          date.setDate(date.getMonth() - i);
+          const newDate = new Date(date).toISOString();
+          keyToReturn[newDate] = {};
+        }
+        break;
+      default:
+        for (let i = 0; i < 12; i++) {
+          const date = new Date();
+          date.setHours(0, 0, 0, 0);
+          date.setDate(date.getMonth() - i);
+          const newDate = new Date(date).toISOString();
+          keyToReturn[newDate] = {};
+        }
+        break;
     }
-    const experimentIdAndPoint = [];
-    const partitions = experiment.partitions;
-    partitions.forEach((partition) => {
-      const partitionId = partition.id;
-      experimentIdAndPoint.push(partitionId);
-    });
-    const promiseData = await Promise.all([
-      this.monitoredExperimentPointRepository.getByDateRange(experimentIdAndPoint, from, to),
-      this.individualAssignmentRepository.findIndividualAssignmentsByExperimentIdAndAlgorithm(
-        experimentId,
-        ASSIGNMENT_TYPE.ALGORITHMIC
-      ),
-      this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
+
+    const promiseArray = await Promise.all([
+      this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
+      this.analyticsRepository.getEnrolmentByDateRange(experimentId, dateRange),
     ]);
-    const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
-    const individualAssignments: IndividualAssignment[] = promiseData[1] as any;
 
-    const userMap: Map<string, IExperimentDateStat> = new Map();
+    const experiment: Experiment = promiseArray[0];
+    const [
+      individualEnrollmentByCondition,
+      individualEnrollmentConditionAndPartition,
+      groupEnrollmentByCondition,
+      groupEnrollmentConditionAndPartition,
+      individualExclusion,
+      groupExclusion,
+    ] = promiseArray[1];
 
-    // monitored document per user
-    monitoredExperimentPoints.forEach((monitoredExperimentPoint) => {
-      const document = userMap.get(monitoredExperimentPoint.user.id);
-      const userGroup = monitoredExperimentPoint.user.workingGroup
-        ? monitoredExperimentPoint.user.workingGroup[experiment.group]
-        : undefined;
-      const createdAt = document
-        ? { [monitoredExperimentPoint.experimentId]: monitoredExperimentPoint.createdAt, ...document.createdAt }
-        : { [monitoredExperimentPoint.experimentId]: monitoredExperimentPoint.createdAt };
-      userMap.set(monitoredExperimentPoint.user.id, {
-        userId: monitoredExperimentPoint.user.id,
-        groupId: experiment.group ? userGroup : undefined,
-        partitionIds: document
-          ? [...document.partitionIds, monitoredExperimentPoint.experimentId]
-          : [monitoredExperimentPoint.experimentId],
-        conditionId: 'default',
-        createdAt,
-      });
+    // console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
+    // console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
+    // console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
+    // console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
+    // console.log('individualExclusion', individualExclusion);
+    // console.log('groupExclusion', groupExclusion);
+
+    return Object.keys(keyToReturn).map((date) => {
+      console.log('date', date);
+      const stats: IExperimentEnrollmentDetailStats = {
+        id: experimentId,
+        users:
+          individualEnrollmentByCondition.reduce((accumulator: number, { count, date_range }): number => {
+            return accumulator + (new Date(date).getTime() === (date_range as any).getTime() ? parseInt(count, 10) : 0);
+          }, 0) || 0,
+        groups:
+          groupEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
+            return accumulator + parseInt(count, 10);
+          }, 0) || 0,
+        usersExcluded: parseInt(individualExclusion[0].count, 10) || 0,
+        groupsExcluded: parseInt(groupExclusion[0].count, 10) || 0,
+        conditions: experiment.conditions.map(({ id }) => {
+          const userInCondition = individualEnrollmentByCondition.find(({ conditions_id, date_range }) => {
+            return conditions_id === id && new Date(date).getTime() === (date_range as any).getTime();
+          });
+          const groupInCondition = groupEnrollmentByCondition.find(({ conditions_id, date_range }) => {
+            return conditions_id === id && new Date(date).getTime() === (date_range as any).getTime();
+          });
+          return {
+            id,
+            users: (userInCondition && parseInt(userInCondition.count, 10)) || 0,
+            groups: (groupInCondition && parseInt(groupInCondition.count, 10)) || 0,
+            partitions: experiment.partitions.map((partitionDoc) => {
+              const userInConditionPartition = individualEnrollmentConditionAndPartition.find(
+                ({ conditions_id, partitions_id, date_range }) => {
+                  return (
+                    partitions_id === partitionDoc.id &&
+                    conditions_id === id &&
+                    new Date(date).getTime() === (date_range as any).getTime()
+                  );
+                }
+              );
+              const groupInConditionPartition = groupEnrollmentConditionAndPartition.find(
+                ({ conditions_id, partitions_id, date_range }) => {
+                  return (
+                    partitions_id === partitionDoc.id &&
+                    conditions_id === id &&
+                    new Date(date).getTime() === (date_range as any).getTime()
+                  );
+                }
+              );
+              return {
+                id: partitionDoc.id,
+                users: (userInConditionPartition && parseInt(userInConditionPartition.count, 10)) || 0,
+                groups: (groupInConditionPartition && parseInt(groupInConditionPartition.count, 10)) || 0,
+              };
+            }),
+          };
+        }),
+      };
+      return {
+        date,
+        stats,
+      };
     });
-
-    // add conditions based on individual assignments
-    individualAssignments.forEach((individualAssignment) => {
-      const document = userMap.get(individualAssignment.user.id);
-      if (document) {
-        document.conditionId = individualAssignment.condition.id;
-        userMap.set(individualAssignment.user.id, document);
-      }
-    });
-    return Array.from(userMap.values());
   }
 
   public async getCSVData(experimentId: string): Promise<string> {
