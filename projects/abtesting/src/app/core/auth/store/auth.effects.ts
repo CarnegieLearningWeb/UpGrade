@@ -44,11 +44,18 @@ export class AuthEffects {
         tap(() => {
           this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: true }));
           gapi.load('auth2', () => {
-            this.auth2 = gapi.auth2.init({
+            let initConfig: any = {
               client_id: env.gapiClientId,
               cookiepolicy: 'single_host_origin',
-              scope: this.scope
-            });
+              scope: this.scope,
+            }
+            if (env.domainName) {
+              initConfig = {
+                ...initConfig,
+                hosted_domain: env.domainName
+              }
+            }
+            this.auth2 = gapi.auth2.init(initConfig);
             this.auth2.currentUser.listen(currentUser => {
               this.ngZone.run(() => {
                 if (!this.hasUserClickedLogin) {
@@ -133,7 +140,7 @@ export class AuthEffects {
             settingsActions.actionGetSetting(),
             analysisActions.actionFetchMetrics()
           ];
-          // Set theme from localstorage if exist
+          // Set theme from local storage if exist
           this.settingsService.setLocalStorageTheme();
           if (user.role) {
             this.authService.setUserPermissions(user.role);
@@ -145,11 +152,16 @@ export class AuthEffects {
             return this.authDataService.getUserByEmail(user.email).pipe(
               switchMap((res: User) => {
                 if (res[0]) {
-                  this.authService.setUserPermissions(res[0].role);
-                  return [
-                    authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }),
-                    ...actions
-                  ];
+                  // Avoid null name in account
+                  if (res[0].firstName) {
+                    this.authService.setUserPermissions(res[0].role);
+                    return [
+                      authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }),
+                      ...actions
+                    ];
+                  } else {
+                    return [authActions.actionLogoutStart()];
+                  }
                 } else {
                   return [
                     authActions.actionSetUserInfoFailed()
