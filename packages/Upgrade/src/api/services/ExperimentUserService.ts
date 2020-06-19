@@ -72,7 +72,7 @@ export class ExperimentUserService {
     const promiseResult = await Promise.all(promiseArray);
     const aliasesUserIds = [];
     const aliasesLinkedWithOtherUser = [];
-    const alreadyLinkedAliases = [];
+    let alreadyLinkedAliases = [];
     promiseResult.map((result, index) => {
       if (result) {
         if (result.originalUser && result.originalUser.id === userExist.id) {
@@ -97,8 +97,16 @@ export class ExperimentUserService {
       aliasUser.originalUser = userExist;
       return aliasUser;
     });
+    alreadyLinkedAliases = alreadyLinkedAliases.map(user => {
+      const { originalUser, ...rest } = user;
+      return { ...rest, originalUser: originalUser.id };
+    });
     if (userAliasesDocs.length) {
-      const aliasesUsers = await this.userRepository.save(userAliasesDocs);
+      let aliasesUsers = await this.userRepository.save(userAliasesDocs);
+      aliasesUsers = aliasesUsers.map(user => {
+        const { originalUser, ...rest } = user;
+        return { ...rest, originalUser: originalUser.id };
+      });
       return [...aliasesUsers, ...alreadyLinkedAliases];
     }
     return alreadyLinkedAliases;
