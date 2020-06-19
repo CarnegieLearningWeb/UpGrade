@@ -84,6 +84,7 @@ variable "AUTH_CHECK" {}
 variable "AWS_REGION" { default = "us-east-1" }
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
 variable "GOOGLE_CLIENT_ID" { }
+variable "DOMAIN_NAME" { default = null }
 variable "HOST_URL" { default = "http://upgrade-development.us-east-1.elasticbeanstalk.com/api" }
 variable "INTERCEPTORS" { default = "src/api/interceptors/**/*Interceptor.ts" }
 variable "LOG_LEVEL" { default = "debug" }

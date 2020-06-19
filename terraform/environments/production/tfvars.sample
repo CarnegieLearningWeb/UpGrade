@@ -22,6 +22,7 @@ autoscaling_max_size    =  4
 
 # APP environment variables
 GOOGLE_CLIENT_ID        = "google-project-id"
+DOMAIN_NAME             = "carnegielearning.com"
 MONITOR_PASSWORD        = "password"
 SWAGGER_PASSWORD        = "password"
 TYPEORM_SYNCHRONIZE     = true

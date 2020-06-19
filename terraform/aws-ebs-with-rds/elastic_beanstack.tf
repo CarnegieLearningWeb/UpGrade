@@ -169,6 +169,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "DOMAIN_NAME"
+    value     = var.DOMAIN_NAME
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "HOST_URL"
     value     = var.HOST_URL
   }
