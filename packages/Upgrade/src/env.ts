@@ -63,6 +63,7 @@ export const env = {
   monitor: {},
   google: {
     clientId: getOsEnv('GOOGLE_CLIENT_ID'),
+    domainName: getOsEnvOptional('DOMAIN_NAME'),
   },
   auth: {
     authCheck: toBool(getOsEnvOptional('AUTH_CHECK')),

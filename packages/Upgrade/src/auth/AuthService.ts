@@ -36,6 +36,16 @@ export class AuthService {
 
     // check if user exist in the user repo
     const email = payload.email;
+    const hd = payload.hd;
+
+    if (env.google.domainName && env.google.domainName !== hd) {
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.USER_NOT_FOUND,
+          message: `User domain is not same as required ${env.google.domainName}`,
+        })
+      );
+    }
 
     // add local cache for validating user for each request
     const document = await this.userRepository.find({ email });
