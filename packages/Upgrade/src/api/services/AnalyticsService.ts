@@ -139,7 +139,8 @@ export class AnalyticsService {
         for (let i = 0; i < 3; i++) {
           const date = new Date();
           date.setHours(0, 0, 0, 0);
-          date.setDate(date.getMonth() - i);
+          date.setDate(1);
+          date.setMonth(date.getMonth() - i);
           const newDate = new Date(date).toISOString();
           keyToReturn[newDate] = {};
         }
@@ -148,7 +149,8 @@ export class AnalyticsService {
         for (let i = 0; i < 6; i++) {
           const date = new Date();
           date.setHours(0, 0, 0, 0);
-          date.setDate(date.getMonth() - i);
+          date.setDate(1);
+          date.setMonth(date.getMonth() - i);
           const newDate = new Date(date).toISOString();
           keyToReturn[newDate] = {};
         }
@@ -157,7 +159,8 @@ export class AnalyticsService {
         for (let i = 0; i < 12; i++) {
           const date = new Date();
           date.setHours(0, 0, 0, 0);
-          date.setDate(date.getMonth() - i);
+          date.setDate(1);
+          date.setMonth(date.getMonth() - i);
           const newDate = new Date(date).toISOString();
           keyToReturn[newDate] = {};
         }
@@ -187,7 +190,6 @@ export class AnalyticsService {
     // console.log('groupExclusion', groupExclusion);
 
     return Object.keys(keyToReturn).map((date) => {
-      console.log('date', date);
       const stats: IExperimentEnrollmentDetailStats = {
         id: experimentId,
         users:
