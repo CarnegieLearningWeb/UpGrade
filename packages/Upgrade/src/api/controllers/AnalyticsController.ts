@@ -97,10 +97,9 @@ export class AnalyticsController {
    *             properties:
    *              experimentId:
    *               type: string
-   *              fromDate:
+   *              dateEnum:
    *               type: string
-   *              toDate:
-   *               type: string
+   *               enum: [last_seven_days, last_three_months, last_six_months, last_twelve_months]
    *       tags:
    *         - Analytics
    *       produces:
