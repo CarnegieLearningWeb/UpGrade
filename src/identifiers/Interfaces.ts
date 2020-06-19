@@ -59,4 +59,8 @@ export namespace Interfaces {
     group: object;
     workingGroup: object;
   }
+
+  export interface IExperimentUserAliases extends IExperimentUser {
+    originalUser: string;
+  }
 }

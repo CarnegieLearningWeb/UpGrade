@@ -50,4 +50,7 @@ export declare namespace Interfaces {
         group: object;
         workingGroup: object;
     }
+    interface IExperimentUserAliases extends IExperimentUser {
+        originalUser: string;
+    }
 }

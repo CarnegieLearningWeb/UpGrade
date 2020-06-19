@@ -138,7 +138,7 @@ export default class UpgradeClient {
         return await log(UpgradeClient.api.log, this.userId, this.token, key, value);
     }
 
-    async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUser[]> {
+    async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
         this.validateClient();
         return await setAltUserIds(UpgradeClient.api.altUserIds, this.userId, this.token, altUserIds);
     }
