@@ -6,7 +6,7 @@ export default async function setAltUserIds(
   userId: string,
   token: string,
   altUserIds: string[]
-): Promise<Interfaces.IExperimentUser[]> {
+): Promise<Interfaces.IExperimentUserAliases[]> {
   try {
     const data = {
       userId,
