@@ -13,6 +13,7 @@ export const environment = {
   test: false,
   i18nPrefix: '',
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
+  domainName: 'playpowerlabs.com',
   api: {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
