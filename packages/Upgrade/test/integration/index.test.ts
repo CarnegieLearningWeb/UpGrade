@@ -62,6 +62,7 @@ import { MetricCRUD } from './Experiment/metric';
 import { CreateLog } from './Experiment/dataLog';
 import { LogSum } from './Experiment/dataLog/index';
 import { QueryCRUD } from './Experiment/query';
+import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -268,6 +269,16 @@ describe('Integration Tests', () => {
 
   test('Stats from Individual Experiment with Date Range', async (done) => {
     await StatsIndividualExperimentWithDateRange();
+    done();
+  });
+
+  test('Stats from Individual Experiment for table', async (done) => {
+    await StatsDetailIndividualExperiment();
+    done();
+  });
+
+  test('Stats from Group Experiment with for table', async (done) => {
+    await StatsDetailGroupExperiment();
     done();
   });
 

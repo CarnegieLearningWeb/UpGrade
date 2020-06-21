@@ -155,7 +155,7 @@ resource "aws_iam_role_policy" "app-attach1" {
          "Resource":[
             "arn:aws:dynamodb:*:*:table/*-stack-AWSEBWorkerCronLeaderRegistry*"
          ]
-      },
+      },      
       {
          "Effect":"Allow",
          "Action":[

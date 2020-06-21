@@ -42,7 +42,15 @@ export default async function testCase(): Promise<void> {
 
   const experimentId = experiments[0].id;
   let stats = await analyticsService.getEnrollments([experimentId]);
-  expect(stats.length).toEqual(0);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        users: 0,
+        groups: 0,
+        id: experimentId,
+      }),
+    ])
+  );
 
   const experimentName1 = experimentObject.partitions[0].expId;
   const experimentPoint1 = experimentObject.partitions[0].expPoint;
@@ -60,7 +68,15 @@ export default async function testCase(): Promise<void> {
 
   // check stats
   stats = await analyticsService.getEnrollments([experimentId]);
-  expect(stats.length).toEqual(0);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        users: 0,
+        groups: 0,
+        id: experimentId,
+      }),
+    ])
+  );
 
   // change experiment state to enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
@@ -77,7 +93,15 @@ export default async function testCase(): Promise<void> {
 
   // check stats
   stats = await analyticsService.getEnrollments([experimentId]);
-  expect(stats.length).toEqual(0);
+  expect(stats).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        users: 0,
+        groups: 0,
+        id: experimentId,
+      }),
+    ])
+  );
 
   // user 3 logs in experiment
   // get all experiment condition for user 3
@@ -93,9 +117,9 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        user: 1,
-        group: 1,
-        experimentId,
+        users: 1,
+        groups: 1,
+        id: experimentId,
       }),
     ])
   );
@@ -114,9 +138,9 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        user: 2,
-        group: 1,
-        experimentId,
+        users: 2,
+        groups: 1,
+        id: experimentId,
       }),
     ])
   );

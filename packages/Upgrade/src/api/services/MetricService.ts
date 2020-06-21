@@ -40,6 +40,34 @@ export class MetricService {
     return this.metricRepository.save(metricDoc);
   }
 
+  // TODO: Verify to keep both saveAllMetrics and upsertAllMetrics
+  // TODO: write test cases
+  public async upsertAllMetrics(metrics: IMetricUnit[]): Promise<IMetricUnit[]> {
+    this.log.info('Upsert all metrics');
+    // check permission for metrics
+    const isAllowed = await this.checkMetricsPermission();
+    if (!isAllowed) {
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Metrics filter not enabled' }));
+    }
+    // create query for metrics
+    const keyArray = this.metricJsonToDocument(metrics);
+    const metricDoc: any[] = keyArray.map((metric) => ({
+      key: metric.key,
+      type: metric.type,
+      allowedData: metric.allowedData,
+    }));
+    const upsertedMetrics = await this.metricRepository.save(metricDoc);
+    return this.metricDocumentToJson(upsertedMetrics);
+  }
+
+  public async deleteMetric(key: string): Promise<IMetricUnit[]> {
+    this.log.info('Delete metric by key ', key);
+    await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
+    const rootKey = key.split(METRICS_JOIN_TEXT);
+    const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
+    return this.metricDocumentToJson(updatedMetric);
+  }
+
   private async checkMetricsPermission(): Promise<boolean> {
     const setting = await this.settingService.getClientCheck();
     return setting.toFilterMetric;
