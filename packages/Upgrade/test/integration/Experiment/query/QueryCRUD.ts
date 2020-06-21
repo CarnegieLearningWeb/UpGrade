@@ -25,7 +25,7 @@ export default async function QueryCRUD(): Promise<void> {
   const user = await userService.create(systemUser as any);
 
   // experiment object
-  const experimentObject = individualAssignmentExperiment;
+  let experimentObject = individualAssignmentExperiment;
 
   // create experiment
   await experimentService.create(experimentObject as any, user);
@@ -81,7 +81,6 @@ export default async function QueryCRUD(): Promise<void> {
   expect(findMetric.length).toEqual(3);
 
   // three query need to be generated
-  // TODO: Remove test case of save query
   const query = {
     name: 'timeAverage',
     query: {
@@ -91,9 +90,14 @@ export default async function QueryCRUD(): Promise<void> {
     experimentId: experiments[0].id,
   };
 
-  await queryService.saveQuery(query.query, query.metric, query.experimentId);
+  experimentObject = {
+    ...experimentObject,
+    queries: [query],
+  };
 
-  const allQuery = await queryService.find();
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
+
+  let allQuery = await queryService.find();
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -106,4 +110,14 @@ export default async function QueryCRUD(): Promise<void> {
       }),
     ])
   );
+
+  experimentObject = {
+    ...experimentObject,
+    queries: [],
+  };
+
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
+
+  allQuery = await queryService.find();
+  expect(allQuery.length).toEqual(0);
 }

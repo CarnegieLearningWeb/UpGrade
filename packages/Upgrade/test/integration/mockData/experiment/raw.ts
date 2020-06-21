@@ -10,6 +10,7 @@ export const experiment = {
   group: 'teacher',
   context: ['home'],
   tags: [],
+  queries: [],
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -61,6 +62,7 @@ export const experimentSecond = {
   group: 'teacher',
   context: ['home'],
   tags: [],
+  queries: [],
   conditions: [
     {
       id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',
