@@ -49,7 +49,17 @@
       display: flex;
 
       &-data {
+        position: relative;
         flex-grow: 1;
+
+        .spinner {
+          display: flex;
+          position: absolute;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
       }
     }
 

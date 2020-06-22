@@ -25,6 +25,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   stats: {},
   graphInfo: null,
   graphRange: null,
+  isGraphInfoLoading: false,
   allPartitions: null,
   allExperimentNames: null,
   context: []
@@ -67,9 +68,13 @@ const reducer = createReducer(
     }
   ),
   on(
+    experimentsAction.actionSetIsGraphLoading,
+    (state, { isGraphInfoLoading }) => ({ ...state, isGraphInfoLoading })
+  ),
+  on(
     experimentsAction.actionFetchExperimentGraphInfoSuccess,
     (state, { graphInfo, range }) => {
-      return { ...state, graphInfo: { ...state.graphInfo, [range]: graphInfo } };
+      return { ...state, graphInfo: { ...state.graphInfo, [range]: graphInfo }, isGraphInfoLoading: false };
     }
   ),
   on(

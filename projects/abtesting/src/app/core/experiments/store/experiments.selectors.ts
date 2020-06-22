@@ -91,6 +91,11 @@ export const selectExperimentContext = createSelector(
   (state) => state.context
 );
 
+export const selectIsGraphLoading = createSelector(
+  selectExperimentState,
+  (state) => state.isGraphInfoLoading
+)
+
 export const selectExperimentGraphRange = createSelector(
   selectExperimentState,
   (state) => state.graphRange

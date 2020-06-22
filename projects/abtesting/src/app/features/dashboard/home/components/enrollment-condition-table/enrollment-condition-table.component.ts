@@ -37,7 +37,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   ngOnInit() {
     this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
       this.experimentData = [];
-      if (stat.conditions) {
+      if (stat && stat.conditions) {
         stat.conditions.forEach(condition => {
 
           const conditionObj: EnrollmentByConditionOrPartitionData = {

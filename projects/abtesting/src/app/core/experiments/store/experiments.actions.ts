@@ -7,9 +7,9 @@ import {
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
-  ExperimentGraphDateFilterOptions,
   IExperimentDateStat,
-  IExperimentEnrollmentDetailStats
+  IExperimentEnrollmentDetailStats,
+  DATE_RANGE
 } from './experiments.model';
 
 export const actionGetExperiments = createAction(
@@ -143,14 +143,19 @@ export const actionExportExperimentInfoFailure = createAction(
   '[Experiment] Export Experiment Info Failure'
 );
 
+export const actionSetIsGraphLoading = createAction(
+  '[Experiment] Set is Graph Loading',
+  props<{ isGraphInfoLoading: boolean }>()
+);
+
 export const actionFetchExperimentGraphInfo = createAction(
   '[Experiment] Fetch Experiment graph Info',
-  props<{ experimentId: string, range: ExperimentGraphDateFilterOptions }>()
+  props<{ experimentId: string, range: DATE_RANGE }>()
 );
 
 export const actionFetchExperimentGraphInfoSuccess = createAction(
   '[Experiment] Fetch Experiment graph Info Success',
-  props<{ range: ExperimentGraphDateFilterOptions, graphInfo: IExperimentDateStat[] }>()
+  props<{ range: DATE_RANGE, graphInfo: IExperimentDateStat[] }>()
 );
 
 export const actionFetchExperimentGraphInfoFailure = createAction(
@@ -164,7 +169,7 @@ export const actionSetExperimentGraphInfo = createAction(
 
 export const actionSetGraphRange = createAction(
   '[Experiment] Set Graph Range',
-  props<{ range: ExperimentGraphDateFilterOptions, experimentId: string }>()
+  props<{ range: DATE_RANGE, experimentId: string }>()
 );
 
 export const actionFetchExperimentDetailStat = createAction(
