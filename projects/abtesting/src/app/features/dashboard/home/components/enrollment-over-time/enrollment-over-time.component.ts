@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, OnDestroy } from '@angular/core';
 import { ASSIGNMENT_UNIT } from 'upgrade_types';
-import { ExperimentVM, DATE_RANGE } from '../../../../../core/experiments/store/experiments.model';
+import { ExperimentVM, DATE_RANGE, IEnrollmentStatByDate } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
 import { MatCheckboxChange } from '@angular/material';
@@ -37,7 +37,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   selectedPartition: string[] = [];
   selectedDateFilter: DATE_RANGE = DATE_RANGE.LAST_SEVEN_DAYS;
   graphData = [];
-  copyGraphData = [];
+  copyGraphData: IEnrollmentStatByDate[] = [];
 
   colors = ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'];
   colorScheme = {

@@ -11,9 +11,9 @@ import {
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams,
-  IExperimentDateStat,
   IExperimentEnrollmentDetailStats,
-  DATE_RANGE
+  DATE_RANGE,
+  IExperimentEnrollmentDetailDateStats
 } from 'upgrade_types';
 
 export {
@@ -27,10 +27,14 @@ export {
   EXPERIMENT_SORT_AS,
   IExperimentSearchParams,
   IExperimentSortParams,
-  IExperimentDateStat,
   IExperimentEnrollmentDetailStats,
-  DATE_RANGE
+  DATE_RANGE,
 };
+
+export interface IEnrollmentStatByDate {
+  date: string;
+  stats: IExperimentEnrollmentDetailDateStats;
+}
 
 export enum GroupTypes {
   CLASS = 'class',
@@ -146,10 +150,10 @@ export interface ExperimentPaginationParams {
 }
 
 export interface IExperimentGraphInfo {
-  [DATE_RANGE.LAST_SEVEN_DAYS]: IExperimentDateStat[],
-  [DATE_RANGE.LAST_THREE_MONTHS]: IExperimentDateStat[],
-  [DATE_RANGE.LAST_SIX_MONTHS]: IExperimentDateStat[],
-  [DATE_RANGE.LAST_TWELVE_MONTHS]: IExperimentDateStat[],
+  [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_SIX_MONTHS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_TWELVE_MONTHS]: IEnrollmentStatByDate[],
 }
 
 export interface ExperimentVM extends Experiment {
