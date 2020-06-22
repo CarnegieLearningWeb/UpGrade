@@ -9,13 +9,13 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { ExperimentUser } from '../models/ExperimentUser';
-import { ASSIGNMENT_UNIT, IExperimentEnrollmentStats, IExperimentDateStat } from 'upgrade_types';
+import { IExperimentDateStat, IExperimentEnrollmentDetailStats } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
-import { Experiment } from '../models/Experiment';
 import { ASSIGNMENT_TYPE } from '../../types';
+import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
+import { Experiment } from '../models/Experiment';
 
 enum EXPERIMENT_ELEMENTS {
   EXPERIMENT_INFORMATION = 'Experiment Information',
@@ -42,69 +42,80 @@ export class AnalyticsService {
     @OrmRepository()
     private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository()
-    private groupAssignmentRepository: GroupAssignmentRepository
-  ) { }
+    private groupAssignmentRepository: GroupAssignmentRepository,
+    @OrmRepository()
+    private analyticsRepository: AnalyticsRepository
+  ) {}
 
-  public async getStats(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
-    return Promise.all(
-      experimentIds.map(async (experimentId) => {
-        // get experiment definition
-        const experiment = await this.experimentRepository.findOne({
-          where: { id: experimentId },
-          relations: ['partitions', 'conditions'],
+  public async getEnrollments(experimentIds: string[]): Promise<any> {
+    return this.analyticsRepository.getEnrollments(experimentIds);
+  }
+
+  public async getDetailEnrolment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
+    const promiseArray = await Promise.all([
+      this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
+      this.analyticsRepository.getDetailEnrollment(experimentId),
+    ]);
+    const experiment: Experiment = promiseArray[0];
+    const [
+      individualEnrollmentByCondition,
+      individualEnrollmentConditionAndPartition,
+      groupEnrollmentByCondition,
+      groupEnrollmentConditionAndPartition,
+      individualExclusion,
+      groupExclusion,
+    ] = promiseArray[1];
+
+    // console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
+    // console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
+    // console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
+    // console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
+    // console.log('individualExclusion', individualExclusion);
+    // console.log('groupExclusion', groupExclusion);
+
+    return {
+      id: experimentId,
+      users:
+        individualEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
+          return accumulator + parseInt(count, 10);
+        }, 0) || 0,
+      groups:
+        groupEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
+          return accumulator + parseInt(count, 10);
+        }, 0) || 0,
+      usersExcluded: parseInt(individualExclusion[0].count, 10) || 0,
+      groupsExcluded: parseInt(groupExclusion[0].count, 10) || 0,
+      conditions: experiment.conditions.map(({ id }) => {
+        const userInCondition = individualEnrollmentByCondition.find(({ conditions_id }) => {
+          return conditions_id === id;
         });
-
-        // when experiment is not defined
-        if (!experiment) {
-          return {
-            id: experimentId,
-            users: 0,
-            group: 0,
-            userExcluded: 0,
-            groupExcluded: 0,
-            conditions: {} as any,
-            partitions: {} as any,
-          };
-        }
-
-        const experimentIdAndPoint = [];
-        const partitions = experiment.partitions;
-        partitions.forEach((partition) => {
-          const partitionId = partition.id;
-          experimentIdAndPoint.push(partitionId);
+        const groupInCondition = groupEnrollmentByCondition.find(({ conditions_id }) => {
+          return conditions_id === id;
         });
-
-        // data for all
-        const promiseData = await Promise.all([
-          this.monitoredExperimentPointRepository.find({
-            where: { experimentId: In(experimentIdAndPoint) },
-            relations: ['user'],
+        return {
+          id,
+          users: (userInCondition && parseInt(userInCondition.count, 10)) || 0,
+          groups: (groupInCondition && parseInt(groupInCondition.count, 10)) || 0,
+          partitions: experiment.partitions.map((partitionDoc) => {
+            const userInConditionPartition = individualEnrollmentConditionAndPartition.find(
+              ({ conditions_id, partitions_id }) => {
+                return partitions_id === partitionDoc.id && conditions_id === id;
+              }
+            );
+            const groupInConditionPartition = groupEnrollmentConditionAndPartition.find(
+              ({ conditions_id, partitions_id }) => {
+                return partitions_id === partitionDoc.id && conditions_id === id;
+              }
+            );
+            return {
+              id: partitionDoc.id,
+              users: (userInConditionPartition && parseInt(userInConditionPartition.count, 10)) || 0,
+              groups: (groupInConditionPartition && parseInt(groupInConditionPartition.count, 10)) || 0,
+            };
           }),
-          this.individualAssignmentRepository.findIndividualAssignmentsByExperimentIdAndAlgorithm(
-            experimentId,
-            ASSIGNMENT_TYPE.ALGORITHMIC
-          ),
-          this.individualExclusionRepository.findExcludedByExperimentId(experimentId),
-          this.groupAssignmentRepository.findGroupAssignmentsByExperimentId(experimentId),
-          this.groupExclusionRepository.findExcludedByExperimentId(experimentId),
-        ]);
-
-        const monitoredExperimentPoints: MonitoredExperimentPoint[] = promiseData[0] as any;
-        const individualAssignments: IndividualAssignment[] = promiseData[1] as any;
-        const individualExclusions: IndividualExclusion[] = promiseData[2] as any;
-        const groupAssignments: GroupAssignment[] = promiseData[3] as any;
-        const groupExclusions: GroupExclusion[] = promiseData[4] as any;
-
-        return this.getStatsData(
-          experiment,
-          monitoredExperimentPoints,
-          individualAssignments,
-          individualExclusions,
-          groupAssignments,
-          groupExclusions
-        );
-      })
-    );
+        };
+      }),
+    };
   }
 
   public async getEnrolmentStatsByDate(experimentId: string, from: Date, to: Date): Promise<IExperimentDateStat[]> {
@@ -246,8 +257,8 @@ export class AnalyticsService {
     const experimentRow = {
       ...csvRowFormat,
       experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_INFORMATION,
-      createdAt: experimentInfo.createdAt,
-      updatedAt: experimentInfo.updatedAt,
+      createdAt: experimentInfo.createdAt.toISOString(),
+      updatedAt: experimentInfo.updatedAt.toISOString(),
       versionNumber: experimentInfo.versionNumber,
       id: experimentInfo.id,
       name: experimentInfo.name,
@@ -258,7 +269,9 @@ export class AnalyticsService {
       consistencyRule: experimentInfo.consistencyRule,
       assignmentUnit: experimentInfo.assignmentUnit,
       postExperimentRule: experimentInfo.postExperimentRule,
-      enrollmentCompleteCondition: experimentInfo.enrollmentCompleteCondition ? JSON.stringify(experimentInfo.enrollmentCompleteCondition) : '',
+      enrollmentCompleteCondition: experimentInfo.enrollmentCompleteCondition
+        ? JSON.stringify(experimentInfo.enrollmentCompleteCondition)
+        : '',
       experimentEndOn: experimentInfo.endOn,
       revertTo: experimentInfo.revertTo,
       tags: experimentInfo.tags,
@@ -267,12 +280,12 @@ export class AnalyticsService {
     csvRows.push(experimentRow);
 
     // Add conditions
-    conditions.forEach(condition => {
+    conditions.forEach((condition) => {
       const conditionRow = {
         ...experimentRow,
         experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_CONDITIONS,
-        createdAt: condition.createdAt,
-        updatedAt: condition.updatedAt,
+        createdAt: condition.createdAt.toISOString(),
+        updatedAt: condition.updatedAt.toISOString(),
         versionNumber: condition.versionNumber,
         id: condition.id,
         twoCharacterId: condition.twoCharacterId,
@@ -285,12 +298,12 @@ export class AnalyticsService {
     });
 
     // Add partitions
-    partitions.forEach(partition => {
+    partitions.forEach((partition) => {
       const partitionRow = {
         ...experimentRow,
         experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_PARTITIONS,
-        createdAt: partition.createdAt,
-        updatedAt: partition.updatedAt,
+        createdAt: partition.createdAt.toISOString(),
+        updatedAt: partition.updatedAt.toISOString(),
         versionNumber: partition.versionNumber,
         id: partition.id,
         twoCharacterId: partition.twoCharacterId,
@@ -307,8 +320,8 @@ export class AnalyticsService {
         const monitoredPointRow = {
           ...experimentRow,
           experimentElement: EXPERIMENT_ELEMENTS.MARKED_EXPERIMENT_POINT,
-          createdAt: monitoredPoint.createdAt,
-          updatedAt: monitoredPoint.updatedAt,
+          createdAt: monitoredPoint.createdAt.toISOString(),
+          updatedAt: monitoredPoint.updatedAt.toISOString(),
           versionNumber: monitoredPoint.versionNumber,
           id: monitoredPoint.id,
           experimentId: monitoredPoint.experimentId,
@@ -326,14 +339,16 @@ export class AnalyticsService {
         const individualExclusionRow = {
           ...experimentRow,
           experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_INDIVIDUAL_EXCLUSION,
-          createdAt: individualExclusion.createdAt,
-          updatedAt: individualExclusion.updatedAt,
+          createdAt: individualExclusion.createdAt.toISOString(),
+          updatedAt: individualExclusion.updatedAt.toISOString(),
           versionNumber: individualExclusion.versionNumber,
           id: individualExclusion.id,
           experimentId: individualExclusion.experiment.id,
           userId: individualExclusion.user.id,
           userGroup: individualExclusion.user.group ? JSON.stringify(individualExclusion.user.group) : '',
-          userWorkingGroup: individualExclusion.user.workingGroup ? JSON.stringify(individualExclusion.user.workingGroup) : '',
+          userWorkingGroup: individualExclusion.user.workingGroup
+            ? JSON.stringify(individualExclusion.user.workingGroup)
+            : '',
         };
         csvRows.push(individualExclusionRow);
       });
@@ -345,8 +360,8 @@ export class AnalyticsService {
         const groupExclusionRow = {
           ...experimentRow,
           experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_GROUP_EXCLUSION,
-          createdAt: groupExclusion.createdAt,
-          updatedAt: groupExclusion.updatedAt,
+          createdAt: groupExclusion.createdAt.toISOString(),
+          updatedAt: groupExclusion.updatedAt.toISOString(),
           versionNumber: groupExclusion.versionNumber,
           id: groupExclusion.id,
           experimentId: groupExclusion.experiment.id,
@@ -362,8 +377,8 @@ export class AnalyticsService {
         const assignmentRow = {
           ...experimentRow,
           experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_INDIVIDUAL_ASSIGNMENT,
-          createdAt: assignment.createdAt,
-          updatedAt: assignment.updatedAt,
+          createdAt: assignment.createdAt.toISOString(),
+          updatedAt: assignment.updatedAt.toISOString(),
           versionNumber: assignment.versionNumber,
           id: assignment.id,
           experimentId: assignment.experiment.id,
@@ -383,8 +398,8 @@ export class AnalyticsService {
         const assignmentRow = {
           ...experimentRow,
           experimentElement: EXPERIMENT_ELEMENTS.EXPERIMENT_GROUP_ASSIGNMENTS,
-          createdAt: assignment.createdAt,
-          updatedAt: assignment.updatedAt,
+          createdAt: assignment.createdAt.toISOString(),
+          updatedAt: assignment.updatedAt.toISOString(),
           versionNumber: assignment.versionNumber,
           id: assignment.id,
           experimentId: assignment.experiment.id,
@@ -395,142 +410,6 @@ export class AnalyticsService {
       });
     }
     return this.convertArrayToCsvForm(csvRows);
-  }
-
-  private getStatsData(
-    experiment: Experiment,
-    monitoredExperimentPoints: MonitoredExperimentPoint[],
-    individualAssignmentsOriginal: IndividualAssignment[],
-    individualExclusions: IndividualExclusion[],
-    groupAssignmentsOriginal: GroupAssignment[],
-    groupExclusions: GroupExclusion[]
-  ): IExperimentEnrollmentStats {
-    // filter individual assignment
-    const individualAssignments = individualAssignmentsOriginal.filter((individualAssignment) => {
-      const user = individualAssignment.user.id;
-      const exist = monitoredExperimentPoints.find((monitoredExperimentPoint) => {
-        return monitoredExperimentPoint.user.id === user;
-      });
-      return exist ? true : false;
-    });
-
-    // group assignments
-    const groupAssignments = groupAssignmentsOriginal;
-
-    // making map of primary keys
-    const mappedMonitoredExperimentPoint = new Map<string, MonitoredExperimentPoint>();
-    const mappedUserDefinition = new Map<string, ExperimentUser>();
-    const mappedIndividualAssignment = new Map<string, IndividualAssignment>();
-
-    // mappedMonitoredExperimentPoint
-    monitoredExperimentPoints.forEach((monitoredPoint) => {
-      mappedMonitoredExperimentPoint.set(monitoredPoint.id, monitoredPoint);
-    });
-
-    // get user definition
-    const userDefinition = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user) || [];
-
-    // mappedUserDefinition
-    userDefinition.forEach((user) => {
-      mappedUserDefinition.set(user.id, user);
-    });
-
-    // mappedIndividualAssignment
-    individualAssignments.forEach((individualAssignment) => {
-      mappedIndividualAssignment.set(individualAssignment.id, individualAssignment);
-    });
-
-    const conditionStats = experiment.conditions.map((condition) => {
-      const conditionAssignedUser = individualAssignments.filter((userPartition) => {
-        return (
-          mappedIndividualAssignment.has(`${experiment.id}_${userPartition.user.id}`) &&
-          mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id === condition.id
-        );
-      });
-
-      const conditionAssignedGroup =
-        (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-          Array.from(
-            new Set(
-              conditionAssignedUser.map(
-                (monitoredPoint) =>
-                  mappedUserDefinition.has(monitoredPoint.user.id) &&
-                  mappedUserDefinition.get(monitoredPoint.user.id).workingGroup[experiment.group]
-              )
-            )
-          )) ||
-        [];
-
-      return {
-        id: condition.id,
-        user: conditionAssignedUser.length,
-        group: conditionAssignedGroup.length,
-      };
-    });
-
-    const partitionStats = experiment.partitions.map((partition) => {
-      const partitionId = partition.id;
-      const usersPartitionIncluded = monitoredExperimentPoints.filter((monitoredPoint) => {
-        return (
-          monitoredPoint.experimentId === partitionId &&
-          mappedIndividualAssignment.has(`${experiment.id}_${monitoredPoint.user.id}`)
-        );
-      });
-
-      const groupPartitionIncluded =
-        (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-          Array.from(
-            new Set(
-              usersPartitionIncluded.map(
-                (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id).workingGroup[experiment.group]
-              )
-            )
-          )) ||
-        [];
-
-      // condition
-      const conditions = experiment.conditions.map((condition) => {
-        const conditionAssignedUser = usersPartitionIncluded.filter((userPartition) => {
-          return (
-            mappedIndividualAssignment.has(`${experiment.id}_${userPartition.user.id}`) &&
-            mappedIndividualAssignment.get(`${experiment.id}_${userPartition.user.id}`).condition.id === condition.id
-          );
-        });
-
-        const conditionAssignedGroup =
-          (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            Array.from(
-              new Set(
-                conditionAssignedUser.map(
-                  (monitoredPoint) => mappedUserDefinition.get(monitoredPoint.user.id).workingGroup[experiment.group]
-                )
-              )
-            )) ||
-          [];
-        return {
-          id: condition.id,
-          user: conditionAssignedUser.length,
-          group: conditionAssignedGroup.length,
-        };
-      });
-
-      return {
-        id: partitionId,
-        user: usersPartitionIncluded.length,
-        group: groupPartitionIncluded.length,
-        conditions,
-      };
-    });
-
-    return {
-      id: experiment.id,
-      users: individualAssignments.length,
-      group: groupAssignments.length,
-      userExcluded: individualExclusions.length,
-      groupExcluded: groupExclusions.length,
-      partitions: partitionStats,
-      conditions: conditionStats,
-    };
   }
 
   private convertArrayToCsvForm(data: any[]): string {

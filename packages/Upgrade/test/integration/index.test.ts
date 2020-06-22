@@ -32,7 +32,7 @@ import {
 } from './Experiment/scheduleJob';
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
-// import { StatsGroupExperiment, StatsIndividualExperiment } from './ExperimentStats';
+// import { StatsGroupExperiment } from './ExperimentStats';
 import {
   NoPreviewUser,
   PreviewAssignments,
@@ -53,11 +53,16 @@ import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { GetAssignments } from './Support/index';
-import { StatsIndividualExperimentWithDateRange } from './ExperimentStats/index';
+import {
+  StatsIndividualEnrollment,
+  StatsGroupEnrollment,
+  StatsIndividualExperimentWithDateRange,
+} from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog } from './Experiment/dataLog';
 import { LogSum } from './Experiment/dataLog/index';
 import { QueryCRUD } from './Experiment/query';
+import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -252,19 +257,28 @@ describe('Integration Tests', () => {
     done();
   });
 
-  // TODO update the base logic and test cases
-  // test('Stats for Group Experiment', async (done) => {
-  //   await StatsGroupExperiment();
-  //   done();
-  // });
+  test('Stats for Individual Enrollment', async (done) => {
+    await StatsIndividualEnrollment();
+    done();
+  });
 
-  // test('Stats for Individual Experiment', async (done) => {
-  //   await StatsIndividualExperiment();
-  //   done();
-  // });
+  test('Stats for Group Enrollment', async (done) => {
+    await StatsGroupEnrollment();
+    done();
+  });
 
   test('Stats from Individual Experiment with Date Range', async (done) => {
     await StatsIndividualExperimentWithDateRange();
+    done();
+  });
+
+  test('Stats from Individual Experiment for table', async (done) => {
+    await StatsDetailIndividualExperiment();
+    done();
+  });
+
+  test('Stats from Group Experiment with for table', async (done) => {
+    await StatsDetailGroupExperiment();
     done();
   });
 
