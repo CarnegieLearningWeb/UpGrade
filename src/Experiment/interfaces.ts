@@ -89,14 +89,6 @@ export interface IExperimentSortParams {
   sortAs: EXPERIMENT_SORT_AS;
 }
 
-export interface IExperimentDateStat {
-  userId: string;
-  groupId: string | undefined;
-  conditionId: string;
-  partitionIds: string[];
-  createdAt: any;
-}
-
 export interface IMetricUnit {
   key: string | string[];
   children?: IMetricUnit[];
