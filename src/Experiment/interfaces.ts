@@ -121,3 +121,13 @@ export interface IFeatureFlag {
   status: boolean;
   variations: IFlagVariation[];
 }
+
+interface IConditionEnrollmentDateStats {
+  id: string;
+  partitions: IPartitionEnrollmentStats[];
+}
+
+export interface IExperimentEnrollmentDetailDateStats {
+  id: string;
+  conditions: IConditionEnrollmentDateStats[];
+}
