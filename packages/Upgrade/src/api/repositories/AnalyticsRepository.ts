@@ -258,16 +258,7 @@ export class AnalyticsRepository {
   public async getEnrolmentByDateRange(
     experimentId: string,
     dateRange: DATE_RANGE
-  ): Promise<
-    [
-      IEnrollmentByConditionDate[],
-      IEnrollmentConditionAndPartitionDate[],
-      IEnrollmentByConditionDate[],
-      IEnrollmentConditionAndPartitionDate[],
-      IExcluded[],
-      IExcluded[]
-    ]
-  > {
+  ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
     const experimentRepository: ExperimentRepository = await this.manager.getCustomRepository(ExperimentRepository);
 
     let whereDate = '';
@@ -292,30 +283,30 @@ export class AnalyticsRepository {
         break;
     }
 
-    const individualEnrollmentByCondition = experimentRepository
-      .createQueryBuilder('experiment')
-      .select(['count(distinct("individualAssignment"."userId"))', 'conditions.id', selectRange])
-      .innerJoin('experiment.conditions', 'conditions')
-      .innerJoin('experiment.partitions', 'partitions')
-      .innerJoin(
-        IndividualAssignment,
-        'individualAssignment',
-        '"individualAssignment"."experimentId" = experiment.id AND conditions.id = "individualAssignment"."conditionId"'
-      )
-      .innerJoin(
-        MonitoredExperimentPoint,
-        'monitoredExperimentPoint',
-        '"monitoredExperimentPoint"."experimentId" = partitions.id AND "individualAssignment"."userId" = "monitoredExperimentPoint"."userId"'
-      )
-      .groupBy('conditions.id')
-      .addGroupBy(groupByRange)
-      .where('experiment.id = :id', { id: experimentId })
-      .andWhere(whereDate)
-      .andWhere((qb) => {
-        const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
-        return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
-      })
-      .execute() as any;
+    // const individualEnrollmentByCondition = experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select(['count(distinct("individualAssignment"."userId"))', 'conditions.id', selectRange])
+    //   .innerJoin('experiment.conditions', 'conditions')
+    //   .innerJoin('experiment.partitions', 'partitions')
+    //   .innerJoin(
+    //     IndividualAssignment,
+    //     'individualAssignment',
+    //     '"individualAssignment"."experimentId" = experiment.id AND conditions.id = "individualAssignment"."conditionId"'
+    //   )
+    //   .innerJoin(
+    //     MonitoredExperimentPoint,
+    //     'monitoredExperimentPoint',
+    //     '"monitoredExperimentPoint"."experimentId" = partitions.id AND "individualAssignment"."userId" = "monitoredExperimentPoint"."userId"'
+    //   )
+    //   .groupBy('conditions.id')
+    //   .addGroupBy(groupByRange)
+    //   .where('experiment.id = :id', { id: experimentId })
+    //   .andWhere(whereDate)
+    //   .andWhere((qb) => {
+    //     const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+    //     return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
+    //   })
+    //   .execute() as any;
 
     const individualEnrollmentConditionAndPartition = experimentRepository
       .createQueryBuilder('experiment')
@@ -343,36 +334,36 @@ export class AnalyticsRepository {
       })
       .execute() as any;
 
-    const individualExcluded = experimentRepository
-      .createQueryBuilder('experiment')
-      .select('count(*)')
-      .innerJoin(IndividualExclusion, 'individualExclusion', '"individualExclusion"."experimentId" = experiment.id')
-      .where('experiment.id = :id', { id: experimentId })
-      .execute();
+    // const individualExcluded = experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select('count(*)')
+    //   .innerJoin(IndividualExclusion, 'individualExclusion', '"individualExclusion"."experimentId" = experiment.id')
+    //   .where('experiment.id = :id', { id: experimentId })
+    //   .execute();
 
-    const groupEnrollmentByCondition = experimentRepository
-      .createQueryBuilder('experiment')
-      .select(['count(distinct("groupAssignment"."groupId"))', 'conditions.id', selectRange])
-      .innerJoin('experiment.conditions', 'conditions')
-      .innerJoin('experiment.partitions', 'partitions')
-      .innerJoin(
-        GroupAssignment,
-        'groupAssignment',
-        '"groupAssignment"."experimentId" = experiment.id AND conditions.id = "groupAssignment"."conditionId"'
-      )
-      .innerJoin(
-        MonitoredExperimentPoint,
-        'monitoredExperimentPoint',
-        '"monitoredExperimentPoint"."experimentId" = partitions.id'
-      )
-      .innerJoin(ExperimentUser, 'experimentUser', '"monitoredExperimentPoint"."userId" = "experimentUser".id')
-      .where('experiment.id = :id', { id: experimentId })
-      .andWhere(whereDate)
-      .andWhere(`"experimentUser"."workingGroup" -> experiment.group #>> '{}' = "groupAssignment"."groupId"`)
-      .groupBy('conditions.id')
-      .addGroupBy('partitions.id')
-      .addGroupBy(groupByRange)
-      .execute() as any;
+    // const groupEnrollmentByCondition = experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select(['count(distinct("groupAssignment"."groupId"))', 'conditions.id', selectRange])
+    //   .innerJoin('experiment.conditions', 'conditions')
+    //   .innerJoin('experiment.partitions', 'partitions')
+    //   .innerJoin(
+    //     GroupAssignment,
+    //     'groupAssignment',
+    //     '"groupAssignment"."experimentId" = experiment.id AND conditions.id = "groupAssignment"."conditionId"'
+    //   )
+    //   .innerJoin(
+    //     MonitoredExperimentPoint,
+    //     'monitoredExperimentPoint',
+    //     '"monitoredExperimentPoint"."experimentId" = partitions.id'
+    //   )
+    //   .innerJoin(ExperimentUser, 'experimentUser', '"monitoredExperimentPoint"."userId" = "experimentUser".id')
+    //   .where('experiment.id = :id', { id: experimentId })
+    //   .andWhere(whereDate)
+    //   .andWhere(`"experimentUser"."workingGroup" -> experiment.group #>> '{}' = "groupAssignment"."groupId"`)
+    //   .groupBy('conditions.id')
+    //   .addGroupBy('partitions.id')
+    //   .addGroupBy(groupByRange)
+    //   .execute() as any;
 
     const groupEnrollmentConditionAndPartition = experimentRepository
       .createQueryBuilder('experiment')
@@ -398,20 +389,13 @@ export class AnalyticsRepository {
       .addGroupBy('partitions.id')
       .execute() as any;
 
-    const groupExcluded = experimentRepository
-      .createQueryBuilder('experiment')
-      .select('count(*)')
-      .innerJoin(GroupExclusion, 'groupExclusion', '"groupExclusion"."experimentId" = experiment.id')
-      .where('experiment.id = :id', { id: experimentId })
-      .execute();
+    // const groupExcluded = experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select('count(*)')
+    //   .innerJoin(GroupExclusion, 'groupExclusion', '"groupExclusion"."experimentId" = experiment.id')
+    //   .where('experiment.id = :id', { id: experimentId })
+    //   .execute();
 
-    return Promise.all([
-      individualEnrollmentByCondition,
-      individualEnrollmentConditionAndPartition,
-      groupEnrollmentByCondition,
-      groupEnrollmentConditionAndPartition,
-      individualExcluded,
-      groupExcluded,
-    ]);
+    return Promise.all([individualEnrollmentConditionAndPartition, groupEnrollmentConditionAndPartition]);
   }
 }

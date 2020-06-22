@@ -9,7 +9,7 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { In } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { IExperimentEnrollmentDetailStats, DATE_RANGE } from 'upgrade_types';
+import { IExperimentEnrollmentDetailStats, DATE_RANGE, IExperimentEnrollmentDetailDateStats } from 'upgrade_types';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
@@ -30,7 +30,7 @@ enum EXPERIMENT_ELEMENTS {
 
 interface IEnrollmentStatByDate {
   date: string;
-  stats: IExperimentEnrollmentDetailStats;
+  stats: IExperimentEnrollmentDetailDateStats;
 }
 
 @Service()
@@ -173,14 +173,7 @@ export class AnalyticsService {
     ]);
 
     const experiment: Experiment = promiseArray[0];
-    const [
-      individualEnrollmentByCondition,
-      individualEnrollmentConditionAndPartition,
-      groupEnrollmentByCondition,
-      groupEnrollmentConditionAndPartition,
-      individualExclusion,
-      groupExclusion,
-    ] = promiseArray[1];
+    const [individualEnrollmentConditionAndPartition, groupEnrollmentConditionAndPartition] = promiseArray[1];
 
     // console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
     // console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
@@ -190,29 +183,11 @@ export class AnalyticsService {
     // console.log('groupExclusion', groupExclusion);
 
     return Object.keys(keyToReturn).map((date) => {
-      const stats: IExperimentEnrollmentDetailStats = {
+      const stats: IExperimentEnrollmentDetailDateStats = {
         id: experimentId,
-        users:
-          individualEnrollmentByCondition.reduce((accumulator: number, { count, date_range }): number => {
-            return accumulator + (new Date(date).getTime() === (date_range as any).getTime() ? parseInt(count, 10) : 0);
-          }, 0) || 0,
-        groups:
-          groupEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
-            return accumulator + parseInt(count, 10);
-          }, 0) || 0,
-        usersExcluded: parseInt(individualExclusion[0].count, 10) || 0,
-        groupsExcluded: parseInt(groupExclusion[0].count, 10) || 0,
         conditions: experiment.conditions.map(({ id }) => {
-          const userInCondition = individualEnrollmentByCondition.find(({ conditions_id, date_range }) => {
-            return conditions_id === id && new Date(date).getTime() === (date_range as any).getTime();
-          });
-          const groupInCondition = groupEnrollmentByCondition.find(({ conditions_id, date_range }) => {
-            return conditions_id === id && new Date(date).getTime() === (date_range as any).getTime();
-          });
           return {
             id,
-            users: (userInCondition && parseInt(userInCondition.count, 10)) || 0,
-            groups: (groupInCondition && parseInt(groupInCondition.count, 10)) || 0,
             partitions: experiment.partitions.map((partitionDoc) => {
               const userInConditionPartition = individualEnrollmentConditionAndPartition.find(
                 ({ conditions_id, partitions_id, date_range }) => {

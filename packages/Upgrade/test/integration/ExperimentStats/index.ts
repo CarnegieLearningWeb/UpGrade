@@ -1,4 +1,3 @@
-import IndividualExperimentWithDateRange from './individualExperimentWithDateRange';
 import IndividualEnrollment from './IndividualEnrollment';
 import GroupEnrollment from './GroupEnrollment';
 import DetailIndividualExperiment from './DetailIndividualExperiment';
@@ -40,11 +39,6 @@ const initialChecks = async () => {
   experimentUsers.map((user) => {
     expect(userList).toContainEqual(user);
   });
-};
-
-export const StatsIndividualExperimentWithDateRange = async () => {
-  await initialChecks();
-  await IndividualExperimentWithDateRange();
 };
 
 export const StatsDetailIndividualExperiment = async () => {
