@@ -87,28 +87,38 @@ export class ExperimentEffects {
           switchMap((data: any) => {
             const experiments = data.nodes;
             const experimentIds = experiments.map(experiment => experiment.id);
-            return this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
-              switchMap((stats: any) => {
-                const experimentStats = stats.reduce(
-                  (acc, stat: IExperimentEnrollmentStats) => ({ ...acc, [stat.id]: stat }),
-                  {}
-                );
-
-                const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
-                return [
-                  ...actions,
-                  experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
-                  experimentAction.actionStoreExperimentStats({ stats: experimentStats })
-                ];
-              }),
-              catchError(error => [experimentAction.actionGetExperimentsFailure(error)])
-            );
+            const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
+            return [
+              ...actions,
+              experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
+              experimentAction.actionFetchExperimentStats({ experimentIds })
+            ];
           }),
           catchError(error => [experimentAction.actionGetExperimentsFailure(error)])
         );
       })
     )
   );
+
+  fetchExperimentStatsForHome$ = createEffect(() =>
+      this.actions$.pipe(
+        ofType(experimentAction.actionFetchExperimentStats),
+        map(action => action.experimentIds),
+        filter(experimentIds => !!experimentIds.length),
+        switchMap(experimentIds =>
+          this.experimentDataService.getAllExperimentsStats(experimentIds).pipe(
+            map((stats: any) => {
+              const experimentStats = stats.reduce(
+                (acc, stat: IExperimentEnrollmentStats) => ({ ...acc, [stat.id]: stat }),
+                {}
+              );
+              return experimentAction.actionFetchExperimentStatsSuccess({ stats: experimentStats });
+            }),
+            catchError(() => [experimentAction.actionFetchExperimentStatsFailure()])
+          )
+        )
+      )
+  )
 
   UpsertExperiment$ = createEffect(() =>
     this.actions$.pipe(
@@ -127,7 +137,7 @@ export class ExperimentEffects {
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
                 return [
-                  experimentAction.actionStoreExperimentStats({ stats }),
+                  experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
                   experimentAction.actionFetchAllPartitions()
                 ];
@@ -187,7 +197,7 @@ export class ExperimentEffects {
                 const stats = { ...experimentStats, [data.id]: stat[0] };
                 return [
                   experimentAction.actionGetExperimentByIdSuccess({ experiment: data }),
-                  experimentAction.actionStoreExperimentStats({ stats })
+                  experimentAction.actionFetchExperimentStatsSuccess({ stats })
                 ];
               })
             )

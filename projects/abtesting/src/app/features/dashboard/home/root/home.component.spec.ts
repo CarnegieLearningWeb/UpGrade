@@ -5,6 +5,7 @@ import { TestingModule } from '../../../../../testing/testing.module';
 import { ExperimentListComponent } from '../components/experiment-list/experiment-list.component';
 import { ExperimentService } from '../../../../core/experiments/experiments.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -13,7 +14,7 @@ describe('HomeComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ HomeComponent, ExperimentListComponent ],
-      imports: [TestingModule],
+      imports: [TestingModule, NgxSkeletonLoaderModule],
       providers: [ExperimentService, AuthService]
     })
     .compileComponents();

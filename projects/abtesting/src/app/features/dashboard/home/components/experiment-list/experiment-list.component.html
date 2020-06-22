@@ -222,21 +222,49 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          <span
-            class="enrollment-info"
-            *ngIf="experiment.stat?.users"
-            [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
-          ></span>
-          <span
-            class="enrollment-info"
-            *ngIf="experiment.stat?.groups"
-            [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups }"
-          ></span>
-          <span
-            class="enrollment-info"
-            *ngIf="!experiment.stat?.groups && !experiment.stat?.users"
-            [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: 0 }"
-          ></span>
+          <ng-container *ngIf="experiment.stat; else skeletonTemplate">
+            <span
+              class="enrollment-info"
+              *ngIf="experiment.stat?.users"
+              [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
+            ></span>
+            <span
+              class="enrollment-info"
+              *ngIf="experiment.stat?.groups"
+              [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups }"
+            ></span>
+            <span
+              class="enrollment-info"
+              *ngIf="!experiment.stat?.groups && !experiment.stat?.users"
+              [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: 0 }"
+            ></span>
+          </ng-container>
+          <ng-template #skeletonTemplate>
+            <ngx-skeleton-loader
+              count="1"
+              animation="pulse"
+              [theme]="(theme$ | async) === Theme.DARK_THEME ?
+              {
+                'border-radius': '5px',
+                height: '20px',
+                position: 'relative',
+                top: '8px',
+                'background-color': '#323232',
+                border: '1px solid #323232',
+                'animation-duration': '2s'
+              }
+              :
+              {
+                'border-radius': '5px',
+                height: '20px',
+                position: 'relative',
+                top: '8px',
+                'animation-duration': '2s'
+              }
+              "
+            >
+            </ngx-skeleton-loader>
+          </ng-template>
         </td>
       </ng-container>
 

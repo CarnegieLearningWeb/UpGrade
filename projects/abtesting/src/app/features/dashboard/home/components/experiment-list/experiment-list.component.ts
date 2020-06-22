@@ -17,6 +17,8 @@ import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-
 import { debounceTime } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { SettingsService } from '../../../../../core/settings/settings.service';
+import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 
 @Component({
   selector: 'home-experiment-list',
@@ -55,10 +57,12 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
+  theme$ = this.settingsService.theme$;
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
+    private settingsService: SettingsService
   ) { }
 
   ngOnInit() {
@@ -231,5 +235,9 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   get ExperimentSearchKey() {
     return EXPERIMENT_SEARCH_KEY;
+  }
+
+  get Theme() {
+    return ThemeOptions;
   }
 }

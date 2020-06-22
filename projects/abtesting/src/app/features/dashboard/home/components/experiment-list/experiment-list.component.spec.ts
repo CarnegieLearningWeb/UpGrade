@@ -4,6 +4,8 @@ import { ExperimentListComponent } from './experiment-list.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { SettingsService } from '../../../../../core/settings/settings.service';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 describe('ExperimentListComponent', () => {
   let component: ExperimentListComponent;
@@ -12,8 +14,8 @@ describe('ExperimentListComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ExperimentListComponent ],
-      imports: [TestingModule],
-      providers: [ExperimentService, AuthService]
+      imports: [TestingModule, NgxSkeletonLoaderModule],
+      providers: [ExperimentService, AuthService, SettingsService]
     })
     .compileComponents();
   }));
