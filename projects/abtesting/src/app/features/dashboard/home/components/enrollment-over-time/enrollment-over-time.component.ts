@@ -120,11 +120,14 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     let series = [];
     return data.map(graphData => {
       series = [];
-      graphData.stats.conditions.map(condition => {
+      const graphInfoConditions = graphData.stats.conditions;
+      this.experiment.conditions.map((condition) => {
         if (this.selectedCondition.indexOf(condition.id) !== -1) {
           let users = 0;
           let groups = 0;
-          condition.partitions.map(partition => {
+          // Find index based on experiment conditions from graphInfoConditions to maintain colors
+          const index = graphInfoConditions.findIndex(graphCondition => graphCondition.id === condition.id);
+          graphInfoConditions[index].partitions.map(partition => {
             if (this.selectedPartition.indexOf(partition.id) !== -1) {
               users += partition.users;
               groups += partition.groups;
