@@ -1,6 +1,10 @@
 {
   "adminUsers": [
     {
+      "email": "mglover@carnegielearning.com",
+      "role": "admin"
+    },
+    {
       "email": "sritter@carnegielearning.com",
       "role": "admin"
     },
