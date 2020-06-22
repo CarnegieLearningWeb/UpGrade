@@ -24,7 +24,19 @@ export const actionGetExperimentsSuccess = createAction(
 
 export const actionGetExperimentsFailure = createAction('[Experiment] Get Experiment Failure', props<{ error: any }>());
 
-export const actionStoreExperimentStats = createAction('[Experiment] Store Experiment Stats', props<{ stats: any }>());
+export const actionFetchExperimentStats = createAction(
+  '[Experiment] Fetch Experiment stats',
+  props<{ experimentIds: string[] }>()
+);
+
+export const actionFetchExperimentStatsSuccess = createAction(
+  '[Experiment] Fetch Experiment Stats Success',
+  props<{ stats: any }>()
+);
+
+export const actionFetchExperimentStatsFailure = createAction(
+  '[Experiment] Fetch Experiment Stats Failure'
+);
 
 export const actionRemoveExperimentStat = createAction(
   '[Experiment] Remove Experiment stat',

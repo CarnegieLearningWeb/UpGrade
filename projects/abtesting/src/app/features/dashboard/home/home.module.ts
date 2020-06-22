@@ -26,6 +26,7 @@ import { TableRowComponent } from './components/table-row/table-row.component';
 import { QueriesModalComponent } from './components/modal/queries-modal/queries-modal.component';
 import { CreateQueryComponent } from './components/create-query/create-query.component';
 import { OperationPipe } from '../../../shared/pipes/operation.pipe';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @NgModule({
   declarations: [
@@ -56,6 +57,7 @@ import { OperationPipe } from '../../../shared/pipes/operation.pipe';
     NgxChartsModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
+    NgxSkeletonLoaderModule
   ],
   providers: [OperationPipe],
   entryComponents: [

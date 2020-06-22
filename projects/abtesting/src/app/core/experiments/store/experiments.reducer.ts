@@ -42,28 +42,29 @@ const reducer = createReducer(
       totalExperiments,
       skipExperiment: state.skipExperiment + experiments.length
     };
-    return adapter.upsertMany(experiments, { ...newState });
+    return adapter.upsertMany(experiments, { ...newState, isLoadingExperiment: false });
   }),
   on(
     experimentsAction.actionGetExperimentsFailure,
     experimentsAction.actionGetExperimentByIdFailure,
+    experimentsAction.actionUpsertExperimentFailure,
     (state) =>
       ({ ...state, isLoadingExperiment: false })
   ),
   on(
     experimentsAction.actionUpsertExperimentSuccess,
     (state, { experiment }) => {
-      return adapter.upsertOne(experiment, { ...state });
+      return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
     }
   ),
   on(
-    experimentsAction.actionStoreExperimentStats,
+    experimentsAction.actionFetchExperimentStatsSuccess,
     (state, { stats }) => {
       const newStats = {};
       stats = Object.keys(stats).map(key => {
         newStats[key] = { ...state.stats[key], ...stats[key] };
       });
-      return { ...state, stats: { ...state.stats, ...newStats }, isLoadingExperiment: false };
+      return { ...state, stats: { ...state.stats, ...newStats } };
     }
   ),
   on(
