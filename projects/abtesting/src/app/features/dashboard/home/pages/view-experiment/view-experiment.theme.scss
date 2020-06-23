@@ -51,4 +51,31 @@
       }
     }
   }
+
+  .owl-dt-container {
+    background-color: mat-color($background, card);
+  }
+
+  .owl-dt-calendar-control,
+  .owl-dt-calendar-table .owl-dt-calendar-header,
+  .owl-dt-calendar-table .owl-dt-calendar-cell,
+  .owl-dt-control-arrow-button svg {
+    color: mat-color($foreground, text);
+  }
+
+  .owl-dt-control-button-arrow {
+    svg {
+      fill: mat-color($foreground, text)
+    }
+  }
+
+  .owl-dt-timer-divider:after,
+  .owl-dt-timer-divider:before {
+    background-color: mat-color($foreground, text);
+  }
+
+  .owl-dt-container-row,
+  .owl-dt-calendar-table .owl-dt-calendar-header .owl-dt-calendar-table-divider:after {
+    border-bottom: 1px solid mat-color($background, shadow-color);
+  }
 }
