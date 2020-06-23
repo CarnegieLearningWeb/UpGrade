@@ -1,5 +1,5 @@
 import { Interfaces } from './identifiers';
-import { IExperimentAssignment, IMetricUnit, IFeatureFlag } from 'upgrade_types';
+import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric } from 'upgrade_types';
 export default class UpgradeClient {
     private static hostUrl;
     private static api;
@@ -22,5 +22,5 @@ export default class UpgradeClient {
     getFeatureFlag(key: string): IFeatureFlag;
     log(key: string, value: any): Promise<Interfaces.ILog>;
     setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]>;
-    addMetrics(metrics: IMetricUnit[]): Promise<Interfaces.IMetric[]>;
+    addMetrics(metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]>;
 }

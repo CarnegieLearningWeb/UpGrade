@@ -2,7 +2,7 @@ import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
-import { IExperimentAssignment, IMetricUnit, IFeatureFlag } from 'upgrade_types';
+import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
@@ -143,7 +143,7 @@ export default class UpgradeClient {
         return await setAltUserIds(UpgradeClient.api.altUserIds, this.userId, this.token, altUserIds);
     }
 
-    async addMetrics(metrics: IMetricUnit[]): Promise<Interfaces.IMetric[]> {
+    async addMetrics(metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]> {
         this.validateClient();
         return await addMetrics(UpgradeClient.api.addMetrics, this.token, metrics);
     }

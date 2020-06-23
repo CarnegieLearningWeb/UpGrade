@@ -1,3 +1,3 @@
 import { Interfaces } from '../identifiers';
-import { IMetricUnit } from 'upgrade_types';
-export default function addMetrics(url: string, token: string, metrics: IMetricUnit[]): Promise<Interfaces.IMetric[]>;
+import { ISingleMetric, IGroupMetric } from 'upgrade_types';
+export default function addMetrics(url: string, token: string, metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]>;

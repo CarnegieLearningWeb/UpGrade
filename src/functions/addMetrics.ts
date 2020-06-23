@@ -1,11 +1,11 @@
 import { Types, Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
-import { IMetricUnit } from 'upgrade_types';
+import { ISingleMetric, IGroupMetric } from 'upgrade_types';
 
 export default async function addMetrics(
   url: string,
   token: string,
-  metrics: IMetricUnit[]
+  metrics: Array<ISingleMetric | IGroupMetric>
 ): Promise<Interfaces.IMetric[]> {
   try {
     const response = await fetchDataService(url, token, { metricUnit: metrics }, Types.REQUEST_TYPES.POST);
