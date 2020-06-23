@@ -98,4 +98,14 @@ export interface IExperimentEnrollmentDetailDateStats {
     id: string;
     conditions: IConditionEnrollmentDateStats[];
 }
+export interface IGroupMetric {
+    groupClass: string;
+    allowedKeys: string[];
+    attributes: Array<IGroupMetric | ISingleMetric>;
+}
+export interface ISingleMetric {
+    metric: string;
+    datatype: IMetricMetaData;
+    allowedValues?: Array<string | number>;
+}
 export {};

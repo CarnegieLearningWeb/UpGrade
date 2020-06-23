@@ -25,6 +25,8 @@ import {
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,
+  IGroupMetric,
+  ISingleMetric
 } from './Experiment/interfaces';
 
 export {
@@ -52,4 +54,6 @@ export {
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,
+  IGroupMetric,
+  ISingleMetric
 };
