@@ -47,7 +47,8 @@ export class LogRepository extends Repository<Log> {
     const experimentRepo = getRepository(Experiment);
     const metricId = metric.split(METRICS_JOIN_TEXT);
     const metricString = metricId.reduce((accumulator: string, value: string) => {
-      return accumulator !== '' ? `${accumulator} ->> '${value}'` : `'${value}'`;
+      // TODO: Fix nested query
+      return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
 
     let executeQuery = experimentRepo

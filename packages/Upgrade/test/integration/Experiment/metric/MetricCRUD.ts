@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
 import { MetricService } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
+import { metrics } from '../../mockData/metric';
 
 export default async function MetricCRUD(): Promise<void> {
   const metricRepository = getRepository(Metric);
@@ -12,54 +13,13 @@ export default async function MetricCRUD(): Promise<void> {
   await settingService.setClientCheck(false, true);
 
   // create metrics service
-  const metricUnit = [
-    {
-      key: 'time',
-      children: [
-        {
-          key: ['login', 'session'],
-        },
-      ],
-      metadata: {
-        type: 'continuous',
-      },
-      allowedData: [],
-    },
-    {
-      key: 'timeCompletion',
-      metadata: {
-        type: 'continuous',
-      },
-    },
-    {
-      key: 'w',
-      children: [
-        {
-          key: 'time',
-          children: [],
-          metadata: {
-            type: 'continuous',
-          },
-          allowedData: [],
-        },
-        {
-          key: 'completion',
-          children: [],
-          metadata: {
-            type: 'categorical',
-          },
-          allowedData: ['InProgress', 'Complete'],
-        },
-      ],
-    },
-  ];
 
-  await metricService.saveAllMetrics(metricUnit as any);
+  await metricService.saveAllMetrics(metrics as any);
 
   let findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(5);
-
-  await metricService.deleteMetric('time');
-  findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
+
+  await metricService.deleteMetric('totalProblemsCompleted');
+  findMetric = await metricRepository.find();
+  expect(findMetric.length).toEqual(2);
 }

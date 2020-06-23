@@ -7,7 +7,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { IExperimentAssignment, IMetricUnit } from 'upgrade_types';
+import { IExperimentAssignment, ISingleMetric, IGroupMetric } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -17,6 +17,7 @@ import { LogValidator } from './validators/LogValidator';
 import { Log } from '../models/Log';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
+import { Metric } from '../models/Metric';
 
 /**
  * @swagger
@@ -345,7 +346,7 @@ export class ExperimentClientController {
    *            description: Filtered Metrics
    */
   @Post('metric')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: IMetricUnit[]): Promise<IMetricUnit[]> {
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<Metric[]> {
     return this.metricService.saveAllMetrics(metricUnit);
   }
 

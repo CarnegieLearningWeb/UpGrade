@@ -1,6 +1,6 @@
 import { Authorized, JsonController, Get, Delete, Param, Post, BodyParam } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
-import { IMetricUnit, SERVER_ERROR } from 'upgrade_types';
+import { IMetricUnit, SERVER_ERROR, ISingleMetric, IGroupMetric } from 'upgrade_types';
 
 /**
  * @swagger
@@ -56,7 +56,7 @@ export class MetricController {
    *            description: Filtered Metrics
    */
   @Post('/save')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: IMetricUnit[]): Promise<IMetricUnit[]> {
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<IMetricUnit[]> {
     return this.metricService.upsertAllMetrics(metricUnit);
   }
 

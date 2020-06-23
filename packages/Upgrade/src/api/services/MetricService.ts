@@ -3,7 +3,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
-import { SERVER_ERROR, IMetricUnit, IMetricMetaData } from 'upgrade_types';
+import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';
 import { SettingService } from './SettingService';
 
 export const METRICS_JOIN_TEXT = '@__@';
@@ -23,40 +23,14 @@ export class MetricService {
     return this.metricDocumentToJson(metricData);
   }
 
-  public async saveAllMetrics(metrics: IMetricUnit[]): Promise<IMetricUnit[]> {
+  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<Metric[]> {
     this.log.info('Save all metrics');
-    // check permission for metrics
-    const isAllowed = await this.checkMetricsPermission();
-    if (!isAllowed) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Metrics filter not enabled' }));
-    }
-    // create query for metrics
-    const keyArray = this.metricJsonToDocument(metrics);
-    const metricDoc: any[] = keyArray.map((metric) => ({
-      key: metric.key,
-      type: metric.type,
-      allowedData: metric.allowedData,
-    }));
-    return this.metricRepository.save(metricDoc);
+    return await this.addAllMetrics(metrics);
   }
 
-  // TODO: Verify to keep both saveAllMetrics and upsertAllMetrics
-  // TODO: write test cases
-  public async upsertAllMetrics(metrics: IMetricUnit[]): Promise<IMetricUnit[]> {
+  public async upsertAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<IMetricUnit[]> {
     this.log.info('Upsert all metrics');
-    // check permission for metrics
-    const isAllowed = await this.checkMetricsPermission();
-    if (!isAllowed) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Metrics filter not enabled' }));
-    }
-    // create query for metrics
-    const keyArray = this.metricJsonToDocument(metrics);
-    const metricDoc: any[] = keyArray.map((metric) => ({
-      key: metric.key,
-      type: metric.type,
-      allowedData: metric.allowedData,
-    }));
-    const upsertedMetrics = await this.metricRepository.save(metricDoc);
+    const upsertedMetrics = await this.addAllMetrics(metrics);
     return this.metricDocumentToJson(upsertedMetrics);
   }
 
@@ -66,6 +40,23 @@ export class MetricService {
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
     return this.metricDocumentToJson(updatedMetric);
+  }
+
+  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<Metric[]> {
+    // check permission for metrics
+    const isAllowed = await this.checkMetricsPermission();
+    if (!isAllowed) {
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Metrics filter not enabled' }));
+    }
+    // create query for metrics
+    const formattedMetrics = this.parseMetrics(metrics);
+    const keyArray = this.metricJsonToDocument(formattedMetrics);
+    const metricDoc: any[] = keyArray.map((metric) => ({
+      key: metric.key,
+      type: metric.type,
+      allowedData: metric.allowedData,
+    }));
+    return this.metricRepository.save(metricDoc);
   }
 
   private async checkMetricsPermission(): Promise<boolean> {
@@ -153,5 +144,55 @@ export class MetricService {
       });
     });
     return metricUnitArray;
+  }
+
+  private parseMetrics(metrics: Array<IGroupMetric | ISingleMetric>): IMetricUnit[] {
+    return metrics.map((data: any) => {
+      if (data.metric) {
+        return {
+          key: data.metric,
+          metadata: {
+            type: data.datatype,
+          },
+          allowedData: data.allowedValues,
+        };
+      } else {
+        return this.convertGroupMetrics(data);
+      }
+    });
+  }
+
+  private convertGroupMetrics(metric: IGroupMetric): IMetricUnit {
+    function formKeyChildrenFormat(groupMetric: any): any {
+      if (groupMetric.metric) {
+        return {
+          key: groupMetric.metric,
+          metadata: {
+            type: groupMetric.datatype,
+          },
+          allowedData: groupMetric.allowedValues,
+        };
+      } else if (groupMetric.groupClass) {
+        const newChildren = groupMetric.allowedKeys.map(allowedKey =>
+          ({
+            key: allowedKey,
+            children: groupMetric.attributes || [],
+          })
+        );
+        return {
+          key: groupMetric.groupClass,
+          children: newChildren.map(child =>
+            ({
+              key: child.key,
+              children: child.children.map(child1 =>
+                formKeyChildrenFormat(child1)
+              ),
+            })
+          ),
+        };
+      }
+    }
+
+    return formKeyChildrenFormat(metric);
   }
 }

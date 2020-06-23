@@ -7,6 +7,7 @@ import { Log } from '../../../../src/api/models/Log';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { IMetricMetaData } from 'upgrade_types';
+import { metrics } from '../../mockData/metric';
 
 export default async function CreateLog(): Promise<void> {
   const metricRepository = getRepository(Metric);
@@ -17,53 +18,24 @@ export default async function CreateLog(): Promise<void> {
 
   await settingService.setClientCheck(false, true);
 
-  // create metrics service
-  const metricUnit = [
-    {
-      key: 'time',
-      children: [],
-      metadata: {
-        type: 'continuous',
-      },
-    },
-    {
-      key: 'w',
-      children: [
-        {
-          key: 'time',
-          metadata: {
-            type: 'continuous',
-          },
-        },
-        {
-          key: 'completion',
-          metadata: {
-            type: 'categorical',
-          },
-          allowedData: ['InProgress', 'Complete'],
-        },
-      ],
-    },
-  ];
-
-  await metricService.saveAllMetrics(metricUnit as any);
+  await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
   expect(findMetric).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        key: `w${METRICS_JOIN_TEXT}time`,
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
         type: IMetricMetaData.CONTINUOUS,
       }),
       expect.objectContaining({
-        key: `time`,
+        key: `totalProblemsCompleted`,
         type: IMetricMetaData.CONTINUOUS,
       }),
       expect.objectContaining({
-        key: `w${METRICS_JOIN_TEXT}completion`,
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
         type: IMetricMetaData.CATEGORICAL,
-        allowedData: ['InProgress', 'Complete'],
+        allowedData: ['GRADUATED', 'PROMOTED'],
       }),
     ])
   );
@@ -71,7 +43,7 @@ export default async function CreateLog(): Promise<void> {
   // create log
   const experimentUser = experimentUsers[0];
   let jsonData: any = {
-    w: { time: 200, completion: 50, name: 'Vivek' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 50, name: 'Vivek' } },
   };
 
   // log data here
@@ -85,22 +57,22 @@ export default async function CreateLog(): Promise<void> {
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 200 } },
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200 } }},
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}completion`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
           }),
         ]),
       }),
     ])
   );
 
-  // adding string in continuous data
+  // // adding string in continuous data
   jsonData = {
-    w: { time: '200', completion: 'InProgress', name: 'Sam' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: '200', completion: 'GRADUATED', name: 'Sam' } },
   };
 
   // log data here
@@ -114,23 +86,23 @@ export default async function CreateLog(): Promise<void> {
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 200, completion: 'InProgress' } },
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } }},
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}completion`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
           }),
         ]),
       }),
     ])
   );
 
-  // adding different string in categorical data
-  // adding string in continuous data
+  // // adding different string in categorical data
+  // // adding string in continuous data
   jsonData = {
-    w: { time: '300', completion: 'In Progress', name: 'Sita' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: '300', completion: 'GRADU ATED', name: 'Sita' }},
   };
 
   // log data here
@@ -144,20 +116,20 @@ export default async function CreateLog(): Promise<void> {
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 300 } },
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 300 } }},
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}completion`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
           }),
         ]),
       }),
     ])
   );
 
-  // switching off filter metrics
+  // // switching off filter metrics
   await settingService.setClientCheck(false, false);
 
   jsonData = {
@@ -213,7 +185,7 @@ export default async function CreateLog(): Promise<void> {
   );
 
   jsonData = {
-    w: { time: 200, completion: 'I am incorrect', error: 'abc' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'I am incorrect', error: 'abc' }},
   };
 
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
@@ -225,13 +197,13 @@ export default async function CreateLog(): Promise<void> {
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 200, error: 'abc' } },
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, error: 'abc' } }},
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}error`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}error`,
           }),
         ]),
       }),
