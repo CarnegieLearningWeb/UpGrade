@@ -47,18 +47,20 @@ Use this function to report failure with given reason
 Use this function to log data
 ```upClient.log(key, value)```
 
-## addMetrics(metrics: IMetricUnit[])
+## addMetrics(metrics: Array<IGroupMetric | ISingleMetric>)
 Use this function to add metrics in upgrade system
-Interface
+
 ```
-interface IMetricUnit {
-    key: string | string[];
-    children?: IMetricUnit[];
-    metadata?: {
-        type: IMetricMetaData;
-    };
-    allowedData?: string[];
-  }
+interface IGroupMetric {
+    groupClass: string;
+    allowedKeys: string[];
+    attributes: Array<IGroupMetric | ISingleMetric>;
+}
+interface ISingleMetric {
+    metric: string;
+    datatype: IMetricMetaData;
+    allowedValues?: Array<string | number>;
+}
 enum IMetricMetaData {
   CONTINUOUS = 'continuous',
   CATEGORICAL = 'categorical'
