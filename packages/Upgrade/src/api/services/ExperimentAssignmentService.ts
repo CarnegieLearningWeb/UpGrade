@@ -391,7 +391,7 @@ export class ExperimentAssignmentService {
     const promiseArray = [];
     // get user document
     promiseArray.push(this.experimentUserService.getOriginalUserDoc(userId));
-    promiseArray.push(this.metricRepository.findByIds(stringIds));
+    promiseArray.push(this.metricRepository.findMetricsWithQueries(stringIds));
     promiseArray.push(this.settingService.getClientCheck());
 
     const result = await Promise.all(promiseArray);
@@ -400,12 +400,14 @@ export class ExperimentAssignmentService {
     let metricDocs: Metric[] = result[1];
     const settingDocs: Setting = result[2];
 
-    // filter json data if metric exist
+    // filter json data if metric and query exist
     if (settingDocs.toFilterMetric) {
-      stringIds.forEach((metricId) => {
+      stringIds.forEach((metricId, index) => {
         const document = metricDocs.find((doc) => {
           return doc.key === metricId;
         });
+
+        const indexOf = metricDocs.indexOf(document);
 
         const keyArray = metricId.split(METRICS_JOIN_TEXT);
         const toPop = keyArray.pop();
@@ -413,8 +415,12 @@ export class ExperimentAssignmentService {
         const jsonPointer: any = keyArray.reduce((accumulator, key) => {
           return accumulator[key];
         }, jsonLog);
-        if (!document) {
+        if (!document || (document.queries && document.queries.length === 0)) {
           delete jsonPointer[toPop];
+          // delete metrics document also
+          if (indexOf !== -1) {
+            metricDocs.splice(indexOf, 1);
+          }
         } else {
           // change data according to the type
           if (document.type === IMetricMetaData.CONTINUOUS) {
@@ -422,6 +428,10 @@ export class ExperimentAssignmentService {
               jsonPointer[toPop] = parseInt(jsonPointer[toPop], 10);
             } else {
               delete jsonPointer[toPop];
+              // delete metrics document also
+              if (indexOf !== -1) {
+                metricDocs.splice(indexOf, 1);
+              }
             }
           } else if (document.type === IMetricMetaData.CATEGORICAL) {
             const stringValue = jsonPointer[toPop].toString();
@@ -429,6 +439,10 @@ export class ExperimentAssignmentService {
               jsonPointer[toPop] = stringValue;
             } else {
               delete jsonPointer[toPop];
+              // delete metrics document also
+              if (indexOf !== -1) {
+                metricDocs.splice(indexOf, 1);
+              }
             }
           }
         }
@@ -499,9 +513,10 @@ export class ExperimentAssignmentService {
     }
 
     const toLog: boolean = Object.keys(jsonLog).length !== 0;
+
     // check all matrix id exist
     // save log with valid matrix ids
-    if (toLog) {
+    if (toLog && metricDocs.length > 0) {
       return this.logRepository.save({
         user: userDoc,
         data: jsonLog,

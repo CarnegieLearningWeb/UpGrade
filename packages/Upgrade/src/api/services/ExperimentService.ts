@@ -32,6 +32,7 @@ import { ExperimentInput } from '../../types/ExperimentInput';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
+import { LogRepository } from '../repositories/LogRepository';
 
 // const METRIC_KEY_DIVIDER = "_@%@_";
 
@@ -48,6 +49,7 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
+    @OrmRepository() private logRepository: LogRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
@@ -229,7 +231,7 @@ export class ExperimentService {
 
   private async updateExperimentSchedules(experimentId: string): Promise<void> {
     const experiment = await this.experimentRepository.findByIds([experimentId]);
-    if (experiment.length > 0) {
+    if (experiment.length > 0 && this.scheduledJobService) {
       await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
     }
   }
@@ -325,236 +327,266 @@ export class ExperimentService {
     const oldQueries = oldExperiment.queries;
 
     // create schedules to start experiment and end experiment
-    this.scheduledJobService.updateExperimentSchedules(experiment as any);
+    if (this.scheduledJobService) {
+      this.scheduledJobService.updateExperimentSchedules(experiment as any);
+    }
 
-    return getConnection().transaction(async (transactionalEntityManager) => {
-      experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-      let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
-      if (experiment.conditions.length) {
-        const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
-        experiment.conditions = response[0];
-        uniqueIdentifiers = response[1];
-      }
-      if (experiment.partitions.length) {
-        const response = this.setConditionOrPartitionIdentifiers(experiment.partitions, uniqueIdentifiers);
-        experiment.partitions = response[0];
-        uniqueIdentifiers = response[1];
-      }
-      const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+    return getConnection()
+      .transaction(async (transactionalEntityManager) => {
+        experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
+        let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+        if (experiment.conditions.length) {
+          const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
+          experiment.conditions = response[0];
+          uniqueIdentifiers = response[1];
+        }
+        if (experiment.partitions.length) {
+          const response = this.setConditionOrPartitionIdentifiers(experiment.partitions, uniqueIdentifiers);
+          experiment.partitions = response[0];
+          uniqueIdentifiers = response[1];
+        }
+        const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
 
-      let experimentDoc: Experiment;
-      try {
-        experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
-      } catch (error) {
-        throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
-      }
+        let experimentDoc: Experiment;
+        try {
+          experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+        } catch (error) {
+          throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
+        }
 
-      // creating condition docs
-      const conditionDocToSave: Array<Partial<ExperimentCondition>> =
-        (conditions &&
-          conditions.length > 0 &&
-          conditions.map((condition: ExperimentCondition) => {
-            // tslint:disable-next-line:no-shadowed-variable
-            const { createdAt, updatedAt, versionNumber, ...rest } = condition;
-            rest.experiment = experimentDoc;
-            rest.id = rest.id || uuid();
-            return rest;
-          })) ||
-        [];
+        // creating condition docs
+        const conditionDocToSave: Array<Partial<ExperimentCondition>> =
+          (conditions &&
+            conditions.length > 0 &&
+            conditions.map((condition: ExperimentCondition) => {
+              // tslint:disable-next-line:no-shadowed-variable
+              const { createdAt, updatedAt, versionNumber, ...rest } = condition;
+              rest.experiment = experimentDoc;
+              rest.id = rest.id || uuid();
+              return rest;
+            })) ||
+          [];
 
-      // creating partition docs
-      const partitionDocToSave =
-        (partitions &&
-          partitions.length > 0 &&
-          partitions.map((partition) => {
-            // tslint:disable-next-line:no-shadowed-variable
-            const { createdAt, updatedAt, versionNumber, ...rest } = partition;
-            const joinedForId = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
-            if (rest.id && rest.id === joinedForId) {
-              rest.id = rest.id;
-            } else {
-              rest.id = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
-            }
-            rest.experiment = experimentDoc;
-            return rest;
-          })) ||
-        [];
+        // creating partition docs
+        const partitionDocToSave =
+          (partitions &&
+            partitions.length > 0 &&
+            partitions.map((partition) => {
+              // tslint:disable-next-line:no-shadowed-variable
+              const { createdAt, updatedAt, versionNumber, ...rest } = partition;
+              const joinedForId = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
+              if (rest.id && rest.id === joinedForId) {
+                rest.id = rest.id;
+              } else {
+                rest.id = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
+              }
+              rest.experiment = experimentDoc;
+              return rest;
+            })) ||
+          [];
 
-      // creating queries docs
-      const promiseArray = [];
-      let queriesDocToSave =
-        (queries &&
-          queries.length > 0 &&
-          queries.map((query: any) => {
-            promiseArray.push(this.metricRepository.findOne(query.metric.key));
-            // tslint:disable-next-line:no-shadowed-variable
-            const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
-            rest.experiment = experimentDoc;
-            rest.id = rest.id || uuid();
-            return rest;
-          })) ||
-        [];
+        // creating queries docs
+        const promiseArray = [];
+        let queriesDocToSave =
+          (queries &&
+            queries.length > 0 &&
+            queries.map((query: any) => {
+              promiseArray.push(this.metricRepository.findOne(query.metric.key));
+              // tslint:disable-next-line:no-shadowed-variable
+              const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
+              rest.experiment = experimentDoc;
+              rest.id = rest.id || uuid();
+              return rest;
+            })) ||
+          [];
 
-      if (promiseArray.length) {
-        const metricsDocs = await Promise.all([...promiseArray]);
-        queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
-          queryDoc.metric = metricsDocs[index];
-          return queryDoc;
+        if (promiseArray.length) {
+          const metricsDocs = await Promise.all([...promiseArray]);
+          queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
+            queryDoc.metric = metricsDocs[index];
+            return queryDoc;
+          });
+        }
+
+        // delete conditions which don't exist in new experiment document
+        const toDeleteConditions = [];
+        oldConditions.forEach(({ id }) => {
+          if (
+            !conditionDocToSave.find((doc) => {
+              return doc.id === id;
+            })
+          ) {
+            toDeleteConditions.push(this.experimentConditionRepository.deleteCondition(id, transactionalEntityManager));
+          }
         });
-      }
 
-      // delete conditions which don't exist in new experiment document
-      const toDeleteConditions = [];
-      oldConditions.forEach(({ id }) => {
-        if (
-          !conditionDocToSave.find((doc) => {
-            return doc.id === id;
-          })
-        ) {
-          toDeleteConditions.push(this.experimentConditionRepository.deleteCondition(id, transactionalEntityManager));
+        // delete partitions which don't exist in new experiment document
+        const toDeletePartitions = [];
+        oldPartitions.forEach(({ id, expPoint, expId }) => {
+          if (
+            !partitionDocToSave.find((doc) => {
+              return doc.id === id && doc.expPoint === expPoint && doc.expId === expId;
+            })
+          ) {
+            toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
+          }
+        });
+
+        // delete queries which don't exist in new experiment document
+        const toDeleteQueries = [];
+        const toDeleteQueriesDoc = [];
+        oldQueries.forEach((queryDoc) => {
+          if (
+            !queriesDocToSave.find((doc) => {
+              return doc.id === queryDoc.id;
+            })
+          ) {
+            toDeleteQueries.push(this.queryRepository.deleteQuery(queryDoc.id, transactionalEntityManager));
+            toDeleteQueriesDoc.push(queryDoc);
+          }
+        });
+
+        // delete old partitions, conditions and queries
+        await Promise.all([...toDeleteConditions, ...toDeletePartitions, ...toDeleteQueries]);
+
+        // saving conditions, saving partitions and saving queries
+        let conditionDocs: ExperimentCondition[];
+        let partitionDocs: ExperimentPartition[];
+        let queryDocs: Query[];
+        try {
+          [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
+            Promise.all(
+              conditionDocToSave.map(async (conditionDoc) => {
+                return this.experimentConditionRepository.upsertExperimentCondition(
+                  conditionDoc,
+                  transactionalEntityManager
+                );
+              })
+            ) as any,
+            Promise.all(
+              partitionDocToSave.map(async (partitionDoc) => {
+                return this.experimentPartitionRepository.upsertExperimentPartition(
+                  partitionDoc,
+                  transactionalEntityManager
+                );
+              })
+            ) as any,
+            Promise.all(
+              queriesDocToSave.map(async (queryDoc) => {
+                return this.queryRepository.upsertQuery(queryDoc, transactionalEntityManager);
+              })
+            ) as any,
+          ]);
+        } catch (error) {
+          throw new Error(`Error in creating conditions, partitions, queries "updateExperimentInDB" ${error}`);
         }
-      });
 
-      // delete partitions which don't exist in new experiment document
-      const toDeletePartitions = [];
-      oldPartitions.forEach(({ id, expPoint, expId }) => {
-        if (
-          !partitionDocToSave.find((doc) => {
-            return doc.id === id && doc.expPoint === expPoint && doc.expId === expId;
-          })
-        ) {
-          toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
+        const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
+          return { ...conditionDoc, experiment: conditionDoc.experiment };
+        });
+
+        const partitionDocToReturn = partitionDocs.map((partitionDoc) => {
+          return { ...partitionDoc, experiment: partitionDoc.experiment };
+        });
+
+        const queryDocToReturn =
+          !!queryDocs &&
+          queryDocs.map((queryDoc, index) => {
+            const { metricKey, ...rest } = queryDoc as any;
+            return { ...rest, metric: queriesDocToSave[index].metric };
+          });
+
+        const newExperiment = {
+          ...experimentDoc,
+          conditions: conditionDocToReturn as any,
+          partitions: partitionDocToReturn as any,
+          queries: (queryDocToReturn as any) || [],
+        };
+
+        // removing unwanted params for diff
+        const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
+        delete oldExperimentClone.versionNumber;
+        delete oldExperimentClone.updatedAt;
+        delete oldExperimentClone.createdAt;
+        delete oldExperimentClone.queries; // TODO: Remove comment if we want to consider queries in diff
+
+        // Sort based on createdAt to make correct diff
+        oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        oldExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+        oldExperimentClone.partitions.map((partition) => {
+          delete partition.versionNumber;
+          delete partition.updatedAt;
+          delete partition.createdAt;
+          delete (partition as any).experimentId;
+        });
+        oldExperimentClone.conditions.map((condition) => {
+          delete condition.versionNumber;
+          delete condition.updatedAt;
+          delete condition.createdAt;
+          delete (condition as any).experimentId;
+        });
+
+        // removing unwanted params for diff
+        const newExperimentClone = JSON.parse(JSON.stringify(newExperiment));
+        delete newExperimentClone.versionNumber;
+        delete newExperimentClone.updatedAt;
+        delete newExperimentClone.createdAt;
+        delete newExperimentClone.queries;
+
+        // Sort based on createdAt to make correct diff
+        newExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        newExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+        newExperimentClone.partitions.map((partition) => {
+          delete partition.versionNumber;
+          delete partition.updatedAt;
+          delete partition.createdAt;
+          delete (partition as any).experimentId;
+        });
+        newExperimentClone.conditions.map((condition) => {
+          delete condition.versionNumber;
+          delete condition.updatedAt;
+          delete condition.createdAt;
+          delete (condition as any).experimentId;
+        });
+
+        // add AuditLogs here
+        const updateAuditLog: AuditLogData = {
+          experimentId: experiment.id,
+          experimentName: experiment.name,
+          diff: diffString(oldExperimentClone, newExperimentClone),
+        };
+
+        await this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED,
+          updateAuditLog,
+          user
+        );
+        return { newExperiment, toDeleteQueriesDoc };
+      })
+      .then(async ({ newExperiment, toDeleteQueriesDoc }) => {
+        // check if logs need to be deleted for metric query
+        if (toDeleteQueriesDoc.length > 0) {
+          await this.cleanLogsForQuery(toDeleteQueriesDoc);
         }
+        return newExperiment;
       });
+  }
 
-       // delete queries which don't exist in new experiment document
-       const toDeleteQueries = [];
-       oldQueries.forEach(({ id }) => {
-         if (
-           !queriesDocToSave.find((doc) => {
-             return doc.id === id;
-           })
-         ) {
-           toDeleteQueries.push(this.queryRepository.deleteQuery(id, transactionalEntityManager));
-         }
-       });
+  private async cleanLogsForQuery(query: Query[]): Promise<void> {
+    const result = await Promise.all(
+      query.map(({ metric: { key } }) => {
+        return this.queryRepository.checkIfQueryExists(key);
+      })
+    );
 
-      // delete old partitions, conditions and queries
-      await Promise.all([...toDeleteConditions, ...toDeletePartitions, ...toDeleteQueries]);
-
-      // saving conditions, saving partitions and saving queries
-      let conditionDocs: ExperimentCondition[];
-      let partitionDocs: ExperimentPartition[];
-      let queryDocs: Query[];
-      try {
-        [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
-          Promise.all(
-            conditionDocToSave.map(async (conditionDoc) => {
-              return this.experimentConditionRepository.upsertExperimentCondition(
-                conditionDoc,
-                transactionalEntityManager
-              );
-            })
-          ) as any,
-          Promise.all(
-            partitionDocToSave.map(async (partitionDoc) => {
-              return this.experimentPartitionRepository.upsertExperimentPartition(
-                partitionDoc,
-                transactionalEntityManager
-              );
-            })
-          ) as any,
-          Promise.all(
-            queriesDocToSave.map(async (queryDoc) => {
-              return this.queryRepository.upsertQuery(
-                queryDoc,
-                transactionalEntityManager
-              );
-            })
-          ) as any,
-        ]);
-      } catch (error) {
-        throw new Error(`Error in creating conditions, partitions, queries "updateExperimentInDB" ${error}`);
+    for (let i = 0; i < result.length; i++) {
+      const value = result[i];
+      if (!value) {
+        await this.logRepository.deleteByMetricId(query[i].metric.key);
       }
-
-      const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
-        return { ...conditionDoc, experiment: conditionDoc.experiment };
-      });
-
-      const partitionDocToReturn = partitionDocs.map((partitionDoc) => {
-        return { ...partitionDoc, experiment: partitionDoc.experiment };
-      });
-
-      const queryDocToReturn = !!queryDocs && queryDocs.map((queryDoc, index) => {
-        const { metricKey, ...rest } = queryDoc as any;
-        return { ...rest, metric: queriesDocToSave[index].metric };
-      });
-
-      const newExperiment = {
-        ...experimentDoc,
-        conditions: conditionDocToReturn as any,
-        partitions: partitionDocToReturn as any,
-        queries: queryDocToReturn as any || [],
-      };
-
-      // removing unwanted params for diff
-      const oldExperimentClone: Experiment = JSON.parse(JSON.stringify(oldExperiment));
-      delete oldExperimentClone.versionNumber;
-      delete oldExperimentClone.updatedAt;
-      delete oldExperimentClone.createdAt;
-      delete oldExperimentClone.queries; // TODO: Remove comment if we want to consider queries in diff
-
-      // Sort based on createdAt to make correct diff
-      oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      oldExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-      oldExperimentClone.partitions.map((partition) => {
-        delete partition.versionNumber;
-        delete partition.updatedAt;
-        delete partition.createdAt;
-        delete (partition as any).experimentId;
-      });
-      oldExperimentClone.conditions.map((condition) => {
-        delete condition.versionNumber;
-        delete condition.updatedAt;
-        delete condition.createdAt;
-        delete (condition as any).experimentId;
-      });
-
-      // removing unwanted params for diff
-      const newExperimentClone = JSON.parse(JSON.stringify(newExperiment));
-      delete newExperimentClone.versionNumber;
-      delete newExperimentClone.updatedAt;
-      delete newExperimentClone.createdAt;
-      delete newExperimentClone.queries;
-
-      // Sort based on createdAt to make correct diff
-      newExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      newExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-      newExperimentClone.partitions.map((partition) => {
-        delete partition.versionNumber;
-        delete partition.updatedAt;
-        delete partition.createdAt;
-        delete (partition as any).experimentId;
-      });
-      newExperimentClone.conditions.map((condition) => {
-        delete condition.versionNumber;
-        delete condition.updatedAt;
-        delete condition.createdAt;
-        delete (condition as any).experimentId;
-      });
-
-      // add AuditLogs here
-      const updateAuditLog: AuditLogData = {
-        experimentId: experiment.id,
-        experimentName: experiment.name,
-        diff: diffString(oldExperimentClone, newExperimentClone),
-      };
-
-      await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, updateAuditLog, user);
-      return newExperiment;
-    });
+    }
   }
 
   // Used to generate twoCharacterId for condition and partition
@@ -652,9 +684,10 @@ export class ExperimentService {
       });
       return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
     });
-
     // create schedules to start experiment and end experiment
-    await this.scheduledJobService.updateExperimentSchedules(createdExperiment);
+    if (this.scheduledJobService) {
+      await this.scheduledJobService.updateExperimentSchedules(createdExperiment);
+    }
 
     // add auditLog here
     const createAuditLogData: AuditLogData = {

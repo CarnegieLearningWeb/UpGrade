@@ -17,32 +17,31 @@ export class QueryRepository extends Repository<Query> {
       });
   }
 
-  public async upsertQuery(
-    queryDoc: Partial<Query>,
-    entityManager: EntityManager
-  ): Promise<Query> {
+  public async upsertQuery(queryDoc: Partial<Query>, entityManager: EntityManager): Promise<Query> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
       .into(Query)
       .values(queryDoc)
-      .onConflict(
-        `("id") DO UPDATE SET "query" = :query, "name" = :name`
-      )
+      .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name`)
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'QueryRepository',
-          'upsertQuery',
-          { queryDoc },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('QueryRepository', 'upsertQuery', { queryDoc }, errorMsg);
         throw new Error(errorMsgString);
       });
 
     return result.raw[0];
+  }
+
+  public async checkIfQueryExists(metricId: string): Promise<boolean> {
+    const queryResult = await this.createQueryBuilder('query')
+      .innerJoinAndSelect('query.metric', 'metric')
+      .where('metric.key = :metricId', { metricId })
+      .getMany();
+
+    return queryResult.length > 0 ? true : false;
   }
 }

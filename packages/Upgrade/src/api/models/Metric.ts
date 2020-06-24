@@ -1,7 +1,8 @@
 import { BaseModel } from './base/BaseModel';
-import { Entity, PrimaryColumn, ManyToMany, JoinTable, Column } from 'typeorm';
+import { Entity, PrimaryColumn, ManyToMany, JoinTable, Column, OneToMany } from 'typeorm';
 import { Log } from './Log';
 import { IMetricMetaData } from 'upgrade_types';
+import { Query } from './Query';
 
 @Entity()
 export class Metric extends BaseModel {
@@ -25,4 +26,7 @@ export class Metric extends BaseModel {
     name: 'metric_log',
   })
   public logs: Log[];
+
+  @OneToMany((type) => Query, (query) => query.metric)
+  public queries: Query[];
 }

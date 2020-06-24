@@ -5,6 +5,7 @@ import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { OPERATION_TYPES } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
+import { Query } from '../models/Query';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -35,6 +36,34 @@ export class LogRepository extends Repository<Log> {
 
       return result.raw;
     }
+  }
+
+  public async deleteByMetricId(metricKey: string): Promise<any> {
+    const queryRepo = getRepository(Query);
+
+    // delete all logs
+    // TODO optimize this query
+    const subQuery = await queryRepo
+      .createQueryBuilder('query')
+      .select('DISTINCT(logs.id)')
+      .innerJoin('query.metric', 'metric')
+      .innerJoin('metric.logs', 'logs')
+      .execute();
+
+    const logIds: string[] = subQuery.map(({ id }) => id);
+
+    let dataResult;
+    if (logIds.length > 0) {
+      dataResult = await this.createQueryBuilder('logs')
+        .delete()
+        .from(Log)
+        .where('id NOT IN (:...logIds)', { logIds })
+        .execute();
+    } else {
+      dataResult = await this.createQueryBuilder('logs').delete().from(Log).execute();
+    }
+
+    return dataResult;
   }
 
   public async analysis(query: any): Promise<any> {

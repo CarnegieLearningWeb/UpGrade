@@ -112,32 +112,6 @@ export default async function CreateLog(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  // log data here
-  await experimentAssignmentService.dataLog(experimentUsers[0].id, {
-    time: 20,
-    w: { time: '100', completion: 'InProgress' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, {
-    time: 200,
-    w: { time: 200, completion: 'InProgress' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[2].id, {
-    time: 100,
-    w: { time: 300, completion: 'Complete' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    time: 50,
-    w: { time: 400, completion: 'InProgress' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    time: 50,
-    w: { time: 500, completion: 'Complete' },
-  });
-
   // Save queries for various operations
   const querySum = makeQuery('time', OPERATION_TYPES.SUM, experiments[0].id);
   await queryService.saveQuery(querySum.query, querySum.metric, querySum.experimentId);
@@ -326,6 +300,32 @@ export default async function CreateLog(): Promise<void> {
       }),
     ])
   );
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUsers[0].id, {
+    time: 20,
+    w: { time: '100', completion: 'InProgress' },
+  });
+
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, {
+    time: 200,
+    w: { time: 200, completion: 'InProgress' },
+  });
+
+  await experimentAssignmentService.dataLog(experimentUsers[2].id, {
+    time: 100,
+    w: { time: 300, completion: 'Complete' },
+  });
+
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
+    time: 50,
+    w: { time: 400, completion: 'InProgress' },
+  });
+
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
+    time: 50,
+    w: { time: 500, completion: 'Complete' },
+  });
 
   // Test results
   // tslint:disable-next-line:prefer-for-of
