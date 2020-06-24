@@ -25,7 +25,8 @@
         >
           {{ 'profile.action.authorization.text' | translate }}
         </mat-slide-toggle>
-        <mat-slide-toggle
+        <!-- TODO: Uncomment if we want filter metric toggle -->
+        <!-- <mat-slide-toggle
           *ngIf="(permissions$ | async)?.manageRoles.update"
           class="ft-16-600 toggle"
           color="primary"
@@ -34,7 +35,7 @@
           labelPosition="before"
         >
           {{ 'profile.action.filter-metric.text' | translate }}
-        </mat-slide-toggle>
+        </mat-slide-toggle> -->
         <mat-slide-toggle
           class="ft-16-600"
           color="primary"

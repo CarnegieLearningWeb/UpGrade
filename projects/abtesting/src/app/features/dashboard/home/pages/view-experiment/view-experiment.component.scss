@@ -215,6 +215,11 @@ $font-size-small: 15px;
   background-color: var(--blue);
 }
 
-::ng-deep .owl-dt-container-info .owl-dt-container-info-active {
+::ng-deep .owl-dt-container-info .owl-dt-container-info-active,
+::ng-deep .owl-dt-container-control-button .owl-dt-control-button-content {
   color: var(--blue);
+}
+
+::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-disabled>.owl-dt-calendar-cell-content:not(.owl-dt-calendar-cell-selected) {
+  color: var(--grey-2);
 }
