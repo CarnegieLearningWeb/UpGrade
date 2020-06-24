@@ -6,33 +6,24 @@ import { SettingService } from '../../../../src/api/services/SettingService';
 import { Log } from '../../../../src/api/models/Log';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { IMetricMetaData, OPERATION_TYPES, EXPERIMENT_STATE } from 'upgrade_types';
+import { IMetricMetaData, OPERATION_TYPES } from 'upgrade_types';
+import { metrics } from '../../mockData/metric';
+import { ExperimentService } from '../../../../src/api/services/ExperimentService';
+import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { ExperimentService } from '../../../../src/api/services/ExperimentService';
-import { QueryService } from '../../../../src/api/services/QueryService';
-import { Query } from '../../../../src/api/models/Query';
 
 export default async function CreateLog(): Promise<void> {
+  const experimentService = Container.get<ExperimentService>(ExperimentService);
   const metricRepository = getRepository(Metric);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
-  const queryService = Container.get<QueryService>(QueryService);
-  const queryRepository = getRepository(Query);
-  const logRepository = getRepository(Log);
+  let experimentObject: any = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
-  const experimentService = Container.get<ExperimentService>(ExperimentService);
+  const logRepository = getRepository(Log);
 
-  await settingService.setClientCheck(false, true);
-
-  // create an experiment
-  // creating new user
   const user = await userService.create(systemUser as any);
-
-  // experiment object
-  const experimentObject = individualAssignmentExperiment;
 
   // create experiment
   await experimentService.create(experimentObject as any, user);
@@ -49,70 +40,29 @@ export default async function CreateLog(): Promise<void> {
     ])
   );
 
-  const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  const experimentName = experimentObject.partitions[0].expId;
+  const experimentPoint = experimentObject.partitions[0].expPoint;
 
-  // fetch experiment
-  experiments = await experimentService.find();
-  expect(experiments).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
-      }),
-    ])
-  );
+  await settingService.setClientCheck(false, true);
 
-  // create metrics service
-  const metricUnit = [
-    {
-      key: 'time',
-      children: [],
-      metadata: {
-        type: 'continuous',
-      },
-    },
-    {
-      key: 'w',
-      children: [
-        {
-          key: 'time',
-          metadata: {
-            type: 'continuous',
-          },
-        },
-        {
-          key: 'completion',
-          metadata: {
-            type: 'categorical',
-          },
-          allowedData: ['InProgress', 'Complete'],
-        },
-      ],
-    },
-  ];
-
-  await metricService.saveAllMetrics(metricUnit as any);
+  await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
   expect(findMetric).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        key: `w${METRICS_JOIN_TEXT}time`,
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
         type: IMetricMetaData.CONTINUOUS,
       }),
       expect.objectContaining({
-        key: `time`,
+        key: `totalProblemsCompleted`,
         type: IMetricMetaData.CONTINUOUS,
       }),
       expect.objectContaining({
-        key: `w${METRICS_JOIN_TEXT}completion`,
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
         type: IMetricMetaData.CATEGORICAL,
-        allowedData: ['InProgress', 'Complete'],
+        allowedData: ['GRADUATED', 'PROMOTED'],
       }),
     ])
   );
@@ -120,7 +70,7 @@ export default async function CreateLog(): Promise<void> {
   // create log
   const experimentUser = experimentUsers[0];
   let jsonData: any = {
-    w: { time: 200, completion: 50, name: 'Vivek' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 50, name: 'Vivek' } },
   };
 
   // log data here
@@ -132,20 +82,22 @@ export default async function CreateLog(): Promise<void> {
 
   expect(logData.length).toEqual(0);
 
-  // create a query for the metrics
-  let query = {
-    name: 'timeAverage',
-    query: {
-      operationType: OPERATION_TYPES.AVERAGE,
-    },
-    metric: `w${METRICS_JOIN_TEXT}time`,
-    experimentId: experiments[0].id,
+  // create queries for all metrics
+  const queryTimeSeconds = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  experimentObject = {
+    ...experimentObject,
+    queries: [queryTimeSeconds],
   };
 
-  const timeQuery = await queryService.saveQuery(query.query, query.metric, query.experimentId);
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
 
   jsonData = {
-    w: { time: 200, completion: 50, name: 'Vivek' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 50, name: 'Vivek' } },
   };
 
   // log data here
@@ -155,62 +107,39 @@ export default async function CreateLog(): Promise<void> {
     relations: ['metrics'],
   });
 
-  // check for log data created and metrics relation
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 200 } },
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200 } } },
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
         ]),
       }),
     ])
   );
 
-  // create a query for the metrics
-  query = {
-    name: 'completionAverage',
-    query: {
-      operationType: OPERATION_TYPES.AVERAGE,
-    },
-    metric: `w${METRICS_JOIN_TEXT}completion`,
-    experimentId: experiments[0].id,
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
+
+  // create queries for all metrics
+  const queryProblemsComplete = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  const experiment = await experimentService.find();
+
+  experimentObject = {
+    ...experiment[0],
+    queries: [...experiment[0].queries, queryProblemsComplete],
   };
 
-  const completionQuery = await queryService.saveQuery(query.query, query.metric, query.experimentId);
+  const experimentUpdatedObject = await experimentService.update(experimentObject.id, experimentObject as any, user);
 
-  jsonData = { w: { time: 200, completion: 'InProgress' } };
-
-  // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
-
-  logData = await logRepository.find({
-    relations: ['metrics'],
-  });
-
-  // check for log data created and metrics relation
-  expect(logData).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        data: { w: { time: 200, completion: 'InProgress' } },
-        metrics: expect.arrayContaining([
-          expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
-          }),
-          expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}completion`,
-          }),
-        ]),
-      }),
-    ])
-  );
-
-  // adding different string in categorical data
-  // adding string in continuous data
   jsonData = {
-    w: { time: '300', completion: 'In Progress', name: 'Sita' },
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 300, completion: 50, name: 'Vivek' } },
   };
 
   // log data here
@@ -224,58 +153,124 @@ export default async function CreateLog(): Promise<void> {
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 300 } },
+        data: {
+          masteryWorkspace: { calculating_area_figures: { timeSeconds: 300 } },
+        },
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
         ]),
       }),
     ])
   );
 
-  experiments = await experimentService.find();
+  // // adding string in continuous data
+  jsonData = {
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: '200', completion: 'GRADUATED', name: 'Sam' } },
+  };
 
-  const indexToRemove = experiments[0].queries.findIndex((queryDoc) => {
-    return queryDoc.id === timeQuery.id;
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
+  logData = await logRepository.find({
+    relations: ['metrics'],
   });
-  experiments[0].queries.splice(indexToRemove, 1);
 
-  await experimentService.update(experiments[0].id, experiments[0], user);
+  // check for log data created and metrics relation
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } } },
+        metrics: expect.arrayContaining([
+          expect.objectContaining({
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
+          }),
+          expect.objectContaining({
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
+          }),
+        ]),
+      }),
+    ])
+  );
 
-  // check all logs for time metrics is deleted
+  // // adding different string in categorical data
+  // // adding string in continuous data
+  jsonData = {
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: '300', completion: 'GRADU ATED', name: 'Sita' } },
+  };
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
+  logData = await logRepository.find({
+    relations: ['metrics'],
+  });
+
+  // check for log data created and metrics relation
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 300 } } },
+        metrics: expect.arrayContaining([
+          expect.objectContaining({
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
+          }),
+        ]),
+      }),
+    ])
+  );
+
+  // delete queries
+  const queryIndex = experimentUpdatedObject.queries.findIndex(({ metric }) => {
+    return metric.key === `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`;
+  });
+
+  experimentUpdatedObject.queries.splice(queryIndex, 1);
+
+  await experimentService.update(experimentObject.id, experimentUpdatedObject as any, user);
+
   logData = await logRepository.find({
     relations: ['metrics'],
   });
 
   expect(logData.length).toEqual(1);
 
-  // Also remove relationship of metrics when query deletes
-  // check for log data created and metrics relation
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { w: { time: 200, completion: 'InProgress' } },
+        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } } },
         metrics: expect.arrayContaining([
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}time`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           }),
           expect.objectContaining({
-            key: `w${METRICS_JOIN_TEXT}completion`,
+            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
           }),
         ]),
       }),
     ])
   );
 
-  // remove all queries
-  experiments[0].queries = [];
-  await experimentService.update(experiments[0].id, experiments[0], user);
+  experimentUpdatedObject.queries = [];
+  await experimentService.update(experimentObject.id, experimentUpdatedObject as any, user);
 
-  // check all logs for time metrics is deleted
   logData = await logRepository.find({
     relations: ['metrics'],
   });
 
   expect(logData.length).toEqual(0);
+}
+
+function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId: string): any {
+  return {
+    name: 'query',
+    query: {
+      operationType,
+    },
+    metric: {
+      key: metric,
+    },
+    experimentId,
+  };
 }

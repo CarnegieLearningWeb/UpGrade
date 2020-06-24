@@ -9,6 +9,7 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { systemUser } from '../../mockData/user/index';
+import { metrics } from '../../mockData/metric';
 
 export default async function QueryCRUD(): Promise<void> {
   const metricRepository = getRepository(Metric);
@@ -25,7 +26,7 @@ export default async function QueryCRUD(): Promise<void> {
   const user = await userService.create(systemUser as any);
 
   // experiment object
-  const experimentObject = individualAssignmentExperiment;
+  let experimentObject = individualAssignmentExperiment;
 
   // create experiment
   await experimentService.create(experimentObject as any, user);
@@ -43,67 +44,52 @@ export default async function QueryCRUD(): Promise<void> {
   );
 
   // create metrics service
-  const metricUnit = [
-    {
-      key: 'time',
-      children: [],
-      metadata: {
-        type: 'continuous',
-      },
-      allowedData: [],
-    },
-    {
-      key: 'w',
-      children: [
-        {
-          key: 'time',
-          children: [],
-          metadata: {
-            type: 'continuous',
-          },
-          allowedData: [],
-        },
-        {
-          key: 'completion',
-          children: [],
-          metadata: {
-            type: 'categorical',
-          },
-          allowedData: ['InProgress', 'Complete'],
-        },
-      ],
-    },
-  ];
 
-  await metricService.saveAllMetrics(metricUnit as any);
+  await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
 
   // three query need to be generated
-  // TODO: Remove test case of save query
   const query = {
     name: 'timeAverage',
     query: {
       operationType: OPERATION_TYPES.AVERAGE,
     },
-    metric: 'time',
+    metric: {
+      key: 'totalProblemsCompleted',
+    },
     experimentId: experiments[0].id,
   };
 
-  await queryService.saveQuery(query.query, query.metric, query.experimentId);
+  experimentObject = {
+    ...experimentObject,
+    queries: [query],
+  };
 
-  const allQuery = await queryService.find();
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
+
+  let allQuery = await queryService.find();
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         query: { operationType: 'avg' },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
-          allowedData: [],
+          allowedData: null,
         }),
       }),
     ])
   );
+
+  experimentObject = {
+    ...experimentObject,
+    queries: [],
+  };
+
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
+
+  allQuery = await queryService.find();
+  expect(allQuery.length).toEqual(0);
 }
