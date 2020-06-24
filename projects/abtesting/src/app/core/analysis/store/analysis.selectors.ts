@@ -32,3 +32,13 @@ export const selectQueryResult = createSelector(
   (state: AnalysisState) => state.queryResult
 );
 
+export const selectQueryResultById = createSelector(
+  selectAnalysisState,
+  (state: AnalysisState, { queryId }) => {
+    if (state.queryResult) {
+      const queryResult = state.queryResult.filter(res => res.id === queryId);
+      return queryResult[0].result || [];
+    }
+    return [];
+  }
+);

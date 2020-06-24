@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
+import * as analysisAction from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
 import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
 import {
@@ -134,10 +135,12 @@ export class ExperimentEffects {
             this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
+                const queryIds = data.queries.map(query => query.id);
                 return [
                   experimentAction.actionFetchExperimentStatsSuccess({ stats }),
                   experimentAction.actionUpsertExperimentSuccess({ experiment: data }),
-                  experimentAction.actionFetchAllPartitions()
+                  experimentAction.actionFetchAllPartitions(),
+                  analysisAction.actionExecuteQuery({ queryIds })
                 ];
               })
             )

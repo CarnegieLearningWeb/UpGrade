@@ -209,6 +209,11 @@ $font-size-small: 15px;
       }
     }
   }
+
+  .box-shadow {
+    margin-bottom: 24px;
+    padding: 10px;
+  }
 }
 
 ::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-selected {

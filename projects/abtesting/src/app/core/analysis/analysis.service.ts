@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
-import { selectMetrics, selectIsMetricsLoading, selectQueryResult, selectIsQueryExecuting } from './store/analysis.selectors';
+import { selectMetrics, selectIsMetricsLoading, selectQueryResult, selectIsQueryExecuting, selectQueryResultById } from './store/analysis.selectors';
 import * as AnalysisActions from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
 
@@ -16,6 +16,7 @@ export class AnalysisService {
   isQueryExecuting$ = this.store$.pipe(select(selectIsQueryExecuting));
   allMetrics$ = this.store$.pipe(select(selectMetrics));
   queryResult$ = this.store$.pipe(select(selectQueryResult));
+  queryResultById$ = (queryId) => this.store$.pipe(select(selectQueryResultById, { queryId }));
 
   setMetricsFilterValue(filterString: string) {
     this.store$.dispatch(AnalysisActions.actionSetMetricsFilterValue({ filterString }));
@@ -29,8 +30,8 @@ export class AnalysisService {
     this.store$.dispatch(AnalysisActions.actionDeleteMetric({ key }));
   }
 
-  executeQuery(queryId: string) {
-    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryId }));
+  executeQuery(queryIds: string[]) {
+    this.store$.dispatch(AnalysisActions.actionExecuteQuery({ queryIds }));
   }
 
   setQueryResult(queryResult: any) {

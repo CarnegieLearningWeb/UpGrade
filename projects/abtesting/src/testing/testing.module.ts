@@ -76,12 +76,9 @@ export const MockWindow = {
         },
         analysis: {
           isMetricsLoading: false,
-          isQueriesLoading: false,
           isQueryExecuting: false,
           metrics: [],
           metricsFilter: null,
-          queries: [],
-          queriesFilter: null,
           queryResult: null
         },
         auth: {
@@ -107,6 +104,7 @@ export const MockWindow = {
           stats: {},
           graphInfo: null,
           graphRange: null,
+          isGraphInfoLoading: false,
           allPartitions: null,
           allExperimentNames: null,
           context: []

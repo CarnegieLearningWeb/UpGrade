@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { AnalysisService } from '../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../core/experiments/experiments.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-query-result',
@@ -15,7 +15,7 @@ export class QueryResultComponent implements OnInit, OnDestroy {
   experiment: ExperimentVM;
   experimentInfo: ExperimentVM;
   experimentInfoSub: Subscription;
-  queryResult$ = this.analysisService.queryResult$;
+  queryResult$: Observable<any>;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
   displayedConditionColumns = ['no', 'conditionCode', 'result'];
 
@@ -38,12 +38,11 @@ export class QueryResultComponent implements OnInit, OnDestroy {
   ngOnInit() {
     if (this.data.query) {
       const { id } = this.data.query;
-      this.analysisService.executeQuery(id);
+      this.queryResult$ = this.analysisService.queryResultById$(id);
     }
   }
 
   ngOnDestroy() {
-    this.analysisService.setQueryResult(null);
     if (this.experimentInfoSub) {
       this.experimentInfoSub.unsubscribe();
     }
