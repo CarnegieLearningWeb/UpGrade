@@ -1,8 +1,9 @@
-import { IsNotEmpty, IsString, IsDefined } from 'class-validator';
+import { IsNotEmpty, IsString, IsDefined, IsArray } from 'class-validator';
 
 export class DataLogAnalysisValidator {
   @IsString()
   @IsNotEmpty()
   @IsDefined()
-  public queryId: string;
+  @IsArray()
+  public queryIds: string[];
 }

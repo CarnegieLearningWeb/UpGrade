@@ -24,13 +24,23 @@ export class QueryService {
     });
   }
 
-  public async analyse(queryId: string): Promise<any> {
-    this.log.info(`Get analysis of query with queryId ${queryId}`);
-    const query = await this.queryRepository.findOne(queryId, {
-      relations: ['metric', 'experiment'],
-    });
+  public async analyse(queryIds: string[]): Promise<any> {
+    this.log.info(`Get analysis of query with queryIds ${queryIds}`);
+    const promiseArray = queryIds.map(queryId =>
+      this.queryRepository.findOne(queryId, {
+        relations: ['metric', 'experiment'],
+      })
+    );
 
-    // convert metric json into string
-    return await this.logRepository.analysis(query);
+    const promiseResult = await Promise.all(promiseArray);
+    const analysePromise = promiseResult.map(query => this.logRepository.analysis(query));
+    let response = await Promise.all(analysePromise);
+    response = response.map((res, index) => {
+      return {
+        id: queryIds[index],
+        result: res,
+      };
+    });
+    return response;
   }
 }

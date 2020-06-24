@@ -392,8 +392,8 @@ export default async function CreateLog(): Promise<void> {
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < allQuery.length; i++) {
     const query = allQuery[i];
-    const queryResult = await queryService.analyse(query.id);
-    const res = reduceResult(queryResult);
+    const queryResult = await queryService.analyse([query.id]);
+    const res = reduceResult(queryResult[0].result);
     let expectedValue;
     // Used for console output
     const consoleString =
