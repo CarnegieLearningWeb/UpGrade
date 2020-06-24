@@ -323,5 +323,11 @@
 
     <!-- Enrollment by condition table -->
     <home-enrollment-condition-table [experiment]="experiment"></home-enrollment-condition-table>
+
+    <ng-container *ngIf="experiment.queries.length">
+      <div class="box-shadow"></div>
+      <!-- Experiment queries results -->
+      <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+    </ng-container>
   </mat-card>
 </mat-card>

@@ -23,8 +23,8 @@ export class AnalysisDataService {
     return this.http.delete(url);
   }
 
-  executeQuery(queryId: string) {
+  executeQuery(queryIds: string[]) {
     const url = environment.api.queryResult;
-    return this.http.post(url, { queryId });
+    return this.http.post(url, { queryIds });
   }
 }

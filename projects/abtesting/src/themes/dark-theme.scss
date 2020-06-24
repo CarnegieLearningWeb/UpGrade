@@ -71,6 +71,7 @@ contrast: (
 $background-color: #111111;
 $card-dialog-color: #1d1d1d;
 $shadow-color: #000000;
+$chart-border: rgba(255, 255, 255, 0.12);
 
 $primary: mat-palette($mat-blue);
 $accent: mat-palette($mat-light-blue);
@@ -80,5 +81,8 @@ $dark-theme: mat-dark-theme($primary, $accent, $warn);
 
 // Insert and bind custom background color
 $background: map-get($dark-theme, background);
+$foreground: map-get($dark-theme, foreground);
 $background: map_merge($background, (background: $background-color, card: $card-dialog-color, dialog: $card-dialog-color, shadow-color: $shadow-color));
+$foreground: map_merge($foreground, (chart-border: $chart-border));
 $dark-theme: map_merge($dark-theme, (background: $background));
+$dark-theme: map_merge($dark-theme, (foreground: $foreground));

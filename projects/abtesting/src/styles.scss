@@ -35,6 +35,7 @@
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/analysis/components/metrics/metrics.theme.scss';
 @import './app/features/dashboard/analysis/components/modal/add-metrics/add-metrics.theme.scss';
+@import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -62,6 +63,7 @@
   @include query-result-component-theme($theme);
   @include metrics-component-theme($theme);
   @include add-metrics-component-theme($theme);
+  @include experiment-query-result-component-theme($theme);
 }
 
 .light-theme {

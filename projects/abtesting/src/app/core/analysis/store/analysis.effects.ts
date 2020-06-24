@@ -63,10 +63,10 @@ export class AnalysisEffects {
   executeQuery$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionExecuteQuery),
-      map(action => action.queryId),
-      filter(queryId => !!queryId),
-      switchMap((queryId) =>
-        this.analysisDataService.executeQuery(queryId).pipe(
+      map(action => action.queryIds),
+      filter(queryIds => !!queryIds.length),
+      switchMap((queryIds) =>
+        this.analysisDataService.executeQuery(queryIds).pipe(
           map((data: any) => AnalysisActions.actionExecuteQuerySuccess({ queryResult: data })),
           catchError(() => [AnalysisActions.actionExecuteQueryFailure()])
         )
