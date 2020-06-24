@@ -11,8 +11,9 @@ import {
   IExperimentEnrollmentStats,
   IExperimentSearchParams,
   IExperimentSortParams,
-  IExperimentDateStat,
-  IExperimentEnrollmentDetailStats
+  IExperimentEnrollmentDetailStats,
+  DATE_RANGE,
+  IExperimentEnrollmentDetailDateStats
 } from 'upgrade_types';
 
 export {
@@ -26,9 +27,14 @@ export {
   EXPERIMENT_SORT_AS,
   IExperimentSearchParams,
   IExperimentSortParams,
-  IExperimentDateStat,
-  IExperimentEnrollmentDetailStats
+  IExperimentEnrollmentDetailStats,
+  DATE_RANGE,
 };
+
+export interface IEnrollmentStatByDate {
+  date: string;
+  stats: IExperimentEnrollmentDetailDateStats;
+}
 
 export enum GroupTypes {
   CLASS = 'class',
@@ -143,18 +149,11 @@ export interface ExperimentPaginationParams {
   sortParams?: IExperimentSortParams;
 }
 
-export enum ExperimentGraphDateFilterOptions {
-  LAST_7_DAYS = 'Last 7 Days',
-  LAST_3_MONTHS = 'Last 3 Months',
-  LAST_6_MONTHS = 'Last 6 Months',
-  LAST_12_MONTHS = 'Last 12 Months'
-}
-
 export interface IExperimentGraphInfo {
-  [ExperimentGraphDateFilterOptions.LAST_7_DAYS]: IExperimentDateStat[],
-  [ExperimentGraphDateFilterOptions.LAST_3_MONTHS]: IExperimentDateStat[],
-  [ExperimentGraphDateFilterOptions.LAST_6_MONTHS]: IExperimentDateStat[],
-  [ExperimentGraphDateFilterOptions.LAST_12_MONTHS]: IExperimentDateStat[],
+  [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_SIX_MONTHS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_TWELVE_MONTHS]: IEnrollmentStatByDate[],
 }
 
 export interface ExperimentVM extends Experiment {
@@ -173,7 +172,8 @@ export interface ExperimentState extends EntityState<Experiment> {
     [key: string]: IExperimentEnrollmentDetailStats;
   };
   graphInfo: IExperimentGraphInfo,
-  graphRange: ExperimentGraphDateFilterOptions;
+  graphRange: DATE_RANGE;
+  isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
   context: string[]
