@@ -28,8 +28,10 @@ export class QueryController {
    *           schema:
    *             type: object
    *             properties:
-   *               queryId:
-   *                 type: string
+   *               queryIds:
+   *                 type: array
+   *                 items:
+   *                  type: string
    *           description: Data analysis
    *       tags:
    *         - Query
@@ -44,6 +46,6 @@ export class QueryController {
     @Body({ validate: { validationError: { target: true, value: true } } })
     dataLogParams: DataLogAnalysisValidator
   ): Promise<any> {
-    return this.queryService.analyse(dataLogParams.queryId);
+    return this.queryService.analyse(dataLogParams.queryIds);
   }
 }
