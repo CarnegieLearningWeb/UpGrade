@@ -1,12 +1,10 @@
-import { IsString, IsDate } from 'class-validator';
+import { IsString, IsEnum } from 'class-validator';
+import { DATE_RANGE } from 'upgrade_types';
 
 export class EnrollmentAnalyticsDateValidator {
   @IsString()
   public experimentId: string;
 
-  @IsDate()
-  public fromDate: Date;
-
-  @IsDate()
-  public toDate: Date;
+  @IsEnum(DATE_RANGE)
+  public dateEnum: DATE_RANGE;
 }

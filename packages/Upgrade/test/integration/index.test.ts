@@ -53,11 +53,7 @@ import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
 import { GetAssignments } from './Support/index';
-import {
-  StatsIndividualEnrollment,
-  StatsGroupEnrollment,
-  StatsIndividualExperimentWithDateRange,
-} from './ExperimentStats/index';
+import { StatsIndividualEnrollment, StatsGroupEnrollment } from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog } from './Experiment/dataLog';
 import { LogSum } from './Experiment/dataLog/index';
@@ -264,11 +260,6 @@ describe('Integration Tests', () => {
 
   test('Stats for Group Enrollment', async (done) => {
     await StatsGroupEnrollment();
-    done();
-  });
-
-  test('Stats from Individual Experiment with Date Range', async (done) => {
-    await StatsIndividualExperimentWithDateRange();
     done();
   });
 

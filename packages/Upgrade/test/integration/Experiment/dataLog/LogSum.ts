@@ -13,6 +13,7 @@ import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
+import { metrics } from '../../mockData/metric';
 
 export default async function CreateLog(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -46,34 +47,7 @@ export default async function CreateLog(): Promise<void> {
 
   await settingService.setClientCheck(false, true);
 
-  const metricUnit = [
-    {
-      key: 'time',
-      metadata: {
-        type: 'continuous',
-      },
-    },
-    {
-      key: 'w',
-      children: [
-        {
-          key: 'time',
-          metadata: {
-            type: 'continuous',
-          },
-        },
-        {
-          key: 'completion',
-          metadata: {
-            type: 'categorical',
-          },
-          allowedData: ['InProgress', 'Complete'],
-        },
-      ],
-    },
-  ];
-
-  await metricService.saveAllMetrics(metricUnit as any);
+  await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
@@ -114,66 +88,84 @@ export default async function CreateLog(): Promise<void> {
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUsers[0].id, {
-    time: 20,
-    w: { time: '100', completion: 'InProgress' },
+    totalProblemsCompleted: 20,
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 100, completion: 'GRADUATED' } },
   });
 
   await experimentAssignmentService.dataLog(experimentUsers[1].id, {
-    time: 200,
-    w: { time: 200, completion: 'InProgress' },
+    totalProblemsCompleted: 200,
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } },
   });
 
   await experimentAssignmentService.dataLog(experimentUsers[2].id, {
-    time: 100,
-    w: { time: 300, completion: 'Complete' },
+    totalProblemsCompleted: 100,
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 300, completion: 'PROMOTED' } },
   });
 
   await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    time: 50,
-    w: { time: 400, completion: 'InProgress' },
+    totalProblemsCompleted: 50,
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 400, completion: 'GRADUATED' } },
   });
 
   await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    time: 50,
-    w: { time: 500, completion: 'Complete' },
+    totalProblemsCompleted: 50,
+    masteryWorkspace: { calculating_area_figures: { timeSeconds: 500, completion: 'PROMOTED' } },
   });
 
   // Save queries for various operations
-  const querySum = makeQuery('time', OPERATION_TYPES.SUM, experiments[0].id);
+  const querySum = makeQuery('totalProblemsCompleted', OPERATION_TYPES.SUM, experiments[0].id);
 
-  const queryMin = makeQuery('time', OPERATION_TYPES.MIN, experiments[0].id);
+  const queryMin = makeQuery('totalProblemsCompleted', OPERATION_TYPES.MIN, experiments[0].id);
 
-  const queryMax = makeQuery('time', OPERATION_TYPES.MAX, experiments[0].id);
+  const queryMax = makeQuery('totalProblemsCompleted', OPERATION_TYPES.MAX, experiments[0].id);
 
-  const queryAvg = makeQuery('time', OPERATION_TYPES.AVERAGE, experiments[0].id);
+  const queryAvg = makeQuery('totalProblemsCompleted', OPERATION_TYPES.AVERAGE, experiments[0].id);
 
-  const queryCount = makeQuery('time', OPERATION_TYPES.COUNT, experiments[0].id);
+  const queryCount = makeQuery('totalProblemsCompleted', OPERATION_TYPES.COUNT, experiments[0].id);
 
-  const queryMode = makeQuery('time', OPERATION_TYPES.MODE, experiments[0].id);
+  const queryMode = makeQuery('totalProblemsCompleted', OPERATION_TYPES.MODE, experiments[0].id);
 
-  const queryMedian = makeQuery('time', OPERATION_TYPES.MEDIAN, experiments[0].id);
+  const queryMedian = makeQuery('totalProblemsCompleted', OPERATION_TYPES.MEDIAN, experiments[0].id);
 
-  const queryStddev = makeQuery('time', OPERATION_TYPES.STDEV, experiments[0].id);
+  const queryStddev = makeQuery('totalProblemsCompleted', OPERATION_TYPES.STDEV, experiments[0].id);
 
   // Deep state queries
-  const deepQuerySum = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.SUM, experiments[0].id);
+  const deepQuerySum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.SUM, experiments[0].id
+  );
 
-  const deepQueryAvg = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.AVERAGE, experiments[0].id);
+  const deepQueryAvg = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.AVERAGE, experiments[0].id
+  );
 
-  const deepQueryMin = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MIN, experiments[0].id);
+  const deepQueryMin = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.MIN, experiments[0].id
+  );
 
-  const deepQueryMax = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MAX, experiments[0].id);
+  const deepQueryMax = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.MAX, experiments[0].id
+  );
 
-  const deepQueryCount = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.COUNT, experiments[0].id);
+  const deepQueryCount = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.COUNT, experiments[0].id
+  );
 
-  const deepQueryMedian = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MEDIAN, experiments[0].id);
+  const deepQueryMedian = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.MEDIAN, experiments[0].id
+  );
 
-  const deepQueryMode = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.MODE, experiments[0].id);
+  const deepQueryMode = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.MODE, experiments[0].id
+  );
 
-  const deepQueryStddev = makeQuery(`w${METRICS_JOIN_TEXT}time`, OPERATION_TYPES.STDEV, experiments[0].id);
+  const deepQueryStddev = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`, OPERATION_TYPES.STDEV, experiments[0].id
+  );
 
   // Deep state queries for categorical data
-  const deepQueryCatSum = makeQuery(`w${METRICS_JOIN_TEXT}completion`, OPERATION_TYPES.COUNT, experiments[0].id);
+  const deepQueryCatSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`, OPERATION_TYPES.COUNT, experiments[0].id
+  );
 
   experimentObject = {
     ...experimentObject,
@@ -192,7 +184,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.SUM },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -201,7 +193,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.AVERAGE },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -210,7 +202,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -219,7 +211,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MAX },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -228,7 +220,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MIN },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -237,7 +229,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MEDIAN },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -246,7 +238,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MODE },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -255,7 +247,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.STDEV },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
           allowedData: null,
         }),
@@ -264,7 +256,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.SUM },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -272,7 +264,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.AVERAGE },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -280,7 +272,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -288,7 +280,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MAX },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -296,7 +288,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MIN },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -304,7 +296,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MEDIAN },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -312,7 +304,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.MODE },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -320,7 +312,7 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.STDEV },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}time`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
           type: 'continuous',
         }),
       }),
@@ -329,9 +321,9 @@ export default async function CreateLog(): Promise<void> {
         name: 'query',
         query: { operationType: OPERATION_TYPES.COUNT },
         metric: expect.objectContaining({
-          key: `w${METRICS_JOIN_TEXT}completion`,
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
           type: 'categorical',
-          allowedData: ['InProgress', 'Complete'],
+          allowedData: ['GRADUATED', 'PROMOTED'],
         }),
       }),
     ])
@@ -346,7 +338,7 @@ export default async function CreateLog(): Promise<void> {
     let expectedValue;
     // Used for console output
     const consoleString =
-      query.metric.key === 'time' ? query.query.operationType + ' ' : query.query.operationType + ' deep';
+      query.metric.key === 'totalProblemsCompleted' ? query.query.operationType + ' ' : query.query.operationType + ' deep';
 
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM:
@@ -354,7 +346,7 @@ export default async function CreateLog(): Promise<void> {
           return accu + data;
         }, 0);
         expectedValue = 420;
-        if (query.metric.key !== 'time') {
+        if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 1500; // For completion metric
         }
         expect(sum).toEqual(expectedValue);
@@ -362,7 +354,7 @@ export default async function CreateLog(): Promise<void> {
       case OPERATION_TYPES.MIN:
         const minValue = Math.min(...res);
         expectedValue = 20;
-        if (query.metric.key !== 'time') {
+        if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 100; // For completion metric
         }
         expect(minValue).toEqual(expectedValue);
@@ -370,7 +362,7 @@ export default async function CreateLog(): Promise<void> {
       case OPERATION_TYPES.MAX:
         const maxValue = Math.max(...res);
         expectedValue = 200;
-        if (query.metric.key !== 'time') {
+        if (query.metric.key !== 'totalProblemsCompleted') {
           expectedValue = 500; // For completion metric
         }
         expect(maxValue).toEqual(expectedValue);

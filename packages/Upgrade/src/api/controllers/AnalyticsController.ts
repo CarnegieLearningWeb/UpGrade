@@ -97,10 +97,9 @@ export class AnalyticsController {
    *             properties:
    *              experimentId:
    *               type: string
-   *              fromDate:
+   *              dateEnum:
    *               type: string
-   *              toDate:
-   *               type: string
+   *               enum: [last_seven_days, last_three_months, last_six_months, last_twelve_months]
    *       tags:
    *         - Analytics
    *       produces:
@@ -114,11 +113,7 @@ export class AnalyticsController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     auditParams: EnrollmentAnalyticsDateValidator
   ): Promise<any> {
-    return this.auditService.getEnrolmentStatsByDate(
-      auditParams.experimentId,
-      auditParams.fromDate,
-      auditParams.toDate
-    );
+    return this.auditService.getEnrolmentStatsByDate(auditParams.experimentId, auditParams.dateEnum);
   }
 
   /**

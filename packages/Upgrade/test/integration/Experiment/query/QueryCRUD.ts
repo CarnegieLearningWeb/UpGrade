@@ -9,6 +9,7 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { systemUser } from '../../mockData/user/index';
+import { metrics } from '../../mockData/metric';
 
 export default async function QueryCRUD(): Promise<void> {
   const metricRepository = getRepository(Metric);
@@ -43,39 +44,8 @@ export default async function QueryCRUD(): Promise<void> {
   );
 
   // create metrics service
-  const metricUnit = [
-    {
-      key: 'time',
-      children: [],
-      metadata: {
-        type: 'continuous',
-      },
-      allowedData: [],
-    },
-    {
-      key: 'w',
-      children: [
-        {
-          key: 'time',
-          children: [],
-          metadata: {
-            type: 'continuous',
-          },
-          allowedData: [],
-        },
-        {
-          key: 'completion',
-          children: [],
-          metadata: {
-            type: 'categorical',
-          },
-          allowedData: ['InProgress', 'Complete'],
-        },
-      ],
-    },
-  ];
 
-  await metricService.saveAllMetrics(metricUnit as any);
+  await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(3);
@@ -86,7 +56,9 @@ export default async function QueryCRUD(): Promise<void> {
     query: {
       operationType: OPERATION_TYPES.AVERAGE,
     },
-    metric: 'time',
+    metric: {
+      key: 'totalProblemsCompleted',
+    },
     experimentId: experiments[0].id,
   };
 
@@ -103,9 +75,9 @@ export default async function QueryCRUD(): Promise<void> {
       expect.objectContaining({
         query: { operationType: 'avg' },
         metric: expect.objectContaining({
-          key: 'time',
+          key: 'totalProblemsCompleted',
           type: 'continuous',
-          allowedData: [],
+          allowedData: null,
         }),
       }),
     ])
