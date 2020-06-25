@@ -3,7 +3,7 @@ import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { OPERATION_TYPES } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 
@@ -76,7 +76,6 @@ export class LogRepository extends Repository<Log> {
     const experimentRepo = getRepository(Experiment);
     const metricId = metric.split(METRICS_JOIN_TEXT);
     const metricString = metricId.reduce((accumulator: string, value: string) => {
-      // TODO: Fix nested query
       return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
 
@@ -95,7 +94,14 @@ export class LogRepository extends Repository<Log> {
       .andWhere('queries.id = :queryId', { queryId });
 
     if (compareFn) {
-      executeQuery = executeQuery.andWhere(`(cast(logs.data -> ${metricString} as text)) ${compareFn} :compareValue`, {
+      const castType = query.metric.type === IMetricMetaData.CONTINUOUS ? 'decimal' : 'text';
+      let castFn = `(cast(logs.data ->> ${metricString} as ${castType}))`;
+      if (metricId.length > 1) {
+        const val = metricString.substring(0, metricString.lastIndexOf('->')) + '->>'
+          + metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
+          castFn = `(cast(logs.data -> ${val} as ${castType}))`;
+      }
+      executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
         compareValue,
       });
     }
