@@ -22,6 +22,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
 
   try {
     const connection = await createConnection(connectionOptions);
+    // run the migrations
+    await connection.runMigrations();
 
     if (settings) {
       settings.setData('connection', connection);

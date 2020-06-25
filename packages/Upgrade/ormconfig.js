@@ -14,6 +14,10 @@ module.exports = {
   synchronize: process.env.TYPEORM_SYNCHRONIZE,
   logging: process.env.TYPEORM_LOGGING,
   entities: [process.env.TYPEORM_ENTITIES],
+  migrations: [process.env.TYPEORM_MIGRATIONS],
   seeds: [process.env.TYPEORM_SEED],
   factories: [process.env.TYPEORM_FACTORY],
+  cli: {
+    migrationsDir: process.env.TYPEORM_MIGRATIONS_DIR,
+  },
 };

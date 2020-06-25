@@ -8,6 +8,12 @@ export class Log extends BaseModel {
   @PrimaryGeneratedColumn()
   public id: string;
 
+  @Column({ default: 1 })
+  public uniquifier: string;
+
+  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  public timeStamp: Date;
+
   @Column('jsonb')
   public data: any;
 

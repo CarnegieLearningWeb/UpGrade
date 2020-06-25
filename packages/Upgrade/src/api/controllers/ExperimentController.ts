@@ -448,17 +448,16 @@ export class ExperimentController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: experimentId
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Experiment ID
-   *         - in: body
-   *           name: state
+   *           name: data
    *           required: true
    *           schema:
    *             type: object
-   *             $ref: '#/definitions/Experiment/state'
+   *             properties:
+   *               experimentId:
+   *                type: string
+   *               state:
+   *                type: string
+   *                $ref: '#/definitions/Experiment/state'
    *           description: Experiment State
    *       tags:
    *         - Experiments
