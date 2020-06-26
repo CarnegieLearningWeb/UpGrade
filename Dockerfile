@@ -11,4 +11,4 @@ RUN ["npm", "run", "build:upgrade"]
 
 
 EXPOSE 3030
-CMD ["npm", "run", "production:upgrade"]
+CMD ["date", "&&", "npm", "run", "production:upgrade"]
