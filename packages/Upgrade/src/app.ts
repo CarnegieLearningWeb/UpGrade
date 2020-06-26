@@ -18,6 +18,7 @@ import { CreateSystemUser } from './init/seed/systemUser';
  */
 
 const log = new Logger(__filename);
+log.info('Server starting at', Date.now());
 
 bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
