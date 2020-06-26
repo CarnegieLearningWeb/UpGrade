@@ -1,0 +1,121 @@
+$role-background-color: #e6fce9;
+$role-text-color: #0a7319;
+
+.profile-wrapper {
+  border-radius: 10px;
+  padding-top: 10px;
+
+  .personal-information {
+    display: flex;
+    height: 100px;
+
+    &.normal-user {
+      margin-bottom: 0;
+    }
+
+    .profile-pic {
+      margin-right: 20px;
+      border: 1px solid var(--blue);
+      border-radius: 50%;
+      width: 46px;
+      height: 46px;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+
+      .email {
+        color: var(--grey-5);
+      }
+
+      .role {
+        margin-top: 10px;
+        border-radius: 4px;
+        background-color: $role-background-color;
+        padding: 2px;
+        width: 100px;
+        text-align: center;
+        color: $role-text-color;
+      }
+    }
+
+    .toggle-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+
+      .toggle {
+        margin-bottom: 10px;
+      }
+    }
+  }
+
+  .role-wrapper {
+    padding: 24px 0;
+
+    .header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+
+      &-title {
+        font-size: var(--text-size-xx-large);
+      }
+
+      button {
+        background-color: var(--blue);
+        height: 40px;
+        color: var(--white);
+      }
+    }
+
+    .filter-options {
+      margin-right: 10px;
+      width: 80px;
+
+      ::ng-deep .mat-form-field-underline,
+      ::ng-deep .mat-form-field-ripple {
+        background-color: unset;
+      }
+    }
+
+    .input {
+      line-height: 18px;
+    }
+
+    .users-list-container {
+      overflow: auto;
+
+      .users-list {
+        width: 100%;
+
+        th,
+        td {
+          padding: 10px 5px;
+        }
+
+        th {
+          color: var(--grey-2);
+        }
+
+        tr.mat-footer-row,
+        tr.mat-row {
+          height: 55px;
+        }
+
+        .mat-cell {
+          width: 20%;
+          word-break: break-word;
+
+          &.cdk-column-email,
+          &.cdk-column-role {
+            width: 25%;
+          }
+        }
+      }
+    }
+  }
+}

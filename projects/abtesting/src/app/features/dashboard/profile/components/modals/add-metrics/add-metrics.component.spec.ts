@@ -1,16 +1,16 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DeleteMetricComponent } from './delete-metric.component';
+import { AddMetricsComponent } from './add-metrics.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 
-describe('DeleteMetricComponent', () => {
-  let component: DeleteMetricComponent;
-  let fixture: ComponentFixture<DeleteMetricComponent>;
+describe('AddMetricsComponent', () => {
+  let component: AddMetricsComponent;
+  let fixture: ComponentFixture<AddMetricsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DeleteMetricComponent ],
+      declarations: [ AddMetricsComponent ],
       imports: [TestingModule],
       providers: [AnalysisService]
     })
@@ -18,7 +18,7 @@ describe('DeleteMetricComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DeleteMetricComponent);
+    fixture = TestBed.createComponent(AddMetricsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

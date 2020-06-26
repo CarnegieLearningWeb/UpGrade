@@ -1,0 +1,185 @@
+<div class="profile-wrapper" #profileInfoContainer>
+  <div
+    class="personal-information"
+    *ngIf="currentUser"
+    [ngClass]="{ 'normal-user': currentUser?.role !== UserRole.ADMIN }"
+  >
+    <img [src]="currentUser?.imageUrl" class="profile-pic" />
+    <div class="user-info">
+      <span class="ft-22-700">{{ (currentUser?.firstName || '') + ' ' + (currentUser?.lastName || '') }}</span>
+      <span class="ft-12-600 email">{{ '( ' + currentUser?.email + ' )' }}</span>
+      <span class="ft-12-600 role">{{ currentUser?.role | titlecase }}</span>
+    </div>
+    <div class="toggle-container">
+      <mat-slide-toggle
+        *ngIf="(permissions$ | async)?.manageRoles.update"
+        class="ft-16-600 toggle"
+        color="primary"
+        [checked]="toCheckAuth$ | async"
+        (change)="setToCheckAuth($event)"
+        labelPosition="before"
+      >
+        {{ 'profile.action.authorization.text' | translate }}
+      </mat-slide-toggle>
+      <!-- TODO: Uncomment if we want filter metric toggle -->
+      <!-- <mat-slide-toggle
+        *ngIf="(permissions$ | async)?.manageRoles.update"
+        class="ft-16-600 toggle"
+        color="primary"
+        [checked]="toFilterMetric$ | async"
+        (change)="setToFilterMetric($event)"
+        labelPosition="before"
+      >
+        {{ 'profile.action.filter-metric.text' | translate }}
+      </mat-slide-toggle> -->
+      <mat-slide-toggle
+        class="ft-16-600"
+        color="primary"
+        [checked]="(theme$ | async) === ThemeOptions.DARK_THEME"
+        labelPosition="before"
+        (change)="changeTheme($event)"
+      >
+      {{ 'profile.action.dark-theme.text' | translate }}
+    </mat-slide-toggle>
+    </div>
+  </div>
+  <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">
+    <div class="header">
+      <h3 class="header-title">{{ 'profile.manage-roles.heading.text' | translate }}</h3>
+      <button class="ft-14-700" mat-flat-button color="primary" (click)="openNewUserModal()">
+        <mat-icon>add</mat-icon>
+        <span>{{ 'profile.add-user.text' | translate }}</span>
+      </button>
+    </div>
+    <div>
+      <mat-form-field class="filter-options">
+        <mat-select
+          class="ft-16-600"
+          [(ngModel)]="selectedUserFilterOption"
+          (selectionChange)="applyFilter(searchString); setSearchKey()"
+        >
+          <mat-option *ngFor="let filterOption of userFilterOptions" [value]="filterOption.value">
+            {{ filterOption.viewValue | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="ft-14-600 input">
+        <input
+          class="ft-14-600 input"
+          #searchInput
+          matInput
+          [(ngModel)]="searchString"
+          (keyup)="applyFilter($event.target.value)"
+          [placeholder]="'global.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
+    <div
+      scroll
+      (scrolled)="fetchUsersOnScroll()"
+      #usersTable
+      class="users-list-container"
+    >
+      <form [formGroup]="userRoleForm">
+        <table
+          class="users-list"
+          mat-table
+          [dataSource]="allUsers"
+          matSort
+          (matSortChange)="resetForm(); changeSorting($event)"
+        >
+          <ng-container matColumnDef="firstName">
+            <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+              <span [matTooltip]="'profile.table.firstName.text' | translate" matTooltipPosition="above">
+                {{ 'profile.table.firstName.text' | translate | uppercase }}
+              </span>
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let user">
+              <span>
+                {{ user.firstName }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="lastName">
+            <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+              <span [matTooltip]="'profile.table.lastName.text' | translate" matTooltipPosition="above">
+                {{ 'profile.table.lastName.text' | translate | uppercase }}
+              </span>
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let user">
+              <span>
+                {{ user.lastName }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="email">
+            <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+              <span [matTooltip]="'profile.global.email.text' | translate" matTooltipPosition="above">
+                {{ 'profile.global.email.text' | translate | uppercase }}
+              </span>
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let user">
+              <span>
+                {{ user.email }}
+              </span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="role">
+            <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+              <span [matTooltip]="'profile.global.role.text' | translate" matTooltipPosition="above">
+                {{ 'profile.global.role.text' | translate | uppercase }}
+              </span>
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
+              <div *ngIf="editMode === index; else roleReadOnly">
+                <mat-form-field class="ft-14-600 input">
+                  <mat-label>{{ 'profile.form.role-control.text' | translate }}</mat-label>
+                  <mat-select class="ft-14-600 input" formControlName="role">
+                    <mat-option *ngFor="let role of userRoles" [value]="role">
+                      {{ role | titlecase }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <ng-template #roleReadOnly>
+                <span>
+                  {{ user.role | titlecase }}
+                </span>
+              </ng-template>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="edit">
+            <th class="ft-12-700" mat-header-cell *matHeaderCellDef></th>
+            <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
+              <mat-icon
+                *ngIf="editMode !== index; else saveBtnTemplate"
+                class="icon"
+                (click)="editPermission(user, index)"
+              >
+                create
+              </mat-icon>
+
+              <ng-template #saveBtnTemplate>
+                <button
+                  mat-raised-button
+                  class="default-button form-control"
+                  [ngClass]="{ 'default-button--disabled': !this.userRoleForm.valid }"
+                  [disabled]="!this.userRoleForm.valid"
+                  (click)="updatePermission(user)"
+                >
+                  {{ 'users.preview-users.save.text' | translate }}
+                </button>
+              </ng-template>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedUsersColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedUsersColumns"></tr>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>

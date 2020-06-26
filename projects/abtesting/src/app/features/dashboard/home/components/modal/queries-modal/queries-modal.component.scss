@@ -28,6 +28,10 @@
       .table {
         width: 100%;
 
+        .mat-cell {
+          padding: 5px 0;
+        }
+
         .mat-column-execute {
           width: 10%;
         }

@@ -33,7 +33,6 @@
   "app-header.title.logs": "Logs",
   "app-header.title.feature-flag": "Feature Flags",
   "app-header.title.view-feature-flag": "View Feature Flag",
-  "app-header.title.metrics": "Metrics",
   "login.sign-in-btn.text": "Login with Google",
   "login.description-1.text": "By creating this account, you agree to",
   "login.description-2.text": "Terms & Conditions",

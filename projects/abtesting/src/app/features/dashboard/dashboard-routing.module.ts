@@ -20,13 +20,6 @@ const routes: Routes = [
         }
       },
       {
-        path: 'metrics',
-        loadChildren: () => import('./analysis/analysis.module').then(m => m.AnalysisModule),
-        data: {
-          title: 'app-header.title.metrics'
-        }
-      },
-      {
         path: 'users',
         loadChildren: () => import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule),
         data: {

@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialogRef } from '@angular/material';
 import { JsonEditorOptions, JsonEditorComponent } from 'ang-jsoneditor';
+import { MatDialogRef } from '@angular/material';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 
 @Component({
@@ -9,7 +9,6 @@ import { AnalysisService } from '../../../../../../core/analysis/analysis.servic
   styleUrls: ['./add-metrics.component.scss']
 })
 export class AddMetricsComponent implements OnInit {
-
   options = new JsonEditorOptions();
   metricsEditorError = false;
   @ViewChild('metricsEditor', { static: false }) metricsEditor: JsonEditorComponent;

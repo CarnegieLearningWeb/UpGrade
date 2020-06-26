@@ -19,7 +19,7 @@
 @import './app/features/dashboard/home/components/experiment-design/experiment-design.theme.scss';
 @import './app/features/dashboard/home/components/enrollment-over-time/enrollment-over-time.theme.scss';
 @import './app/features/dashboard/home/components/modal/new-experiment/new-experiment.theme.scss';
-@import './app/features/dashboard/profile/profile-root/profile-root.theme.scss';
+@import './app/features/dashboard/profile/components/profile-info/profile-info.theme.scss';
 @import './app/features/dashboard/profile/components/modals/new-user/new-user.theme.scss';
 @import './app/features/dashboard/experiment-users/components/experiment-users/experiment-users.theme.scss';
 @import './app/features/dashboard/experiment-users/components/preview-user/preview-user.theme.scss';
@@ -33,8 +33,8 @@
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
-@import './app/features/dashboard/analysis/components/metrics/metrics.theme.scss';
-@import './app/features/dashboard/analysis/components/modal/add-metrics/add-metrics.theme.scss';
+@import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
+@import './app/features/dashboard/profile/components/modals/add-metrics/add-metrics.theme.scss';
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 
 @mixin custom-components-theme($theme) {
@@ -48,7 +48,7 @@
   @include enrollment-over-time-component-theme($theme);
   @include new-experiment-component-theme($theme);
   @include experiment-users-component-theme($theme);
-  @include profile-root-component-theme($theme);
+  @include profile-info-component-theme($theme);
   @include new-user-component-theme($theme);
   @include preview-user-component-theme($theme);
   @include logs-view-component-theme($theme);

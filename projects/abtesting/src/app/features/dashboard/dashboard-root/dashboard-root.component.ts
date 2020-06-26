@@ -18,11 +18,6 @@ export class DashboardRootComponent {
       iconType: 'assignment'
     },
     {
-      path: ['/metrics'],
-      text: 'global.metrics.text',
-      iconType: 'analytics'
-    },
-    {
       path: ['/featureFlags'],
       text: 'Feature flags',
       iconType: 'toggle_on'

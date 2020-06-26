@@ -1,19 +1,19 @@
 import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 import { METRICS_JOIN_TEXT } from '../../../../../../core/analysis/store/analysis.models';
 
 @Component({
-  selector: 'app-delete-metric',
-  templateUrl: './delete-metric.component.html',
-  styleUrls: ['./delete-metric.component.scss'],
+  selector: 'app-delete-metrics',
+  templateUrl: './delete-metrics.component.html',
+  styleUrls: ['./delete-metrics.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DeleteMetricComponent {
+export class DeleteMetricsComponent {
 
   constructor(
     private analysisService: AnalysisService,
-    public dialogRef: MatDialogRef<DeleteMetricComponent>,
+    public dialogRef: MatDialogRef<DeleteMetricsComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
@@ -25,5 +25,4 @@ export class DeleteMetricComponent {
     this.analysisService.deleteMetric(this.data.key.join(METRICS_JOIN_TEXT));
     this.onCancelClick();
   }
-
 }

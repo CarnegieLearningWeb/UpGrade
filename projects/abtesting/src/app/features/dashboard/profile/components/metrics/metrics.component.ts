@@ -1,20 +1,21 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
+import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { Subscription, BehaviorSubject, of } from 'rxjs';
-import { MatTableDataSource, MatTreeNestedDataSource, MatDialog } from '@angular/material';
 import { MetricUnit } from '../../../../../core/analysis/store/analysis.models';
 import { NestedTreeControl } from '@angular/cdk/tree';
-import { DeleteMetricComponent } from '../modal/delete-metric/delete-metric.component';
+import { MatTreeNestedDataSource, MatDialog, MatTableDataSource } from '@angular/material';
+import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { AddMetricsComponent } from '../modal/add-metrics/add-metrics.component';
+import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component';
+import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.component';
 
 @Component({
-  selector: 'analysis-metrics',
+  selector: 'profile-metrics',
   templateUrl: './metrics.component.html',
-  styleUrls: ['./metrics.component.scss']
+  styleUrls: ['./metrics.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;
   permissionSub: Subscription;
 
@@ -90,7 +91,7 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
     this.selectedMetricIndex = null;
-    const dialogRef = this.dialog.open(DeleteMetricComponent, {
+    const dialogRef = this.dialog.open(DeleteMetricsComponent, {
       panelClass: 'delete-modal',
       data: { key }
     });
@@ -129,7 +130,7 @@ export class MetricsComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.metricsTable.nativeElement.style.maxHeight = (windowHeight - 365) + 'px';
+    this.metricsTable.nativeElement.style.maxHeight = (windowHeight - 440) + 'px';
   }
 
   ngOnDestroy() {
