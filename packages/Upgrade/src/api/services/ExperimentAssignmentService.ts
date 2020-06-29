@@ -404,7 +404,10 @@ export class ExperimentAssignmentService {
       // const uniquifierKeys = keyUniqueArray.map(({ uniquifier }) => uniquifier);
 
       // get metrics document
-      const metricDocs = await this.metricRepository.findMetricsWithQueries(metricKeys);
+      let metricDocs = [];
+      if (metricKeys.length > 0) {
+        metricDocs = await this.metricRepository.findMetricsWithQueries(metricKeys);
+      }
 
       const filteredKeyUniqueArray = keyUniqueArray.filter(({ key }) => {
         return metricDocs.find((doc) => doc.key === key);
