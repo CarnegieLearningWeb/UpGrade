@@ -133,9 +133,9 @@ export default class UpgradeClient {
         return getFeatureFlag(this.featureFlags, key);
     }
 
-    async log(key: string, value: any): Promise<Interfaces.ILog> {
+    async log(value: any): Promise<Interfaces.ILog> {
         this.validateClient();
-        return await log(UpgradeClient.api.log, this.userId, this.token, key, value);
+        return await log(UpgradeClient.api.log, this.userId, this.token, value);
     }
 
     async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
