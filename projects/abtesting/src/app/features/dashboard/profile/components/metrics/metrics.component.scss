@@ -9,8 +9,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 0 2.25rem;
-    height: 94px;
+    height: 70px;
 
     .search-input {
       line-height: 20px;
@@ -27,13 +26,12 @@
   .read-mode-container {
     display: flex;
     justify-content: flex-end;
-    padding: 15px 36px 0;
+    padding-top: 15px;
   }
 
   .metrics-table-container {
     position: relative;
     margin-top: 8px;
-    padding: 0 2.25rem;
     overflow: auto;
 
     table {

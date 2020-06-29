@@ -1,0 +1,16 @@
+@import '~@angular/material/theming';
+
+@mixin profile-info-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .profile-wrapper {
+    .personal-information {
+      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+    }
+
+    .icon {
+      color: mat-color($foreground, icon);
+    }
+  }
+}
