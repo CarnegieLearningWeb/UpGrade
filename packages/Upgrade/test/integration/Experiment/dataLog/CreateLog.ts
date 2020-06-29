@@ -48,30 +48,202 @@ export default async function CreateLog(): Promise<void> {
   await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(3);
+  expect(findMetric.length).toEqual(32);
   expect(findMetric).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
+        key: `totalTimeSeconds`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `totalMasteryWorkspacesCompleted`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `totalConceptBuildersCompleted`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `totalMasteryWorkspacesGraduated`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `totalSessionsCompleted`,
         type: IMetricMetaData.CONTINUOUS,
       }),
       expect.objectContaining({
         key: `totalProblemsCompleted`,
         type: IMetricMetaData.CONTINUOUS,
       }),
+
       expect.objectContaining({
-        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}hintCount`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}errorCount`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completionCount`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}problemsCompleted`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
         type: IMetricMetaData.CATEGORICAL,
         allowedData: ['GRADUATED', 'PROMOTED'],
+      }),
+
+      expect.objectContaining({
+        key: `conceptBuilderWorkspace${METRICS_JOIN_TEXT}adding_and_subtracting_decimals${METRICS_JOIN_TEXT}timeSeconds`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `conceptBuilderWorkspace${METRICS_JOIN_TEXT}adding_and_subtracting_decimals${METRICS_JOIN_TEXT}hintCount`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `conceptBuilderWorkspace${METRICS_JOIN_TEXT}adding_and_subtracting_decimals${METRICS_JOIN_TEXT}errorCount`,
+        type: IMetricMetaData.CONTINUOUS,
+      }),
+      expect.objectContaining({
+        key: `conceptBuilderWorkspace${METRICS_JOIN_TEXT}adding_and_subtracting_decimals${METRICS_JOIN_TEXT}completionCount`,
+        type: IMetricMetaData.CONTINUOUS,
       }),
     ])
   );
 
+  // create query for all the metrics
+  const totalTimeSum = makeQuery(`totalTimeSeconds`, OPERATION_TYPES.SUM, experiments[0].id);
+  const totalMastryWorkspaceSum = makeQuery(`totalMasteryWorkspacesCompleted`, OPERATION_TYPES.SUM, experiments[0].id);
+  const totalConceptBuildersCompletedSum = makeQuery(
+    `totalConceptBuildersCompleted`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+  const totalMasteryWorkspacesGraduatedSum = makeQuery(
+    `totalMasteryWorkspacesGraduated`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+  const totalSessionsCompletedSum = makeQuery(`totalSessionsCompleted`, OPERATION_TYPES.SUM, experiments[0].id);
+  const totalProblemsCompletedSum = makeQuery(`totalProblemsCompleted`, OPERATION_TYPES.SUM, experiments[0].id);
+
+  // make nested query
+  const masteryWorkspaceFiguresTimeSecondsSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_various_figures${METRICS_JOIN_TEXT}timeSeconds`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  const masteryWorkspaceFiguresHintCountSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_various_figures${METRICS_JOIN_TEXT}hintCount`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  const masteryWorkspaceFiguresErrorCountSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_various_figures${METRICS_JOIN_TEXT}errorCount`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  const masteryWorkspaceFiguresCompletionCountSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_various_figures${METRICS_JOIN_TEXT}completionCount`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  const masteryWorkspaceFiguresWorkspaceCompletionStatusSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_various_figures${METRICS_JOIN_TEXT}workspaceCompletionStatus`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  const masteryWorkspaceFiguresproblemsCompletedSum = makeQuery(
+    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_various_figures${METRICS_JOIN_TEXT}problemsCompleted`,
+    OPERATION_TYPES.SUM,
+    experiments[0].id
+  );
+
+  experimentObject = {
+    ...experimentObject,
+    queries: [
+      totalTimeSum,
+      totalMastryWorkspaceSum,
+      totalConceptBuildersCompletedSum,
+      totalMasteryWorkspacesGraduatedSum,
+      totalSessionsCompletedSum,
+      totalProblemsCompletedSum,
+      masteryWorkspaceFiguresTimeSecondsSum,
+      masteryWorkspaceFiguresHintCountSum,
+      masteryWorkspaceFiguresErrorCountSum,
+      masteryWorkspaceFiguresCompletionCountSum,
+      masteryWorkspaceFiguresWorkspaceCompletionStatusSum,
+      masteryWorkspaceFiguresproblemsCompletedSum,
+    ],
+  };
+
+  await experimentService.update(experimentObject.id, experimentObject as any, user);
+
+  let timestampOld = new Date().toISOString();
+  let timestamp = new Date().toISOString();
+
   // create log
   const experimentUser = experimentUsers[0];
-  let jsonData: any = {
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 50, name: 'Vivek' } },
-  };
+  let jsonData: any = [
+    {
+      timestamp,
+      metrics: {
+        attributes: {
+          totalTimeSeconds: 123456,
+          totalProblemsCompleted: 48,
+        },
+        // groupedMetrics: [
+        //   {
+        //     groupClass: 'masteryWorkspace',
+        //     groupKey: 'calculating_area_various_figures',
+        //     groupUniquifier: '1970-01-01T00:00:00Z',
+        //     attributes: {
+        //       timeSeconds: 246,
+        //       hintCount: 25,
+        //       errorCount: 48,
+        //       completionCount: 1,
+        //       workspaceCompletionStatus: 'GRADUATED',
+        //       problemsCompleted: 12,
+        //     },
+        //   },
+        //   {
+        //     groupClass: 'masteryWorkspace',
+        //     groupKey: 'calculating_area_various_figures',
+        //     groupUniquifier: '1980-12-31T00:00:00Z',
+        //     attributes: {
+        //       completionCount: 2,
+        //     },
+        //   },
+        //   {
+        //     groupClass: 'conceptBuilderWorkspace',
+        //     groupKey: 'adding_and_subtracting_decimals',
+        //     groupUniquifier: '1970-01-01T00:00:00Z',
+        //     attributes: {
+        //       timeSeconds: 123,
+        //       hintCount: 12,
+        //       errorCount: 21,
+        //       completionCount: 1,
+        //     },
+        //   },
+        // ],
+      },
+    },
+  ];
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
@@ -80,95 +252,33 @@ export default async function CreateLog(): Promise<void> {
     relations: ['metrics'],
   });
 
-  expect(logData.length).toEqual(0);
-
-  // create queries for all metrics
-  const queryTimeSeconds = makeQuery(
-    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
-    OPERATION_TYPES.SUM,
-    experiments[0].id
-  );
-
-  experimentObject = {
-    ...experimentObject,
-    queries: [queryTimeSeconds],
-  };
-
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
-
-  jsonData = {
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 50, name: 'Vivek' } },
-  };
-
-  // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
-
-  logData = await logRepository.find({
-    relations: ['metrics'],
-  });
-
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200 } } },
-        metrics: expect.arrayContaining([
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
-          }),
-        ]),
-      }),
-    ])
-  );
-
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
-
-  // create queries for all metrics
-  const queryProblemsComplete = makeQuery(
-    `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
-    OPERATION_TYPES.SUM,
-    experiments[0].id
-  );
-
-  const experiment = await experimentService.find();
-
-  experimentObject = {
-    ...experiment[0],
-    queries: [...experiment[0].queries, queryProblemsComplete],
-  };
-
-  const experimentUpdatedObject = await experimentService.update(experimentObject.id, experimentObject as any, user);
-
-  jsonData = {
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 300, completion: 50, name: 'Vivek' } },
-  };
-
-  // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
-
-  logData = await logRepository.find({
-    relations: ['metrics'],
-  });
-
-  // check for log data created and metrics relation
-  expect(logData).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
         data: {
-          masteryWorkspace: { calculating_area_figures: { timeSeconds: 300 } },
+          totalTimeSeconds: 123456,
+          totalProblemsCompleted: 48,
         },
-        metrics: expect.arrayContaining([
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
-          }),
-        ]),
       }),
     ])
   );
 
-  // // adding string in continuous data
-  jsonData = {
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: '200', completion: 'GRADUATED', name: 'Sam' } },
-  };
+  // overwrite part of metrics
+  timestamp = new Date().toISOString();
+
+  jsonData = [
+    {
+      timestamp,
+      metrics: {
+        attributes: {
+          totalTimeSeconds: 123,
+          totalProblemsCompleted: 4,
+        },
+      },
+    },
+  ];
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
@@ -177,28 +287,36 @@ export default async function CreateLog(): Promise<void> {
     relations: ['metrics'],
   });
 
-  // check for log data created and metrics relation
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } } },
-        metrics: expect.arrayContaining([
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
-          }),
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
-          }),
-        ]),
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalTimeSeconds: 123,
+          totalProblemsCompleted: 4,
+        },
       }),
     ])
   );
 
-  // // adding different string in categorical data
-  // // adding string in continuous data
-  jsonData = {
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: '300', completion: 'GRADU ATED', name: 'Sita' } },
-  };
+  // overwrite part of metrics
+  timestamp = new Date().toISOString();
+
+  jsonData = [
+    {
+      timestamp,
+      metrics: {
+        attributes: {
+          totalTimeSeconds: 1,
+          totalProblemsCompleted: 2,
+          totalSessionsCompleted: 14,
+          totalConceptBuildersCompleted: 1,
+          totalMasteryWorkspacesCompleted: 4,
+        },
+      },
+    },
+  ];
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
@@ -207,59 +325,395 @@ export default async function CreateLog(): Promise<void> {
     relations: ['metrics'],
   });
 
-  // check for log data created and metrics relation
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 300 } } },
-        metrics: expect.arrayContaining([
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
-          }),
-        ]),
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalTimeSeconds: 1,
+          totalProblemsCompleted: 2,
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalSessionsCompleted: 14,
+          totalConceptBuildersCompleted: 1,
+          totalMasteryWorkspacesCompleted: 4,
+        },
       }),
     ])
   );
 
-  // delete queries
-  const queryIndex = experimentUpdatedObject.queries.findIndex(({ metric }) => {
-    return metric.key === `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`;
-  });
+  // ignore changes with old timestamp
+  jsonData = [
+    {
+      timestamp: timestampOld,
+      metrics: {
+        attributes: {
+          totalTimeSeconds: 2,
+          totalProblemsCompleted: 5,
+          totalSessionsCompleted: 145,
+          totalConceptBuildersCompleted: 12,
+          totalMasteryWorkspacesCompleted: 47,
+        },
+      },
+    },
+  ];
 
-  experimentUpdatedObject.queries.splice(queryIndex, 1);
-
-  await experimentService.update(experimentObject.id, experimentUpdatedObject as any, user);
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
 
   logData = await logRepository.find({
     relations: ['metrics'],
   });
 
-  expect(logData.length).toEqual(1);
-
   expect(logData).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        data: { masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } } },
-        metrics: expect.arrayContaining([
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}timeSeconds`,
-          }),
-          expect.objectContaining({
-            key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
-          }),
-        ]),
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalTimeSeconds: 1,
+          totalProblemsCompleted: 2,
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalSessionsCompleted: 14,
+          totalConceptBuildersCompleted: 1,
+          totalMasteryWorkspacesCompleted: 4,
+        },
       }),
     ])
   );
 
-  experimentUpdatedObject.queries = [];
-  await experimentService.update(experimentObject.id, experimentUpdatedObject as any, user);
+  timestamp = new Date().toISOString();
+  jsonData = [
+    {
+      timestamp,
+      metrics: {
+        attributes: {
+          totalTimeSeconds: 1,
+          totalProblemsCompleted: 1,
+          totalSessionsCompleted: 1,
+          totalConceptBuildersCompleted: 1,
+          totalMasteryWorkspacesCompleted: 1,
+          totalMasteryWorkspacesGraduated: 1,
+        },
+      },
+    },
+  ];
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
 
   logData = await logRepository.find({
     relations: ['metrics'],
   });
 
-  expect(logData.length).toEqual(0);
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalTimeSeconds: 1,
+          totalProblemsCompleted: 1,
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalSessionsCompleted: 1,
+          totalConceptBuildersCompleted: 1,
+          totalMasteryWorkspacesCompleted: 1,
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          totalMasteryWorkspacesGraduated: 1,
+        },
+      }),
+    ])
+  );
+
+  timestamp = new Date().toISOString();
+  jsonData = [
+    {
+      timestamp,
+      metrics: {
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_various_figures',
+            groupUniquifier: '1',
+            attributes: {
+              timeSeconds: 246,
+              hintCount: 25,
+              // errorCount: 48,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 12,
+            },
+          },
+        ],
+      },
+    },
+  ];
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
+  logData = await logRepository.find({
+    relations: ['metrics'],
+  });
+
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 246,
+              hintCount: 25,
+              // errorCount: 48,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 12,
+            },
+          },
+        },
+      }),
+    ])
+  );
+
+  timestamp = new Date().toISOString();
+  jsonData = [
+    {
+      timestamp,
+      metrics: {
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_various_figures',
+            groupUniquifier: '2',
+            attributes: {
+              timeSeconds: 2,
+              hintCount: 2,
+              // errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 1,
+            },
+          },
+        ],
+      },
+    },
+  ];
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
+  logData = await logRepository.find({
+    relations: ['metrics'],
+  });
+
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        uniquifier: '1',
+        // timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 246,
+              hintCount: 25,
+              // errorCount: 48,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 12,
+            },
+          },
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '2',
+        timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 2,
+              hintCount: 2,
+              // errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 1,
+            },
+          },
+        },
+      }),
+    ])
+  );
+
+  // metric log to be ignored
+  jsonData = [
+    {
+      timestamp: timestampOld,
+      metrics: {
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_various_figures',
+            groupUniquifier: '1',
+            attributes: {
+              timeSeconds: 2,
+              hintCount: 2,
+              // errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 1,
+            },
+          },
+        ],
+      },
+    },
+  ];
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
+  logData = await logRepository.find({
+    relations: ['metrics'],
+  });
+
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        uniquifier: '1',
+        // timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 246,
+              hintCount: 25,
+              // errorCount: 48,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 12,
+            },
+          },
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '2',
+        timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 2,
+              hintCount: 2,
+              // errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 1,
+            },
+          },
+        },
+      }),
+    ])
+  );
+
+  timestamp = new Date().toISOString();
+  jsonData = [
+    {
+      timestamp,
+      metrics: {
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_various_figures',
+            groupUniquifier: '1',
+            attributes: {
+              timeSeconds: 2,
+              hintCount: 2,
+              errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 1,
+            },
+          },
+        ],
+      },
+    },
+  ];
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
+  logData = await logRepository.find({
+    relations: ['metrics'],
+  });
+
+  expect(logData).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        uniquifier: '1',
+        // timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 2,
+              hintCount: 2,
+              // errorCount: 48,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 12,
+            },
+          },
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '1',
+        timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 12,
+            },
+          },
+        },
+      }),
+      expect.objectContaining({
+        uniquifier: '2',
+        // timeStamp: new Date(timestamp),
+        data: {
+          masteryWorkspace: {
+            calculating_area_various_figures: {
+              timeSeconds: 2,
+              hintCount: 2,
+              // errorCount: 4,
+              // completionCount: 1,
+              // workspaceCompletionStatus: 'GRADUATED',
+              // problemsCompleted: 1,
+            },
+          },
+        },
+      }),
+    ])
+  );
 }
 
 function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId: string): any {

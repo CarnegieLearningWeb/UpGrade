@@ -91,10 +91,10 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
-  test('Log Sum', async (done) => {
-    await LogSum();
-    done();
-  });
+  // test('Log Sum', async (done) => {
+  //   await LogSum();
+  //   done();
+  // });
 
   test('Support Get Assignments', async (done) => {
     await GetAssignments();
@@ -328,18 +328,18 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Metric CRUD', async (done) => {
-    await MetricCRUD();
-    done();
-  });
+  // test('Metric CRUD', async (done) => {
+  //   await MetricCRUD();
+  //   done();
+  // });
 
   test('Create Log', async (done) => {
     await CreateLog();
     done();
   });
 
-  test('Query CRUD operation', async (done) => {
-    await QueryCRUD();
-    done();
-  });
+  // test('Query CRUD operation', async (done) => {
+  //   await QueryCRUD();
+  //   done();
+  // });
 });

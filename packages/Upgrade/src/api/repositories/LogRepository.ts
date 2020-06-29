@@ -6,6 +6,7 @@ import { IndividualAssignment } from '../models/IndividualAssignment';
 import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
+import { Metric } from '../models/Metric';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -66,6 +67,37 @@ export class LogRepository extends Repository<Log> {
     return dataResult;
   }
 
+  public async getMetricUniquifierData(metricKeys: string[], uniquifierKeys: string[], userId: string): Promise<any> {
+    const metricsRepository = getRepository(Metric);
+
+    return metricsRepository
+      .createQueryBuilder('metric')
+      .select([
+        'logs.data as data',
+        'logs.uniquifier as uniquifier',
+        'logs."timeStamp" as timeStamp',
+        'logs.id as id',
+        'metric.key as key',
+      ])
+      .innerJoin('metric.logs', 'logs')
+      .where('logs."userId" = :userId', { userId })
+      .andWhere('logs.uniquifier IN (:...uniquifierKeys)', { uniquifierKeys })
+      .andWhere('metric.key IN (:...metricKeys)', { metricKeys })
+      .groupBy('logs.id')
+      .addGroupBy('metric.key')
+      .orderBy('logs."timeStamp"', 'DESC')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'getMetricUniquifierData',
+          { metricKeys, uniquifierKeys },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async analysis(query: any): Promise<any> {
     const experimentId = query.experiment.id;
     const metric = query.metric.key;
@@ -97,9 +129,11 @@ export class LogRepository extends Repository<Log> {
       const castType = query.metric.type === IMetricMetaData.CONTINUOUS ? 'decimal' : 'text';
       let castFn = `(cast(logs.data ->> ${metricString} as ${castType}))`;
       if (metricId.length > 1) {
-        const val = metricString.substring(0, metricString.lastIndexOf('->')) + '->>'
-          + metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
-          castFn = `(cast(logs.data -> ${val} as ${castType}))`;
+        const val =
+          metricString.substring(0, metricString.lastIndexOf('->')) +
+          '->>' +
+          metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
+        castFn = `(cast(logs.data -> ${val} as ${castType}))`;
       }
       executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
         compareValue,
