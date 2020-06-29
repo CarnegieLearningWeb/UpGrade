@@ -121,6 +121,26 @@ export default async function CreateLog(): Promise<void> {
     ])
   );
 
+  const timestampOld = new Date().toISOString();
+  let timestamp = new Date().toISOString();
+
+  // create log
+  const experimentUser = experimentUsers[0];
+  let jsonData: any = [
+    {
+      timestamp,
+      metrics: {
+        attributes: {
+          totalTimeSeconds: 123456,
+          totalProblemsCompleted: 48,
+        },
+      },
+    },
+  ];
+
+  // log data here
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+
   // create query for all the metrics
   const totalTimeSum = makeQuery(`totalTimeSeconds`, OPERATION_TYPES.SUM, experiments[0].id);
   const totalMastryWorkspaceSum = makeQuery(`totalMasteryWorkspacesCompleted`, OPERATION_TYPES.SUM, experiments[0].id);
@@ -193,57 +213,6 @@ export default async function CreateLog(): Promise<void> {
   };
 
   await experimentService.update(experimentObject.id, experimentObject as any, user);
-
-  let timestampOld = new Date().toISOString();
-  let timestamp = new Date().toISOString();
-
-  // create log
-  const experimentUser = experimentUsers[0];
-  let jsonData: any = [
-    {
-      timestamp,
-      metrics: {
-        attributes: {
-          totalTimeSeconds: 123456,
-          totalProblemsCompleted: 48,
-        },
-        // groupedMetrics: [
-        //   {
-        //     groupClass: 'masteryWorkspace',
-        //     groupKey: 'calculating_area_various_figures',
-        //     groupUniquifier: '1970-01-01T00:00:00Z',
-        //     attributes: {
-        //       timeSeconds: 246,
-        //       hintCount: 25,
-        //       errorCount: 48,
-        //       completionCount: 1,
-        //       workspaceCompletionStatus: 'GRADUATED',
-        //       problemsCompleted: 12,
-        //     },
-        //   },
-        //   {
-        //     groupClass: 'masteryWorkspace',
-        //     groupKey: 'calculating_area_various_figures',
-        //     groupUniquifier: '1980-12-31T00:00:00Z',
-        //     attributes: {
-        //       completionCount: 2,
-        //     },
-        //   },
-        //   {
-        //     groupClass: 'conceptBuilderWorkspace',
-        //     groupKey: 'adding_and_subtracting_decimals',
-        //     groupUniquifier: '1970-01-01T00:00:00Z',
-        //     attributes: {
-        //       timeSeconds: 123,
-        //       hintCount: 12,
-        //       errorCount: 21,
-        //       completionCount: 1,
-        //     },
-        //   },
-        // ],
-      },
-    },
-  ];
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData);

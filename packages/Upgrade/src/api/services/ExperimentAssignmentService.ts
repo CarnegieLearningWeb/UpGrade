@@ -406,6 +406,10 @@ export class ExperimentAssignmentService {
       // get metrics document
       const metricDocs = await this.metricRepository.findMetricsWithQueries(metricKeys);
 
+      if (metricDocs.length === 0) {
+        return [];
+      }
+
       const filteredKeyUniqueArray = keyUniqueArray.filter(({ key }) => {
         return metricDocs.find((doc) => doc.key === key);
       });
@@ -414,10 +418,8 @@ export class ExperimentAssignmentService {
       const uniquifierKeys = filteredKeyUniqueArray.map(({ uniquifier }) => uniquifier);
 
       // get all metric detail
-      let logGroup = [];
-      if (metricKeys.length > 0) {
-        logGroup = await this.logRepository.getMetricUniquifierData(metricKeys, uniquifierKeys, userId);
-      }
+      const logGroup = await this.logRepository.getMetricUniquifierData(metricKeys, uniquifierKeys, userId);
+
       const mergedLogGroup = [];
 
       // merge the metrics field
