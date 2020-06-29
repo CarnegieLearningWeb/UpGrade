@@ -607,9 +607,11 @@ export class ExperimentAssignmentService {
       const data = {};
       const dataLogMetricsDoc = [];
       Object.keys(metrics.attributes).forEach((key) => {
-        data[key] = metrics.attributes[key];
         const metricDocOfKey = metricDocs.find((metricDocument) => key === metricDocument.key);
-        dataLogMetricsDoc.push(metricDocOfKey);
+        if (metricDocOfKey) {
+          dataLogMetricsDoc.push(metricDocOfKey);
+          data[key] = metrics.attributes[key];
+        }
       });
       if (dataLogMetricsDoc.length > 0) {
         dataLogs.push({
@@ -628,13 +630,16 @@ export class ExperimentAssignmentService {
       groupedMetrics.forEach(({ groupClass, groupKey, groupUniquifier, attributes }) => {
         const data = {};
         const dataLogMetricsDoc = [];
-        data[groupClass] = data[groupClass] || {};
-        data[groupClass][groupKey] = data[groupClass][groupKey] || {};
+
         Object.keys(attributes).forEach((metricKey) => {
-          data[groupClass][groupKey][metricKey] = attributes[metricKey];
           const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}${metricKey}`;
           const metricDocOfKey = metricDocs.find((metricDocument) => key === metricDocument.key);
-          dataLogMetricsDoc.push(metricDocOfKey);
+          if (metricDocOfKey) {
+            dataLogMetricsDoc.push(metricDocOfKey);
+            data[groupClass] = data[groupClass] || {};
+            data[groupClass][groupKey] = data[groupClass][groupKey] || {};
+            data[groupClass][groupKey][metricKey] = attributes[metricKey];
+          }
         });
         if (dataLogMetricsDoc.length > 0) {
           dataLogs.push({
