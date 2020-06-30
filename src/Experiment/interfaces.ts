@@ -131,3 +131,19 @@ export interface IExperimentEnrollmentDetailDateStats {
   id: string;
   conditions: IConditionEnrollmentDateStats[];
 }
+
+interface IMetrics {
+  attributes: any;
+  groupedMetrics: IGroupMetrics;
+}
+
+interface IGroupMetrics {
+  groupClass: string;
+  groupKey: string;
+  groupUniquifier: string;
+  attributes: any;
+}
+export interface ILogInput {
+  timestamp: string;
+  metrics: IMetrics;
+}

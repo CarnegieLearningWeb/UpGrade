@@ -26,6 +26,7 @@ import {
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,
+  ILogInput,
 } from './Experiment/interfaces';
 
 export {
@@ -54,4 +55,5 @@ export {
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,
+  ILogInput,
 };
