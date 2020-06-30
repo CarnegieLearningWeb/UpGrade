@@ -48,7 +48,7 @@ export default async function QueryCRUD(): Promise<void> {
   await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(3);
+  expect(findMetric.length).toEqual(32);
 
   // three query need to be generated
   const query = {

@@ -17,9 +17,9 @@ export default async function MetricCRUD(): Promise<void> {
   await metricService.saveAllMetrics(metrics as any);
 
   let findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(3);
+  expect(findMetric.length).toEqual(32);
 
   await metricService.deleteMetric('totalProblemsCompleted');
   findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(2);
+  expect(findMetric.length).toEqual(31);
 }
