@@ -1,5 +1,5 @@
 import CreateLogTestCase from './CreateLog';
-import LogSumTestCase from './LogSum';
+import LogSumTestCase from './LogOperations';
 import Container from 'typedi';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';

@@ -15,7 +15,7 @@ import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 import { metrics } from '../../mockData/metric';
 
-export default async function CreateLog(): Promise<void> {
+export default async function LogOperations(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   let experimentObject = individualAssignmentExperiment;
@@ -50,7 +50,7 @@ export default async function CreateLog(): Promise<void> {
   await metricService.saveAllMetrics(metrics as any);
 
   const findMetric = await metricRepository.find();
-  expect(findMetric.length).toEqual(3);
+  expect(findMetric.length).toEqual(32);
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
@@ -185,30 +185,103 @@ export default async function CreateLog(): Promise<void> {
   await experimentService.update(experimentObject.id, experimentObject as any, user);
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUsers[0].id, {
-    totalProblemsCompleted: 20,
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 100, completion: 'GRADUATED' } },
-  });
+  await experimentAssignmentService.dataLog(experimentUsers[0].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: 20,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: {
+              timeSeconds: 100,
+              completion: 'GRADUATED',
+            },
+          },
+        ],
+      },
+    },
+  ]);
 
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, {
-    totalProblemsCompleted: 200,
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 200, completion: 'GRADUATED' } },
-  });
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: 200,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: { timeSeconds: 200, completion: 'GRADUATED' },
+          },
+        ],
+      },
+    },
+  ]);
 
-  await experimentAssignmentService.dataLog(experimentUsers[2].id, {
-    totalProblemsCompleted: 100,
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 300, completion: 'PROMOTED' } },
-  });
+  await experimentAssignmentService.dataLog(experimentUsers[2].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: 100,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: { timeSeconds: 300, completion: 'PROMOTED' },
+          },
+        ],
+      },
+    },
+  ]);
 
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    totalProblemsCompleted: 50,
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 400, completion: 'GRADUATED' } },
-  });
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: 50,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: { timeSeconds: 400, completion: 'GRADUATED' },
+          },
+        ],
+      },
+    },
+  ]);
 
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    totalProblemsCompleted: 50,
-    masteryWorkspace: { calculating_area_figures: { timeSeconds: 500, completion: 'PROMOTED' } },
-  });
+  await experimentAssignmentService.dataLog(experimentUsers[3].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: 50,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: { timeSeconds: 500, completion: 'PROMOTED' },
+          },
+        ],
+      },
+    },
+  ]);
 
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(
@@ -362,32 +435,6 @@ export default async function CreateLog(): Promise<void> {
     ])
   );
 
-  // log data here
-  await experimentAssignmentService.dataLog(experimentUsers[0].id, {
-    time: 20,
-    w: { time: '100', completion: 'InProgress' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, {
-    time: 200,
-    w: { time: 200, completion: 'InProgress' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[2].id, {
-    time: 100,
-    w: { time: 300, completion: 'Complete' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    time: 50,
-    w: { time: 400, completion: 'InProgress' },
-  });
-
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, {
-    time: 50,
-    w: { time: 500, completion: 'Complete' },
-  });
-
   // Test results
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < allQuery.length; i++) {
@@ -403,12 +450,13 @@ export default async function CreateLog(): Promise<void> {
 
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM:
+        console.log(consoleString, queryResult);
         const sum = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
-        expectedValue = 420;
+        expectedValue = 370;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 1500; // For completion metric
+          expectedValue = 1100; // For completion metric
         }
         expect(sum).toEqual(expectedValue);
         break;
@@ -435,7 +483,7 @@ export default async function CreateLog(): Promise<void> {
         const count = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
-        expect(count).toEqual(5);
+        expect(count).toEqual(4);
         break;
       case OPERATION_TYPES.AVERAGE:
         console.log(consoleString, queryResult);
