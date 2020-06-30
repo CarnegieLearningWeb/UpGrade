@@ -100,7 +100,7 @@ export interface IExperimentEnrollmentDetailDateStats {
 }
 interface ILogMetrics {
     attributes: any;
-    groupedMetrics: ILogGroupMetrics;
+    groupedMetrics: ILogGroupMetrics[];
 }
 interface ILogGroupMetrics {
     groupClass: string;
