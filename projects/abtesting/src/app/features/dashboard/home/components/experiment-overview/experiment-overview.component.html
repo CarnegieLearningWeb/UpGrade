@@ -43,7 +43,7 @@
     <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
       <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
       <mat-select class="ft-14-400" formControlName="groupType">
-        <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value | titlecase }}</mat-option>
+        <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
       </mat-select>
       <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
         {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
@@ -109,7 +109,7 @@
     </mat-chip-list>
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedAutoCompleteContext($event)">
       <mat-option *ngFor="let context of experimentContext$ | async" [value]="context">
-        {{ context | titlecase }}
+        {{ context }}
       </mat-option>
     </mat-autocomplete>
     <mat-error

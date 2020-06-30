@@ -38,6 +38,7 @@ import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 import { OperationPipe } from './pipes/operation.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
+import { GroupTypePlural } from './pipes/groupTypes.pipe';
 
 @NgModule({
   imports: [
@@ -81,6 +82,7 @@ import { QueryResultComponent } from './components/query-result/query-result.com
     ScrollDirective,
     FormatDatePipe,
     OperationPipe,
+    GroupTypePlural,
     QueryResultComponent
   ],
   exports: [
@@ -125,6 +127,7 @@ import { QueryResultComponent } from './components/query-result/query-result.com
     FormatDatePipe,
     ScrollDirective,
     OperationPipe,
+    GroupTypePlural,
     QueryResultComponent
   ],
   entryComponents: [QueryResultComponent]

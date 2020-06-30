@@ -58,6 +58,22 @@
         <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_CRITERIA" color="primary">
           {{ 'home.new-experiment.schedule.end-criteria.text' | translate }}
         </mat-radio-button>
+        <div class="end-criteria" *ngIf="groupType">
+          <mat-form-field class="ft-14-700 group-type-control">
+            <input
+              type="number"
+              matInput
+              class="input"
+              [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: groupType | groupTypePlural } "
+              formControlName="groupCount"
+            />
+          </mat-form-field>
+          <span
+            class="ft-14-400 group-type"
+            [innerHTML]="'home.new-experiment.schedule.group-count.text' | translate: { groupType: groupType | groupTypePlural }"
+            [ngClass]="{'group-type--disable': !groupTypeValue}"
+          ></span>
+        </div>
         <div class="end-criteria">
           <mat-form-field class="ft-14-700">
             <input
@@ -73,22 +89,6 @@
             [innerHTML]="!!experimentScheduleForm.get('groupCount').value && groupType
               ? ('home.new-experiment.schedule.user-count-per-group.title.text' | translate: { groupType: groupType })
               : ('home.new-experiment.schedule.user-count.title.text' | translate)"
-            [ngClass]="{'group-type--disable': !groupTypeValue}"
-          ></span>
-        </div>
-        <div class="end-criteria" *ngIf="groupType">
-          <mat-form-field class="ft-14-700 group-type-control">
-            <input
-              type="number"
-              matInput
-              class="input"
-              [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: groupType } "
-              formControlName="groupCount"
-            />
-          </mat-form-field>
-          <span
-            class="ft-14-400 group-type"
-            [innerHTML]="'home.new-experiment.schedule.group-count.text' | translate: { groupType: groupType }"
             [ngClass]="{'group-type--disable': !groupTypeValue}"
           ></span>
         </div>

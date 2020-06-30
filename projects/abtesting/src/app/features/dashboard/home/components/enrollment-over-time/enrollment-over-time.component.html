@@ -12,7 +12,7 @@
           *ngFor="let groupValue of groupFiltersOptions"
           [value]="groupValue"
         >
-          {{ groupValue | titlecase }}
+          {{ groupValue }}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -37,7 +37,7 @@
           *ngFor="let condition of conditionsFilterOptions"
           [value]="condition.id"
         >
-          {{ condition.code | titlecase }}
+          {{ condition.code }}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -62,7 +62,7 @@
           *ngFor="let partition of partitionsFilterOptions"
           [value]="partition.id"
         >
-          {{ partition.point | titlecase }}
+          {{ partition.point }}
         </mat-option>
       </mat-select>
     </mat-form-field>

@@ -14,7 +14,7 @@ enum ExperimentFilterType {
   DATE_FILTER = 'Date filter'
 }
 
-const INDIVIDUAL = 'Individual';
+const INDIVIDUAL = 'individual';
 
 @Component({
   selector: 'home-enrollment-over-time',

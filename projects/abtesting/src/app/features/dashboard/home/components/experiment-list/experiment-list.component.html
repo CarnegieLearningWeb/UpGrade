@@ -117,7 +117,10 @@
 
       <ng-container matColumnDef="postExperimentRule">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="'Post Experiment Rule'" matTooltipPosition="above">
+          <span
+            [matTooltip]="'home.experiments-table.post-experiment-rule-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
             {{ 'home-global.post-experiment-rule.text' | translate }}
           </span>
         </th>
