@@ -66,13 +66,6 @@ export interface IExperimentSortParams {
     key: EXPERIMENT_SORT_KEY;
     sortAs: EXPERIMENT_SORT_AS;
 }
-export interface IExperimentDateStat {
-    userId: string;
-    groupId: string | undefined;
-    conditionId: string;
-    partitionIds: string[];
-    createdAt: any;
-}
 export interface IMetricUnit {
     key: string | string[];
     children?: IMetricUnit[];
@@ -105,11 +98,11 @@ export interface IExperimentEnrollmentDetailDateStats {
     id: string;
     conditions: IConditionEnrollmentDateStats[];
 }
-interface IMetrics {
+interface ILogMetrics {
     attributes: any;
-    groupedMetrics: IGroupMetrics;
+    groupedMetrics: ILogGroupMetrics;
 }
-interface IGroupMetrics {
+interface ILogGroupMetrics {
     groupClass: string;
     groupKey: string;
     groupUniquifier: string;
@@ -117,6 +110,16 @@ interface IGroupMetrics {
 }
 export interface ILogInput {
     timestamp: string;
-    metrics: IMetrics;
+    metrics: ILogMetrics;
+}
+export interface IGroupMetric {
+    groupClass: string;
+    allowedKeys: string[];
+    attributes: Array<IGroupMetric | ISingleMetric>;
+}
+export interface ISingleMetric {
+    metric: string;
+    datatype: IMetricMetaData;
+    allowedValues?: Array<string | number>;
 }
 export {};

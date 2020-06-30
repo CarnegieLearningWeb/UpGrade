@@ -22,11 +22,12 @@ import {
   IExperimentSearchParams,
   IExperimentSortParams,
   AuditLogData,
-  IExperimentDateStat,
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,
   ILogInput,
+  IGroupMetric,
+  ISingleMetric,
 } from './Experiment/interfaces';
 
 export {
@@ -48,7 +49,6 @@ export {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   UserRole,
-  IExperimentDateStat,
   OPERATION_TYPES,
   IMetricMetaData,
   DATE_RANGE,
@@ -56,4 +56,6 @@ export {
   IFeatureFlag,
   IFlagVariation,
   ILogInput,
+  IGroupMetric,
+  ISingleMetric,
 };
