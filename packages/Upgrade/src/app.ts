@@ -11,6 +11,7 @@ import { iocLoader } from './loaders/iocLoader';
 import { typeormLoader } from './loaders/typeormLoader';
 import { swaggerLoader } from './loaders/swaggerLoader';
 import { CreateSystemUser } from './init/seed/systemUser';
+import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
@@ -25,6 +26,10 @@ bootstrapMicroframework({
 })
   .then(() => {
     return CreateSystemUser();
+  })
+  .then(() => {
+    // enable metric filtering
+    return enableMetricFiltering();
   })
   .then(() => {
     banner(log);
