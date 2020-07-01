@@ -4,7 +4,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
-import { METRICS_JOIN_TEXT, OPERATION_TYPES } from '../../../../../../core/analysis/store/analysis.models';
+import { METRICS_JOIN_TEXT, OPERATION_TYPES, IMetricMetaData } from '../../../../../../core/analysis/store/analysis.models';
 import { OperationPipe } from '../../../../../../shared/pipes/operation.pipe';
 import { QueryResultComponent } from '../../../../../../shared/components/query-result/query-result.component';
 import * as clonedeep from 'lodash.clonedeep';
@@ -56,7 +56,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
 
   applyFilter(filterValue?: string) {
     this.resetVariables();
-    const searchValue = filterValue && filterValue.toLowerCase() || this.searchInput.toLowerCase();
+    const searchValue = filterValue && filterValue.toLowerCase() || this.searchInput && this.searchInput.toLowerCase() || '';
     if (searchValue) {
       this.experimentQueries = this.experimentInfo.queries.filter(query => {
         const operationPipedValue = this.operationPipe.transform(query.query.operationType).toLowerCase();
@@ -71,6 +71,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
 
   executeQuery(query: any) {
     this.resetVariables();
+    this.analysisService.executeQuery([query.id]);
     const dialogRef = this.dialog.open(QueryResultComponent, {
       panelClass: 'query-result',
       data: { experiment: this.experimentInfo, query }
@@ -110,13 +111,12 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
     } else if (query.metric && query.metric.type === 'categorical') {
       this.queryOperations = [
         { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-        { value: 'percent', viewValue: 'Percent' }
+        { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' }
       ];
     }
   }
 
   updateQuery(query: any) {
-    // console.log('Experiment ', this.experimentInfo);
     query = {
       ...query,
       name: this.queryName,
@@ -150,6 +150,10 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
 
   get METRICS_JOIN_TEXT() {
     return METRICS_JOIN_TEXT;
+  }
+
+  get IMetricMetadata() {
+    return IMetricMetaData;
   }
 
 }

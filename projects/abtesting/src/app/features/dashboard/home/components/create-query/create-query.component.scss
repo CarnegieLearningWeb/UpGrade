@@ -1,7 +1,8 @@
+$tab-text-color: #8f9bb3;
+
 .create-query-container {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
   min-height: 480px;
   max-height: 480px;
   overflow: auto;
@@ -50,5 +51,12 @@
 
   .zero-state {
     min-height: 250px;
+  }
+
+  ::ng-deep .mat-tab-label-content {
+    color: $tab-text-color;
+    font-family: 'Open Sans';
+    font-size: var(--text-size-x-large);
+    font-weight: 600;
   }
 }

@@ -23,6 +23,8 @@ export class OperationPipe implements PipeTransform {
         return 'Standard Deviation';
       case OPERATION_TYPES.SUM:
         return 'Sum';
+      case OPERATION_TYPES.PERCENTAGE:
+        return 'Percentage';
       default:
         return '';
     }

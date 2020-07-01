@@ -15,6 +15,10 @@
       justify-content: space-between;
       height: 66.5px;
 
+      .hide-search {
+        visibility: hidden;
+      }
+
       .search-input {
         line-height: 20px;
       }
@@ -52,6 +56,10 @@
 
         .mat-column-edit {
           width: 10%;
+        }
+
+        .cdk-column-metric {
+          padding: 5px;
         }
       }
 
