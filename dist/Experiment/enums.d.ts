@@ -71,7 +71,8 @@ export declare enum OPERATION_TYPES {
     AVERAGE = "avg",
     MODE = "mode",
     MEDIAN = "median",
-    STDEV = "stddev"
+    STDEV = "stddev",
+    PERCENTAGE = "percentage"
 }
 export declare enum IMetricMetaData {
     CONTINUOUS = "continuous",

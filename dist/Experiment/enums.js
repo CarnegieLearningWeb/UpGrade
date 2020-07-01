@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DATE_RANGE = exports.IMetricMetaData = exports.OPERATION_TYPES = exports.UserRole = exports.EXPERIMENT_SORT_AS = exports.EXPERIMENT_SORT_KEY = exports.EXPERIMENT_SEARCH_KEY = exports.EXPERIMENT_LOG_TYPE = exports.SERVER_ERROR = exports.EXPERIMENT_STATE = exports.POST_EXPERIMENT_RULE = exports.ASSIGNMENT_UNIT = exports.CONSISTENCY_RULE = void 0;
 var CONSISTENCY_RULE;
 (function (CONSISTENCY_RULE) {
     CONSISTENCY_RULE["INDIVIDUAL"] = "individual";
@@ -85,6 +86,7 @@ var OPERATION_TYPES;
     OPERATION_TYPES["MODE"] = "mode";
     OPERATION_TYPES["MEDIAN"] = "median";
     OPERATION_TYPES["STDEV"] = "stddev";
+    OPERATION_TYPES["PERCENTAGE"] = "percentage";
 })(OPERATION_TYPES = exports.OPERATION_TYPES || (exports.OPERATION_TYPES = {}));
 var IMetricMetaData;
 (function (IMetricMetaData) {
