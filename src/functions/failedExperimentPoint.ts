@@ -1,5 +1,5 @@
-import { Interfaces, Types } from "../identifiers";
-import fetchDataService from "../common/fetchDataService";
+import { Interfaces, Types } from '../identifiers';
+import fetchDataService from '../common/fetchDataService';
 
 export default async function failedExperimentPoint(
   url: string,

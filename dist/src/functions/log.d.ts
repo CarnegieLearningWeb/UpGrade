@@ -1,2 +1,3 @@
-import { Interfaces } from "../identifiers";
-export default function log(url: string, userId: string, token: string, key: string, value: any): Promise<Interfaces.ILog>;
+import { Interfaces } from '../identifiers';
+import { ILogInput } from 'upgrade_types';
+export default function log(url: string, userId: string, token: string, value: ILogInput[]): Promise<Interfaces.ILog[]>;

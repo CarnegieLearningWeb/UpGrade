@@ -43,9 +43,27 @@ Use this function to report failure with given reason
 ```upClient.failedExperimentPoint(experimentPoint, reason)```  
 ```upClient.failedExperimentPoint(experimentPoint, reason, experimentId)```
 
-## log(key: string, value: any)
+## log(value: ILogInput[])
 Use this function to log data
-```upClient.log(key, value)```
+```
+interface ILogMetrics {
+  attributes: any;
+  groupedMetrics: ILogGroupMetrics[];
+}
+
+interface ILogGroupMetrics {
+  groupClass: string;
+  groupKey: string;
+  groupUniquifier: string;
+  attributes: any;
+}
+
+interface ILogInput {
+  timestamp: string;
+  metrics: ILogMetrics;
+}
+upClient.log(value)
+```
 
 ## addMetrics(metrics: Array<IGroupMetric | ISingleMetric>)
 Use this function to add metrics in upgrade system
