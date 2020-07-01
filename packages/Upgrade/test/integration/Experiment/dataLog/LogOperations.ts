@@ -159,6 +159,20 @@ export default async function LogOperations(): Promise<void> {
     experiments[0].id
   );
 
+  // Deep state percentage query
+  const deepPercentage = {
+    name: 'query',
+    query: {
+      operationType: OPERATION_TYPES.PERCENTAGE,
+      compareFn: '=',
+      compareValue: 'GRADUATED',
+    },
+    metric: {
+      key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
+    },
+    experimentId: experiments[0].id,
+  };
+
   experimentObject = {
     ...experimentObject,
     queries: [
@@ -179,6 +193,7 @@ export default async function LogOperations(): Promise<void> {
       deepQueryMode,
       deepQueryStddev,
       deepQueryCatSum,
+      deepPercentage,
     ],
   };
 
@@ -432,6 +447,16 @@ export default async function LogOperations(): Promise<void> {
           allowedData: ['GRADUATED', 'PROMOTED'],
         }),
       }),
+
+      expect.objectContaining({
+        name: 'query',
+        query: { operationType: OPERATION_TYPES.PERCENTAGE, compareFn: '=', compareValue: 'GRADUATED' },
+        metric: expect.objectContaining({
+          key: `masteryWorkspace${METRICS_JOIN_TEXT}calculating_area_figures${METRICS_JOIN_TEXT}completion`,
+          type: 'categorical',
+          allowedData: ['GRADUATED', 'PROMOTED'],
+        }),
+      }),
     ])
   );
 
@@ -495,6 +520,9 @@ export default async function LogOperations(): Promise<void> {
         console.log(consoleString, queryResult);
         break;
       case OPERATION_TYPES.STDEV:
+        console.log(consoleString, queryResult);
+        break;
+      case OPERATION_TYPES.PERCENTAGE:
         console.log(consoleString, queryResult);
         break;
       default:

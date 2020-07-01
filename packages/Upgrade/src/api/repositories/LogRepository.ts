@@ -119,14 +119,81 @@ export class LogRepository extends Repository<Log> {
     const { operationType, compareFn, compareValue } = query.query;
     const { id: queryId } = query;
 
-    // get experiment repository
-    const experimentRepo = getRepository(Experiment);
     const metricId = metric.split(METRICS_JOIN_TEXT);
     const metricString = metricId.reduce((accumulator: string, value: string) => {
       return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
 
-    let executeQuery = experimentRepo
+    let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId);
+
+    let percentQuery; // Used for percentage query
+    if (compareFn) {
+      const castType = query.metric.type === IMetricMetaData.CONTINUOUS ? 'decimal' : 'text';
+      let castFn = `(cast(logs.data ->> ${metricString} as ${castType}))`;
+      if (metricId.length > 1) {
+        // When we have more than 1 key then we want ->> operator to get json value as text
+        const val = metricString.substring(0, metricString.lastIndexOf('->')) + '->>'
+          + metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
+        castFn = `(cast(logs.data -> ${val} as ${castType}))`;
+      }
+      if (query.metric.type === IMetricMetaData.CATEGORICAL) {
+        percentQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId)
+          .andWhere(`${castFn} In (:...allowedData)`, {
+            allowedData: query.metric.allowedData,
+          })
+          .groupBy('"individualAssignment"."conditionId"');
+      }
+      executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
+        compareValue,
+      });
+    }
+    executeQuery = executeQuery.groupBy('"individualAssignment"."conditionId"');
+    if (operationType === OPERATION_TYPES.PERCENTAGE) {
+      executeQuery = executeQuery.select([
+        '"individualAssignment"."conditionId"',
+        `count(cast(logs.data -> ${metricString} as text)) as result`,
+      ]);
+      percentQuery = percentQuery.select([
+        '"individualAssignment"."conditionId"',
+        `count(cast(logs.data -> ${metricString} as text)) as result`,
+      ]);
+      const executeQueryResult = await executeQuery.getRawMany();
+      const percentQueryResult = await percentQuery.getRawMany();
+      const result = executeQueryResult.map(res => {
+        const { conditionId } = res;
+        const percentageQueryConditionRes = percentQueryResult.find(queryRes => queryRes.conditionId === conditionId);
+        return {
+          conditionId,
+          result: (res.result / percentageQueryConditionRes.result) * 100,
+        };
+      });
+      return result;
+    } else {
+      if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
+        const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
+        executeQuery = executeQuery.select([
+          '"individualAssignment"."conditionId"',
+          `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
+        ]);
+      } else if (operationType === OPERATION_TYPES.COUNT) {
+        executeQuery = executeQuery.select([
+          '"individualAssignment"."conditionId"',
+          `${operationType}(cast(logs.data -> ${metricString} as text)) as result`,
+        ]);
+      } else {
+        executeQuery = executeQuery.select([
+          '"individualAssignment"."conditionId"',
+          `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
+        ]);
+      }
+      return executeQuery.getRawMany();
+    }
+  }
+
+  private getCommonAnalyticQuery(metric: string, experimentId: string, queryId: string): any {
+    // get experiment repository
+    const experimentRepo = getRepository(Experiment);
+    return experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
@@ -139,44 +206,5 @@ export class LogRepository extends Repository<Log> {
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
       .andWhere('queries.id = :queryId', { queryId });
-
-    if (compareFn) {
-      const castType = query.metric.type === IMetricMetaData.CONTINUOUS ? 'decimal' : 'text';
-      let castFn = `(cast(logs.data ->> ${metricString} as ${castType}))`;
-      if (metricId.length > 1) {
-        const val =
-          metricString.substring(0, metricString.lastIndexOf('->')) +
-          '->>' +
-          metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
-        castFn = `(cast(logs.data -> ${val} as ${castType}))`;
-      }
-      executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
-        compareValue,
-      });
-    }
-    // TODO: Form properly
-    executeQuery = executeQuery.groupBy('"individualAssignment"."conditionId"');
-    // let castType = 'decimal';
-    // if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-    //   castType = 'text';
-    // }
-    if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
-      const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
-      executeQuery = executeQuery.select([
-        '"individualAssignment"."conditionId"',
-        `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
-      ]);
-    } else if (operationType === OPERATION_TYPES.COUNT) {
-      executeQuery = executeQuery.select([
-        '"individualAssignment"."conditionId"',
-        `${operationType}(cast(logs.data -> ${metricString} as text)) as result`,
-      ]);
-    } else {
-      executeQuery = executeQuery.select([
-        '"individualAssignment"."conditionId"',
-        `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
-      ]);
-    }
-    return executeQuery.getRawMany();
   }
 }
