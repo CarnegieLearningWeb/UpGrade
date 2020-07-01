@@ -41,8 +41,10 @@ export namespace Interfaces {
     versionNumber: number;
     id: string;
     data: any;
-    metric: IMetric[];
+    metrics: IMetric[];
     user: IExperimentUser;
+    timeStamp: string;
+    uniquifier: string;
   }
 
   export interface IMetric {

@@ -1,12 +1,13 @@
 import { Types, Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
+import { ILogInput } from 'upgrade_types';
 
 export default async function log(
   url: string,
   userId: string,
   token: string,
-  value: any
-): Promise<Interfaces.ILog> {
+  value: ILogInput[]
+): Promise<Interfaces.ILog[]> {
   try {
     const data = {
       userId,

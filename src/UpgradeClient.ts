@@ -2,7 +2,7 @@ import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
-import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric } from 'upgrade_types';
+import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric, ILogInput } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
@@ -133,7 +133,7 @@ export default class UpgradeClient {
         return getFeatureFlag(this.featureFlags, key);
     }
 
-    async log(value: any): Promise<Interfaces.ILog> {
+    async log(value: ILogInput[]): Promise<Interfaces.ILog[]> {
         this.validateClient();
         return await log(UpgradeClient.api.log, this.userId, this.token, value);
     }
