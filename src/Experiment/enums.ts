@@ -82,6 +82,7 @@ export enum OPERATION_TYPES {
   MODE = 'mode',
   MEDIAN = 'median',
   STDEV = 'stddev',
+  PERCENTAGE = 'percentage'
 }
 
 export enum IMetricMetaData {
