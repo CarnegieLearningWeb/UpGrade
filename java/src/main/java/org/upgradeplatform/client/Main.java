@@ -12,12 +12,6 @@ import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.InitRequest;
 import org.upgradeplatform.responsebeans.LogEventResponse;
-import org.upgradeplatform.responsebeans.Value;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.vavr.control.Either;
-
 
 
 public class Main {
@@ -41,19 +35,12 @@ public class Main {
 
             System.out.println(prefix() + "initiating requests");
 		    experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
-		        @SuppressWarnings("rawtypes")
 				@Override
 		        public void onSuccess(InitRequest i){
 		        	
 		        	
 		        	String key = "key";
-		        	
-		        	// The value variable in Log method can be of type Integer, String or JSON
-		        	
-		        	Either<Integer, Either<String, Value>> value;
-		        	// value = Either.left(10); 								// (Integer example)
-		        	// value = Either.right(Either.left("String")); 			// (String example)
-		        	value = Either.right(Either.right(new Value(25,"5",6))); 	// (Custom JSON example using POJO)
+		        	String value = "string";
 		    		
 		        	
 		    		
@@ -61,19 +48,10 @@ public class Main {
 
 						@Override
 						public void onSuccess(@NonNull LogEventResponse t) {
-							
-							// Field data in class LogEventResponse can be of type Integer, String or JSON
-							// Either<Integer, Either<String, Value>>
-							Either<String, Value> temp = (Either<String, Value>) t.getData().get(); 
 							 
-							// Map Linked hashmap data to proper class using jakson mapper 
-							ObjectMapper mapper = new ObjectMapper();
-							Value value = mapper.convertValue(temp.get(), Value.class);
-							 
-							result.complete(prefix() + "retrieved  experiment responses; foo response: " + value.getTime());
+							result.complete(prefix() + "retrieved  experiment responses; foo response: " + t.getData());
 							
 						}
-
 						@Override
 						public void onError(@NonNull ErrorResponse error) {
 							// TODO Auto-generated method stub

@@ -34,7 +34,6 @@ import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
 
-import io.vavr.control.Either;
 
 
 public class ExperimentClient implements AutoCloseable {
@@ -416,16 +415,11 @@ public class ExperimentClient implements AutoCloseable {
 		}));	
 	}
 
-	public <T> void log(final String key, final Either<Integer, Either<String, T >> value,  @SuppressWarnings("rawtypes") final ResponseCallback<LogEventResponse> callbacks) {
+	public void log(final String key, final Object value, final ResponseCallback<LogEventResponse> callbacks) {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
-
-		// get data from Either field to pass in request object
-		Object data =  value.isLeft() ? value.getLeft() : value.get().isRight() ? value.get().get() : value.get().getLeft();
-
-		Log log = new Log( key,data);
+		Log log = new Log( key,value);
 		Entity<Log> requestContent = Entity.json(log);
-
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
@@ -438,7 +432,6 @@ public class ExperimentClient implements AutoCloseable {
 					} catch(Exception e) {
 						e.printStackTrace();
 					}
-
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
