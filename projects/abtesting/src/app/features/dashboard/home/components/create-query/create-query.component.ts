@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
 import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData } from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
@@ -18,6 +18,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   // Used for displaying metrics
   allMetricsSub: Subscription;
+  allMetrics = [];
   isAnalysisMetricsLoading$ = this.analysisService.isMetricsLoading$;
 
   queryOperations = [];
@@ -30,7 +31,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   options: any[] = [];
   selectedNode = null;
 
-  @ViewChild('metricsTable', { static: false }) metricsTable: ElementRef;
+  controlTitles = ['Class', 'Key', 'Metric']; // Used to show different titles in grouped metrics
 
   constructor(
     private analysisService: AnalysisService,
@@ -40,7 +41,8 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe(metrics => {
-      this.options[0] = metrics;
+      this.allMetrics = metrics;
+      this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
     });
 
     this.queryForm = this.fb.group({
@@ -95,6 +97,17 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       );
   }
 
+  selectedIndexChange(tabIndex: number) {
+    this.resetForm();
+    if (tabIndex === 0) {
+      // Show only simple metrics
+      this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
+    } else {
+      // Show only grouped metrics
+      this.options[0] = this.allMetrics.filter(metric => metric.children.length !== 0);
+    }
+  }
+
   resetForm() {
     this.keys.clear();
     this.queryForm.reset();
@@ -147,7 +160,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
         } else if (type && type === IMetricMetaData.CATEGORICAL) {
           this.queryOperations = [
             { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-            { value: 'percent', viewValue: 'Percent' }
+            { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' }
           ];
         }
       }

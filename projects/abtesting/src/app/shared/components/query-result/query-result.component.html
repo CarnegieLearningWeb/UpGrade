@@ -6,7 +6,7 @@
       mode="indeterminate"
       *ngIf="isQueryExecuting$ | async"
     ></mat-progress-bar>
-    <mat-table *ngIf="(queryResult$ | async)?.length; else emptyResult" [dataSource]="queryResult$ | async" class="table">
+    <mat-table *ngIf="(queryResult$ | async)?.length && !(isQueryExecuting$ | async); else emptyResult" [dataSource]="queryResult$ | async" class="table">
       <!-- Number Column -->
       <ng-container matColumnDef="no">
         <mat-header-cell class="ft-12-700" *matHeaderCellDef>
