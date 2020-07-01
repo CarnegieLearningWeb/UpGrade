@@ -1,4 +1,4 @@
-import { IExperimentAssignment } from "upgrade_types";
+import { IExperimentAssignment } from 'upgrade_types';
 
 export default function getExperimentCondition(
   experimentConditionData: IExperimentAssignment[],

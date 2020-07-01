@@ -2,7 +2,7 @@ import setGroupMembership from './functions/setGroupMembership';
 import { Interfaces } from './identifiers';
 import setWorkingGroup from './functions/setWorkingGroup';
 import getAllExperimentConditions from './functions/getAllExperimentConditions';
-import { IExperimentAssignment, IMetricUnit, IFeatureFlag } from 'upgrade_types';
+import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric, ILogInput } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
@@ -133,17 +133,17 @@ export default class UpgradeClient {
         return getFeatureFlag(this.featureFlags, key);
     }
 
-    async log(key: string, value: any): Promise<Interfaces.ILog> {
+    async log(value: ILogInput[]): Promise<Interfaces.ILog[]> {
         this.validateClient();
-        return await log(UpgradeClient.api.log, this.userId, this.token, key, value);
+        return await log(UpgradeClient.api.log, this.userId, this.token, value);
     }
 
-    async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUser[]> {
+    async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
         this.validateClient();
         return await setAltUserIds(UpgradeClient.api.altUserIds, this.userId, this.token, altUserIds);
     }
 
-    async addMetrics(metrics: IMetricUnit[]): Promise<Interfaces.IMetric[]> {
+    async addMetrics(metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]> {
         this.validateClient();
         return await addMetrics(UpgradeClient.api.addMetrics, this.token, metrics);
     }

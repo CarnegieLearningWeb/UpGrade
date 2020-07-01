@@ -43,22 +43,42 @@ Use this function to report failure with given reason
 ```upClient.failedExperimentPoint(experimentPoint, reason)```  
 ```upClient.failedExperimentPoint(experimentPoint, reason, experimentId)```
 
-## log(key: string, value: any)
+## log(value: ILogInput[])
 Use this function to log data
-```upClient.log(key, value)```
-
-## addMetrics(metrics: IMetricUnit[])
-Use this function to add metrics in upgrade system
-Interface
 ```
-interface IMetricUnit {
-    key: string | string[];
-    children?: IMetricUnit[];
-    metadata?: {
-        type: IMetricMetaData;
-    };
-    allowedData?: string[];
-  }
+interface ILogMetrics {
+  attributes: any;
+  groupedMetrics: ILogGroupMetrics[];
+}
+
+interface ILogGroupMetrics {
+  groupClass: string;
+  groupKey: string;
+  groupUniquifier: string;
+  attributes: any;
+}
+
+interface ILogInput {
+  timestamp: string;
+  metrics: ILogMetrics;
+}
+upClient.log(value)
+```
+
+## addMetrics(metrics: Array<IGroupMetric | ISingleMetric>)
+Use this function to add metrics in upgrade system
+
+```
+interface IGroupMetric {
+    groupClass: string;
+    allowedKeys: string[];
+    attributes: Array<IGroupMetric | ISingleMetric>;
+}
+interface ISingleMetric {
+    metric: string;
+    datatype: IMetricMetaData;
+    allowedValues?: Array<string | number>;
+}
 enum IMetricMetaData {
   CONTINUOUS = 'continuous',
   CATEGORICAL = 'categorical'

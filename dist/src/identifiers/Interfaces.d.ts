@@ -34,8 +34,10 @@ export declare namespace Interfaces {
         versionNumber: number;
         id: string;
         data: any;
-        metric: IMetric[];
+        metrics: IMetric[];
         user: IExperimentUser;
+        timeStamp: string;
+        uniquifier: string;
     }
     interface IMetric {
         key: string;
@@ -49,5 +51,8 @@ export declare namespace Interfaces {
         id: string;
         group: object;
         workingGroup: object;
+    }
+    interface IExperimentUserAliases extends IExperimentUser {
+        originalUser: string;
     }
 }
