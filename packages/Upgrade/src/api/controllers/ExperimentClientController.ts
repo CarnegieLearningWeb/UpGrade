@@ -257,7 +257,7 @@ export class ExperimentClientController {
   public log(
     @Body({ validate: { validationError: { target: false, value: false } } })
     logData: LogValidator
-  ): Promise<Log | any> {
+  ): Promise<Log[]> {
     return this.experimentAssignmentService.dataLog(logData.userId, logData.value);
   }
 

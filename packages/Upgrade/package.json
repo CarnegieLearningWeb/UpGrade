@@ -80,6 +80,7 @@
     "json-diff": "^0.5.4",
     "jsonfile": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
+    "lodash.flatten": "^4.4.0",
     "lodash.isequal": "^4.5.0",
     "microframework": "^0.6.4",
     "mocker-data-generator": "^2.8.0",

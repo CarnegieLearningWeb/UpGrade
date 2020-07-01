@@ -43,6 +43,8 @@ import { Metric } from '../models/Metric';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { SettingService } from './SettingService';
 import isequal from 'lodash.isequal';
+import flatten from 'lodash.flatten';
+import { ILogInput } from 'upgrade_types';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -364,8 +366,7 @@ export class ExperimentAssignmentService {
     }
   }
 
-  // TODO add typings here
-  public async dataLog(userId: string, jsonLog: any): Promise<Log | any> {
+  public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
     // this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
 
     const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
@@ -509,19 +510,22 @@ export class ExperimentAssignmentService {
 
       // metrics to update
       const updateLogGroups = toUpdateLogGroup.map((toUpdateLogs) => {
-        return this.logRepository.update(
-          { id: toUpdateLogs.id },
-          { data: toUpdateLogs.data, timeStamp: toUpdateLogs.timeStamp }
-        );
+        return this.logRepository.updateLog(toUpdateLogs.id, toUpdateLogs.data, toUpdateLogs.timeStamp);
       });
 
-      await Promise.all(updateLogGroups);
+      const updatedLog: Log[] = await Promise.all(updateLogGroups);
 
+      let newLogData: Log[] = [];
       // metrics to save
-      return this.logRepository.save(rawDataLogs);
+      if (rawDataLogs.length > 0) {
+        newLogData = await this.logRepository.save(rawDataLogs);
+      }
+
+      return [...updatedLog, ...newLogData];
     });
 
-    return Promise.all(promise);
+    const logsToReturn = await Promise.all(promise);
+    return flatten(logsToReturn);
   }
 
   public async clientFailedExperimentPoint(

@@ -39,6 +39,21 @@ export class LogRepository extends Repository<Log> {
     }
   }
 
+  public async updateLog(logId: string, data: any, timeStamp: Date): Promise<Log> {
+    const result = await this.createQueryBuilder('log')
+      .update()
+      .set({ data, timeStamp })
+      .where({ id: logId })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('LogRepository', 'updateLog', { logId, data, timeStamp }, errorMsg);
+        throw new Error(errorMsgString);
+      });
+
+    return result.raw;
+  }
+
   public async deleteByMetricId(metricKey: string): Promise<any> {
     const queryRepo = getRepository(Query);
 

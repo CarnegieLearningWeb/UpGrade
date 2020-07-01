@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsDefined, IsString, IsJSON } from 'class-validator';
+import { ILogInput } from 'upgrade_types';
 
 export class LogValidator {
   @IsDefined()
@@ -9,5 +10,5 @@ export class LogValidator {
   @IsJSON()
   @IsDefined()
   @IsNotEmpty()
-  public value: string;
+  public value: ILogInput[];
 }
