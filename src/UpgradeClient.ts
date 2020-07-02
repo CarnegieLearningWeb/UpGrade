@@ -35,7 +35,7 @@ export default class UpgradeClient {
     private experimentConditionData: IExperimentAssignment[] = null;
     private featureFlags: IFeatureFlag[] = null;
 
-    constructor(userId: string, token: string) {
+    constructor(userId: string, token?: string) {
         this.userId = userId;
         this.token = token;
     }
@@ -60,10 +60,7 @@ export default class UpgradeClient {
             throw new Error('Please set application host URL first.');
         }
         if (!this.userId) {
-            throw new Error('Provided User id is invalid');
-        }
-        if (!this.token) {
-            throw new Error('Provided token is invalid');
+            throw new Error('Please provide valid user id.');
         }
     }
 
