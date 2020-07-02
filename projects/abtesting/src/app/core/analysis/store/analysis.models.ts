@@ -25,6 +25,12 @@ export interface Query {
   }
 }
 
+export enum RepeatedMeasure {
+  MEAN = 'mean',
+  EARLIEST = 'earliest',
+  MOST_RECENT = 'recent'
+}
+
 export interface AnalysisState {
   isMetricsLoading: boolean;
   isQueryExecuting: boolean;

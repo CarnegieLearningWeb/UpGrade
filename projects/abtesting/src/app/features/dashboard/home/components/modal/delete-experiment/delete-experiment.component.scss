@@ -2,5 +2,9 @@
   &-actions {
     justify-content: flex-end;
     margin: 0;
+
+    .delete-btn {
+      background-color: var(--red) !important;
+    }
   }
 }
