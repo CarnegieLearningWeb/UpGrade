@@ -8,7 +8,7 @@ import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 
-export default async function DeleteEndExperiment(): Promise<void> {
+export default async function CompleteEndExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);

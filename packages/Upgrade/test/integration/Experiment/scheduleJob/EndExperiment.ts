@@ -38,7 +38,7 @@ export default async function EndExperiment(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   const endExperiment = await scheduledJobService.getAllEndExperiment();
 
   expect(endExperiment).toEqual(
@@ -71,4 +71,21 @@ export default async function EndExperiment(): Promise<void> {
   const auditLog = await auditService.getAuditLogs(1, 0);
 
   expect(auditLog[0].user).toEqual(expect.objectContaining(systemUserDoc));
+
+  experiments = await experimentService.find();
+  await experimentService.updateState(experiments[0].id, EXPERIMENT_STATE.ENROLLING, user);
+
+  experiments = await experimentService.find();
+  // change to enrolling
+  expect(experiments).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        name: experimentObject.name,
+        state: EXPERIMENT_STATE.ENROLLING,
+        postExperimentRule: experimentObject.postExperimentRule,
+        assignmentUnit: experimentObject.assignmentUnit,
+        consistencyRule: experimentObject.consistencyRule,
+      }),
+    ])
+  );
 }

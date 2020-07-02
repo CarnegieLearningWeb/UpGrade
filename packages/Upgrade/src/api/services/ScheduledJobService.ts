@@ -33,6 +33,8 @@ export class ScheduledJobService {
       if (scheduledJob && experiment) {
         const systemUser = await this.userRepository.findOne({ email: systemUserDoc.email });
         const experimentService = Container.get<ExperimentService>(ExperimentService);
+        // update experiment startOn
+        await this.experimentRepository.update({ id: experiment.id }, { startOn: null });
         return experimentService.updateState(scheduledJob.experiment.id, EXPERIMENT_STATE.ENROLLING, systemUser);
       }
     }
@@ -46,6 +48,8 @@ export class ScheduledJobService {
       // get system user
       const systemUser = await this.userRepository.findOne({ email: systemUserDoc.email });
       const experimentService = Container.get<ExperimentService>(ExperimentService);
+      // update experiment endOn
+      await this.experimentRepository.update({ id: experiment.id }, { endOn: null });
       return experimentService.updateState(
         scheduledJob.experiment.id,
         EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
@@ -162,10 +166,7 @@ export class ScheduledJobService {
     try {
       // Do not return deleted logs as number of logs can be very large
       const offset = 25; // Number of logs that we do not want to delete
-      await Promise.all([
-        this.experimentAuditLogRepository.clearLogs(offset),
-        this.errorRepository.clearLogs(offset),
-      ]);
+      await Promise.all([this.experimentAuditLogRepository.clearLogs(offset), this.errorRepository.clearLogs(offset)]);
       return true;
     } catch (error) {
       this.log.error('Error in clear Logs schedular ', error.message);
