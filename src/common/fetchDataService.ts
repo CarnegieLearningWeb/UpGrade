@@ -13,10 +13,18 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
     let options: any = {
       method: requestType,
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       }
     };
+    if (token) {
+      options = {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    }
     if (requestType === Types.REQUEST_TYPES.POST) {
       options = {
         ...options,
@@ -24,9 +32,12 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
       }
     }
     const response = await fetch(url, options);
+    const responseData = await response.json();
+    // If name, endpoint and message appears in response then its error
+    const status =  !responseData.name && !responseData.endPoint && !responseData.message;
     return {
-      status: true,
-      data: await response.json()
+      status,
+      data: responseData
     };
   } catch (error) {
     requestCount++;

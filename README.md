@@ -9,7 +9,8 @@ This is a static method to set host URL which can be accessed by
 ```UpgradeClient.setHostUrl(url)```
 
 ## Initialize User
-To initialize user call UpgradeClient constructor with userId  
+Two ways for initializing users 
+``` const upClient = UpgradeClient('userId');```
 ``` const upClient = UpgradeClient('userId', 'token');```
 
 ## setAltUserIds(altUserIds: string[])

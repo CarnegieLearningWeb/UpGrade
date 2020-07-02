@@ -9,7 +9,7 @@ export default class UpgradeClient {
     private workingGroup;
     private experimentConditionData;
     private featureFlags;
-    constructor(userId: string, token: string);
+    constructor(userId: string, token?: string);
     static setHostUrl(url: string): void;
     private validateClient;
     setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser>;
