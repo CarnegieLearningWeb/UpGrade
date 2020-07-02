@@ -2,19 +2,19 @@ package org.upgradeplatform.requestbeans;
 
 import java.util.List;
 
-public class MetricUnitBody {
+public  class MetricUnitBody<T> {
 	
-	private List<MetricUnit>  metricUnit;
+	private List<T>  metricUnit;
 	
-	public MetricUnitBody(List<MetricUnit>  metricUnit) {
+	public MetricUnitBody(List<T>  metricUnit) {
 		this.metricUnit = metricUnit;
 	}
 	
-	public List<MetricUnit> getMetricUnit() {
+	public List<T> getMetricUnit() {
 		return metricUnit;
 	}
 
-	public void setMetricUnit(List<MetricUnit> metricUnit) {
+	public void setMetricUnit(List<T> metricUnit) {
 		this.metricUnit = metricUnit;
 	}
 	

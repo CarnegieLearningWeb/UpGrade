@@ -16,17 +16,19 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.requestbeans.ExperimentRequest;
 import org.upgradeplatform.requestbeans.FailedExperimentPointRequest;
-import org.upgradeplatform.requestbeans.Log;
+import org.upgradeplatform.requestbeans.GroupMetric;
+import org.upgradeplatform.requestbeans.LogInput;
+import org.upgradeplatform.requestbeans.LogRequest;
 import org.upgradeplatform.requestbeans.MarkExperimentRequest;
-import org.upgradeplatform.requestbeans.MetricUnit;
 import org.upgradeplatform.requestbeans.MetricUnitBody;
+import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.FailedExperiment;
 import org.upgradeplatform.responsebeans.FeatureFlag;
-import org.upgradeplatform.responsebeans.InitRequest;
+import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 import org.upgradeplatform.responsebeans.Metric;
@@ -58,11 +60,11 @@ public class ExperimentClient implements AutoCloseable {
 		this.apiService.close();
 	}
 
-	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<InitRequest> callbacks) {
+	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<ExperimentUser> callbacks) {
 		// Build a request object and prepare invocation method
-		InitRequest initRequest = new InitRequest(this.userId, group, null);
+		ExperimentUser experimentUser = new ExperimentUser(this.userId, group, null);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
-		Entity<InitRequest> requestContent = Entity.json(initRequest);
+		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		// Invoke the method
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES,RequestType.POST, 
@@ -71,7 +73,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(InitRequest.class));
+					callbacks.onSuccess(response.readEntity(ExperimentUser.class));
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -87,10 +89,10 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<InitRequest> callbacks) {
-		InitRequest initRequest = new InitRequest(this.userId, null, workingGroup);
+	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<ExperimentUser> callbacks) {
+		ExperimentUser experimentUser = new ExperimentUser(this.userId, null, workingGroup);
 		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
-		Entity<InitRequest> requestContent = Entity.json(initRequest);
+		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
@@ -98,7 +100,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(InitRequest.class));
+					callbacks.onSuccess(response.readEntity(ExperimentUser.class));
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -358,7 +360,7 @@ public class ExperimentClient implements AutoCloseable {
 		return resultFeatureFlag;
 	}
 
-	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<List<InitRequest>> callbacks) {
+	public void setAltUserIds(final List<String> altUserIds, final ResponseCallback<List<ExperimentUser>> callbacks) {
 
 		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
 
@@ -371,7 +373,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(new GenericType<List<InitRequest>>() {}));
+					callbacks.onSuccess(response.readEntity(new GenericType<List<ExperimentUser>>() {}));
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -387,11 +389,26 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	public void addMetrics(final List<MetricUnit> metrics, final ResponseCallback<List<Metric>> callbacks) {
-
-		MetricUnitBody metricUnit = new MetricUnitBody( metrics );
-		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
+	@SuppressWarnings("rawtypes")
+	public <T> void addGroupMetrics(final List<GroupMetric> metrics, final ResponseCallback<List<Metric>> callbacks) {
+		
+		MetricUnitBody<GroupMetric> metricUnit = new MetricUnitBody<GroupMetric>( metrics );
 		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
+		addMetrics(requestContent, callbacks);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public <T> void addSingleMetrics(final List<SingleMetric> metrics, final ResponseCallback<List<Metric>> responseCallback) {
+		
+		MetricUnitBody<SingleMetric> metricUnit = new MetricUnitBody<SingleMetric>( metrics );
+		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
+		addMetrics(requestContent, responseCallback);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private void addMetrics(Entity<MetricUnitBody> requestContent, final ResponseCallback<List<Metric>> callbacks) {
+		
+		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
@@ -415,11 +432,12 @@ public class ExperimentClient implements AutoCloseable {
 		}));	
 	}
 
-	public void log(final String key, final Object value, final ResponseCallback<LogEventResponse> callbacks) {
+	public void log(List<LogInput> value, final ResponseCallback<LogEventResponse> callbacks) {
 
 		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
-		Log log = new Log( key,value);
-		Entity<Log> requestContent = Entity.json(log);
+		LogRequest logRequest = new LogRequest(this.userId, value );
+		
+		Entity<LogRequest> requestContent = Entity.json(logRequest);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
@@ -427,11 +445,14 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+					LogEventResponse logEventResponse = null;
 					try {
-						callbacks.onSuccess(response.readEntity(LogEventResponse.class));
+						logEventResponse = response.readEntity(LogEventResponse.class);
+						
 					} catch(Exception e) {
-						e.printStackTrace();
+						callbacks.onError(new ErrorResponse(e.toString()));
 					}
+					callbacks.onSuccess(logEventResponse);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -446,4 +467,5 @@ public class ExperimentClient implements AutoCloseable {
 			}
 		}));	
 	}
+
 }

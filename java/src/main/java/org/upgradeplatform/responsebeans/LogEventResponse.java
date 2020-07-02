@@ -5,15 +5,15 @@ public class LogEventResponse {
 	private String createdAt;
 	private String updatedAt;
 	private int versionNumber;
-	private int id;
-	private Object  data;
-	private Metric[] metrics;
-	private InitRequest user;
-
-	public LogEventResponse() {}
-
-	public LogEventResponse(String createdAt, String updatedAt, int versionNumber, int id, Object data,
-			Metric[] metrics, InitRequest user) {
+	private String id;
+	private Object data;
+	private Metric metrics;
+	private ExperimentUser user;
+	private String timeStamp;
+	private String uniquifier;
+	
+	public LogEventResponse(String createdAt, String updatedAt, int versionNumber, String id, Object data,
+			Metric metrics, ExperimentUser user, String timeStamp, String uniquifier) {
 		super();
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -22,8 +22,10 @@ public class LogEventResponse {
 		this.data = data;
 		this.metrics = metrics;
 		this.user = user;
+		this.timeStamp = timeStamp;
+		this.uniquifier = uniquifier;
 	}
-
+	
 	public String getCreatedAt() {
 		return createdAt;
 	}
@@ -42,28 +44,44 @@ public class LogEventResponse {
 	public void setVersionNumber(int versionNumber) {
 		this.versionNumber = versionNumber;
 	}
-	public int getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
-	public Object  getData() {
+	public Object getData() {
 		return data;
 	}
 	public void setData(Object data) {
 		this.data = data;
 	}
-	public Metric[] getMetrics() {
+	public Metric getMetrics() {
 		return metrics;
 	}
-	public void setMetrics(Metric[] metrics) {
+	public void setMetrics(Metric metrics) {
 		this.metrics = metrics;
 	}
-	public InitRequest getUser() {
+	public ExperimentUser getUser() {
 		return user;
 	}
-	public void setUser(InitRequest user) {
+	public void setUser(ExperimentUser user) {
 		this.user = user;
 	}
+	public String getTimeStamp() {
+		return timeStamp;
+	}
+	public void setTimeStamp(String timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+	public String getUniquifier() {
+		return uniquifier;
+	}
+	public void setUniquifier(String uniquifier) {
+		this.uniquifier = uniquifier;
+	}
+	
+	
+
+	
 }

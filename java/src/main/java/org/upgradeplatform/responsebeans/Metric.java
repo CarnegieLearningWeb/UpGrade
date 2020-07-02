@@ -1,11 +1,12 @@
 package org.upgradeplatform.responsebeans;
 
+import org.upgradeplatform.utils.Utils.MetricMetaData;
 
 public class Metric {
 
 
-	private Object key;
-	private String type;
+	private String key;
+	private MetricMetaData type;
 	private String[] allowedData;
 	private String createdAt;
 	private String updatedAt;
@@ -13,7 +14,7 @@ public class Metric {
 
 	public Metric() {}
 
-	public Metric(Object key, String type, String[] allowedData, String createdAt, String updatedAt, Integer versionNumber) {
+	public Metric(String key, MetricMetaData type, String[] allowedData, String createdAt, String updatedAt, Integer versionNumber) {
 		super();
 		this.key = key;
 		this.type = type;
@@ -23,19 +24,19 @@ public class Metric {
 		this.versionNumber = versionNumber;
 	}
 
-	public Object getKey() {
+	public String getKey() {
 		return key;
 	}
 
-	public void setKey(Object key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 
-	public String getType() {
+	public MetricMetaData getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(MetricMetaData type) {
 		this.type = type;
 	}
 

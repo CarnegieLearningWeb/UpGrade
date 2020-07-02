@@ -3,7 +3,7 @@ package org.upgradeplatform.responsebeans;
 import java.util.List;
 import java.util.Map;
 
-public class InitRequest
+public class ExperimentUser
 {
 	
 	private String createdAt;
@@ -12,10 +12,10 @@ public class InitRequest
 	private String id;
 	private Map<String, List<String>> group;
 	private Map<String, String> workingGroup;
-	private InitRequest originalUser;
-	public InitRequest() {}
+	private String originalUser;
+	public ExperimentUser() {}
 	
-	public InitRequest(String id, Map<String, List<String>> group, Map<String, String> workingGroup, InitRequest originalUser) {
+	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup, String originalUser) {
 		super();
 		this.id = id;
 		this.group = group;
@@ -23,7 +23,7 @@ public class InitRequest
 		this.originalUser = originalUser;
 	}
 	
-	public InitRequest(String id, Map<String, List<String>> group, Map<String, String> workingGroup ) {
+	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup ) {
 		super();
 		this.id = id;
 		this.group = group;
@@ -67,11 +67,11 @@ public class InitRequest
 		this.workingGroup = workingGroup;
 	}
 
-	public InitRequest getOriginalUser() {
+	public String getOriginalUser() {
 		return originalUser;
 	}
 
-	public void setOriginalUser(InitRequest originalUser) {
+	public void setOriginalUser(String originalUser) {
 		this.originalUser = originalUser;
 	}
 	

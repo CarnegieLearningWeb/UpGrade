@@ -10,8 +10,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.ErrorResponse;
-import org.upgradeplatform.responsebeans.InitRequest;
-import org.upgradeplatform.responsebeans.LogEventResponse;
+import org.upgradeplatform.responsebeans.ExperimentUser;
 
 
 public class Main {
@@ -34,30 +33,10 @@ public class Main {
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
-		    experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
+		    experimentClient.setGroupMembership(group, new ResponseCallback<ExperimentUser>(){
 				@Override
-		        public void onSuccess(InitRequest i){
-		        	
-		        	
-		        	String key = "key";
-		        	String value = "string";
-		    		
-		        	
-		    		
-		            experimentClient.log(key, value, new ResponseCallback<LogEventResponse>() {
-
-						@Override
-						public void onSuccess(@NonNull LogEventResponse t) {
-							 
-							result.complete(prefix() + "retrieved  experiment responses; foo response: " + t.getData());
-							
-						}
-						@Override
-						public void onError(@NonNull ErrorResponse error) {
-							// TODO Auto-generated method stub
-							result.completeExceptionally(new Exception(prefix() + error.toString()));
-						}
-					});
+		        public void onSuccess(ExperimentUser i){
+					result.complete(prefix() + "retrieved  experiment responses; foo response: " + i.getId());
 		        }
 
 		        @Override

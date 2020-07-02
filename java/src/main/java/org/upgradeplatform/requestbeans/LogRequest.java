@@ -1,27 +1,31 @@
 package org.upgradeplatform.requestbeans;
 
-public class Log {
+import java.util.List;
+
+public class LogRequest {
 	private String userId;
-	private Object value;
+	private List<LogInput> value;
 	
-	public Log(String userId, Object value) {
+	public LogRequest(String userId, List<LogInput> value) {
 		super();
 		this.userId = userId;
 		this.value = value;
 	}
-	
+
 	public String getUserId() {
 		return userId;
 	}
+
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	public Object getValue() {
+
+	public List<LogInput> getValue() {
 		return value;
 	}
-	public void setValue(Object value) {
+
+	public void setValue(List<LogInput> value) {
 		this.value = value;
 	}
-	
-	
+
 }
