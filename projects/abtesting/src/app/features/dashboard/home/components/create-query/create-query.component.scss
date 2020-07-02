@@ -3,14 +3,14 @@ $tab-text-color: #8f9bb3;
 .create-query-container {
   display: flex;
   flex-direction: column;
-  min-height: 480px;
-  max-height: 480px;
-  overflow: auto;
 
   .key-selection-form {
     display: flex;
     flex-direction: column;
     margin-top: 10px;
+    min-height: 442px;
+    max-height: 442px;
+    overflow: auto;
 
     .auto-complete-container {
       display: flex;

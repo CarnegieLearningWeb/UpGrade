@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
-import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData } from '../../../../../core/analysis/store/analysis.models';
+import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData, RepeatedMeasure } from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -50,9 +50,23 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       queryName: [null, Validators.required],
       operationType: [null, Validators.required],
       compareFn: [null],
-      compareValue: [null]
+      compareValue: [null],
+      repeatedMeasure: [RepeatedMeasure.MEAN]
     });
     this.ManageKeysControl(0);
+
+    // TODO: Move to separate validator file
+    this.queryForm.get('operationType').valueChanges.subscribe(operation => {
+      if (operation === OPERATION_TYPES.PERCENTAGE) {
+        this.queryForm.get('compareFn').setValidators([Validators.required]);
+        this.queryForm.get('compareValue').setValidators([Validators.required]);
+      } else {
+        this.queryForm.get('compareFn').clearValidators();
+        this.queryForm.get('compareValue').clearValidators();
+      }
+      this.queryForm.get('compareFn').updateValueAndValidity()
+      this.queryForm.get('compareValue').updateValueAndValidity()
+    });
 
     this.queryForm.get('compareFn').valueChanges.subscribe(compareFn => {
       if (compareFn) {
@@ -168,7 +182,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   }
 
   saveQuery() {
-    const { operationType, queryName, compareFn, compareValue } = this.queryForm.getRawValue();
+    const { operationType, queryName, compareFn, compareValue, repeatedMeasure } = this.queryForm.getRawValue();
     let { keys } = this.queryForm.getRawValue();
     keys = keys.map(key => key.metricKey.key);
     let queryObj: Query = {
@@ -202,5 +216,9 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   get IMetricMetadata() {
     return IMetricMetaData;
+  }
+
+  get RepeatedMeasure() {
+    return RepeatedMeasure;
   }
 }

@@ -19,7 +19,7 @@ export class DashboardRootComponent {
     },
     {
       path: ['/featureFlags'],
-      text: 'Feature flags',
+      text: 'feature-flags.title.text',
       iconType: 'toggle_on'
     },
     {
