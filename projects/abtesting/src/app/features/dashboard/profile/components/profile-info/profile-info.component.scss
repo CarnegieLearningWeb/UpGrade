@@ -115,6 +115,12 @@ $role-text-color: #0a7319;
             width: 25%;
           }
         }
+
+        .icon {
+          &:hover {
+            cursor: pointer;
+          }
+        }
       }
     }
   }
