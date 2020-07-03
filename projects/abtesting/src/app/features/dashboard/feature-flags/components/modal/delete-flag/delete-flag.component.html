@@ -1,7 +1,15 @@
 <div mat-dialog-content class="delete-flag-dialog">
   <p class="ft-16-600">
-    {{ 'feature-flags.delete-flag.message.text' | translate: { flagName: data.flagName } }}
+    {{ 'feature-flags.delete-flag.message.text' | translate }}
   </p>
+  <mat-form-field class="ft-14-600 name">
+    <input
+      matInput
+      class="ft-14-400 name-input"
+      [placeholder]="'feature-flags.delete-flag.input-placeholder.text' | translate"
+      [(ngModel)]="flagName"
+    />
+  </mat-form-field>
 </div>
 <div mat-dialog-actions class="delete-flag-dialog-actions">
   <button
@@ -14,7 +22,8 @@
   <button
     class="modal-btn default-button delete-btn"
     mat-flat-button
-    cdkFocusInitial
+    [ngClass]="{ 'default-button--disabled': flagName !== data.flagName }"
+    [disabled]="flagName !== data.flagName"
     (click)="deleteFlag()"
   >
     {{ 'global.delete.text' | translate }}

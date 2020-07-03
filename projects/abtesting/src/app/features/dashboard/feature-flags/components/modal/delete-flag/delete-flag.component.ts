@@ -9,6 +9,7 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeleteFlagComponent {
+  flagName: string;
   constructor(
     public dialogRef: MatDialogRef<DeleteFlagComponent>,
     private featureFlagService: FeatureFlagsService,

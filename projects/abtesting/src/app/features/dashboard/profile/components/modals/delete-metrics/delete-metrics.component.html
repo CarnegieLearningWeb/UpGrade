@@ -1,7 +1,15 @@
 <div mat-dialog-content class="metric-delete-dialog">
   <p class="ft-16-600">
-    {{ 'metric.delete-metric.message.text' | translate: { metricName: data.key.join(' ') } }}
+    {{ 'metric.delete-metric.message.text' | translate }}
   </p>
+  <mat-form-field class="ft-14-600 name">
+    <input
+      matInput
+      class="ft-14-400 name-input"
+      [placeholder]="'metric.delete-metric.input-placeholder.text' | translate"
+      [(ngModel)]="metricName"
+    />
+  </mat-form-field>
 </div>
 <div mat-dialog-actions class="metric-delete-dialog-actions">
   <button
@@ -14,7 +22,8 @@
   <button
     class="modal-btn default-button delete-btn"
     mat-flat-button
-    cdkFocusInitial
+    [ngClass]="{ 'default-button--disabled': metricName !== data.key.join(' ') }"
+    [disabled]="metricName !== data.key.join(' ')"
     (click)="deleteMetric()"
   >
     {{ 'global.delete.text' | translate }}
