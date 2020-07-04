@@ -28,6 +28,7 @@ import { CreateQueryComponent } from './components/create-query/create-query.com
 import { OperationPipe } from '../../../shared/pipes/operation.pipe';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ExperimentQueryResultComponent } from './components/experiment-query-result/experiment-query-result.component';
+import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { ExperimentQueryResultComponent } from './components/experiment-query-re
     QueriesModalComponent,
     CreateQueryComponent,
     ExperimentQueryResultComponent,
+    ExperimentEndCriteriaComponent,
   ],
   imports: [
     CommonModule,
@@ -67,7 +69,8 @@ import { ExperimentQueryResultComponent } from './components/experiment-query-re
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
     DeleteExperimentComponent,
-    QueriesModalComponent
+    QueriesModalComponent,
+    ExperimentEndCriteriaComponent
   ]
 })
 export class HomeModule {}

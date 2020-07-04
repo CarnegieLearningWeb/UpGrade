@@ -54,6 +54,7 @@
       <div class="experiment-secondary-info-container">
 
         <div class="experiment-info-section">
+          <!-- Experiment status  -->
           <div class="section-data section-data--fixed">
             <span class="ft-16-600 section-data-title">{{ 'home-global.status.text' | translate }}</span>
             <div class="experiment-state-container">
@@ -65,29 +66,34 @@
               <ng-template #experimentStateTemplate>
                 <span class="state-circle" [ngStyle]="{'backgroundColor': experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
               </ng-template>
-              <span
-                class="ft-18-700 section-data-value section-data-value--editable"
-                *ngIf="permissions?.experiments.update; else readOnlyStatus"
-                (click)="openDialog(DialogType.CHANGE_STATUS)"
-              >
-                {{ experiment.state | experimentState }}
-              </span>
-              <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update">create</mat-icon>
+              <ng-container *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED; else readOnlyStatus">
+                <span
+                  class="ft-18-700 section-data-value section-data-value--editable"
+                  (click)="openDialog(DialogType.CHANGE_STATUS)"
+                >
+                  {{ experiment.state | experimentState }}
+                </span>
+                <mat-icon class="edit-icon">create</mat-icon>
+              </ng-container>
               <ng-template #readOnlyStatus>
                 <span class="ft-18-700 section-data-value ">{{ experiment.state | experimentState }}</span>
               </ng-template>
             </div>
           </div>
 
+          <!-- Experiment post experiment rule -->
           <div class="section-data">
             <span class="ft-16-600 section-data-title">{{ 'home-global.post-experiment-rule.text' | translate }}</span>
             <div class="experiment-state-container">
-              <span
-                class="ft-18-700 section-data-value section-data-value--editable"
-                *ngIf="permissions?.experiments.update; else readOnlyRule"
-                (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
-              >{{ experiment.postExperimentRule | titlecase }}</span>
-              <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update">create</mat-icon>
+              <ng-container
+                *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED; else readOnlyRule"
+              >
+                <span
+                  class="ft-18-700 section-data-value section-data-value--editable"
+                  (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
+                >{{ experiment.postExperimentRule | titlecase }}</span>
+                <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update">create</mat-icon>
+              </ng-container>
               <ng-template #readOnlyRule>
                 <span class="ft-18-700 section-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
               </ng-template>
@@ -96,6 +102,7 @@
         </div>
 
         <div class="experiment-info-section">
+          <!-- Experiment Unit of assignment -->
           <div class="section-data section-data--fixed">
             <span class="ft-16-600 section-data-title">{{ 'home-global.unit-of-assignment.text' | translate | uppercase }} </span>
             <span class="ft-18-700 section-data-value">{{ experiment.assignmentUnit | titlecase }}</span>
@@ -111,6 +118,7 @@
             </ng-container>
           </div>
 
+          <!-- Experiment consistency rule -->
           <div class="section-data">
             <span class="ft-16-600 section-data-title">{{ 'home-global.consistency-rule.text' | translate | uppercase }}</span>
             <span class="ft-18-700 section-data-value">{{ experiment.consistencyRule | titlecase }}</span>
@@ -121,49 +129,93 @@
           <div class="section-data end-criteria-container">
             <span class="ft-16-600 section-data-title">{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
             <ng-container *ngIf="experiment.endOn || experiment.enrollmentCompleteCondition; else noCriteriaTemplate">
+              <!-- if we have custom ending criteria -->
               <ng-container *ngIf="experiment.enrollmentCompleteCondition as endCondition">
                 <span class="ft-18-700 end-criteria end-criteria--text">
                   (
                 </span>
                 <span
-                  class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
-                  *ngIf="endCondition?.groupCount as groupCount"
+                  *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else endingCriteriaCommonTempReadOnly"
+                  (click)="updateEndingCriteria()"
+                  [ngClass]="{'end-criteria-underline--blue': permissions?.experiments.update}"
                 >
-                  {{
-                    groupCount +
-                      ' ' +
-                    (experiment.group | groupTypePlural: groupCount)
-                  }}
+                  <ng-container *ngTemplateOutlet="endingCriteriaCommonTemp"></ng-container>
                 </span>
-                <span class="ft-18-700 end-criteria end-criteria--text" *ngIf="endCondition?.userCount && endCondition.groupCount">
-                  {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
-                </span>
-                <span
-                  class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
-                  *ngIf="endCondition?.userCount as studentCount"
-                >
-                  {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
-                </span>
-                <span
-                  class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
-                  *ngIf="endCondition?.groupCount as groupCount"
-                >
-                  {{ ('home-global.enrollments-per-custom.text' | translate) + experiment.group }}
-                </span>
+
+                <ng-template #endingCriteriaCommonTempReadOnly>
+                  <ng-container *ngTemplateOutlet="endingCriteriaCommonTemp"></ng-container>
+                </ng-template>
+
+                <!-- Common ending criteria template -->
+                <ng-template #endingCriteriaCommonTemp>
+                  <span
+                    class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
+                    *ngIf="endCondition?.groupCount as groupCount"
+                  >
+                    {{
+                      groupCount +
+                        ' ' +
+                      (experiment.group | groupTypePlural: groupCount)
+                    }}
+                  </span>
+                  <span class="ft-18-700 end-criteria end-criteria--text" *ngIf="endCondition?.userCount && endCondition.groupCount">
+                    {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
+                  </span>
+                  <span
+                    class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
+                    *ngIf="endCondition?.userCount as studentCount"
+                  >
+                    {{ studentCount + ('home.view-experiment.ending-criteria.students.text' | translate) }}
+                  </span>
+                  <span
+                    class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
+                    *ngIf="endCondition?.groupCount && endCondition?.userCount"
+                  >
+                    {{ ('home-global.enrollments-per-custom.text' | translate) + experiment.group }}
+                  </span>
+                </ng-template>
+
                 <span class="ft-18-700 end-criteria end-criteria--text">
                   )
                 </span>
+                <mat-icon
+                  class="edit-icon"
+                  *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete"
+                >
+                  create
+                </mat-icon>
               </ng-container>
+
+              <!-- if we have end date -->
               <span class="ft-18-700 end-criteria" *ngIf="experiment.endOn">
-                {{ experiment.endOn | formatDate: 'medium date' }}
+                <ng-container *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else endOnReadOnly">
+                  <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
+                    {{ experiment.endOn | formatDate: 'medium date' }}
+                  </span>
+                  <mat-icon class="edit-icon">create</mat-icon>
+                </ng-container>
+
+                <ng-template #endOnReadOnly>
+                  <span>{{ experiment.endOn | formatDate: 'medium date' }}</span>
+                </ng-template>
               </span>
             </ng-container>
 
             <!-- Show template if ending criteria is not set -->
             <ng-template #noCriteriaTemplate>
-              <span class="ft-18-700 end-criteria">
-                {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
+              <span
+                class="ft-18-700 end-criteria"
+                *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else noCriteriaTemplateReadOnly"
+              >
+                <span (click)="updateEndingCriteria()" class="end-criteria-underline--grey">
+                  {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
+                </span>
+                <mat-icon class="edit-icon">create</mat-icon>
               </span>
+            </ng-template>
+
+            <ng-template #noCriteriaTemplateReadOnly>
+              <span class="ft-18-700 end-criteria">{{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}</span>
             </ng-template>
           </div>
         </div>

@@ -14,6 +14,10 @@
     mat-form-field {
       margin-right: 10px;
       width: 45%;
+
+      .status-selection {
+        line-height: 20px;
+      }
     }
   }
 

@@ -18,6 +18,7 @@ import { Router } from '@angular/router';
 import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
+import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -104,6 +105,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
+  updateEndingCriteria() {
+    const dialogRef = this.dialog.open(ExperimentEndCriteriaComponent, {
+      panelClass: 'experiment-ending-criteria',
+      data: { experiment: clonedeep(this.experiment) }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after opening query modal
+    });
+  }
+
   exportExperimentInfo(experimentId: string, experimentName: string) {
     this.experimentService.exportExperimentInfo(experimentId, experimentName);
   }
@@ -127,5 +139,9 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get ExperimentStatePipeTypes() {
     return ExperimentStatePipeType;
+  }
+
+  get isStateCancelledOrComplete() {
+    return this.experiment.state === EXPERIMENT_STATE.CANCELLED || this.experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
   }
 }
