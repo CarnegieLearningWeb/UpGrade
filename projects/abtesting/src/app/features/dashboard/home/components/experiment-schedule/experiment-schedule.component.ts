@@ -168,6 +168,12 @@ export class ExperimentScheduleComponent implements OnInit {
               startOn: dateOfExperimentStart,
               state: EXPERIMENT_STATE.SCHEDULED
             }
+          } else {
+            scheduleData = {
+              ...scheduleData,
+              startOn: null,
+              state: this.experimentInfo.state === EXPERIMENT_STATE.SCHEDULED ? EXPERIMENT_STATE.INACTIVE : this.experimentInfo.state
+            }
           }
           this.emitExperimentDialogEvent.emit({
             type: eventType,
