@@ -1,6 +1,11 @@
 .enrollment-over-time {
   padding: 0 34px 34px;
 
+  .title {
+    display: block;
+    margin-bottom: 10px;
+  }
+
   .enrollment-filters {
     display: flex;
     justify-content: space-between;
@@ -71,13 +76,13 @@
       text-align: center;
 
       &__unique {
-        padding-bottom: 30px;
+        padding-bottom: 28px;
       }
 
       &__class {
         visibility: hidden;
         border-top: 1px solid var(--grey);
-        padding-top: 30px;
+        padding-top: 28px;
 
         &.group-enabled {
           visibility: visible;

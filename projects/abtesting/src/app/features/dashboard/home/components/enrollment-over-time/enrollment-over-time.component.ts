@@ -54,26 +54,24 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   ngOnChanges(changes: SimpleChanges) {
     if (changes.experiment) {
       this.conditionsFilterOptions = [];
+      this.selectedCondition = [];
       this.experiment.conditions.forEach(condition => {
         this.conditionsFilterOptions.push({ code: condition.conditionCode, id: condition.id });
+        this.selectedCondition.push(condition.id);
       });
       this.partitionsFilterOptions = [];
-      this.experiment.partitions.forEach(partition => {
-        this.partitionsFilterOptions.push({ point: partition.expPoint, id: partition.id });
+      this.selectedPartition = [];
+      this.experiment.partitions.forEach((partition, index)=> {
+        this.partitionsFilterOptions.push({ point: partition.expPoint, id: partition.id, twoCharacterId: partition.twoCharacterId });
+        if (index === 0) {
+          this.selectedPartition.push(partition.id);
+        }
       });
+      this.groupFiltersOptions = this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ? [INDIVIDUAL] : [INDIVIDUAL, this.experiment.group];
     }
   }
 
   ngOnInit() {
-    // Preselect all conditions
-    this.experiment.conditions.map(condition => {
-      this.selectedCondition.push(condition.id);
-    });
-    // Preselect all partitions
-    this.experiment.partitions.map(partition => {
-      this.selectedPartition.push(partition.id);
-    });
-    this.groupFiltersOptions = this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ? [INDIVIDUAL] : [INDIVIDUAL, this.experiment.group];
     this.graphInfoSub = this.experimentService.selectExperimentGraphInfo$.pipe(
       filter((info) => !!info)
     ).subscribe((graphInfo: any) => {

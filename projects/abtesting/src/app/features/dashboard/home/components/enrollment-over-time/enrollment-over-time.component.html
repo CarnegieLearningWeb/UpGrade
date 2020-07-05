@@ -1,18 +1,27 @@
 <div class="enrollment-over-time">
-  <span class="ft-24-700">{{ 'home.view-experiment.marked-over-time.text' | translate }}</span>
+  <span class="ft-24-700 title">{{ 'home.view-experiment.enrollments-over-time.text' | translate }}</span>
   <div class="enrollment-filters">
     <mat-form-field>
-      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
       <mat-select
-        [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
-        [(ngModel)]="selectedGroupFilter"
-        (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
+        [(ngModel)]="selectedPartition"
+        multiple
+        (selectionChange)="applyExperimentFilter(ExperimentFilter.PARTITION_FILTER)"
       >
+        <mat-checkbox
+          color="primary"
+          class="mat-option"
+          [indeterminate]="isIndeterminate('partitions')"
+          [checked]="isChecked('partitions')"
+          (click)="$event.stopPropagation()"
+          (change)="toggleSelection($event, 'partitions')">
+            {{ 'home.view-experiment.graph-select-all.text' | translate }}
+        </mat-checkbox>
         <mat-option
-          *ngFor="let groupValue of groupFiltersOptions"
-          [value]="groupValue"
+          *ngFor="let partition of partitionsFilterOptions"
+          [value]="partition.id"
         >
-          {{ groupValue }}
+          {{ partition.point + ' (' + partition.twoCharacterId + ')' }}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -43,26 +52,17 @@
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-type.text' | translate }}</mat-label>
       <mat-select
-        [(ngModel)]="selectedPartition"
-        multiple
-        (selectionChange)="applyExperimentFilter(ExperimentFilter.PARTITION_FILTER)"
+        [disabled]="experiment.assignmentUnit === AssignmentUnit.INDIVIDUAL"
+        [(ngModel)]="selectedGroupFilter"
+        (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
       >
-        <mat-checkbox
-          color="primary"
-          class="mat-option"
-          [indeterminate]="isIndeterminate('partitions')"
-          [checked]="isChecked('partitions')"
-          (click)="$event.stopPropagation()"
-          (change)="toggleSelection($event, 'partitions')">
-            {{ 'home.view-experiment.graph-select-all.text' | translate }}
-        </mat-checkbox>
         <mat-option
-          *ngFor="let partition of partitionsFilterOptions"
-          [value]="partition.id"
+          *ngFor="let groupValue of groupFiltersOptions"
+          [value]="groupValue"
         >
-          {{ partition.point }}
+          {{ groupValue }}
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -114,14 +114,14 @@
 
       <div class="enrollment-statistic">
         <div class="enrollment-statistic__unique">
-          <span class="ft-18-600 title">
-            {{ 'home.view-experiment.enrollment-over-time.total-marked-user.text' | translate }}
+          <span class="ft-16-600 title">
+            {{ 'home.view-experiment.enrollment-over-time.user-enrollments-across-sites.text' | translate }}
           </span>
           <span class="ft-36-700 numbers">{{ totalMarkedUsers }}</span>
         </div>
-        <div class="enrollment-statistic__class" [ngClass]="{'group-enabled': selectedGroupFilter !== 'Individual'}">
-          <span class="ft-18-600 title">
-            {{ 'home.view-experiment.enrollment-over-time.total-marked-groups.text' | translate }}
+        <div class="enrollment-statistic__class" [ngClass]="{'group-enabled': selectedGroupFilter !== 'individual'}">
+          <span class="ft-16-600 title">
+            {{ 'home.view-experiment.enrollment-over-time.group-enrollments-across-sites.text' | translate }}
           </span>
           <span class="ft-36-700 numbers">{{ totalMarkedGroups }}</span>
         </div>

@@ -234,7 +234,7 @@
             <span
               class="enrollment-info"
               *ngIf="experiment.stat?.groups"
-              [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups }"
+              [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups, groupName: experiment.group | groupTypePlural: experiment.stat?.groups }"
             ></span>
             <span
               class="enrollment-info"
