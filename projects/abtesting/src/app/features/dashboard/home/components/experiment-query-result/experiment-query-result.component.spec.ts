@@ -4,6 +4,7 @@ import { ExperimentQueryResultComponent } from './experiment-query-result.compon
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
+import { TestMockData } from '../../../../../../testing/test.mock.data';
 
 describe('ExperimentQueryResultComponent', () => {
   let component: ExperimentQueryResultComponent;
@@ -21,10 +22,11 @@ describe('ExperimentQueryResultComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ExperimentQueryResultComponent);
     component = fixture.componentInstance;
+    component.experiment = TestMockData.getExperiment()[0] as any;
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

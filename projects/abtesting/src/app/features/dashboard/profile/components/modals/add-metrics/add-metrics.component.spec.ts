@@ -3,6 +3,8 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { AddMetricsComponent } from './add-metrics.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { NgJsonEditorModule } from 'ang-jsoneditor';
 
 describe('AddMetricsComponent', () => {
   let component: AddMetricsComponent;
@@ -11,8 +13,15 @@ describe('AddMetricsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ AddMetricsComponent ],
-      imports: [TestingModule],
-      providers: [AnalysisService]
+      imports: [TestingModule, NgJsonEditorModule],
+      providers: [
+        AnalysisService,
+        { provide: MatDialogRef, useValue: {} },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {}
+        }
+      ]
     })
     .compileComponents();
   }));
@@ -23,7 +32,7 @@ describe('AddMetricsComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

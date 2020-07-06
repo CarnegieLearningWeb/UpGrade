@@ -7,6 +7,9 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
 import { EnrollmentConditionTableComponent } from '../../components/enrollment-condition-table/enrollment-condition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { ExperimentQueryResultComponent } from '../../components/experiment-query-result/experiment-query-result.component';
+import { TableRowComponent } from '../../components/table-row/table-row.component';
+import { EnrollmentPointPartitionTableComponent } from '../../components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 
 describe('ViewExperimentComponent', () => {
   let component: ViewExperimentComponent;
@@ -14,7 +17,14 @@ describe('ViewExperimentComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ViewExperimentComponent, EnrollmentOverTimeComponent, EnrollmentConditionTableComponent ],
+      declarations: [
+        ViewExperimentComponent,
+        EnrollmentOverTimeComponent,
+        EnrollmentConditionTableComponent,
+        ExperimentQueryResultComponent,
+        TableRowComponent,
+        EnrollmentPointPartitionTableComponent
+      ],
       imports: [TestingModule, NgxChartsModule],
       providers: [ExperimentService, AuthService]
     })
@@ -27,7 +37,7 @@ describe('ViewExperimentComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

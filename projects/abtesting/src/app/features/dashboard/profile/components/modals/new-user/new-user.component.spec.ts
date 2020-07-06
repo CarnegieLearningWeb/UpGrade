@@ -3,6 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NewUserComponent } from './new-user.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { UsersService } from '../../../../../../core/users/users.service';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
 describe('NewUserComponent', () => {
   let component: NewUserComponent;
@@ -12,7 +13,14 @@ describe('NewUserComponent', () => {
     TestBed.configureTestingModule({
       declarations: [NewUserComponent],
       imports: [TestingModule],
-      providers: [UsersService]
+      providers: [
+        UsersService,
+        { provide: MatDialogRef, useValue: {} },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {}
+        }
+      ]
     }).compileComponents();
   }));
 
@@ -22,7 +30,7 @@ describe('NewUserComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

@@ -1,6 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProfileInfoComponent } from './profile-info.component';
+import { TestingModule } from '../../../../../../testing/testing.module';
+import { UsersService } from '../../../../../core/users/users.service';
+import { AuthService } from '../../../../../core/auth/auth.service';
+import { SettingsService } from '../../../../../core/settings/settings.service';
 
 describe('ProfileInfoComponent', () => {
   let component: ProfileInfoComponent;
@@ -8,7 +12,13 @@ describe('ProfileInfoComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileInfoComponent ]
+      declarations: [ ProfileInfoComponent ],
+      imports: [TestingModule],
+      providers:[
+        UsersService,
+        AuthService,
+        SettingsService
+      ]
     })
     .compileComponents();
   }));
@@ -19,7 +29,7 @@ describe('ProfileInfoComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

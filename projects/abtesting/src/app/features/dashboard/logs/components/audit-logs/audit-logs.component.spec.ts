@@ -7,6 +7,7 @@ import { LogsService } from '../../../../../core/logs/logs.service';
 import { TimelineComponent } from '../timeline/timeline.component';
 import { LogDateFormatPipe } from '../../pipes/logs-date-format.pipe';
 import { ErrorLogPipe } from '../../pipes/error-log.pipe';
+import { ExperimentActionMessage } from '../../pipes/experiment-action-message.pipe';
 
 describe('AuditLogsComponent', () => {
   let component: AuditLogsComponent;
@@ -14,7 +15,13 @@ describe('AuditLogsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [AuditLogsComponent, TimelineComponent, LogDateFormatPipe, ErrorLogPipe],
+      declarations: [
+        AuditLogsComponent,
+        TimelineComponent,
+        LogDateFormatPipe,
+        ErrorLogPipe,
+        ExperimentActionMessage
+      ],
       imports: [TestingModule],
       providers: [SettingsService, LogsService]
     }).compileComponents();
@@ -26,7 +33,7 @@ describe('AuditLogsComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

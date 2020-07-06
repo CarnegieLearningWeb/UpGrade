@@ -5,6 +5,7 @@ import { TestingModule } from '../../../../../../../testing/testing.module';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 import { FlagVariationsComponent } from '../../flag-variations/flag-variations.component';
 import { FlagOverviewComponent } from '../../flag-overview/flag-overview.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 
 describe('NewFlagComponent', () => {
   let component: NewFlagComponent;
@@ -14,7 +15,11 @@ describe('NewFlagComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ NewFlagComponent, FlagOverviewComponent, FlagVariationsComponent ],
       imports: [TestingModule],
-      providers: [FeatureFlagsService]
+      providers: [
+        FeatureFlagsService,
+        { provide: MatDialogRef, useValue: {} },
+	      { provide: MAT_DIALOG_DATA, useValue: [] },
+      ]
     })
     .compileComponents();
   }));
@@ -25,7 +30,7 @@ describe('NewFlagComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });
