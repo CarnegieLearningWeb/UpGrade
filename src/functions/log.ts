@@ -24,6 +24,13 @@ export default async function log(
   }
 }
 
+/**
+ * 
+ * @param url URL of the host to send the analytics to
+ * @param userId id of the user
+ * @param token additional token to add to the header
+ * @param value data to be sent to the server
+ */
 export function sendAnalytics(
   url: string,
   userId: string,
