@@ -21,6 +21,7 @@ export default class UpgradeClient {
     getAllFeatureFlags(): Promise<IFeatureFlag[]>;
     getFeatureFlag(key: string): IFeatureFlag;
     log(value: ILogInput[]): Promise<Interfaces.ILog[]>;
+    sendAnalytics(value: ILogInput[]): void;
     setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]>;
     addMetrics(metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]>;
 }
