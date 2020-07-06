@@ -7,7 +7,7 @@ import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
-import log from './functions/log';
+import log, { sendAnalytics } from './functions/log';
 import setAltUserIds from './functions/setAltUserIds';
 import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
@@ -133,6 +133,10 @@ export default class UpgradeClient {
     async log(value: ILogInput[]): Promise<Interfaces.ILog[]> {
         this.validateClient();
         return await log(UpgradeClient.api.log, this.userId, this.token, value);
+    }
+
+    sendAnalytics(value: ILogInput[]): void {
+        return sendAnalytics(UpgradeClient.api.log, this.userId, this.token, value);
     }
 
     async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
