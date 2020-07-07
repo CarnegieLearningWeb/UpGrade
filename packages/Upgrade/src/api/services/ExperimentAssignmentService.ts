@@ -366,162 +366,25 @@ export class ExperimentAssignmentService {
     }
   }
 
+  // When browser will be sending the blob data
+  public async blobDataLog(userId: string, blobLog: ILogInput): Promise<Log[]> {
+    this.log.info(`Add blob data userId ${userId} and value ${blobLog}`);
+
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const keyUniqueArray = [];
+
+    return this.createLog(blobLog, keyUniqueArray, userDoc);
+  }
+
   public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
-    // this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
+    this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
 
     const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
 
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
-      const {
-        timestamp,
-        metrics,
-        metrics: { groupedMetrics },
-      } = individualMetrics;
-
-      // add individual metrics in the database
-      if (metrics && metrics.attributes) {
-        // search metrics log with default uniquifier
-        keyUniqueArray.push(
-          ...Object.keys(metrics.attributes).map((metricKey) => {
-            return { key: metricKey, uniquifier: 1 };
-          })
-        );
-      }
-
-      // add group metrics in the database
-      if (groupedMetrics) {
-        // search metrics log with specific uniquifier
-        groupedMetrics.forEach(({ groupClass, groupKey, groupUniquifier, attributes }) => {
-          const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}`;
-          Object.keys(attributes).forEach((metricKey) => {
-            keyUniqueArray.push({ key: `${key}${metricKey}`, uniquifier: groupUniquifier });
-          });
-        });
-      }
-      // all metrics keys
-      let metricKeys = keyUniqueArray.map(({ key }) => key);
-      // const uniquifierKeys = keyUniqueArray.map(({ uniquifier }) => uniquifier);
-
-      // get metrics document
-      const metricDocs = await this.metricRepository.findMetricsWithQueries(metricKeys);
-
-      if (metricDocs.length === 0) {
-        return [];
-      }
-
-      const filteredKeyUniqueArray = keyUniqueArray.filter(({ key }) => {
-        return metricDocs.find((doc) => doc.key === key);
-      });
-
-      metricKeys = filteredKeyUniqueArray.map(({ key }) => key);
-      const uniquifierKeys = filteredKeyUniqueArray.map(({ uniquifier }) => uniquifier);
-
-      // get all metric detail
-      const logGroup = await this.logRepository.getMetricUniquifierData(metricKeys, uniquifierKeys, userId);
-
-      const mergedLogGroup = [];
-
-      // merge the metrics field
-      logGroup.forEach((logData, index) => {
-        if (logData !== null) {
-          // tslint:disable-next-line:no-shadowed-variable
-          const { id, uniquifier, data, timestamp, key } = logData;
-          const metric_keys = [key];
-          for (let i = index + 1; i < logGroup.length; i++) {
-            const toCheckMetrics = logGroup[i];
-            // merge the data log here
-            if (
-              toCheckMetrics.id === id &&
-              toCheckMetrics.uniquifier === uniquifier &&
-              isequal(toCheckMetrics.data, data) &&
-              new Date(toCheckMetrics.timestamp).getTime() === new Date(timestamp).getTime()
-            ) {
-              metric_keys.push(toCheckMetrics.key);
-              logGroup[i] = null;
-            }
-          }
-          mergedLogGroup.push({ ...logData, key: metric_keys });
-        }
-      });
-
-      // if logGroup is empty insert the log data
-      // transform log data to database format
-      // array for dataLogs
-
-      const toUpdateLogGroup = [];
-      let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc);
-
-      rawDataLogs.forEach((rawLogs) => {
-        // tslint:disable-next-line:no-shadowed-variable
-        const { metrics, data, uniquifier, timeStamp } = rawLogs;
-
-        metrics.forEach((metric, index) => {
-          const metricArray = metric.key.split(METRICS_JOIN_TEXT);
-          const lastKey = metricArray.pop();
-          const logGroupSelected = toUpdateLogGroup.find((logGroupIndividual) => {
-            return logGroupIndividual.key.includes(metric.key);
-          });
-
-          if (logGroupSelected && uniquifier === logGroupSelected.uniquifier) {
-            if (new Date(timeStamp).getTime() >= new Date(logGroupSelected.timeStamp).getTime()) {
-              const logGroupSelectedRoot = this.getRootMetric(logGroupSelected.data, metricArray);
-              const dataRoot = this.getRootMetric(data, metricArray);
-              logGroupSelectedRoot[lastKey] = dataRoot[lastKey];
-            }
-
-            // delete metric and data from the logGroup
-            const dataRootToDelete = this.getRootMetric(data, metricArray);
-            delete dataRootToDelete[lastKey];
-            delete metrics[index];
-          } else {
-            // add log group to toUpdateLogGroup Array
-            const toMergeElement = mergedLogGroup.find((mergedLogGroupElement) => {
-              return mergedLogGroupElement.key.includes(metric.key);
-            });
-
-            if (toMergeElement && uniquifier === toMergeElement.uniquifier) {
-              if (new Date(timeStamp).getTime() >= new Date(toMergeElement.timestamp).getTime()) {
-                const toMergeElementRoot = this.getRootMetric(toMergeElement.data, metricArray);
-                const dataRoot = this.getRootMetric(data, metricArray);
-                toMergeElementRoot[lastKey] = dataRoot[lastKey];
-                // toMergeElement.data[metric.key] = data[metric.key];
-                toMergeElement.timeStamp = timeStamp;
-
-                toUpdateLogGroup.push(toMergeElement);
-              }
-
-              // delete metric and data from the logGroup
-              const dataRootToDelete = this.getRootMetric(data, metricArray);
-              delete dataRootToDelete[lastKey];
-              delete metrics[index];
-            }
-          }
-        });
-      });
-
-      // filter rawDataLogs
-      // tslint:disable-next-line:no-shadowed-variable
-      rawDataLogs = rawDataLogs.filter(({ metrics }) => {
-        const metricArray = metrics.filter((metric) => metric !== null);
-        return metricArray.length > 0;
-      });
-
-      // metrics to update
-      const updateLogGroups = toUpdateLogGroup.map((toUpdateLogs) => {
-        return this.logRepository.updateLog(toUpdateLogs.id, toUpdateLogs.data, toUpdateLogs.timeStamp);
-      });
-
-      const updatedLog: Log[] = await Promise.all(updateLogGroups);
-
-      let newLogData: Log[] = [];
-      // metrics to save
-      if (rawDataLogs.length > 0) {
-        newLogData = await this.logRepository.save(rawDataLogs);
-      }
-
-      return [...updatedLog, ...newLogData];
+      return this.createLog(individualMetrics, keyUniqueArray, userDoc);
     });
 
     const logsToReturn = await Promise.all(promise);
@@ -544,6 +407,162 @@ export class ExperimentAssignmentService {
       reason,
     });
     return this.errorRepository.saveRawJson(error);
+  }
+
+  private async createLog(
+    individualMetrics: ILogInput,
+    keyUniqueArray: any[],
+    userDoc: ExperimentUser
+  ): Promise<Log[]> {
+    const userId = userDoc.id;
+    const {
+      timestamp,
+      metrics,
+      metrics: { groupedMetrics },
+    } = individualMetrics;
+
+    // add individual metrics in the database
+    if (metrics && metrics.attributes) {
+      // search metrics log with default uniquifier
+      keyUniqueArray.push(
+        ...Object.keys(metrics.attributes).map((metricKey) => {
+          return { key: metricKey, uniquifier: 1 };
+        })
+      );
+    }
+
+    // add group metrics in the database
+    if (groupedMetrics) {
+      // search metrics log with specific uniquifier
+      groupedMetrics.forEach(({ groupClass, groupKey, groupUniquifier, attributes }) => {
+        const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}`;
+        Object.keys(attributes).forEach((metricKey) => {
+          keyUniqueArray.push({ key: `${key}${metricKey}`, uniquifier: groupUniquifier });
+        });
+      });
+    }
+    // all metrics keys
+    let metricKeys = keyUniqueArray.map(({ key }) => key);
+    // const uniquifierKeys = keyUniqueArray.map(({ uniquifier }) => uniquifier);
+
+    // get metrics document
+    const metricDocs = await this.metricRepository.findMetricsWithQueries(metricKeys);
+
+    if (metricDocs.length === 0) {
+      return [];
+    }
+
+    const filteredKeyUniqueArray = keyUniqueArray.filter(({ key }) => {
+      return metricDocs.find((doc) => doc.key === key);
+    });
+
+    metricKeys = filteredKeyUniqueArray.map(({ key }) => key);
+    const uniquifierKeys = filteredKeyUniqueArray.map(({ uniquifier }) => uniquifier);
+
+    // get all metric detail
+    const logGroup = await this.logRepository.getMetricUniquifierData(metricKeys, uniquifierKeys, userId);
+
+    const mergedLogGroup = [];
+
+    // merge the metrics field
+    logGroup.forEach((logData, index) => {
+      if (logData !== null) {
+        // tslint:disable-next-line:no-shadowed-variable
+        const { id, uniquifier, data, timestamp, key } = logData;
+        const metric_keys = [key];
+        for (let i = index + 1; i < logGroup.length; i++) {
+          const toCheckMetrics = logGroup[i];
+          // merge the data log here
+          if (
+            toCheckMetrics.id === id &&
+            toCheckMetrics.uniquifier === uniquifier &&
+            isequal(toCheckMetrics.data, data) &&
+            new Date(toCheckMetrics.timestamp).getTime() === new Date(timestamp).getTime()
+          ) {
+            metric_keys.push(toCheckMetrics.key);
+            logGroup[i] = null;
+          }
+        }
+        mergedLogGroup.push({ ...logData, key: metric_keys });
+      }
+    });
+
+    // if logGroup is empty insert the log data
+    // transform log data to database format
+    // array for dataLogs
+
+    const toUpdateLogGroup = [];
+    let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc);
+
+    rawDataLogs.forEach((rawLogs) => {
+      // tslint:disable-next-line:no-shadowed-variable
+      const { metrics, data, uniquifier, timeStamp } = rawLogs;
+
+      metrics.forEach((metric, index) => {
+        const metricArray = metric.key.split(METRICS_JOIN_TEXT);
+        const lastKey = metricArray.pop();
+        const logGroupSelected = toUpdateLogGroup.find((logGroupIndividual) => {
+          return logGroupIndividual.key.includes(metric.key);
+        });
+
+        if (logGroupSelected && uniquifier === logGroupSelected.uniquifier) {
+          if (new Date(timeStamp).getTime() >= new Date(logGroupSelected.timeStamp).getTime()) {
+            const logGroupSelectedRoot = this.getRootMetric(logGroupSelected.data, metricArray);
+            const dataRoot = this.getRootMetric(data, metricArray);
+            logGroupSelectedRoot[lastKey] = dataRoot[lastKey];
+          }
+
+          // delete metric and data from the logGroup
+          const dataRootToDelete = this.getRootMetric(data, metricArray);
+          delete dataRootToDelete[lastKey];
+          delete metrics[index];
+        } else {
+          // add log group to toUpdateLogGroup Array
+          const toMergeElement = mergedLogGroup.find((mergedLogGroupElement) => {
+            return mergedLogGroupElement.key.includes(metric.key);
+          });
+
+          if (toMergeElement && uniquifier === toMergeElement.uniquifier) {
+            if (new Date(timeStamp).getTime() >= new Date(toMergeElement.timestamp).getTime()) {
+              const toMergeElementRoot = this.getRootMetric(toMergeElement.data, metricArray);
+              const dataRoot = this.getRootMetric(data, metricArray);
+              toMergeElementRoot[lastKey] = dataRoot[lastKey];
+              // toMergeElement.data[metric.key] = data[metric.key];
+              toMergeElement.timeStamp = timeStamp;
+
+              toUpdateLogGroup.push(toMergeElement);
+            }
+
+            // delete metric and data from the logGroup
+            const dataRootToDelete = this.getRootMetric(data, metricArray);
+            delete dataRootToDelete[lastKey];
+            delete metrics[index];
+          }
+        }
+      });
+    });
+
+    // filter rawDataLogs
+    // tslint:disable-next-line:no-shadowed-variable
+    rawDataLogs = rawDataLogs.filter(({ metrics }) => {
+      const metricArray = metrics.filter((metric) => metric !== null);
+      return metricArray.length > 0;
+    });
+
+    // metrics to update
+    const updateLogGroups = toUpdateLogGroup.map((toUpdateLogs) => {
+      return this.logRepository.updateLog(toUpdateLogs.id, toUpdateLogs.data, toUpdateLogs.timeStamp);
+    });
+
+    const updatedLog: Log[] = await Promise.all(updateLogGroups);
+
+    let newLogData: Log[] = [];
+    // metrics to save
+    if (rawDataLogs.length > 0) {
+      newLogData = await this.logRepository.save(rawDataLogs);
+    }
+
+    return [...updatedLog, ...newLogData];
   }
 
   private async updateExperimentEnrollmentComplete(experiment: Experiment): Promise<void> {
