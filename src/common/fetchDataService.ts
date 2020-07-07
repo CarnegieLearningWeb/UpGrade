@@ -33,12 +33,18 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
     }
     const response = await fetch(url, options);
     const responseData = await response.json();
-    // If name, endpoint and message appears in response then its error
-    const status =  !responseData.name && !responseData.endPoint && !responseData.message;
-    return {
-      status,
-      data: responseData
-    };
+    // If value of ok is false then it's error
+    if (response.ok) {
+      return {
+        status: true,
+        data: responseData
+      };
+    } else {
+      return {
+        status: false,
+        message: responseData
+      }
+    }
   } catch (error) {
     requestCount++;
     if (requestCount === requestThreshold) {

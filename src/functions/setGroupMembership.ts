@@ -15,9 +15,9 @@ export default async function setGroupMembership(url: string, userId: string, to
         group
       };
     } else {
-      throw new Error(response.message);
+      throw new Error(JSON.stringify(response.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

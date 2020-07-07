@@ -21,9 +21,9 @@ export default async function markExperimentPoint(url: string, userId: string, t
         experimentPoint
       }
     } else {
-      throw new Error(response.message);
+      throw new Error(JSON.stringify(response.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }
