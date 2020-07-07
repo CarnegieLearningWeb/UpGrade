@@ -28,9 +28,9 @@ export default async function failedExperimentPoint(
         message: response.data.message,
       };
     } else {
-      throw new Error(response.message);
+      throw new Error(JSON.stringify(response.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

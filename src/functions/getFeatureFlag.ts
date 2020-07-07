@@ -22,7 +22,7 @@ export default function getFeatureFlag(
       return null;
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }
 
