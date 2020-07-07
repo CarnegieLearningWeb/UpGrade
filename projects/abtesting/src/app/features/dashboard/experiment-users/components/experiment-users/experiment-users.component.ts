@@ -116,6 +116,20 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     return UserRole;
   }
 
+  // For getting custom placeholder
+  get getIdPlaceholder() {
+    const { entityType, groupType, customGroupName } = this.excludeEntitiesForm.value;
+    if (entityType === EntityTypes.USER_ID) {
+      return 'Enter user ID';
+    } else {
+      if (groupType === GroupTypes.OTHER) {
+        return 'Enter ' + (customGroupName || '') + ' ID';
+      } else {
+        return 'Enter ' + groupType + ' ID';
+      }
+    }
+  }
+
   ngOnDestroy() {
     this.allExcludedEntitiesSub.unsubscribe();
   }
