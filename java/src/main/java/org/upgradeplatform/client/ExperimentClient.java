@@ -389,24 +389,21 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
-	@SuppressWarnings("rawtypes")
-	public <T> void addGroupMetrics(final List<GroupMetric> metrics, final ResponseCallback<List<Metric>> callbacks) {
+	public void addGroupMetrics(final List<GroupMetric> metrics, final ResponseCallback<List<Metric>> callbacks) {
 		
-		MetricUnitBody<GroupMetric> metricUnit = new MetricUnitBody<GroupMetric>( metrics );
-		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
+		MetricUnitBody<GroupMetric> metricUnit = new MetricUnitBody<>( metrics );
+		Entity<MetricUnitBody<?>> requestContent = Entity.json(metricUnit);
 		addMetrics(requestContent, callbacks);
 	}
 
-	@SuppressWarnings("rawtypes")
-	public <T> void addSingleMetrics(final List<SingleMetric> metrics, final ResponseCallback<List<Metric>> responseCallback) {
+	public void addSingleMetrics(final List<SingleMetric> metrics, final ResponseCallback<List<Metric>> responseCallback) {
 		
-		MetricUnitBody<SingleMetric> metricUnit = new MetricUnitBody<SingleMetric>( metrics );
-		Entity<MetricUnitBody> requestContent = Entity.json(metricUnit);
+		MetricUnitBody<SingleMetric> metricUnit = new MetricUnitBody<>( metrics );
+		Entity<MetricUnitBody<?>> requestContent = Entity.json(metricUnit);
 		addMetrics(requestContent, responseCallback);
 	}
 	
-	@SuppressWarnings("rawtypes")
-	private void addMetrics(Entity<MetricUnitBody> requestContent, final ResponseCallback<List<Metric>> callbacks) {
+	private void addMetrics(Entity<MetricUnitBody<?>> requestContent, final ResponseCallback<List<Metric>> callbacks) {
 		
 		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
 
