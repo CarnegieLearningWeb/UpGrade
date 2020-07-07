@@ -5,7 +5,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentUser } from '../models/ExperimentUser';
 import uuid from 'uuid/v4';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
 import { In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
@@ -88,7 +88,7 @@ export class ExperimentUserService {
       }
     });
     if (aliasesLinkedWithOtherUser.length) {
-      throw new Error(`Users with ids ${aliasesLinkedWithOtherUser} already associated with other users`);
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: `Users with ids ${aliasesLinkedWithOtherUser} already associated with other users` }));
     }
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {
