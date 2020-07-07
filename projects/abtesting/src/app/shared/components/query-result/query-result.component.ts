@@ -19,7 +19,7 @@ export class QueryResultComponent implements OnInit {
   constructor(
     private analysisService: AnalysisService,
     private dialogRef: MatDialogRef<QueryResultComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: any
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.experiment = this.data.experiment;
   }
