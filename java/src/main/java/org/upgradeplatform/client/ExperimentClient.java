@@ -442,14 +442,11 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					LogEventResponse logEventResponse = null;
 					try {
-						logEventResponse = response.readEntity(LogEventResponse.class);
-						
+						callbacks.onSuccess(response.readEntity(LogEventResponse.class));
 					} catch(Exception e) {
 						callbacks.onError(new ErrorResponse(e.toString()));
 					}
-					callbacks.onSuccess(logEventResponse);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
