@@ -18,7 +18,7 @@ import { Log } from '../models/Log';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
-import bodyParser from 'body-parser';
+// import bodyParser from 'body-parser';
 import { BlobValidator } from './validators/BlobValidator';
 
 /**
@@ -269,7 +269,7 @@ export class ExperimentClientController {
    *    post:
    *       description: Post blob log data
    *       consumes:
-   *         - application/json
+   *         - multipart/form-data
    *       parameters:
    *          - in: body
    *            name: data
@@ -292,12 +292,12 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  @UseBefore(bodyParser.raw())
+  // @UseBefore(bodyParser.raw())
   public blobLog(
     @Body({ validate: { validationError: { target: false, value: false } } })
     blobData: BlobValidator
   ): Promise<Log[]> {
-    return this.experimentAssignmentService.blobDataLog(blobData.userId, JSON.parse(blobData.value));
+    return this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
   }
 
   /**
