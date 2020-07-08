@@ -367,13 +367,19 @@ export class ExperimentAssignmentService {
   }
 
   // When browser will be sending the blob data
-  public async blobDataLog(userId: string, blobLog: ILogInput): Promise<Log[]> {
+  public async blobDataLog(userId: string, blobLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add blob data userId ${userId} and value ${blobLog}`);
 
     const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
 
-    return this.createLog(blobLog, keyUniqueArray, userDoc);
+    // extract the array value
+    const promise = blobLog.map(async (individualMetrics) => {
+      return this.createLog(individualMetrics, keyUniqueArray, userDoc);
+    });
+
+    const logsToReturn = await Promise.all(promise);
+    return flatten(logsToReturn);
   }
 
   public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
