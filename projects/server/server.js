@@ -3,7 +3,7 @@ const express = require('express');
 const compression = require('compression');
 
 const CONTEXT = `/${process.env.CONTEXT || ''}`;
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4200;
 
 const app = express();
 
