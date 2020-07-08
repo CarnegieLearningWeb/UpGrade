@@ -18,8 +18,6 @@ import { Log } from '../models/Log';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
-// import bodyParser from 'body-parser';
-import { BlobValidator } from './validators/BlobValidator';
 
 /**
  * @swagger
@@ -292,10 +290,9 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  // @UseBefore(bodyParser.raw())
   public blobLog(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    blobData: BlobValidator
+    blobData: LogValidator
   ): Promise<Log[]> {
     return this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
   }
