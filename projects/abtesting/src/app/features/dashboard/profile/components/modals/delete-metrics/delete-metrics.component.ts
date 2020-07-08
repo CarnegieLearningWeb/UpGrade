@@ -11,6 +11,7 @@ import { METRICS_JOIN_TEXT } from '../../../../../../core/analysis/store/analysi
 })
 export class DeleteMetricsComponent {
 
+  metricName: string;
   constructor(
     private analysisService: AnalysisService,
     public dialogRef: MatDialogRef<DeleteMetricsComponent>,

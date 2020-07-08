@@ -113,6 +113,22 @@ $font-size-small: 15px;
             }
 
             &.end-criteria-container {
+              .end-criteria-underline {
+                &--blue {
+                  text-decoration: underline;
+                  text-decoration-color: var(--blue);
+                }
+
+                &--grey {
+                  text-decoration: underline;
+                }
+
+                &--blue,
+                &--grey {
+                  cursor: pointer;
+                }
+              }
+
               .end-criteria {
                 color: $dark-grey-text-color;
 
@@ -123,6 +139,15 @@ $font-size-small: 15px;
                 &--data {
                   color: var(--blue);
                 }
+              }
+
+              .edit-icon {
+                position: relative;
+                top: 5px;
+                margin-left: 5px;
+                width: 18px;
+                height: 18px;
+                font-size: var(--text-size-x-large);
               }
             }
 

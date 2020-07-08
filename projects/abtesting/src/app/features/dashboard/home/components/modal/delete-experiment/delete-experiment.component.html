@@ -1,7 +1,15 @@
 <div mat-dialog-content class="dialog">
   <p class="ft-16-600">
-    {{ 'home.delete-experiment.message.text' | translate: { experimentName: data.experimentName } }}
+    {{ 'home.delete-experiment.message.text' | translate }}
   </p>
+  <mat-form-field class="ft-14-600 name">
+    <input
+      matInput
+      class="ft-14-400 name-input"
+      [placeholder]="'home.delete-experiment.input-placeholder.text' | translate"
+      [(ngModel)]="expName"
+    />
+  </mat-form-field>
 </div>
 <div mat-dialog-actions class="dialog-actions">
   <button
@@ -14,7 +22,8 @@
   <button
     class="modal-btn default-button delete-btn"
     mat-flat-button
-    cdkFocusInitial
+    [ngClass]="{ 'default-button--disabled': expName !== data.experimentName }"
+    [disabled]="expName !== data.experimentName"
     (click)="deleteExperiment()"
   >
     {{ 'global.delete.text' | translate }}

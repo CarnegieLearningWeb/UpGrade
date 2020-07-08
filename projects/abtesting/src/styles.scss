@@ -36,6 +36,7 @@
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
 @import './app/features/dashboard/profile/components/modals/add-metrics/add-metrics.theme.scss';
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
+@import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -64,6 +65,7 @@
   @include metrics-component-theme($theme);
   @include add-metrics-component-theme($theme);
   @include experiment-query-result-component-theme($theme);
+  @include experiment-ending-criteria-component-theme($theme);
 }
 
 .light-theme {
@@ -103,7 +105,8 @@
 .new-user-modal,
 .queries-modal,
 .query-result,
-.add-metric-modal {
+.add-metric-modal,
+.experiment-ending-criteria {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
 
@@ -113,7 +116,7 @@
 }
 
 .delete-modal {
-  width: 350px;
+  width: 400px;
   min-height: 192px;
 
   .mat-dialog-container {
@@ -125,6 +128,11 @@
 .add-metric-modal {
   width: 804px;
   min-height: 294px;
+}
+
+.experiment-ending-criteria {
+  width: 600px;
+  min-height: 400px;
 }
 
 .query-result {
