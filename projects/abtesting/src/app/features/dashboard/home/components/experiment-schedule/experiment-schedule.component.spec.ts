@@ -11,7 +11,7 @@ describe('ExperimentScheduleComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ExperimentScheduleComponent ],
-      imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule,]
+      imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule]
     })
     .compileComponents();
   }));

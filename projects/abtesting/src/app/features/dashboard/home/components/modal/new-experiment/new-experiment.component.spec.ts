@@ -8,6 +8,7 @@ import { ExperimentDesignComponent } from '../../experiment-design/experiment-de
 import { ExperimentScheduleComponent } from '../../experiment-schedule/experiment-schedule.component';
 import { ExperimentPostConditionComponent } from '../../experiment-post-condition/experiment-post-condition.component';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
 describe('NewExperimentComponent', () => {
   let component: NewExperimentComponent;
@@ -23,7 +24,14 @@ describe('NewExperimentComponent', () => {
         ExperimentPostConditionComponent
       ],
       imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule,],
-      providers: [ExperimentService]
+      providers: [
+        ExperimentService,
+        { provide: MatDialogRef, useValue: {} },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {}
+        }
+      ]
     })
     .compileComponents();
   }));
@@ -34,7 +42,7 @@ describe('NewExperimentComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });
