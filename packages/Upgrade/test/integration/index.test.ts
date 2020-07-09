@@ -55,8 +55,7 @@ import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalSta
 import { GetAssignments } from './Support/index';
 import { StatsIndividualEnrollment, StatsGroupEnrollment } from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
-import { CreateLog } from './Experiment/dataLog';
-import { LogSum } from './Experiment/dataLog/index';
+import { CreateLog, LogOperations, RepeatedMeasure } from './Experiment/dataLog';
 import { QueryCRUD } from './Experiment/query';
 import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
 
@@ -91,8 +90,13 @@ describe('Integration Tests', () => {
   // Test cases
   // -------------------------------------------------------------------------
 
-  test('Log Sum', async (done) => {
-    await LogSum();
+  test('Log Operations', async (done) => {
+    await LogOperations();
+    done();
+  });
+
+  test('Repeated Measure', async (done) => {
+    await RepeatedMeasure();
     done();
   });
 

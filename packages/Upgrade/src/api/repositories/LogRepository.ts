@@ -1,9 +1,9 @@
-import { EntityRepository, Repository, EntityManager, getRepository } from 'typeorm';
+import { EntityRepository, Repository, EntityManager, getRepository, SelectQueryBuilder } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
 import { IndividualAssignment } from '../models/IndividualAssignment';
-import { OPERATION_TYPES, IMetricMetaData } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 import { Metric } from '../models/Metric';
@@ -113,35 +113,59 @@ export class LogRepository extends Repository<Log> {
       });
   }
 
-  public async analysis(query: any): Promise<any> {
+  public async analysis(query: Query): Promise<any> {
     const experimentId = query.experiment.id;
     const metric = query.metric.key;
     const { operationType, compareFn, compareValue } = query.query;
-    const { id: queryId } = query;
+    const { id: queryId, repeatedMeasure } = query;
 
     const metricId = metric.split(METRICS_JOIN_TEXT);
-    const metricString = metricId.reduce((accumulator: string, value: string) => {
+    let metricString = metricId.reduce((accumulator: string, value: string) => {
       return accumulator !== '' ? `${accumulator} -> '${value}'` : `'${value}'`;
     }, '');
+    if (compareFn && metricId.length > 1) {
+      metricString =
+        metricString.substring(0, metricString.lastIndexOf('->')) +
+        '->>' +
+        metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
+    }
 
-    let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId);
+    // updating metric string to use logs.data
+    let jsonDataValue = `logs.data -> ${metricString}`;
+    if (compareFn && metricId.length <= 1) {
+      jsonDataValue = `logs.data ->> ${metricString}`;
+    }
+
+    let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue);
+
+    let valueToUse = 'extracted.value';
+    switch (repeatedMeasure) {
+      case REPEATED_MEASURE.mostRecent:
+        this.repeatedMeasureMostRecent(executeQuery);
+        break;
+      case REPEATED_MEASURE.earliest:
+        this.repeatedMeasureEarliest(executeQuery);
+        break;
+      default:
+        this.repeatedMeasureMean(executeQuery, jsonDataValue);
+        valueToUse = 'avg.avgval';
+        break;
+    }
 
     let percentQuery; // Used for percentage query
     if (compareFn) {
       const castType = query.metric.type === IMetricMetaData.CONTINUOUS ? 'decimal' : 'text';
-      let castFn = `(cast(logs.data ->> ${metricString} as ${castType}))`;
+      let castFn = `(cast(${valueToUse} as ${castType}))`;
       if (metricId.length > 1) {
         // When we have more than 1 key then we want ->> operator to get json value as text
-        const val = metricString.substring(0, metricString.lastIndexOf('->')) + '->>'
-          + metricString.substring(metricString.lastIndexOf('->') + 2, metricString.length);
-        castFn = `(cast(logs.data -> ${val} as ${castType}))`;
+        castFn = `(cast(${valueToUse} as ${castType}))`;
       }
       if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-        percentQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId)
+        percentQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue)
           .andWhere(`${castFn} In (:...allowedData)`, {
             allowedData: query.metric.allowedData,
           })
-          .groupBy('"individualAssignment"."conditionId"');
+          .addGroupBy('"individualAssignment"."conditionId"');
       }
       executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
         compareValue,
@@ -151,17 +175,17 @@ export class LogRepository extends Repository<Log> {
     if (operationType === OPERATION_TYPES.PERCENTAGE) {
       executeQuery = executeQuery.select([
         '"individualAssignment"."conditionId"',
-        `count(cast(logs.data -> ${metricString} as text)) as result`,
+        `count(cast(${valueToUse} as text)) as result`,
       ]);
       percentQuery = percentQuery.select([
         '"individualAssignment"."conditionId"',
-        `count(cast(logs.data -> ${metricString} as text)) as result`,
+        `count(cast(${valueToUse} as text)) as result`,
       ]);
       const executeQueryResult = await executeQuery.getRawMany();
       const percentQueryResult = await percentQuery.getRawMany();
-      const result = executeQueryResult.map(res => {
+      const result = executeQueryResult.map((res) => {
         const { conditionId } = res;
-        const percentageQueryConditionRes = percentQueryResult.find(queryRes => queryRes.conditionId === conditionId);
+        const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);
         return {
           conditionId,
           result: (res.result / percentageQueryConditionRes.result) * 100,
@@ -173,24 +197,83 @@ export class LogRepository extends Repository<Log> {
         const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
         executeQuery = executeQuery.select([
           '"individualAssignment"."conditionId"',
-          `${queryFunction} within group (order by (cast(logs.data -> ${metricString} as decimal))) as result`,
+          `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
         ]);
       } else if (operationType === OPERATION_TYPES.COUNT) {
         executeQuery = executeQuery.select([
           '"individualAssignment"."conditionId"',
-          `${operationType}(cast(logs.data -> ${metricString} as text)) as result`,
+          `${operationType}(cast(${valueToUse} as text)) as result`,
         ]);
       } else {
         executeQuery = executeQuery.select([
           '"individualAssignment"."conditionId"',
-          `${operationType}(cast(logs.data -> ${metricString} as decimal)) as result`,
+          `${operationType}(cast(${valueToUse} as decimal)) as result`,
         ]);
       }
+      const getData = await executeQuery.getRawMany();
+      console.log('getData', getData);
       return executeQuery.getRawMany();
     }
   }
 
-  private getCommonAnalyticQuery(metric: string, experimentId: string, queryId: string): any {
+  private repeatedMeasureMostRecent(query: SelectQueryBuilder<Experiment>): SelectQueryBuilder<Experiment> {
+    return query.andWhere((qb) => {
+      const subQuery = qb
+        .subQuery()
+        .select('max(sqlog."createdAt")')
+        .from(Log, 'sqlog')
+        .where('sqlog."userId" = logs."userId"')
+        .getSql();
+      return `logs."createdAt" = ${subQuery}`;
+    });
+  }
+
+  private repeatedMeasureEarliest(query: SelectQueryBuilder<Experiment>): SelectQueryBuilder<Experiment> {
+    return query.andWhere((qb) => {
+      const subQuery = qb
+        .subQuery()
+        .select('min(sqlog."createdAt")')
+        .from(Log, 'sqlog')
+        .where('sqlog."userId" = logs."userId"')
+        .getSql();
+      return `logs."createdAt" = ${subQuery}`;
+    });
+  }
+
+  private repeatedMeasureMean(
+    query: SelectQueryBuilder<Experiment>,
+    jsonDataValue: string
+  ): SelectQueryBuilder<Experiment> {
+    // return query.select([`avg(cast(extracted.value as decimal)) as avgval`, 'logs."userId"']).groupBy('logs."userId"');
+    return query
+      .innerJoin(
+        (qb) => {
+          return qb
+            .subQuery()
+            .select([`avg(cast(${jsonDataValue} as decimal)) as avgval`, 'logs."userId" as "userId"'])
+            .from(Log, 'logs')
+            .groupBy('logs."userId"');
+        },
+        'avg',
+        'avg."userId" = logs."userId"'
+      )
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('min(sqlog."createdAt")')
+          .from(Log, 'sqlog')
+          .where('sqlog."userId" = logs."userId"')
+          .getSql();
+        return `logs."createdAt" = ${subQuery}`;
+      });
+  }
+
+  private getCommonAnalyticQuery(
+    metric: string,
+    experimentId: string,
+    queryId: string,
+    metricString: string
+  ): SelectQueryBuilder<Experiment> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
     return experimentRepo
@@ -202,6 +285,16 @@ export class LogRepository extends Repository<Log> {
         IndividualAssignment,
         'individualAssignment',
         'experiment.id = "individualAssignment"."experimentId" AND logs."userId" = "individualAssignment"."userId"'
+      )
+      .innerJoin(
+        (qb) => {
+          return qb
+            .subQuery()
+            .select([`${metricString} as value`, 'logs.id as id'])
+            .from(Log, 'logs');
+        },
+        'extracted',
+        'extracted.id = logs.id'
       )
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })

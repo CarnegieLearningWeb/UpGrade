@@ -18,7 +18,7 @@ export class QueryService {
     const queries = await this.queryRepository.find({
       relations: ['metric', 'experiment'],
     });
-    return queries.map(query => {
+    return queries.map((query) => {
       const { experiment, ...rest } = query;
       return { ...rest, experiment: { id: experiment.id, name: experiment.name } } as any;
     });
@@ -26,14 +26,14 @@ export class QueryService {
 
   public async analyse(queryIds: string[]): Promise<any> {
     this.log.info(`Get analysis of query with queryIds ${queryIds}`);
-    const promiseArray = queryIds.map(queryId =>
+    const promiseArray = queryIds.map((queryId) =>
       this.queryRepository.findOne(queryId, {
         relations: ['metric', 'experiment'],
       })
     );
 
     const promiseResult = await Promise.all(promiseArray);
-    const analysePromise = promiseResult.map(query => this.logRepository.analysis(query));
+    const analysePromise = promiseResult.map((query) => this.logRepository.analysis(query));
     let response = await Promise.all(analysePromise);
     response = response.map((res, index) => {
       return {

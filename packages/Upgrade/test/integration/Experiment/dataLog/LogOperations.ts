@@ -7,7 +7,7 @@ import { Metric } from '../../../../src/api/models/Metric';
 import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import { EXPERIMENT_STATE, OPERATION_TYPES } from 'upgrade_types';
+import { EXPERIMENT_STATE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
 import { getAllExperimentCondition } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
@@ -531,7 +531,12 @@ export default async function LogOperations(): Promise<void> {
   }
 }
 
-function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId: string): any {
+function makeQuery(
+  metric: string,
+  operationType: OPERATION_TYPES,
+  experimentId: string,
+  repeatedMeasure: REPEATED_MEASURE = REPEATED_MEASURE.mostRecent
+): any {
   return {
     name: 'query',
     query: {
@@ -541,6 +546,7 @@ function makeQuery(metric: string, operationType: OPERATION_TYPES, experimentId:
       key: metric,
     },
     experimentId,
+    repeatedMeasure,
   };
 }
 

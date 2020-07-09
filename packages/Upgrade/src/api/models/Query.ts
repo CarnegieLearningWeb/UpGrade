@@ -3,6 +3,7 @@ import { BaseModel } from './base/BaseModel';
 import { Metric } from './Metric';
 import { Experiment } from './Experiment';
 import { IsDefined } from 'class-validator';
+import { REPEATED_MEASURE } from 'upgrade_types';
 
 @Entity()
 export class Query extends BaseModel {
@@ -21,4 +22,11 @@ export class Query extends BaseModel {
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.queries, { onDelete: 'CASCADE' })
   public experiment: Experiment;
+
+  @Column({
+    type: 'enum',
+    enum: REPEATED_MEASURE,
+    default: REPEATED_MEASURE.mostRecent,
+  })
+  public repeatedMeasure: REPEATED_MEASURE;
 }
