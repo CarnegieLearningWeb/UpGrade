@@ -98,4 +98,10 @@ var DATE_RANGE;
     DATE_RANGE["LAST_SIX_MONTHS"] = "last_six_months";
     DATE_RANGE["LAST_TWELVE_MONTHS"] = "last_twelve_months";
 })(DATE_RANGE = exports.DATE_RANGE || (exports.DATE_RANGE = {}));
+var REPEATED_MEASURE;
+(function (REPEATED_MEASURE) {
+    REPEATED_MEASURE["mean"] = "MEAN";
+    REPEATED_MEASURE["earliest"] = "EARLIEST";
+    REPEATED_MEASURE["mostRecent"] = "MOST_RECENT";
+})(REPEATED_MEASURE = exports.REPEATED_MEASURE || (exports.REPEATED_MEASURE = {}));
 //# sourceMappingURL=enums.js.map

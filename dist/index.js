@@ -14,4 +14,5 @@ exports.UserRole = enums_1.UserRole;
 exports.OPERATION_TYPES = enums_1.OPERATION_TYPES;
 exports.IMetricMetaData = enums_1.IMetricMetaData;
 exports.DATE_RANGE = enums_1.DATE_RANGE;
+exports.REPEATED_MEASURE = enums_1.REPEATED_MEASURE;
 //# sourceMappingURL=index.js.map

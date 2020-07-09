@@ -12,6 +12,7 @@ import {
   OPERATION_TYPES,
   IMetricMetaData,
   DATE_RANGE,
+  REPEATED_MEASURE,
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -52,6 +53,7 @@ export {
   OPERATION_TYPES,
   IMetricMetaData,
   DATE_RANGE,
+  REPEATED_MEASURE,
   IMetricUnit,
   IFeatureFlag,
   IFlagVariation,

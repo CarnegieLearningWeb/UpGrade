@@ -83,3 +83,8 @@ export declare enum DATE_RANGE {
     LAST_SIX_MONTHS = "last_six_months",
     LAST_TWELVE_MONTHS = "last_twelve_months"
 }
+export declare enum REPEATED_MEASURE {
+    mean = "MEAN",
+    earliest = "EARLIEST",
+    mostRecent = "MOST_RECENT"
+}
