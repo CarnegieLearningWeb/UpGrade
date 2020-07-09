@@ -23,7 +23,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
 
   experimentInfo: ExperimentVM;
   experimentSub: Subscription;
-  displayedColumns = ['id', 'queryName', 'metric', 'operation', 'execute', 'edit', 'delete'];
+  displayedColumns = ['id', 'queryName', 'metric', 'operation', 'repeatedMeasure', 'execute', 'edit', 'delete'];
   createQueryMode = false;
   experimentQueries = [];
   searchInput = null;

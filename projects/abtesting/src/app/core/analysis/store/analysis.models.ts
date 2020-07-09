@@ -1,9 +1,10 @@
 import { AppState } from '../../core.module';
-import { OPERATION_TYPES, IMetricMetaData, IMetricUnit } from 'upgrade_types';
+import { OPERATION_TYPES, IMetricMetaData, IMetricUnit, REPEATED_MEASURE } from 'upgrade_types';
 
 export {
   OPERATION_TYPES,
-  IMetricMetaData
+  IMetricMetaData,
+  REPEATED_MEASURE
 };
 
 export const METRICS_JOIN_TEXT = '@__@';
@@ -22,13 +23,8 @@ export interface Query {
   query: any;
   metric: {
     key: string;
-  }
-}
-
-export enum RepeatedMeasure {
-  MEAN = 'mean',
-  EARLIEST = 'earliest',
-  MOST_RECENT = 'recent'
+  },
+  repeatedMeasure: REPEATED_MEASURE
 }
 
 export interface AnalysisState {

@@ -108,28 +108,26 @@
         <div *ngIf="selectedNode && tabIndex !== 0">
           <label>{{ 'monitor.metric-repeated-measure.text' | translate }}</label>
           <br>
-          <mat-radio-group formControlName="repeatedMeasure">
-            <!-- Remove checked true -->
+          <mat-radio-group class="radio-group" formControlName="repeatedMeasure">
             <mat-radio-button
-              class="ft-14-600"
-              [value]="RepeatedMeasure.MEAN"
+              class="ft-14-600 repeated-measure"
+              [value]="RepeatedMeasure.mean"
               color="primary"
-              [checked]="true"
             >
               {{ 'monitor.metric-mean.text' | translate }}
             </mat-radio-button>
             <br>
             <mat-radio-button
-              class="ft-14-600"
-              [value]="RepeatedMeasure.EARLIEST"
+              class="ft-14-600 repeated-measure"
+              [value]="RepeatedMeasure.earliest"
               color="primary"
             >
               {{ 'monitor.metric-earliest.text' | translate }}
             </mat-radio-button>
             <br>
             <mat-radio-button
-              class="ft-14-600"
-              [value]="RepeatedMeasure.MOST_RECENT"
+              class="ft-14-600 repeated-measure"
+              [value]="RepeatedMeasure.mostRecent"
               color="primary"
             >
               {{ 'monitor.metric-most-recent.text' | translate }}

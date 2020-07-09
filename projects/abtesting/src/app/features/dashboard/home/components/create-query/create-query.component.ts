@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
-import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData, RepeatedMeasure } from '../../../../../core/analysis/store/analysis.models';
+import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData, REPEATED_MEASURE } from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -51,7 +51,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       operationType: [null, Validators.required],
       compareFn: [null],
       compareValue: [null],
-      repeatedMeasure: [RepeatedMeasure.MEAN]
+      repeatedMeasure: [REPEATED_MEASURE.mostRecent]
     });
     this.ManageKeysControl(0);
 
@@ -118,6 +118,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
     } else {
       // Show only grouped metrics
+      this.queryForm.get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
       this.options[0] = this.allMetrics.filter(metric => metric.children.length !== 0);
     }
   }
@@ -193,6 +194,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       metric: {
         key: keys.join(METRICS_JOIN_TEXT)
       },
+      repeatedMeasure
     };
     if (compareFn && !!compareValue) {
       queryObj = {
@@ -219,6 +221,6 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   }
 
   get RepeatedMeasure() {
-    return RepeatedMeasure;
+    return REPEATED_MEASURE;
   }
 }
