@@ -85,6 +85,7 @@ var OPERATION_TYPES;
     OPERATION_TYPES["MODE"] = "mode";
     OPERATION_TYPES["MEDIAN"] = "median";
     OPERATION_TYPES["STDEV"] = "stddev";
+    OPERATION_TYPES["PERCENTAGE"] = "percentage";
 })(OPERATION_TYPES = exports.OPERATION_TYPES || (exports.OPERATION_TYPES = {}));
 var IMetricMetaData;
 (function (IMetricMetaData) {
