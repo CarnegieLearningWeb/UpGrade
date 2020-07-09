@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -18,6 +18,7 @@ import { Log } from '../models/Log';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
+import * as express from 'express';
 
 /**
  * @swagger
@@ -290,11 +291,14 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  public blobLog(
-    @Body({ validate: { validationError: { target: false, value: false } } })
-    blobData: LogValidator
-  ): Promise<Log[]> {
-    return this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
+  public blobLog(@Req() request: express.Request): Promise<Log[]> {
+    return new Promise((resolve) => {
+      request.on('readable', async (data) => {
+        const blobData = JSON.parse(request.read());
+        const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
+        resolve(response);
+      });
+    });
   }
 
   /**
