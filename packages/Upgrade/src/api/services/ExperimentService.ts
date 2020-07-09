@@ -32,7 +32,6 @@ import { ExperimentInput } from '../../types/ExperimentInput';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
-import { LogRepository } from '../repositories/LogRepository';
 
 // const METRIC_KEY_DIVIDER = "_@%@_";
 
@@ -49,7 +48,6 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private logRepository: LogRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     @Logger(__filename) private log: LoggerInterface
@@ -567,27 +565,27 @@ export class ExperimentService {
       })
       .then(async ({ newExperiment, toDeleteQueriesDoc }) => {
         // check if logs need to be deleted for metric query
-        if (toDeleteQueriesDoc.length > 0) {
-          await this.cleanLogsForQuery(toDeleteQueriesDoc);
-        }
+        // if (toDeleteQueriesDoc.length > 0) {
+        //   await this.cleanLogsForQuery(toDeleteQueriesDoc);
+        // }
         return newExperiment;
       });
   }
 
-  private async cleanLogsForQuery(query: Query[]): Promise<void> {
-    const result = await Promise.all(
-      query.map(({ metric: { key } }) => {
-        return this.queryRepository.checkIfQueryExists(key);
-      })
-    );
+  // private async cleanLogsForQuery(query: Query[]): Promise<void> {
+  //   const result = await Promise.all(
+  //     query.map(({ metric: { key } }) => {
+  //       return this.queryRepository.checkIfQueryExists(key);
+  //     })
+  //   );
 
-    for (let i = 0; i < result.length; i++) {
-      const value = result[i];
-      if (!value) {
-        await this.logRepository.deleteByMetricId(query[i].metric.key);
-      }
-    }
-  }
+  //   for (let i = 0; i < result.length; i++) {
+  //     const value = result[i];
+  //     if (!value) {
+  //       await this.logRepository.deleteByMetricId(query[i].metric.key);
+  //     }
+  //   }
+  // }
 
   // Used to generate twoCharacterId for condition and partition
   private getUniqueIdentifier(uniqueIdentifiers: string[]): string {
