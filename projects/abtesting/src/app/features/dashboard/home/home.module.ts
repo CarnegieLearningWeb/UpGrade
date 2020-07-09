@@ -29,6 +29,7 @@ import { OperationPipe } from '../../../shared/pipes/operation.pipe';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ExperimentQueryResultComponent } from './components/experiment-query-result/experiment-query-result.component';
 import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
+import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { ExperimentEndCriteriaComponent } from './components/modal/experiment-en
     CreateQueryComponent,
     ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
+    RepeatedMeasurePipe
   ],
   imports: [
     CommonModule,

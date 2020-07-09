@@ -41,8 +41,9 @@
         }
 
         .mat-column-operation,
-        .mat-column-queryName {
-          width: 20%;
+        .mat-column-queryName,
+        .mat-column-repeatedMeasure {
+          width: 15%;
         }
 
         .mat-column-delete {
@@ -59,7 +60,7 @@
         }
 
         .cdk-column-metric {
-          padding: 5px;
+          padding: 5px 10px;
         }
       }
 

@@ -130,6 +130,16 @@
             </td>
           </ng-container>
 
+           <!-- Repeated Measure Column -->
+           <ng-container matColumnDef="repeatedMeasure">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-repeated-measure.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span>{{ element.repeatedMeasure | repeatedMeasure }}</span>
+            </td>
+          </ng-container>
+
           <!-- Execute Column -->
           <ng-container matColumnDef="execute">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">

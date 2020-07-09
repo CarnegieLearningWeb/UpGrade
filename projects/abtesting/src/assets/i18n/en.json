@@ -236,6 +236,7 @@
   "query.form-compare-value.text": "Compare Value",
   "query.table-experiment.text": "EXPERIMENT",
   "query.table-execute.text": "EXECUTE",
+  "query.table-repeated-measure.text": "REPEATED MEASURE",
   "query.result-title.text": "result",
   "query.result.condition-code.text": "Condition Code",
   "query.result.result.text": "Result",

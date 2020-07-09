@@ -140,9 +140,12 @@
   min-height: 300px;
 }
 
-.new-experiment-modal,
-.queries-modal {
+.new-experiment-modal {
   width: 900px;
+}
+
+.queries-modal {
+  width: 1000px;
 }
 
 .new-flag-modal {
