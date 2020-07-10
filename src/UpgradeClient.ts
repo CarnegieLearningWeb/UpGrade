@@ -7,7 +7,7 @@ import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
 import failedExperimentPoint from './functions/failedExperimentPoint';
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
-import log, { sendAnalytics } from './functions/log';
+import log from './functions/log';
 import setAltUserIds from './functions/setAltUserIds';
 import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
