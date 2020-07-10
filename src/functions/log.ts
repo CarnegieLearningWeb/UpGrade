@@ -57,7 +57,7 @@ export function sendAnalytics(
   const body = JSON.stringify(data);
 
   fetch(url, {
-    method: 'POST',
+    method: Types.REQUEST_TYPES.POST,
     keepalive: true,
     body,
     headers
