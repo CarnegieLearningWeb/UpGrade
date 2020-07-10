@@ -10,21 +10,24 @@ export default async function fetchDataService(url: string, token: string, data:
 
 async function fetchDataFromDB(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, requestCount: number, requestThreshold: number, sendAsAnalytics = false): Promise<Interfaces.IResponse> {
   try {
-    let options: any = {
-      method: requestType,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    };
-    if (token) {
-      options = {
-        ...options,
-        headers: {
-          ...options.headers,
-          'Authorization': `Bearer ${token}`
-        }
+
+    let headers: any = {
+      'Content-Type': 'application/json'
+    }
+    if (!!token) {
+      headers = {
+        ...headers,
+        'Authorization': `Bearer ${token}`
       }
     }
+
+
+    let options: any = {
+      headers,
+      method: requestType,
+      keepalive: sendAsAnalytics === true
+    };
+
     if (requestType === Types.REQUEST_TYPES.POST) {
       options = {
         ...options,
@@ -32,12 +35,6 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
       }
     }
 
-    if (sendAsAnalytics === true) {
-      options = {
-        ...options,
-        keepalive: true
-      }
-    }
     const response = await fetch(url, options);
     const responseData = await response.json();
     // If name, endpoint and message appears in response then its error
