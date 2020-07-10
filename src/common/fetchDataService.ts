@@ -11,13 +11,17 @@ export default async function fetchDataService(url: string, token: string, data:
 async function fetchDataFromDB(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, requestCount: number, requestThreshold: number, sendAsAnalytics = false): Promise<Interfaces.IResponse> {
   try {
 
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
+    let headers: any = {
+      'Content-Type': 'application/json'
+    }
     if (!!token) {
-      headers.append('Authorization', `Bearer ${token}`);
+      headers = {
+        ...headers,
+        'Authorization': `Bearer ${token}`
+      }
     }
 
-    
+
     let options: any = {
       headers,
       method: requestType,
@@ -30,7 +34,7 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
         body: JSON.stringify(data)
       }
     }
-    
+
     const response = await fetch(url, options);
     const responseData = await response.json();
     // If name, endpoint and message appears in response then its error
