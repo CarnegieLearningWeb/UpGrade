@@ -1,6 +1,7 @@
 import { Types, Interfaces } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 import { ILogInput } from 'upgrade_types';
+import * as fetch from 'isomorphic-fetch';
 
 export default async function log(
   url: string,
@@ -37,30 +38,28 @@ export function sendAnalytics(
   token: string,
   value: ILogInput[]
 ): void {
+
   const data = {
     userId,
     value
   };
 
   let headers: any = {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  };
 
   if (!!token) {
     headers = {
       ...headers,
       'Authorization': `Bearer ${token}`
-    }
+    };
   }
+  const body = JSON.stringify(data);
 
-  const blob = new Blob([JSON.stringify(data)], headers);
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(url, blob);
-  } else {
-    console.error('navigator.sendBeacon not supported');
-    // handle with xhr fallback
-    const xhr = new XMLHttpRequest();
-    xhr.open('post', url, false);
-    xhr.send(blob);
-  }
+  fetch(url, {
+    method: 'POST',
+    keepalive: true,
+    body,
+    headers
+  });
 }
