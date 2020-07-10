@@ -18,9 +18,9 @@ export default async function getAllFeatureFlags(url: string, token: string): Pr
         };
       });
     } else {
-      throw new Error(featureFlagResponse.message);
+      throw new Error(JSON.stringify(featureFlagResponse.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

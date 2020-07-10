@@ -10,19 +10,15 @@ export default async function addMetrics(
   try {
     const response = await fetchDataService(url, token, { metricUnit: metrics }, Types.REQUEST_TYPES.POST);
     if (response.status) {
-      if (Array.isArray(response.data)) {
-        response.data =  response.data.map(metric => {
-          const { createdAt, updatedAt, versionNumber, ...rest } = metric;
-          return rest;
-        });
-        return response.data;
-      }
-      // If type is not array then it is an error
-      throw new Error(response.data);
+      response.data = response.data.map(metric => {
+        const { createdAt, updatedAt, versionNumber, ...rest } = metric;
+        return rest;
+      });
+      return response.data;
     } else {
-      throw new Error(response.message);
+      throw new Error(JSON.stringify(response.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

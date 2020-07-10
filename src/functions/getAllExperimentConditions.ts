@@ -10,25 +10,21 @@ export default async function getAllExperimentConditions(url: string, userId: st
     };
     const experimentConditionResponse = await fetchDataService(url, token, params, Types.REQUEST_TYPES.POST);
     if (experimentConditionResponse.status) {
-      if (Array.isArray(experimentConditionResponse.data)) {
-        experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
-          return {
-            ...data,
-            assignedCondition: {
-              conditionCode: data.assignedCondition.conditionCode,
-              twoCharacterId: data.assignedCondition.twoCharacterId,
-              description: data.assignedCondition.description
-            }
+      experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
+        return {
+          ...data,
+          assignedCondition: {
+            conditionCode: data.assignedCondition.conditionCode,
+            twoCharacterId: data.assignedCondition.twoCharacterId,
+            description: data.assignedCondition.description
           }
-        });
-        return experimentConditionResponse.data;
-      }
-      // If type is not array then it is an error
-      throw new Error(experimentConditionResponse.data);
+        }
+      });
+      return experimentConditionResponse.data;
     } else {
-      throw new Error(experimentConditionResponse.message);
+      throw new Error(JSON.stringify(experimentConditionResponse.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

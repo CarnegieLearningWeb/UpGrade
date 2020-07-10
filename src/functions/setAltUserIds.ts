@@ -16,9 +16,9 @@ export default async function setAltUserIds(
     if (response.status) {
       return response.data;
     } else {
-      throw new Error(response.message);
+      throw new Error(JSON.stringify(response.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

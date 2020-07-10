@@ -15,9 +15,9 @@ export default async function setWorkingGroup(url: string, userId: string, token
         workingGroup
       };
     } else {
-      throw new Error(response.message);
+      throw new Error(JSON.stringify(response.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }

@@ -18,9 +18,9 @@ export default async function log(
     if (logResponse.status) {
       return logResponse.data;
     } else {
-      throw new Error(logResponse.message);
+      throw new Error(JSON.stringify(logResponse.message));
     }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error.message);
   }
 }
