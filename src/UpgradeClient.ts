@@ -115,7 +115,7 @@ export default class UpgradeClient {
         this.validateClient();
         return await failedExperimentPoint(UpgradeClient.api.failedExperimentPoint, this.token, experimentPoint, reason, this.userId, experimentId);
     }
-    
+
     async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
         this.validateClient();
         const response = await getAllFeatureFlags(UpgradeClient.api.getAllFeatureFlag, this.token);
@@ -130,13 +130,9 @@ export default class UpgradeClient {
         return getFeatureFlag(this.featureFlags, key);
     }
 
-    async log(value: ILogInput[]): Promise<Interfaces.ILog[]> {
+    async log(value: ILogInput[], sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
         this.validateClient();
-        return await log(UpgradeClient.api.log, this.userId, this.token, value);
-    }
-
-    sendAnalytics(value: ILogInput[]): void {
-        return sendAnalytics(UpgradeClient.api.log, this.userId, this.token, value);
+        return await log(UpgradeClient.api.log, this.userId, this.token, value, sendAsAnalytics);
     }
 
     async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
