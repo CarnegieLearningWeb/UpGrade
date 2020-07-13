@@ -20,7 +20,7 @@ export default class UpgradeClient {
     failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint>;
     getAllFeatureFlags(): Promise<IFeatureFlag[]>;
     getFeatureFlag(key: string): IFeatureFlag;
-    log(value: ILogInput[]): Promise<Interfaces.ILog[]>;
+    log(value: ILogInput[], sendAsAnalytics?: boolean): Promise<Interfaces.ILog[]>;
     setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]>;
     addMetrics(metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]>;
 }

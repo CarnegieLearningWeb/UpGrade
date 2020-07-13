@@ -6,14 +6,15 @@ export default async function log(
   url: string,
   userId: string,
   token: string,
-  value: ILogInput[]
+  value: ILogInput[],
+  sendAsAnalytics = false
 ): Promise<Interfaces.ILog[]> {
   try {
     const data = {
       userId,
       value
     };
-    const logResponse = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST);
+    const logResponse = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST, sendAsAnalytics);
     if (logResponse.status) {
       return logResponse.data;
     } else {
