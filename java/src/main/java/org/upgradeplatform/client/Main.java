@@ -10,9 +10,7 @@ import java.util.concurrent.ExecutionException;
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.ErrorResponse;
-import org.upgradeplatform.responsebeans.ExperimentsResponse;
-import org.upgradeplatform.responsebeans.InitRequest;
-
+import org.upgradeplatform.responsebeans.ExperimentUser;
 
 
 public class Main {
@@ -28,37 +26,17 @@ public class Main {
 		HashMap<String, List<String>> group = new HashMap<>();
 		group.put("classes", Arrays.asList(classList));
 		group.put("teachers", Arrays.asList(teacherList));
+		
+		
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl)){
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
-		    experimentClient.setGroupMembership(group, new ResponseCallback<InitRequest>(){
-		        @Override
-		        public void onSuccess(InitRequest __){
-		            experimentClient.getAllExperimentCondition("addition hard", new ResponseCallback<List<ExperimentsResponse>>() {
-
-		                @Override
-		                public void onSuccess(@NonNull List<ExperimentsResponse> ers) {
-		                    experimentClient.getExperimentCondition("foo", new ResponseCallback<ExperimentsResponse>(){
-
-                                @Override
-                                public void onSuccess(@NonNull ExperimentsResponse er){
-                                    result.complete(prefix() + "retrieved " + ers.size() + " experiment responses; foo response: " + er);
-                                }
-
-                                @Override
-                                public void onError(@NonNull ErrorResponse error){
-                                    result.completeExceptionally(new Exception(prefix() + error.toString()));
-                                }
-                            });
-		                }
-
-		                @Override
-		                public void onError(@NonNull ErrorResponse error) {
-                            result.completeExceptionally(new Exception(prefix() + error.toString()));
-		                }
-		            });
+		    experimentClient.setGroupMembership(group, new ResponseCallback<ExperimentUser>(){
+				@Override
+		        public void onSuccess(ExperimentUser i){
+					result.complete(prefix() + "retrieved  experiment responses; foo response: " + i.getId());
 		        }
 
 		        @Override

@@ -5,6 +5,11 @@ Make a new instance of ExperimentClient class by passing `userId, authToken, bas
 
 # Functions
 
+## setAltUserIds
+Set alternative user ids for current user
+
+> setAltUserIds(String[] altUserIds, callback)
+
 ## SetGroupMemebership
 Updates/Set the group membership of the initialized user
 
@@ -45,6 +50,25 @@ Use this function to report failure with given reason
 
 > failedExperimentPoint(String experimentPoint, String experimentId, String reason, callback)
 
+## log
+Use this function to log data
+
+> log(String key, Object value, callback)
+
+## addMetrics
+Use this function to add metrics in upgrade system
+
+> addMetrics(MetricUnit[] metrics, callback)
+
+## getAllFeatureFlags
+Use this function to get feature flags list
+
+getAllFeatureFlags()
+
+## getFeatureFlag
+Use this function to get feature flag matched to given key
+
+getFeatureFlag(String key, callback)
 
 # Example request
 
