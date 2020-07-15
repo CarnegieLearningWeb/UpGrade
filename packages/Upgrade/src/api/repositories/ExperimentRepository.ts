@@ -79,10 +79,15 @@ export class ExperimentRepository extends Repository<Experiment> {
       });
   }
 
-  public async updateState(experimentId: string, state: EXPERIMENT_STATE, scheduleDate: Date): Promise<Experiment> {
+  public async updateState(
+    experimentId: string,
+    state: EXPERIMENT_STATE,
+    scheduleDate: Date,
+    endDate: Date = null
+  ): Promise<Experiment> {
     const result = await this.createQueryBuilder('experiment')
       .update()
-      .set({ state, startOn: scheduleDate })
+      .set({ state, startOn: scheduleDate, endDate })
       .where({ id: experimentId })
       .returning('*')
       .execute()

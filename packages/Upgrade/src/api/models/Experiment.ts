@@ -54,6 +54,9 @@ export class Experiment extends BaseModel {
   @IsNotEmpty()
   public startOn: Date;
 
+  @Column({ nullable: true })
+  public endDate: Date;
+
   @IsNotEmpty()
   @Column({
     type: 'enum',

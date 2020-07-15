@@ -19,7 +19,7 @@ import {
   PreviewForcedAssigned,
 } from './ExperimentAssignment';
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
-import { UpdateExperiment } from './Experiment/update';
+import { UpdateExperiment, ExperimentEndDate } from './Experiment/update';
 import { ExperimentContextAssignments } from './Experiment/experimentContext';
 import {
   EndExperiment,
@@ -213,6 +213,12 @@ describe('Integration Tests', () => {
   // testing experiment update over here
   test('Update Experiment', async (done) => {
     await UpdateExperiment();
+    done();
+  });
+
+  // testing experiment update over here
+  test('Experiment End Date when updated', async (done) => {
+    await ExperimentEndDate();
     done();
   });
 

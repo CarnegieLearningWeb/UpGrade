@@ -40,6 +40,8 @@ export class ExperimentInput {
 
   public endOn: Date;
 
+  public endDate: Date;
+
   public revertTo: string;
 
   public tags: string[];

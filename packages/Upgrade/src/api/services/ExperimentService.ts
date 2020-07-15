@@ -218,8 +218,10 @@ export class ExperimentService {
     // add experiment audit logs
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
+    const endDate = state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE ? new Date() : null;
+
     // update experiment
-    const updatedState = await this.experimentRepository.updateState(experimentId, state, scheduleDate);
+    const updatedState = await this.experimentRepository.updateState(experimentId, state, scheduleDate, endDate);
 
     // updating experiment schedules here
     await this.updateExperimentSchedules(experimentId);
@@ -347,6 +349,10 @@ export class ExperimentService {
 
         let experimentDoc: Experiment;
         try {
+          // if state is enrollment complete add endDate
+          if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+            expDoc.endDate = new Date();
+          }
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
         } catch (error) {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
@@ -637,6 +643,10 @@ export class ExperimentService {
       // saving experiment docs
       let experimentDoc: Experiment;
       try {
+        // if state is enrollment complete add endDate
+        if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+          expDoc.endDate = new Date();
+        }
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
