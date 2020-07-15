@@ -34,6 +34,12 @@ export declare enum SERVER_ERROR {
     INVALID_TOKEN = "Invalid token",
     TOKEN_NOT_PRESENT = "Token is not present in request"
 }
+export declare enum ENROLLMENT_CODE {
+    INCLUDED = "Student included in experiment",
+    PRIOR_EXPERIMENT_ENROLLING = "Student reached experiment point prior to experiment enrolling",
+    STUDENT_EXCLUDED = "Student was on exclusion list",
+    GROUP_EXCLUDED = "GROUP was on exclusion list"
+}
 export declare enum EXPERIMENT_LOG_TYPE {
     EXPERIMENT_CREATED = "experimentCreated",
     EXPERIMENT_UPDATED = "experimentUpdated",

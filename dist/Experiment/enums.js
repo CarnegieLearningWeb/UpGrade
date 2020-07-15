@@ -41,6 +41,13 @@ var SERVER_ERROR;
     SERVER_ERROR["INVALID_TOKEN"] = "Invalid token";
     SERVER_ERROR["TOKEN_NOT_PRESENT"] = "Token is not present in request";
 })(SERVER_ERROR = exports.SERVER_ERROR || (exports.SERVER_ERROR = {}));
+var ENROLLMENT_CODE;
+(function (ENROLLMENT_CODE) {
+    ENROLLMENT_CODE["INCLUDED"] = "Student included in experiment";
+    ENROLLMENT_CODE["PRIOR_EXPERIMENT_ENROLLING"] = "Student reached experiment point prior to experiment enrolling";
+    ENROLLMENT_CODE["STUDENT_EXCLUDED"] = "Student was on exclusion list";
+    ENROLLMENT_CODE["GROUP_EXCLUDED"] = "GROUP was on exclusion list";
+})(ENROLLMENT_CODE = exports.ENROLLMENT_CODE || (exports.ENROLLMENT_CODE = {}));
 var EXPERIMENT_LOG_TYPE;
 (function (EXPERIMENT_LOG_TYPE) {
     EXPERIMENT_LOG_TYPE["EXPERIMENT_CREATED"] = "experimentCreated";
