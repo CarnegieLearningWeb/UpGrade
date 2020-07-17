@@ -83,11 +83,12 @@ export class ExperimentRepository extends Repository<Experiment> {
     experimentId: string,
     state: EXPERIMENT_STATE,
     scheduleDate: Date,
-    endDate: Date = null
+    endDate: Date = null,
+    startDate: Date = null
   ): Promise<Experiment> {
     const result = await this.createQueryBuilder('experiment')
       .update()
-      .set({ state, startOn: scheduleDate, endDate })
+      .set({ state, startOn: scheduleDate, endDate, startDate })
       .where({ id: experimentId })
       .returning('*')
       .execute()

@@ -19,7 +19,7 @@ import {
   PreviewForcedAssigned,
 } from './ExperimentAssignment';
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
-import { UpdateExperiment, ExperimentEndDate } from './Experiment/update';
+import { UpdateExperiment, ExperimentEndDate, ExperimentStartDate } from './Experiment/update';
 import { ExperimentContextAssignments } from './Experiment/experimentContext';
 import {
   EndExperiment,
@@ -58,6 +58,8 @@ import { MetricCRUD } from './Experiment/metric';
 import { CreateLog, LogOperations, RepeatedMeasure } from './Experiment/dataLog';
 import { QueryCRUD } from './Experiment/query';
 import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
+import { IndividualExperimentEnrollmentCode } from './Experiment/enrollmentCode';
+import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -222,6 +224,12 @@ describe('Integration Tests', () => {
     done();
   });
 
+  // testing experiment update over here
+  test('Experiment Start Date when updated', async (done) => {
+    await ExperimentStartDate();
+    done();
+  });
+
   // testing ScheduleJob
   test('Create Scheduled Job in database to start experiment', async (done) => {
     await StartExperiment();
@@ -333,11 +341,6 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Experiment Context Assignment', async (done) => {
-    await ExperimentContextAssignments();
-    done();
-  });
-
   test('Metric CRUD', async (done) => {
     await MetricCRUD();
     done();
@@ -350,6 +353,26 @@ describe('Integration Tests', () => {
 
   test('Query CRUD operation', async (done) => {
     await QueryCRUD();
+    done();
+  });
+
+  test('Individual Experiment Enrollment Code', async (done) => {
+    await IndividualExperimentEnrollmentCode();
+    done();
+  });
+
+  test('Group Experiment Enrollment Code', async (done) => {
+    await GroupExperimentEnrollmentCode();
+    done();
+  });
+
+  test('Experiment Experiment Enrollment Code', async (done) => {
+    await ExperimentExperimentEnrollmentCode();
+    done();
+  });
+
+  test('Experiment Context Assignment', async (done) => {
+    await ExperimentContextAssignments();
     done();
   });
 });

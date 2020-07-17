@@ -8,6 +8,7 @@ import {
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
   IExperimentAssignment,
+  ENROLLMENT_CODE,
 } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -45,6 +46,7 @@ import { SettingService } from './SettingService';
 import isequal from 'lodash.isequal';
 import flatten from 'lodash.flatten';
 import { ILogInput } from 'upgrade_types';
+import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -59,6 +61,8 @@ export class ExperimentAssignmentService {
     private groupAssignmentRepository: GroupAssignmentRepository,
     @OrmRepository()
     private individualAssignmentRepository: IndividualAssignmentRepository,
+    @OrmRepository()
+    private monitoredExperimentPointLogRepository: MonitoredExperimentPointLogRepository,
     @OrmRepository()
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
@@ -113,6 +117,8 @@ export class ExperimentAssignmentService {
       relations: ['experiment'],
     });
 
+    let enrollmentCode: ENROLLMENT_CODE | null = null;
+    const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
     if (experimentPartition) {
       const { experiment } = experimentPartition;
       const promiseArray = [];
@@ -123,19 +129,78 @@ export class ExperimentAssignmentService {
       ) {
         promiseArray.push(this.updateExperimentEnrollmentComplete(experiment));
       }
+
+      const assignmentPromise: Array<Promise<any>> = [
+        // query individual assignment for user
+        this.individualAssignmentRepository.findAssignment(userDoc.id, [experiment.id]),
+        // query group assignment
+        (workingGroup &&
+          this.groupAssignmentRepository.findExperiment([workingGroup[experiment.group]], [experiment.id])) ||
+          Promise.resolve([]),
+        // query group exclusion
+        (workingGroup &&
+          this.groupExclusionRepository.findExcluded([workingGroup[experiment.group]], [experiment.id])) ||
+          Promise.resolve([]),
+      ];
+      const result = await Promise.all(assignmentPromise);
+      const individualAssignments: IndividualAssignment[] = result[0];
+      const groupExcluded: GroupAssignment[] = result[2];
+
       promiseArray.push(
-        this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment)
+        this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment, result)
       );
 
       await Promise.all(promiseArray);
+
+      // find monitored document
+      const monitoredDocumentExist = await this.monitoredExperimentPointRepository.findOne({
+        id: `${experimentId}_${userDoc.id}`,
+      });
+
+      // new document of user will be saved
+      if (!monitoredDocumentExist) {
+        if (experiment.state === EXPERIMENT_STATE.ENROLLING) {
+          enrollmentCode = ENROLLMENT_CODE.INCLUDED;
+          if (experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL) {
+            if (individualAssignments.length === 0) {
+              enrollmentCode = ENROLLMENT_CODE.STUDENT_EXCLUDED;
+            }
+          } else if (experiment.consistencyRule === CONSISTENCY_RULE.GROUP) {
+            if (groupExcluded.length > 0) {
+              enrollmentCode = ENROLLMENT_CODE.GROUP_EXCLUDED;
+            }
+          } else if (experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT) {
+            enrollmentCode = ENROLLMENT_CODE.INCLUDED;
+          }
+        } else if (experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+          if (experiment.consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
+            enrollmentCode = ENROLLMENT_CODE.PRIOR_EXPERIMENT_ENROLLING;
+          }
+        }
+      } else if (
+        monitoredDocumentExist &&
+        monitoredDocumentExist.enrollmentCode === null &&
+        experiment.state === EXPERIMENT_STATE.ENROLLING &&
+        experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT
+      ) {
+        enrollmentCode = ENROLLMENT_CODE.INCLUDED;
+
+        // update enrollment code
+        this.monitoredExperimentPointRepository.update({ id: monitoredDocumentExist.id }, { enrollmentCode });
+      }
     }
 
-    const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
     // adding in monitored experiment point table
-    return this.monitoredExperimentPointRepository.saveRawJson({
+    const monitoredDocument = await this.monitoredExperimentPointRepository.saveRawJson({
       user: userDoc,
       experimentId,
+      enrollmentCode,
     });
+
+    // save monitored log document
+    await this.monitoredExperimentPointLogRepository.save({ monitoredExperimentPoint: monitoredDocument });
+
+    return monitoredDocument;
   }
 
   public async getAllExperimentConditions(
@@ -688,21 +753,12 @@ export class ExperimentAssignmentService {
   private async updateExclusionFromMarkExperimentPoint(
     user: ExperimentUser,
     userEnvironment: any,
-    experiment: Experiment
+    experiment: Experiment,
+    assignmentPromise: any
   ): Promise<void> {
-    const { state, consistencyRule, id, group } = experiment;
+    const { state, consistencyRule, group } = experiment;
 
-    const assignmentPromise: Array<Promise<any>> = [
-      // query individual assignment for user
-      this.individualAssignmentRepository.findAssignment(user.id, [id]),
-      // query group assignment
-      (userEnvironment && this.groupAssignmentRepository.findExperiment([userEnvironment[experiment.group]], [id])) ||
-        Promise.resolve([]),
-      // query group exclusion
-      (userEnvironment && this.groupExclusionRepository.findExcluded([userEnvironment[experiment.group]], [id])) ||
-        Promise.resolve([]),
-    ];
-    const [individualAssignments, groupAssignments, groupExcluded] = await Promise.all(assignmentPromise);
+    const [individualAssignments, groupAssignments, groupExcluded] = assignmentPromise;
 
     if (consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
       if (state === EXPERIMENT_STATE.ENROLLING) {

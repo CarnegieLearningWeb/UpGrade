@@ -44,6 +44,6 @@ export class CheckService {
   }
 
   public getAllMarkedExperimentPoints(): Promise<MonitoredExperimentPoint[]> {
-    return this.monitoredExperimentPointRepository.find({ relations: ['user'] });
+    return this.monitoredExperimentPointRepository.find({ relations: ['user', 'monitoredPointLogs'] });
   }
 }

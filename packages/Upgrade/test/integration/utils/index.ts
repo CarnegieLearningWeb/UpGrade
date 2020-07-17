@@ -2,7 +2,7 @@ import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExper
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { IExperimentAssignment } from 'upgrade_types';
+import { IExperimentAssignment, ENROLLMENT_CODE } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
@@ -43,20 +43,46 @@ export function checkMarkExperimentPointForUser(
   markedExperimentPoint: MonitoredExperimentPoint[],
   userId: string,
   experimentName: string,
-  experimentPoint: string
+  experimentPoint: string,
+  markExperimentPointLogLength?: number,
+  enrollmentCode?: ENROLLMENT_CODE
 ): void {
   const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
-  expect(markedExperimentPoint).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        id: `${experimentId}_${userId}`,
-        experimentId,
-        user: expect.objectContaining({
-          id: userId,
+  if (!markExperimentPointLogLength) {
+    expect(markedExperimentPoint).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: `${experimentId}_${userId}`,
+          experimentId,
+          user: expect.objectContaining({
+            id: userId,
+          }),
         }),
-      }),
-    ])
-  );
+      ])
+    );
+  } else {
+    expect(markedExperimentPoint).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: `${experimentId}_${userId}`,
+          experimentId,
+          user: expect.objectContaining({
+            id: userId,
+          }),
+        }),
+      ])
+    );
+
+    const monitorDocument = markedExperimentPoint.find((markedPoint) => {
+      return markedPoint.id === `${experimentId}_${userId}` && experimentId === experimentId;
+    });
+
+    expect(monitorDocument.monitoredPointLogs.length).toEqual(markExperimentPointLogLength);
+
+    if (enrollmentCode) {
+      expect(monitorDocument.enrollmentCode).toEqual(enrollmentCode);
+    }
+  }
 }
 
 export async function getAllExperimentCondition(

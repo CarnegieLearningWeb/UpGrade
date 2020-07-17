@@ -71,12 +71,12 @@ export class AnalyticsService {
       groupExclusion,
     ] = promiseArray[1];
 
-    // console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
-    // console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
-    // console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
-    // console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
-    // console.log('individualExclusion', individualExclusion);
-    // console.log('groupExclusion', groupExclusion);
+    console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
+    console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
+    console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
+    console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
+    console.log('individualExclusion', individualExclusion);
+    console.log('groupExclusion', groupExclusion);
 
     return {
       id: experimentId,

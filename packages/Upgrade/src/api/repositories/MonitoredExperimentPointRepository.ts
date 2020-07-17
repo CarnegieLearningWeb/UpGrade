@@ -1,11 +1,12 @@
 import { EntityRepository, EntityManager, Repository } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import repositoryError from './utils/repositoryError';
+import { ENROLLMENT_CODE } from 'upgrade_types';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
   public async saveRawJson(
-    rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id'>
+    rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id' | 'monitoredPointLogs'>
   ): Promise<MonitoredExperimentPoint> {
     const id = `${rawData.experimentId}_${rawData.user.id}`;
     const result = await this.createQueryBuilder('monitoredPoint')
@@ -58,5 +59,18 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         const errorMsgString = repositoryError(this.constructor.name, 'getByDateRange', { ids, from, to }, errorMsg);
         throw new Error(errorMsgString);
       });
+  }
+
+  public async updateEnrollmentCode(
+    enrollmentCode: ENROLLMENT_CODE,
+    ids: string[]
+  ): Promise<MonitoredExperimentPoint[]> {
+    const result = await this.createQueryBuilder('monitoredExperiment')
+      .update()
+      .set({ enrollmentCode })
+      .where('id IN (:...values) AND enrollmentCode is null', { values: ids })
+      .execute();
+
+    return result.raw;
   }
 }

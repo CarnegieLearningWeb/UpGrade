@@ -17,7 +17,7 @@ import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE } from 'upgrade_types';
+import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
@@ -219,9 +219,16 @@ export class ExperimentService {
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
     const endDate = state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE ? new Date() : null;
+    const startDate = state === EXPERIMENT_STATE.ENROLLING ? new Date() : null;
 
     // update experiment
-    const updatedState = await this.experimentRepository.updateState(experimentId, state, scheduleDate, endDate);
+    const updatedState = await this.experimentRepository.updateState(
+      experimentId,
+      state,
+      scheduleDate,
+      endDate,
+      startDate
+    );
 
     // updating experiment schedules here
     await this.updateExperimentSchedules(experimentId);
@@ -281,6 +288,16 @@ export class ExperimentService {
     // end the loop if no users
     if (uniqueUserIds.size === 0) {
       return;
+    }
+
+    // update document of monitoredExperimentPoints to ENROLLMENT CODE STUDENT EXCLUDED
+    if (experiment.consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
+      const monitoredExperimentIds = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.id);
+
+      await this.monitoredExperimentPointRepository.updateEnrollmentCode(
+        ENROLLMENT_CODE.STUDENT_EXCLUDED,
+        monitoredExperimentIds
+      );
     }
 
     const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
@@ -352,6 +369,8 @@ export class ExperimentService {
           // if state is enrollment complete add endDate
           if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
             expDoc.endDate = new Date();
+          } else if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
+            expDoc.startDate = new Date();
           }
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
         } catch (error) {
@@ -646,6 +665,8 @@ export class ExperimentService {
         // if state is enrollment complete add endDate
         if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
           expDoc.endDate = new Date();
+        } else if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
+          expDoc.startDate = new Date();
         }
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {

@@ -23,6 +23,8 @@ export class ExperimentInput {
   @IsNotEmpty()
   public state: EXPERIMENT_STATE;
 
+  public startDate: Date;
+
   @ValidateIf((o) => o.state === EXPERIMENT_STATE.SCHEDULED)
   @IsNotEmpty()
   public startOn: Date;
