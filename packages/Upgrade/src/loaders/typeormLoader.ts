@@ -31,9 +31,11 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     }
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
-      throw new Error(SERVER_ERROR.DB_UNREACHABLE);
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.DB_UNREACHABLE, message: ` : ${error.message}` }));
+    } else if (error.code === '42P07') {
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.MIGRATION_ERROR, message: ` : ${error.message}` }));
     } else {
-      throw new Error(SERVER_ERROR.DB_AUTH_FAIL);
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.DB_AUTH_FAIL, message: ` : ${error.message}` }));
     }
   }
 };
