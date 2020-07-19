@@ -1,9 +1,10 @@
-import { JsonController, Get, Post, Body, Authorized, ContentType, Param, Header } from 'routing-controllers';
+import { JsonController, Post, Body, Authorized } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { IExperimentEnrollmentStats, IExperimentEnrollmentDetailStats } from 'upgrade_types';
 import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsValidator';
 import { EnrollmentAnalyticsDateValidator } from './validators/EnrollmentAnalyticsDateValidator';
 import { EnrollmentDetailAnalyticsValidator } from './validators/EnrollmentDetailAnalyticsValidator';
+import { DataExportValidator } from './validators/DataExportValidator';
 
 /**
  * @swagger
@@ -119,25 +120,31 @@ export class AnalyticsController {
   /**
    * @swagger
    * /stats/csv/{experimentId}:
-   *    get:
-   *       description: Get report by experimentId
+   *    post:
+   *       description: Get csv files
    *       parameters:
-   *         - in: path
-   *           name: experimentId
+   *         - in: body
+   *           name: props
    *           required: true
    *           schema:
-   *             type: string
-   *           description: Experiment Id
+   *             type: object
+   *             properties:
+   *              experimentId:
+   *                type: string
+   *              email:
+   *                type: string
+   *           description: Get Csv files in given mail id
    *       tags:
    *         - Analytics
    *       responses:
    *          '200':
-   *            description: Get Report by Experiment Id
+   *            description: Get CSV files
    */
-  @Get('/csv/:experimentId')
-  @ContentType('text/csv')
-  @Header('Content-disposition', 'attachment; filename="experiment.csv"')
-  public async downloadCSV(@Param('experimentId') experimentId: string): Promise<string> {
-    return this.auditService.getCSVData(experimentId);
+  @Post('/csv')
+  public async downloadCSV(
+    @Body({ validate: { validationError: { target: false, value: false } } })
+    csvInfo: DataExportValidator
+  ): Promise<string> {
+    return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email);
   }
 }

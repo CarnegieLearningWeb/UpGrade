@@ -205,7 +205,7 @@ export class ExperimentService {
       await this.populateExclusionTable(experimentId, state);
     }
 
-    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name'] });
+    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name', 'startDate', 'endDate'] });
     let data: AuditLogData = {
       experimentId,
       experimentName: oldExperiment.name,
@@ -218,8 +218,14 @@ export class ExperimentService {
     // add experiment audit logs
     this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
-    const endDate = state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE ? new Date() : null;
-    const startDate = state === EXPERIMENT_STATE.ENROLLING ? new Date() : null;
+    let endDate = oldExperiment.endDate || null;
+    let startDate = oldExperiment.startDate || null;
+    if (state === EXPERIMENT_STATE.ENROLLING) {
+      startDate = new Date();
+      endDate = null;
+    } else if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+      endDate = new Date();
+    }
 
     // update experiment
     const updatedState = await this.experimentRepository.updateState(

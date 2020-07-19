@@ -45,6 +45,29 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       });
   }
 
+  public async findGroupAssignmentsByConditions(
+    experimentId: string
+  ): Promise<GroupAssignment[]> {
+    return this.createQueryBuilder('groupAssignment')
+      .leftJoinAndSelect('groupAssignment.experiment', 'experiment')
+      .select('"groupAssignment"."conditionId"')
+      .addSelect("COUNT(*) AS count")
+      .addGroupBy('"groupAssignment"."conditionId"')
+      .where('experiment.id = :experimentId', {
+        experimentId,
+      })
+      .getRawMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'findGroupAssignmentsByConditions',
+          { experimentId },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+  }
+
   public async saveRawJson(
     rawData: Omit<GroupAssignment, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id'>
   ): Promise<GroupAssignment> {
