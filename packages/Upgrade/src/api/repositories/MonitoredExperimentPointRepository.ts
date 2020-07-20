@@ -2,6 +2,8 @@ import { EntityRepository, EntityManager, Repository } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import repositoryError from './utils/repositoryError';
 import { ENROLLMENT_CODE } from 'upgrade_types';
+import { ExperimentPartition } from '../models/ExperimentPartition';
+import { IndividualAssignment } from '../models/IndividualAssignment';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
@@ -72,5 +74,45 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .execute();
 
     return result.raw;
+  }
+
+  public async getMonitorExperimentPointForExport(offset: number, limit: number, monitorPointIds: string[], experimentId: string): Promise<any> {
+    return this.createQueryBuilder('monitoredExperiment')
+      .leftJoinAndSelect('monitoredExperiment.user', 'user')
+      .leftJoinAndSelect('monitoredExperiment.monitoredPointLogs', 'monitoredPointLogs')
+      .leftJoinAndMapOne(
+        'monitoredExperiment.partition',
+        ExperimentPartition,
+        'experimentPartition',
+        'monitoredExperiment.experimentId = "experimentPartition"."id"'
+      )
+      .leftJoinAndMapOne(
+        'monitoredExperiment.assignment',
+        IndividualAssignment,
+        'individualAssignment',
+        'user.id = "individualAssignment"."userId"'
+      )
+      .leftJoinAndSelect('individualAssignment.experiment', 'experiment')
+      .leftJoinAndSelect('individualAssignment.condition', 'conditions')
+      .where('monitoredExperiment.experimentId IN (:...ids)', { ids: monitorPointIds })
+      .andWhere('experiment.id = :id', { id: experimentId })
+      .skip(offset)
+      .take(limit)
+      .getMany()
+      .catch((errorMsg: any) => {
+        console.log('errormsg', errorMsg);
+        const errorMsgString = repositoryError(this.constructor.name, 'getMonitorExperimentPointForExport', { monitorPointIds }, errorMsg);
+        throw new Error(errorMsgString);
+      });
+  }
+
+  public async getMonitoredExperimentPointCount(monitorPointIds: string[]): Promise<number> {
+    return this.createQueryBuilder('monitoredExperiment')
+      .where('monitoredExperiment.experimentId IN (:...ids)', { ids: monitorPointIds })
+      .getCount()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'getMinitoredExperimentPointCount', { monitorPointIds }, errorMsg);
+        throw new Error(errorMsgString);
+      });
   }
 }
