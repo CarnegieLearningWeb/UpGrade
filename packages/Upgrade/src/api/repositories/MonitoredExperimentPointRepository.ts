@@ -76,32 +76,53 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     return result.raw;
   }
 
-  public async getMonitorExperimentPointForExport(offset: number, limit: number, monitorPointIds: string[], experimentId: string): Promise<any> {
+  public async getMonitorExperimentPointForExport(
+    offset: number,
+    limit: number,
+    monitorPointIds: string[],
+    experimentId: string
+  ): Promise<any> {
     return this.createQueryBuilder('monitoredExperiment')
-      .leftJoinAndSelect('monitoredExperiment.user', 'user')
-      .leftJoinAndSelect('monitoredExperiment.monitoredPointLogs', 'monitoredPointLogs')
-      .leftJoinAndMapOne(
-        'monitoredExperiment.partition',
+      .select([
+        'monitoredExperiment.user',
+        'monitoredExperiment.experimentId',
+        'monitoredPointLogs.createdAt',
+        'conditions.name',
+        'experiment.id',
+        'logs.data',
+      ])
+      .leftJoin('monitoredExperiment.user', 'user')
+      .leftJoin('monitoredExperiment.monitoredPointLogs', 'monitoredPointLogs')
+      .leftJoin(
         ExperimentPartition,
         'experimentPartition',
         'monitoredExperiment.experimentId = "experimentPartition"."id"'
       )
-      .leftJoinAndMapOne(
-        'monitoredExperiment.assignment',
-        IndividualAssignment,
-        'individualAssignment',
-        'user.id = "individualAssignment"."userId"'
-      )
-      .leftJoinAndSelect('individualAssignment.experiment', 'experiment')
-      .leftJoinAndSelect('individualAssignment.condition', 'conditions')
+      .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
+      .leftJoin('individualAssignment.experiment', 'experiment')
+      .leftJoin('individualAssignment.condition', 'conditions')
+      .innerJoin('experiment.queries', 'queries')
+      .innerJoin('queries.metric', 'metric')
+      .innerJoin('metric.logs', 'logs', 'logs."userId" = user.id')
       .where('monitoredExperiment.experimentId IN (:...ids)', { ids: monitorPointIds })
       .andWhere('experiment.id = :id', { id: experimentId })
       .skip(offset)
       .take(limit)
-      .getMany()
+      .groupBy('monitoredExperiment.user')
+      .addGroupBy('monitoredExperiment.experimentId')
+      .addGroupBy('monitoredPointLogs.createdAt')
+      .addGroupBy('conditions.name')
+      .addGroupBy('experiment.id')
+      .addGroupBy('logs.data')
+      .execute()
       .catch((errorMsg: any) => {
         console.log('errormsg', errorMsg);
-        const errorMsgString = repositoryError(this.constructor.name, 'getMonitorExperimentPointForExport', { monitorPointIds }, errorMsg);
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'getMonitorExperimentPointForExport',
+          { monitorPointIds },
+          errorMsg
+        );
         throw new Error(errorMsgString);
       });
   }
@@ -111,7 +132,12 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .where('monitoredExperiment.experimentId IN (:...ids)', { ids: monitorPointIds })
       .getCount()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'getMinitoredExperimentPointCount', { monitorPointIds }, errorMsg);
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'getMinitoredExperimentPointCount',
+          { monitorPointIds },
+          errorMsg
+        );
         throw new Error(errorMsgString);
       });
   }
