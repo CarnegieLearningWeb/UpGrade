@@ -84,12 +84,14 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
   ): Promise<any> {
     return this.createQueryBuilder('monitoredExperiment')
       .select([
-        'monitoredExperiment.user',
+        'user.id',
+        'monitoredExperiment.enrollmentCode',
         'monitoredExperiment.experimentId',
         'monitoredPointLogs.createdAt',
         'conditions.name',
         'experiment.id',
         'logs.data',
+        'experiment.group',
       ])
       .leftJoin('monitoredExperiment.user', 'user')
       .leftJoin('monitoredExperiment.monitoredPointLogs', 'monitoredPointLogs')
@@ -108,11 +110,13 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .andWhere('experiment.id = :id', { id: experimentId })
       .skip(offset)
       .take(limit)
-      .groupBy('monitoredExperiment.user')
+      .groupBy('user.id')
       .addGroupBy('monitoredExperiment.experimentId')
+      .addGroupBy('monitoredExperiment.enrollmentCode')
       .addGroupBy('monitoredPointLogs.createdAt')
       .addGroupBy('conditions.name')
       .addGroupBy('experiment.id')
+      .addGroupBy('experiment.group')
       .addGroupBy('logs.data')
       .execute()
       .catch((errorMsg: any) => {
