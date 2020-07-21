@@ -84,6 +84,7 @@ module "aws-ebs-app" {
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "~/.ssh/id_rsa"
   PATH_TO_PUBLIC_KEY      = "~/.ssh/id_rsa.pub"
+  DOMAIN_NAME             = var.DOMAIN_NAME
 }
 
 resource "null_resource" "update-ebs-env" { 

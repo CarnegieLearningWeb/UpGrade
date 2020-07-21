@@ -23,7 +23,7 @@ variable "autoscaling_max_size"{}
 # APP environment variables
 variable "GOOGLE_CLIENT_ID"{}
 variable "DOMAIN_NAME"{
-    default     = null
+    default     = ""
 }
 variable "MONITOR_PASSWORD"{}
 variable "SWAGGER_PASSWORD"{}
