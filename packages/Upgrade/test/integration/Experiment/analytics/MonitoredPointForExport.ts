@@ -488,7 +488,7 @@ export default async function LogOperations(): Promise<void> {
   // get the CSV data for the query
   const result = await monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
     0,
-    100,
+    1,
     partitionIds,
     experimentObject.id
   );
