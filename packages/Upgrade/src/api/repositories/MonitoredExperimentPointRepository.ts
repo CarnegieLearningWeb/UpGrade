@@ -5,7 +5,6 @@ import { ENROLLMENT_CODE } from 'upgrade_types';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { IndividualAssignment } from '../models/IndividualAssignment';
 import { ExperimentUser } from '../models/ExperimentUser';
-import { MonitoredExperimentPointLog } from '../models/MonitorExperimentPointLog';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
@@ -162,11 +161,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         // )
         .leftJoin(ExperimentUser, 'user', 'user.id = "monitoredExperiment"."userId"')
         .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
-        .leftJoin(
-          ExperimentPartition,
-          'partition',
-          'monitoredExperiment.experimentId = "partition"."id"'
-        )
+        .leftJoin(ExperimentPartition, 'partition', 'monitoredExperiment.experimentId = "partition"."id"')
         .leftJoin('individualAssignment.experiment', 'experiment')
         .leftJoin('individualAssignment.condition', 'conditions')
         .leftJoin('experiment.queries', 'queries')

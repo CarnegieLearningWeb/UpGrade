@@ -9,7 +9,12 @@ import { ExperimentRepository } from '../repositories/ExperimentRepository';
 // import { In } from 'typeorm';
 // import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 // import { IndividualAssignment } from '../models/IndividualAssignment';
-import { IExperimentEnrollmentDetailStats, DATE_RANGE, IExperimentEnrollmentDetailDateStats, POST_EXPERIMENT_RULE } from 'upgrade_types';
+import {
+  IExperimentEnrollmentDetailStats,
+  DATE_RANGE,
+  IExperimentEnrollmentDetailDateStats,
+  POST_EXPERIMENT_RULE,
+} from 'upgrade_types';
 // import { IndividualExclusion } from '../models/IndividualExclusion';
 // import { GroupAssignment } from '../models/GroupAssignment';
 // import { GroupExclusion } from '../models/GroupExclusion';
@@ -235,52 +240,63 @@ export class AnalyticsService {
     const promiseData = await Promise.all([
       this.individualAssignmentRepository.findIndividualAssignmentsByConditions(experimentId),
       this.groupAssignmentRepository.findGroupAssignmentsByConditions(experimentId),
-      this.monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint)
+      this.monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
     ]);
 
-    let csvRows: any = [{
-      'Created At': experimentInfo.createdAt.toISOString(),
-      'Updated At': experimentInfo.updatedAt.toISOString(),
-      'version Number': experimentInfo.versionNumber,
-      'Experiment ID': experimentInfo.id,
-      'Experiment Name': experimentInfo.name,
-      'Experiment Description': experimentInfo.description,
-      'Enrollment Start Date': experimentInfo.startDate && experimentInfo.startDate.toISOString(),
-      'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
-      'Unit of Assignment': experimentInfo.assignmentUnit,
-      'Consistency Rule': experimentInfo.consistencyRule,
-      'Group': experimentInfo.group,
-      'Tags': experimentInfo.tags.join(','),
-      'Context': experimentInfo.context.join(','),
-      'Condition Names': conditions.map(condition => condition.conditionCode).join(','),
-      'Condition Weights': conditions.map(condition => condition.assignmentWeight).join(','),
-      'Condition UserNs': this.getConditionByCount(conditions, promiseData[0]),
-      'Condition GroupNs': this.getConditionByCount(conditions, promiseData[1]),
-      'Ending Criteria': experimentInfo.enrollmentCompleteCondition && JSON.stringify(experimentInfo.enrollmentCompleteCondition),
-      'Post-Experiment Rule': experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
-      ? experimentInfo.postExperimentRule
-      : experimentInfo.revertTo ? 'revert ( ' +  this.getConditionCode(conditions, experimentInfo.revertTo) + ' )' : 'revert (to default)' ,
-      'ExperimentPoints': partitions.map(partition => partition.expPoint).join(','),
-      'ExperimentIDs': partitions.map(partition => partition.expId).join(','),
-    }];
+    let csvRows: any = [
+      {
+        'Created At': experimentInfo.createdAt.toISOString(),
+        'Updated At': experimentInfo.updatedAt.toISOString(),
+        'version Number': experimentInfo.versionNumber,
+        'Experiment ID': experimentInfo.id,
+        'Experiment Name': experimentInfo.name,
+        'Experiment Description': experimentInfo.description,
+        'Enrollment Start Date': experimentInfo.startDate && experimentInfo.startDate.toISOString(),
+        'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
+        'Unit of Assignment': experimentInfo.assignmentUnit,
+        'Consistency Rule': experimentInfo.consistencyRule,
+        'Group': experimentInfo.group,
+        'Tags': experimentInfo.tags.join(','),
+        'Context': experimentInfo.context.join(','),
+        'Condition Names': conditions.map((condition) => condition.conditionCode).join(','),
+        'Condition Weights': conditions.map((condition) => condition.assignmentWeight).join(','),
+        'Condition UserNs': this.getConditionByCount(conditions, promiseData[0]),
+        'Condition GroupNs': this.getConditionByCount(conditions, promiseData[1]),
+        'Ending Criteria':
+          experimentInfo.enrollmentCompleteCondition && JSON.stringify(experimentInfo.enrollmentCompleteCondition),
+        'Post-Experiment Rule':
+          experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
+            ? experimentInfo.postExperimentRule
+            : experimentInfo.revertTo
+            ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
+            : 'revert (to default)',
+        'ExperimentPoints': partitions.map((partition) => partition.expPoint).join(','),
+        'ExperimentIDs': partitions.map((partition) => partition.expId).join(','),
+      },
+    ];
 
     let csv = new ObjectsToCsv(csvRows);
     await csv.toDisk(`src/api/assets/files/${email}_experiment_${timeStamp}.csv`);
     for (let i = 1; i <= promiseData[2]; i++) {
       csvRows = [];
-      const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(i - 1, 1, experimentIdAndPoint, experimentId);
+      const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
+        i - 1,
+        1,
+        experimentIdAndPoint,
+        experimentId
+      );
       console.log('monitoredExperimentPoints', monitoredExperimentPoints);
-      monitoredExperimentPoints.forEach(data => {
+      monitoredExperimentPoints.forEach((data) => {
         console.log('data.condition', data.assignment.condition);
         csvRows.push({
           'UserID': data.user.id || '',
           'markExperimentPointTime': data.createdAt.toISOString(),
           'Enrollment code': data.enrollmentCode,
-          'Condition Name': data.assignment && data.assignment.condition.conditionCode || 'default',
+          'Condition Name': (data.assignment && data.assignment.condition.conditionCode) || 'default',
           'GroupID': data.user.workingGroup || '',
           'ExperimentPoint': data.partition.expPoint,
           'ExperimentID': data.partition.expId,
-          'Metrics monitored': ''
+          'Metrics monitored': '',
         });
       });
       csv = new ObjectsToCsv(csvRows);
@@ -290,13 +306,15 @@ export class AnalyticsService {
   }
 
   private getConditionCode(conditions: ExperimentCondition[], id: string): string {
-    return conditions.filter(condition => condition.id === id)[0].conditionCode || '';
+    return conditions.filter((condition) => condition.id === id)[0].conditionCode || '';
   }
 
   private getConditionByCount(conditions: ExperimentCondition[], data: any): string {
-    return conditions.map(condition => {
-      const conditionFound = data.find(con => (con as any).conditionId === condition.id);
-      return conditionFound ? (conditionFound as any).count : 0;
-    }).join(',');
+    return conditions
+      .map((condition) => {
+        const conditionFound = data.find((con) => (con as any).conditionId === condition.id);
+        return conditionFound ? (conditionFound as any).count : 0;
+      })
+      .join(',');
   }
 }

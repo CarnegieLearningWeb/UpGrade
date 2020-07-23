@@ -45,13 +45,11 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       });
   }
 
-  public async findGroupAssignmentsByConditions(
-    experimentId: string
-  ): Promise<GroupAssignment[]> {
+  public async findGroupAssignmentsByConditions(experimentId: string): Promise<GroupAssignment[]> {
     return this.createQueryBuilder('groupAssignment')
       .leftJoinAndSelect('groupAssignment.experiment', 'experiment')
       .select('"groupAssignment"."conditionId"')
-      .addSelect("COUNT(*) AS count")
+      .addSelect('COUNT(*) AS count')
       .addGroupBy('"groupAssignment"."conditionId"')
       .where('experiment.id = :experimentId', {
         experimentId,

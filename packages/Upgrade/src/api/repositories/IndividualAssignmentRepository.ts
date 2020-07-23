@@ -71,13 +71,11 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       });
   }
 
-  public async findIndividualAssignmentsByConditions(
-    experimentId: string
-  ): Promise<IndividualAssignment[]> {
+  public async findIndividualAssignmentsByConditions(experimentId: string): Promise<IndividualAssignment[]> {
     return this.createQueryBuilder('individualAssignment')
       .leftJoinAndSelect('individualAssignment.experiment', 'experiment')
       .select('"individualAssignment"."conditionId"')
-      .addSelect("COUNT(*) AS count")
+      .addSelect('COUNT(*) AS count')
       .addGroupBy('"individualAssignment"."conditionId"')
       .where('experiment.id = :experimentId', {
         experimentId,
