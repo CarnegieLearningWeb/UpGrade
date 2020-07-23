@@ -140,10 +140,12 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
           '"monitoredExperiment"."enrollmentCode"',
           '"monitoredExperiment"."experimentId"',
           // 'monitoredPointLogs.createdAt',
-          'conditions.name',
+          'conditions.conditionCode',
           'experiment.id',
           'logs.data',
           'experiment.group',
+          'partition.expId',
+          'partition.expPoint',
         ])
         .from((subQuery) => {
           return subQuery
@@ -160,6 +162,11 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         // )
         .leftJoin(ExperimentUser, 'user', 'user.id = "monitoredExperiment"."userId"')
         .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
+        .leftJoin(
+          ExperimentPartition,
+          'partition',
+          'monitoredExperiment.experimentId = "partition"."id"'
+        )
         .leftJoin('individualAssignment.experiment', 'experiment')
         .leftJoin('individualAssignment.condition', 'conditions')
         .leftJoin('experiment.queries', 'queries')
@@ -170,7 +177,9 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         .addGroupBy('"monitoredExperiment"."experimentId"')
         .addGroupBy('"monitoredExperiment"."enrollmentCode"')
         // .addGroupBy('monitoredPointLogs.createdAt')
-        .addGroupBy('conditions.name')
+        .addGroupBy('conditions.conditionCode')
+        .addGroupBy('partition.expId')
+        .addGroupBy('partition.expPoint')
         .addGroupBy('experiment.id')
         .addGroupBy('experiment.group')
         .addGroupBy('logs.data')
