@@ -83,53 +83,6 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     monitorPointIds: string[],
     experimentId: string
   ): Promise<any> {
-    // return this.createQueryBuilder('monitoredExperiment')
-    //   .select([
-    //     'user.id',
-    //     'monitoredExperiment.enrollmentCode',
-    //     'monitoredExperiment.experimentId',
-    //     'monitoredPointLogs.createdAt',
-    //     'conditions.name',
-    //     'experiment.id',
-    //     'logs.data',
-    //     'experiment.group',
-    //   ])
-    //   .leftJoin('monitoredExperiment.user', 'user')
-    //   .leftJoin('monitoredExperiment.monitoredPointLogs', 'monitoredPointLogs')
-    //   .leftJoin(
-    //     ExperimentPartition,
-    //     'experimentPartition',
-    //     'monitoredExperiment.experimentId = "experimentPartition"."id"'
-    //   )
-    //   .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
-    //   .leftJoin('individualAssignment.experiment', 'experiment')
-    //   .leftJoin('individualAssignment.condition', 'conditions')
-    //   .innerJoin('experiment.queries', 'queries')
-    //   .innerJoin('queries.metric', 'metric')
-    //   .innerJoin('metric.logs', 'logs', 'logs."userId" = user.id')
-    //   .where('monitoredExperiment.experimentId IN (:...ids)', { ids: monitorPointIds })
-    //   .andWhere('experiment.id = :id', { id: experimentId })
-    //   .skip(offset)
-    //   .take(limit)
-    //   .groupBy('user.id')
-    //   .addGroupBy('monitoredExperiment.experimentId')
-    //   .addGroupBy('monitoredExperiment.enrollmentCode')
-    //   .addGroupBy('monitoredPointLogs.createdAt')
-    //   .addGroupBy('conditions.name')
-    //   .addGroupBy('experiment.id')
-    //   .addGroupBy('experiment.group')
-    //   .addGroupBy('logs.data')
-    //   .execute()
-    //   .catch((errorMsg: any) => {
-    //     console.log('errormsg', errorMsg);
-    //     const errorMsgString = repositoryError(
-    //       this.constructor.name,
-    //       'getMonitorExperimentPointForExport',
-    //       { monitorPointIds },
-    //       errorMsg
-    //     );
-    //     throw new Error(errorMsgString);
-    //   });
 
     return (
       getConnection()
@@ -138,7 +91,6 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
           'user.id',
           '"monitoredExperiment"."enrollmentCode"',
           '"monitoredExperiment"."experimentId"',
-          // 'monitoredPointLogs.createdAt',
           'conditions.conditionCode',
           'experiment.id',
           'logs.data',
@@ -154,14 +106,9 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
             .skip(offset)
             .take(limit);
         }, 'monitoredExperiment')
-        // .leftJoin(
-        //   MonitoredExperimentPointLog,
-        //   '"monitoredLog"',
-        //   '"monitoredExperiment"."id" = "monitoredLog"."monitoredExperimentPointId"'
-        // )
         .leftJoin(ExperimentUser, 'user', 'user.id = "monitoredExperiment"."userId"')
         .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
-        .leftJoin(ExperimentPartition, 'partition', 'monitoredExperiment.experimentId = "partition"."id"')
+        .leftJoin(ExperimentPartition, 'partition', '"monitoredExperiment"."experimentId" = "partition"."id"')
         .leftJoin('individualAssignment.experiment', 'experiment')
         .leftJoin('individualAssignment.condition', 'conditions')
         .leftJoin('experiment.queries', 'queries')
@@ -171,7 +118,6 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         .groupBy('user.id')
         .addGroupBy('"monitoredExperiment"."experimentId"')
         .addGroupBy('"monitoredExperiment"."enrollmentCode"')
-        // .addGroupBy('monitoredPointLogs.createdAt')
         .addGroupBy('conditions.conditionCode')
         .addGroupBy('partition.expId')
         .addGroupBy('partition.expPoint')

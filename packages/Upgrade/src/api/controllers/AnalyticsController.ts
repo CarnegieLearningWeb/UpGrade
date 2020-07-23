@@ -119,7 +119,7 @@ export class AnalyticsController {
 
   /**
    * @swagger
-   * /stats/csv/{experimentId}:
+   * /stats/csv:
    *    post:
    *       description: Get csv files
    *       parameters:

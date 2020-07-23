@@ -2,27 +2,23 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
-// import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
-// import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { GroupAssignmentRepository } from '../repositories/GroupAssignmentRepository';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-// import { In } from 'typeorm';
-// import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-// import { IndividualAssignment } from '../models/IndividualAssignment';
+import { AWSService } from './AWSService';
+import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
   POST_EXPERIMENT_RULE,
 } from 'upgrade_types';
-// import { IndividualExclusion } from '../models/IndividualExclusion';
-// import { GroupAssignment } from '../models/GroupAssignment';
-// import { GroupExclusion } from '../models/GroupExclusion';
-// import { ASSIGNMENT_TYPE } from '../../types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import ObjectsToCsv from 'objects-to-csv';
+import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
+import { In } from 'typeorm';
+import fs from 'fs';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -37,15 +33,16 @@ export class AnalyticsService {
     @OrmRepository()
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
+    private monitoredExperimentPointLogRepository: MonitoredExperimentPointLogRepository,
+    @OrmRepository()
     private individualAssignmentRepository: IndividualAssignmentRepository,
-    // @OrmRepository()
-    // private individualExclusionRepository: IndividualExclusionRepository,
-    // @OrmRepository()
-    // private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository()
     private groupAssignmentRepository: GroupAssignmentRepository,
     @OrmRepository()
-    private analyticsRepository: AnalyticsRepository
+    private analyticsRepository: AnalyticsRepository,
+    @OrmRepository()
+    private experimentUserRepository: ExperimentUserRepository,
+    public awsService: AWSService
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<any> {
@@ -220,6 +217,14 @@ export class AnalyticsService {
   }
 
   public async getCSVData(experimentId: string, email: string): Promise<string> {
+    const timeStamp = new Date().toISOString();
+    const folderPath = 'src/api/assets/files/';
+    // create the directory if not exist
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+    const experimentCSV = `${email}_experiment_${timeStamp}.csv`;
+    const monitoredPointCSV = `${email}_monitoredPoints${timeStamp}.csv`;
     // get experiment definition
     const experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
@@ -235,7 +240,6 @@ export class AnalyticsService {
       const partitionId = partition.id;
       experimentIdAndPoint.push(partitionId);
     });
-    const timeStamp = new Date().toISOString();
 
     const promiseData = await Promise.all([
       this.individualAssignmentRepository.findIndividualAssignmentsByConditions(experimentId),
@@ -255,9 +259,12 @@ export class AnalyticsService {
         'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
         'Unit of Assignment': experimentInfo.assignmentUnit,
         'Consistency Rule': experimentInfo.consistencyRule,
-        'Group': experimentInfo.group,
-        'Tags': experimentInfo.tags.join(','),
-        'Context': experimentInfo.context.join(','),
+        // tslint:disable-next-line:object-literal-key-quotes
+        Group: experimentInfo.group,
+        // tslint:disable-next-line: object-literal-key-quotes
+        Tags: experimentInfo.tags.join(','),
+        // tslint:disable-next-line: object-literal-key-quotes
+        Context: experimentInfo.context.join(','),
         'Condition Names': conditions.map((condition) => condition.conditionCode).join(','),
         'Condition Weights': conditions.map((condition) => condition.assignmentWeight).join(','),
         'Condition UserNs': this.getConditionByCount(conditions, promiseData[0]),
@@ -270,38 +277,127 @@ export class AnalyticsService {
             : experimentInfo.revertTo
             ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
             : 'revert (to default)',
-        'ExperimentPoints': partitions.map((partition) => partition.expPoint).join(','),
-        'ExperimentIDs': partitions.map((partition) => partition.expId).join(','),
+        // tslint:disable-next-line: object-literal-key-quotes
+        ExperimentPoints: partitions.map((partition) => partition.expPoint).join(','),
+        // tslint:disable-next-line: object-literal-key-quotes
+        ExperimentIDs: partitions.map((partition) => partition.expId).join(','),
       },
     ];
 
     let csv = new ObjectsToCsv(csvRows);
-    await csv.toDisk(`src/api/assets/files/${email}_experiment_${timeStamp}.csv`);
-    for (let i = 1; i <= promiseData[2]; i++) {
+    await csv.toDisk(`${folderPath}${experimentCSV}`);
+    const take = 50;
+    for (let i = 1; i <= promiseData[2]; i = i + take) {
       csvRows = [];
       const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
         i - 1,
-        1,
+        take,
         experimentIdAndPoint,
         experimentId
       );
-      console.log('monitoredExperimentPoints', monitoredExperimentPoints);
-      monitoredExperimentPoints.forEach((data) => {
-        console.log('data.condition', data.assignment.condition);
+      // merge all the data log
+      const mergedMonitoredExperimentPoint = {};
+
+      monitoredExperimentPoints.forEach((monitoredPoint) => {
+        const key = `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
+        mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
+          ? {
+              ...mergedMonitoredExperimentPoint[key],
+              logs_data: { ...mergedMonitoredExperimentPoint[key].logs_data, ...monitoredPoint.logs_data },
+            }
+          : monitoredPoint;
+      });
+
+      // get all monitored experiment points ids
+      const monitoredPointIds = monitoredExperimentPoints.map(
+        (monitoredPoint) =>
+          `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+      );
+
+      // query experiment user
+      const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
+
+      const experimentUserSet = new Set(experimentUsers);
+      const experimentUsersArray = Array.from(experimentUserSet);
+
+      const [monitoredLogDocuments, experimentUserDocuments] = await Promise.all([
+        this.monitoredExperimentPointLogRepository.find({
+          where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
+          relations: ['monitoredExperimentPoint'],
+        }),
+        this.experimentUserRepository.find({
+          id: In(experimentUsersArray),
+        }),
+      ]);
+
+      const experimentUserMap = {};
+      experimentUserDocuments.forEach((document) => {
+        experimentUserMap[document.id] = document;
+      });
+
+      // monitored Log Document
+      const toLogDocument = monitoredLogDocuments.map((monitoredLogDocument) => {
+        const {
+          createdAt,
+          updatedAt,
+          monitoredExperimentPoint: { id },
+        } = monitoredLogDocument;
+        return { ...mergedMonitoredExperimentPoint[id], createdAt, updatedAt };
+      });
+
+      toLogDocument.forEach((data) => {
         csvRows.push({
-          'UserID': data.user.id || '',
-          'markExperimentPointTime': data.createdAt.toISOString(),
+          // tslint:disable-next-line: object-literal-key-quotes
+          UserId: data.user_id || '',
+          // tslint:disable-next-line: object-literal-key-quotes
+          markExperimentPointTime: data.createdAt.toISOString(),
           'Enrollment code': data.enrollmentCode,
-          'Condition Name': (data.assignment && data.assignment.condition.conditionCode) || 'default',
-          'GroupID': data.user.workingGroup || '',
-          'ExperimentPoint': data.partition.expPoint,
-          'ExperimentID': data.partition.expId,
-          'Metrics monitored': '',
+          'Condition Name': data.conditions_conditionCode || 'default',
+          // tslint:disable-next-line: object-literal-key-quotes
+          GroupId:
+            (experiment.group &&
+              experimentUserMap[data.user_id] &&
+              experimentUserMap[data.user_id].workingGroup &&
+              experimentUserMap[data.user_id].workingGroup[experiment.group]) ||
+            '',
+          // tslint:disable-next-line: object-literal-key-quotes
+          ExperimentPoint: data.partition_expPoint,
+          // tslint:disable-next-line: object-literal-key-quotes
+          ExperimentId: data.partition_expId,
+          'Metrics monitored': JSON.stringify(data.logs_data),
         });
       });
       csv = new ObjectsToCsv(csvRows);
-      await csv.toDisk(`src/api/assets/files/${email}_monitoredPoints${timeStamp}.csv`, { append: true });
+      await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
     }
+
+    const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
+    const monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+
+    // delete the file from local store
+    fs.unlinkSync(`${folderPath}${experimentCSV}`);
+    fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
+
+    // upload the csv to s3
+    await Promise.all([
+      this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
+      this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
+    ]);
+
+    // generate signed url
+    const signedUrl = await Promise.all([
+      this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
+      this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
+    ]);
+
+    const emailText = `Here are the exported data
+    Experiment Data: ${signedUrl[0]},
+    Monitored Data: ${signedUrl[1]},`;
+
+    const emailSubject = `Exported Data for experiment ${experiment.name}`;
+    // send email to the user
+    await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
+
     return '';
   }
 

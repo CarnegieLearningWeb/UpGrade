@@ -14,7 +14,6 @@ import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/M
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 import { metrics } from '../../mockData/metric';
-import { MonitoredExperimentPoint } from '../../../../src/api/models/MonitoredExperimentPoint';
 import { MonitoredExperimentPointRepository } from '../../../../src/api/repositories/MonitoredExperimentPointRepository';
 
 export default async function LogOperations(): Promise<void> {
