@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
@@ -19,6 +19,7 @@ import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
+import { SnackbarComponent } from '../../components/snackbar/snackbar.component';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -45,7 +46,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private experimentService: ExperimentService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -60,6 +62,12 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         }
         this.experiment = experiment;
       });
+  }
+
+  openSnackBar() {
+    this._snackBar.openFromComponent(SnackbarComponent, {
+      duration: 1000,
+    });
   }
 
   openDialog(dialogType: DialogType) {
@@ -118,6 +126,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   exportExperimentInfo(experimentId: string, experimentName: string) {
     this.experimentService.exportExperimentInfo(experimentId, experimentName);
+    this.openSnackBar();
   }
 
   get DialogType() {

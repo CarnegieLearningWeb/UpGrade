@@ -66,9 +66,9 @@ export class ExperimentDataService {
     return this.http.get(url);
   }
 
-  exportExperimentInfo(experimentId: string) {
-    const url = `${environment.api.generateCsv}/${experimentId}`;
-    return this.http.get(url, { responseType: 'text' });
+  exportExperimentInfo(experimentId: string, email: string) {
+    const url = environment.api.generateCsv;
+    return this.http.post(url, { experimentId, email });
   }
 
   fetchExperimentGraphInfo(params: any) {
