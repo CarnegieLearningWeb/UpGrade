@@ -377,8 +377,8 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Monitored Point for Export', async (done) => {
-    await MonitoredPointForExport();
-    done();
-  });
+  // test('Monitored Point for Export', async (done) => {
+  //   await MonitoredPointForExport();
+  //   done();
+  // });
 });
