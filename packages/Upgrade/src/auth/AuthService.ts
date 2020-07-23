@@ -38,7 +38,7 @@ export class AuthService {
     const email = payload.email;
     const hd = payload.hd;
 
-    if (env.google.domainName && env.google.domainName !== hd) {
+    if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== hd) {
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.USER_NOT_FOUND,

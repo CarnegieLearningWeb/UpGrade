@@ -1,6 +1,6 @@
 import { Connection } from 'typeorm';
 import { configureLogger } from '../utils/logger';
-import { synchronizeDatabase, createDatabaseConnection, closeDatabase } from '../utils/database';
+import { createDatabaseConnection, closeDatabase, migrateDatabase } from '../utils/database';
 import {
   Scenario1,
   Scenario2,
@@ -77,7 +77,7 @@ describe('Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    await synchronizeDatabase(connection);
+    await migrateDatabase(connection);
 
     // create System Users
     await CreateSystemUser();

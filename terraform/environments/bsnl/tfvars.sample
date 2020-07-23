@@ -21,6 +21,7 @@ autoscaling_max_size    =  4
 
 # APP environment variables
 GOOGLE_CLIENT_ID        = "google-project-id"
+DOMAIN_NAME             = "playpowerlabs.com"
 MONITOR_PASSWORD        = "passowrd"
 SWAGGER_PASSWORD        = "passowrd"
 TYPEORM_SYNCHRONIZE     = true
