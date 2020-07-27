@@ -399,11 +399,13 @@ export class AnalyticsService {
         this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
       ]);
 
-      //   // generate signed url
-      //   const signedUrl = await Promise.all([
-      //     this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
-      //     this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
-      //   ]);
+      // generate signed url
+      const signedUrl = await Promise.all([
+        this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
+        this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
+      ]);
+
+      console.log('signedUrl', signedUrl);
 
       //   const emailText = `Here are the exported data
       // Experiment Data: ${signedUrl[0]},
