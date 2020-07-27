@@ -61,6 +61,11 @@ export const env = {
     api: getOsEnv('SWAGGER_API'),
   },
   monitor: {},
+  email: {
+    from: getOsEnv('EMAIL_FROM'),
+    expireAfterSeconds: toNumber(getOsEnv('EMAIL_EXPIRE_AFTER_SECONDS')),
+    emailBucket: getOsEnv('upgrade-csv-upload'),
+  },
   google: {
     clientId: getOsEnv('GOOGLE_CLIENT_ID'),
     domainName: getOsEnvOptional('DOMAIN_NAME'),

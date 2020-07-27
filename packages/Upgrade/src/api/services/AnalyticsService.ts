@@ -21,6 +21,7 @@ import { In } from 'typeorm';
 import fs from 'fs';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
+import { env } from '../../env';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -393,16 +394,20 @@ export class AnalyticsService {
       fs.unlinkSync(`${folderPath}${experimentCSV}`);
       fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
 
+      const email_export = env.email.emailBucket;
+      const email_expiry_time = env.email.expireAfterSeconds;
+      const email_from = env.email.from;
+
       // upload the csv to s3
       await Promise.all([
-        this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
-        this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
+        this.awsService.uploadCSV(experimentFileBuffer, email_export, experimentCSV),
+        this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV),
       ]);
 
       // generate signed url
       const signedUrl = await Promise.all([
-        this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
-        this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
+        this.awsService.generateSignedURL(email_export, experimentCSV, email_expiry_time),
+        this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
       ]);
 
       const emailText = `Here are the exported data
@@ -411,7 +416,7 @@ export class AnalyticsService {
 
       const emailSubject = `Exported Data for experiment ${experiment.name}`;
       // send email to the user
-      await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
+      await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
     } catch (error) {
       throw Promise.reject(new Error(SERVER_ERROR.EMAIL_SEND_ERROR + error));
     }
