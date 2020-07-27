@@ -20,6 +20,7 @@ import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorEx
 import { In } from 'typeorm';
 import fs from 'fs';
 import { SERVER_ERROR } from 'upgrade_types';
+import { Logger, LoggerInterface } from '../../decorators/Logger';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -43,7 +44,8 @@ export class AnalyticsService {
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
     private experimentUserRepository: ExperimentUserRepository,
-    public awsService: AWSService
+    public awsService: AWSService,
+    @Logger(__filename) private log: LoggerInterface
   ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<any> {
@@ -218,6 +220,7 @@ export class AnalyticsService {
   }
 
   public async getCSVData(experimentId: string, email: string): Promise<string> {
+    this.log.info('Inside getCSVData', experimentId, email);
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -286,6 +289,7 @@ export class AnalyticsService {
         },
       ];
 
+      this.log.info('Saving Experiment metadata');
       let csv = new ObjectsToCsv(csvRows);
       await csv.toDisk(`${folderPath}${experimentCSV}`);
       const take = 50;
@@ -402,6 +406,8 @@ export class AnalyticsService {
     } catch (error) {
       throw Promise.reject(new Error(SERVER_ERROR.EMAIL_SEND_ERROR + error));
     }
+
+    this.log.info('Completing experiment process');
 
     return '';
   }

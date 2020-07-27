@@ -5,6 +5,7 @@ import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsVa
 import { EnrollmentAnalyticsDateValidator } from './validators/EnrollmentAnalyticsDateValidator';
 import { EnrollmentDetailAnalyticsValidator } from './validators/EnrollmentDetailAnalyticsValidator';
 import { DataExportValidator } from './validators/DataExportValidator';
+import { Logger, LoggerInterface } from '../../decorators/Logger';
 
 /**
  * @swagger
@@ -15,7 +16,7 @@ import { DataExportValidator } from './validators/DataExportValidator';
 @Authorized()
 @JsonController('/stats')
 export class AnalyticsController {
-  constructor(public auditService: AnalyticsService) {}
+  constructor(public auditService: AnalyticsService, @Logger(__filename) private log: LoggerInterface) {}
 
   /**
    * @swagger
@@ -145,6 +146,7 @@ export class AnalyticsController {
     @Body({ validate: { validationError: { target: false, value: false } } })
     csvInfo: DataExportValidator
   ): Promise<string> {
+    this.log.info('Request received for csv download', JSON.stringify(csvInfo, null, 2));
     return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email);
   }
 }
