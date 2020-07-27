@@ -31,6 +31,10 @@ variable "TYPEORM_SYNCHRONIZE"{}
 variable "TOKEN_SECRET_KEY"{}
 variable "AUTH_CHECK"{}
 
+# Email
+variable "EMAIL_FROM" {}
+variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
+
 # CICD variables
 variable "repository_name"{}
 variable "branch_name"{}

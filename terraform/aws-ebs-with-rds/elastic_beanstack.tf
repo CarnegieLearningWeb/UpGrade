@@ -307,4 +307,19 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     name      = "TYPEORM_SYNCHRONIZE"
     value     = var.TYPEORM_SYNCHRONIZE
   }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EMAIL_FROM"
+    value     = var.EMAIL_FROM
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EMAIL_EXPIRE_AFTER_SECONDS"
+    value     = var.EMAIL_EXPIRE_AFTER_SECONDS
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EMAIL_BUCKET"
+    value     = var.EMAIL_BUCKET
+  }
 }

@@ -36,5 +36,10 @@ build_image             = "aws/codebuild/standard:1.0"
 build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
 
+# Email detail
+EMAIL_FROM                      = "dev@playpowerlabs.com",
+EMAIL_EXPIRE_AFTER_SECONDS      = 36000
+EMAIL_BUCKET                    = "upgrade-csv-upload"
+
 # Real values for secrets for this environment are stored in vault at
 #   internal/upgrade-experiment-service/environments/staging
