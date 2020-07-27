@@ -41,6 +41,7 @@ var SERVER_ERROR;
     SERVER_ERROR["INVALID_TOKEN"] = "Invalid token";
     SERVER_ERROR["TOKEN_NOT_PRESENT"] = "Token is not present in request";
     SERVER_ERROR["MIGRATION_ERROR"] = "Error in migration";
+    SERVER_ERROR["EMAIL_SEND_ERROR"] = "Email send error";
 })(SERVER_ERROR = exports.SERVER_ERROR || (exports.SERVER_ERROR = {}));
 var ENROLLMENT_CODE;
 (function (ENROLLMENT_CODE) {
