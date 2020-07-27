@@ -64,7 +64,7 @@ export const env = {
   email: {
     from: getOsEnv('EMAIL_FROM'),
     expireAfterSeconds: toNumber(getOsEnv('EMAIL_EXPIRE_AFTER_SECONDS')),
-    emailBucket: getOsEnv('upgrade-csv-upload'),
+    emailBucket: getOsEnv('EMAIL_BUCKET'),
   },
   google: {
     clientId: getOsEnv('GOOGLE_CLIENT_ID'),
