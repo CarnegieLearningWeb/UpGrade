@@ -386,18 +386,18 @@ export class AnalyticsService {
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
 
-      fs.readFileSync(`${folderPath}${experimentCSV}`);
-      fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+      const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
+      const monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
 
       // delete the file from local store
       fs.unlinkSync(`${folderPath}${experimentCSV}`);
       fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
 
-      //   // upload the csv to s3
-      //   await Promise.all([
-      //     this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
-      //     this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
-      //   ]);
+      // upload the csv to s3
+      await Promise.all([
+        this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
+        this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
+      ]);
 
       //   // generate signed url
       //   const signedUrl = await Promise.all([
