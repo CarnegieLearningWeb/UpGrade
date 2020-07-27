@@ -19,6 +19,7 @@ import ObjectsToCsv from 'objects-to-csv';
 import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
 import { In } from 'typeorm';
 import fs from 'fs';
+import { SERVER_ERROR } from 'upgrade_types';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -217,186 +218,190 @@ export class AnalyticsService {
   }
 
   public async getCSVData(experimentId: string, email: string): Promise<string> {
-    const timeStamp = new Date().toISOString();
-    const folderPath = 'src/api/assets/files/';
-    // create the directory if not exist
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-    const experimentCSV = `${email}_experiment_${timeStamp}.csv`;
-    const monitoredPointCSV = `${email}_monitoredPoints${timeStamp}.csv`;
-    // get experiment definition
-    const experiment = await this.experimentRepository.findOne({
-      where: { id: experimentId },
-      relations: ['partitions', 'conditions'],
-    });
-
-    if (!experiment) {
-      return '';
-    }
-    const { conditions, partitions, ...experimentInfo } = experiment;
-    const experimentIdAndPoint = [];
-    partitions.forEach((partition) => {
-      const partitionId = partition.id;
-      experimentIdAndPoint.push(partitionId);
-    });
-
-    const promiseData = await Promise.all([
-      this.individualAssignmentRepository.findIndividualAssignmentsByConditions(experimentId),
-      this.groupAssignmentRepository.findGroupAssignmentsByConditions(experimentId),
-      this.monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
-    ]);
-
-    let csvRows: any = [
-      {
-        'Created At': experimentInfo.createdAt.toISOString(),
-        'Updated At': experimentInfo.updatedAt.toISOString(),
-        'version Number': experimentInfo.versionNumber,
-        'Experiment ID': experimentInfo.id,
-        'Experiment Name': experimentInfo.name,
-        'Experiment Description': experimentInfo.description,
-        'Enrollment Start Date': experimentInfo.startDate && experimentInfo.startDate.toISOString(),
-        'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
-        'Unit of Assignment': experimentInfo.assignmentUnit,
-        'Consistency Rule': experimentInfo.consistencyRule,
-        // tslint:disable-next-line:object-literal-key-quotes
-        Group: experimentInfo.group,
-        // tslint:disable-next-line: object-literal-key-quotes
-        Tags: experimentInfo.tags.join(','),
-        // tslint:disable-next-line: object-literal-key-quotes
-        Context: experimentInfo.context.join(','),
-        'Condition Names': conditions.map((condition) => condition.conditionCode).join(','),
-        'Condition Weights': conditions.map((condition) => condition.assignmentWeight).join(','),
-        'Condition UserNs': this.getConditionByCount(conditions, promiseData[0]),
-        'Condition GroupNs': this.getConditionByCount(conditions, promiseData[1]),
-        'Ending Criteria':
-          experimentInfo.enrollmentCompleteCondition && JSON.stringify(experimentInfo.enrollmentCompleteCondition),
-        'Post-Experiment Rule':
-          experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
-            ? experimentInfo.postExperimentRule
-            : experimentInfo.revertTo
-            ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
-            : 'revert (to default)',
-        // tslint:disable-next-line: object-literal-key-quotes
-        ExperimentPoints: partitions.map((partition) => partition.expPoint).join(','),
-        // tslint:disable-next-line: object-literal-key-quotes
-        ExperimentIDs: partitions.map((partition) => partition.expId).join(','),
-      },
-    ];
-
-    let csv = new ObjectsToCsv(csvRows);
-    await csv.toDisk(`${folderPath}${experimentCSV}`);
-    const take = 50;
-    for (let i = 1; i <= promiseData[2]; i = i + take) {
-      csvRows = [];
-      const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
-        i - 1,
-        take,
-        experimentIdAndPoint,
-        experimentId
-      );
-      // merge all the data log
-      const mergedMonitoredExperimentPoint = {};
-
-      monitoredExperimentPoints.forEach((monitoredPoint) => {
-        const key = `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
-        mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
-          ? {
-              ...mergedMonitoredExperimentPoint[key],
-              logs_data: { ...mergedMonitoredExperimentPoint[key].logs_data, ...monitoredPoint.logs_data },
-            }
-          : monitoredPoint;
+    try {
+      const timeStamp = new Date().toISOString();
+      const folderPath = 'src/api/assets/files/';
+      // create the directory if not exist
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+      }
+      const experimentCSV = `${email}_experiment_${timeStamp}.csv`;
+      const monitoredPointCSV = `${email}_monitoredPoints${timeStamp}.csv`;
+      // get experiment definition
+      const experiment = await this.experimentRepository.findOne({
+        where: { id: experimentId },
+        relations: ['partitions', 'conditions'],
       });
 
-      // get all monitored experiment points ids
-      const monitoredPointIds = monitoredExperimentPoints.map(
-        (monitoredPoint) =>
-          `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
-      );
+      if (!experiment) {
+        return '';
+      }
+      const { conditions, partitions, ...experimentInfo } = experiment;
+      const experimentIdAndPoint = [];
+      partitions.forEach((partition) => {
+        const partitionId = partition.id;
+        experimentIdAndPoint.push(partitionId);
+      });
 
-      // query experiment user
-      const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
-
-      const experimentUserSet = new Set(experimentUsers);
-      const experimentUsersArray = Array.from(experimentUserSet);
-
-      const [monitoredLogDocuments, experimentUserDocuments] = await Promise.all([
-        this.monitoredExperimentPointLogRepository.find({
-          where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
-          relations: ['monitoredExperimentPoint'],
-        }),
-        this.experimentUserRepository.find({
-          id: In(experimentUsersArray),
-        }),
+      const promiseData = await Promise.all([
+        this.individualAssignmentRepository.findIndividualAssignmentsByConditions(experimentId),
+        this.groupAssignmentRepository.findGroupAssignmentsByConditions(experimentId),
+        this.monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
       ]);
 
-      const experimentUserMap = {};
-      experimentUserDocuments.forEach((document) => {
-        experimentUserMap[document.id] = document;
-      });
+      let csvRows: any = [
+        {
+          'Created At': experimentInfo.createdAt.toISOString(),
+          'Updated At': experimentInfo.updatedAt.toISOString(),
+          'version Number': experimentInfo.versionNumber,
+          'Experiment ID': experimentInfo.id,
+          'Experiment Name': experimentInfo.name,
+          'Experiment Description': experimentInfo.description,
+          'Enrollment Start Date': experimentInfo.startDate && experimentInfo.startDate.toISOString(),
+          'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
+          'Unit of Assignment': experimentInfo.assignmentUnit,
+          'Consistency Rule': experimentInfo.consistencyRule,
+          // tslint:disable-next-line:object-literal-key-quotes
+          Group: experimentInfo.group,
+          // tslint:disable-next-line: object-literal-key-quotes
+          Tags: experimentInfo.tags.join(','),
+          // tslint:disable-next-line: object-literal-key-quotes
+          Context: experimentInfo.context.join(','),
+          'Condition Names': conditions.map((condition) => condition.conditionCode).join(','),
+          'Condition Weights': conditions.map((condition) => condition.assignmentWeight).join(','),
+          'Condition UserNs': this.getConditionByCount(conditions, promiseData[0]),
+          'Condition GroupNs': this.getConditionByCount(conditions, promiseData[1]),
+          'Ending Criteria':
+            experimentInfo.enrollmentCompleteCondition && JSON.stringify(experimentInfo.enrollmentCompleteCondition),
+          'Post-Experiment Rule':
+            experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
+              ? experimentInfo.postExperimentRule
+              : experimentInfo.revertTo
+              ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
+              : 'revert (to default)',
+          // tslint:disable-next-line: object-literal-key-quotes
+          ExperimentPoints: partitions.map((partition) => partition.expPoint).join(','),
+          // tslint:disable-next-line: object-literal-key-quotes
+          ExperimentIDs: partitions.map((partition) => partition.expId).join(','),
+        },
+      ];
 
-      // monitored Log Document
-      const toLogDocument = monitoredLogDocuments.map((monitoredLogDocument) => {
-        const {
-          createdAt,
-          updatedAt,
-          monitoredExperimentPoint: { id },
-        } = monitoredLogDocument;
-        return { ...mergedMonitoredExperimentPoint[id], createdAt, updatedAt };
-      });
+      let csv = new ObjectsToCsv(csvRows);
+      await csv.toDisk(`${folderPath}${experimentCSV}`);
+      const take = 50;
+      for (let i = 1; i <= promiseData[2]; i = i + take) {
+        csvRows = [];
+        const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
+          i - 1,
+          take,
+          experimentIdAndPoint,
+          experimentId
+        );
+        // merge all the data log
+        const mergedMonitoredExperimentPoint = {};
 
-      toLogDocument.forEach((data) => {
-        csvRows.push({
-          // tslint:disable-next-line: object-literal-key-quotes
-          UserId: data.user_id || '',
-          // tslint:disable-next-line: object-literal-key-quotes
-          markExperimentPointTime: data.createdAt.toISOString(),
-          'Enrollment code': data.enrollmentCode,
-          'Condition Name': data.conditions_conditionCode || 'default',
-          // tslint:disable-next-line: object-literal-key-quotes
-          GroupId:
-            (experiment.group &&
-              experimentUserMap[data.user_id] &&
-              experimentUserMap[data.user_id].workingGroup &&
-              experimentUserMap[data.user_id].workingGroup[experiment.group]) ||
-            '',
-          // tslint:disable-next-line: object-literal-key-quotes
-          ExperimentPoint: data.partition_expPoint,
-          // tslint:disable-next-line: object-literal-key-quotes
-          ExperimentId: data.partition_expId,
-          'Metrics monitored': JSON.stringify(data.logs_data),
+        monitoredExperimentPoints.forEach((monitoredPoint) => {
+          const key = `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
+          mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
+            ? {
+                ...mergedMonitoredExperimentPoint[key],
+                logs_data: { ...mergedMonitoredExperimentPoint[key].logs_data, ...monitoredPoint.logs_data },
+              }
+            : monitoredPoint;
         });
-      });
-      csv = new ObjectsToCsv(csvRows);
-      await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
-    }
 
-    const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
-    const monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+        // get all monitored experiment points ids
+        const monitoredPointIds = monitoredExperimentPoints.map(
+          (monitoredPoint) =>
+            `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+        );
 
-    // delete the file from local store
-    fs.unlinkSync(`${folderPath}${experimentCSV}`);
-    fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
+        // query experiment user
+        const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
 
-    // upload the csv to s3
-    await Promise.all([
-      this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
-      this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
-    ]);
+        const experimentUserSet = new Set(experimentUsers);
+        const experimentUsersArray = Array.from(experimentUserSet);
 
-    // generate signed url
-    const signedUrl = await Promise.all([
-      this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
-      this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
-    ]);
+        const [monitoredLogDocuments, experimentUserDocuments] = await Promise.all([
+          this.monitoredExperimentPointLogRepository.find({
+            where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
+            relations: ['monitoredExperimentPoint'],
+          }),
+          this.experimentUserRepository.find({
+            id: In(experimentUsersArray),
+          }),
+        ]);
 
-    const emailText = `Here are the exported data
+        const experimentUserMap = {};
+        experimentUserDocuments.forEach((document) => {
+          experimentUserMap[document.id] = document;
+        });
+
+        // monitored Log Document
+        const toLogDocument = monitoredLogDocuments.map((monitoredLogDocument) => {
+          const {
+            createdAt,
+            updatedAt,
+            monitoredExperimentPoint: { id },
+          } = monitoredLogDocument;
+          return { ...mergedMonitoredExperimentPoint[id], createdAt, updatedAt };
+        });
+
+        toLogDocument.forEach((data) => {
+          csvRows.push({
+            // tslint:disable-next-line: object-literal-key-quotes
+            UserId: data.user_id || '',
+            // tslint:disable-next-line: object-literal-key-quotes
+            markExperimentPointTime: data.createdAt.toISOString(),
+            'Enrollment code': data.enrollmentCode,
+            'Condition Name': data.conditions_conditionCode || 'default',
+            // tslint:disable-next-line: object-literal-key-quotes
+            GroupId:
+              (experiment.group &&
+                experimentUserMap[data.user_id] &&
+                experimentUserMap[data.user_id].workingGroup &&
+                experimentUserMap[data.user_id].workingGroup[experiment.group]) ||
+              '',
+            // tslint:disable-next-line: object-literal-key-quotes
+            ExperimentPoint: data.partition_expPoint,
+            // tslint:disable-next-line: object-literal-key-quotes
+            ExperimentId: data.partition_expId,
+            'Metrics monitored': JSON.stringify(data.logs_data),
+          });
+        });
+        csv = new ObjectsToCsv(csvRows);
+        await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
+      }
+
+      const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
+      const monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+
+      // delete the file from local store
+      fs.unlinkSync(`${folderPath}${experimentCSV}`);
+      fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
+
+      // upload the csv to s3
+      await Promise.all([
+        this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
+        this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
+      ]);
+
+      // generate signed url
+      const signedUrl = await Promise.all([
+        this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
+        this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
+      ]);
+
+      const emailText = `Here are the exported data
     Experiment Data: ${signedUrl[0]},
     Monitored Data: ${signedUrl[1]},`;
 
-    const emailSubject = `Exported Data for experiment ${experiment.name}`;
-    // send email to the user
-    await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
+      const emailSubject = `Exported Data for experiment ${experiment.name}`;
+      // send email to the user
+      await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
+    } catch (error) {
+      throw Promise.reject(new Error(SERVER_ERROR.EMAIL_SEND_ERROR + error));
+    }
 
     return '';
   }

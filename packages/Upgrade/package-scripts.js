@@ -196,6 +196,9 @@ module.exports = {
       clean: banner('clean'),
     },
   },
+  options: {
+    silent: true
+  }
 };
 
 function copy(source, target) {
