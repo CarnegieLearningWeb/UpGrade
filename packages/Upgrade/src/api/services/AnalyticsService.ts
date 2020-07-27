@@ -386,32 +386,32 @@ export class AnalyticsService {
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
 
-      const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
-      const monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+      fs.readFileSync(`${folderPath}${experimentCSV}`);
+      fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
 
       // delete the file from local store
       fs.unlinkSync(`${folderPath}${experimentCSV}`);
       fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
 
-      // upload the csv to s3
-      await Promise.all([
-        this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
-        this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
-      ]);
+      //   // upload the csv to s3
+      //   await Promise.all([
+      //     this.awsService.uploadCSV(experimentFileBuffer, 'upgrade-csv-upload', experimentCSV),
+      //     this.awsService.uploadCSV(monitorFileBuffer, 'upgrade-csv-upload', monitoredPointCSV),
+      //   ]);
 
-      // generate signed url
-      const signedUrl = await Promise.all([
-        this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
-        this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
-      ]);
+      //   // generate signed url
+      //   const signedUrl = await Promise.all([
+      //     this.awsService.generateSignedURL('upgrade-csv-upload', experimentCSV, 60),
+      //     this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
+      //   ]);
 
-      const emailText = `Here are the exported data
-    Experiment Data: ${signedUrl[0]},
-    Monitored Data: ${signedUrl[1]},`;
+      //   const emailText = `Here are the exported data
+      // Experiment Data: ${signedUrl[0]},
+      // Monitored Data: ${signedUrl[1]},`;
 
-      const emailSubject = `Exported Data for experiment ${experiment.name}`;
-      // send email to the user
-      await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
+      //   const emailSubject = `Exported Data for experiment ${experiment.name}`;
+      //   // send email to the user
+      //   await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
     } catch (error) {
       throw Promise.reject(new Error(SERVER_ERROR.EMAIL_SEND_ERROR + error));
     }

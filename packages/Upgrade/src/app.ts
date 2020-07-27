@@ -19,12 +19,13 @@ import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
  */
 
 const log = new Logger(__filename);
-log.info('Server starting at', Date.now());
 
 bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 })
   .then(() => {
+    // logging data after the winston is configured
+    log.info('Server starting at', Date.now());
     return CreateSystemUser();
   })
   .then(() => {
