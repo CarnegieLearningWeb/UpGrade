@@ -51,6 +51,16 @@ module "aws-state-machine" {
   lambda_arn            = module.aws_lambda_function.lambda-arn[0] 
 }
 
+module "aws-email-bucket" {
+  source                = "../../aws-email-bucket"
+
+  environment           = var.environment 
+  prefix                = var.prefix 
+}
+
+output "email-bucket" {
+  value = module.aws-email-bucket.s3-bucket
+}
 
 module "aws-ebs-app" {
 
