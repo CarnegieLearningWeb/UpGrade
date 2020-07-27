@@ -327,13 +327,22 @@ export class AnalyticsService {
         const experimentUsersArray = Array.from(experimentUserSet);
 
         const [monitoredLogDocuments, experimentUserDocuments] = await Promise.all([
-          this.monitoredExperimentPointLogRepository.find({
-            where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
-            relations: ['monitoredExperimentPoint'],
-          }),
-          this.experimentUserRepository.find({
-            id: In(experimentUsersArray),
-          }),
+          this.monitoredExperimentPointLogRepository
+            .find({
+              where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
+              relations: ['monitoredExperimentPoint'],
+            })
+            .catch((error) => {
+              throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
+            }),
+          this.experimentUserRepository
+            .find({
+              id: In(experimentUsersArray),
+            })
+            .catch((error) => {
+              throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
+            }),
+          ,
         ]);
 
         const experimentUserMap = {};
