@@ -66,6 +66,14 @@ resource "aws_iam_role_policy" "app-attach1" {
    "Version":"2012-10-17",
    "Statement":[
       {
+         "Sid": "EmailAccess",
+         "Action": [
+                "ses:*"
+            ],
+         "Effect":"Allow",
+         "Resource": "*"
+      },
+      {
          "Sid":"BucketAccess",
          "Action":[
             "s3:Get*",

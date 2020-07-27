@@ -405,15 +405,13 @@ export class AnalyticsService {
         this.awsService.generateSignedURL('upgrade-csv-upload', monitoredPointCSV, 60),
       ]);
 
-      console.log('signedUrl', signedUrl);
+      const emailText = `Here are the exported data
+      Experiment Data: ${signedUrl[0]},
+      Monitored Data: ${signedUrl[1]},`;
 
-      //   const emailText = `Here are the exported data
-      // Experiment Data: ${signedUrl[0]},
-      // Monitored Data: ${signedUrl[1]},`;
-
-      //   const emailSubject = `Exported Data for experiment ${experiment.name}`;
-      //   // send email to the user
-      //   await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
+      const emailSubject = `Exported Data for experiment ${experiment.name}`;
+      // send email to the user
+      await this.awsService.sendEmail('dev@playpowerlabs.com', email, emailText, emailSubject);
     } catch (error) {
       throw Promise.reject(new Error(SERVER_ERROR.EMAIL_SEND_ERROR + error));
     }
