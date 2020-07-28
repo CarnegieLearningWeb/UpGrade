@@ -146,10 +146,13 @@ public class ExperimentClient implements AutoCloseable {
 		}));
 	}
 
+    /**@param experimentPoint This is matched case-insensitively*/
 	public void getExperimentCondition(String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
 		getExperimentCondition(experimentPoint, null, callbacks);
 	}
 
+    /**@param experimentPoint This is matched case-insensitively
+     * @param experimentId This is matched case-insensitively*/
 	public void getExperimentCondition(String experimentPoint, String experimentId,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
@@ -184,9 +187,9 @@ public class ExperimentClient implements AutoCloseable {
 	private ExperimentsResponse findExperimentResponse(String experimentPoint, String experimentId,
 			List<ExperimentsResponse> experiments) {
 		return experiments.stream()
-				.filter(t -> t.getExpPoint().equals(experimentPoint) &&
+				.filter(t -> t.getExpPoint().equalsIgnoreCase(experimentPoint) &&
 						(isStringNull(experimentId) ? isStringNull(t.getExpId().toString())
-								: t.getExpId().toString().equals(experimentId)))
+								: t.getExpId().toString().equalsIgnoreCase(experimentId)))
 				.findFirst()
 				.map(ExperimentClient::copyExperimentResponse)
 				.orElse(new ExperimentsResponse());
