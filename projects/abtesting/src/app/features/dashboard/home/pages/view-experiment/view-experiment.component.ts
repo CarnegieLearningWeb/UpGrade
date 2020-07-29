@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY
 } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, first } from 'rxjs/operators';
 import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
@@ -19,7 +19,6 @@ import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
-import { SnackbarComponent } from '../../components/snackbar/snackbar.component';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -65,8 +64,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   openSnackBar() {
-    this._snackBar.openFromComponent(SnackbarComponent, {
-      duration: 1000,
+    this.authService.currentUser$.pipe(
+      first()
+    ).subscribe(userInfo => {
+      if (userInfo.email) {
+        this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 })
+      } else {
+        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 })
+      }
     });
   }
 

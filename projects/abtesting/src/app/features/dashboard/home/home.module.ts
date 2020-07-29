@@ -30,7 +30,6 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ExperimentQueryResultComponent } from './components/experiment-query-result/experiment-query-result.component';
 import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
-import { SnackbarComponent } from './components/snackbar/snackbar.component';
 
 @NgModule({
   declarations: [
@@ -53,8 +52,7 @@ import { SnackbarComponent } from './components/snackbar/snackbar.component';
     CreateQueryComponent,
     ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
-    RepeatedMeasurePipe,
-    SnackbarComponent
+    RepeatedMeasurePipe
   ],
   imports: [
     CommonModule,
@@ -74,8 +72,7 @@ import { SnackbarComponent } from './components/snackbar/snackbar.component';
     PostExperimentRuleComponent,
     DeleteExperimentComponent,
     QueriesModalComponent,
-    ExperimentEndCriteriaComponent,
-    SnackbarComponent
+    ExperimentEndCriteriaComponent
   ]
 })
 export class HomeModule {}
