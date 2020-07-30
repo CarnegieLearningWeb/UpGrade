@@ -437,9 +437,10 @@ export class AnalyticsService {
         this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
       ]);
 
-      const emailText = `Here are the exported data
-      Experiment Data: ${signedUrl[0]},
-      Monitored Data: ${signedUrl[1]},`;
+      const emailText = `Here are the new exported data
+      <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
+      <a href=\"${signedUrl[1]}\">Monitored Data</a>
+    `;
 
       const emailSubject = `Exported Data for experiment ${experiment.name}`;
       // send email to the user
