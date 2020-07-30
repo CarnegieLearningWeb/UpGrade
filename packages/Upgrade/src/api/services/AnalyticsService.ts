@@ -438,7 +438,9 @@ export class AnalyticsService {
       ]);
 
       const emailText = `Here are the new exported data
+      <br>
       <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
+      <br>
       <a href=\"${signedUrl[1]}\">Monitored Data</a>
     `;
 
