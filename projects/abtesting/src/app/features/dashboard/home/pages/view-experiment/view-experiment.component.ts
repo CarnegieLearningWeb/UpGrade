@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY
 } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, first } from 'rxjs/operators';
 import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
@@ -45,7 +45,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private experimentService: ExperimentService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private _snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -60,6 +61,18 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         }
         this.experiment = experiment;
       });
+  }
+
+  openSnackBar() {
+    this.authService.currentUser$.pipe(
+      first()
+    ).subscribe(userInfo => {
+      if (userInfo.email) {
+        this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 })
+      } else {
+        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 })
+      }
+    });
   }
 
   openDialog(dialogType: DialogType) {
@@ -118,6 +131,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   exportExperimentInfo(experimentId: string, experimentName: string) {
     this.experimentService.exportExperimentInfo(experimentId, experimentName);
+    this.openSnackBar();
   }
 
   get DialogType() {
