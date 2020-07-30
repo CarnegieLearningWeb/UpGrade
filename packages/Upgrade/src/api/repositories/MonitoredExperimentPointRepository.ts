@@ -92,9 +92,11 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         'conditions.conditionCode',
         'experiment.id',
         'logs.data',
+        'logs.uniquifier',
         'experiment.group',
         'partition.expId',
         'partition.expPoint',
+        'metric.key',
       ])
       .from((subQuery) => {
         return subQuery
@@ -122,6 +124,8 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .addGroupBy('experiment.id')
       .addGroupBy('experiment.group')
       .addGroupBy('logs.data')
+      .addGroupBy('logs.uniquifier')
+      .addGroupBy('metric.key')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(

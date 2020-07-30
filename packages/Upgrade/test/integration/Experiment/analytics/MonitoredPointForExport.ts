@@ -2,7 +2,7 @@ import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
 import { UserService } from '../../../../src/api/services/UserService';
-import { getRepository, getCustomRepository } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
 import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
@@ -14,7 +14,7 @@ import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/M
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 import { metrics } from '../../mockData/metric';
-import { MonitoredExperimentPointRepository } from '../../../../src/api/repositories/MonitoredExperimentPointRepository';
+import { AnalyticsService } from '../../../../src/api/services/AnalyticsService';
 
 export default async function LogOperations(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -24,9 +24,9 @@ export default async function LogOperations(): Promise<void> {
   const metricRepository = getRepository(Metric);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
+  const analyticsService = Container.get<AnalyticsService>(AnalyticsService);
   const queryService = Container.get<QueryService>(QueryService);
-
-  const monitoredExperimentPointRepository = getCustomRepository(MonitoredExperimentPointRepository);
+  const emailAddress = 'vivekfitkariwala@gmail.com';
 
   const user = await userService.create(systemUser as any);
 
@@ -219,6 +219,8 @@ export default async function LogOperations(): Promise<void> {
 
   await experimentService.update(experimentObject.id, experimentObject as any, user);
 
+  await analyticsService.getCSVData(experimentObject.id, emailAddress);
+
   // log data here
   await experimentAssignmentService.dataLog(experimentUsers[0].id, [
     {
@@ -235,6 +237,28 @@ export default async function LogOperations(): Promise<void> {
             attributes: {
               timeSeconds: 100,
               completion: 'GRADUATED',
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  await experimentAssignmentService.dataLog(experimentUsers[0].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: 30,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '2',
+            attributes: {
+              timeSeconds: 200,
+              completion: 'PROMOTED',
             },
           },
         ],
@@ -260,6 +284,8 @@ export default async function LogOperations(): Promise<void> {
       },
     },
   ]);
+
+  await analyticsService.getCSVData(experimentObject.id, emailAddress);
 
   await experimentAssignmentService.dataLog(experimentUsers[2].id, [
     {
@@ -479,20 +505,6 @@ export default async function LogOperations(): Promise<void> {
       }),
     ])
   );
-
-  const partitionIds = experimentObject.partitions.map(({ expPoint, expId }) => {
-    return expId ? `${expId}_${expPoint}` : expPoint;
-  });
-
-  // get the CSV data for the query
-  const result = await monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
-    0,
-    1,
-    partitionIds,
-    experimentObject.id
-  );
-
-  console.log('result', JSON.stringify(result, null, 2));
 }
 
 function makeQuery(
@@ -512,12 +524,4 @@ function makeQuery(
     experimentId,
     repeatedMeasure,
   };
-}
-
-function reduceResult(result: any): number[] {
-  const resultSet = [];
-  result.forEach((data) => {
-    resultSet.push(parseInt(data.result, 10));
-  });
-  return resultSet;
 }

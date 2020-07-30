@@ -22,6 +22,7 @@ import fs from 'fs';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
+import { METRICS_JOIN_TEXT } from './MetricService';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -302,17 +303,43 @@ export class AnalyticsService {
           experimentIdAndPoint,
           experimentId
         );
+
         // merge all the data log
         const mergedMonitoredExperimentPoint = {};
 
-        monitoredExperimentPoints.forEach((monitoredPoint) => {
+        monitoredExperimentPoints.forEach(({ metric_key, logs_uniquifier, ...monitoredPoint }) => {
           const key = `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
+          // filter logs only which are tracked
+          const metricToTrack = metric_key;
+          const metricArray = metricToTrack.split(METRICS_JOIN_TEXT);
+          let filteredLogs = monitoredPoint.logs_data;
+          // tslint:disable-next-line:prefer-for-of
+          for (let j = 0; j < metricArray.length; j++) {
+            const metric = metricArray[j];
+            if (filteredLogs && filteredLogs[metric]) {
+              filteredLogs = filteredLogs[metric];
+            } else {
+              filteredLogs = null;
+              break;
+            }
+          }
+          const metricToTrackWithUniquifier =
+            metricArray.length > 1 ? `${metricToTrack}_${logs_uniquifier}` : metricToTrack;
+
           mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
             ? {
                 ...mergedMonitoredExperimentPoint[key],
-                logs_data: { ...mergedMonitoredExperimentPoint[key].logs_data, ...monitoredPoint.logs_data },
+                logs_data: filteredLogs
+                  ? {
+                      ...mergedMonitoredExperimentPoint[key].logs_data,
+                      [metricToTrackWithUniquifier]: filteredLogs,
+                    }
+                  : { ...mergedMonitoredExperimentPoint[key].logs_data },
               }
-            : monitoredPoint;
+            : {
+                ...monitoredPoint,
+                logs_data: filteredLogs ? { [metricToTrackWithUniquifier]: filteredLogs } : filteredLogs,
+              };
         });
 
         // get all monitored experiment points ids
@@ -323,7 +350,6 @@ export class AnalyticsService {
 
         // query experiment user
         const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
-
         const experimentUserSet = new Set(experimentUsers);
         const experimentUsersArray = Array.from(experimentUserSet);
 
@@ -346,6 +372,7 @@ export class AnalyticsService {
           ,
         ]);
 
+        // mapping user to their id
         const experimentUserMap = {};
         experimentUserDocuments.forEach((document) => {
           experimentUserMap[document.id] = document;
