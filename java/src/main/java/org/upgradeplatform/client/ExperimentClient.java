@@ -147,13 +147,13 @@ public class ExperimentClient implements AutoCloseable {
 	}
 
     /**@param experimentPoint This is matched case-insensitively*/
-	public void getExperimentCondition(String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
-		getExperimentCondition(experimentPoint, null, callbacks);
+	public void getExperimentCondition(String context, String experimentPoint, final ResponseCallback<ExperimentsResponse> callbacks) {
+		getExperimentCondition(context, experimentPoint, null, callbacks);
 	}
 
     /**@param experimentPoint This is matched case-insensitively
      * @param experimentId This is matched case-insensitively*/
-	public void getExperimentCondition(String experimentPoint, String experimentId,
+	public void getExperimentCondition(String context, String experimentPoint, String experimentId,
 			final ResponseCallback<ExperimentsResponse> callbacks) {
 		if (this.allExperiments != null) {
 
@@ -163,7 +163,7 @@ public class ExperimentClient implements AutoCloseable {
 				callbacks.onSuccess(resultCondition);
 			}
 		} else {
-			getAllExperimentCondition("", new ResponseCallback<List<ExperimentsResponse>>() {
+			getAllExperimentCondition(context, new ResponseCallback<List<ExperimentsResponse>>() {
 				@Override
 				public void onSuccess(@NonNull List<ExperimentsResponse> experiments) {
 
