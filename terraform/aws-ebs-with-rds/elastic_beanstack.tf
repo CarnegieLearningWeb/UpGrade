@@ -322,14 +322,4 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     name      = "EMAIL_BUCKET"
     value     = var.EMAIL_BUCKET
   }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "ADMIN_USERS"
-    value     = var.ADMIN_USERS
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "CONTEXT"
-    value     = var.CONTEXT
-  }
 }

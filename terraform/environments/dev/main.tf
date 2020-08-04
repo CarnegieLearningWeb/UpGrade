@@ -98,9 +98,6 @@ module "aws-ebs-app" {
   EMAIL_FROM                      = var.EMAIL_FROM
   EMAIL_EXPIRE_AFTER_SECONDS      = var.EMAIL_EXPIRE_AFTER_SECONDS
   EMAIL_BUCKET                    = module.aws-email-bucket.s3-bucket
-
-  ADMIN_USERS         = var.ADMIN_USERS
-  CONTEXT             = var.CONTEXT
 }
 
 resource "null_resource" "update-ebs-env" { 

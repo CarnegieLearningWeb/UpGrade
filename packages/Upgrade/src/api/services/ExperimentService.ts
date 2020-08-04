@@ -31,7 +31,7 @@ import { ExperimentInput } from '../../types/ExperimentInput';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
-import { env } from '../../env';
+import * as config from '../../config.json';
 
 // const METRIC_KEY_DIVIDER = "_@%@_";
 
@@ -114,7 +114,7 @@ export class ExperimentService {
   }
 
   public getContext(): string[] {
-    return env.initialization.context;
+    return config.context;
   }
 
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {

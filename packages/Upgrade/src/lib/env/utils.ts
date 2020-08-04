@@ -44,14 +44,6 @@ export function toBool(value: string): boolean {
   return value === 'true';
 }
 
-export function toArray(value: string): any[] {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    throw new Error('Error in parsing object');
-  }
-}
-
 export function normalizePort(port: string): number | string | boolean {
   const parsedPort = parseInt(port, 10);
   if (isNaN(parsedPort)) {
