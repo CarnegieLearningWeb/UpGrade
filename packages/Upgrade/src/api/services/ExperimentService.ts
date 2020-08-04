@@ -27,11 +27,11 @@ import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
-import * as config from '../../config.json';
 import { ExperimentInput } from '../../types/ExperimentInput';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
+import { env } from '../../env';
 
 // const METRIC_KEY_DIVIDER = "_@%@_";
 
@@ -114,7 +114,7 @@ export class ExperimentService {
   }
 
   public getContext(): string[] {
-    return config.context;
+    return env.initialization.context;
   }
 
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
@@ -205,7 +205,10 @@ export class ExperimentService {
       await this.populateExclusionTable(experimentId, state);
     }
 
-    const oldExperiment = await this.experimentRepository.findOne({ id: experimentId }, { select: ['state', 'name', 'startDate', 'endDate'] });
+    const oldExperiment = await this.experimentRepository.findOne(
+      { id: experimentId },
+      { select: ['state', 'name', 'startDate', 'endDate'] }
+    );
     let data: AuditLogData = {
       experimentId,
       experimentName: oldExperiment.name,

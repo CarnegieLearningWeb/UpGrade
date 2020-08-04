@@ -121,3 +121,5 @@ variable "PATH_TO_PUBLIC_KEY" {}
 variable "EMAIL_FROM" {}
 variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
 variable "EMAIL_BUCKET" {}
+variable "ADMIN_USERS" {}
+variable "CONTEXT" {}

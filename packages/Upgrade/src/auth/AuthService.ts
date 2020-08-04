@@ -25,12 +25,14 @@ export class AuthService {
 
   public async validateUser(token: string): Promise<User> {
     const client = new OAuth2Client(env.google.clientId);
+    this.log.info(`Validating ID Token`);
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: env.google.clientId, // Specify the CLIENT_ID of the app that accesses the backend
       // Or, if multiple clients access the backend:
       // [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
+    this.log.info(`Token Validated`);
 
     const payload = ticket.getPayload();
 
@@ -38,6 +40,7 @@ export class AuthService {
     const email = payload.email;
     const hd = payload.hd;
 
+    this.log.info(`Validating domain name`);
     if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== hd) {
       throw new Error(
         JSON.stringify({
@@ -46,10 +49,12 @@ export class AuthService {
         })
       );
     }
+    this.log.info(`Domain name validated`);
 
     // add local cache for validating user for each request
     const document = await this.userRepository.find({ email });
     if (document.length === 0) {
+      this.log.info(`User not found in database`);
       throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
     }
 
