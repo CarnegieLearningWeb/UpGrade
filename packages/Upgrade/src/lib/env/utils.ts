@@ -69,7 +69,7 @@ export function parseAdminUsers(value: string): Array<{ email: string; role: str
   if (!value) {
     return [];
   }
-  const adminDoc = value.split('@');
+  const adminDoc = value.split('/\\');
   return adminDoc.map((doc) => {
     const [email, role] = doc.split(':');
     return { email, role };
