@@ -40,6 +40,8 @@ export class AuthService {
     const email = payload.email;
     const hd = payload.hd;
 
+    this.log.info('hd', hd);
+    this.log.info('env.google.domainName', env.google.domainName);
     this.log.info(`Validating domain name`);
     if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== hd) {
       throw new Error(

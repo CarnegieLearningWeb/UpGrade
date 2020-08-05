@@ -57,6 +57,25 @@ export function normalizePort(port: string): number | string | boolean {
   return false;
 }
 
+export function parseContext(value: string): string[] {
+  if (!value) {
+    return [];
+  }
+  const contextArray = value.split('@');
+  return contextArray.length > 0 ? contextArray : [];
+}
+
+export function parseAdminUsers(value: string): Array<{ email: string; role: string }> {
+  if (!value) {
+    return [];
+  }
+  const adminDoc = value.split('@');
+  return adminDoc.map((doc) => {
+    const [email, role] = doc.split(':');
+    return { email, role };
+  });
+}
+
 export function formatBadReqErrorMessage(validationError: ValidationError[]): string {
   const formatErrors = [];
   validationError.forEach((error: ValidationError | ValidationError[]) => {
