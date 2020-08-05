@@ -30,6 +30,8 @@ variable "SWAGGER_PASSWORD"{}
 variable "TYPEORM_SYNCHRONIZE"{}
 variable "TOKEN_SECRET_KEY"{}
 variable "AUTH_CHECK"{}
+variable "CONTEXT"{}
+variable "ADMIN_USERS"{}
 
 # Email
 variable "EMAIL_FROM" {}
