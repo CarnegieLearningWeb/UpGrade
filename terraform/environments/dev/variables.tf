@@ -32,6 +32,7 @@ variable "TOKEN_SECRET_KEY"{}
 variable "AUTH_CHECK"{}
 variable "CONTEXT"{}
 variable "ADMIN_USERS"{}
+variable "RDS_PASSWORD"{}
 
 # Email
 variable "EMAIL_FROM" {}
