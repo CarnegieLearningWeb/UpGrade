@@ -90,6 +90,7 @@ module "aws-ebs-app" {
   TYPEORM_SYNCHRONIZE   = var.TYPEORM_SYNCHRONIZE
   CONTEXT               = var.CONTEXT
   ADMIN_USERS           = var.ADMIN_USERS
+  RDS_PASSWORD          = var.RDS_PASSWORD
 
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "id_rsa"
