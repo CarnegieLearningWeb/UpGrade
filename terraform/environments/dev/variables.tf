@@ -1,7 +1,6 @@
 # General variables
 variable "current_directory"{}
 variable "aws_region"{}
-variable "aws_profile"{}
 variable "environment"{}
 variable "prefix"{}
 variable "app_version"{}

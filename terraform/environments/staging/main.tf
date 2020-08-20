@@ -13,7 +13,6 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  profile = var.aws_profile
 }
 
 
@@ -112,7 +111,7 @@ resource "null_resource" "update-ebs-env" {
   }
   
   provisioner "local-exec" {
-    command = "export AWS_PROFILE=${var.aws_profile} && aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=http://${module.aws-ebs-app.ebs-cname}/api"
+    command = "aws elasticbeanstalk update-environment --region ${var.aws_region} --environment-name ${module.aws-ebs-app.ebs-env} --option-settings Namespace=aws:elasticbeanstalk:application:environment,OptionName=HOST_URL,Value=http://${module.aws-ebs-app.ebs-cname}/api"
   }
 }
 
