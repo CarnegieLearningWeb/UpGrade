@@ -30,6 +30,7 @@ tsconfig.build.json
 .idea/
 *.swp
 .awcache
+.vscode
 
 # Generated source-code #
 src/**/*.js
