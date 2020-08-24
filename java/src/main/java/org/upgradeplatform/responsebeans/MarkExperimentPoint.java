@@ -9,6 +9,7 @@ public class MarkExperimentPoint {
 	private String userId;
 	private String experimentId;
 	private String experimentPoint;
+	private String enrollmentCode;
 	private String id;
 	
 	public String getCreatedAt() {
@@ -82,6 +83,20 @@ public class MarkExperimentPoint {
 		this.experimentPoint = experimentPoint;
 	}
 
+	public String getEnrollmentCode() {
+	    return enrollmentCode;
+	}
 
-    
+	public void setEnrollmentCode(String enrollmentCode) {
+	    this.enrollmentCode = enrollmentCode;
+	}
+
+    @Override
+    public String toString(){
+        return "MarkExperimentPoint [createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", versionNumber="
+               + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", experimentPoint="
+               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", id=" + id + "]";
+    }
+
+	
 }
