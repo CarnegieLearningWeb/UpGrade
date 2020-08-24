@@ -1,49 +1,52 @@
 package org.upgradeplatform.client;
 
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.upgradeplatform.interfaces.ResponseCallback;
+import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
-import org.upgradeplatform.responsebeans.ExperimentUser;
-
+import org.upgradeplatform.responsebeans.ExperimentsResponse;
+import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 
 public class Main {
-	public static void main(String []args) throws InterruptedException, ExecutionException
+	public static void main(String[] args) throws InterruptedException, ExecutionException
 	{
-		String baseUrl = "http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com";
-		String userId = "user1";
-	
-		
-		String[] classList = {"1","2","3","4","5"};
-		String[] teacherList = {"1","2","7"};
-		
-		HashMap<String, List<String>> group = new HashMap<>();
-		group.put("classes", Arrays.asList(classList));
-		group.put("teachers", Arrays.asList(teacherList));
-		
-		
+		String baseUrl = "http://upgradeapi.qa-cli.com";
+		String userId = UUID.randomUUID().toString();
+
+		String sectionId = args.length > 0 ? args[0] : "test_dummy_variants_nonmastery";
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl)){
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
-		    experimentClient.setGroupMembership(group, new ResponseCallback<ExperimentUser>(){
-				@Override
-		        public void onSuccess(ExperimentUser i){
-					result.complete(prefix() + "retrieved  experiment responses; foo response: " + i.getId());
-		        }
+            experimentClient.getExperimentCondition("assign-prog", "SelectSection", sectionId, new ResponseCallback<ExperimentsResponse>(){
+                @Override
+                public void onSuccess(ExperimentsResponse expResult){
+                    AssignedCondition condition = expResult.getAssignedCondition();
+                    String code = condition == null ? null : condition.getConditionCode();
+                    experimentClient.markExperimentPoint("SelectSection", sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
+                        @Override
+                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                            result.complete("marked " + code + ": " + markResult.toString());
+                        }
 
-		        @Override
-		        public void onError(@NonNull ErrorResponse error){
-                    result.completeExceptionally(new Exception(prefix() + error.toString()));
-		        }
-		    });
+                        @Override
+                        public void onError(@NonNull ErrorResponse error){
+                            result.complete("error marking " + code + ": " + error.toString());
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(@NonNull ErrorResponse error){
+                    result.complete(error.toString());
+                }
+                
+            });
 
             System.out.println(prefix() + result.getNow("not complete yet"));
             String rs = result.get();
