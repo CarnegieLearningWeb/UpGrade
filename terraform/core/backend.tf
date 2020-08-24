@@ -3,6 +3,5 @@ terraform {
       bucket = "cli-terraform-artifacts-bucket"
       key  =  "upgrade.core.tfstate"
       region = "us-east-1"
-      profile = "upgrade-terraform"
   }
 }
