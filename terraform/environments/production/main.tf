@@ -97,6 +97,10 @@ module "aws-ebs-app" {
   PATH_TO_PRIVATE_KEY     = "id_rsa"
   PATH_TO_PUBLIC_KEY      = "id_rsa.pub"
   DOMAIN_NAME             = var.DOMAIN_NAME
+
+  EMAIL_FROM                      = var.EMAIL_FROM
+  EMAIL_EXPIRE_AFTER_SECONDS      = var.EMAIL_EXPIRE_AFTER_SECONDS
+  EMAIL_BUCKET                    = module.aws-email-bucket.s3-bucket
 }
 
 resource "null_resource" "update-ebs-env" { 
