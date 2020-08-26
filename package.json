@@ -64,7 +64,7 @@
     "ngx-skeleton-loader": "^2.2.0",
     "rxjs": "~6.5.0",
     "tslib": "^1.9.0",
-    "upgrade_types": "github:CarnegieLearningWeb/educational-experiment-types#master",
+    "upgrade_types": "1.0.3",
     "uuid": "^3.3.3",
     "zone.js": "~0.9.1"
   },
