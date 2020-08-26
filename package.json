@@ -26,6 +26,6 @@
   "dependencies": {
     "es6-promise": "^4.2.8",
     "isomorphic-fetch": "^2.2.1",
-    "upgrade_types": "github:CarnegieLearningWeb/educational-experiment-types#master"
+    "upgrade_types": "1.0.3"
   }
 }
