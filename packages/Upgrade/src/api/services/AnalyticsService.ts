@@ -311,7 +311,8 @@ export class AnalyticsService {
           const key = `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
           // filter logs only which are tracked
           const metricToTrack = metric_key;
-          const metricArray = metricToTrack.split(METRICS_JOIN_TEXT);
+          // const metricArray = metricToTrack.split(METRICS_JOIN_TEXT);
+          const metricArray = (metricToTrack == null ) ? [] : metricToTrack.split(METRICS_JOIN_TEXT);
           let filteredLogs = monitoredPoint.logs_data;
           // tslint:disable-next-line:prefer-for-of
           for (let j = 0; j < metricArray.length; j++) {
