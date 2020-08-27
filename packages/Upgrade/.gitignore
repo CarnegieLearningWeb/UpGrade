@@ -3,10 +3,6 @@
 *.log
 *.log*
 
-
-#Package lock json
-package-lock.json
-
 # Node files #
 node_modules/
 npm-debug.log
