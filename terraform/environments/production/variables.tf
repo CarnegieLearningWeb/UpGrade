@@ -19,6 +19,10 @@ variable "ebs_app_name"{}
 variable "autoscaling_min_size"{}
 variable "autoscaling_max_size"{}
 
+# Lambda variables
+variable "s3_lambda_bucket" {}
+variable "s3_lambda_key" {}
+
 # APP environment variables
 variable "GOOGLE_CLIENT_ID"{}
 variable "DOMAIN_NAME"{
