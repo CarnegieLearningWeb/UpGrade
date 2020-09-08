@@ -7,6 +7,7 @@ export const environment = {
   production: true,
   test: false,
   i18nPrefix: '',
+  appVersion: require('../../../../package.json').version,
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
   domainName: '',
   api: {
@@ -39,6 +40,7 @@ export const environment = {
     setting: `${endpointApi}/setting`,
     metrics: `${endpointApi}/metric`,
     metricsSave: `${endpointApi}/metric/save`,
-    queryResult: `${endpointApi}/query/analyse`
+    queryResult: `${endpointApi}/query/analyse`,
+    getVersion: `${endpointApi}/version`
   }
 };

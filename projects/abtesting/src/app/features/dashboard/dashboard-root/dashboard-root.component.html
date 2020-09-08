@@ -3,6 +3,10 @@
     <div class="drawer-container">
       <div class="logo">
         <a class="logo-link ft-36-800" [routerLink]="['/home']">UpGrade</a>
+        <div class="version">
+          <span>Client: {{ clientVersion }}</span>
+          <span>Server: {{ serverVersion }}</span>
+        </div>
       </div>
       <div class="list-item-container">
         <mat-list class="list">
@@ -21,11 +25,11 @@
         <div class="user">
           <mat-list class="user-list">
             <a class="profile" [routerLink]="['/profile']">
-            <mat-list-item
-              class="user-list--item ft-16-600"
-              *ngIf="currentUser$ | async as user"
-              routerLinkActive="user-list--item-selected"
-            >
+              <mat-list-item
+                class="user-list--item ft-16-600"
+                *ngIf="currentUser$ | async as user"
+                routerLinkActive="user-list--item-selected"
+              >
                 <img [src]="user.imageUrl" class="user-pic" />
                 <span>{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
               </mat-list-item>
@@ -42,8 +46,7 @@
     </div>
   </mat-drawer>
   <mat-drawer-content class="drawer__main-content">
-    <div class="drawer__main-content-header">
-    </div>
+    <div class="drawer__main-content-header"></div>
     <router-outlet></router-outlet>
   </mat-drawer-content>
 </mat-drawer-container>

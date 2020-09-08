@@ -4,6 +4,7 @@ export const environment = {
   appName: 'UpGrade',
   envName: 'bsnl',
   endpointApi,
+  appVersion: require('../../../../package.json').version,
   production: true,
   test: false,
   i18nPrefix: '',
@@ -39,6 +40,7 @@ export const environment = {
     setting: `${endpointApi}/setting`,
     metrics: `${endpointApi}/metric`,
     metricsSave: `${endpointApi}/metric/save`,
-    queryResult: `${endpointApi}/query/analyse`
+    queryResult: `${endpointApi}/query/analyse`,
+    getVersion: `${endpointApi}/version`
   }
 };

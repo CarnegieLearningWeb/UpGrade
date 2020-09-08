@@ -17,9 +17,9 @@ mat-drawer {
     align-items: flex-end;
     padding: 0 26px;
     height: 125px;
+    flex-direction: column;
 
     &-link {
-      margin-bottom: 22px;
       text-decoration: none;
       color: var(--blue);
     }
@@ -116,4 +116,10 @@ mat-drawer {
     justify-content: flex-end;
     height: 25px;
   }
+}
+
+.version {
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
 }
