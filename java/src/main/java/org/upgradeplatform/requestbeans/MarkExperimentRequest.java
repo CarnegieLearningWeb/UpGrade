@@ -7,14 +7,16 @@ public class MarkExperimentRequest {
 	private String userId;
 	private String experimentPoint;
 	private String partitionId;
+	private String condition;
 	
 	public MarkExperimentRequest() {}
 
-	public MarkExperimentRequest(String userId, String experimentPoint, String partitionId) {
+	public MarkExperimentRequest(String userId, String experimentPoint, String partitionId, String condition) {
 		super();
 		this.userId = userId;
 		this.experimentPoint = experimentPoint;
 		this.partitionId = partitionId;
+		this.condition = condition;
 	}
 
 	public String getUserId() {
@@ -41,4 +43,11 @@ public class MarkExperimentRequest {
 		this.partitionId = partitionId;
 	}
 
+	public String getCondition() {
+		return condition;
+	}
+
+	public void setCondition(String condition) {
+		this.condition = condition;
+	}
 }

@@ -208,13 +208,18 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void markExperimentPoint(final String experimentPoint,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(experimentPoint, "", callbacks);
+		markExperimentPoint(experimentPoint, "", "", callbacks);
 	}
 
-	public void markExperimentPoint(final String experimentPoint, String experimentId,
+	public void markExperimentPoint(final String experimentPoint,String experimentId,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
+		markExperimentPoint(experimentPoint, experimentId, "", callbacks);
+	}
+
+	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
-				experimentId);
+				experimentId, condition);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
