@@ -17,4 +17,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_NAME: 'tanmayjain3'
           GITHUB_EMAIL: 'tanmayjain53@gmail.com'
-          VERSION_FILE_NAME: './packages/Upgrade/package.json'
+          VERSION_FILE_NAME: 'package.json'
