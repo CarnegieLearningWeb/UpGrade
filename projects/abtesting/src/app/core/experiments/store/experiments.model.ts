@@ -40,6 +40,7 @@ export enum GroupTypes {
   CLASS = 'class',
   SCHOOL = 'school',
   DISTRICT = 'district',
+  TEACHER = 'teacher',
   OTHER = 'other'
 }
 

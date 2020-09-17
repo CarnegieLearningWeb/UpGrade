@@ -14,6 +14,8 @@ export class GroupTypePlural implements PipeTransform {
         return groupCount > 1 ? 'districts' : 'district';
       case GroupTypes.SCHOOL:
         return groupCount > 1 ? 'schools' : 'school';
+      case GroupTypes.TEACHER:
+        return groupCount > 1 ? 'teachers' : 'teacher';
       default:
         return groupType;
     }

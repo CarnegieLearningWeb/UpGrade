@@ -32,6 +32,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: GroupTypes.CLASS },
     { value: GroupTypes.SCHOOL },
     { value: GroupTypes.DISTRICT },
+    { value: GroupTypes.TEACHER },
     { value: GroupTypes.OTHER }
   ];
 
