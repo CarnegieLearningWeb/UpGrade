@@ -11,7 +11,7 @@ export enum ASSIGNMENT_UNIT {
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
-  REVERT = 'revert',
+  ASSIGN = 'assign',
 }
 
 export enum EXPERIMENT_STATE {
