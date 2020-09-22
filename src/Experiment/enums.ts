@@ -53,6 +53,7 @@ export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_UPDATED = 'experimentUpdated',
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
   EXPERIMENT_DELETED = 'experimentDeleted',
+  EXPERIMENT_DATA_EXPORTED = 'experimentDataExported'
 }
 
 export enum EXPERIMENT_SEARCH_KEY {
