@@ -23,7 +23,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   allExcludedEntitiesSub: Subscription;
 
   excludeEntitiesForm: FormGroup;
-  entityTypes = [{ value: EntityTypes.USER_ID }, { value: EntityTypes.GROUP_ID }];
+  entityTypes = [{ value: EntityTypes.PARTICIPANT_ID }, { value: EntityTypes.GROUP_ID }];
   groupTypes = [
     { value: GroupTypes.CLASS },
     { value: GroupTypes.DISTRICT },
@@ -88,7 +88,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     this.excludeEntitiesForm.get('id').reset();
     this.excludeEntitiesForm.get('customGroupName').reset();
     switch (entityType) {
-      case EntityTypes.USER_ID:
+      case EntityTypes.PARTICIPANT_ID:
         this.experimentUserService.excludeUser(id);
         break;
       case EntityTypes.GROUP_ID:
@@ -120,7 +120,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   // For getting custom placeholder
   get getIdPlaceholder() {
     const { entityType, groupType, customGroupName } = this.excludeEntitiesForm.value;
-    if (entityType === EntityTypes.USER_ID) {
+    if (entityType === EntityTypes.PARTICIPANT_ID) {
       return 'Enter participant ID';
     } else {
       if (groupType === GroupTypes.OTHER) {
