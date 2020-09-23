@@ -121,7 +121,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   get getIdPlaceholder() {
     const { entityType, groupType, customGroupName } = this.excludeEntitiesForm.value;
     if (entityType === EntityTypes.USER_ID) {
-      return 'Enter user ID';
+      return 'Enter participant ID';
     } else {
       if (groupType === GroupTypes.OTHER) {
         return 'Enter ' + (customGroupName || '') + ' ID';
