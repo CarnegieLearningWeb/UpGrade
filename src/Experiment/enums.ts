@@ -11,6 +11,8 @@ export enum ASSIGNMENT_UNIT {
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
+  // TO DO : Remove revert when frontend anad backend integrated with assign
+  REVERT = 'revert',
   ASSIGN = 'assign',
 }
 
