@@ -1,16 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { environment } from '../../../../environments/environment';
+import { VersionService } from '../../../core/version/version.service';
 
 @Component({
   selector: 'app-dashboard-root',
   templateUrl: './dashboard-root.component.html',
   styleUrls: ['./dashboard-root.component.scss']
 })
-export class DashboardRootComponent {
+export class DashboardRootComponent implements OnInit {
   theme$ = this.settingsService.theme$;
   isLoggedIn$ = this.authService.isLoggedIn$;
   currentUser$ = this.authService.currentUser$;
+  serverVersion: any;
+  clientVersion: string;
   routeLinks = [
     {
       path: ['/home'],
@@ -34,9 +38,14 @@ export class DashboardRootComponent {
     }
   ];
 
-  constructor(private settingsService: SettingsService, private authService: AuthService) {}
+  constructor(private settingsService: SettingsService, private authService: AuthService, private versionService: VersionService) { }
 
   logout() {
     this.authService.authLogout();
+  }
+
+  async ngOnInit() {
+    this.serverVersion = 'v' + await this.versionService.getVersion();
+    this.clientVersion = 'v' + environment.appVersion;
   }
 }
