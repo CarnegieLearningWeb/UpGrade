@@ -28,8 +28,8 @@ describe('GroupTypePluralPipe', () => {
     expect(groupTypePipe.transform(GroupTypes.SCHOOL, 1)).toBe('school');
   });
 
-  it('should return teacher', () => {
-    expect(groupTypePipe.transform('teacher')).toBe('teacher');
+  it('should return teachers', () => {
+    expect(groupTypePipe.transform('teacher')).toBe('teachers');
   });
 
   it('should return teacher when 1 group is given', () => {

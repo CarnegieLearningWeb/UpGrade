@@ -28,6 +28,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     { value: GroupTypes.CLASS },
     { value: GroupTypes.DISTRICT },
     { value: GroupTypes.SCHOOL },
+    { value: GroupTypes.TEACHER },
     { value: GroupTypes.OTHER }
   ];
   isEntityLoading$ = this.experimentUserService.isExcludedEntityLoading$;
@@ -35,11 +36,11 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   private paginator: MatPaginator;
   private sort: MatSort;
 
-  @ViewChild(MatPaginator, {static: false}) set matPaginator(mp: MatPaginator) {
+  @ViewChild(MatPaginator, { static: false }) set matPaginator(mp: MatPaginator) {
     this.paginator = mp;
     this.allExcludedEntities.paginator = this.paginator;
   }
-  @ViewChild(MatSort, {static: false}) set matSort(ms: MatSort) {
+  @ViewChild(MatSort, { static: false }) set matSort(ms: MatSort) {
     this.sort = ms;
     this.allExcludedEntities.sort = this.sort;
   }
