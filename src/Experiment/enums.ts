@@ -39,6 +39,7 @@ export enum SERVER_ERROR {
   TOKEN_NOT_PRESENT = 'Token is not present in request',
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
+  CONDTION_NOT_FOUND = 'Condition not found',
 }
 
 export enum ENROLLMENT_CODE {
