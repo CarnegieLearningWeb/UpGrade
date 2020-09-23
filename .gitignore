@@ -19,7 +19,7 @@ src/api/schema.gql
 typings/
 
 # Dist #
-# dist/
+dist/
 
 # IDE #
 .idea/
