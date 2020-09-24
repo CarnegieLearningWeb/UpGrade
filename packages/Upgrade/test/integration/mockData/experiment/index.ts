@@ -13,7 +13,7 @@ export const individualAssignmentExperimentConsistencyRuleExperiemnt = {
   ...experiment,
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
-  postExperimentRule: POST_EXPERIMENT_RULE.REVERT,
+  postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
   revertTo: experiment.conditions[0].id,
   state: EXPERIMENT_STATE.INACTIVE,
 };
