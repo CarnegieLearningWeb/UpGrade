@@ -3,7 +3,7 @@ import { EntityState } from '@ngrx/entity';
 
 export enum EntityTypes {
   GROUP_ID = 'Group ID',
-  USER_ID = 'User ID'
+  PARTICIPANT_ID = 'Participant ID'
 }
 
 export interface ExcludeEntity {
