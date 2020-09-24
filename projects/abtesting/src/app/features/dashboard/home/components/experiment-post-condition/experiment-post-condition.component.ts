@@ -17,7 +17,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   postExperimentRuleForm: FormGroup;
   postExperimentRules = [
     { value: POST_EXPERIMENT_RULE.CONTINUE },
-    { value: POST_EXPERIMENT_RULE.REVERT }
+    { value: POST_EXPERIMENT_RULE.ASSIGN }
   ];
   experimentConditions = [
     { value: 'default', id: 'default' }
