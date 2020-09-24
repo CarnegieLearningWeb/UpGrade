@@ -11,7 +11,9 @@ export enum ASSIGNMENT_UNIT {
 
 export enum POST_EXPERIMENT_RULE {
   CONTINUE = 'continue',
+  // TO DO : Remove revert when frontend and backend integrated with assign
   REVERT = 'revert',
+  ASSIGN = 'assign',
 }
 
 export enum EXPERIMENT_STATE {
@@ -39,6 +41,7 @@ export enum SERVER_ERROR {
   TOKEN_NOT_PRESENT = 'Token is not present in request',
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
+  CONDTION_NOT_FOUND = 'Condition not found',
 }
 
 export enum ENROLLMENT_CODE {
@@ -53,6 +56,7 @@ export enum EXPERIMENT_LOG_TYPE {
   EXPERIMENT_UPDATED = 'experimentUpdated',
   EXPERIMENT_STATE_CHANGED = 'experimentStateChanged',
   EXPERIMENT_DELETED = 'experimentDeleted',
+  EXPERIMENT_DATA_EXPORTED = 'experimentDataExported'
 }
 
 export enum EXPERIMENT_SEARCH_KEY {
