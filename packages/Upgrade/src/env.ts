@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-import * as pkg from '../../../package.json';
+import * as pkg from '../package.json';
 
 import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
 import { getOsEnvOptional, toNumber, parseContext, parseAdminUsers } from './lib/env/utils';
