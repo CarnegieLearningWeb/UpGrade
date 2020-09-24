@@ -25,7 +25,7 @@ export class ExperimentFormValidators {
   static validatePostExperimentRuleForm(controls: AbstractControl): { [key: string]: any } | null {
     const postExperimentRule = controls.get('postExperimentRule').value;
     const revertTo = controls.get('revertTo').value;
-    if (postExperimentRule === POST_EXPERIMENT_RULE.REVERT && !revertTo) {
+    if (postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN && !revertTo) {
       return { conditionSelectionError: true };
     }
     return null;
