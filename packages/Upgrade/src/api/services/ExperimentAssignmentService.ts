@@ -841,7 +841,7 @@ export class ExperimentAssignmentService {
         } else {
           return;
         }
-      } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT) {
+      } else if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN) {
         if (!experiment.revertTo) {
           return;
         } else {

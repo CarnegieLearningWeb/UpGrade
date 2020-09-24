@@ -25,7 +25,7 @@ export class CreateExperiments implements Seeder {
       });
 
       // adding revert to in experiment
-      if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.REVERT && Math.random() < 0.5) {
+      if (experiment.postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN && Math.random() < 0.5) {
         experiment.revertTo = createdConditions[Math.floor(createdConditions.length * Math.random())].id;
       }
 
