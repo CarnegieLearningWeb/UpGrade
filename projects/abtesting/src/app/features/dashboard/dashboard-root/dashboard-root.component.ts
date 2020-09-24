@@ -27,7 +27,7 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'toggle_on'
     },
     {
-      path: ['/users'],
+      path: ['/participants'],
       text: 'global.experiment-user.title',
       iconType: 'supervisor_account'
     },

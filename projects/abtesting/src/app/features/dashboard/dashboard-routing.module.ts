@@ -20,7 +20,7 @@ const routes: Routes = [
         }
       },
       {
-        path: 'users',
+        path: 'participants',
         loadChildren: () => import('./experiment-users/experiment-users.module').then(m => m.ExperimentUsersModule),
         data: {
           title: 'app-header.title.users'
@@ -59,4 +59,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class DashboardRoutingModule {}
+export class DashboardRoutingModule { }
