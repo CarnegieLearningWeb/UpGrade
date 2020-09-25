@@ -75,6 +75,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.TOKEN_NOT_PRESENT;
         message = errorMessage;
         break;
+      case SERVER_ERROR.CONDTION_NOT_FOUND:
+        type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        message = errorMessage;
+        break;
       default:
         switch (error.httpCode) {
           case 400:
