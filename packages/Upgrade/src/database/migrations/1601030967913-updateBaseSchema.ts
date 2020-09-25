@@ -1,11 +1,10 @@
 import {MigrationInterface, QueryRunner} from 'typeorm';
 
 // tslint:disable-next-line: class-name
-export class updateBaseSchema1601014685903 implements MigrationInterface {
-    public name = 'updateBaseSchema1601014685903';
+export class updateBaseSchema1601030967913 implements MigrationInterface {
+    public name = 'updateBaseSchema1601030967913';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "monitored_experiment_point" ADD "condition" character varying`);
         await queryRunner.query(`ALTER TYPE "public"."experiment_postexperimentrule_enum" RENAME TO "experiment_postexperimentrule_enum_old"`);
         await queryRunner.query(`CREATE TYPE "experiment_postexperimentrule_enum" AS ENUM('continue', 'revert', 'assign')`);
         await queryRunner.query(`ALTER TABLE "experiment" ALTER COLUMN "postExperimentRule" TYPE "experiment_postexperimentrule_enum" USING "postExperimentRule"::"text"::"experiment_postexperimentrule_enum"`);
@@ -33,7 +32,6 @@ export class updateBaseSchema1601014685903 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "experiment" ALTER COLUMN "postExperimentRule" TYPE "experiment_postexperimentrule_enum_old" USING "postExperimentRule"::"text"::"experiment_postexperimentrule_enum_old"`);
         await queryRunner.query(`DROP TYPE "experiment_postexperimentrule_enum"`);
         await queryRunner.query(`ALTER TYPE "experiment_postexperimentrule_enum_old" RENAME TO  "experiment_postexperimentrule_enum"`);
-        await queryRunner.query(`ALTER TABLE "monitored_experiment_point" DROP COLUMN "condition"`);
     }
 
 }
