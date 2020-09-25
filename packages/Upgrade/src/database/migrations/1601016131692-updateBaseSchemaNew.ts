@@ -1,7 +1,8 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import {MigrationInterface, QueryRunner} from 'typeorm';
 
+// tslint:disable-next-line: class-name
 export class updateBaseSchemaNew1601016131692 implements MigrationInterface {
-    name = 'updateBaseSchemaNew1601016131692'
+    public name = 'updateBaseSchemaNew1601016131692';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TYPE "public"."experiment_postexperimentrule_enum" RENAME TO "experiment_postexperimentrule_enum_old"`);
