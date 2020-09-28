@@ -158,6 +158,7 @@
   "logs.audit-log-experiment-created.text": "successfully created",
   "logs.audit-log-experiment-updated.text": "successfully updated",
   "logs.audit-log-experiment-deleted.text": "successfully deleted",
+  "logs.audit-log-experiment-data-exported.text": "successfully exported data of ",
   "logs.audit-log-experiment-state-changed.text": "successfully changed status from {{ previousState }} to {{ newState }} in ",
   "users-global.text": "Participant",
   "users.main-heading.text": "Participants",

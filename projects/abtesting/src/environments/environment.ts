@@ -4,6 +4,7 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 const endpointApi = 'http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
+// const endpointApi = 'http://localhost:3030/api';
 
 export const environment = {
   appName: 'UpGrade',
