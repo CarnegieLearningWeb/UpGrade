@@ -57,6 +57,7 @@ export class NewExperimentComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
+      case NewExperimentDialogEvents.SAVE_DATA:
         this.newExperimentData = {
           ...this.experimentInfo,
           ...this.newExperimentData,
