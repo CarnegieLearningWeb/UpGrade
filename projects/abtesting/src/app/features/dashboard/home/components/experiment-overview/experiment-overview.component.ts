@@ -23,7 +23,6 @@ import { startWith, map } from 'rxjs/operators';
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() editExperiment: boolean
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput', { static: false }) contextInput: ElementRef<HTMLInputElement>;
   overviewForm: FormGroup;
@@ -66,7 +65,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('tanmay', this.editExperiment, this.experimentInfo);
     this.allContextSub = this.experimentService.experimentContext$.subscribe(context => {
       this.allContext = context;
     });
