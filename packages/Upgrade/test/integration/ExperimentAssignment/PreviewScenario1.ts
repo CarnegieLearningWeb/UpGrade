@@ -49,13 +49,14 @@ export default async function testCase(): Promise<void> {
 
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint);
+  let markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to PREVIEW
@@ -81,7 +82,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 1
@@ -89,7 +90,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment p oint for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
@@ -97,7 +98,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
@@ -121,7 +122,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 1
@@ -129,7 +130,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
@@ -137,6 +138,6 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint);
+  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint, condition);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 }

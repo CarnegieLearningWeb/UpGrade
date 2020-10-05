@@ -10,4 +10,8 @@ export class MarkExperimentValidator {
   @IsNotEmpty()
   @IsDefined()
   public userId: string;
+
+  @IsNotEmpty()
+  @IsDefined()
+  public condition: string | null;
 }

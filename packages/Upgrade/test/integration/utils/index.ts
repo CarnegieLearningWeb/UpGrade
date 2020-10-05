@@ -103,13 +103,14 @@ export async function getUserAssignments(userId: string, context: string = 'home
 export async function markExperimentPoint(
   userId: string,
   experimentName: string,
-  experimentPoint: string
+  experimentPoint: string,
+  condition: string | null
 ): Promise<MonitoredExperimentPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const checkService = Container.get<CheckService>(CheckService);
 
   // mark experiment point
-  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, experimentName);
+  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, condition, experimentName);
   return checkService.getAllMarkedExperimentPoints();
 }
 

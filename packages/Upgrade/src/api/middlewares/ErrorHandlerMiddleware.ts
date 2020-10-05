@@ -75,6 +75,10 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         type = SERVER_ERROR.TOKEN_NOT_PRESENT;
         message = errorMessage;
         break;
+      case SERVER_ERROR.CONDTION_NOT_FOUND:
+        type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        message = errorMessage;
+        break;
       case SERVER_ERROR.EMAIL_SEND_ERROR:
         type = SERVER_ERROR.EMAIL_SEND_ERROR;
         message = errorMessage;

@@ -84,10 +84,11 @@ export class ExperimentAssignmentService {
     public errorService: ErrorService,
     public settingService: SettingService,
     @Logger(__filename) private log: LoggerInterface
-  ) {}
+  ) { }
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
+    condition: string | null,
     experimentName?: string
   ): Promise<MonitoredExperimentPoint> {
     this.log.info(
@@ -106,7 +107,6 @@ export class ExperimentAssignmentService {
         })
       );
     }
-
     const { workingGroup } = userDoc;
 
     // query root experiment details
@@ -121,6 +121,21 @@ export class ExperimentAssignmentService {
     const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
     if (experimentPartition) {
       const { experiment } = experimentPartition;
+      const { conditions } = await this.experimentRepository.findOne({
+        where: {
+          id: experiment.id,
+        },
+        relations: ['conditions'],
+      });
+      const matchedCondtion = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
+      if (matchedCondtion.length === 0 && condition !== null) {
+        throw new Error(
+          JSON.stringify({
+            type: SERVER_ERROR.CONDTION_NOT_FOUND,
+            message: `Condition not found: ${condition}`,
+          })
+        );
+      }
       const promiseArray = [];
       if (
         experiment.enrollmentCompleteCondition &&
@@ -136,11 +151,11 @@ export class ExperimentAssignmentService {
         // query group assignment
         (workingGroup &&
           this.groupAssignmentRepository.findExperiment([workingGroup[experiment.group]], [experiment.id])) ||
-          Promise.resolve([]),
+        Promise.resolve([]),
         // query group exclusion
         (workingGroup &&
           this.groupExclusionRepository.findExcluded([workingGroup[experiment.group]], [experiment.id])) ||
-          Promise.resolve([]),
+        Promise.resolve([]),
       ];
       const result = await Promise.all(assignmentPromise);
       const individualAssignments: IndividualAssignment[] = result[0];
@@ -193,6 +208,7 @@ export class ExperimentAssignmentService {
     // adding in monitored experiment point table
     const monitoredDocument = await this.monitoredExperimentPointRepository.saveRawJson({
       user: userDoc,
+      condition,
       experimentId,
       enrollmentCode,
     });
