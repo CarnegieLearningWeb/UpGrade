@@ -19,4 +19,8 @@ describe('ExperimentActionMessage', () => {
   it('should return translation string of EXPERIMENT_UPDATED', () => {
     expect(experimentActionMessagePipe.transform(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED)).toBe('logs.audit-log-experiment-updated.text');
   });
+
+  it('should return translation string of EXPERIMENT_DATA_EXPORTED', () => {
+    expect(experimentActionMessagePipe.transform(EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED)).toBe('logs.audit-log-experiment-data-exported.text');
+  });
 });

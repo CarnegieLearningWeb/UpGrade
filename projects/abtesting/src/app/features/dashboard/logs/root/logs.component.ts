@@ -14,7 +14,8 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, viewValue: 'Experiment Created' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED, viewValue: 'Experiment Updated' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, viewValue: 'Experiment State Changed' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED, viewValue: 'Experiment Deleted' }
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED, viewValue: 'Experiment Deleted' },
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, viewValue: 'Experiment Data Exported' }
   ];
 
   // Error log tab filter options
@@ -32,6 +33,8 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP, viewValue: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP },
     { value: SERVER_ERROR.INVALID_TOKEN, viewValue: SERVER_ERROR.INVALID_TOKEN },
     { value: SERVER_ERROR.TOKEN_NOT_PRESENT, viewValue: SERVER_ERROR.TOKEN_NOT_PRESENT },
+    { value: SERVER_ERROR.EMAIL_SEND_ERROR, viewValue: SERVER_ERROR.EMAIL_SEND_ERROR },
+    { value: SERVER_ERROR.CONDTION_NOT_FOUND, viewValue: SERVER_ERROR.CONDTION_NOT_FOUND },
   ];
   filterOptions = [];
   selectedFilterOption: string;

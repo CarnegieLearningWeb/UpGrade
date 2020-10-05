@@ -51,6 +51,13 @@
             <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
           </div>
 
+          <div *ngSwitchCase="ExperimentLogType.EXPERIMENT_DATA_EXPORTED" class="log-text">
+            <span class="ft-16-600 action action-msg">
+              {{ (log.type | experimentActionMessage | translate) + ' ' + log.data.experimentName }}
+            </span>
+            <span class="ft-16-400 log-time">{{ log.createdAt | date: 'shortTime' }}</span>
+          </div>
+
           <div
             class="log-text"
             *ngSwitchCase="
@@ -101,6 +108,7 @@
               </mat-expansion-panel>
             </mat-accordion>
           </div>
+
         </ng-container>
 
         <ng-template #experimentNotExist>
