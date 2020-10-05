@@ -1,7 +1,7 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 
-export default async function markExperimentPoint(url: string, userId: string, token: string, experimentPoint: string, condition = null, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
+export default async function markExperimentPoint(url: string, userId: string, token: string, experimentPoint: string, condition: string|null, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
   try {
     let data: any = {
       experimentPoint,
