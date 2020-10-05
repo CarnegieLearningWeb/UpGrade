@@ -84,7 +84,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         : NewExperimentComponent;
     const dialogRef = this.dialog.open(dialogComponent as any, {
       panelClass: dialogType === DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' : 'experiment-general-modal',
-      data: { experiment: clonedeep(this.experiment) }
+      data: { experiment: clonedeep(this.experiment) },
+      disableClose : dialogType === DialogType.EDIT_EXPERIMENT
     });
 
     dialogRef.afterClosed().subscribe(() => {});

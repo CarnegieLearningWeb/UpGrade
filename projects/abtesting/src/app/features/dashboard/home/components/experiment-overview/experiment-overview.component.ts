@@ -125,7 +125,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         context: this.experimentInfo.context,
         tags: this.experimentInfo.tags
       });
-    }
+    } 
   }
 
   setGroupTypeControlValue() {
@@ -195,6 +195,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+      case NewExperimentDialogEvents.SAVE_DATA:
         if (this.overviewForm.valid) {
           const {
             experimentName,

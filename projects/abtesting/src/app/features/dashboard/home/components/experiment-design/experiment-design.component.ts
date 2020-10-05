@@ -210,6 +210,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+      case NewExperimentDialogEvents.SAVE_DATA:
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
         if (!this.partitionPointErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
           const experimentDesignFormData = this.experimentDesignForm.value;
