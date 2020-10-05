@@ -106,7 +106,8 @@ export class AuditLogController {
    *                       Error reported from client,
    *                       Experiment user not defined,
    *                       Experiment user group not defined,
-   *                       Working group is not a subset of user group]
+   *                       Email send error,
+   *                       Working group is not a subset of user group,]
    *           description: number of error logs to requests
    *       tags:
    *         - Logs
