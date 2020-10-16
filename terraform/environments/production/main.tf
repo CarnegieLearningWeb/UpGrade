@@ -82,6 +82,7 @@ module "aws-ebs-app" {
   ebs_app_name          = var.ebs_app_name
   autoscaling_min_size  = var.autoscaling_min_size
   autoscaling_max_size  = var.autoscaling_max_size
+  ssl_certificate_id    = var.ssl_certificate_id
 
   /* APP env config*/
   GOOGLE_CLIENT_ID      = var.GOOGLE_CLIENT_ID
