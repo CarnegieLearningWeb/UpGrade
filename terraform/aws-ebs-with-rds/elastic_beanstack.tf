@@ -60,7 +60,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     setting {
     namespace = "aws:elb:listener:443"
     name      = "ListenerProtocol"
-    value     = "https"
+    value     = "HTTPS"
   }
   setting {
     namespace = "aws:elb:listener:443"
@@ -70,7 +70,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elb:listener:443"
     name      = "InstanceProtocol"
-    value     = "http"
+    value     = "HTTP"
   }
   setting {
     namespace = "aws:elb:listener:443"
