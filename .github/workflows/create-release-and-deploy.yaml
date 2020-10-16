@@ -1,3 +1,11 @@
+# The following secrets need to be set for the deployment to work
+#  AWS_ACCESS_KEY_ID
+#  AWS_SECRET_ACCESS_KEY
+#  AWS_REGION
+#  S3_BUCKET
+#  EB_APP_NAME
+#  EB_ENV_NAME
+
 name: Create Release And Deploy
 on:
   push:
@@ -52,6 +60,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           sudo apt-get update && sudo apt-get -y install awscli
-          aws s3 cp upgrade-backend-${{ steps.package-version.outputs.current-version}}.zip s3://${{ secrets.S3_BUCKET }}/
+          aws s3 cp upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip s3://${{ secrets.S3_BUCKET }}/
           aws elasticbeanstalk --region ${{ secrets.AWS_REGION }} create-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label ${{ steps.package-version.outputs.current-version}} --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
           aws elasticbeanstalk --region ${{ secrets.AWS_REGION }} update-environment --application-name ${{ secrets.EB_APP_NAME }} --environment-name ${{ secrets.EB_ENV_NAME }} --version-label ${{ steps.package-version.outputs.current-version}}
