@@ -5,6 +5,12 @@
 #  S3_BUCKET
 #  EB_APP_NAME
 #  EB_ENV_NAME
+#  SLACK_TOKEN
+#  SLACK_BUILD_CHANNEL
+#  SLACK_DEPLOY_CHANNEL
+
+# Optional secrets
+#  SLACK_FAILURE_PINGS
 
 name: Create Release And Deploy
 on:
@@ -37,10 +43,16 @@ jobs:
         id: package-version
         with:
           path: packages/Upgrade
-      - uses: Bullrich/generate-release-changelog@2.0.1
+      - name: Generate Release Changelog
+        uses: Bullrich/generate-release-changelog@2.0.1
         id: changelog
         env:
           REPO: ${{ github.repository }}
+      - name: Generate Slack Changelog
+        run: |
+          echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.before}}..HEAD >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
       - run: npm install
       - uses: montudor/action-zip@v0.1.0
         with:
@@ -53,13 +65,48 @@ jobs:
           body: ${{ steps.changelog.outputs.changelog }}
           commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Success Build Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+          message: |
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build was successful*
+            {{ env.CHANGELOG }}
+      - name: Failure Build Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        if: failure()
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+          message: |
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build FAILURE*
+            {{ env.CHANGELOG }}
       - name: Deploy to QA
-        shell: bash
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          sudo apt-get update && sudo apt-get -y install awscli
-          aws s3 cp upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip s3://${{ secrets.S3_BUCKET }}/
-          aws elasticbeanstalk --region ${{ secrets.AWS_REGION }} create-application-version --application-name ${{ secrets.EB_APP_NAME }} --version-label ${{ steps.package-version.outputs.current-version}} --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
-          aws elasticbeanstalk --region ${{ secrets.AWS_REGION }} update-environment --application-name ${{ secrets.EB_APP_NAME }} --environment-name ${{ secrets.EB_ENV_NAME }} --version-label ${{ steps.package-version.outputs.current-version}}
+        id: deploy
+        uses: einaregilsson/beanstalk-deploy@v13
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ secrets.EB_APP_NAME }}
+          environment_name: ${{ secrets.EB_ENV_NAME }}
+          version_label: ${{ steps.package-version.outputs.current-version}}
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
+      - name: Success Deploy Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+          message: |
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> has been deployed to https://upgradeapi.qa-cli.net/api*
+            {{ env.CHANGELOG }}
+      - name: Failure Deploy Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        if: failure() && steps.deploy.outcome == 'failure'
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+          message: |
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            {{ env.CHANGELOG }}
