@@ -375,7 +375,7 @@ export class AnalyticsService {
             }),
           this.experimentUserRepository
             .find({
-              id: In(experimentUsersArray),
+              where: { id: In(experimentUsersArray) },
             })
             .catch((error) => {
               throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
@@ -444,7 +444,7 @@ export class AnalyticsService {
         csv = new ObjectsToCsv(csvRows);
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
-      const experimentJson = `ExperimentExportData.json`;
+      const experimentJson = `${experiment.name}.json`;
       const experimentJsonPromise =  () => {
         return new Promise((resolve) => {
           fs.writeFile(`${folderPath}${experimentJson}`, JSON.stringify(experiment), () => {
