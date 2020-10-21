@@ -92,7 +92,7 @@
         "pretty-quick": "^1.11.1",
         "protractor": "~5.4.1",
         "rimraf": "^2.6.2",
-        "standard-version": "^6.0.1",
+        "standard-version": "^8.0.1",
         "stylelint": "^12.0.0",
         "stylelint-config-concentric-order": "^3.5.0",
         "stylelint-scss": "^3.13.0",
