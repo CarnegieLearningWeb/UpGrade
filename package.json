@@ -62,6 +62,7 @@
         "lodash.groupby": "^4.6.0",
         "ng-pick-datetime": "^7.0.0",
         "ngx-skeleton-loader": "^2.2.0",
+        "papaparse": "^5.3.0",
         "rxjs": "~6.5.0",
         "tslib": "^1.9.0",
         "upgrade_types": "^1.0.4",

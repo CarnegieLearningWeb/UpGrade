@@ -28,6 +28,7 @@ import {
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
+import { MatSnackBar } from '@angular/material';
 
 @Injectable()
 export class ExperimentEffects {
@@ -35,7 +36,8 @@ export class ExperimentEffects {
     private actions$: Actions,
     private store$: Store<AppState>,
     private experimentDataService: ExperimentDataService,
-    private router: Router
+    private router: Router,
+    private _snackBar: MatSnackBar
   ) {}
 
   getPaginatedExperiment$ = createEffect(() =>
@@ -129,10 +131,11 @@ export class ExperimentEffects {
         const experimentMethod =
           actionType === UpsertExperimentType.CREATE_NEW_EXPERIMENT
             ? this.experimentDataService.createNewExperiment(experiment)
+            : actionType === UpsertExperimentType.IMPORT_EXPERIMENT
+            ? this.experimentDataService.importExperiment(experiment)
             : this.experimentDataService.updateExperiment(experiment);
         return experimentMethod.pipe(
-          switchMap((data: Experiment) =>
-            this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
+          switchMap((data: Experiment) => this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
               switchMap((experimentStat: IExperimentEnrollmentStats) => {
                 const stats = { ...experimentStats, [data.id]: experimentStat[0] };
                 const queryIds = data.queries.map(query => query.id);
@@ -145,7 +148,10 @@ export class ExperimentEffects {
               })
             )
           ),
-          catchError(() => [experimentAction.actionUpsertExperimentFailure()])
+          catchError((error) => {
+            this._snackBar.open(error.error.message, null, { duration: 2000 });
+            return [experimentAction.actionUpsertExperimentFailure()];
+          })
         );
       })
     )

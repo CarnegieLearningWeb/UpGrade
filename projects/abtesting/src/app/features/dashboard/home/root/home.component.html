@@ -16,6 +16,16 @@
           [innerHTML]="'home.no-experiment.text' | translate"
         ></span>
         <button
+          mat-flat-button
+          color="primary"
+          class="ft-14-700"
+          (click)="openImportExperimentDialog()"
+          *ngIf="(permissions$ | async)?.experiments.create"
+        >
+          <mat-icon>add</mat-icon>
+          <span>{{ 'home.experiment.import-experiment.text' | translate }}</span>
+        </button>
+        <button
           (click)="openNewExperimentDialog()"
           mat-flat-button
           color="primary"

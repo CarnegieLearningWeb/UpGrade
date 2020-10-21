@@ -30,7 +30,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { ExperimentQueryResultComponent } from './components/experiment-query-result/experiment-query-result.component';
 import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
-
+import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
 @NgModule({
   declarations: [
     HomeComponent,
@@ -47,6 +47,7 @@ import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
     EnrollmentPointPartitionTableComponent,
     ExperimentPostConditionComponent,
     DeleteExperimentComponent,
+    ImportExperimentComponent,
     TableRowComponent,
     QueriesModalComponent,
     CreateQueryComponent,
@@ -71,6 +72,7 @@ import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
     DeleteExperimentComponent,
+    ImportExperimentComponent,
     QueriesModalComponent,
     ExperimentEndCriteriaComponent
   ]

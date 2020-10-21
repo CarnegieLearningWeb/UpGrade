@@ -19,6 +19,7 @@ import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
+import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 
 @Component({
   selector: 'home-experiment-list',
@@ -163,6 +164,16 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
       panelClass: 'new-experiment-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Code will be executed after closing dialog
+    });
+  }
+
+  openImportExperimentDialog() {
+    const dialogRef = this.dialog.open(ImportExperimentComponent, {
+      panelClass: 'import-experiment-modal'
     });
 
     dialogRef.afterClosed().subscribe(result => {
