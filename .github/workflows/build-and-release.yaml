@@ -46,9 +46,13 @@ jobs:
           body: ${{ steps.changelog.outputs.changelog }}
           commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: shallwefootball/s3-upload-action@v1.1.2
-        with:
+      - uses: reggionick/s3-deploy@v2.0.1
+        env:
           aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-          aws_bucket: ${{ secrets.S3_BUCKET }}
-          source_dir: dist/abtesting/
+        with:
+          bucket: ${{ secrets.S3_BUCKET }}
+          bucket-region: ${{ secrets.AWS_REGION }}
+          folder: dist/abtesting/
+          dist-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          invalidation: /index.html
