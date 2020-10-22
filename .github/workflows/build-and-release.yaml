@@ -10,6 +10,7 @@ jobs:
   bump-version:
     name: 'Build and Deploy'
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'CarnegieLearningWeb'
     steps:
       - uses: 'actions/checkout@v2'
         with:
