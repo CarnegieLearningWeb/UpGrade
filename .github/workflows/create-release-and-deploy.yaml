@@ -99,7 +99,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> has been deployed to the `dev` environment at https://upgradeapi.qa-cli.net/api*
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `dev` environment at https://upgradeapi.qa-cli.net/api
             {{ env.CHANGELOG }}
       - name: Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
