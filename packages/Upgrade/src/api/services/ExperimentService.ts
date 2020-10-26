@@ -33,7 +33,6 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
-// const METRIC_KEY_DIVIDER = "_@%@_";
 
 @Service()
 export class ExperimentService {
