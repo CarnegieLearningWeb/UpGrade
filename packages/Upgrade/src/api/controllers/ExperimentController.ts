@@ -538,4 +538,29 @@ export class ExperimentController {
     }
     return this.experimentService.update(id, experiment, currentUser);
   }
+
+ /**
+  * @swagger
+  * /experiments/{import}:
+  *    put:
+  *       description: Import New Experiment
+  *       consumes:
+  *         - application/json
+  *       parameters:
+  *         - in: path
+  *       tags:
+  *         - Experiments
+  *       produces:
+  *         - application/json
+  *       responses:
+  *          '200':
+  *            description: Experiment is imported
+  */
+  @Post('/import')
+  public importExperiment(
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput,
+    @CurrentUser() currentUser: User
+  ): Promise<Experiment> {
+    return this.experimentService.importExperiment(experiment, currentUser);
+  }
 }

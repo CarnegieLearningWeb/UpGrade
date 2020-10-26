@@ -247,7 +247,6 @@ export class AnalyticsService {
         where: { id: experimentId },
         relations: ['partitions', 'conditions'],
       });
-
       if (!experiment) {
         return '';
       }
@@ -376,7 +375,7 @@ export class AnalyticsService {
             }),
           this.experimentUserRepository
             .find({
-              id: In(experimentUsersArray),
+              where: { id: In(experimentUsersArray) },
             })
             .catch((error) => {
               throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
@@ -445,7 +444,15 @@ export class AnalyticsService {
         csv = new ObjectsToCsv(csvRows);
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
-
+      const experimentJson = `${experiment.name}.json`;
+      const experimentJsonPromise =  () => {
+        return new Promise((resolve) => {
+          fs.writeFile(`${folderPath}${experimentJson}`, JSON.stringify(experiment), () => {
+            return resolve();
+          });
+        });
+      };
+      await experimentJsonPromise();
       const email_export = env.email.emailBucket;
       const email_expiry_time = env.email.expireAfterSeconds;
       const email_from = env.email.from;
@@ -454,18 +461,22 @@ export class AnalyticsService {
       let signedURLMonitored;
 
       const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
+      const experimentJsonBuffer = fs.readFileSync(`${folderPath}${experimentJson}`);
 
       // delete the file from local store
       fs.unlinkSync(`${folderPath}${experimentCSV}`);
+      fs.unlinkSync(`${folderPath}${experimentJson}`);
 
       // upload the csv to s3
       await Promise.all([
         this.awsService.uploadCSV(experimentFileBuffer, email_export, experimentCSV),
+        this.awsService.uploadCSV(experimentJsonBuffer, email_export, experimentJson),
       ]);
 
       // generate signed url
       const signedUrl = await Promise.all([
         this.awsService.generateSignedURL(email_export, experimentCSV, email_expiry_time),
+        this.awsService.generateSignedURL(email_export, experimentJson, email_expiry_time ),
       ]);
 
       let emailText;
@@ -487,11 +498,16 @@ export class AnalyticsService {
        <br>
        <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
        <br>
+       <br>
+       <a href=\"${signedUrl[1]}\">Experiment Data Json</a>
+       <br>
        <a href=\"${signedURLMonitored[0]}\">Monitored Data</a>`;
       } else {
         emailText = `Here are the new exported data
         <br>
-        <a href=\"${signedUrl[0]}\">Experiment Metadata</a>`;
+        <a href=\"${signedUrl[0]}\">Experiment Data Json</a>
+        <br>
+        <a href=\"${signedUrl[1]}\">Experiment Metadata</a>`;
       }
 
       const emailSubject = `Exported Data for experiment ${experiment.name}`;
