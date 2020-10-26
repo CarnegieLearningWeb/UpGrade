@@ -33,7 +33,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - uses: phips28/gh-action-bump-version@v8.0.7
+      - uses: phips28/gh-action-bump-version@v8
         with:
           tag-prefix: upgrade-backend-
         env:
