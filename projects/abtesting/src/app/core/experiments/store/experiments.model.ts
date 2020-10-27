@@ -71,7 +71,8 @@ export enum DateType {
 
 export enum UpsertExperimentType {
   CREATE_NEW_EXPERIMENT = 'Create new experiment',
-  UPDATE_EXPERIMENT = 'Update experiment'
+  UPDATE_EXPERIMENT = 'Update experiment',
+  IMPORT_EXPERIMENT = 'Import experiment'
 }
 
 export enum EndExperimentCondition {
