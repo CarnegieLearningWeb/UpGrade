@@ -76,6 +76,7 @@ jobs:
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
       - uses: appleboy/lambda-action@v0.0.8
+        id: deploy
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
