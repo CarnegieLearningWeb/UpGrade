@@ -24,6 +24,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGEJSON_DIR: packages/Schedular
+      - uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
+        with:
+          path: packages/Schedular
       - name: Generate Release Changelog
         uses: Bullrich/generate-release-changelog@2.0.1
         id: changelog
@@ -43,7 +47,7 @@ jobs:
           cp -a dist/schedule lib/schedule
       - working-directory: packages/Schedular/lib
         run: |
-          zip -r upgrade-lambda-${{ steps.package-version.outputs.current-version }}.zip *
+          zip -r upgrade-lambda-v${{ steps.package-version.outputs.current-version }}.zip *
           mv upgrade-lambda-${{ steps.package-version.outputs.current-version }}.zip ../../../
       - uses: ncipollo/release-action@v1
         with:
