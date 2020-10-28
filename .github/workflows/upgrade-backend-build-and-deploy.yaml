@@ -11,19 +11,19 @@
 # Optional secrets
 #  SLACK_FAILURE_PINGS
 
-name: Create Release And Deploy
+name: UpGrade Backend Build and Deploy
 on:
   push:
     branches:
       - master
     paths:
-      - .github/**
+      - .github/workflows/upgrade-backend-build-and-deploy.yaml
       - packages/Upgrade/**
       - Docker*
       - package*.json
 jobs:
   create-release:
-    name: Create Release
+    name: UpGrade Backend Build and Deploy
     runs-on: ubuntu-latest
     if: github.repository_owner == 'CarnegieLearningWeb'
     steps:
