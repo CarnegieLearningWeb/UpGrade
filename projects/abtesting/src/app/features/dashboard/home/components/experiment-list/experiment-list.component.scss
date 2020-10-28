@@ -33,6 +33,10 @@ $experiment-state-light-color: #8f9bb3;
       height: 40px;
       color: var(--white);
     }
+
+    .import-experiment{
+      margin-right: 20px;
+    }
   }
 
   ::ng-deep .mat-form-field-suffix {

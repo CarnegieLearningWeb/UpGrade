@@ -1,0 +1,33 @@
+<div class="import-experiment-container">
+  <span class="ft-24-700 title">{{ 'home.experiment.import-experiment.text' | translate | titlecase }}</span>
+
+  <div class="import-experiment-body">
+    <p class="ft-16-400">
+      {{ 'home.import-experiment.message.text' | translate }}
+    </p>
+    <input
+        accept=".json"
+        type="file"
+        class="ft-14-400 file-input"
+        (change)="uploadFile($event)"
+      />
+      <span class="error-msg" *ngIf="!isExperimentJSONValid">
+        {{ 'home.import-experiment.error.message.text' | translate }}
+      </span>
+  </div>
+
+  <div class="button-container">
+    <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      [ngClass]="{ 'default-button--disabled': !experimentInfo }"
+      [disabled]="!experimentInfo"
+      (click)="importExperiment()"
+    >
+      {{ 'global.import.text' | translate }}
+    </button>
+  </div>
+</div>
