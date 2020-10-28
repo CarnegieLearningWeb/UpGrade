@@ -81,6 +81,7 @@ jobs:
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
             ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build FAILURE*
+            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
       - name: Deploy to QA
         id: deploy
@@ -108,5 +109,6 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
