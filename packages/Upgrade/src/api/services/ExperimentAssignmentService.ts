@@ -451,8 +451,13 @@ export class ExperimentAssignmentService {
   public async blobDataLog(userId: string, blobLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add blob data userId ${userId} and value ${blobLog}`);
 
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
+
+    // create user if user does not exist
+    if (!userDoc) {
+      userDoc = await this.userRepository.save({ id: userId });
+    }
 
     // extract the array value
     const promise = blobLog.map(async (individualMetrics) => {
@@ -466,8 +471,13 @@ export class ExperimentAssignmentService {
   public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
 
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
+
+    // create user if user does not exist
+    if (!userDoc) {
+      userDoc = await this.userRepository.save({ id: userId });
+    }
 
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
@@ -485,7 +495,13 @@ export class ExperimentAssignmentService {
     experimentId: string
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+
+    // create user if user does not exist
+    if (!userDoc) {
+      userDoc = await this.userRepository.save({ id: userId });
+    }
+
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({
       experimentPoint,
