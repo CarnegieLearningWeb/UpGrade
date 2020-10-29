@@ -84,14 +84,14 @@ jobs:
         uses: montudor/action-zip@v0.1.0
         if: env.BUILD_BACKEND == 'true'
         with:
-          args: zip -qq -r upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          args: zip -qq -r upgrade-backend-v${{ steps.backend-package.outputs.current-version}}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
       - name: Create Backend Release
         uses: ncipollo/release-action@v1
         if: env.BUILD_BACKEND == 'true'
         with:
-          artifacts: upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
-          tag: upgrade-backend-v${{ steps.package-version.outputs.current-version}}
-          name: UpGrade Backend ${{ steps.package-version.outputs.current-version}}
+          artifacts: upgrade-backend-v${{ steps.backend-package.outputs.current-version}}.zip
+          tag: upgrade-backend-v${{ steps.backend-package.outputs.current-version}}
+          name: UpGrade Backend ${{ steps.backend-package.outputs.current-version}}
           body: ${{ steps.changelog.outputs.changelog }}
           commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -102,7 +102,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build was successful*
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.backend-package.outputs.current-version }}|UpGrade Backend ${{ steps.backend-package.outputs.current-version }}> build was successful*
             {{ env.CHANGELOG }}
       - name: Backend Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -111,7 +111,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.package-version.outputs.current-version }} build FAILURE*
+            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.backend-package.outputs.current-version }} build FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
 
@@ -126,9 +126,9 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: ${{ secrets.EB_APP_NAME }}
           environment_name: ${{ secrets.EB_ENV_NAME }}
-          version_label: ${{ steps.package-version.outputs.current-version}}
+          version_label: ${{ steps.backend-package.outputs.current-version}}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
+          deployment_package: upgrade-backend-v${{ steps.backend-package.outputs.current-version}}.zip
       - name: Success Deploy Message
         if: env.BUILD_BACKEND == 'true'
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -136,7 +136,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `dev` environment at https://upgradeapi.qa-cli.net/api
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.backend-package.outputs.current-version }}|UpGrade Backend ${{ steps.backend-package.outputs.current-version }}>* has been deployed to the `dev` environment at https://upgradeapi.qa-cli.net/api
             {{ env.CHANGELOG }}
       - name: Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -145,7 +145,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.backend-package.outputs.current-version }}|UpGrade Backend ${{ steps.backend-package.outputs.current-version }}> deployment FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
 
@@ -165,15 +165,15 @@ jobs:
         id: package-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.build-lambda.outcome == 'success'
         run: |
-          zip -r upgrade-lambda-v${{ steps.package-version.outputs.current-version }}.zip *
-          mv upgrade-lambda-v${{ steps.package-version.outputs.current-version }}.zip ../../../
+          zip -r upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}.zip *
+          mv upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}.zip ../../../
       - uses: ncipollo/release-action@v1
         id: release-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.package-lambda.outcome == 'success'
         with:
-          artifacts: upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
-          tag: upgrade-lambda-v${{ steps.package-version.outputs.current-version}}
-          name: UpGrade Lambda ${{ steps.package-version.outputs.current-version}}
+          artifacts: upgrade-lambda-v${{ steps.lambda-package.outputs.current-version}}.zip
+          tag: upgrade-lambda-v${{ steps.lambda-package.outputs.current-version}}
+          name: UpGrade Lambda ${{ steps.lambda-package.outputs.current-version}}
           body: ${{ steps.changelog.outputs.changelog }}
           commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -184,7 +184,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> build was successful*
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}|UpGrade Lambda ${{ steps.lambda-package.outputs.current-version }}> build was successful*
             {{ env.CHANGELOG }}
       - name: Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -193,7 +193,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Lambda ${{ steps.package-version.outputs.current-version }} build FAILURE*
+            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Lambda ${{ steps.lambda-package.outputs.current-version }} build FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
 
@@ -207,7 +207,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-          zip_file: upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
+          zip_file: upgrade-lambda-v${{ steps.lambda-package.outputs.current-version}}.zip
       - name: Success Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         if: always() && env.BUILD_LAMBDA == 'true' && steps.deploy-lambda.outcome == 'success'
@@ -215,7 +215,7 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `dev` environment
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}|UpGrade Lambda ${{ steps.lambda-package.outputs.current-version }}>* has been deployed to the `dev` environment
             {{ env.CHANGELOG }}
       - name: Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -224,6 +224,6 @@ jobs:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}|UpGrade Lambda ${{ steps.lambda-package.outputs.current-version }}> deployment FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
             {{ env.CHANGELOG }}
