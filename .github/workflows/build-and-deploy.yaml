@@ -153,7 +153,7 @@ jobs:
 # Using always() along with checking the last step allows this to ignore failures in the backend build
 
       - working-directory: packages/Schedular
-        id: build-lamdba
+        id: build-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.last-setup-step.outcome == 'success'
         run: |
           npm ci
