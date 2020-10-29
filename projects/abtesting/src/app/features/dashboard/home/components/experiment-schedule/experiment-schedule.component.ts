@@ -127,6 +127,7 @@ export class ExperimentScheduleComponent implements OnInit {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+      case NewExperimentDialogEvents.SAVE_DATA:
         this.validateScheduleForm();
         if (this.experimentScheduleForm.valid) {
           let scheduleData = {

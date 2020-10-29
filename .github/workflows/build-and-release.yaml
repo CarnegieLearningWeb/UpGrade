@@ -1,0 +1,93 @@
+name: 'Build and Deploy'
+on:
+  push:
+    branches:
+      - 'master'
+    paths-ignore:
+      - projects/server/**
+      - terraform/**
+jobs:
+  bump-version:
+    name: 'Build and Deploy'
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'CarnegieLearningWeb'
+    steps:
+      - uses: 'actions/checkout@v2'
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - uses: phips28/gh-action-bump-version@v8.0.12
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm ci
+      - run: npm run build:prod
+      - run: zip -r upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip *
+        working-directory: dist/abtesting
+      - run: mv dist/abtesting/upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip .
+      - name: Generate Release Changelog
+        uses: Bullrich/generate-release-changelog@2.0.1
+        id: changelog
+        env:
+          REPO: ${{ github.repository }}
+      - name: Generate Slack Changelog
+        run: |
+          echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.before}}..HEAD >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+      - uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip
+          tag: v${{ steps.package-version.outputs.current-version}}
+          name: Upgrade Client ${{ steps.package-version.outputs.current-version}}
+          body: ${{ steps.changelog.outputs.changelog }}
+          commit: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Success Build Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+          message: |
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}> build was successful*
+            {{ env.CHANGELOG }}
+      - name: Failure Build Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        if: failure()
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+          message: |
+            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Client ${{ steps.package-version.outputs.current-version }}> build FAILURE*
+            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+            {{ env.CHANGELOG }}
+      - name: Deploy to QA
+        id: deploy
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          SOURCE_DIR: dist/abtesting
+      - name: Success Deploy Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+          message: |
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `dev` environment at https://upgrade.qa-cli.net
+            {{ env.CHANGELOG }}
+      - name: Failure Deploy Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        if: failure() && steps.deploy.outcome == 'failure'
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+          message: |
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+            {{ env.CHANGELOG }}

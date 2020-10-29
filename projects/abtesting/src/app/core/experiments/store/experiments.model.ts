@@ -47,7 +47,8 @@ export enum GroupTypes {
 export enum NewExperimentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
-  UPDATE_EXPERIMENT = 'Update experiment'
+  UPDATE_EXPERIMENT = 'Update experiment',
+  SAVE_DATA = 'Save Data'
 }
 
 export enum NewExperimentPaths {
@@ -70,7 +71,8 @@ export enum DateType {
 
 export enum UpsertExperimentType {
   CREATE_NEW_EXPERIMENT = 'Create new experiment',
-  UPDATE_EXPERIMENT = 'Update experiment'
+  UPDATE_EXPERIMENT = 'Update experiment',
+  IMPORT_EXPERIMENT = 'Import experiment'
 }
 
 export enum EndExperimentCondition {
