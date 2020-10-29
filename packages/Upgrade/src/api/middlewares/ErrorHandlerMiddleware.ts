@@ -12,7 +12,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   public isProduction = env.isProduction;
 
-  constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) {}
+  constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) { }
 
   public async error(
     error: HttpError,
@@ -73,6 +73,14 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
         break;
       case SERVER_ERROR.TOKEN_NOT_PRESENT:
         type = SERVER_ERROR.TOKEN_NOT_PRESENT;
+        message = errorMessage;
+        break;
+      case SERVER_ERROR.CONDTION_NOT_FOUND:
+        type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        message = errorMessage;
+        break;
+      case SERVER_ERROR.EMAIL_SEND_ERROR:
+        type = SERVER_ERROR.EMAIL_SEND_ERROR;
         message = errorMessage;
         break;
       default:

@@ -17,7 +17,13 @@ export class MonitoredExperimentPoint extends BaseModel {
     enum: ENROLLMENT_CODE,
     nullable: true,
   })
+
   public enrollmentCode: ENROLLMENT_CODE | null;
+
+  @Column({
+    nullable: true,
+  })
+  public condition: string | null;
 
   @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;

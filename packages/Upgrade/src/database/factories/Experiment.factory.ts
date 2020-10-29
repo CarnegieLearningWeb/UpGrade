@@ -32,7 +32,7 @@ define(Experiment, (faker: typeof Faker, settings: {}) => {
     consistencyRule === CONSISTENCY_RULE.GROUP
       ? faker.random.arrayElement([ASSIGNMENT_UNIT.INDIVIDUAL])
       : faker.random.arrayElement([ASSIGNMENT_UNIT.GROUP, ASSIGNMENT_UNIT.INDIVIDUAL]);
-  const postExperimentRule = faker.random.arrayElement([POST_EXPERIMENT_RULE.CONTINUE, POST_EXPERIMENT_RULE.REVERT]);
+  const postExperimentRule = faker.random.arrayElement([POST_EXPERIMENT_RULE.CONTINUE, POST_EXPERIMENT_RULE.ASSIGN]);
   let enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
   let endOn: Date;
   if (Math.random() < 0.5) {

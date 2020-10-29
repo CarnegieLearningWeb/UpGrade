@@ -11,6 +11,8 @@ import {
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
   POST_EXPERIMENT_RULE,
+  ENROLLMENT_CODE,
+  EXPERIMENT_LOG_TYPE
 } from 'upgrade_types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -23,6 +25,9 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
 import { METRICS_JOIN_TEXT } from './MetricService';
+import { ErrorService } from './ErrorService';
+import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { UserRepository } from '../repositories/UserRepository';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -46,9 +51,14 @@ export class AnalyticsService {
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
     private experimentUserRepository: ExperimentUserRepository,
+    @OrmRepository()
+    private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @OrmRepository()
+    private userRepository: UserRepository,
     public awsService: AWSService,
+    public errorService: ErrorService,
     @Logger(__filename) private log: LoggerInterface
-  ) {}
+  ) { }
 
   public async getEnrollments(experimentIds: string[]): Promise<any> {
     return this.analyticsRepository.getEnrollments(experimentIds);
@@ -237,7 +247,6 @@ export class AnalyticsService {
         where: { id: experimentId },
         relations: ['partitions', 'conditions'],
       });
-
       if (!experiment) {
         return '';
       }
@@ -282,8 +291,8 @@ export class AnalyticsService {
             experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
               ? experimentInfo.postExperimentRule
               : experimentInfo.revertTo
-              ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
-              : 'revert (to default)',
+                ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
+                : 'revert (to default)',
           // tslint:disable-next-line: object-literal-key-quotes
           ExperimentPoints: partitions.map((partition) => partition.expPoint).join(','),
           // tslint:disable-next-line: object-literal-key-quotes
@@ -306,13 +315,13 @@ export class AnalyticsService {
 
         // merge all the data log
         const mergedMonitoredExperimentPoint = {};
-
         monitoredExperimentPoints.forEach(({ metric_key, logs_uniquifier, ...monitoredPoint }) => {
-          const key = `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
+          const key = monitoredPoint.partition_expId
+            ? `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+            : `${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
           // filter logs only which are tracked
-          const metricToTrack = metric_key;
-          // const metricArray = metricToTrack.split(METRICS_JOIN_TEXT);
-          const metricArray = (metricToTrack == null ) ? [] : metricToTrack.split(METRICS_JOIN_TEXT);
+          const metricToTrack = metric_key || ' ';
+          const metricArray = metricToTrack.split(METRICS_JOIN_TEXT);
           let filteredLogs = monitoredPoint.logs_data;
           // tslint:disable-next-line:prefer-for-of
           for (let j = 0; j < metricArray.length; j++) {
@@ -325,30 +334,31 @@ export class AnalyticsService {
             }
           }
           const metricToTrackWithUniquifier =
-            metricArray.length > 1 ? `${metricToTrack}_${logs_uniquifier}` : metricToTrack;
+            metricArray.length > 1 ? `${metricToTrack}${METRICS_JOIN_TEXT}${logs_uniquifier}` : metricToTrack;
 
           mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
             ? {
-                ...mergedMonitoredExperimentPoint[key],
-                logs_data: filteredLogs
-                  ? {
-                      ...mergedMonitoredExperimentPoint[key].logs_data,
-                      [metricToTrackWithUniquifier]: filteredLogs,
-                    }
-                  : { ...mergedMonitoredExperimentPoint[key].logs_data },
-              }
+              ...mergedMonitoredExperimentPoint[key],
+              logs_data: filteredLogs
+                ? {
+                  ...mergedMonitoredExperimentPoint[key].logs_data,
+                  [metricToTrackWithUniquifier]: filteredLogs,
+                }
+                : { ...mergedMonitoredExperimentPoint[key].logs_data },
+            }
             : {
-                ...monitoredPoint,
-                logs_data: filteredLogs ? { [metricToTrackWithUniquifier]: filteredLogs } : filteredLogs,
-              };
+              ...monitoredPoint,
+              logs_data: filteredLogs ? { [metricToTrackWithUniquifier]: filteredLogs } : filteredLogs,
+            };
         });
 
         // get all monitored experiment points ids
         const monitoredPointIds = monitoredExperimentPoints.map(
           (monitoredPoint) =>
-            `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+            monitoredPoint.partition_expId
+              ? `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+              : `${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
         );
-
         // query experiment user
         const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
         const experimentUserSet = new Set(experimentUsers);
@@ -365,7 +375,7 @@ export class AnalyticsService {
             }),
           this.experimentUserRepository
             .find({
-              id: In(experimentUsersArray),
+              where: { id: In(experimentUsersArray) },
             })
             .catch((error) => {
               throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
@@ -390,12 +400,32 @@ export class AnalyticsService {
         });
 
         toLogDocument.forEach((data) => {
+          let enrollmentCodeNum = 3;
+          switch (data.enrollmentCode) {
+            case ENROLLMENT_CODE.INCLUDED:
+              enrollmentCodeNum = 0;
+              break;
+            case ENROLLMENT_CODE.PRIOR_EXPERIMENT_ENROLLING:
+              enrollmentCodeNum = 1;
+              break;
+            case ENROLLMENT_CODE.STUDENT_EXCLUDED:
+              enrollmentCodeNum = 2;
+              break;
+            case ENROLLMENT_CODE.GROUP_EXCLUDED:
+              enrollmentCodeNum = 3;
+              break;
+            default:
+              enrollmentCodeNum = 0;
+              break;
+          }
           csvRows.push({
+            'Main Experiment Id': experimentId,
             // tslint:disable-next-line: object-literal-key-quotes
             UserId: data.user_id || '',
             // tslint:disable-next-line: object-literal-key-quotes
             markExperimentPointTime: data.createdAt.toISOString(),
             'Enrollment code': data.enrollmentCode,
+            'Enrollment code number': enrollmentCodeNum,
             'Condition Name': data.conditions_conditionCode || 'default',
             // tslint:disable-next-line: object-literal-key-quotes
             GroupId:
@@ -408,48 +438,91 @@ export class AnalyticsService {
             ExperimentPoint: data.partition_expPoint,
             // tslint:disable-next-line: object-literal-key-quotes
             ExperimentId: data.partition_expId,
-            'Metrics monitored': JSON.stringify(data.logs_data),
+            'Metrics monitored': data.logs_data == null ? '' : JSON.stringify(data.logs_data),
           });
         });
         csv = new ObjectsToCsv(csvRows);
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
-
-      const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
-      const monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
-
-      // delete the file from local store
-      fs.unlinkSync(`${folderPath}${experimentCSV}`);
-      fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
-
+      const experimentJson = `${experiment.name}.json`;
+      const experimentJsonPromise =  () => {
+        return new Promise((resolve) => {
+          fs.writeFile(`${folderPath}${experimentJson}`, JSON.stringify(experiment), () => {
+            return resolve();
+          });
+        });
+      };
+      await experimentJsonPromise();
       const email_export = env.email.emailBucket;
       const email_expiry_time = env.email.expireAfterSeconds;
       const email_from = env.email.from;
 
+      let monitorFileBuffer;
+      let signedURLMonitored;
+
+      const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
+      const experimentJsonBuffer = fs.readFileSync(`${folderPath}${experimentJson}`);
+
+      // delete the file from local store
+      fs.unlinkSync(`${folderPath}${experimentCSV}`);
+      fs.unlinkSync(`${folderPath}${experimentJson}`);
+
       // upload the csv to s3
       await Promise.all([
         this.awsService.uploadCSV(experimentFileBuffer, email_export, experimentCSV),
-        this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV),
+        this.awsService.uploadCSV(experimentJsonBuffer, email_export, experimentJson),
       ]);
 
       // generate signed url
       const signedUrl = await Promise.all([
         this.awsService.generateSignedURL(email_export, experimentCSV, email_expiry_time),
-        this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
+        this.awsService.generateSignedURL(email_export, experimentJson, email_expiry_time ),
       ]);
 
-      const emailText = `Here are the new exported data
-      <br>
-      <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
-      <br>
-      <a href=\"${signedUrl[1]}\">Monitored Data</a>
-    `;
+      let emailText;
+
+      if (promiseData[2] > 0) {
+        monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+
+        fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
+
+        await Promise.all([
+          this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV),
+        ]);
+
+        signedURLMonitored = await Promise.all([
+          this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
+        ]);
+
+        emailText = `Here are the new exported data
+       <br>
+       <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
+       <br>
+       <br>
+       <a href=\"${signedUrl[1]}\">Experiment Data Json</a>
+       <br>
+       <a href=\"${signedURLMonitored[0]}\">Monitored Data</a>`;
+      } else {
+        emailText = `Here are the new exported data
+        <br>
+        <a href=\"${signedUrl[0]}\">Experiment Data Json</a>
+        <br>
+        <a href=\"${signedUrl[1]}\">Experiment Metadata</a>`;
+      }
 
       const emailSubject = `Exported Data for experiment ${experiment.name}`;
       // send email to the user
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
+      const user = await this.userRepository.findOne({ email });
+      this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, { experimentName: experimentInfo.name }, user);
     } catch (error) {
-      throw Promise.reject(new Error(SERVER_ERROR.EMAIL_SEND_ERROR + error));
+      await this.errorService.create({
+        endPoint: '/api/stats/csv',
+        errorCode: 417,
+        message: `Email send error: ${JSON.stringify(error, undefined, 2)}`,
+        name: 'Email send error',
+        type: SERVER_ERROR.EMAIL_SEND_ERROR,
+      } as any);
     }
 
     this.log.info('Completing experiment process');

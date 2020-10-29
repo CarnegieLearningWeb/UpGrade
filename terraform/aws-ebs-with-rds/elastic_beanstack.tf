@@ -57,6 +57,26 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     name      = "CrossZone"
     value     = "true"
   }
+    setting {
+    namespace = "aws:elb:listener:443"
+    name      = "ListenerProtocol"
+    value     = "HTTPS"
+  }
+  setting {
+    namespace = "aws:elb:listener:443"
+    name      = "InstancePort"
+    value     = 80
+  }
+  setting {
+    namespace = "aws:elb:listener:443"
+    name      = "InstanceProtocol"
+    value     = "HTTP"
+  }
+  setting {
+    namespace = "aws:elb:listener:443"
+    name      = "SSLCertificateId"
+    value     = var.ssl_certificate_id
+  }
    setting {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs"
     name      = "StreamLogs"

@@ -17,7 +17,7 @@ import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE } from 'upgrade_types';
+import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
@@ -32,8 +32,7 @@ import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
-
-// const METRIC_KEY_DIVIDER = "_@%@_";
+import { ErrorService } from './ErrorService';
 
 @Service()
 export class ExperimentService {
@@ -50,6 +49,7 @@ export class ExperimentService {
     @OrmRepository() private queryRepository: QueryRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
+    public errorService: ErrorService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -243,6 +243,59 @@ export class ExperimentService {
     await this.updateExperimentSchedules(experimentId);
 
     return updatedState;
+  }
+
+  public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
+    const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
+    if (duplicateExperiment && experiment.id !== undefined) {
+      throw new Error(JSON.stringify({type : SERVER_ERROR.QUERY_FAILED, message: 'Duplicate experiment'}));
+    }
+    let experimentPartitions = experiment.partitions;
+
+    // Remove the partitions which are already exist
+    for (const partition of experimentPartitions) {
+      const partitionExist = await this.experimentPartitionRepository.findOne(partition.id);
+      if (partitionExist) {
+        if (experimentPartitions.indexOf(partition) >= 0) {
+          experimentPartitions.splice(experimentPartitions.indexOf(partition), 1);
+        }
+      }
+    }
+
+    if (experimentPartitions.length === 0) {
+      throw new Error(JSON.stringify({type : SERVER_ERROR.QUERY_FAILED, message: 'Duplicate partition'}));
+    }
+
+    // Generate new twoCharacterId if it is already exist for conditions
+    let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+    experiment.conditions = experiment.conditions.map(condition => {
+        let twoCharacterId = condition.twoCharacterId;
+        if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
+          twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+          condition.twoCharacterId = twoCharacterId;
+        }
+        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+        return condition;
+    });
+
+    // Generate new twoCharacterId if it is already exist for partitions
+    experimentPartitions = experimentPartitions.map(partition => {
+      let twoCharacterId = partition.twoCharacterId;
+      if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
+        twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+        partition.twoCharacterId = twoCharacterId;
+      }
+      uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+      return partition;
+    });
+
+    experiment.partitions  = experimentPartitions;
+    experiment.endDate = null;
+    experiment.startDate = null;
+    experiment.endOn = null;
+    experiment.createdAt = new Date();
+    experiment.state = EXPERIMENT_STATE.INACTIVE;
+    return this.create(experiment, user);
   }
 
   private async updateExperimentSchedules(experimentId: string): Promise<void> {

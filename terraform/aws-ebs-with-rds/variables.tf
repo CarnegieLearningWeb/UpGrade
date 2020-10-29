@@ -69,7 +69,7 @@ variable "app_instance_type" {}
 variable "ebs_app_name"{}
 variable "autoscaling_min_size" {}
 variable "autoscaling_max_size" {}
-
+variable "ssl_certificate_id" {}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # BEANSTACK ENV SPECIFIC VARIABLES 

@@ -43,7 +43,6 @@ coverage/
 mydb.sql
 
 .ebextensions
-Dockerrun.aws.json
 
 # Terraform 
 terraform/environments/*/mykey*

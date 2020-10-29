@@ -36,7 +36,7 @@ export class ExperimentClientController {
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
     public metricService: MetricService
-  ) {}
+  ) { }
 
   /**
    * @swagger
@@ -188,6 +188,7 @@ export class ExperimentClientController {
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.experimentPoint,
+      experiment.condition,
       experiment.partitionId
     );
   }

@@ -50,16 +50,19 @@ export default async function testCase(): Promise<void> {
 
   const experimentName1 = experimentObject.partitions[0].expId;
   const experimentPoint1 = experimentObject.partitions[0].expPoint;
+  const condition1 = experimentObject.conditions[0].conditionCode;
 
   const experimentName2 = experimentObject.partitions[1].expId;
   const experimentPoint2 = experimentObject.partitions[1].expPoint;
+  const condition2 = experimentObject.conditions[1].conditionCode;
+
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1);
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   // user 1 logs in experiment
@@ -68,7 +71,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   let stats = await analyticsService.getEnrollments([experimentId]);
@@ -105,7 +108,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
   checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   stats = await analyticsService.getEnrollments([experimentId]);
@@ -120,7 +123,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
 
   stats = await analyticsService.getEnrollments([experimentId]);
@@ -139,7 +142,7 @@ export default async function testCase(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
 
-  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2);
+  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2, condition2);
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUser.id, experimentName2, experimentPoint2);
 
   // number of users should not increase
@@ -160,7 +163,7 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName2, experimentPoint2);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName2, experimentPoint2, condition2);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
 
   stats = await analyticsService.getEnrollments([experimentId]);
