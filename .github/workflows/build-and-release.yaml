@@ -21,6 +21,8 @@ jobs:
       - uses: phips28/gh-action-bump-version@v8.0.12
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
       - run: npm ci
       - run: npm run build:prod
       - run: zip -r upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip *
@@ -36,8 +38,6 @@ jobs:
           echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
           git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.before}}..HEAD >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - uses: martinbeentjes/npm-get-version-action@v1.1.0
-        id: package-version
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
