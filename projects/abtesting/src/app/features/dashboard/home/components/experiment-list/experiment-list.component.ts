@@ -163,7 +163,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   openNewExperimentDialog() {
     const dialogRef = this.dialog.open(NewExperimentComponent, {
-      panelClass: 'new-experiment-modal'
+      panelClass: 'new-experiment-modal',
+      disableClose: true
     });
 
     dialogRef.afterClosed().subscribe(result => {

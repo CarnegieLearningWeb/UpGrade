@@ -144,6 +144,7 @@
 
   <div class="button-container">
     <button
+      type="button"
       mat-raised-button
       class="modal-btn"
       (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
@@ -151,6 +152,7 @@
       {{ 'global.cancel.text' | translate }}
     </button>
     <button
+      type="button"
       *ngIf="experimentInfo"
       mat-raised-button
       class="modal-btn default-button"
@@ -159,6 +161,7 @@
       {{ 'global.save.text' | translate }}
     </button>
     <button
+      type="button"
       mat-raised-button
       class="modal-btn default-button"
       (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
