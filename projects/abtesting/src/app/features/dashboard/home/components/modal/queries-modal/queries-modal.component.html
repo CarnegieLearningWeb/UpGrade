@@ -79,17 +79,7 @@
               {{ 'query.table-name.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span *ngIf="selectedQueryId !== element.id; else nameTemplate">{{ element?.name }}</span>
-              <ng-template #nameTemplate>
-                <mat-form-field class="ft-14-600 form-control">
-                  <input
-                    matInput
-                    [(ngModel)]="queryName"
-                    class="ft-14-600"
-                    [placeholder]="'query.query-name.text' | translate"
-                  />
-                </mat-form-field>
-              </ng-template>
+              <span>{{ element?.name }}</span>
             </td>
           </ng-container>
 
@@ -110,23 +100,7 @@
               {{ 'monitor.statistic.text' | translate }}
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <span *ngIf="selectedQueryId !== element.id; else operationTemplate">
-                {{ element.query?.operationType | operationType }}
-              </span>
-
-              <ng-template #operationTemplate>
-                <mat-form-field class="ft-14-600 form-control">
-                  <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
-                  <mat-select [(ngModel)]="selectedOperation" class="ft-14-600 input">
-                    <mat-option
-                      *ngFor="let operation of queryOperations"
-                      [value]="operation.value"
-                    >
-                      {{ operation.viewValue }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </ng-template>
+              <span> {{ element.query?.operationType | operationType }} </span>
             </td>
           </ng-container>
 
@@ -149,34 +123,6 @@
                 class="icon"
                 (click)="executeQuery(element)"
               >send</mat-icon>
-            </td>
-          </ng-container>
-
-          <!-- Edit Column -->
-          <ng-container matColumnDef="edit">
-            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            </th>
-            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <ng-container *ngIf="permissions?.experiments.update">
-                <mat-icon
-                  *ngIf="selectedQueryId !== element.id; else saveBtnTemplate"
-                  class="icon"
-                  (click)="editQuery(element)"
-                >create</mat-icon>
-              </ng-container>
-
-              <ng-template #saveBtnTemplate>
-                <button
-                  mat-flat-button
-                  color="primary"
-                  class="ft-14-700 default-button"
-                  [ngClass]="{ 'default-button--disabled': !selectedOperation || !queryName }"
-                  [disabled]="!selectedOperation || !queryName"
-                  (click)="updateQuery(element)"
-                >
-                  <span>{{ 'global.save.text' | translate }}</span>
-                </button>
-              </ng-template>
             </td>
           </ng-container>
 
