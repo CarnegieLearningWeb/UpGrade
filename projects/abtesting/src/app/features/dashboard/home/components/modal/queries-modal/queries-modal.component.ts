@@ -4,10 +4,9 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
-import { METRICS_JOIN_TEXT, OPERATION_TYPES, IMetricMetaData } from '../../../../../../core/analysis/store/analysis.models';
+import { METRICS_JOIN_TEXT, IMetricMetaData } from '../../../../../../core/analysis/store/analysis.models';
 import { OperationPipe } from '../../../../../../shared/pipes/operation.pipe';
 import { QueryResultComponent } from '../../../../../../shared/components/query-result/query-result.component';
-import * as clonedeep from 'lodash.clonedeep';
 import { UserPermission } from '../../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 
@@ -23,17 +22,11 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
 
   experimentInfo: ExperimentVM;
   experimentSub: Subscription;
-  displayedColumns = ['id', 'queryName', 'metric', 'operation', 'repeatedMeasure', 'execute', 'edit', 'delete'];
+  displayedColumns = ['id', 'queryName', 'metric', 'operation', 'repeatedMeasure', 'execute', 'delete'];
   createQueryMode = false;
   experimentQueries = [];
   searchInput = null;
   isExperimentLoading$ = this.experimentService.isLoadingExperiment$;
-
-  // For editing query
-  selectedQueryId = null;
-  queryName: string;
-  selectedOperation: OPERATION_TYPES;
-  queryOperations = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -55,7 +48,6 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(filterValue?: string) {
-    this.resetVariables();
     const searchValue = filterValue && filterValue.toLowerCase() || this.searchInput && this.searchInput.toLowerCase() || '';
     if (searchValue) {
       this.experimentQueries = this.experimentInfo.queries.filter(query => {
@@ -70,14 +62,13 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   }
 
   executeQuery(query: any) {
-    this.resetVariables();
     this.analysisService.executeQuery([query.id]);
     const dialogRef = this.dialog.open(QueryResultComponent, {
       panelClass: 'query-result',
       data: { experiment: this.experimentInfo, query }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(() => {
       // Add code of further actions after query result
     });
   }
@@ -91,51 +82,6 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   deleteQuery(query: any) {
     this.experimentInfo.queries = this.experimentInfo.queries.filter(expQuery => expQuery.id !== query.id);
     this.experimentService.updateExperiment(this.experimentInfo);
-  }
-
-  editQuery(query: any) {
-    this.selectedQueryId = query.id;
-    this.queryName = query.name;
-    this.selectedOperation = query.query.operationType;
-    if (query.metric && query.metric.type === 'continuous') {
-      this.queryOperations = [
-        { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
-        { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
-        { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
-        { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-        { value: OPERATION_TYPES.AVERAGE, viewValue: 'Average' },
-        { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
-        { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
-        { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' }
-      ];
-    } else if (query.metric && query.metric.type === 'categorical') {
-      this.queryOperations = [
-        { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-        { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' }
-      ];
-    }
-  }
-
-  updateQuery(query: any) {
-    query = {
-      ...query,
-      name: this.queryName,
-      query: {
-        operationType: this.selectedOperation
-      }
-    };
-    const cloneExperiment  = clonedeep(this.experimentInfo);
-    cloneExperiment.queries = cloneExperiment.queries.map(expQuery => {
-      return expQuery.id === query.id ? query : expQuery;
-    });
-    this.experimentService.updateExperiment(cloneExperiment);
-    this.resetVariables();
-  }
-
-  resetVariables() {
-    this.selectedQueryId = null;
-    this.queryName = null;
-    this.selectedOperation = null;
   }
 
   createdQueryEvent() {

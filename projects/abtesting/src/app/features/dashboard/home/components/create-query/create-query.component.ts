@@ -31,7 +31,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   options: any[] = [];
   selectedNode = null;
 
-  controlTitles = ['Class', 'Key', 'Metric']; // Used to show different titles in grouped metrics
+  controlTitles = ['Type', 'ID', 'Metric']; // Used to show different titles in grouped metrics
 
   constructor(
     private analysisService: AnalysisService,
@@ -126,6 +126,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   resetForm() {
     this.keys.clear();
     this.queryForm.reset();
+    this.queryForm.get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
     this.options = [this.options[0]];
     this.filteredOptions = [];
     this.keys.push(this.addKey());

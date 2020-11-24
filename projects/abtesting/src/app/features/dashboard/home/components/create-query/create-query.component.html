@@ -67,8 +67,8 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field class="ft-14-600 form-control">
-            <mat-label>{{ 'query.form-data-filter-function.text' | translate | titlecase }}</mat-label>
+          <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+            <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
             <mat-select class="ft-14-400" formControlName="compareFn">
               <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
               <mat-option
@@ -80,30 +80,17 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field
-            class="ft-14-600 form-control"
-            *ngIf="selectedNode?.metadata?.type === IMetricMetadata.CONTINUOUS; else allowedValuesTemplate"
-          >
-            <input
-              matInput
-              class="ft-14-400"
-              [placeholder]="'query.form-compare-value.text' | translate"
-              formControlName="compareValue"
-            />
+          <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+            <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
+            <mat-select class="ft-14-400" formControlName="compareValue">
+              <mat-option
+                *ngFor="let value of selectedNode?.allowedData"
+                [value]="value"
+              >
+                {{ value | titlecase }}
+              </mat-option>
+            </mat-select>
           </mat-form-field>
-          <ng-template #allowedValuesTemplate>
-            <mat-form-field class="ft-14-600 form-control">
-              <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
-              <mat-select class="ft-14-400" formControlName="compareValue">
-                <mat-option
-                  *ngFor="let value of selectedNode?.allowedData"
-                  [value]="value"
-                >
-                  {{ value | titlecase }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </ng-template>
         </div>
         <div *ngIf="selectedNode && tabIndex !== 0">
           <label>{{ 'monitor.metric-repeated-measure.text' | translate }}</label>

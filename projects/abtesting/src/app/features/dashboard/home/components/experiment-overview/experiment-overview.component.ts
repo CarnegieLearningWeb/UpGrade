@@ -125,7 +125,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         context: this.experimentInfo.context,
         tags: this.experimentInfo.tags
       });
-    } 
+    }
   }
 
   setGroupTypeControlValue() {
