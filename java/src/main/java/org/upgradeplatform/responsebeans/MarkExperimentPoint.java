@@ -10,6 +10,7 @@ public class MarkExperimentPoint {
 	private String experimentId;
 	private String experimentPoint;
 	private String enrollmentCode;
+	private String condition;
 	private String id;
 	
 	public String getCreatedAt() {
@@ -91,11 +92,19 @@ public class MarkExperimentPoint {
 	    this.enrollmentCode = enrollmentCode;
 	}
 
+	public String getCondition() {
+	    return condition;
+	}
+
+	public void setCondition(String condition) {
+	    this.condition = condition;
+	}
+
     @Override
     public String toString(){
         return "MarkExperimentPoint [createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", versionNumber="
                + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", experimentPoint="
-               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", id=" + id + "]";
+               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", condition=" + condition + ", id=" + id + "]";
     }
 
 	
