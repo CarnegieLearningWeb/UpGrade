@@ -1,11 +1,12 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 
-export default async function markExperimentPoint(url: string, userId: string, token: string, experimentPoint: string, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
+export default async function markExperimentPoint(url: string, userId: string, token: string, experimentPoint: string, condition: string|null, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
   try {
     let data: any = {
       experimentPoint,
-      userId
+      userId,
+      condition
     }
     if (partitionId) {
       data = {
@@ -18,7 +19,8 @@ export default async function markExperimentPoint(url: string, userId: string, t
       return {
         userId,
         experimentId: partitionId,
-        experimentPoint
+        experimentPoint,
+        condition
       }
     } else {
       throw new Error(JSON.stringify(response.message));

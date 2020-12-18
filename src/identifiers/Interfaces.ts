@@ -28,6 +28,7 @@ export namespace Interfaces {
     experimentId: string;
     experimentPoint: string;
     userId: string;
+    condition: string | null;
   }
 
   export interface IFailedExperimentPoint {

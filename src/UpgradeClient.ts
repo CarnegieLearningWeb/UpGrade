@@ -106,9 +106,9 @@ export default class UpgradeClient {
         return getExperimentCondition(this.experimentConditionData, experimentPoint, partitionId);
     }
 
-    async markExperimentPoint(experimentPoint: string, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
+    async markExperimentPoint(experimentPoint: string, condition = null, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
         this.validateClient();
-        return await markExperimentPoint(UpgradeClient.api.markExperimentPoint, this.userId, this.token, experimentPoint, partitionId);
+        return await markExperimentPoint(UpgradeClient.api.markExperimentPoint, this.userId, this.token, experimentPoint, condition, partitionId);
     }
 
     async failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint> {

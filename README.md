@@ -34,10 +34,10 @@ Returns the Experiment Condition for the partition and point received from the g
 ```upClient.getExperimentCondition(experimentPoint)```  
 ```upClient.getExperimentCondition(experimentPoint, partitionId)```
 
-## markExperimentPoint (experimentPoint: string, partitionId?: string)
+## markExperimentPoint (experimentPoint: string, condition:string|null, partitionId?: string)
 Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user  
-```upClient.markExperimentPoint(experimentPoint)```  
-```upClient.markExperimentPoint(experimentPoint, partitionId)```
+```upClient.markExperimentPoint(experimentPoint,condition)```  
+```upClient.markExperimentPoint(experimentPoint, condition, partitionId)```
 
 ## failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string)
 Use this function to report failure with given reason  
