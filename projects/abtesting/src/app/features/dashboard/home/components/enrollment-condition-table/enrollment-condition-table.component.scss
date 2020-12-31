@@ -3,6 +3,16 @@
   flex-direction: column;
   padding: 0 34px 14px 34px;
   width: 100%;
+  min-height: 150px;
+
+  .spinner {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 150px;
+  }
 
   .data {
     display: flex;

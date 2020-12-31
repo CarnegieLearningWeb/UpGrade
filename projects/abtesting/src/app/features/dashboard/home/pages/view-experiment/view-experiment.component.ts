@@ -59,7 +59,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         if (!this.experiment) {
           this.experimentService.fetchExperimentDetailStat(experiment.id);
         }
-        this.experiment = experiment;
+        // By refreshing page if we would have experimentId then only assign it's value
+        if (experiment.id) {
+          this.experiment = experiment;
+        }
       });
   }
 
