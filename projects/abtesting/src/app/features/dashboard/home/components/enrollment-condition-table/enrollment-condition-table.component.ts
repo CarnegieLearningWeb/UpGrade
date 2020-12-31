@@ -18,6 +18,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
     'userEnrolled',
   ];
   displayedColumns: string[] = [];
+  isStatLoading = true;
 
   constructor(private experimentService: ExperimentService) {}
 
@@ -27,17 +28,13 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
     } else {
       this.displayedColumns = [...this.commonColumns, 'groupEnrolled'];
     }
-    if (changes.experiment) {
-      // TODO: Remove
-      this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
-      });
-    }
   }
 
   ngOnInit() {
     this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
       this.experimentData = [];
       if (stat && stat.conditions) {
+        this.isStatLoading = false;
         stat.conditions.forEach(condition => {
 
           const conditionObj: EnrollmentByConditionOrPartitionData = {

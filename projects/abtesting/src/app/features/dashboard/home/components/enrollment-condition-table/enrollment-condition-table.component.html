@@ -1,29 +1,36 @@
 <div class="condition-table-container">
   <span class="ft-24-700">{{ 'home.view-experiment.enrollments-by-condition.title.text' | translate }}</span>
-  <div class="data">
-    <div class="enrollment-condition-table-container">
-      <app-table-row
-        [dataSource]="experimentData"
-        [displayedColumns]="displayedColumns"
-        [referenceId]="'condition'"
-        [experiment]="experiment"
-      >
-      </app-table-row>
-    </div>
-
-    <div class="enrollment-statistic">
-      <div class="enrollment-statistic__unique">
-        <span class="ft-14-600 title">
-          {{ 'home.view-experiment.global.users-excluded.text' | translate }}
-        </span>
-        <span class="ft-30-700 numbers">{{ experiment.stat.usersExcluded || 0 }}</span>
-      </div>
-      <div class="enrollment-statistic__class" *ngIf="experiment.assignmentUnit === AssignmentUnit.GROUP">
-        <span class="ft-14-600 title">
-          {{ 'home.view-experiment.global.group-excluded.text' | translate }}
-        </span>
-        <span class="ft-30-700 numbers">{{ experiment.stat.groupsExcluded || 0}}</span>
-      </div>
-    </div>
+  <div class="spinner" *ngIf="isStatLoading; else conditionTableTemplate">
+    <mat-spinner
+      diameter="60"
+    ></mat-spinner>
   </div>
+  <ng-template #conditionTableTemplate>
+    <div class="data">
+      <div class="enrollment-condition-table-container">
+        <app-table-row
+          [dataSource]="experimentData"
+          [displayedColumns]="displayedColumns"
+          [referenceId]="'condition'"
+          [experiment]="experiment"
+        >
+        </app-table-row>
+      </div>
+
+      <div class="enrollment-statistic">
+        <div class="enrollment-statistic__unique">
+          <span class="ft-14-600 title">
+            {{ 'home.view-experiment.global.users-excluded.text' | translate }}
+          </span>
+          <span class="ft-30-700 numbers">{{ experiment.stat?.usersExcluded || 0 }}</span>
+        </div>
+        <div class="enrollment-statistic__class" *ngIf="experiment.assignmentUnit === AssignmentUnit.GROUP">
+          <span class="ft-14-600 title">
+            {{ 'home.view-experiment.global.group-excluded.text' | translate }}
+          </span>
+          <span class="ft-30-700 numbers">{{ experiment.stat?.groupsExcluded || 0}}</span>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 </div>
