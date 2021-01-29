@@ -152,7 +152,8 @@ jobs:
 ########################### Lambda Build Steps ###########################
 # Using always() along with checking the last step allows this to ignore failures in the backend build
 
-      - working-directory: packages/Schedular
+      - name: Build Lambda
+        working-directory: packages/Schedular
         id: build-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.last-setup-step.outcome == 'success'
         run: |
@@ -161,13 +162,15 @@ jobs:
           mkdir lib
           cp -a node_modules/ lib/node_modules
           cp -a dist/schedule lib/schedule
-      - working-directory: packages/Schedular/lib
+      - name: Package Lambda
+        working-directory: packages/Schedular/lib
         id: package-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.build-lambda.outcome == 'success'
         run: |
           zip -r upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}.zip *
           mv upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}.zip ../../../
-      - uses: ncipollo/release-action@v1
+      - name: Lambda Release
+        uses: ncipollo/release-action@v1
         id: release-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.package-lambda.outcome == 'success'
         with:
@@ -177,7 +180,7 @@ jobs:
           body: ${{ steps.changelog.outputs.changelog }}
           commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Success Build Message
+      - name: Lambda Success Build Message
         if: always() && env.BUILD_LAMBDA == 'true' && steps.release-lambda.outcome == 'success'
         uses: aibexhq/slack-rich-notify@v2.0.1
         with:
@@ -186,7 +189,7 @@ jobs:
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}|UpGrade Lambda ${{ steps.lambda-package.outputs.current-version }}> build was successful*
             {{ env.CHANGELOG }}
-      - name: Failure Build Message
+      - name: Lambda Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         if: always() && env.BUILD_LAMBDA == 'true' && steps.release-lambda.outcome != 'success'
         with:
@@ -199,7 +202,8 @@ jobs:
 
 ########################### Lambda Deploy Steps ###########################
 
-      - uses: appleboy/lambda-action@v0.0.8
+      - name: Deploy Lambda to dev
+        uses: appleboy/lambda-action@v0.0.8
         id: deploy-lambda
         if: always() && env.BUILD_LAMBDA == 'true' && steps.release-lambda.outcome == 'success'
         with:
@@ -208,7 +212,7 @@ jobs:
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: ${{ secrets.LAMBDA_FUNCTION_NAME }}
           zip_file: upgrade-lambda-v${{ steps.lambda-package.outputs.current-version}}.zip
-      - name: Success Deploy Message
+      - name: Lambda Success Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         if: always() && env.BUILD_LAMBDA == 'true' && steps.deploy-lambda.outcome == 'success'
         with:
@@ -217,7 +221,7 @@ jobs:
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.lambda-package.outputs.current-version }}|UpGrade Lambda ${{ steps.lambda-package.outputs.current-version }}>* has been deployed to the `dev` environment
             {{ env.CHANGELOG }}
-      - name: Failure Deploy Message
+      - name: Lambda Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         if: failure() && env.BUILD_LAMBDA == 'true' && steps.deploy-lambda.outcome == 'failure'
         with:
