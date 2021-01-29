@@ -94,6 +94,8 @@ variable "MONITOR_ENABLED" { default = true }
 variable "MONITOR_PASSWORD" {}
 variable "MONITOR_ROUTE" { default = "/monitor" }
 variable "MONITOR_USERNAME" { default = "admin" }
+variable "NEW_RELIC_APP_NAME" { default = "upgrade-backend" }
+variable "NEW_RELIC_LICENSE_KEY" {}
 variable "SWAGGER_API" { default = "src/api/controllers/*.ts" }
 variable "SWAGGER_ENABLED" { default = true }
 variable "SWAGGER_FILE" { default = "api/swagger.json" }

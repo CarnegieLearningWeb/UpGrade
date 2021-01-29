@@ -104,6 +104,9 @@ module "aws-ebs-app" {
   EMAIL_FROM                      = var.EMAIL_FROM
   EMAIL_EXPIRE_AFTER_SECONDS      = var.EMAIL_EXPIRE_AFTER_SECONDS
   EMAIL_BUCKET                    = module.aws-email-bucket.s3-bucket
+
+  NEW_RELIC_APP_NAME    = var.NEW_RELIC_APP_NAME
+  NEW_RELIC_LICENSE_KEY = var.NEW_RELIC_LICENSE_KEY
 }
 
 resource "null_resource" "update-ebs-env" { 

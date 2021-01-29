@@ -1,3 +1,5 @@
+require('newrelic');
+
 import 'reflect-metadata';
 
 import { bootstrapMicroframework } from 'microframework';

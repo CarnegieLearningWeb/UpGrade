@@ -37,6 +37,8 @@ variable "AUTH_CHECK"{}
 variable "CONTEXT"{}
 variable "ADMIN_USERS"{}
 variable "RDS_PASSWORD"{}
+variable "NEW_RELIC_APP_NAME" {}
+variable "NEW_RELIC_LICENSE_KEY" {}
 
 # Email
 variable "EMAIL_FROM" {}

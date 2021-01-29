@@ -239,6 +239,16 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "NEW_RELIC_APP_NAME"
+    value     = var.NEW_RELIC_APP_NAME
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "NEW_RELIC_LICENSE_KEY"
+    value     = var.NEW_RELIC_LICENSE_KEY
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "SCHEDULER_STEP_FUNCTION"
     value     = var.SCHEDULER_STEP_FUNCTION
   }
