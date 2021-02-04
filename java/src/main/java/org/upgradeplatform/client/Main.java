@@ -14,8 +14,9 @@ import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 public class Main {
 	public static void main(String[] args) throws InterruptedException, ExecutionException
 	{
-		String baseUrl = "http://upgradeapi.qa-cli.com";
-		String userId = UUID.randomUUID().toString();
+		final String baseUrl = "http://upgradeapi.qa-cli.com";
+		final String userId = UUID.randomUUID().toString();
+		final String experimentPoint = "SelectSection";
 
 		String sectionId = args.length > 0 ? args[0] : "test_dummy_variants_nonmastery";
 
@@ -23,12 +24,12 @@ public class Main {
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
-            experimentClient.getExperimentCondition("assign-prog", "SelectSection", sectionId, new ResponseCallback<ExperimentsResponse>(){
+            experimentClient.getExperimentCondition("assign-prog", experimentPoint, sectionId, new ResponseCallback<ExperimentsResponse>(){
                 @Override
                 public void onSuccess(ExperimentsResponse expResult){
                     AssignedCondition condition = expResult.getAssignedCondition();
                     String code = condition == null ? null : condition.getConditionCode();
-                    experimentClient.markExperimentPoint("SelectSection", sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
+                    experimentClient.markExperimentPoint(experimentPoint, sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
                         @Override
                         public void onSuccess(@NonNull MarkExperimentPoint markResult){
                             result.complete("marked " + code + ": " + markResult.toString());
