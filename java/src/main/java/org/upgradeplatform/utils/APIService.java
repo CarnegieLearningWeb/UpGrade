@@ -3,6 +3,7 @@ package org.upgradeplatform.utils;
 
 import static org.upgradeplatform.utils.Utils.*;
 
+import java.util.Map;
 
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Client;
@@ -17,7 +18,7 @@ public class APIService implements AutoCloseable{
 	private final String baseUrl,authToken;
 	private final Client client;
 	
-	public APIService(String baseUrl, String authToken) {
+	public APIService(String baseUrl, String authToken, Map<String, Object> properties) {
         if (isStringNull(baseUrl)) {
             throw new IllegalArgumentException(INVALID_BASE_URL);
         }
@@ -28,13 +29,16 @@ public class APIService implements AutoCloseable{
 		}
 		this.authToken=authToken;
 
-		client = createClient();
+		client = createClient(properties);
 	}
 
-	public static Client createClient() {
+	public static Client createClient(Map<String,Object> properties) {
 		Client client = ClientBuilder.newClient();
 		client.property(ClientProperties.CONNECT_TIMEOUT, 3000);
 		client.property(ClientProperties.READ_TIMEOUT,    3000);
+		properties.entrySet().stream()
+		          .forEachOrdered(p -> client.property(p.getKey(),
+		                                               p.getValue()));
 		return client;
 	}
 

@@ -1,5 +1,6 @@
 package org.upgradeplatform.client;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -20,7 +21,7 @@ public class Main {
 
 		String sectionId = args.length > 0 ? args[0] : "test_dummy_variants_nonmastery";
 
-		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl)){
+		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
