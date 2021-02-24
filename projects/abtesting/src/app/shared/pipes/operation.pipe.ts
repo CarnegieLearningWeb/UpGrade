@@ -8,7 +8,7 @@ export class OperationPipe implements PipeTransform {
   transform(operationType: OPERATION_TYPES | string): string {
     switch (operationType) {
       case OPERATION_TYPES.AVERAGE:
-        return 'Average';
+        return 'Mean';
       case OPERATION_TYPES.COUNT:
         return 'Count';
       case OPERATION_TYPES.MAX:

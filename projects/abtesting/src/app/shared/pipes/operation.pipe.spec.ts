@@ -4,8 +4,8 @@ import { OPERATION_TYPES } from 'upgrade_types';
 describe('OperationPipe', () => {
   const operationPipe = new OperationPipe();
 
-  it('should return Average', () => {
-    expect(operationPipe.transform(OPERATION_TYPES.AVERAGE)).toBe('Average');
+  it('should return Mean', () => {
+    expect(operationPipe.transform(OPERATION_TYPES.AVERAGE)).toBe('Mean');
   });
 
   it('should return Count', () => {

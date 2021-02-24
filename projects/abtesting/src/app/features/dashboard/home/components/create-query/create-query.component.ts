@@ -168,7 +168,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
             { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
             { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
             { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-            { value: OPERATION_TYPES.AVERAGE, viewValue: 'Average' },
+            { value: OPERATION_TYPES.AVERAGE, viewValue: 'Mean' },
             { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
             { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
             { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' }
