@@ -7,7 +7,7 @@
       matInput
       class="ft-14-400 name-input"
       [placeholder]="'home.delete-experiment.input-placeholder.text' | translate"
-      [(ngModel)]="expName"
+      [(ngModel)]="deleteConfirm"
     />
   </mat-form-field>
 </div>
@@ -22,8 +22,8 @@
   <button
     class="modal-btn default-button delete-btn"
     mat-flat-button
-    [ngClass]="{ 'default-button--disabled': expName !== data.experimentName }"
-    [disabled]="expName !== data.experimentName"
+    [ngClass]="{ 'default-button--disabled': deleteConfirm !== ('home.delete-experiment.delete.text' | translate) }"
+    [disabled]="deleteConfirm !== ('home.delete-experiment.delete.text' | translate)"
     (click)="deleteExperiment()"
   >
     {{ 'global.delete.text' | translate }}

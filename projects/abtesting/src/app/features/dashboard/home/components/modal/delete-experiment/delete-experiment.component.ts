@@ -10,7 +10,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 })
 export class DeleteExperimentComponent {
 
-  expName: string;
+  deleteConfirm: string;
   constructor(
     private experimentService: ExperimentService,
     public dialogRef: MatDialogRef<DeleteExperimentComponent>,
