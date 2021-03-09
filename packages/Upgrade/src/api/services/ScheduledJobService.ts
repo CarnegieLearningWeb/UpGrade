@@ -165,7 +165,7 @@ export class ScheduledJobService {
   public async clearLogs(): Promise<boolean> {
     try {
       // Do not return deleted logs as number of logs can be very large
-      const offset = 25; // Number of logs that we do not want to delete
+      const offset = 500; // Number of logs that we do not want to delete
       await Promise.all([this.experimentAuditLogRepository.clearLogs(offset), this.errorRepository.clearLogs(offset)]);
       return true;
     } catch (error) {
