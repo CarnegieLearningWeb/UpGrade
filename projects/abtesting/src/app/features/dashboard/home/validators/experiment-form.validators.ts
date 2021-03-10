@@ -13,8 +13,8 @@ export class ExperimentFormValidators {
       return { conditionCountError: true };
     } else if (conditions.length >= 2) {
       let sumOfAssignmentWeights = 0.0;
-      conditions.forEach(condition => (sumOfAssignmentWeights += parseFloat(condition.assignmentWeight, 10.0)));
-      return sumOfAssignmentWeights !== 100.0 ? { assignmentWightsSumError: true } : null;
+      conditions.forEach(condition => (sumOfAssignmentWeights += parseFloat(condition.assignmentWeight)));
+      return Math.ceil(sumOfAssignmentWeights) !== 100.0 ? { assignmentWightsSumError: true } : null;
     }
     if (partitions.length < 1) {
       return { partitionCountError: true };

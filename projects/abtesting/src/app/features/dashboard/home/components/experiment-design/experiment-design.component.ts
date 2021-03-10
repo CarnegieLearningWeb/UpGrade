@@ -244,6 +244,24 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return partition;
   }
 
+  applyEqualWeight(event){
+    console.log(event.checked);
+    const conditions = this.experimentDesignForm.get('conditions') as FormArray;
+    
+    if(event.checked){ 
+      const len = conditions.controls.length;
+      conditions.controls.forEach( control => {
+        control.get('assignmentWeight').setValue((100.0/len).toFixed(2));
+      });
+    }
+    else {
+      conditions.controls.forEach( control => {
+      control.get('assignmentWeight').setValue(0);
+      });
+    }
+    
+  }
+
 
   get condition(): FormArray {
     return this.experimentDesignForm.get('conditions') as FormArray;
