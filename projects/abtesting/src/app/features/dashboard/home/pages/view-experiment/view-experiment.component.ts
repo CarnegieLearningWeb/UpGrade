@@ -138,6 +138,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.openSnackBar();
   }
 
+  getConditionCode(conditionId: string) {
+    return !!this.experiment ? '(' + this.experiment.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
+  }
+
   get DialogType() {
     return DialogType;
   }
