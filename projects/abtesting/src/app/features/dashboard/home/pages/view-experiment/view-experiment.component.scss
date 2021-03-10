@@ -61,6 +61,11 @@ $font-size-small: 15px;
       color: var(--grey-3);
     }
 
+    &-assign {
+      display: block;
+      color: var(--grey-3);
+    }
+
     &-create-date {
       display: block;
       padding-bottom: 23px;
