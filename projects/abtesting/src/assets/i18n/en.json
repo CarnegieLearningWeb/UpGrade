@@ -45,6 +45,7 @@
   "home-global.consistency-rule.text": "Consistency Rule",
   "home-global.post-experiment-rule.text": "POST EXPERIMENT RULE",
   "home-global.post-experiment-rule.default.text": "default",
+  "home-global.post-experiment-rule.assign.text": "assign",
   "home-global.enrollments-per-custom.text": " per ",
   "home-global.assignment-weight.text": "ASSIGNMENT WEIGHT",
   "home.experiment.text.subtitle": "Create and analyze experiments",

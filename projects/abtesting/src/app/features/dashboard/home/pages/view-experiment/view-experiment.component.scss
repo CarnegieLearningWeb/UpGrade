@@ -62,7 +62,7 @@ $font-size-small: 15px;
     }
 
     &-assign {
-      display: block;
+      word-break: break-word;
       color: var(--grey-3);
     }
 
@@ -89,8 +89,9 @@ $font-size-small: 15px;
             margin-bottom: 20px;
 
             .experiment-state-container {
+              flex-direction: column;
               display: flex;
-              align-items: center;
+              align-items: flex-start;
 
               .state-circle {
                 display: inline-block;
@@ -176,6 +177,12 @@ $font-size-small: 15px;
                 &:hover {
                   cursor: pointer;
                 }
+              }
+
+              &--editablediv{
+                display: flex;
+                align-items: center;
+
               }
             }
 
