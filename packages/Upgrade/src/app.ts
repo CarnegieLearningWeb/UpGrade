@@ -1,4 +1,4 @@
-require('newrelic');
+import 'newrelic/index';
 
 import 'reflect-metadata';
 
