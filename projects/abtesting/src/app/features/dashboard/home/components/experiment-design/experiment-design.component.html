@@ -59,6 +59,7 @@
                   | translate
               "
               formControlName="assignmentWeight"
+              
             />
           </mat-form-field>
         </mat-cell>
@@ -93,7 +94,7 @@
           [formGroupName]="groupIndex"
         >
           <mat-icon
-            *ngIf="groupIndex !== 0 && groupIndex !== 1"
+            *ngIf="condition.length > 2"
             class="remove-icon"
             (click)="removeConditionOrPartition('condition', groupIndex)"
           >
@@ -127,7 +128,7 @@
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
     </button>
   </ng-container>
-
+  
   <!-- Partition Table -->
   <ng-container>
     <mat-table
@@ -199,7 +200,7 @@
           [formGroupName]="groupIndex"
         >
           <mat-icon
-            *ngIf="groupIndex !== 0"
+            *ngIf="partition.length > 1"
             class="remove-icon"
             (click)="removeConditionOrPartition('partition', groupIndex)"
           >

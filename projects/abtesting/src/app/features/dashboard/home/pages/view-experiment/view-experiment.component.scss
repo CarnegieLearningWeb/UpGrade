@@ -61,6 +61,11 @@ $font-size-small: 15px;
       color: var(--grey-3);
     }
 
+    &-assign {
+      word-break: break-word;
+      color: var(--grey-3);
+    }
+
     &-create-date {
       display: block;
       padding-bottom: 23px;
@@ -84,8 +89,9 @@ $font-size-small: 15px;
             margin-bottom: 20px;
 
             .experiment-state-container {
+              flex-direction: column;
               display: flex;
-              align-items: center;
+              align-items: flex-start;
 
               .state-circle {
                 display: inline-block;
@@ -171,6 +177,12 @@ $font-size-small: 15px;
                 &:hover {
                   cursor: pointer;
                 }
+              }
+
+              &--editablediv{
+                display: flex;
+                align-items: center;
+
               }
             }
 

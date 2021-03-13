@@ -244,7 +244,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return partition;
   }
 
-
   get condition(): FormArray {
     return this.experimentDesignForm.get('conditions') as FormArray;
   }
