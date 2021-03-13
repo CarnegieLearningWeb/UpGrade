@@ -139,7 +139,7 @@
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
           <span>{{ experiment.postExperimentRule | titlecase }}</span>
           <br />
-          <span class="experiment-revertTo ft-10-400" *ngIf= "experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
+          <span class="experiment-revertTo ft-10-400" *ngIf="experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
             {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
           </span>
         </td>

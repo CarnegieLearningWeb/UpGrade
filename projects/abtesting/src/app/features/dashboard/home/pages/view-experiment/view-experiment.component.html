@@ -95,7 +95,7 @@
                 >{{ experiment.postExperimentRule | titlecase }}</span>
                 <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update">create</mat-icon>
               </div>
-                <span class="ft-14-400 experiment-assign" *ngIf= "experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
+                <span class="ft-14-400 experiment-assign" *ngIf="experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
                   {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
                 </span>
               </ng-container>
@@ -105,7 +105,6 @@
                 <span class="ft-14-400 experiment-assign" *ngIf= "experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
                   {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }} 
                 </span>
-                
               </ng-template>
             </div>
           </div>
