@@ -84,7 +84,7 @@
           <!-- Experiment post experiment rule -->
           <div class="section-data">
             <span class="ft-16-600 section-data-title">{{ 'home-global.post-experiment-rule.text' | translate }}</span>
-            <div class="experiment-state-container">
+            <div class="experiment-state-container post-experiment-rule-container">
               <ng-container
                 *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED; else readOnlyRule"
               >
@@ -103,7 +103,7 @@
                 <span class="ft-18-700 section-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
                 <br />
                 <span class="ft-14-400 experiment-assign" *ngIf= "experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
-                  {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }} 
+                  {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
                 </span>
               </ng-template>
             </div>
