@@ -251,7 +251,7 @@ export class ExperimentAssignmentService {
 
     // check for group and working group
     if (hasGroupExperiment) {
-      if (!experimentUser.group || !experimentUser.workingGroup) {
+      if (!experimentUser.group || !experimentUser.workingGroup || Object.keys(experimentUser.workingGroup).length === 0) {
         // filter group experiments
         experiments = experiments.filter((experiment) => experiment.assignmentUnit !== ASSIGNMENT_UNIT.GROUP);
 

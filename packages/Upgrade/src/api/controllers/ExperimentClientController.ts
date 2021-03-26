@@ -412,6 +412,8 @@ export class ExperimentClientController {
    *                type: string
    *              aliases:
    *                type: array
+   *                items:
+   *                 type: string
    *            description: Set user aliases
    *       tags:
    *         - Experiment Point
