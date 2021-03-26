@@ -271,14 +271,6 @@
           <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
         </ng-container>
 
-        <!-- 'twoCharacterId' Column -->
-        <ng-container matColumnDef="twoCharacterId">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'home.view-experiment.global.unique-identifier.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.twoCharacterId }} </mat-cell>
-        </ng-container>
-
         <!-- Condition Code Column -->
         <ng-container matColumnDef="conditionCode">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -336,14 +328,6 @@
             {{ 'global.number.text' | translate }}
           </mat-header-cell>
           <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
-        </ng-container>
-
-        <!-- 'twoCharacterId' Column -->
-        <ng-container matColumnDef="twoCharacterId">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'home.view-experiment.global.unique-identifier.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.twoCharacterId }} </mat-cell>
         </ng-container>
 
         <!-- Partition Point Column -->
