@@ -25,10 +25,10 @@ Updates/Set the working group of the initialized user
 Get all the experiment assignments for the initialized user
 ```upClient.getAllExperimentConditions(context)```
 
-## getExperimentCondition (experimentPoint: string, partitionId?: string)
-Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the initialized user
-```upClient.getExperimentCondition(experimentPoint)```
-```upClient.getExperimentCondition(experimentPoint, partitionId)```
+## getExperimentCondition (context: string, experimentPoint: string, partitionId?: string)
+Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the initialized user. If getAllExperimentConditions is not called before this function then it will call it internally and return the result.
+```upClient.getExperimentCondition(context, experimentPoint)```
+```upClient.getExperimentCondition(context, experimentPoint, partitionId)```
 
 ## markExperimentPoint (experimentPoint: string, condition:string|null, partitionId?: string)
 Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user

@@ -98,8 +98,11 @@ export default class UpgradeClient {
         return response;
     }
 
-    getExperimentCondition(experimentPoint: string, partitionId?: string): IExperimentAssignment {
+    async getExperimentCondition(context: string, experimentPoint: string, partitionId?: string): Promise<IExperimentAssignment> {
         this.validateClient();
+        if (this.experimentConditionData == null) {
+            await this.getAllExperimentConditions(context);
+        }
         return getExperimentCondition(this.experimentConditionData, experimentPoint, partitionId);
     }
 
