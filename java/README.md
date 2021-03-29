@@ -26,14 +26,14 @@ Get all the experiment assignments for the initialized user
 
 > getAllExperimentCondition(String context, callback)
 
-## getExperimentCondition 
+## getExperimentCondition
 Returns the Experiment Condition for the partition and point received from the getAllExperimentConditions for the initialized user
 
-> getExperimentCondition(String experimentPoint, callback)
+> getExperimentCondition(String context, String experimentPoint, callback)
 
-> getExperimentCondition(String experimentPoint,  String experimentId, callback)
+> getExperimentCondition(String context, String experimentPoint,  String experimentId, callback)
 
-## markExperimentPoint 
+## markExperimentPoint
 Calls markExperimentPoint for experiment point and partitionId. It will use the user definition from initialized user
 
 > markExperimentPoint(String experimentPoint, callback)
@@ -73,15 +73,15 @@ getFeatureFlag(String key, callback)
 # Example request
 
 ```java
-  
+
  public static void main(String []args) throws InterruptedException
 	{
 		String baseUrl = "http://upgrade-development.us-east-1.elasticbeanstalk.com/";
 		String userId = "user1";
-	
+
 		ExperimentClient experimentClient = new ExperimentClient( userId , authToken , baseUrl);
 
-		experimentClient.getExperimentCondition("Workspace1", new ResponseCallback<GetExperimentCondition>() {
+		experimentClient.getExperimentCondition("appContext", "Workspace1", new ResponseCallback<GetExperimentCondition>() {
 
 			@Override
 			public void onSuccess(@NonNull GetExperimentCondition t) {
