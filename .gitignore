@@ -1,0 +1,64 @@
+# Logs #
+/logs
+*.log
+*.log*
+
+# Node files #
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+
+# OS generated files #
+.DS_Store
+Thumbs.db
+.tmp/
+src/api/schema.gql
+
+# Typing #
+typings/
+
+#Package lock json
+package-lock.json
+yarn.lock
+
+# Dist #
+dist/
+tsconfig.build.json
+
+# IDE #
+.idea/
+*.swp
+.awcache
+.vscode
+
+# Generated source-code #
+src/**/*.js
+src/**/*.js.map
+!src/public/**/*
+test/**/*.js
+test/**/*.js.map
+coverage/
+!test/preprocessor.js
+mydb.sql
+
+.ebextensions
+
+# Terraform 
+terraform/environments/*/mykey*
+terraform/environments/*/.terraform*
+terraform/environments/*/terraform.tfstate.backup
+terraform/environments/*/terraform.tfstate
+terraform/environments/*/*.tfvars
+terraform/environments/.terraform*
+terraform/environments/terraform.tfstate.backup
+terraform/environments/terraform.tfstate
+terraform/environments/*.tfvars
+terraform/core/.terraform
+terraform/core/*.tfvars
+terraform/environments/lambda/*
+
+# Serverless compiled files
+packages/Schedular/lib
+id_rsa
+id_rsa.pub

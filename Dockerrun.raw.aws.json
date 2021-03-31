@@ -1,0 +1,14 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "carnegielearning/educational-experiment-service:latest",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "3030"
+    }
+  ],
+  "Volumes": [],
+  "Logging": "/var/log/eb-activity.log"
+}
