@@ -2,7 +2,7 @@ name: Backend Build and Deploy
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - .github/workflows/backend-build-and-deploy.yaml
       - backend/packages/Schedular/**
