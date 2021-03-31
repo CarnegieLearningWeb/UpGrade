@@ -1,0 +1,32 @@
+{
+  "name": "upgrade_client_lib",
+  "version": "1.1.5",
+  "description": "",
+  "main": "dist/bundle.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "build": "npm run clean && webpack",
+    "build:watch": "tsc -w",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^13.11.1",
+    "ts-loader": "^6.2.2",
+    "tslint": "^6.1.1",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "es6-promise": "^4.2.8",
+    "isomorphic-fetch": "^2.2.1",
+    "upgrade_types": "1.0.3"
+  }
+}
