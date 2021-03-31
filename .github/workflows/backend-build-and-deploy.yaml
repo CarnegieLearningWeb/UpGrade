@@ -82,6 +82,7 @@ jobs:
       - name: Backend Npm Install
         run: npm ci
         if: env.BUILD_BACKEND == 'true'
+        working-directory: backend
       - name: Create Backend Zip Artifact
         if: env.BUILD_BACKEND == 'true'
         run: zip -qq -r upgrade-backend-v${{ steps.backend-package.outputs.current-version}}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
