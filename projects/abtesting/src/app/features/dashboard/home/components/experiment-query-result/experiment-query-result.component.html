@@ -1,0 +1,44 @@
+<div class="experiment-queries-result">
+  <span class="ft-24-700 title">{{ 'monitor.monitored-metrics.text' | translate }}</span>
+
+  <mat-accordion>
+    <mat-expansion-panel *ngFor="let query of experiment.queries">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ query.name }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <ng-container *ngIf="!(isQueryExecuting$ | async); else spinnerTemplate">
+        <ng-container *ngIf="!isResultExist(query.id); else noResultTemplate">
+          <ngx-charts-bar-vertical
+            [scheme]="colorScheme"
+            [results]="queryResults[query?.id]"
+            [xAxis]="true"
+            [yAxis]="true"
+            [showXAxisLabel]="true"
+            [showYAxisLabel]="true"
+            [xAxisTickFormatting]="formateXAxisLabel"
+            [trimXAxisTicks]="true"
+            [maxXAxisTickLength]="10"
+          >
+          </ngx-charts-bar-vertical>
+        </ng-container>
+
+        <ng-template #noResultTemplate>
+          <span
+            class="zero-state"
+            [innerHTML]="'query.result.empty-result.text' | translate"
+          >
+          </span>
+        </ng-template>
+      </ng-container>
+
+      <ng-template #spinnerTemplate>
+        <div class="loading-container">
+          <mat-spinner diameter="60"></mat-spinner>
+        </div>
+      </ng-template>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

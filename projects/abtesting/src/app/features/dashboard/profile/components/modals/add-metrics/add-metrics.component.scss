@@ -1,0 +1,36 @@
+.add-metrics {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .json-editor-container {
+    margin-top: 20px;
+    padding: 0 36px 20px;
+  }
+
+  ::ng-deep .jsoneditor {
+    border: 0;
+    height: 300px;
+  }
+
+  ::ng-deep .jsoneditor-menu {
+    display: none;
+  }
+
+  ::ng-deep .ace-jsoneditor .ace_gutter {
+    border-right: 1px solid var(--blue);
+  }
+
+  ::ng-deep .ace-jsoneditor .ace_gutter-active-line,
+  ::ng-deep .ace-jsoneditor .ace_marker-layer .ace_active-line {
+    background-color: var(--blue);
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+  }
+}

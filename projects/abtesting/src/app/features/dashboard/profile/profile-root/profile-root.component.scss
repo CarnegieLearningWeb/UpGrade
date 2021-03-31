@@ -1,0 +1,9 @@
+@import '../../common/tabs-view.scss';
+
+.profile-container {
+  height: calc(100% - 25px); // Subtract header height
+
+  ::ng-deep .mat-tab-body-content {
+    padding: 10px 34px 34px !important;
+  }
+}

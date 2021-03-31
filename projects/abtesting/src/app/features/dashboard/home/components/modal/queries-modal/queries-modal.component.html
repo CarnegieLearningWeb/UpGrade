@@ -1,0 +1,163 @@
+<div class="queries-modal-container">
+  <ng-container *ngIf="!createQueryMode; else monitorMetricTitle">
+    <span
+      class="ft-24-700 title"
+      [matTooltip]="experimentInfo.name"
+      matTooltipPosition="above"
+      *ngIf="experimentInfo.name.length > 38; else monitoredTitleTemplate"
+    >
+      {{ 'monitor.title.text' | translate: { expName: experimentInfo.name } | truncate: 60 }}
+    </span>
+  </ng-container>
+  <ng-template #monitoredTitleTemplate>
+    <span class="ft-24-700 title">{{ 'monitor.title.text' | translate: { expName: experimentInfo.name } }}</span>
+  </ng-template>
+  <ng-template #monitorMetricTitle>
+    <span class="ft-24-700 title">{{ 'monitor.metric-creation.text' | translate }}</span>
+  </ng-template>
+  <div class="query-view">
+    <div class="query-actions">
+
+      <!-- Do not shows search bar in create query view -->
+      <mat-form-field [ngClass]="{'hide-search': createQueryMode}">
+        <input
+          class="ft-16-400 search-input"
+          [(ngModel)]="searchInput"
+          matInput
+          (keyup)="applyFilter()"
+          [placeholder]="'global.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <ng-container *ngIf="permissions?.experiments.create">
+        <button
+          mat-flat-button
+          color="primary"
+          class="ft-14-700"
+          (click)="setCreateQueryMode()"
+          *ngIf="!createQueryMode; else queryListBtnTemplate"
+        >
+          <mat-icon>add</mat-icon>
+          <span>{{ 'monitor.add-query.text' | translate | uppercase }}</span>
+        </button>
+        <ng-template #queryListBtnTemplate>
+          <button
+            mat-flat-button
+            color="primary"
+            class="ft-14-700"
+            (click)="setCreateQueryMode()"
+          >
+            <mat-icon style="margin-right: 5px">list</mat-icon>
+            <span>{{ 'monitor.metrics-list.text' | translate }}</span>
+          </button>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <mat-progress-bar
+      mode="indeterminate"
+      *ngIf="isExperimentLoading$ | async"
+    ></mat-progress-bar>
+    <div
+      class="queries-table-container"
+      *ngIf="!createQueryMode; else createQueryTemplate"
+    >
+      <ng-container  *ngIf="experimentQueries?.length; else zeroState">
+        <table class="table" mat-table [dataSource]="experimentQueries">
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-id.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="queryName">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-name.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span>{{ element?.name }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Metric Column -->
+          <ng-container matColumnDef="metric">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.metric.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span>{{ element.metric?.key?.split(METRICS_JOIN_TEXT).join(' ') }}</span>
+              <span *ngIf="element.metric?.type === IMetricMetadata.CATEGORICAL">{{ '=' + element.query?.compareValue }}</span>
+            </td>
+          </ng-container>
+
+          <!-- operation Column -->
+          <ng-container matColumnDef="operation">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'monitor.statistic.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span> {{ element.query?.operationType | operationType }} </span>
+            </td>
+          </ng-container>
+
+           <!-- Repeated Measure Column -->
+           <ng-container matColumnDef="repeatedMeasure">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+              {{ 'query.table-repeated-measure.text' | translate }}
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <span>{{ element.repeatedMeasure | repeatedMeasure }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Execute Column -->
+          <ng-container matColumnDef="execute">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                class="icon"
+                (click)="executeQuery(element)"
+              >send</mat-icon>
+            </td>
+          </ng-container>
+
+          <!-- Delete Column -->
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            </th>
+            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+              <mat-icon
+                *ngIf="permissions?.experiments.delete"
+                class="icon"
+                (click)="deleteQuery(element)"
+              >delete_outline</mat-icon>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </ng-container>
+    </div>
+
+    <ng-template #createQueryTemplate>
+      <app-create-query
+        [experimentInfo]="experimentInfo"
+        (createdQueryEvent)="createdQueryEvent($event)"
+      ></app-create-query>
+    </ng-template>
+
+    <ng-template #zeroState>
+      <span
+        class="zero-state"
+        [innerHTML]="'global.no-monitored-metrics-tabs.text' | translate"
+      >
+      </span>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,84 @@
+.queries-modal-container {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .query-view {
+    margin: 20px 0;
+    padding: 0 40px;
+
+    .query-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 66.5px;
+
+      .hide-search {
+        visibility: hidden;
+      }
+
+      .search-input {
+        line-height: 20px;
+      }
+    }
+
+    .queries-table-container {
+      min-height: 500px;
+      max-height: 500px;
+      overflow: auto;
+
+      .table {
+        width: 100%;
+
+        .mat-cell {
+          padding: 5px 0;
+        }
+
+        .mat-column-execute {
+          width: 10%;
+        }
+
+        .mat-column-operation,
+        .mat-column-queryName,
+        .mat-column-repeatedMeasure {
+          width: 18%;
+        }
+
+        .mat-column-delete {
+          width: 5%;
+        }
+
+        .mat-column-id {
+          padding-left: 0;
+          width: 8%;
+        }
+
+        .cdk-column-metric {
+          padding: 5px 10px;
+        }
+      }
+
+      .form-control {
+        padding-top: 10px;
+        width: 140px;
+        line-height: 20px;
+      }
+
+      .default-button {
+        font-size: var(--text-size-x-small);
+      }
+    }
+
+    .icon {
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .zero-state {
+      min-height: 250px;
+    }
+  }
+}

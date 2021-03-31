@@ -1,0 +1,52 @@
+div {
+  width: 100%;
+
+  .inner-table-container {
+    div {
+      margin-bottom: 5px;
+    }
+  }
+
+  .mat-table {
+    mat-cell,
+    mat-header-cell {
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    mat-header-cell {
+      color: var(--grey-2);
+    }
+
+    .mat-column-expandIcon {
+      flex-grow: 0;
+    }
+
+    .mat-icon {
+      position: relative;
+      cursor: pointer;
+
+      &.active {
+        transform: rotate(90deg);
+        margin-left: -8px;
+      }
+    }
+  }
+
+  .expandable-row {
+    min-height: 0;
+    overflow: hidden;
+
+    mat-cell,
+    mat-header-cell {
+      padding: 0px;
+    }
+
+    .mat-column-experimentPoint {
+      padding-left: 20px;
+    }
+  }
+}

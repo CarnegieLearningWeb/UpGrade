@@ -1,0 +1,49 @@
+.exclude-entities,
+.preview-users {
+  .exclude-form,
+  .preview-user-form {
+    .form-control,
+    .input {
+      margin-right: 45px;
+    }
+
+    .input {
+      line-height: 18px;
+      font-family: 'Open Sans';
+    }
+  }
+
+  .entities-container,
+  .preview-user-container {
+    position: relative;
+
+    .paginator {
+      width: 690px;
+    }
+
+    table {
+      width: 690px;
+
+      .mat-cell {
+        padding: 5px;
+        width: 50%;
+      }
+
+      .mat-header-cell {
+        padding: 5px;
+        color: var(--grey-2);
+      }
+
+      .remove-icon {
+        display: flex;
+        width: 18px;
+        height: 18px;
+        font-size: var(--text-size-x-large);
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+<mat-horizontal-stepper
+  labelPosition="bottom"
+  class="flag-stepper"
+  #stepper
+>
+  <ng-template matStepperIcon="edit">
+    <mat-icon>{{ 'feature-flags.new-flag-done.text' | translate }}</mat-icon>
+  </ng-template>
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'feature-flags.new-flag-overview-stepper.text' | translate }}
+      </span>
+    </ng-template>
+    <feature-flag-overview
+      [flagInfo]="flagInfo"
+      (emitFlagDialogEvent)="getFlagData($event)"
+    ></feature-flag-overview>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'feature-flags.new-flag-variations-stepper.text' | translate }}
+      </span>
+    </ng-template>
+    <feature-flag-variations
+      [flagInfo]="flagInfo"
+      [variationType]="newFlagData?.variationType"
+      (emitFlagDialogEvent)="getFlagData($event)"
+    ></feature-flag-variations>
+  </mat-step>
+</mat-horizontal-stepper>

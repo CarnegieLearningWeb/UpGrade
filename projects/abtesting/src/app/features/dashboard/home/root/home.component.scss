@@ -1,0 +1,52 @@
+.experiments-container {
+  display: flex;
+  flex-direction: column;
+  box-shadow: unset;
+  background: unset;
+  padding: 0 2.75rem 2.75rem;
+  height: calc(100% - 25px); // Subtract theme selector's height
+
+  .title {
+    margin-bottom: 0;
+  }
+
+  .subtitle {
+    display: block;
+    margin-bottom: 43px;
+    color: var(--grey-3);
+  }
+
+  .experiment-table {
+    flex-grow: 1;
+    border-radius: 10px;
+    padding: 0;
+  }
+
+  .no-experiment-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+
+    .text {
+      text-align: center;
+      line-height: 60px;
+    }
+
+    button {
+      margin-top: 30px;
+      background-color: var(--blue);
+      color: var(--white);
+      width: 203px;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+  }
+}

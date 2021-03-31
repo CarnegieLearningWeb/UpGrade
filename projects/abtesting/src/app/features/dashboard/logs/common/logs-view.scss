@@ -1,0 +1,27 @@
+.logs {
+  padding-top: 10px;
+  overflow: auto;
+
+  .timeline-section {
+    display: flex;
+    padding: 16px 34px;
+
+    .error-date {
+      width: 203px;
+      max-width: 203px;
+
+      .date-info {
+        display: block;
+      }
+
+      .day-info {
+        color: var(--grey-2);
+      }
+    }
+
+    .timeline {
+      flex-grow: 1;
+      width: calc(100% - 203px); // subtract error-date width
+    }
+  }
+}

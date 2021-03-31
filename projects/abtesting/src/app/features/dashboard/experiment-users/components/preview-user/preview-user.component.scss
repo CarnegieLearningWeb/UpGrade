@@ -1,0 +1,142 @@
+@import '../../common/table-view.scss';
+
+.preview-users {
+  .progress {
+    margin-top: 30px;
+
+    &--visible {
+      visibility: visible;
+    }
+
+    &--hide {
+      visibility: hidden;
+    }
+  }
+
+  .preview-user-container {
+    overflow: auto;
+
+    table {
+      width: 100%;
+
+      .mat-cell {
+        position: relative;
+        width: 15%;
+
+        &.mat-column-totalAssignedConditions {
+          width: 20%;
+          text-align: center;
+        }
+
+        &.mat-column-assignment {
+          width: 50%;
+        }
+      }
+
+      .mat-header-cell {
+        &.mat-column-totalAssignedConditions {
+          text-align: center;
+        }
+      }
+
+      .form-control {
+        line-height: 18px;
+      }
+
+      .assignment-heading {
+        display: flex;
+
+        span {
+          width: 50%;
+          text-align: left;
+        }
+      }
+
+      .assignment-list {
+        padding-top: 10px !important;
+
+        .condition-selection {
+          max-height: 100px;
+          overflow: scroll;
+
+          .condition-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+
+            &-selection {
+              width: 50%;
+            }
+          }
+        }
+
+        .add-new-experiment {
+          display: block;
+          margin: 5px 5px 35px 0;
+          outline: 0;
+          border: 0;
+          background-color: transparent;
+          padding-left: 0;
+          color: var(--blue);
+        }
+
+        .assigned-condition-list {
+          max-height: 100px;
+          overflow: scroll;
+
+          .assigned-condition-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            span {
+              margin-bottom: 7px;
+              width: 50%;
+              text-align: left;
+              word-break: break-word;
+            }
+          }
+        }
+      }
+
+      .icons-container {
+        display: flex;
+        align-items: center;
+
+        &--edit-mode {
+          position: absolute;
+          bottom: 15px;
+        }
+
+        .save-btn {
+          margin-right: 15px;
+        }
+      }
+
+      .action-icon {
+        margin-right: 5px;
+        width: 18px;
+        height: 18px;
+        font-size: var(--text-size-x-large);
+
+        &:hover {
+          cursor: pointer;
+        }
+
+        &--edit {
+          margin-right: 62px;
+        }
+
+        &--small {
+          margin-left: 10px;
+          font-size: var(--text-size-normal);
+
+          &:hover {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+}

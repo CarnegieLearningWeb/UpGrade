@@ -1,0 +1,39 @@
+.new-user {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .content {
+    .user-form {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 15px 40px 0;
+
+      mat-form-field {
+        width: 45%;
+        color: var(--black-2);
+      }
+
+      .input {
+        line-height: 18px;
+      }
+
+      .email-container {
+        width: 45%;
+
+        mat-form-field {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    padding: 14px 40px 34px;
+  }
+}

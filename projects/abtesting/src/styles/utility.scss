@@ -1,0 +1,206 @@
+@mixin set-font($size, $weight) {
+  font-family: 'Open Sans' !important;
+  font-size: $size + px !important;
+  font-weight: $weight !important;
+}
+
+html {
+  box-sizing: border-box;
+  height: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  outline: none;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  line-height: 1.5;
+  font-family: 'Open Sans';
+  font-weight: 400;
+}
+
+button:focus {
+  outline: none;
+}
+
+.zero-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  color: var(--grey);
+  font-family: 'Open Sans';
+  font-size: var(--text-size-xxx-large);
+  font-weight: 700;
+}
+
+hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+pre {
+  // Remove browser default top margin
+  margin-top: 0;
+  // Reset browser default of `1em` to use `rem`s
+  margin-bottom: 1rem;
+  // Don't allow content to break outside
+  overflow: auto;
+}
+
+img {
+  border-style: none;
+  vertical-align: middle;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+button,
+[type='button'] {
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.validation-message {
+  display: block;
+  padding: 5px 0;
+  color: var(--red);
+}
+
+// Styles for Fonts
+
+// For Open Sans Regular Font
+//   font-family: 'Open Sans';
+//   font-weight: 400;
+
+// For Open Sans SemiBold Font
+//   font-family: 'Open Sans';
+//   font-weight: 600;
+
+// For Open Sans Bold Font
+//   font-family: 'Open Sans';
+//   font-weight: 700;
+
+// For Open Sans ExtraBold Font
+//   font-family: 'Open Sans';
+//   font-weight: 800;
+
+.ft-10-400 {
+  @include set-font(10, 400);
+}
+
+.ft-12-400 {
+  @include set-font(12, 400);
+}
+
+.ft-12-600 {
+  @include set-font(12, 600);
+}
+
+.ft-12-700 {
+  @include set-font(12, 700);
+}
+
+.ft-14-400 {
+  @include set-font(14, 400);
+}
+
+.ft-14-600 {
+  @include set-font(14, 600);
+}
+
+.ft-14-700 {
+  @include set-font(14, 700);
+}
+
+.ft-16-400 {
+  @include set-font(16, 400);
+}
+
+.ft-16-600 {
+  @include set-font(16, 600);
+}
+
+.ft-16-700 {
+  @include set-font(16, 700);
+}
+
+.ft-18-400 {
+  @include set-font(18, 400);
+}
+
+.ft-18-600 {
+  @include set-font(18, 600);
+}
+
+.ft-18-700 {
+  @include set-font(18, 700);
+}
+
+.ft-20-400 {
+  @include set-font(20, 400);
+}
+
+.ft-20-600 {
+  @include set-font(20, 600);
+}
+
+.ft-20-700 {
+  @include set-font(20, 700);
+}
+
+.ft-22-700 {
+  @include set-font(22, 700);
+}
+
+.ft-24-400 {
+  @include set-font(24, 400);
+}
+
+.ft-24-600 {
+  @include set-font(24, 600);
+}
+
+.ft-24-700 {
+  @include set-font(24, 700);
+}
+
+.ft-30-700 {
+  @include set-font(30, 700);
+}
+
+.ft-32-700 {
+  @include set-font(32, 700);
+}
+
+.ft-36-700 {
+  @include set-font(36, 700);
+}
+
+.ft-36-800 {
+  @include set-font(36, 800);
+}

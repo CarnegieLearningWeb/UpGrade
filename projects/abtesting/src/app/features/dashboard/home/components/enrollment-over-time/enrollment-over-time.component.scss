@@ -1,0 +1,117 @@
+.enrollment-over-time {
+  padding: 0 34px 34px;
+
+  .title {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .enrollment-filters {
+    display: flex;
+    justify-content: space-between;
+
+    mat-form-field {
+      margin-right: 20px;
+
+      ::ng-deep .mat-checkbox-checked.mat-primary .mat-checkbox-background {
+        background-color: var(--blue) !important;
+      }
+    }
+
+    .dropdown-label {
+      color: var(--grey-2);
+    }
+  }
+
+  .chart-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .condition-container {
+      display: flex;
+      flex-direction: row;
+      margin-bottom: 20px;
+      padding-left: 15px;
+
+      .condition {
+        display: flex;
+        align-items: center;
+        margin-right: 30px;
+
+        .color-box {
+          display: inline-block;
+          margin-right: 12px;
+          border-radius: 4px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
+
+    .chart {
+      display: flex;
+
+      &-data {
+        position: relative;
+        flex-grow: 1;
+
+        .spinner {
+          display: flex;
+          position: absolute;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
+    .enrollment-statistic {
+      display: flex;
+      flex-direction: column;
+      margin-left: 30px;
+      width: 225px;
+      text-align: center;
+
+      &__unique {
+        padding-bottom: 28px;
+      }
+
+      &__class {
+        visibility: hidden;
+        border-top: 1px solid var(--grey);
+        padding-top: 28px;
+
+        &.group-enabled {
+          visibility: visible;
+        }
+      }
+
+      .title {
+        display: block;
+        color: var(--grey-5);
+      }
+
+      .numbers {
+        display: block;
+        margin-top: 10px;
+        color: var(--blue);
+      }
+    }
+  }
+
+  ::ng-deep .ngx-charts {
+    ::ng-deep text {
+      font-family: 'Open Sans';
+      font-weight: 600;
+    }
+  }
+}
+
+::ng-deep .mat-option .mat-checkbox-layout,
+::ng-deep .mat-option .mat-checkbox-label {
+  width: 100% !important;
+}
+

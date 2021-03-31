@@ -1,0 +1,68 @@
+$tab-text-color: #8f9bb3;
+
+.create-query-container {
+  display: flex;
+  flex-direction: column;
+
+  .key-selection-form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    min-height: 442px;
+    max-height: 442px;
+    overflow: auto;
+
+    .auto-complete-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+
+      div {
+        flex: 0 0 50%;
+
+        .auto-complete {
+          width: 90%;
+        }
+      }
+    }
+  }
+
+  .btn {
+    margin-right: 10px;
+    width: 80px;
+
+    &--save {
+      margin-top: 20px;
+    }
+  }
+
+  .secondary-form {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .form-control {
+      flex: 0 0 45%;
+      line-height: 20px;
+    }
+  }
+
+  .radio-group {
+    .repeated-measure {
+      margin-top: 10px;
+    }
+  }
+
+  .zero-state {
+    min-height: 250px;
+  }
+
+  ::ng-deep .mat-tab-label-content {
+    color: $tab-text-color;
+    font-family: 'Open Sans';
+    font-size: var(--text-size-x-large);
+    font-weight: 600;
+  }
+}

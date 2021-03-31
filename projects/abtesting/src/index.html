@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/" />
+    <title>UpGrade</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta property="og:title" content="UpGrade" />
+    <meta property="og:description" content="Open Source A/B Testing Platform for Education Software" />
+    <meta property="og:image" content="/abtesting/favicon.ico" />
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script src="./assets/js/gapi.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $.ajaxSetup({
+        async: false
+      });
+      $.getJSON('./environment.json', (envInfo) => {
+          window.upgrade_env = envInfo;
+        }).fail(() => {
+          window.upgrade_env = null;
+        });
+    </script>
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

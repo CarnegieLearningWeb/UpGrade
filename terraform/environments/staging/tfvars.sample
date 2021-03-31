@@ -1,0 +1,6 @@
+aws_profile                   = "upgrade-terraform"
+aws_region                    = "us-east-1"
+environment                   = "staging"
+prefix                        = "cli-upgrade-frontend"
+repository_name               = "experiment-service-client"
+repository_branch             = "staging"

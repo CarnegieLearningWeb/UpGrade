@@ -1,0 +1,24 @@
+.flag-overview {
+  display: flex;
+  flex-direction: column;
+
+  mat-form-field {
+    line-height: 20px;
+  }
+
+  .name,
+  .key,
+  .variationType {
+    width: 50%;
+  }
+
+  .description {
+    width: 100%;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+  }
+}

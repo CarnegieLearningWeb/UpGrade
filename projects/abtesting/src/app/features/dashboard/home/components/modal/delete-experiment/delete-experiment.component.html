@@ -1,0 +1,31 @@
+<div mat-dialog-content class="dialog">
+  <p class="ft-16-600">
+    {{ 'home.delete-experiment.message.text' | translate }}
+  </p>
+  <mat-form-field class="ft-14-600 name">
+    <input
+      matInput
+      class="ft-14-400 name-input"
+      [placeholder]="'home.delete-experiment.input-placeholder.text' | translate"
+      [(ngModel)]="deleteConfirm"
+    />
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="dialog-actions">
+  <button
+    class="modal-btn"
+    mat-flat-button
+    (click)="onCancelClick()"
+  >
+    {{ 'global.cancel.text' | translate }}
+  </button>
+  <button
+    class="modal-btn default-button delete-btn"
+    mat-flat-button
+    [ngClass]="{ 'default-button--disabled': deleteConfirm !== ('home.delete-experiment.delete.text' | translate) }"
+    [disabled]="deleteConfirm !== ('home.delete-experiment.delete.text' | translate)"
+    (click)="deleteExperiment()"
+  >
+    {{ 'global.delete.text' | translate }}
+  </button>
+</div>

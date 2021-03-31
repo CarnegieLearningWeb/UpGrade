@@ -1,0 +1,44 @@
+.experiment-status {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  &-form {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 0 40px;
+
+    mat-form-field {
+      margin-right: 10px;
+      width: 45%;
+
+      .status-selection {
+        line-height: 20px;
+      }
+    }
+  }
+
+  .info-msg,
+  .error-msg {
+    display: block;
+    margin-bottom: 10px;
+    padding: 0 40px;
+  }
+
+  .info-msg {
+    color: var(--green);
+  }
+
+  .error-msg {
+    color: var(--red);
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+  }
+}

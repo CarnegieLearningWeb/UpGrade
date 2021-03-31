@@ -1,0 +1,61 @@
+<div class="experiment-status">
+  <span class="ft-24-700 title">{{ 'home.change-experiment-status.title.text' | translate }}</span>
+  <form [formGroup]="statusForm" class="experiment-status-form">
+    <mat-form-field class="ft-16-400">
+      <mat-label>{{ 'home.change-experiment-status.current-status.text' | translate }}</mat-label>
+      <mat-select class="ft-16-400 status-selection" disabled="true" [(value)]="experimentInfo.state">
+        <mat-option *ngFor="let status of experimentStatus" [value]="status.value">
+          {{ status.value | experimentState }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="ft-16-400">
+      <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
+      <mat-select class="ft-16-400 status-selection" formControlName="newStatus">
+        <ng-container *ngFor="let status of experimentStatus">
+          <mat-option *ngIf="status.value === ExperimentStatus.SCHEDULED || status.value !== experimentInfo?.state" [value]="status">
+            {{ status.value | experimentState }}
+          </mat-option>
+        </ng-container>
+      </mat-select>
+      <mat-error *ngIf="statusForm.controls.newStatus.hasError('required')">
+        {{ 'home.change-experiment-status.new-status.error.text' | translate }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="newStatusValue.value === ExperimentStatus.SCHEDULED">
+      <input
+        matInput
+        readonly
+        [min]="minDate"
+        [owlDateTimeTrigger]="dateTime"
+        [owlDateTime]="dateTime"
+        [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
+        formControlName="scheduleDate"
+      />
+      <owl-date-time #dateTime></owl-date-time>
+    </mat-form-field>
+  </form>
+  <span class="info-msg" *ngIf="showInfoMsg">
+    {{ 'home.change-experiment-status.enrolling-info.text' | translate }}
+  </span>
+  <span class="error-msg" *ngIf="isScheduleDateWrong">
+    {{ 'home.change-experiment-status.enrolling-error.text' | translate: {endDate: (experimentInfo.endOn | date)} }}
+  </span>
+
+  <div class="button-container">
+    <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      [ngClass]="{ 'default-button--disabled': !this.statusForm.valid || isScheduleDateWrong }"
+      [disabled]="!this.statusForm.valid || isScheduleDateWrong"
+      (click)="changeStatus()"
+    >
+      {{ 'global.save.text' | translate }}
+    </button>
+  </div>
+</div>

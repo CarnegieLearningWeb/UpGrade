@@ -1,0 +1,45 @@
+.query-result-container {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .query-result-view {
+    margin: 20px 0;
+    padding: 0 40px;
+    min-height: 200px;
+
+    .table {
+      max-height: 500px;
+      overflow: auto;
+
+      .mat-header-cell {
+        padding-right: 10px;
+      }
+
+      .mat-cell {
+        padding-right: 10px;
+
+        .mat-column-no {
+          width: 20%;
+        }
+
+        .mat-column-conditionCode,
+        .mat-column-result {
+          width: 40%;
+        }
+      }
+    }
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+  }
+
+  .zero-state {
+    min-height: 200px;
+  }
+}

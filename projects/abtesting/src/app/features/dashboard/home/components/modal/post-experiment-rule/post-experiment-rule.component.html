@@ -1,0 +1,50 @@
+<div class="experiment-rule">
+  <span class="ft-24-700 title">{{ 'home.change-post-experiment-rule.title.text' | translate }}</span>
+  <form
+    [formGroup]="postExperimentRuleForm"
+    class="experiment-rule-form"
+  >
+      <mat-form-field class="ft-16-400">
+        <mat-label>{{ 'home-global.post-experiment-rule.text' | translate }}</mat-label>
+        <mat-select class="ft-16-400" formControlName="postExperimentRule">
+          <mat-option
+            *ngFor="let rule of postExperimentRules"
+            [value]="rule.value"
+          >
+            {{ rule.value | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="ft-16-400">
+        <mat-label>{{ 'global.condition.text' | translate }}</mat-label>
+        <mat-select class="ft-16-400" formControlName="revertTo">
+          <mat-option
+            *ngFor="let condition of experimentConditions"
+            [value]="condition.id"
+          >
+            {{ condition.value }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+  </form>
+
+  <div class="button-container">
+    <button
+      mat-raised-button
+      class="modal-btn"
+      (click)="onCancelClick()"
+    >
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      [ngClass]="{'default-button--disabled': !this.postExperimentRuleForm.valid}"
+      [disabled]="!this.postExperimentRuleForm.valid"
+      (click)="changePostExperimentRule()"
+    >
+      {{ 'global.save.text' | translate }}
+    </button>
+  </div>
+</div>

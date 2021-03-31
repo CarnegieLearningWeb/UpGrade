@@ -1,0 +1,26 @@
+.experiment-queries-result {
+  padding: 0 34px 34px;
+
+  .title {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  ::ng-deep .ngx-charts {
+    ::ng-deep text {
+      font-family: 'Open Sans';
+      font-weight: 600;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+  }
+
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0 0 16px;
+  }
+}

@@ -1,0 +1,15 @@
+<mat-card class="tabs-container profile-container">
+  <h1 class="ft-32-700 title">{{ 'profile.heading.text' | translate }} </h1>
+  <span class="ft-16-400 subtitle" [innerHTML]="'profile.sub-heading.text' | translate"></span>
+
+  <mat-card class="tabs-wrapper">
+    <mat-tab-group disableRipple="true">
+      <mat-tab [label]="'profile.heading.text' | translate">
+        <profile-info></profile-info>
+      </mat-tab>
+      <mat-tab [label]="'global.metrics.text' | translate">
+        <profile-metrics></profile-metrics>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</mat-card>

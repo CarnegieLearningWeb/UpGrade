@@ -1,0 +1,20 @@
+.post-experiment-rule-form {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 97px;
+
+  mat-form-field {
+    width: 45%;
+    color: var(--grey-6);
+  }
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+
+  .btn-back {
+    margin-left: 0 !important;
+  }
+}

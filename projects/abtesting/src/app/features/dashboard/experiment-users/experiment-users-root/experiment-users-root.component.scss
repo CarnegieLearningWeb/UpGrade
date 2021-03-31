@@ -1,0 +1,6 @@
+@import '../common/table-view.scss';
+@import '../../common/tabs-view.scss';
+
+.users-container {
+  height: calc(100% - 25px); // Subtract header height
+}

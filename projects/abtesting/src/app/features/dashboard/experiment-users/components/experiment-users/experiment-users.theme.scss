@@ -1,0 +1,15 @@
+@import '~@angular/material/theming';
+
+@mixin experiment-users-component-theme($theme) {
+  $foreground: map-get($theme, foreground);
+
+  .exclude-entities {
+    .entities-container {
+      table {
+        .remove-icon {
+          color: mat-color($foreground, icon);
+        }
+      }
+    }
+  }
+}

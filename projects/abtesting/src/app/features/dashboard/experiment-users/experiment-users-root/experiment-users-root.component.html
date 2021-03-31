@@ -1,0 +1,15 @@
+<mat-card class="tabs-container users-container">
+  <h1 class="ft-32-700 title">{{ 'users.main-heading.text' | translate }} </h1>
+  <span class="ft-16-400 subtitle" [innerHTML]="'users.sub-heading.text' | translate"></span>
+
+  <mat-card class="tabs-wrapper">
+    <mat-tab-group disableRipple="true" (selectedTabChange)="selectedTabChange($event)">
+      <mat-tab [label]="'users.experiment-users-title.text' | translate">
+        <users-experiment-users></users-experiment-users>
+      </mat-tab>
+      <mat-tab [label]="'users.preview-users-title.text' | translate">
+        <users-preview-user></users-preview-user>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</mat-card>

@@ -1,0 +1,291 @@
+<mat-card class="experiments-list-container">
+  <div class="header">
+    <div>
+      <mat-form-field class="filter-options">
+        <mat-select
+          class="ft-16-600"
+          [(ngModel)]="selectedExperimentFilterOption"
+          (selectionChange)="applyFilter(searchValue); setSearchKey()"
+        >
+          <mat-option *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
+            {{ filterOption | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          class="search-input ft-16-400"
+          matInput
+          #searchInput
+          [(ngModel)]="searchValue"
+          (keyup)="applyFilter($event.target.value)"
+          [placeholder]="'global.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    <div>
+      <button
+        (click)="openImportExperimentDialog()"
+        mat-flat-button
+        color="primary"
+        class="ft-14-700 import-experiment"
+        *ngIf="(permissions$ | async)?.experiments.create"
+      >
+        <mat-icon>add</mat-icon>
+        <span>{{ 'home.experiment.import-experiment.text' | translate }}</span>
+      </button>
+      <button
+        mat-flat-button
+        color="primary"
+        class="ft-14-700"
+        (click)="openNewExperimentDialog()"
+        *ngIf="(permissions$ | async)?.experiments.create"
+      >
+        <mat-icon>add</mat-icon>
+        <span>{{ 'home.experiment.add-experiment.text' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div
+    scroll
+    (scrolled)="fetchExperimentOnScroll()"
+    class="experiment-list-table-container"
+    #tableContainer
+  >
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
+    <table
+      class="experiment-list"
+      mat-table
+      [dataSource]="allExperiments"
+      matSort
+      (matSortChange)="changeSorting($event)"
+    >
+      <ng-container matColumnDef="name">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'home.experiments-table.name-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'home.experiments-table.text.name' | translate }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
+          <a [routerLink]="['/home', 'detail', experiment.id]" *ngIf="experiment.name?.length < 30; else experimentNameEllipsis" class="experiment-name">
+            {{ experiment.name }}
+          </a>
+          <ng-template #experimentNameEllipsis>
+            <a [routerLink]="['/home', 'detail', experiment.id]" [matTooltip]="experiment.name" class="experiment-name" matTooltipPosition="above">
+              {{ experiment.name | truncate: 30 }}
+            </a>
+          </ng-template>
+          <br />
+          <span
+            class="experiment-description ft-10-400"
+            *ngIf="experiment.description?.length < 30; else experimentDescription"
+          >
+            {{ experiment.description }}
+          </span>
+          <ng-template #experimentDescription>
+            <span class="experiment-description ft-10-400" [matTooltip]="experiment.description" matTooltipPosition="above">
+              {{ experiment.description | truncate: 35 }}
+            </span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="state">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'home.experiments-table.status-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'home-global.status.text' | translate }}
+          </span>
+        </th>
+        <td
+          class="ft-12-600"
+          mat-cell
+          *matCellDef="let experiment"
+        >
+          <div class="experiment-state">
+            <ng-container
+              *ngIf="experiment.state === ExperimentState.PREVIEW || experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.SCHEDULED; else experimentStateTemplate"
+            >
+              <app-shared-icons class="icons" [iconType]="experiment.state"></app-shared-icons>
+            </ng-container>
+            <ng-template #experimentStateTemplate>
+              <span class="experiment-state-circle" [ngStyle]="{'backgroundColor': experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+            </ng-template>
+            <span
+              [ngClass]="{'experiment-state--light': experiment.state === ExperimentState.INACTIVE || experiment.state === ExperimentState.CANCELLED }"
+            >
+              {{ experiment.state | experimentState }}
+            </span>
+          </div>
+          <span
+            class="experiment-schedule ft-10-400"
+            *ngIf="experiment.state === ExperimentState.SCHEDULED"
+          >
+            {{ '(' + (experiment.startOn | date: 'medium') + ')' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="postExperimentRule">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span
+            [matTooltip]="'home.experiments-table.post-experiment-rule-tooltip.text' | translate"
+            matTooltipPosition="above"
+          >
+            {{ 'home-global.post-experiment-rule.text' | translate }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
+          <span>{{ experiment.postExperimentRule | titlecase }}</span>
+          <br />
+          <span class="experiment-revertTo ft-10-400" *ngIf="experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
+            {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
+          <span [matTooltip]="'home.experiments-table.start-date-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'home.experiments-table.text.created-date' | translate }}</span
+          >
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
+          {{ experiment.createdAt | formatDate }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="context">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef>
+          <span [matTooltip]="'home.experiments-table.context-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'global.context.text' | translate }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
+          <mat-chip-list>
+            <ng-container *ngFor="let context of experiment.context; let contextIndex = index">
+              <mat-chip
+                *ngIf="contextIndex < 2; else moreContextTemplate"
+                class="chip ft-12-600"
+                (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
+              >
+                {{ context }}
+              </mat-chip>
+              <ng-template #moreContextTemplate>
+                <mat-chip
+                  class="chip ft-12-600"
+                  *ngIf="isAllChipsVisible(experiment.id, 'contextVisibility')"
+                  (click)="filterExperimentByChips(context, ExperimentSearchKey.CONTEXT)"
+                >
+                  {{ context }}
+                </mat-chip>
+              </ng-template>
+            </ng-container>
+            <mat-chip
+              *ngIf="experiment.context.length > 2 && !isAllChipsVisible(experiment.id, 'contextVisibility')"
+              class="chip ft-12-600"
+              (click)="setChipsVisible(experiment.id, 'contextVisibility')"
+            >
+              {{ '+' + (experiment.context.length - 2) }}
+            </mat-chip>
+          </mat-chip-list>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="tags">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef>
+          <span [matTooltip]="'home.experiments-table.tags-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'global.tags.text' | translate }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
+          <mat-chip-list>
+            <ng-container *ngFor="let tag of experiment?.tags; let tagIndex = index">
+              <mat-chip
+                *ngIf="tagIndex < 2; else moreTagsTemplate"
+                class="chip ft-12-600"
+                (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
+              >
+                {{ tag }}
+              </mat-chip>
+              <ng-template #moreTagsTemplate>
+                <mat-chip
+                  class="chip ft-12-600"
+                  *ngIf="isAllChipsVisible(experiment.id, 'tagsVisibility')"
+                  (click)="filterExperimentByChips(tag, ExperimentSearchKey.TAG)"
+                >
+                  {{ tag }}
+                </mat-chip>
+              </ng-template>
+            </ng-container>
+            <mat-chip
+              *ngIf="experiment.tags?.length > 2 && !isAllChipsVisible(experiment.id, 'tagsVisibility')"
+              class="chip ft-12-600"
+              (click)="setChipsVisible(experiment.id, 'tagsVisibility')"
+            >
+              {{ '+' + (experiment.tags.length - 2) }}
+            </mat-chip>
+          </mat-chip-list>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="enrollment">
+        <th class="ft-12-700" mat-header-cell *matHeaderCellDef>
+          <span [matTooltip]="'home.experiments-table.enrollments-tooltip.text' | translate" matTooltipPosition="above">
+            {{ 'home.experiments-table.text.enrollment' | translate }}
+          </span>
+        </th>
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
+          <ng-container *ngIf="experiment.stat; else skeletonTemplate">
+            <span
+              class="enrollment-info"
+              *ngIf="experiment.stat?.users"
+              [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
+            ></span>
+            <span
+              class="enrollment-info"
+              *ngIf="experiment.stat?.groups"
+              [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups, groupName: experiment.group | groupTypePlural: experiment.stat?.groups }"
+            ></span>
+            <span
+              class="enrollment-info"
+              *ngIf="!experiment.stat?.groups && !experiment.stat?.users"
+              [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: 0 }"
+            ></span>
+          </ng-container>
+          <ng-template #skeletonTemplate>
+            <ngx-skeleton-loader
+              count="1"
+              animation="pulse"
+              [theme]="(theme$ | async) === Theme.DARK_THEME ?
+              {
+                'border-radius': '5px',
+                height: '20px',
+                position: 'relative',
+                top: '8px',
+                'background-color': '#323232',
+                border: '1px solid #323232',
+                'animation-duration': '2s'
+              }
+              :
+              {
+                'border-radius': '5px',
+                height: '20px',
+                position: 'relative',
+                top: '8px',
+                'animation-duration': '2s'
+              }
+              "
+            >
+            </ngx-skeleton-loader>
+          </ng-template>
+        </td>
+      </ng-container>
+
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+</mat-card>

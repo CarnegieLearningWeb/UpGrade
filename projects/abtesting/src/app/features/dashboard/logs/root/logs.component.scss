@@ -1,0 +1,26 @@
+@import '../../common/tabs-view.scss';
+
+.logs-container {
+  height: calc(100% - 25px); // Subtract header height
+
+  ::ng-deep .mat-tab-body-content {
+    padding: 10px 0 34px;
+  }
+
+  .tabs-wrapper {
+    position: relative;
+
+    .log-filter {
+      position: absolute;
+      top: 28px;
+      right: 34px;
+      z-index: 1;
+      width: 250px;
+
+      &-selection {
+        line-height: 20px;
+      }
+    }
+  }
+}
+

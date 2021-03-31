@@ -1,0 +1,18 @@
+@import '~@angular/material/theming';
+
+@mixin queries-modal-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .queries-modal-container {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+
+    .query-view {
+      .icon {
+        color: mat-color($foreground, icon);
+      }
+    }
+  }
+}
