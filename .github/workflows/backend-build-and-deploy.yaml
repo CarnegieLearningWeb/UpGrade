@@ -95,7 +95,7 @@ jobs:
           tag: upgrade-backend-v${{ steps.backend-package.outputs.current-version}}
           name: UpGrade Backend ${{ steps.backend-package.outputs.current-version}}
           body: ${{ steps.changelog.outputs.changelog }}
-          commit: master
+          commit: main
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Backend Success Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -179,7 +179,7 @@ jobs:
           tag: upgrade-lambda-v${{ steps.lambda-package.outputs.current-version}}
           name: UpGrade Lambda ${{ steps.lambda-package.outputs.current-version}}
           body: ${{ steps.changelog.outputs.changelog }}
-          commit: master
+          commit: main
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Lambda Success Build Message
         if: always() && env.BUILD_LAMBDA == 'true' && steps.release-lambda.outcome == 'success'
