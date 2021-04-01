@@ -1,0 +1,101 @@
+name: Lambda Build and Deploy
+on:
+  repository_dispatch:
+    types: [trigger-lambda-build]
+jobs:
+  lambda-build-and-deploy:
+    name: Lambda Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v2
+        with: 
+          ref: ${{ github.event.client_payload.tag }}
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+
+      - name: Get Package Version
+        uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
+        with:
+          path: backend/packages/Schedular
+
+#############################################  Build Steps #############################################
+
+      - name: Build
+        working-directory: backend/packages/Schedular
+        id: build-lambda
+        run: |
+          npm ci
+          npm run build
+          mkdir lib
+          cp -a node_modules/ lib/node_modules
+          cp -a dist/schedule lib/schedule
+
+      - name: Package
+        working-directory: backend/packages/Schedular/lib
+        id: package-lambda
+        run: zip -r upgrade-lambda-v${{ steps.package-version.outputs.current-version }}.zip *
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: backend/packages/Schedular/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
+          tag: upgrade-lambda-v${{ steps.package-version.outputs.current-version}}
+          name: UpGrade Lambda ${{ steps.package-version.outputs.current-version}}
+          body: ${{ github.event.client_payload.release_changelog }}
+          commit: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Success Build Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+          message: |
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> build was successful*
+            {{ env.CHANGELOG }}
+
+      - name: Failure Build Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+          message: |
+            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Lambda ${{ steps.package-version.outputs.current-version }} build FAILURE*
+            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+            {{ env.CHANGELOG }}
+
+########################### Lambda Deploy Steps ###########################
+
+      - name: Deploy Lambda to dev
+        uses: appleboy/lambda-action@v0.0.8
+        id: deploy-lambda
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          function_name: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+          zip_file: backend/packages/Schedular/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
+
+      - name: Lambda Success Deploy Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+          message: |
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment
+            {{ env.CHANGELOG }}
+
+      - name: Lambda Failure Deploy Message
+        uses: aibexhq/slack-rich-notify@v2.0.1
+        if: failure() && steps.deploy-lambda.outcome == 'failure'
+        with:
+          token: ${{ secrets.SLACK_TOKEN }}
+          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+          message: |
+            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+            {{ env.CHANGELOG }}

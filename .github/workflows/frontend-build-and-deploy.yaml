@@ -1,60 +1,46 @@
 name: Frontend Build and Deploy
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/frontend-build-and-deploy.yaml
-      - frontend/projects/abtesting/**
-      - frontend/*.json
-      - frontend/buildspec.yml
+  repository_dispatch:
+    types: [trigger-frontend-build]
 jobs:
   frontend-build-and-deploy:
     name: 'Frontend Build and Deploy'
     runs-on: ubuntu-latest
     if: github.repository_owner == 'CarnegieLearningWeb'
     steps:
+
       - uses: 'actions/checkout@v2'
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.client_payload.tag }}
       - uses: actions/setup-node@v2
         with:
           node-version: 12.x
-      - uses: phips28/gh-action-bump-version@v8.0.18
-        with:
-          tag-prefix: upgrade-frontend-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: frontend
+
       - uses: martinbeentjes/npm-get-version-action@v1.1.0
         id: package-version
         with:
           path: frontend
+
+#############################################  Build Steps #############################################
+
       - run: |
           npm ci
           npm run build:prod
         working-directory: frontend
+
       - run: zip -r upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip *
         working-directory: frontend/dist/abtesting
-      - name: Generate Release Changelog
-        uses: Bullrich/generate-release-changelog@2.0.1
-        id: changelog
-        env:
-          REPO: ${{ github.repository }}
-      - name: Generate Slack Changelog
-        run: |
-          echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
-          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.before}}..HEAD >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: frontend/dist/abtesting/upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip
           tag: upgrade-frontend-v${{ steps.package-version.outputs.current-version}}
           name: Upgrade Client ${{ steps.package-version.outputs.current-version}}
-          body: ${{ steps.changelog.outputs.changelog }}
+          body: ${{ github.event.client_payload.release_changelog }}
           commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Success Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         with:
@@ -62,7 +48,8 @@ jobs:
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}> build was successful*
-            {{ env.CHANGELOG }}
+            ${{ github.event.client_payload.slack_changelog }}
+
       - name: Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         if: failure()
@@ -72,7 +59,10 @@ jobs:
           message: |
             ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Client ${{ steps.package-version.outputs.current-version }}> build FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-            {{ env.CHANGELOG }}
+            ${{ github.event.client_payload.slack_changelog }}
+
+#############################################  Deploy Steps #############################################
+
       - name: Deploy to QA
         id: deploy
         uses: jakejarvis/s3-sync-action@v0.5.1
@@ -81,6 +71,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
           SOURCE_DIR: frontend/dist/abtesting
+
       - name: Success Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         with:
@@ -88,7 +79,8 @@ jobs:
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL }}
-            {{ env.CHANGELOG }}
+            ${{ github.event.client_payload.slack_changelog }}
+
       - name: Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         if: failure() && steps.deploy.outcome == 'failure'
@@ -98,4 +90,4 @@ jobs:
           message: |
             ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-            {{ env.CHANGELOG }}
+            ${{ github.event.client_payload.slack_changelog }}
