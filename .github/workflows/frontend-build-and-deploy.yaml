@@ -50,7 +50,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: frontend/dist/abtesting/upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip
-          tag: v${{ steps.package-version.outputs.current-version}}
+          tag: upgrade-frontend-v${{ steps.package-version.outputs.current-version}}
           name: Upgrade Client ${{ steps.package-version.outputs.current-version}}
           body: ${{ steps.changelog.outputs.changelog }}
           commit: master
