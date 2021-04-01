@@ -88,20 +88,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGEJSON_DIR: backend/packages/Schedular
 
-############################ Generate changelogs ############################
-
-      - name: Generate Release Changelog
-        uses: Bullrich/generate-release-changelog@2.0.1
-        id: changelog
-        env:
-          REPO: ${{ github.repository }}
-
-      - name: Generate Slack Changelog
-        run: |
-          echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
-          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.before}}..HEAD >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-
 ############################ Trigger builds ############################
 # Use always() to trigger builds even if other unrelated version bumps failed
 # REPO_DISPATCH_TOKEN needs to be a personal access token that has repo access (can't use GITHUB_TOKEN)
@@ -113,7 +99,7 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-backend-build
-          client-payload: '{"tag": "${{ steps.backend-version-bump.outputs.newTag }}", "release_changelog": "${{ steps.changelog.outputs.changelog }}", "slack_changelog", "${{ env.CHANGELOG }}"}'
+          client-payload: '{"tag": "${{ steps.backend-version-bump.outputs.newTag }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Frontend Build
         uses: peter-evans/repository-dispatch@v1
         if: always() && env.BUILD_FRONTEND == 'true' && steps.frontend-version-bump.outcome == 'success'
@@ -121,7 +107,7 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-frontend-build
-          client-payload: '{"tag": "${{ steps.frontend-version-bump.outputs.newTag }}", "release_changelog": "${{ steps.changelog.outputs.changelog }}", "slack_changelog", "${{ env.CHANGELOG }}"}'
+          client-payload: '{"tag": "${{ steps.frontend-version-bump.outputs.newTag }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Lambda Build
         uses: peter-evans/repository-dispatch@v1
         if: always() && env.BUILD_LAMBDA == 'true' && steps.lambda-version-bump.outcome == 'success'
@@ -129,4 +115,4 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-lambda-build
-          client-payload: '{"tag": "${{ steps.lambda-version-bump.outputs.newTag }}", "release_changelog": "${{ steps.changelog.outputs.changelog }}", "slack_changelog", "${{ env.CHANGELOG }}"}'
+          client-payload: '{"tag": "${{ steps.lambda-version-bump.outputs.newTag }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'

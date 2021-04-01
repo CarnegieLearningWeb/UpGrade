@@ -22,6 +22,15 @@ jobs:
         with:
           path: backend/packages/Schedular
 
+      - name: Generate Changelogs
+        run: |
+          echo 'SLACK_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
 #############################################  Build Steps #############################################
 
       - name: Build
@@ -45,7 +54,7 @@ jobs:
           artifacts: backend/packages/Schedular/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
           tag: upgrade-lambda-v${{ steps.package-version.outputs.current-version}}
           name: UpGrade Lambda ${{ steps.package-version.outputs.current-version}}
-          body: ${{ github.event.client_payload.release_changelog }}
+          body: ${{ env.RELEASE_CHANGELOG }}
           commit: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -56,7 +65,7 @@ jobs:
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> build was successful*
-            {{ env.CHANGELOG }}
+            ${{ SLACK_CHANGELOG }}
 
       - name: Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -66,7 +75,7 @@ jobs:
           message: |
             ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Lambda ${{ steps.package-version.outputs.current-version }} build FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-            {{ env.CHANGELOG }}
+            ${{ env.SLACK_CHANGELOG }}
 
 ########################### Lambda Deploy Steps ###########################
 
@@ -87,7 +96,7 @@ jobs:
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment
-            {{ env.CHANGELOG }}
+            ${{ env.SLACK_CHANGELOG }}
 
       - name: Lambda Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
@@ -98,4 +107,4 @@ jobs:
           message: |
             ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
             <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-            {{ env.CHANGELOG }}
+            ${{ env.SLACK_CHANGELOG }}
