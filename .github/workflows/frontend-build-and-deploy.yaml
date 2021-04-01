@@ -1,33 +1,38 @@
-name: 'Build and Deploy'
+name: Frontend Build and Deploy
 on:
   push:
     branches:
-      - 'master'
-    paths-ignore:
-      - projects/server/**
-      - terraform/**
+      - main
+    paths:
+      - .github/workflows/frontend-build-and-deploy.yaml
+      - frontend/projects/abtesting/**
+      - frontend/*.json
+      - frontend/buildspec.yml
 jobs:
-  bump-version:
-    name: 'Build and Deploy'
+  frontend-build-and-deploy:
+    name: 'Frontend Build and Deploy'
     runs-on: ubuntu-latest
     if: github.repository_owner == 'CarnegieLearningWeb'
     steps:
       - uses: 'actions/checkout@v2'
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 12.x
-      - uses: phips28/gh-action-bump-version@v8.0.12
+      - uses: phips28/gh-action-bump-version@v8.0.18
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: martinbeentjes/npm-get-version-action@v1.1.0
         id: package-version
-      - run: npm ci
-      - run: npm run build:prod
+        with:
+          path: frontend
+      - run: |
+          npm ci
+          npm run build:prod
+        working-directory: frontend
       - run: zip -r upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip *
-        working-directory: dist/abtesting
-      - run: mv dist/abtesting/upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip .
+        working-directory: frontend/dist/abtesting
       - name: Generate Release Changelog
         uses: Bullrich/generate-release-changelog@2.0.1
         id: changelog
@@ -41,7 +46,7 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip
+          artifacts: frontend/dist/abtesting/upgrade-client-v${{ steps.package-version.outputs.current-version}}.zip
           tag: v${{ steps.package-version.outputs.current-version}}
           name: Upgrade Client ${{ steps.package-version.outputs.current-version}}
           body: ${{ steps.changelog.outputs.changelog }}
@@ -72,14 +77,14 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
-          SOURCE_DIR: dist/abtesting
+          SOURCE_DIR: frontend/dist/abtesting
       - name: Success Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
         with:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
           message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `dev` environment at ${{ secrets.DEV_URL }}
+            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/v${{ steps.package-version.outputs.current-version }}|UpGrade Client ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL }}
             {{ env.CHANGELOG }}
       - name: Failure Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
