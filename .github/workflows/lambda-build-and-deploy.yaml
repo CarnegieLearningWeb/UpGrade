@@ -70,6 +70,7 @@ jobs:
 
       - name: Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
+        if: failure()
         with:
           token: ${{ secrets.SLACK_TOKEN }}
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
