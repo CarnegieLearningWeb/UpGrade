@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@v2
         with: 
           ref: ${{ github.event.client_payload.tag }}
+          fetch-depth: 0
 
       - uses: actions/setup-node@v2
         with:
@@ -65,7 +66,7 @@ jobs:
           channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
           message: |
             *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-lambda-v${{ steps.package-version.outputs.current-version }}|UpGrade Lambda ${{ steps.package-version.outputs.current-version }}> build was successful*
-            ${{ SLACK_CHANGELOG }}
+            ${{ env.SLACK_CHANGELOG }}
 
       - name: Failure Build Message
         uses: aibexhq/slack-rich-notify@v2.0.1
