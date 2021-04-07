@@ -5,5 +5,5 @@
   },
   "watch": ["src/**/*.ts", ".env"],
   "ext": "ts",
-  "exec": "ts-node ./src/app.ts"
+  "exec": "node --inspect=0.0.0.0:9200 -r ts-node/register ./src/app.ts"
 }
