@@ -138,3 +138,20 @@ export const previewGroupExperiment = {
 export const secondExperiment = {
   ...experimentSecond,
 };
+
+export const groupAndParticipantsExperiment = {
+  ...groupAssignmentWithGroupConsistencyExperiment,
+  state: EXPERIMENT_STATE.INACTIVE,
+  enrollmentCompleteCondition: {
+    groupCount: 2,
+    userCount: 2,
+  },
+};
+
+export const participantsOnlyExperiment = {
+  ...individualAssignmentExperiment,
+  state: EXPERIMENT_STATE.INACTIVE,
+  enrollmentCompleteCondition: {
+    userCount: 2,
+  },
+};

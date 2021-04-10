@@ -12,7 +12,7 @@ import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { ExperimentPartition } from '../models/ExperimentPartition';
+import { ExperimentPartition, getExperimentPartitionID } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
@@ -137,7 +137,7 @@ export class ExperimentService {
       if (experiment) {
         // monitoredIds
         const monitoredIds = experiment.partitions.map((partition) => {
-          return partition.expId ? `${partition.expId}_${partition.expPoint}` : partition.expPoint;
+          return getExperimentPartitionID(partition.expPoint, partition.expId);
         });
 
         const promiseArray = [];
@@ -248,7 +248,7 @@ export class ExperimentService {
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
     const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
     if (duplicateExperiment && experiment.id !== undefined) {
-      throw new Error(JSON.stringify({type : SERVER_ERROR.QUERY_FAILED, message: 'Duplicate experiment'}));
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: 'Duplicate experiment' }));
     }
     let experimentPartitions = experiment.partitions;
 
@@ -263,23 +263,23 @@ export class ExperimentService {
     }
 
     if (experimentPartitions.length === 0) {
-      throw new Error(JSON.stringify({type : SERVER_ERROR.QUERY_FAILED, message: 'Duplicate partition'}));
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: 'Duplicate partition' }));
     }
 
     // Generate new twoCharacterId if it is already exist for conditions
     let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
-    experiment.conditions = experiment.conditions.map(condition => {
-        let twoCharacterId = condition.twoCharacterId;
-        if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
-          twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-          condition.twoCharacterId = twoCharacterId;
-        }
-        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-        return condition;
+    experiment.conditions = experiment.conditions.map((condition) => {
+      let twoCharacterId = condition.twoCharacterId;
+      if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
+        twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+        condition.twoCharacterId = twoCharacterId;
+      }
+      uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+      return condition;
     });
 
     // Generate new twoCharacterId if it is already exist for partitions
-    experimentPartitions = experimentPartitions.map(partition => {
+    experimentPartitions = experimentPartitions.map((partition) => {
       let twoCharacterId = partition.twoCharacterId;
       if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
         twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
@@ -289,7 +289,7 @@ export class ExperimentService {
       return partition;
     });
 
-    experiment.partitions  = experimentPartitions;
+    experiment.partitions = experimentPartitions;
     experiment.endDate = null;
     experiment.startDate = null;
     experiment.endOn = null;
@@ -459,11 +459,11 @@ export class ExperimentService {
             partitions.map((partition) => {
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = partition;
-              const joinedForId = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
+              const joinedForId = getExperimentPartitionID(rest.expPoint, rest.expId);
               if (rest.id && rest.id === joinedForId) {
                 rest.id = rest.id;
               } else {
-                rest.id = rest.expId ? `${rest.expId}_${rest.expPoint}` : `${rest.expPoint}`;
+                rest.id = getExperimentPartitionID(rest.expPoint, rest.expId);
               }
               rest.experiment = experimentDoc;
               return rest;
@@ -749,7 +749,7 @@ export class ExperimentService {
         partitions &&
         partitions.length > 0 &&
         partitions.map((partition) => {
-          partition.id = partition.expId ? `${partition.expId}_${partition.expPoint}` : `${partition.expPoint}`;
+          partition.id = getExperimentPartitionID(partition.expPoint, partition.expId);
           partition.experiment = experimentDoc;
           return partition;
         });
@@ -846,7 +846,7 @@ export class ExperimentService {
         experiment.partitions &&
         experiment.partitions.length > 0 &&
         experiment.partitions.map((partition) => {
-          partition.id = partition.expId ? `${partition.expId}_${partition.expPoint}` : `${partition.expPoint}`;
+          partition.id = getExperimentPartitionID(partition.expPoint, partition.expId);
           partition.experiment = experiment as any;
           return partition;
         });
