@@ -84,7 +84,7 @@ export class ExperimentAssignmentService {
     public errorService: ErrorService,
     public settingService: SettingService,
     @Logger(__filename) private log: LoggerInterface
-  ) { }
+  ) {}
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
@@ -151,11 +151,11 @@ export class ExperimentAssignmentService {
         // query group assignment
         (workingGroup &&
           this.groupAssignmentRepository.findExperiment([workingGroup[experiment.group]], [experiment.id])) ||
-        Promise.resolve([]),
+          Promise.resolve([]),
         // query group exclusion
         (workingGroup &&
           this.groupExclusionRepository.findExcluded([workingGroup[experiment.group]], [experiment.id])) ||
-        Promise.resolve([]),
+          Promise.resolve([]),
       ];
       const result = await Promise.all(assignmentPromise);
       const individualAssignments: IndividualAssignment[] = result[0];
@@ -251,7 +251,11 @@ export class ExperimentAssignmentService {
 
     // check for group and working group
     if (hasGroupExperiment) {
-      if (!experimentUser.group || !experimentUser.workingGroup || Object.keys(experimentUser.workingGroup).length === 0) {
+      if (
+        !experimentUser.group ||
+        !experimentUser.workingGroup ||
+        Object.keys(experimentUser.workingGroup).length === 0
+      ) {
         // filter group experiments
         experiments = experiments.filter((experiment) => experiment.assignmentUnit !== ASSIGNMENT_UNIT.GROUP);
 
@@ -266,32 +270,32 @@ export class ExperimentAssignmentService {
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
         } as any);
       } else {
-        const keys = Object.keys(experimentUser.workingGroup);
+        const workingGroupKeys = Object.keys(experimentUser.workingGroup);
         let addError = false;
-        keys.forEach(async (key) => {
-          if (!experimentUser.group[key]) {
-            // filter experiment whose group membership is not set
-            experiments = experiments.filter(
-              (experiment) =>
-                experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-                (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && experiment.group !== experimentUser.group[key])
-            );
-            // add error inside the error database
+        // get valid working group keys
+        const validWorkingGroupKeys = workingGroupKeys.filter((key) => {
+          const groupHasKey = experimentUser.group[key];
+          // if group doesn't has working group key
+          if (!groupHasKey) {
             addError = true;
-          } else {
-            if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
-              // filter experiment whose group membership is not set
-              experiments = experiments.filter(
-                (experiment) =>
-                  experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-                  (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-                    experiment.group !== experimentUser.group[key])
-              );
-              // add error inside the error database
-              addError = true;
-            }
+            return false;
           }
+
+          const groupHasWorkingGroupKey = !!experimentUser.group[key].includes(experimentUser.workingGroup[key]);
+          if (!groupHasWorkingGroupKey) {
+            addError = true;
+            return false;
+          }
+
+          return true;
         });
+
+        experiments = experiments.filter(
+          (experiment) =>
+            experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && validWorkingGroupKeys.includes(experiment.group))
+        );
+        
         if (addError) {
           await this.errorService.create({
             endPoint: '/api/assign',
