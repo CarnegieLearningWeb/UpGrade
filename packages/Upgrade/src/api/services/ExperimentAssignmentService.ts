@@ -269,32 +269,32 @@ export class ExperimentAssignmentService {
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
         } as any);
       } else {
-        const keys = Object.keys(experimentUser.workingGroup);
+        const workingGroupKeys = Object.keys(experimentUser.workingGroup);
         let addError = false;
-        keys.forEach(async (key) => {
-          if (!experimentUser.group[key]) {
-            // filter experiment whose group membership is not set
-            experiments = experiments.filter(
-              (experiment) =>
-                experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-                (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && experiment.group !== experimentUser.group[key])
-            );
-            // add error inside the error database
+        // get valid working group keys
+        const validWorkingGroupKeys = workingGroupKeys.filter((key) => {
+          const groupHasKey = experimentUser.group[key];
+          // if group doesn't has working group key
+          if (!groupHasKey) {
             addError = true;
-          } else {
-            if (!experimentUser.group[key].includes(experimentUser.workingGroup[key])) {
-              // filter experiment whose group membership is not set
-              experiments = experiments.filter(
-                (experiment) =>
-                  experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-                  (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-                    experiment.group !== experimentUser.group[key])
-              );
-              // add error inside the error database
-              addError = true;
-            }
+            return false;
           }
+
+          const groupHasWorkingGroupKey = !!experimentUser.group[key].includes(experimentUser.workingGroup[key]);
+          if (!groupHasWorkingGroupKey) {
+            addError = true;
+            return false;
+          }
+
+          return true;
         });
+
+        experiments = experiments.filter(
+          (experiment) =>
+            experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
+            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && validWorkingGroupKeys.includes(experiment.group))
+        );
+        
         if (addError) {
           await this.errorService.create({
             endPoint: '/api/assign',
