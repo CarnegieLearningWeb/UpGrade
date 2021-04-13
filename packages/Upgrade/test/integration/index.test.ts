@@ -61,6 +61,7 @@ import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './E
 import { IndividualExperimentEnrollmentCode } from './Experiment/enrollmentCode';
 import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode/index';
 import { MonitoredPointForExport } from './Experiment/analytics';
+import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -92,6 +93,16 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('Group and Participants', async (done) => {
+    await GroupAndParticipants();
+    done();
+  });
+
+  test('Participants Only', async (done) => {
+    await ParticipantsOnly();
+    done();
+  });
 
   test('Log Operations', async (done) => {
     await LogOperations();

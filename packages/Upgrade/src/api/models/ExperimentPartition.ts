@@ -26,3 +26,7 @@ export class ExperimentPartition extends BaseModel {
   @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 }
+
+export function getExperimentPartitionID(partitionPoint: string, partitionId: string): string {
+  return partitionId ? `${partitionId}_${partitionPoint}` : `${partitionPoint}`;
+}

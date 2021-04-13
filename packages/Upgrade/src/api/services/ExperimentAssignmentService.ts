@@ -10,6 +10,7 @@ import {
   IExperimentAssignment,
   ENROLLMENT_CODE,
 } from 'upgrade_types';
+import { getExperimentPartitionID } from '../models/ExperimentPartition';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -32,7 +33,7 @@ import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { MonitoredExperimentPoint, getMonitoredExperimentPointID } from '../models/MonitoredExperimentPoint';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from './ErrorService';
@@ -84,7 +85,7 @@ export class ExperimentAssignmentService {
     public errorService: ErrorService,
     public settingService: SettingService,
     @Logger(__filename) private log: LoggerInterface
-  ) { }
+  ) {}
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
@@ -110,17 +111,18 @@ export class ExperimentAssignmentService {
     const { workingGroup } = userDoc;
 
     // query root experiment details
+
     const experimentPartition = await this.experimentPartitionRepository.findOne({
       where: {
-        id: experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint,
+        id: getExperimentPartitionID(experimentPoint, experimentName),
       },
-      relations: ['experiment'],
+      relations: ['experiment', 'experiment.partitions'],
     });
 
     let enrollmentCode: ENROLLMENT_CODE | null = null;
-    const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
+    const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
+    const { experiment } = experimentPartition;
     if (experimentPartition) {
-      const { experiment } = experimentPartition;
       const { conditions } = await this.experimentRepository.findOne({
         where: {
           id: experiment.id,
@@ -136,14 +138,6 @@ export class ExperimentAssignmentService {
           })
         );
       }
-      const promiseArray = [];
-      if (
-        experiment.enrollmentCompleteCondition &&
-        experiment.state === EXPERIMENT_STATE.ENROLLING &&
-        experiment.group
-      ) {
-        promiseArray.push(this.updateExperimentEnrollmentComplete(experiment));
-      }
 
       const assignmentPromise: Array<Promise<any>> = [
         // query individual assignment for user
@@ -151,25 +145,22 @@ export class ExperimentAssignmentService {
         // query group assignment
         (workingGroup &&
           this.groupAssignmentRepository.findExperiment([workingGroup[experiment.group]], [experiment.id])) ||
-        Promise.resolve([]),
+          Promise.resolve([]),
         // query group exclusion
         (workingGroup &&
           this.groupExclusionRepository.findExcluded([workingGroup[experiment.group]], [experiment.id])) ||
-        Promise.resolve([]),
+          Promise.resolve([]),
       ];
       const result = await Promise.all(assignmentPromise);
       const individualAssignments: IndividualAssignment[] = result[0];
       const groupExcluded: GroupAssignment[] = result[2];
 
-      promiseArray.push(
-        this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment, result)
-      );
-
-      await Promise.all(promiseArray);
+      await this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment, result);
 
       // find monitored document
+
       const monitoredDocumentExist = await this.monitoredExperimentPointRepository.findOne({
-        id: `${experimentId}_${userDoc.id}`,
+        id: getMonitoredExperimentPointID(experimentId, userDoc.id),
       });
 
       // new document of user will be saved
@@ -213,6 +204,14 @@ export class ExperimentAssignmentService {
       enrollmentCode,
     });
 
+    /**
+     * Check the enrollment complete condition for experiments with ending criteria
+     * group count and participants count
+     */
+    if (experiment.enrollmentCompleteCondition && experiment.state === EXPERIMENT_STATE.ENROLLING) {
+      await this.checkEnrollmentEndingCriteriaForCount(experiment);
+    }
+
     // save monitored log document
     await this.monitoredExperimentPointLogRepository.save({ monitoredExperimentPoint: monitoredDocument });
 
@@ -251,7 +250,11 @@ export class ExperimentAssignmentService {
 
     // check for group and working group
     if (hasGroupExperiment) {
-      if (!experimentUser.group || !experimentUser.workingGroup || Object.keys(experimentUser.workingGroup).length === 0) {
+      if (
+        !experimentUser.group ||
+        !experimentUser.workingGroup ||
+        Object.keys(experimentUser.workingGroup).length === 0
+      ) {
         // filter group experiments
         experiments = experiments.filter((experiment) => experiment.assignmentUnit !== ASSIGNMENT_UNIT.GROUP);
 
@@ -668,46 +671,88 @@ export class ExperimentAssignmentService {
     return [...updatedLog, ...newLogData];
   }
 
-  private async updateExperimentEnrollmentComplete(experiment: Experiment): Promise<void> {
-    const { enrollmentCompleteCondition, group } = experiment;
+  /**
+   * Check the enrollment complete condition for experiments with ending criteria
+   * of group count and participants count defined in experiment
+   * experiment - Experiment definition
+   */
+  private async checkEnrollmentEndingCriteriaForCount(experiment: Experiment): Promise<void> {
+    const { enrollmentCompleteCondition, group, partitions } = experiment;
     const { groupCount, userCount } = enrollmentCompleteCondition;
-    if (groupCount && userCount) {
-      // check the group assignments table for user
-      const groupAssignments = await this.groupAssignmentRepository.find({ experiment });
+
+    // get assignments and fetch monitored document for those assignments
+    const getMonitoredDocumentOfExperiment = async (experimentDoc: Experiment) => {
+      // get groupAssignment and individual assignment details
       const individualAssignments = await this.individualAssignmentRepository.find({
-        where: { experiment },
+        where: { experiment: experimentDoc },
         relations: ['user'],
       });
 
-      if (groupAssignments.length >= groupCount) {
-        // check for student inside each group
-        const groupMap = new Map<string, IndividualAssignment[]>();
-        groupAssignments.map((groupAssignment) => {
-          groupMap.set(groupAssignment.groupId, []);
-        });
-        individualAssignments.forEach((individualAssignment) => {
-          const groupId = individualAssignment.user.workingGroup[group];
-          if (groupMap.has(groupId)) {
-            groupMap.set(groupId, [...groupMap.get(groupId), individualAssignment]);
-          }
-        });
-        let individualUserSatisfied = true;
-        groupMap.forEach((individualAssignment) => {
-          if (individualAssignment.length < userCount) {
-            individualUserSatisfied = false;
-          }
-        });
+      // get the monitored document for all the partitions in the experiment
+      const experimentPartitionIds = partitions.map((partition) => {
+        const experimentId = partition.expId;
+        const experimentPoint = partition.expPoint;
+        return getExperimentPartitionID(experimentPoint, experimentId);
+      });
 
-        if (individualUserSatisfied) {
-          await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+      const monitoredDocumentIds = [];
+      individualAssignments.forEach((individualAssignment) => {
+        experimentPartitionIds.forEach((experimentPartitionId) => {
+          monitoredDocumentIds.push(getMonitoredExperimentPointID(experimentPartitionId, individualAssignment.user.id));
+        });
+      });
+
+      // fetch all the monitored document if exist
+      const monitoredDocuments = await this.monitoredExperimentPointRepository.findByIds(monitoredDocumentIds, {
+        relations: ['user'],
+      });
+
+      return monitoredDocuments;
+    };
+
+    /**
+     * This should only be possible when
+     * experiment assignment unit is GROUP
+     * ending condition has both groupCount and userCount
+     */
+
+    if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
+      // fetch all the monitored document if exist
+      const monitoredDocuments = await getMonitoredDocumentOfExperiment(experiment);
+
+      // check for student inside each group
+      const groupMap = new Map<string, Set<string>>();
+      // groupAssignments.forEach((groupAssignment) => {
+      //   groupMap.set(groupAssignment.groupId, []);
+      // });
+      monitoredDocuments.forEach((monitoredDocument) => {
+        const groupId = monitoredDocument.user.workingGroup[group];
+        // create new Set for new group
+        if (!groupMap.has(groupId)) {
+          groupMap.set(groupId, new Set());
         }
+        groupMap.set(groupId, groupMap.get(groupId).add(monitoredDocument.user.id));
+      });
+      let groupSatisfied = 0;
+
+      groupMap.forEach((groupElement) => {
+        if (groupElement.size >= userCount) {
+          groupSatisfied++;
+        }
+      });
+
+      if (groupSatisfied >= groupCount) {
+        await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
       }
       // check the individual assignment table for the user
     } else if (userCount) {
-      // check the individual assignment table for the user
-      const individualAssignmentCount = await this.individualAssignmentRepository.count({ experiment });
-      if (individualAssignmentCount >= userCount) {
-        // update state of experiment
+      // fetch all the monitored document if exist
+      const monitoredDocuments = await getMonitoredDocumentOfExperiment(experiment);
+      const userIds = monitoredDocuments.map((doc) => {
+        return doc.user.id;
+      })
+      const uniqueUser = new Set(userIds);
+      if (uniqueUser.size >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
       }
     }

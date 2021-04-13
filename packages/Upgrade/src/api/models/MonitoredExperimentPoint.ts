@@ -17,7 +17,6 @@ export class MonitoredExperimentPoint extends BaseModel {
     enum: ENROLLMENT_CODE,
     nullable: true,
   })
-
   public enrollmentCode: ENROLLMENT_CODE | null;
 
   @Column({
@@ -30,4 +29,8 @@ export class MonitoredExperimentPoint extends BaseModel {
 
   @OneToMany((type) => MonitoredExperimentPointLog, (monitoredPointLog) => monitoredPointLog.monitoredExperimentPoint)
   public monitoredPointLogs: MonitoredExperimentPointLog[];
+}
+
+export function getMonitoredExperimentPointID(partitionId: string, userId: string): string {
+  return `${partitionId}_${userId}`;
 }
