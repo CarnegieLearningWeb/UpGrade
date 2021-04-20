@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ExperimentLocalStorageKeys, ExperimentState, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY } from '../experiments/store/experiments.model';
 
 import { LocalStorageService } from './local-storage.service';
 
@@ -21,35 +22,31 @@ describe('LocalStorageService', () => {
   it('should get, set, and remove the item', () => {
     service.setItem('TEST', 'item');
     expect(service.getItem('TEST')).toBe('item');
-    service.removeItem('TEST');
+    LocalStorageService.removeItem('TEST');
     expect(service.getItem('TEST')).toBe(null);
   });
 
   it('should load initial state', () => {
-    service.setItem('TEST.PROP', 'value');
-    expect(LocalStorageService.loadInitialState()).toEqual({
-      test: { prop: 'value' }
-    });
-  });
-
-  it('should load nested initial state', () => {
-    service.setItem('TEST.PROP1.PROP2', 'value');
-    expect(LocalStorageService.loadInitialState()).toEqual({
-      test: { prop1: { prop2: 'value' } }
-    });
-  });
-
-  it('should load initial state with camel case property', () => {
-    service.setItem('TEST.SUB-PROP', 'value');
-    expect(LocalStorageService.loadInitialState()).toEqual({
-      test: { subProp: 'value' }
-    });
-  });
-
-  it('should load nested initial state with camel case properties', () => {
-    service.setItem('TEST.SUB-PROP.SUB-SUB-PROP', 'value');
-    expect(LocalStorageService.loadInitialState()).toEqual({
-      test: { subProp: { subSubProp: 'value' } }
-    });
+    const experimentState: ExperimentState = {
+      ids: [],
+      entities: {},
+      isLoadingExperiment: false,
+      skipExperiment: 0,
+      totalExperiments: null,
+      searchKey: null,
+      searchString: null,
+      sortKey: EXPERIMENT_SORT_KEY.STATUS,
+      sortAs: EXPERIMENT_SORT_AS.DESCENDING,
+      stats: {},
+      graphInfo: null,
+      graphRange: null,
+      isGraphInfoLoading: false,
+      allPartitions: null,
+      allExperimentNames: null,
+      context: []
+    }
+    service.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_KEY.STATUS);
+    service.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE, EXPERIMENT_SORT_AS.DESCENDING);
+    expect(LocalStorageService.loadInitialState()).toEqual({ experiments: experimentState });
   });
 });

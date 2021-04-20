@@ -1,5 +1,7 @@
 import { Action } from '@ngrx/store';
 import * as AuthActions from '../auth/store/auth.actions';
+import { ExperimentLocalStorageKeys } from '../experiments/store/experiments.model';
+import { LocalStorageService } from '../local-storage/local-storage.service';
 import { SettingsState } from '../settings/store/settings.model';
 
 export function clearState(reducer) {
@@ -14,6 +16,10 @@ export function clearState(reducer) {
       state = {
         settings: settingState, // Used to persist theme,
       };
+
+      Object.values(ExperimentLocalStorageKeys).forEach(key => {
+        LocalStorageService.removeItem(key);
+      })
     }
     return reducer(state, action);
   };

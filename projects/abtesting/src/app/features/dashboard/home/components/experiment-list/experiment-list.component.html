@@ -61,6 +61,8 @@
       [dataSource]="allExperiments"
       matSort
       (matSortChange)="changeSorting($event)"
+      [matSortActive]="experimentSortKey$ | async"
+      [matSortDirection]="(experimentSortAs$ | async) | lowercase"
     >
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
