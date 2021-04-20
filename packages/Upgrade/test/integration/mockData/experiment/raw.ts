@@ -96,3 +96,50 @@ export const experimentSecond = {
     },
   ],
 };
+
+export const experimentThird = {
+  id: '3711346b-49d4-4f49-92b9-0d0ce7fa6e07',
+  name: 'Test Experiment',
+  description: 'Test Experiment Description',
+  consistencyRule: 'individual',
+  assignmentUnit: 'individual',
+  postExperimentRule: 'continue',
+  state: 'scheduled',
+  startOn: new Date().toISOString(),
+  group: 'teacher',
+  context: ['home'],
+  tags: [],
+  queries: [],
+  conditions: [
+    {
+      id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e1',
+      name: 'Condition A',
+      description: 'Condition A',
+      assignmentWeight: 40,
+      conditionCode: 'ConditionA',
+      twoCharacterId: 'AA',
+    },
+    {
+      id: '8c7b2951-f9a7-4d2e-a1ed-0572e1ede879',
+      name: 'Condition B',
+      description: 'Condition B',
+      assignmentWeight: 60,
+      conditionCode: 'ConditionB',
+      twoCharacterId: 'AB',
+    },
+  ],
+  partitions: [
+    {
+      expPoint: 'CurriculumSequence3',
+      expId: 'W1',
+      description: 'Partition on Workspace 1',
+      twoCharacterId: 'Y1',
+    },
+    {
+      expPoint: 'CurriculumSequence3',
+      expId: 'W2',
+      description: 'Partition on Workspace 2',
+      twoCharacterId: 'Y2',
+    },
+  ],
+};

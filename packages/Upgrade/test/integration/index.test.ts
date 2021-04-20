@@ -21,6 +21,7 @@ import {
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
 import { UpdateExperiment, ExperimentEndDate, ExperimentStartDate } from './Experiment/update';
 import { ExperimentContextAssignments } from './Experiment/experimentContext';
+import { NoGroup, NoWorkingGroup, IncorrectWorkingGroup, IncorrectGroup } from './Experiment/incorrectGroup';
 import {
   EndExperiment,
   StartExperiment,
@@ -93,6 +94,26 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('No Group for Experiment', async (done) => {
+    await NoGroup();
+    done();
+  });
+
+  test('No Working Group for Experiment', async (done) => {
+    await NoWorkingGroup();
+    done();
+  });
+
+  test('Working Group not having the key', async (done) => {
+    await IncorrectWorkingGroup();
+    done();
+  });
+
+  test('Group not having the key', async (done) => {
+    await IncorrectGroup();
+    done();
+  });
 
   test('Group and Participants', async (done) => {
     await GroupAndParticipants();

@@ -250,24 +250,71 @@ export class ExperimentAssignmentService {
 
     // check for group and working group
     if (hasGroupExperiment) {
+      // filter group experiment
+      const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
+
+      /**
+       * Check already assigned group experiment or exclude group experiment
+       * @param filteredGroupExperiments
+       * @param addError
+       */
+
+      const checkValidGroupExperiment = async (filteredGroupExperiments: Experiment[], addError: boolean = true) => {
+        // fetch individual assignment for group experiments
+        const individualAssignments = await this.individualAssignmentRepository.findAssignment(
+          experimentUser.id,
+          filteredGroupExperiments.map(({ id }) => id)
+        );
+
+        // check assignments for group experiment
+        const groupExperimentAssignedIds = individualAssignments.map((assignment) => {
+          return assignment.experiment.id;
+        });
+
+        // TODO if assignments for group experiment already exist raise warning
+        if (groupExperimentAssignedIds.length > 0) {
+          console.log('Experiment already assigned but working group and group data is not properly set');
+        }
+
+        // exclude experiments which are not previously assigned and throw error
+        const experimentToExclude = filteredGroupExperiments.filter((experiment) => {
+          return groupExperimentAssignedIds.indexOf(experiment.id) === -1;
+        });
+
+        const experimentToExcludeIds = experimentToExclude.map((experiment) => experiment.id);
+
+        // throw error user group not defined and add experiments which are excluded
+        if (addError) {
+          await this.errorService.create({
+            endPoint: '/api/assign',
+            errorCode: 417,
+            message: `Group not defined for experiment User: ${JSON.stringify(
+              { ...experimentUser, experiment: experimentToExcludeIds },
+              undefined,
+              2
+            )}`,
+            name: 'Experiment user not defined',
+            type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          } as any);
+        }
+
+        // exclude user whose group information is not provided
+        await this.individualExclusionRepository.saveRawJson(
+          experimentToExclude.map((experiment) => {
+            return {
+              experiment,
+              user: experimentUser,
+            };
+          })
+        );
+      };
+
       if (
         !experimentUser.group ||
         !experimentUser.workingGroup ||
         Object.keys(experimentUser.workingGroup).length === 0
       ) {
-        // filter group experiments
-        experiments = experiments.filter((experiment) => experiment.assignmentUnit !== ASSIGNMENT_UNIT.GROUP);
-
-        // add error inside the error database
-
-        // throw error user group not defined
-        await this.errorService.create({
-          endPoint: '/api/assign',
-          errorCode: 417,
-          message: `Group not defined for experiment User: ${JSON.stringify(experimentUser, undefined, 2)}`,
-          name: 'Experiment user not defined',
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-        } as any);
+        await checkValidGroupExperiment(groupExperiments);
       } else {
         const workingGroupKeys = Object.keys(experimentUser.workingGroup);
         let addError = false;
@@ -289,21 +336,13 @@ export class ExperimentAssignmentService {
           return true;
         });
 
-        experiments = experiments.filter(
-          (experiment) =>
-            experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ||
-            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && validWorkingGroupKeys.includes(experiment.group))
-        );
-        
-        if (addError) {
-          await this.errorService.create({
-            endPoint: '/api/assign',
-            errorCode: 417,
-            message: `Working group not a subset of user group: ${JSON.stringify(experimentUser, undefined, 2)}`,
-            name: 'Working group not subset of group',
-            type: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
-          } as any);
-        }
+        const experimentWithInvalidGroupOrWorkingGroup = experiments.filter((experiment) => {
+          return (
+            experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP && !validWorkingGroupKeys.includes(experiment.group)
+          );
+        });
+
+        await checkValidGroupExperiment(experimentWithInvalidGroupOrWorkingGroup, addError);
       }
     }
 
@@ -750,7 +789,7 @@ export class ExperimentAssignmentService {
       const monitoredDocuments = await getMonitoredDocumentOfExperiment(experiment);
       const userIds = monitoredDocuments.map((doc) => {
         return doc.user.id;
-      })
+      });
       const uniqueUser = new Set(userIds);
       if (uniqueUser.size >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
