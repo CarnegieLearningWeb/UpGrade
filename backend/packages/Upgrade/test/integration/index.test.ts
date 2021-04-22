@@ -21,6 +21,7 @@ import {
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
 import { UpdateExperiment, ExperimentEndDate, ExperimentStartDate } from './Experiment/update';
 import { ExperimentContextAssignments } from './Experiment/experimentContext';
+import { NoGroup, NoWorkingGroup, IncorrectWorkingGroup, IncorrectGroup } from './Experiment/incorrectGroup';
 import {
   EndExperiment,
   StartExperiment,
@@ -61,6 +62,7 @@ import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './E
 import { IndividualExperimentEnrollmentCode } from './Experiment/enrollmentCode';
 import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode/index';
 import { MonitoredPointForExport } from './Experiment/analytics';
+import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -92,6 +94,36 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('No Group for Experiment', async (done) => {
+    await NoGroup();
+    done();
+  });
+
+  test('No Working Group for Experiment', async (done) => {
+    await NoWorkingGroup();
+    done();
+  });
+
+  test('Working Group not having the key', async (done) => {
+    await IncorrectWorkingGroup();
+    done();
+  });
+
+  test('Group not having the key', async (done) => {
+    await IncorrectGroup();
+    done();
+  });
+
+  test('Group and Participants', async (done) => {
+    await GroupAndParticipants();
+    done();
+  });
+
+  test('Participants Only', async (done) => {
+    await ParticipantsOnly();
+    done();
+  });
 
   test('Log Operations', async (done) => {
     await LogOperations();

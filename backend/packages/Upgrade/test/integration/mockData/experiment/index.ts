@@ -1,4 +1,4 @@
-import { experiment, experimentSecond } from './raw';
+import { experiment, experimentSecond, experimentThird } from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
@@ -138,3 +138,40 @@ export const previewGroupExperiment = {
 export const secondExperiment = {
   ...experimentSecond,
 };
+
+export const groupAssignmentWithIndividualConsistencyExperimentSecond = {
+  ...secondExperiment,
+  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+  assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+}
+
+export const groupAndParticipantsExperiment = {
+  ...groupAssignmentWithGroupConsistencyExperiment,
+  state: EXPERIMENT_STATE.INACTIVE,
+  enrollmentCompleteCondition: {
+    groupCount: 2,
+    userCount: 2,
+  },
+};
+
+export const participantsOnlyExperiment = {
+  ...individualAssignmentExperiment,
+  state: EXPERIMENT_STATE.INACTIVE,
+  enrollmentCompleteCondition: {
+    userCount: 2,
+  },
+};
+
+export const thirdExperiment = {
+  ...experimentThird,
+};
+
+export const groupAssignmentWithIndividualConsistencyExperimentThird = {
+  ...thirdExperiment,
+  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+  assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
+  state: EXPERIMENT_STATE.INACTIVE,
+}
