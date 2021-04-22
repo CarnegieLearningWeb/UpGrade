@@ -15,6 +15,9 @@ Thumbs.db
 .tmp/
 src/api/schema.gql
 
+# Locust #
+locust/__pycache__/
+
 # Typing #
 typings/
 
