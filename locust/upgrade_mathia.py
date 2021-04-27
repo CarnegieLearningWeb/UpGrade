@@ -3,13 +3,41 @@ import uuid
 import sys
 import json
 import threading
-import time
 from  upgrade_mathia_data import modules, workspaces
-from locust import HttpUser, task, tag, between
+from locust import HttpUser, SequentialTaskSet, task, tag, between
+import createExperiment
+import deleteExperiment
 
 schools = {}
 students = {}
 
+allExperimentPartitionIDConditionPair = []
+
+# clear all existing experiments:
+
+# Setting host URL's:
+host = "localhost:3030"
+
+option = int(input("Enter 1 for delete a single random experiment and 2 to delete all experiments: "))
+expIds = deleteExperiment.getExperimentIds(host)
+
+if option == 1:
+    deleteExperiment.deleteExperiment(host,expIds)
+else:
+    for i in range(len(expIds)):
+        expIds = deleteExperiment.getExperimentIds(host)
+        deleteExperiment.deleteExperiment(host, expIds)
+
+# create new experiments:
+# set groupExp to True for creating a group level experiment or False for a individual level experiment:
+groupExp = True
+experimentCount = int(input("Enter the number of experiments to be created: "))
+
+for i in range(experimentCount):
+    # returning the updated partionconditionpair list:
+    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(host, groupExp, allExperimentPartitionIDConditionPair)
+
+### Start enrolling students in the newly created experiment: ###
 #Return a new or existing Student
 def getStudent(initialize):
     if len(students.keys()) < 10:
@@ -84,7 +112,6 @@ def getSchools(schoolCount):
             }
 
         else:
-
             schoolId = random.choice(list(schools.keys()))
             while schoolId in retSchools:
                 schoolId = random.choice(list(schools.keys()))
@@ -131,16 +158,16 @@ def getClasses(schoolIds, numClasses):
 
     return retClassData
 
-
-class UpgradeUser(HttpUser):
+# Main Locust API calls for enrolling students in an experiment:
+class UpgradeUserTask(SequentialTaskSet):
 
     wait_time = between(0.1, 10)
-    host = ""
-
     #Portal Tasks
     ## Portal calls init -> setGroupMembership in reality
+
+    # Task 1:
     @tag("required")
-    @task(3)
+    @task
     def initSetGroupMembership(self):
         student = getStudent(True)
         with student["lock"]:
@@ -155,47 +182,27 @@ class UpgradeUser(HttpUser):
                 for classId in student["schools"][schoolId]["classes"].keys():
                     instructorIds.append(student["schools"][schoolId]["classes"][classId]["instructorId"])
 
-            workingSchoolId = random.choice(list(student["schools"].keys()))
-            workingClassId = random.choice(list(student["schools"][workingSchoolId]["classes"].keys()))
-            workingInstructorId = random.choice(list(student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]))
-
-            url = f"https://{self.host}/api/init"
+            url = f"http://{host}/api/init"
+            print("/init for userid: " + student["studentId"])
             data = {
                 "id": student["studentId"],
                 "group": {
                     "schoolId": schoolIds,
                     "classId": classIds,
                     "instructorId": instructorIds
-                },
+                }
+                ,
                 "workingGroup": {}
             }
 
             with self.client.post(url, json = data, catch_response = True) as response:
                 if response.status_code != 200:
-                    print(f"Init Failed with {response.status_code}")
+                    print(f"Init Failed with {response.status_code} for userid: " + student["studentId"])
 
-    @tag("portal")
-    @task(3)
-    def getAllExperimentConditionsPortal(self):
-        student = getStudent(False)
-
-        if student:
-            with student["lock"]:
-                url = f"https://{self.host}/api/assign"
-                data = {
-                    "userId": student["studentId"],
-                    "context": "portal"
-                }
-
-                with self.client.post(url, json = data, catch_response = True) as response:
-                    if response.status_code != 200:
-                        print(f"getAllExperimentConditions in portal Failed with {response.status_code}")
-        else:
-            print("Waiting on users to be initialized")
-
+    # Task 2:
     #Launcher
     @tag("launcher")
-    @task(3)
+    @task
     def setWorkingGroup(self):
         student = getStudent(False)
 
@@ -205,7 +212,8 @@ class UpgradeUser(HttpUser):
                 workingClassId = random.choice(list(student["schools"][workingSchoolId]["classes"].keys()))
                 workingInstructorId = random.choice(list(student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]))
 
-                url = f"https://{self.host}/api/workinggroup"
+                url = f"http://{host}/api/workinggroup"
+                print("/workinggroup for userid: " + student["studentId"])
                 data = {
                     "id": student["studentId"],
                     "workingGroup": {
@@ -217,18 +225,40 @@ class UpgradeUser(HttpUser):
 
                 with self.client.post(url, json = data, catch_response = True) as response:
                     if response.status_code != 200:
-                        print(f"SetWorkingGroup Failed with {response.status_code}")
+                        print(f"setWorkingGroup Failed with {response.status_code} for userid: " + student["studentId"])
         else:
-            print("Waiting on users to be initialized")
+            print("2. Waiting on users to be initialized")
 
+    # Task 3a:
+    @tag("portal")
+    @task
+    def getAllExperimentConditionsPortal(self):
+        student = getStudent(False)
+
+        if student:
+            with student["lock"]:
+                url = f"http://{host}/api/assign"
+                print("/assign for userid: " + student["studentId"])
+                data = {
+                    "userId": student["studentId"],
+                    "context": "addition"
+                }
+
+                with self.client.post(url, json = data, catch_response = True) as response:
+                    if response.status_code != 200:
+                        print(f"/assign Failed with {response.status_code} for userid: " + student["studentId"])
+        else:
+            print("3. Waiting on users to be initialized")
+
+    # Task 3b:
     @tag("launcher")
-    @task(3)
+    @task
     def getAllExperimentConditionsAssignProg(self):
         student = getStudent(False)
 
         if student:
             with student["lock"]:
-                url = f"https://{self.host}/api/assign"
+                url = f"http://{host}/api/assign"
                 data = {
                     "userId": student["studentId"],
                     "context": "assign-prog"
@@ -239,10 +269,11 @@ class UpgradeUser(HttpUser):
                         print(f"getAllExperimentConditions in assign-prog Failed with {response.status_code}")
 
         else:
-            print("Waiting on users to be initialized")
+            print("3. Waiting on users to be initialized")
 
+    # Task 4:
     @tag("launcher")
-    @task(3)
+    @task
     def setAltIds(self):
         student = getStudent(False)
         if student:
@@ -251,7 +282,8 @@ class UpgradeUser(HttpUser):
                 workingClassId = random.choice(list(student["schools"][workingSchoolId]["classes"].keys()))
                 classModules = student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"]
 
-                url = f"https://{self.host}/api/useraliases"
+                url = f"http://{host}/api/useraliases"
+                print("/useraliases for userid: " + student["studentId"])
                 data = {
                     "userId": student["studentId"],
                     "aliases": [student["studentId"] + m for m in classModules]
@@ -259,48 +291,49 @@ class UpgradeUser(HttpUser):
 
                 with self.client.post(url, json = data, catch_response = True) as response:
                     if response.status_code != 200:
-                        print(f"SetAltIds Failed with {response.status_code}")
+                        print(f"/useraliases Failed with {response.status_code} for userid: " + student["studentId"])
         else:
-            print("Waiting on users to be initialized")
+            print("4. Waiting on users to be initialized")
 
     #Assignment Progress Service
     #Skipping getExperimentCondition() - Assume getAllExperimentConditionsAssignProg() has been called, so getExperimentCondition() does not hit API
 
+    # Task 5: (Student count gets incremented here on marking complete)
     @tag("assign-prog")
-    @task(5)
+    @task
     def markExperimentPoint(self):
         student = getStudent(False)
         if student:
             with student["lock"]:
-                workingSchoolId = random.choice(list(student["schools"].keys()))
-                workingClassId = random.choice(list(student["schools"][workingSchoolId]["classes"].keys()))
-                workingModule = random.choice(student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"])
-                workingWorkspace = random.choice(modules[workingModule])
-                workingCondition = random.choice(workspaces[workingWorkspace])
+                url = f"http://{host}/api/mark"
+                print("/mark for userid: " + student["studentId"])
 
-                url = f"https://{self.host}/api/mark"
+                # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
+                markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair);
+
                 data = {
                     "userId": student["studentId"],
-                    "experimentPoint": "SelectSection",
-                    "partitionId": workingWorkspace,
-                    "condition": workingCondition
+                    "experimentPoint": markPartitionIDConditionPair['experimentPoint'],
+                    "partitionId": markPartitionIDConditionPair['partitionId'],
+                    "condition": markPartitionIDConditionPair['condition']
                 }
 
                 with self.client.post(url, json = data, catch_response = True) as response:
                     
                     if response.status_code != 200:
-                        print(f"MarkExperimentPoint Failed with {response.status_code}")
+                        print(f"/mark Failed with {response.status_code} for userid: " + student["studentId"])
         else:
-            print("Waiting on users to be initialized")
+            print("5. Waiting on users to be initialized")
 
+    # Task 6:
     #UpgradeForwarder
     @tag("logger")
-    @task(4)
+    @task
     def logEvent(self):
         student = getStudent(False)
         if student:
             with student["lock"]:
-                url = f"https://{self.host}/api/log"
+                url = f"http://{host}/api/log"
                 data = {
                     "userId": student["studentId"],
                     "value": [] #TODO: Populate with more realistic values
@@ -310,6 +343,10 @@ class UpgradeUser(HttpUser):
                     if response.status_code != 200:
                         print(f"LogEvent Failed with {response.status_code}")
         else:
-            print("Waiting on users to be initialized")
+            print("6. Waiting on users to be initialized")
 
-        
+class UpgradeUser(HttpUser):
+    wait_time = between(0.1, 10)
+    host = "localhost:3030"
+    # host = "development-cli-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com"
+    tasks = [UpgradeUserTask]
