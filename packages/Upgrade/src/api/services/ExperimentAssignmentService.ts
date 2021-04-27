@@ -272,9 +272,11 @@ export class ExperimentAssignmentService {
           return assignment.experiment.id;
         });
 
-        // TODO if assignments for group experiment already exist raise warning
         if (groupExperimentAssignedIds.length > 0) {
-          console.log('Experiment already assigned but working group and group data is not properly set');
+          this.log.warn(
+            `Experiments Id: ${groupExperimentAssignedIds.join(' ')}
+            Experiment already assigned but working group and group data is not properly set`
+          );
         }
 
         // exclude experiments which are not previously assigned and throw error
