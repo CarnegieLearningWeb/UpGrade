@@ -71,7 +71,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     this.overviewForm = this._formBuilder.group(
       {
         experimentName: [null, Validators.required],
-        description: [null, Validators.required],
+        description: [null],
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         customGroupName: [null],
