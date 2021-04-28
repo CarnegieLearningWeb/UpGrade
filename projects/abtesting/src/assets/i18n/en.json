@@ -75,7 +75,7 @@
   "home.new-experiment.schedule-selection-error.text": "Please select option",
   "home.new-experiment.post-condition-rule.text": "Post Experiment Rule",
   "home.new-experiment.overview.name.placeHolder": "Name of the Experiment",
-  "home.new-experiment.overview.description.placeHolder": "Description of the Experiment",
+  "home.new-experiment.overview.description.placeHolder": "Description of the Experiment (optional)",
   "home.new-experiment.overview.group-type.placeHolder": "Group Type",
   "home.new-experiment.overview.context.placeHolder": "Context (optional)",
   "home.new-experiment.overview.tags.placeHolder": "Tags (optional)",
