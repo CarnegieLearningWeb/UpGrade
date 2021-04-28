@@ -247,7 +247,6 @@ export class ExperimentAssignmentService {
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const hasGroupExperiment = experiments.find((experiment) => experiment.group) ? true : false;
-
     // check for group and working group
     if (hasGroupExperiment) {
       // filter group experiment
@@ -261,19 +260,23 @@ export class ExperimentAssignmentService {
 
       const checkValidGroupExperiment = async (filteredGroupExperiments: Experiment[], addError: boolean = true) => {
         // fetch individual assignment for group experiments
-        const individualAssignments = await this.individualAssignmentRepository.findAssignment(
-          experimentUser.id,
-          filteredGroupExperiments.map(({ id }) => id)
-        );
+        const individualAssignments = await (filteredGroupExperiments.length > 0
+          ? this.individualAssignmentRepository.findAssignment(
+              experimentUser.id,
+              filteredGroupExperiments.map(({ id }) => id)
+            )
+          : Promise.resolve([]));
 
         // check assignments for group experiment
         const groupExperimentAssignedIds = individualAssignments.map((assignment) => {
           return assignment.experiment.id;
         });
 
-        // TODO if assignments for group experiment already exist raise warning
         if (groupExperimentAssignedIds.length > 0) {
-          console.log('Experiment already assigned but working group and group data is not properly set');
+          this.log.warn(
+            `Experiments Id: ${groupExperimentAssignedIds.join(' ')}
+            Experiment already assigned but working group and group data is not properly set`
+          );
         }
 
         // exclude experiments which are not previously assigned and throw error
@@ -299,14 +302,16 @@ export class ExperimentAssignmentService {
         }
 
         // exclude user whose group information is not provided
-        await this.individualExclusionRepository.saveRawJson(
-          experimentToExclude.map((experiment) => {
-            return {
-              experiment,
-              user: experimentUser,
-            };
-          })
-        );
+        if (experimentToExclude.length > 0) {
+          await this.individualExclusionRepository.saveRawJson(
+            experimentToExclude.map((experiment) => {
+              return {
+                experiment,
+                user: experimentUser,
+              };
+            })
+          );
+        }
       };
 
       if (
