@@ -53,6 +53,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   isLoadingExperiment$ = this.experimentService.isLoadingExperiment$;
   isAllExperimentsFetched = false;
   isAllExperimentsFetchedSub: Subscription;
+  experimentSortKey$: Observable<string>;
+  experimentSortAs$: Observable<string>;
   @ViewChild('tableContainer', { static: false }) experimentTableContainer: ElementRef;
   @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
 
@@ -76,6 +78,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
         this.applyFilter(this.searchValue);
       }
     );
+    this.experimentSortKey$ = this.experimentService.selectExperimentSortKey$;
+    this.experimentSortAs$ = this.experimentService.selectExperimentSortAs$;
 
     this.experimentService.selectSearchExperimentParams().subscribe((searchParams: any) => {
       // Used when user clicks on context or tags from view experiment page
@@ -230,11 +234,6 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnDestroy() {
     this.allExperimentsSub.unsubscribe();
     this.isAllExperimentsFetchedSub.unsubscribe();
-
-    this.experimentService.setSearchString(null);
-    this.experimentService.setSearchKey(EXPERIMENT_SEARCH_KEY.ALL);
-    this.experimentService.setSortKey(null);
-    this.experimentService.setSortingType(null);
   }
 
   get ExperimentStatePipeTypes() {

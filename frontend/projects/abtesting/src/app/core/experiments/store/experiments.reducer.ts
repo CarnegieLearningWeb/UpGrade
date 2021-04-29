@@ -1,4 +1,4 @@
-import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY } from './experiments.model';
+import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
@@ -20,8 +20,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   totalExperiments: null,
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
   searchString: null,
-  sortKey: null,
-  sortAs: null,
+  sortKey: EXPERIMENT_SORT_KEY.NAME,
+  sortAs: EXPERIMENT_SORT_AS.ASCENDING,
   stats: {},
   graphInfo: null,
   graphRange: null,

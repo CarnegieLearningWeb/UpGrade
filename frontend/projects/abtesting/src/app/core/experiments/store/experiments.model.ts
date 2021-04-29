@@ -80,6 +80,13 @@ export enum EndExperimentCondition {
   END_CRITERIA = 'End Criteria'
 }
 
+export enum ExperimentLocalStorageKeys {
+  EXPERIMENT_SEARCH_STRING = 'EXPERIMENT_SEARCH_STRING',
+  EXPERIMENT_SEARCH_KEY = 'EXPERIMENT_KEY_STRING',
+  EXPERIMENT_SORT_KEY = 'EXPERIMENT_SORT_KEY',
+  EXPERIMENT_SORT_TYPE = 'EXPERIMENT_SORT_TYPE',
+}
+
 export interface ExperimentStateInfo {
   newStatus: EXPERIMENT_STATE;
   scheduleDate?: string;

@@ -9,6 +9,7 @@ import {
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
   DATE_RANGE,
+  ExperimentLocalStorageKeys,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -25,15 +26,21 @@ import {
   selectSkipExperiment,
   selectTotalExperiment,
   selectExperimentStatById,
-  selectIsGraphLoading
+  selectIsGraphLoading,
+  selectSortKey,
+  selectSortAs
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map, first, filter } from 'rxjs/operators';
+import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
 export class ExperimentService {
-  constructor(private store$: Store<AppState>) {}
+  constructor(
+    private store$: Store<AppState>,
+    private localStorageService: LocalStorageService
+  ) {}
 
   experiments$: Observable<Experiment[]> = this.store$.pipe(
     select(selectAllExperiment),
@@ -51,6 +58,8 @@ export class ExperimentService {
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
   selectSearchString$ = this.store$.pipe(select(selectSearchString));
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
+  selectExperimentSortKey$ = this.store$.pipe(select(selectSortKey));
+  selectExperimentSortAs$ = this.store$.pipe(select(selectSortAs));
   experimentContext$ = this.store$.pipe(select(selectExperimentContext));
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
@@ -132,18 +141,22 @@ export class ExperimentService {
   }
 
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY, searchKey);
     this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
   }
 
   setSearchString(searchString: string) {
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING, searchString);
     this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
   }
 
   setSortKey(sortKey: EXPERIMENT_SORT_KEY) {
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_KEY, sortKey);
     this.store$.dispatch(experimentAction.actionSetSortKey({ sortKey }));
   }
 
   setSortingType(sortingType: EXPERIMENT_SORT_AS) {
+    this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE, sortingType);
     this.store$.dispatch(experimentAction.actionSetSortingType({ sortingType }));
   }
 
