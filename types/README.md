@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-This is a combined repository for UpGrade.
-=======
 # Enums Exported
 
 - **CONSISTENCY_RULE**
