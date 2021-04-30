@@ -1,0 +1,24 @@
+<<<<<<< HEAD
+This is a combined repository for UpGrade.
+=======
+# Enums Exported
+
+- **CONSISTENCY_RULE**
+  - INDIVIDUAL
+  - EXPERIMENT
+  - GROUP
+- **ASSIGNMENT_UNIT**
+  - INDIVIDUAL
+  - GROUP
+- **POST_EXPERIMENT_RULE**
+  - CONTINUE
+  - REVERT_TO_DEFAULT
+  - ASSIGN
+- **EXPERIMENT_STATE**
+  - INACTIVE
+  - DEMO
+  - SCHEDULED
+  - ENROLLING
+  - ENROLLMENT_COMPLETE
+  - CANCELLED
+>>>>>>> types/master
