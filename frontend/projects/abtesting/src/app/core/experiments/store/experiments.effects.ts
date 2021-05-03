@@ -24,7 +24,8 @@ import {
   selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
-  selectExperimentContext
+  selectExperimentContext,
+  selectExperimentPointsAndIds
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
@@ -354,6 +355,22 @@ export class ExperimentEffects {
         this.experimentDataService.fetchExperimentContext().pipe(
           map((context: string[]) => experimentAction.actionFetchExperimentContextSuccess({ context })),
           catchError(() => [experimentAction.actionFetchExperimentContextFailure()])
+        )
+      )
+    )
+  );
+
+  fetchExperimentPointsAndIds$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchExperimentPointsAndIds),
+      withLatestFrom(
+        this.store$.pipe(select(selectExperimentPointsAndIds))
+      ),
+      filter(([, expPointsAndIds]) => !Object.keys(expPointsAndIds).length),
+      switchMap(() =>
+        this.experimentDataService.fetchExperimentPointsAndIds().pipe(
+          map((expPointsAndIds: object) => experimentAction.actionFetchExperimentPointsAndIdsSuccess({ expPointsAndIds })),
+          catchError(() => [experimentAction.actionFetchExperimentPointsAndIdsFailure()])
         )
       )
     )

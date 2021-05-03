@@ -42,6 +42,7 @@ export const environment = {
     metrics: `${endpointApi}/metric`,
     metricsSave: `${endpointApi}/metric/save`,
     queryResult: `${endpointApi}/query/analyse`,
-    getVersion: `${endpointApi}/version`
+    getVersion: `${endpointApi}/version`,
+    expPointsAndIds: `${endpointApi}/experiments/expPointsAndIds`,
   }
 };
