@@ -77,9 +77,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         customGroupName: [null],
         consistencyRule: [null, Validators.required],
         context: [[], Validators.required],
-        tags: [[]]
+        tags: [[]],
+        logging: [null]
       }
     );
+
+    this.overviewForm.get('logging').valueChanges.subscribe(logging => {});
 
     this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
       this.overviewForm.get('consistencyRule').reset();

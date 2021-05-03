@@ -139,6 +139,7 @@
   "home.view-experiment.graph-partitions.text": "Sites",
   "home.view-experiment.graph-time.text": "Time",
   "home.view-experiment.graph-select-all.text": "Select All",
+  "home.view-experiment.logging.text": "Logging",
   "home.delete-experiment.message.text": "Type 'delete' to confirm deletion:",
   "home.delete-experiment.delete.text": "delete",
   "home.import-experiment.message.text": "Select the JSON to import experiment:",
