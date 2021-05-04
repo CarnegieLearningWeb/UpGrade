@@ -2,8 +2,8 @@ import random
 import json
 import requests
 
-def getExperimentIds(host):
-    url = f"http://{host}/api/experiments/names"
+def getExperimentIds(protocol, host):
+    url = protocol + f"://{host}/api/experiments/names"
 
     with requests.get(url) as response:
         if response.status_code != 200:
@@ -20,8 +20,8 @@ def getExperimentIds(host):
 
             return expIds
 
-def deleteExperiment(host, expIds):
-        url = f"http://{host}/api/experiments/"+random.choice(expIds)
+def deleteExperiment(protocol, host, expIds):
+        url = protocol + f"://{host}/api/experiments/"+random.choice(expIds)
         if expIds:
             with requests.delete(url) as response:
                 if response.status_code != 200:
