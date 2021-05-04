@@ -16,17 +16,18 @@ allExperimentPartitionIDConditionPair = []
 # clear all existing experiments:
 
 # Setting host URL's:
+protocol = "http"
 host = "localhost:3030"
 
 option = int(input("Enter 1 for delete a single random experiment and 2 to delete all experiments: "))
-expIds = deleteExperiment.getExperimentIds(host)
+expIds = deleteExperiment.getExperimentIds(protocol, host)
 
 if option == 1:
-    deleteExperiment.deleteExperiment(host,expIds)
+    deleteExperiment.deleteExperiment(protocol, host,expIds)
 else:
     for i in range(len(expIds)):
-        expIds = deleteExperiment.getExperimentIds(host)
-        deleteExperiment.deleteExperiment(host, expIds)
+        expIds = deleteExperiment.getExperimentIds(protocol, host)
+        deleteExperiment.deleteExperiment(protocol, host, expIds)
 
 # create new experiments:
 # set groupExp to True for creating a group level experiment or False for a individual level experiment:
@@ -35,7 +36,7 @@ experimentCount = int(input("Enter the number of experiments to be created: "))
 
 for i in range(experimentCount):
     # returning the updated partionconditionpair list:
-    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(host, groupExp, allExperimentPartitionIDConditionPair)
+    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, groupExp, allExperimentPartitionIDConditionPair)
 
 ### Start enrolling students in the newly created experiment: ###
 #Return a new or existing Student
@@ -182,7 +183,7 @@ class UpgradeUserTask(SequentialTaskSet):
                 for classId in student["schools"][schoolId]["classes"].keys():
                     instructorIds.append(student["schools"][schoolId]["classes"][classId]["instructorId"])
 
-            url = f"http://{host}/api/init"
+            url = protocol + f"://{host}/api/init"
             print("/init for userid: " + student["studentId"])
             data = {
                 "id": student["studentId"],
@@ -210,9 +211,8 @@ class UpgradeUserTask(SequentialTaskSet):
             with student["lock"]:
                 workingSchoolId = random.choice(list(student["schools"].keys()))
                 workingClassId = random.choice(list(student["schools"][workingSchoolId]["classes"].keys()))
-                workingInstructorId = random.choice(list(student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]))
-
-                url = f"http://{host}/api/workinggroup"
+                workingInstructorId = student["schools"][workingSchoolId]["classes"][workingClassId]["instructorId"]
+                url = protocol + f"://{host}/api/workinggroup"
                 print("/workinggroup for userid: " + student["studentId"])
                 data = {
                     "id": student["studentId"],
@@ -237,7 +237,7 @@ class UpgradeUserTask(SequentialTaskSet):
 
         if student:
             with student["lock"]:
-                url = f"http://{host}/api/assign"
+                url = protocol + f"://{host}/api/assign"
                 print("/assign for userid: " + student["studentId"])
                 data = {
                     "userId": student["studentId"],
@@ -258,7 +258,7 @@ class UpgradeUserTask(SequentialTaskSet):
 
         if student:
             with student["lock"]:
-                url = f"http://{host}/api/assign"
+                url = protocol + f"://{host}/api/assign"
                 data = {
                     "userId": student["studentId"],
                     "context": "assign-prog"
@@ -282,7 +282,7 @@ class UpgradeUserTask(SequentialTaskSet):
                 workingClassId = random.choice(list(student["schools"][workingSchoolId]["classes"].keys()))
                 classModules = student["schools"][workingSchoolId]["classes"][workingClassId]["classModules"]
 
-                url = f"http://{host}/api/useraliases"
+                url = protocol + f"://{host}/api/useraliases"
                 print("/useraliases for userid: " + student["studentId"])
                 data = {
                     "userId": student["studentId"],
@@ -305,7 +305,7 @@ class UpgradeUserTask(SequentialTaskSet):
         student = getStudent(False)
         if student:
             with student["lock"]:
-                url = f"http://{host}/api/mark"
+                url = protocol + f"://{host}/api/mark"
                 print("/mark for userid: " + student["studentId"])
 
                 # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
@@ -333,7 +333,7 @@ class UpgradeUserTask(SequentialTaskSet):
         student = getStudent(False)
         if student:
             with student["lock"]:
-                url = f"http://{host}/api/log"
+                url = protocol + f"://{host}/api/log"
                 data = {
                     "userId": student["studentId"],
                     "value": [] #TODO: Populate with more realistic values
@@ -348,5 +348,4 @@ class UpgradeUserTask(SequentialTaskSet):
 class UpgradeUser(HttpUser):
     wait_time = between(0.1, 10)
     host = "localhost:3030"
-    # host = "development-cli-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com"
     tasks = [UpgradeUserTask]
