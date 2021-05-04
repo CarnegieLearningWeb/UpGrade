@@ -36,7 +36,7 @@ export class ExperimentClientController {
     public experimentUserService: ExperimentUserService,
     public featureFlagService: FeatureFlagService,
     public metricService: MetricService
-  ) { }
+  ) {}
 
   /**
    * @swagger

@@ -98,6 +98,11 @@ export class Experiment extends BaseModel {
   @Column('text', { nullable: true })
   public group: string;
 
+  @Column({
+    default: false,
+  })
+  public logging: boolean;
+
   @OneToMany((type) => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()
   @Type(() => ExperimentCondition)

@@ -111,7 +111,6 @@ export class ExperimentAssignmentService {
     const { workingGroup } = userDoc;
 
     // query root experiment details
-
     const experimentPartition = await this.experimentPartitionRepository.findOne({
       where: {
         id: getExperimentPartitionID(experimentPoint, experimentName),
@@ -129,8 +128,8 @@ export class ExperimentAssignmentService {
         },
         relations: ['conditions'],
       });
-      const matchedCondtion = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
-      if (matchedCondtion.length === 0 && condition !== null) {
+      const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
+      if (matchedCondition.length === 0 && condition !== null) {
         throw new Error(
           JSON.stringify({
             type: SERVER_ERROR.CONDTION_NOT_FOUND,
@@ -158,7 +157,6 @@ export class ExperimentAssignmentService {
       await this.updateExclusionFromMarkExperimentPoint(userDoc, workingGroup, experimentPartition.experiment, result);
 
       // find monitored document
-
       const monitoredDocumentExist = await this.monitoredExperimentPointRepository.findOne({
         id: getMonitoredExperimentPointID(experimentId, userDoc.id),
       });
@@ -192,7 +190,7 @@ export class ExperimentAssignmentService {
         enrollmentCode = ENROLLMENT_CODE.INCLUDED;
 
         // update enrollment code
-        this.monitoredExperimentPointRepository.update({ id: monitoredDocumentExist.id }, { enrollmentCode });
+        await this.monitoredExperimentPointRepository.update({ id: monitoredDocumentExist.id }, { enrollmentCode });
       }
     }
 
@@ -246,18 +244,14 @@ export class ExperimentAssignmentService {
     }
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
-    const hasGroupExperiment = experiments.find((experiment) => experiment.group) ? true : false;
+    const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
     // check for group and working group
-    if (hasGroupExperiment) {
-      // filter group experiment
-      const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
-
+    if (groupExperiments.length > 0) {
       /**
        * Check already assigned group experiment or exclude group experiment
        * @param filteredGroupExperiments
        * @param addError
        */
-
       const checkValidGroupExperiment = async (filteredGroupExperiments: Experiment[], addError: boolean = true) => {
         // fetch individual assignment for group experiments
         const individualAssignments = await (filteredGroupExperiments.length > 0
@@ -322,24 +316,26 @@ export class ExperimentAssignmentService {
         await checkValidGroupExperiment(groupExperiments);
       } else {
         const workingGroupKeys = Object.keys(experimentUser.workingGroup);
-        let addError = false;
         // get valid working group keys
         const validWorkingGroupKeys = workingGroupKeys.filter((key) => {
           const groupHasKey = experimentUser.group[key];
           // if group doesn't has working group key
           if (!groupHasKey) {
-            addError = true;
             return false;
           }
 
           const groupHasWorkingGroupKey = !!experimentUser.group[key].includes(experimentUser.workingGroup[key]);
           if (!groupHasWorkingGroupKey) {
-            addError = true;
             return false;
           }
 
           return true;
         });
+
+        let addError = false;
+        if (validWorkingGroupKeys.length < workingGroupKeys.length) {
+          addError = true;
+        }
 
         const experimentWithInvalidGroupOrWorkingGroup = experiments.filter((experiment) => {
           return (
@@ -430,11 +426,6 @@ export class ExperimentAssignmentService {
         mergedIndividualAssignment = [...(previewAssignment as any), ...mergedIndividualAssignment];
       }
 
-      this.log.info('individualAssignments', mergedIndividualAssignment);
-      this.log.info('groupAssignment', groupAssignments);
-      this.log.info('individualExclusion', individualExclusions);
-      this.log.info('groupExclusion', groupExclusions);
-
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
         filteredExperiments.map((experiment) => {
@@ -475,9 +466,19 @@ export class ExperimentAssignmentService {
 
       return filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
+        const { state, logging, name } = experiment;
         const partitions = experiment.partitions.map((partition) => {
           const { expId, expPoint, twoCharacterId } = partition;
           const conditionAssigned = assignment;
+          // adding info based on experiment state or logging flag
+          if (logging || state === EXPERIMENT_STATE.PREVIEW) {
+            // TODO add enrollment code here
+            this.log.info(
+              `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
+                conditionAssigned ? conditionAssigned.conditionCode : 'default'
+              }`
+            );
+          }
           return {
             expId,
             expPoint,
