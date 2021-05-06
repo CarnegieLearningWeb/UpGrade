@@ -59,7 +59,6 @@
                   | translate
               "
               formControlName="assignmentWeight"
-              
             />
           </mat-form-field>
         </mat-cell>
@@ -128,7 +127,7 @@
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
     </button>
   </ng-container>
-  
+
   <!-- Partition Table -->
   <ng-container>
     <mat-table
@@ -166,7 +165,13 @@
                   | translate
               "
               formControlName="expPoint"
+              [matAutocomplete]="autoCompleteExperimentPoints"
             />
+            <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete">
+              <mat-option *ngFor="let expPoint of filteredExpPoints$[groupIndex] | async" [value]="expPoint">
+                {{ expPoint }}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </mat-cell>
       </ng-container>
@@ -188,7 +193,13 @@
                   | translate
               "
               formControlName="expId"
+              [matAutocomplete]="autoCompleteExperimentIds"
             />
+            <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete">
+              <mat-option *ngFor="let expId of filteredExpIds$[groupIndex] | async" [value]="expId">
+                {{ expId }}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </mat-cell>
       </ng-container>
@@ -227,6 +238,12 @@
   <span
     class="ft-14-600 validation-message"
     *ngFor="let error of partitionPointErrors"
+  >{{ error }} </span>
+
+  <!-- If experiment point and id are not from predefined value -->
+  <span
+    class="ft-14-600 validation-message"
+    *ngFor="let error of expPointAndIdErrors"
   >{{ error }} </span>
 
   <div class="button-container">

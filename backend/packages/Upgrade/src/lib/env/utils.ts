@@ -57,12 +57,12 @@ export function normalizePort(port: string): number | string | boolean {
   return false;
 }
 
-export function parseContext(value: string): string[] {
+export function parseEnvironmentValuesBySpecialChar(value: string, separator: string = '@'): string[] {
   if (!value) {
     return [];
   }
-  const contextArray = value.split('@');
-  return contextArray.length > 0 ? contextArray : [];
+  const parsedArray = value.split(separator);
+  return parsedArray.length > 0 ? parsedArray : [];
 }
 
 export function parseAdminUsers(value: string): Array<{ email: string; role: string }> {
