@@ -65,6 +65,7 @@ export class ImportExperimentComponent {
       endOn: 'string',
       revertTo: 'string',
       tags: 'array',
+      logging: 'boolean',
       group: 'string',
       conditions: 'interface',
       partitions: 'interface',

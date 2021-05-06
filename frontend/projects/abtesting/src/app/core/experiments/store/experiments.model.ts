@@ -145,6 +145,7 @@ export interface Experiment {
   revertTo: string;
   tags: string[];
   group: string;
+  logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
   queries: any[];

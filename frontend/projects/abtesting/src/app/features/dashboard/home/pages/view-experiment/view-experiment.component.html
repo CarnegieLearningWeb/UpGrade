@@ -258,7 +258,8 @@
         </div>
       </div>
       <div>
-        <mat-checkbox class="ft-14-700" color="primary">
+        <mat-checkbox [checked]="verboseLogging" class="ft-14-700" color="primary"
+        (change)="toggleLogging($event)">
           {{ 'home.view-experiment.logging.text' | translate }}
         </mat-checkbox>
       </div>

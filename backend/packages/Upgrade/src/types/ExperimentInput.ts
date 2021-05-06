@@ -50,6 +50,8 @@ export class ExperimentInput {
 
   public group: string;
 
+  public logging: boolean;
+
   @ValidateNested()
   public conditions: ExperimentCondition[];
 

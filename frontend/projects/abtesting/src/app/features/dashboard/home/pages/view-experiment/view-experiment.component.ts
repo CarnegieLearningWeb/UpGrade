@@ -48,6 +48,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private router: Router,
     private _snackBar: MatSnackBar
   ) {}
+  
+  verboseLogging: boolean;
 
   ngOnInit() {
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
@@ -62,6 +64,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         // By refreshing page if we would have experimentId then only assign it's value
         if (experiment.id) {
           this.experiment = experiment;
+          this.verboseLogging = this.experiment.logging;
         }
       });
   }
@@ -145,7 +148,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   get DialogType() {
     return DialogType;
   }
-
+  
+  toggleLogging(e) {
+    if (e.checked) {
+      this.verboseLogging = true;
+      this.experimentService.updateExperiment({...this.experiment, logging:true});
+    } else {
+      this.verboseLogging = false;
+      this.experimentService.updateExperiment({...this.experiment, logging:false});
+    }
+  }
+  
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
