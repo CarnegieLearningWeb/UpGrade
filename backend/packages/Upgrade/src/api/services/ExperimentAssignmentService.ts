@@ -92,10 +92,6 @@ export class ExperimentAssignmentService {
     condition: string | null,
     experimentName?: string
   ): Promise<MonitoredExperimentPoint> {
-    this.log.info(
-      `Mark experiment point => Experiment: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
-    );
-
     // find working group for user
     const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
 
@@ -121,6 +117,15 @@ export class ExperimentAssignmentService {
     let enrollmentCode: ENROLLMENT_CODE | null = null;
     const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
     const { experiment } = experimentPartition;
+
+    const { logging, state } = experiment;
+
+    if (logging || state === EXPERIMENT_STATE.PREVIEW) {
+      this.log.info(
+        `markExperimentPoint: Experiment: ${experiment.id}, Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
+      );
+    }
+
     if (experimentPartition) {
       const { conditions } = await this.experimentRepository.findOne({
         where: {
