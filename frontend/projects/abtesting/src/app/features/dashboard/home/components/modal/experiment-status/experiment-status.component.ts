@@ -17,6 +17,8 @@ export class ExperimentStatusComponent implements OnInit {
   experimentStatus = [];
   minDate = new Date();
   showInfoMsg = false;
+  showConditionCountErrorMsg = false;
+
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -59,8 +61,15 @@ export class ExperimentStatusComponent implements OnInit {
           { value: EXPERIMENT_STATE.CANCELLED }
         ];
     }
-    this.statusForm.get('newStatus').valueChanges.subscribe(status => {
+      this.statusForm.get('newStatus').valueChanges.subscribe(status => {
       this.showInfoMsg = status.value === EXPERIMENT_STATE.ENROLLING;
+      // set validation flag for condition count less than 2 and not for status as cancelled:
+      if (this.data.experiment.conditions.length < 2  && !(status.value === EXPERIMENT_STATE.CANCELLED)) {
+        this.showConditionCountErrorMsg = true;
+      } else {
+        // allow cancelled status for even less than 2 conditions:
+        this.showConditionCountErrorMsg = false;
+      }
     });
   }
 

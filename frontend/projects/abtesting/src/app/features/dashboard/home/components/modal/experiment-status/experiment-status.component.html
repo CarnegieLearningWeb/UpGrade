@@ -40,6 +40,9 @@
   <span class="info-msg" *ngIf="showInfoMsg">
     {{ 'home.change-experiment-status.enrolling-info.text' | translate }}
   </span>
+  <span class="info-msg" *ngIf="showConditionCountErrorMsg">
+    {{ 'home.change-experiment-status.condition-count-error.text' | translate }}
+  </span>
   <span class="error-msg" *ngIf="isScheduleDateWrong">
     {{ 'home.change-experiment-status.enrolling-error.text' | translate: {endDate: (experimentInfo.endOn | date)} }}
   </span>
@@ -51,8 +54,8 @@
     <button
       mat-raised-button
       class="modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': !this.statusForm.valid || isScheduleDateWrong }"
-      [disabled]="!this.statusForm.valid || isScheduleDateWrong"
+      [ngClass]="{ 'default-button--disabled': !this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg }"
+      [disabled]="!this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg"
       (click)="changeStatus()"
     >
       {{ 'global.save.text' | translate }}
