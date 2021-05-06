@@ -1,8 +1,8 @@
 import random
 import requests
 
-def createExperiment(host, groupExp, allExperimentPartitionIDConditionPair):
-    url = f"http://{host}/api/experiments"
+def createExperiment(protocol, host, groupExp, allExperimentPartitionIDConditionPair):
+    url = protocol + f"://{host}/api/experiments"
     # context = ["assign-prog", "app", "addition"]
     context = ["addition"]
     states = ["enrolling"]
@@ -18,10 +18,10 @@ def createExperiment(host, groupExp, allExperimentPartitionIDConditionPair):
         # parameters for individual experiment testing:
         consistencyRules = ["individual"]
         asssignmentUnits = ["individual"]
-        groups = ["class", "school", "district", "teacher"]
+        groups = [""]
     
     # random ids upto:
-    n = 100
+    n = 1000
     # assignment weight for 1st condition: (1-100):
     weight = 50
 
@@ -59,7 +59,6 @@ def createExperiment(host, groupExp, allExperimentPartitionIDConditionPair):
                 "name": "condition2",
                 "description": "condition description 2",
                 "assignmentWeight": 100-weight,
-                # "conditionCode": random.choice(conditionCodes)
                 "conditionCode": conditionCode2
             }
         ],
