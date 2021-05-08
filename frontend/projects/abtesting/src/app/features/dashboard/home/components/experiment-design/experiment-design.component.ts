@@ -59,7 +59,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   filteredExpIds$: Observable<string[]>[] = [];
   expPointsAndIds: IExpPointsAndIds | {} = {};
   expPointsAndIdsSub: Subscription;
-  expPointAndIdErrors: string[];
+  expPointAndIdErrors: string[] = [];
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -320,8 +320,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
         this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
-        if (!this.partitionPointErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError && !this.conditionCountError && !this.partitionCountError) {
-        this.validatePartitions();
+        
+        // TODO: Uncomment to validate partitions with predefined expPoint and expId
+        // this.validatePartitions();
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
           const experimentDesignFormData = this.experimentDesignForm.value;
 
@@ -346,7 +347,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           });
         }
         break;
-      }
     }
   }
   
