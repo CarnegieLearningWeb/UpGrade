@@ -118,3 +118,8 @@ export const selectExperimentStatById = createSelector(
     return state.stats[experimentId];
   }
 );
+
+export const selectExperimentPointsAndIds = createSelector(
+  selectExperimentState,
+  (state) => state.expPointsAndIds
+);

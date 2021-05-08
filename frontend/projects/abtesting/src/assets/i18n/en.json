@@ -102,6 +102,8 @@
   "home.new-experiment.design.assignment-partition-error-2.text": " partition data are already exist",
   "home.new-experiment.design.assignment-partition-error-3.text": " partition data is duplicate",
   "home.new-experiment.design.assignment-partition-error-4.text": " partition data are duplicate",
+  "home.new-experiment.design.partition-point-selection-error.text": "Please select experiment point from predefined values",
+  "home.new-experiment.design.partition-id-selection-error.text": " Please select experiment id from predefined values",
   "home.new-experiment.schedule.start-automatically.text": "Start Automatically",
   "home.new-experiment.schedule.end-automatically.text": "End Automatically",
   "home.new-experiment.schedule.start-on.text": "Starts on",

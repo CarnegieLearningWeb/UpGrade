@@ -193,6 +193,20 @@ export const actionFetchExperimentDetailStatSuccess = createAction(
   '[Experiment] Fetch Experiment Detail stat Success',
   props<{ stat: IExperimentEnrollmentDetailStats }>()
 );
+
 export const actionFetchExperimentDetailStatFailure = createAction(
   '[Experiment] Fetch Experiment Detail stat Failure',
+);
+
+export const actionFetchExperimentPointsAndIds = createAction(
+  '[Experiment] Fetch Experiment Points and Ids',
+);
+
+export const actionFetchExperimentPointsAndIdsSuccess = createAction(
+  '[Experiment] Fetch Experiment Points and Ids Success',
+  props<{ expPointsAndIds: object }>()
+);
+
+export const actionFetchExperimentPointsAndIdsFailure = createAction(
+  '[Experiment] Fetch Experiment Points and Ids Failure',
 );

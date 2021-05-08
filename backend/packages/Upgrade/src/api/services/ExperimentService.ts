@@ -117,6 +117,13 @@ export class ExperimentService {
     return env.initialization.context;
   }
 
+  public getExpPointsAndIds(): object {
+    return {
+      expPoints: env.initialization.expPoints,
+      expIds: env.initialization.expIds
+    };
+  }
+
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
