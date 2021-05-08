@@ -28,7 +28,8 @@ import {
   selectExperimentStatById,
   selectIsGraphLoading,
   selectSortKey,
-  selectSortAs
+  selectSortAs,
+  selectExperimentPointsAndIds
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -64,6 +65,7 @@ export class ExperimentService {
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
+  expPointsAndIds$ = this.store$.pipe(select(selectExperimentPointsAndIds));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
@@ -138,6 +140,10 @@ export class ExperimentService {
 
   fetchExperimentContext() {
     this.store$.dispatch(experimentAction.actionFetchExperimentContext());
+  }
+
+  fetchExperimentPointsAndIds() {
+    this.store$.dispatch(experimentAction.actionFetchExperimentPointsAndIds());
   }
 
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {

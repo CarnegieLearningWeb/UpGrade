@@ -179,6 +179,24 @@ export class ExperimentController {
 
   /**
    * @swagger
+   * /experiments/expPointsAndIds:
+   *    get:
+   *       description: Get experiment points and ids
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment points and ids list
+   */
+  @Get('/expPointsAndIds')
+  public getExpPointsAndIds(): object {
+    return this.experimentService.getExpPointsAndIds();
+  }
+
+  /**
+   * @swagger
    * /experiments/paginated:
    *    post:
    *       description: Get Paginated Experiment

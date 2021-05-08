@@ -160,6 +160,11 @@ export interface ExperimentPaginationParams {
   sortParams?: IExperimentSortParams;
 }
 
+export interface IExpPointsAndIds {
+  expPoints: string[],
+  expIds: string[]
+}
+
 export interface IExperimentGraphInfo {
   [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[],
   [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[],
@@ -187,7 +192,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
-  context: string[]
+  context: string[],
+  expPointsAndIds: {}
 }
 
 export interface State extends AppState {

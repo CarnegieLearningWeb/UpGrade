@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as pkg from '../package.json';
 
 import { getOsEnv, getOsPath, getOsPaths, normalizePort, toBool } from './lib/env';
-import { getOsEnvOptional, toNumber, parseContext, parseAdminUsers } from './lib/env/utils';
+import { getOsEnvOptional, toNumber, parseEnvironmentValuesBySpecialChar, parseAdminUsers } from './lib/env/utils';
 
 /**
  * Load .env file or for tests the .env.test file.
@@ -80,8 +80,10 @@ export const env = {
     region: getOsEnv('AWS_REGION'),
   },
   initialization: {
-    context: parseContext(getOsEnv('CONTEXT')),
+    context: parseEnvironmentValuesBySpecialChar(getOsEnv('CONTEXT')),
     adminUsers: parseAdminUsers(getOsEnv('ADMIN_USERS')),
+    expPoints: parseEnvironmentValuesBySpecialChar(getOsEnv('EXP_POINTS')),
+    expIds: parseEnvironmentValuesBySpecialChar(getOsEnv('EXP_IDS')),
   },
   hostUrl: getOsEnv('HOST_URL'),
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),

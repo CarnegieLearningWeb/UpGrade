@@ -80,4 +80,9 @@ export class ExperimentDataService {
     const url = environment.api.experimentGraphInfo;
     return this.http.post(url, params);
   }
+
+  fetchExperimentPointsAndIds() {
+    const url = environment.api.expPointsAndIds;
+    return this.http.get(url);
+  }
 }
