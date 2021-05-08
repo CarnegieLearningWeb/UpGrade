@@ -77,7 +77,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         customGroupName: [null],
         consistencyRule: [null, Validators.required],
         context: [[], Validators.required],
-        tags: [[]]
+        tags: [[]],
+        logging: [null]
       }
     );
 
@@ -123,7 +124,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         customGroupName,
         consistencyRule: this.experimentInfo.consistencyRule,
         context: this.experimentInfo.context,
-        tags: this.experimentInfo.tags
+        tags: this.experimentInfo.tags,
+        logging: this.experimentInfo.logging
       });
     }
   }
@@ -205,7 +207,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             customGroupName,
             consistencyRule,
             context,
-            tags
+            tags,
+            logging
           } = this.overviewForm.value;
           const overviewFormData = {
             name: experimentName,
@@ -213,8 +216,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             consistencyRule: consistencyRule,
             assignmentUnit: unitOfAssignment,
             group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
+            context,
             tags,
-            context
+            logging
           };
           this.emitExperimentDialogEvent.emit({
             type: eventType,
