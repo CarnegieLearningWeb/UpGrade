@@ -8,16 +8,20 @@ export class ExperimentFormValidators {
 
   static validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
     const conditions = controls.get('conditions').value;
-    const partitions = controls.get('partitions').value;
-    if (conditions.length < 2) {
-      return { conditionCountError: true };
-    } else if (conditions.length >= 2) {
-      let sumOfAssignmentWeights = 0;
-      conditions.forEach(condition => (sumOfAssignmentWeights += parseInt(condition.assignmentWeight, 10)));
-      return sumOfAssignmentWeights !== 100 ? { assignmentWightsSumError: true } : null;
-    }
-    if (partitions.length < 1) {
-      return { partitionCountError: true };
+    if (conditions.length >= 0) {
+      if(conditions.length == 0) {
+        return { assignmentWeightsSumError: false };
+      } else if (conditions.length >= 1) {
+        const conditionWeight = conditions.map(condition => condition.assignmentWeight);
+        if(!conditionWeight[0]) {
+          return { assignmentWeightsSumError: false };
+        } else {
+          let sumOfAssignmentWeights = 0;
+          conditions.forEach(condition => (sumOfAssignmentWeights += parseInt(condition.assignmentWeight, 10)));
+          // checking if sum is not equal to 100 and its not the new experiment creation where the empty weights sum is NaN:
+          return (sumOfAssignmentWeights !== 100) ? { assignmentWeightsSumError: true } : null;
+        }
+      }
     }
     return null;
   }

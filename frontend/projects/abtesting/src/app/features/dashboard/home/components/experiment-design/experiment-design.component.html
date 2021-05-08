@@ -93,7 +93,6 @@
           [formGroupName]="groupIndex"
         >
           <mat-icon
-            *ngIf="condition.length > 2"
             class="remove-icon"
             (click)="removeConditionOrPartition('condition', groupIndex)"
           >
@@ -111,13 +110,18 @@
     </mat-table>
     <span
       class="ft-14-600 validation-message"
-      *ngIf="experimentDesignForm.errors?.assignmentWightsSumError && isAssignmentWeightControlDirty"
+      *ngIf="experimentDesignForm.errors?.assignmentWeightsSumError"
       [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
     ></span>
     <span
       class="ft-14-600 validation-message"
       *ngIf="conditionCodeError"
       [innerHTML]="conditionCodeError"
+    ></span>
+    <span
+      class="ft-14-600 validation-message"
+      *ngIf="conditionCountError"
+      [innerHTML]="conditionCountError"
     ></span>
     <button
       type="button"
@@ -211,7 +215,6 @@
           [formGroupName]="groupIndex"
         >
           <mat-icon
-            *ngIf="partition.length > 1"
             class="remove-icon"
             (click)="removeConditionOrPartition('partition', groupIndex)"
           >
@@ -239,6 +242,11 @@
     class="ft-14-600 validation-message"
     *ngFor="let error of partitionPointErrors"
   >{{ error }} </span>
+  <span
+      class="ft-14-600 validation-message"
+      *ngIf="partitionCountError"
+      [innerHTML]="partitionCountError"
+  ></span>
 
   <!-- If experiment point and id are not from predefined value -->
   <span
