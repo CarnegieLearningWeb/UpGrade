@@ -78,7 +78,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         consistencyRule: [null, Validators.required],
         context: [[], Validators.required],
         tags: [[]],
-        logging: [null]
+        logging: [false]
       }
     );
 
