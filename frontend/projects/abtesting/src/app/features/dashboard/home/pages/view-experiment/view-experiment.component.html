@@ -227,6 +227,20 @@
               <span class="ft-18-700 end-criteria">{{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}</span>
             </ng-template>
           </div>
+
+          <!-- Enrollment Time Logs -->
+          <div class="section-data">
+            <span class="ft-16-600 section-data-title">
+              {{ 'home.view-experiment.enrollment-time-logs.title.text' | translate | uppercase }}
+            </span>
+            <span 
+              class="ft-18-700 section-data-value section-data-value--editable"
+
+              (click)="openDialog(DialogType.STATE_TIME_LOGS)"
+            >
+            {{ 'home.view-experiment.enrollment-start-time-list.text' | translate | uppercase  }}
+            </span>
+          </div>
         </div>
       </div>
 
