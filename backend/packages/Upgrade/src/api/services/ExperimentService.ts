@@ -76,6 +76,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.stateTimeLogs','stateTimeLogs')
       .leftJoinAndSelect('queries.metric', 'metric');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
