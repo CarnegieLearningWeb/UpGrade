@@ -5,57 +5,56 @@
       </span>
     </ng-container>
   
-  
-    <div class="stateTimeLogs-view">
-      <div class="stateTimeLogs-table-container">
-  
-        <ng-container *ngIf="filtered_timeLog?.length; else zeroState">    
-          <mat-table
-            class="table"
-            [dataSource]="filtered_timeLog"
-          >
-  
-            <!-- TIMELOG NUMBER Column -->
-            <ng-container matColumnDef="timeLogNumber">
-              <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-                {{ 'global.number.text' | translate }}
-              </mat-header-cell>
-              <mat-cell *matCellDef="let element; let groupIndex = index">
-                <span>{{ groupIndex + 1 }}</span>
-              </mat-cell>
-            </ng-container>
-          
-            <!-- TIME LOG START TIME -->
-            <ng-container matColumnDef="startTime">
-              <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                {{ 'home.view-experiment.enrollment-start-time.title.text' | translate | uppercase }}
-              </mat-header-cell>
-              <mat-cell class="ft-12-600" *matCellDef="let element"> 
-                  {{ element.startTimeLog | date: 'medium'}}
-              </mat-cell>
-            </ng-container>
-  
-            <!-- TIME LOG END TIME -->
-            <ng-container matColumnDef="endTime">
-              <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-                {{ 'home.view-experiment.enrollment-end-time.title.text' | translate | uppercase }}
-              </mat-header-cell>
-              <mat-cell class="ft-12-600" *matCellDef="let element"> 
-                {{ element.endTimeLog | date: 'medium'}} 
-              </mat-cell>
-            </ng-container>
-  
-            <mat-header-row *matHeaderRowDef="timeLogDisplayedColumns; sticky: true"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: timeLogDisplayedColumns"></mat-row>
-          </mat-table>
-        </ng-container>
-      </div>
-      <ng-template #zeroState>
-        <span
-          class="zero-state"
-          [innerHTML]="'logs-global.log-zero-state.text' | translate"
+  <div class="stateTimeLogs-view">
+    <div class="stateTimeLogs-table-container">
+
+      <ng-container *ngIf="filtered_timeLog?.length; else zeroState">    
+        <mat-table
+          class="table"
+          [dataSource]="filtered_timeLog"
         >
-        </span>
-      </ng-template>
+
+          <!-- TIMELOG NUMBER Column -->
+          <ng-container matColumnDef="timeLogNumber">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+              {{ 'global.number.text' | translate }}
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element; let groupIndex = index">
+              <span>{{ groupIndex + 1 }}</span>
+            </mat-cell>
+          </ng-container>
+        
+          <!-- TIME LOG START TIME -->
+          <ng-container matColumnDef="startTime">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{ 'home.view-experiment.enrollment-start-time.title.text' | translate | uppercase }}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element"> 
+                {{ element.startTimeLog | date: 'medium'}}
+            </mat-cell>
+          </ng-container>
+
+          <!-- TIME LOG END TIME -->
+          <ng-container matColumnDef="endTime">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{ 'home.view-experiment.enrollment-end-time.title.text' | translate | uppercase }}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element"> 
+              {{ element.endTimeLog | date: 'medium'}} 
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="timeLogDisplayedColumns; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: timeLogDisplayedColumns"></mat-row>
+        </mat-table>
+      </ng-container>
     </div>
+    <ng-template #zeroState>
+      <span
+        class="zero-state"
+        [innerHTML]="'logs-global.log-zero-state.text' | translate"
+      >
+      </span>
+    </ng-template>
   </div>
+</div>

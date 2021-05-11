@@ -26,7 +26,7 @@ export class StateTimeLogsComponent implements OnInit {
     this.experiment = this.data.experiment;
   }
 
-  ngOnInit(){
+  ngOnInit() {
     this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState==='enrolling');
     this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState==='enrolling');
     
@@ -34,6 +34,5 @@ export class StateTimeLogsComponent implements OnInit {
       const endTimeLog = idx < this.endTimeLogs.length ?  this.endTimeLogs[idx].timeLog : null;
       this.filtered_timeLog.push({startTimeLog: startTimeLog.timeLog, endTimeLog: endTimeLog});
     });
-  }
- 
+  } 
 }
