@@ -1,0 +1,57 @@
+.stateTimeLogs-modal {
+    .title {
+      display: block;
+      padding: 40px 40px 0;
+      height: 108px;
+    }
+  
+    .stateTimeLogs-view {
+      margin: 20px 0;
+      padding: 0 40px;
+  
+      .stateTimeLogs-table-container {
+        min-height: 500px;
+        max-height: 500px;
+        //overflow: auto;
+  
+        .table {
+          max-height: 500px;
+          overflow: auto;
+  
+          mat-header-row {
+            min-height: 35px;
+          }
+  
+          mat-row {
+            min-height: 46px;
+            max-height: 46px;
+          }
+  
+          mat-header-cell {
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--grey-6);
+          }
+  
+          mat-cell {
+            justify-content: center;
+            margin-right: 15px;
+          }
+  
+          .cdk-column-timeLogNumber{
+            flex : 0 0 20%
+          }
+          .cdk-column-startTime,
+          .cdk-column-endTime {
+            flex: 0 40% 40%;
+            width: 40%;
+          }
+        }
+      }
+  
+      .zero-state {
+        min-height: 250px;
+      }
+    }
+  }
+  

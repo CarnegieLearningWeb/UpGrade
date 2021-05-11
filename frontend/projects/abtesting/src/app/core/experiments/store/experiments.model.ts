@@ -128,6 +128,13 @@ export interface ExperimentNameVM {
   name: string;
 }
 
+export interface ExperimentStateTimeLog{
+  id: string;
+  fromState: EXPERIMENT_STATE;
+  toState: EXPERIMENT_STATE;
+  timeLog: Date;
+}
+
 export interface Experiment {
   id: string;
   name: string;
@@ -149,6 +156,7 @@ export interface Experiment {
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
   queries: any[];
+  stateTimeLogs: ExperimentStateTimeLog[];
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;

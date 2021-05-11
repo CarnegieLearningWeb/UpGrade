@@ -76,7 +76,8 @@ import { StateTimeLogsComponent } from './components/modal/state-time-logs/state
     DeleteExperimentComponent,
     ImportExperimentComponent,
     QueriesModalComponent,
-    ExperimentEndCriteriaComponent
+    ExperimentEndCriteriaComponent,
+    StateTimeLogsComponent
   ]
 })
 export class HomeModule {}
