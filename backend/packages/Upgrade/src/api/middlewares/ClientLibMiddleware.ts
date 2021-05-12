@@ -4,8 +4,8 @@ import { LoggerInterface, Logger } from '../../decorators/Logger';
 import { SettingService } from '../services/SettingService';
 import { SERVER_ERROR } from 'upgrade_types';
 import * as jwt from 'jsonwebtoken';
-import * as config from '../../config.json';
 import isequal from 'lodash.isequal';
+import { env } from '../../env';
 
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
   constructor(@Logger(__filename) private log: LoggerInterface, public settingService: SettingService) {}
@@ -33,12 +33,12 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
             })
           );
         }
-        const decodeToken = jwt.verify(token, config.clientApi.secret);
+        const { secret, key } = env.clientApi;
+        const decodeToken = jwt.verify(token, secret);
         delete decodeToken.iat;
         delete decodeToken.exp;
-        const APIKey = config.clientApi.data;
 
-        if (isequal(decodeToken, APIKey)) {
+        if (isequal(decodeToken, { APIKey: key })) {
           next();
         } else {
           throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Provided token is invalid' }));
