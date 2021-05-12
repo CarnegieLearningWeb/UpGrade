@@ -792,7 +792,11 @@ export class ExperimentService {
       experimentId: createdExperiment.id,
       experimentName: createdExperiment.name,
     };
-    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
+    await this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+      createAuditLogData,
+      user
+    );
     return createdExperiment;
   }
 
