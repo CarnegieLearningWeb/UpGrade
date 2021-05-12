@@ -120,7 +120,7 @@ export class ExperimentService {
   public getExpPointsAndIds(): object {
     return {
       expPoints: env.initialization.expPoints,
-      expIds: env.initialization.expIds
+      expIds: env.initialization.expIds,
     };
   }
 
