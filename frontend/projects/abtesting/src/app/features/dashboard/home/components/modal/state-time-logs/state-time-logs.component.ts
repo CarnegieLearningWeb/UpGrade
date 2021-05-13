@@ -27,6 +27,7 @@ export class StateTimeLogsComponent implements OnInit {
   }
 
   ngOnInit() {
+    console.log('----------experiment data----', this.experiment);
     this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState==='enrolling');
     this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState==='enrolling');
     

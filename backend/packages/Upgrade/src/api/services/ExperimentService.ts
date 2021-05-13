@@ -33,6 +33,7 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
+import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 
 @Service()
 export class ExperimentService {
@@ -47,6 +48,7 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
+    @OrmRepository() private StateTimeLogsRepository: StateTimeLogsRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
@@ -250,6 +252,14 @@ export class ExperimentService {
     // updating experiment schedules here
     await this.updateExperimentSchedules(experimentId);
 
+    // updating the state time logs here
+    const yashil = await this.StateTimeLogsRepository.insertStateTimeLog(
+      oldExperiment.state,
+      state,
+      startDate,
+      experimentId
+    );
+    console.log(' le vaparyu ', yashil);
     return updatedState;
   }
 
@@ -413,6 +423,7 @@ export class ExperimentService {
     const oldPartitions = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
 
+    console.log(' old experiment data ', oldExperiment);
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
       this.scheduledJobService.updateExperimentSchedules(experiment as any);
