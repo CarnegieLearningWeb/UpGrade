@@ -64,7 +64,7 @@ export class AnalyticsService {
     return this.analyticsRepository.getEnrollments(experimentIds);
   }
 
-  public async getDetailEnrolment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
+  public async getDetailEnrollment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
       this.analyticsRepository.getDetailEnrollment(experimentId),
@@ -131,7 +131,7 @@ export class AnalyticsService {
     };
   }
 
-  public async getEnrolmentStatsByDate(experimentId: string, dateRange: DATE_RANGE): Promise<IEnrollmentStatByDate[]> {
+  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
@@ -177,7 +177,7 @@ export class AnalyticsService {
 
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
-      this.analyticsRepository.getEnrolmentByDateRange(experimentId, dateRange),
+      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange),
     ]);
 
     const experiment: Experiment = promiseArray[0];

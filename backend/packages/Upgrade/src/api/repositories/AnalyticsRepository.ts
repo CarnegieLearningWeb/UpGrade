@@ -255,7 +255,7 @@ export class AnalyticsRepository {
     ]);
   }
 
-  public async getEnrolmentByDateRange(
+  public async getEnrollmentByDateRange(
     experimentId: string,
     dateRange: DATE_RANGE
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
