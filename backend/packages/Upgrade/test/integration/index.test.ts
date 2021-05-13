@@ -63,6 +63,7 @@ import { IndividualExperimentEnrollmentCode } from './Experiment/enrollmentCode'
 import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode/index';
 import { MonitoredPointForExport } from './Experiment/analytics';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
+import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssigmentWeight';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -341,6 +342,11 @@ describe('Integration Tests', () => {
 
   test('Experiment without partition', async (done) => {
     await NoPartitionPoint();
+    done();
+  });
+
+  test('Experiment with decimal assignment weights', async (done) => {
+    await DecimalAssignmentWeight();
     done();
   });
 
