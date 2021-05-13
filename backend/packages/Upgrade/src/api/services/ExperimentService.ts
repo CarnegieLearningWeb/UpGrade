@@ -251,15 +251,15 @@ export class ExperimentService {
 
     // updating experiment schedules here
     await this.updateExperimentSchedules(experimentId);
-
+    let timeLogDate = new Date();
     // updating the state time logs here
     const yashil = await this.StateTimeLogsRepository.insertStateTimeLog(
       oldExperiment.state,
       state,
-      startDate,
-      experimentId
+      timeLogDate,
+      oldExperiment.id
     );
-    console.log(' le vaparyu ', yashil);
+    console.log(' ------------le vaparyu--------- ', yashil);
     return updatedState;
   }
 

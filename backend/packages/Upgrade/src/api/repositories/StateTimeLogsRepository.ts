@@ -2,7 +2,7 @@ import { StateTimeLog } from '../models/StateTimeLogs';
 import { Repository, EntityRepository } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-
+import uuid from 'uuid';
 
 @EntityRepository(StateTimeLog)
 export class StateTimeLogsRepository extends Repository<StateTimeLog> {
@@ -12,13 +12,15 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
     timeLog: Date,
     experimentId: string,
   ): Promise<StateTimeLog> {
-    const result = await this.createQueryBuilder('StateTimeLog')
+    const result = await this.createQueryBuilder()
       .insert()
       .into(StateTimeLog)
-      .setParameter('fromState', fromState)
-      .setParameter('toState', toState)
-      .setParameter('timeLog', timeLog)
-      .setParameter('experimentId', experimentId)
+      .values({
+        id: uuid(),
+        fromState: fromState,
+        toState: toState,
+        timeLog: timeLog
+      })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
