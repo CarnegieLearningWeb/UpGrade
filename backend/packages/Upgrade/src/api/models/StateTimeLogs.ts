@@ -21,7 +21,7 @@ export class StateTimeLog extends BaseModel {
   public toState: EXPERIMENT_STATE;
 
   @Column()
-  public timeLog : Date;
+  public timeLog: Date;
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.stateTimeLogs)
   public experiment: Experiment;

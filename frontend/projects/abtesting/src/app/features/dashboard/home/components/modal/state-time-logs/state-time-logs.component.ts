@@ -27,10 +27,21 @@ export class StateTimeLogsComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('----------experiment data----', this.experiment);
     this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState==='enrolling');
     this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState==='enrolling');
     
+    this.startTimeLogs.sort((a, b) => {
+      const d1 = new Date(a.timeLog);
+      const d2 = new Date(b.timeLog);
+      return d1 > d2 ? 1 : d1 < d2 ? -1 : 0;
+    });
+
+    this.endTimeLogs.sort((a, b) => {
+      const d1 = new Date(a.timeLog);
+      const d2 = new Date(b.timeLog);
+      return d1 > d2 ? 1 : d1 < d2 ? -1 : 0;
+    });
+
     this.startTimeLogs.forEach((startTimeLog, idx)=>{
       const endTimeLog = idx < this.endTimeLogs.length ?  this.endTimeLogs[idx].timeLog : null;
       this.filtered_timeLog.push({startTimeLog: startTimeLog.timeLog, endTimeLog: endTimeLog});

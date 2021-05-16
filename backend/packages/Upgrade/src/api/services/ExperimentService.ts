@@ -48,7 +48,7 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private StateTimeLogsRepository: StateTimeLogsRepository,
+    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
@@ -78,7 +78,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('experiment.stateTimeLogs','stateTimeLogs')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('queries.metric', 'metric');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -251,15 +251,18 @@ export class ExperimentService {
 
     // updating experiment schedules here
     await this.updateExperimentSchedules(experimentId);
-    let timeLogDate = new Date();
-    // updating the state time logs here
-    const yashil = await this.StateTimeLogsRepository.insertStateTimeLog(
+
+    // updating state time logs here
+    const timeLogDate = new Date();
+    const experiment = await this.experimentRepository.findByIds([experimentId]);
+
+    await this.stateTimeLogsRepository.insertStateTimeLog(
       oldExperiment.state,
       state,
       timeLogDate,
-      oldExperiment.id
+      experiment[0]
     );
-    console.log(' ------------le vaparyu--------- ', yashil);
+
     return updatedState;
   }
 
