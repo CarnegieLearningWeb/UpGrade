@@ -11,17 +11,16 @@ import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion
 import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
 import { SupportService } from '../../../src/api/services/SupportService';
 
-export function checkExperimentAssignedIsDefault(
+export function checkExperimentAssignedIsNull(
   experimentConditionAssignments: any,
   experimentName: string,
   experimentPoint: string
 ): void {
-  expect(experimentConditionAssignments).toEqual(
+  expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         expId: experimentName,
-        expPoint: experimentPoint,
-        assignedCondition: { conditionCode: 'default' },
+        expPoint: experimentPoint
       }),
     ])
   );

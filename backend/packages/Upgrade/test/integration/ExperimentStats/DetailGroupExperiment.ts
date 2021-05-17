@@ -7,7 +7,7 @@ import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
 } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../src/api/services/UserService';
@@ -179,8 +179,8 @@ export default async function testCase(): Promise<void> {
   // user 3 logs in experiment
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName2, experimentPoint2, condition2);

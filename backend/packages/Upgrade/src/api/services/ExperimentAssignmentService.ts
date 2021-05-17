@@ -480,7 +480,7 @@ export class ExperimentAssignmentService {
             // TODO add enrollment code here
             this.log.info(
               `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-                conditionAssigned ? conditionAssigned.conditionCode : 'default'
+                conditionAssigned ? conditionAssigned.conditionCode : null
               }`
             );
           }
@@ -489,11 +489,11 @@ export class ExperimentAssignmentService {
             expPoint,
             twoCharacterId,
             assignedCondition: conditionAssigned || {
-              conditionCode: 'default',
+              conditionCode: null,
             },
           };
         });
-        return [...accumulator, ...partitions];
+        return assignment ? [...accumulator, ...partitions] : accumulator;
       }, []);
     } catch (error) {
       throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));
