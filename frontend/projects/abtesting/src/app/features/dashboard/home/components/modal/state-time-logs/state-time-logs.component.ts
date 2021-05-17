@@ -31,11 +31,12 @@ export class StateTimeLogsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.experimentSub = this.experimentService.selectExperimentById(this.experiment.id).subscribe(experiment => {
       //this.experiment = experiment;
-      this.startTimeLogs = experiment.stateTimeLogs.filter(state => state.toState===EXPERIMENT_STATE.ENROLLING);
-      this.endTimeLogs = experiment.stateTimeLogs.filter(state => state.fromState===EXPERIMENT_STATE.ENROLLING);
-      
-      console.log('----- subscription of stateChanges and data below----');
-      console.log(experiment.stateTimeLogs);
+      if(this.experiment.stateTimeLogs){
+        this.startTimeLogs = experiment.stateTimeLogs.filter(state => state.toState===EXPERIMENT_STATE.ENROLLING);
+        this.endTimeLogs = experiment.stateTimeLogs.filter(state => state.fromState===EXPERIMENT_STATE.ENROLLING);
+      }
+     // console.log('----- subscription of stateChanges and data below----');
+     // console.log(experiment.stateTimeLogs);
     });
 
     
