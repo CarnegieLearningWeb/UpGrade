@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentVM, EXPERIMENT_STATE } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-state-time-logs',
@@ -27,8 +27,8 @@ export class StateTimeLogsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState==='enrolling');
-    this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState==='enrolling');
+    this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState===EXPERIMENT_STATE.ENROLLING);
+    this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState===EXPERIMENT_STATE.ENROLLING);
     
     this.startTimeLogs.sort((a, b) => {
       const d1 = new Date(a.timeLog);
