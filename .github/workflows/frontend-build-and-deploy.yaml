@@ -6,7 +6,7 @@ jobs:
   frontend-build-and-deploy:
     name: 'Frontend Build and Deploy'
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'CarnegieLearningWeb'
+    if: github.repository_owner == 'PlaypowerLabs'
     steps:
 
       - uses: 'actions/checkout@v2'
