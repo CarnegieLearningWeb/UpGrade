@@ -200,7 +200,8 @@ export default async function testCase(): Promise<void> {
 
   // when preview user is assigned an experiment condition
   experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
-  expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
+  // because the user was excluded from the experiment
+  expect(experimentConditionAssignments).toHaveLength(0);
 
   checkData = await analyticsService.getDetailEnrolment(experimentId);
   expect(checkData).toEqual(

@@ -6,7 +6,7 @@ import { individualAssignmentExperimentConsistencyRuleExperiemnt } from '../../m
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
   checkExperimentAssignedIsNotDefault,
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';

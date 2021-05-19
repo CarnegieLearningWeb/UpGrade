@@ -10,7 +10,7 @@ import { previewUsers } from '../mockData/previewUsers/index';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import {
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
   checkMarkExperimentPointForUser,
 } from '../utils/index';
 

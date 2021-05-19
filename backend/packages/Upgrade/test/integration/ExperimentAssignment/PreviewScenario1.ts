@@ -10,7 +10,7 @@ import { previewUsers } from '../mockData/previewUsers/index';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import {
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
   checkMarkExperimentPointForUser,
 } from '../utils/index';
 
@@ -87,7 +87,7 @@ export default async function testCase(): Promise<void> {
 
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment p oint for user 1
   markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition);
@@ -127,7 +127,7 @@ export default async function testCase(): Promise<void> {
 
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(previewUsers[0].id);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
   markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition);
