@@ -287,6 +287,15 @@ export class ExperimentAssignmentService {
 
         // throw error user group not defined and add experiments which are excluded
         if (addError) {
+          experimentToExclude.forEach(({ id, name }) => {
+            this.log.error(
+              `Experiment Id: ${id},
+              Experiment Name: ${name},
+              Group not valid for experiment user
+              `
+            );
+          });
+
           await this.errorService.create({
             endPoint: '/api/assign',
             errorCode: 417,
