@@ -120,7 +120,7 @@ export class ExperimentService {
   public getExpPointsAndIds(): object {
     return {
       expPoints: env.initialization.expPoints,
-      expIds: env.initialization.expIds
+      expIds: env.initialization.expIds,
     };
   }
 
@@ -792,7 +792,11 @@ export class ExperimentService {
       experimentId: createdExperiment.id,
       experimentName: createdExperiment.name,
     };
-    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
+    await this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+      createAuditLogData,
+      user
+    );
     return createdExperiment;
   }
 
