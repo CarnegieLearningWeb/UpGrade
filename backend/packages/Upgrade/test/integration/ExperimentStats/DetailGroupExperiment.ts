@@ -59,7 +59,7 @@ export default async function testCase(): Promise<void> {
   let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
-  let checkData = await analyticsService.getDetailEnrolment(experimentId);
+  let checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       id: experimentId,
@@ -119,7 +119,7 @@ export default async function testCase(): Promise<void> {
   // change experiment state to enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
 
-  checkData = await analyticsService.getDetailEnrolment(experimentId);
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       id: experimentId,
@@ -186,7 +186,7 @@ export default async function testCase(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName2, experimentPoint2, condition2);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
 
-  checkData = await analyticsService.getDetailEnrolment(experimentId);
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 0,
@@ -204,7 +204,7 @@ export default async function testCase(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
-  checkData = await analyticsService.getDetailEnrolment(experimentId);
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
@@ -225,7 +225,7 @@ export default async function testCase(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
-  checkData = await analyticsService.getDetailEnrolment(experimentId);
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
