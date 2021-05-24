@@ -144,7 +144,7 @@
                   (
                 </span>
                 <span
-                  *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else endingCriteriaCommonTempReadOnly"
+                  *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endingCriteriaCommonTempReadOnly"
                   (click)="updateEndingCriteria()"
                   [ngClass]="{'end-criteria-underline--blue': permissions?.experiments.update}"
                 >
@@ -189,7 +189,7 @@
                 </span>
                 <mat-icon
                   class="edit-icon"
-                  *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete"
+                  *ngIf="permissions?.experiments.update && !isExperimentStateCancelled"
                 >
                   create
                 </mat-icon>
@@ -197,7 +197,7 @@
 
               <!-- if we have end date -->
               <span class="ft-18-700 end-criteria" *ngIf="experiment.endOn">
-                <ng-container *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else endOnReadOnly">
+                <ng-container *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endOnReadOnly">
                   <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
                     {{ experiment.endOn | formatDate: 'medium date' }}
                   </span>
@@ -214,7 +214,7 @@
             <ng-template #noCriteriaTemplate>
               <span
                 class="ft-18-700 end-criteria"
-                *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else noCriteriaTemplateReadOnly"
+                *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else noCriteriaTemplateReadOnly"
               >
                 <span (click)="updateEndingCriteria()" class="end-criteria-underline--grey">
                   {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
@@ -264,7 +264,6 @@
         </mat-checkbox>
       </div>
     </div>
-    
 
     <!-- Experiment Conditions Table -->
     <div class="table-container">

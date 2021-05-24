@@ -145,11 +145,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   get DialogType() {
     return DialogType;
   }
-  
+
   toggleVerboseLogging(event) {
     this.experimentService.updateExperiment({...this.experiment, logging: event.checked })
   }
-  
+
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
@@ -167,7 +167,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     return ExperimentStatePipeType;
   }
 
-  get isStateCancelledOrComplete() {
-    return this.experiment.state === EXPERIMENT_STATE.CANCELLED || this.experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
+  get isExperimentStateCancelled() {
+    return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
   }
 }
