@@ -505,9 +505,9 @@ export class AnalyticsService {
       } else {
         emailText = `Here are the new exported data
         <br>
-        <a href=\"${signedUrl[0]}\">Experiment Data Json</a>
+        <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
         <br>
-        <a href=\"${signedUrl[1]}\">Experiment Metadata</a>`;
+        <a href=\"${signedUrl[1]}\">Experiment Data Json</a>`;
       }
 
       const emailSubject = `Exported Data for experiment ${experiment.name}`;
