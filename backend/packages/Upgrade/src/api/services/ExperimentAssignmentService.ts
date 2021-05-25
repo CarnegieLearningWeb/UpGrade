@@ -48,6 +48,7 @@ import isequal from 'lodash.isequal';
 import flatten from 'lodash.flatten';
 import { ILogInput } from 'upgrade_types';
 import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
+import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -78,6 +79,8 @@ export class ExperimentAssignmentService {
     private logRepository: LogRepository,
     @OrmRepository()
     private metricRepository: MetricRepository,
+    @OrmRepository()
+    private stateTimeLogsRepository: StateTimeLogsRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -793,6 +796,8 @@ export class ExperimentAssignmentService {
 
       if (groupSatisfied >= groupCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        const timeLogDate = new Date();
+        await this.stateTimeLogsRepository.insertStateTimeLog(experiment.state, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, timeLogDate, experiment);
       }
       // check the individual assignment table for the user
     } else if (userCount) {
@@ -804,6 +809,8 @@ export class ExperimentAssignmentService {
       const uniqueUser = new Set(userIds);
       if (uniqueUser.size >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        const timeLogDate = new Date();
+        await this.stateTimeLogsRepository.insertStateTimeLog(experiment.state, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, timeLogDate, experiment);
       }
     }
   }
