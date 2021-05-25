@@ -268,7 +268,7 @@ export class ExperimentService {
       ...oldExperiment,
       state: updatedState[0].state,
       stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]]
-    }
+    };
   }
 
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
