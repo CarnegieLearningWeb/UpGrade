@@ -116,17 +116,13 @@ export class ExperimentAssignmentService {
 
     let enrollmentCode: ENROLLMENT_CODE | null = null;
     const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
-    const { experiment } = experimentPartition;
 
-    const { logging, state } = experiment;
-
-    if (logging || state === EXPERIMENT_STATE.PREVIEW) {
-      this.log.info(
-        `markExperimentPoint: Experiment: ${experiment.id}, Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
-      );
-    }
+    this.log.info(
+      `markExperimentPoint: Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
+    );
 
     if (experimentPartition) {
+      const { experiment } = experimentPartition;
       const { conditions } = await this.experimentRepository.findOne({
         where: {
           id: experiment.id,
@@ -211,8 +207,9 @@ export class ExperimentAssignmentService {
      * Check the enrollment complete condition for experiments with ending criteria
      * group count and participants count
      */
-    if (experiment.enrollmentCompleteCondition && experiment.state === EXPERIMENT_STATE.ENROLLING) {
-      await this.checkEnrollmentEndingCriteriaForCount(experiment);
+    const experimentDoc = experimentPartition?.experiment;
+    if (experimentDoc && experimentDoc.enrollmentCompleteCondition && experimentDoc.state === EXPERIMENT_STATE.ENROLLING) {
+      await this.checkEnrollmentEndingCriteriaForCount(experimentDoc);
     }
 
     // save monitored log document
