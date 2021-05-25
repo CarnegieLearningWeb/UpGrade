@@ -34,6 +34,7 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
+// import { StateTimeLog } from '../models/StateTimeLogs';
 
 @Service()
 export class ExperimentService {
@@ -218,7 +219,7 @@ export class ExperimentService {
 
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { select: ['state', 'name', 'startDate', 'endDate'] }
+      { relations: ['stateTimeLogs'] }
     );
     let data: AuditLogData = {
       experimentId,
@@ -255,16 +256,19 @@ export class ExperimentService {
 
     // updating state time logs here
     const timeLogDate = new Date();
-    const experiment = await this.experimentRepository.findByIds([experimentId]);
 
-    await this.stateTimeLogsRepository.insertStateTimeLog(
+    const updatedStateTimeLog = await this.stateTimeLogsRepository.insertStateTimeLog(
       oldExperiment.state,
       state,
       timeLogDate,
-      experiment[0]
+      oldExperiment
     );
 
-    return updatedState;
+    return {
+      ...oldExperiment,
+      state: updatedState[0].state,
+      stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]]
+    }
   }
 
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
