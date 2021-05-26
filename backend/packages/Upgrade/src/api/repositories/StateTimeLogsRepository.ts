@@ -1,5 +1,5 @@
 import { StateTimeLog } from '../models/StateTimeLogs';
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import uuid from 'uuid';
@@ -11,9 +11,12 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
     fromState: EXPERIMENT_STATE,
     toState: EXPERIMENT_STATE,
     timeLog: Date,
-    experimentId: Experiment
+    experimentId: Experiment,
+    entityManager?: EntityManager | any
   ): Promise<StateTimeLog> {
-    const result = await this.createQueryBuilder()
+    entityManager = entityManager || this
+    const result = await entityManager
+      .createQueryBuilder()
       .insert()
       .into(StateTimeLog)
       .values({

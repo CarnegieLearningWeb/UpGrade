@@ -213,62 +213,67 @@ export class ExperimentService {
     user: User,
     scheduleDate?: Date
   ): Promise<Experiment> {
-    if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
-      await this.populateExclusionTable(experimentId, state);
-    }
 
-    const oldExperiment = await this.experimentRepository.findOne(
-      { id: experimentId },
-      { relations: ['stateTimeLogs'] }
-    );
-    let data: AuditLogData = {
-      experimentId,
-      experimentName: oldExperiment.name,
-      previousState: oldExperiment.state,
-      newState: state,
-    };
-    if (scheduleDate) {
-      data = { ...data, startOn: scheduleDate };
-    }
-    // add experiment audit logs
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
+    return getConnection().transaction(async (transactionalEntityManager) => {
 
-    let endDate = oldExperiment.endDate || null;
-    let startDate = oldExperiment.startDate || null;
-    if (state === EXPERIMENT_STATE.ENROLLING) {
-      startDate = new Date();
-      endDate = null;
-    } else if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-      endDate = new Date();
-    }
+      if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
+        await this.populateExclusionTable(experimentId, state);
+      }
 
-    // update experiment
-    const updatedState = await this.experimentRepository.updateState(
-      experimentId,
-      state,
-      scheduleDate,
-      endDate,
-      startDate
-    );
+      const oldExperiment = await this.experimentRepository.findOne(
+        { id: experimentId },
+        { relations: ['stateTimeLogs'] }
+      );
+      let data: AuditLogData = {
+        experimentId,
+        experimentName: oldExperiment.name,
+        previousState: oldExperiment.state,
+        newState: state,
+      };
+      if (scheduleDate) {
+        data = { ...data, startOn: scheduleDate };
+      }
+      // add experiment audit logs
+      this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
-    // updating experiment schedules here
-    await this.updateExperimentSchedules(experimentId);
+      let endDate = oldExperiment.endDate || null;
+      let startDate = oldExperiment.startDate || null;
+      if (state === EXPERIMENT_STATE.ENROLLING) {
+        startDate = new Date();
+        endDate = null;
+      } else if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+        endDate = new Date();
+      }
 
-    // updating state time logs here
-    const timeLogDate = new Date();
+      const updatedState = await this.experimentRepository.updateState(
+        experimentId,
+        state,
+        scheduleDate,
+        endDate,
+        startDate,
+        transactionalEntityManager
+      );
 
-    const updatedStateTimeLog = await this.stateTimeLogsRepository.insertStateTimeLog(
-      oldExperiment.state,
-      state,
-      timeLogDate,
-      oldExperiment
-    );
+      // updating experiment schedules here
+      await this.updateExperimentSchedules(experimentId);
 
-    return {
-      ...oldExperiment,
-      state: updatedState[0].state,
-      stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]]
-    };
+      // updating state time logs here
+      const timeLogDate = new Date();
+
+      const updatedStateTimeLog = await this.stateTimeLogsRepository.insertStateTimeLog(
+        oldExperiment.state,
+        state,
+        timeLogDate,
+        oldExperiment,
+        transactionalEntityManager
+      );
+
+      return {
+        ...oldExperiment,
+        state: updatedState[0].state,
+        stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]]
+      };
+    });
   }
 
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
@@ -462,6 +467,7 @@ export class ExperimentService {
             expDoc.startDate = new Date();
           }
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
+          // here
         } catch (error) {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
         }
