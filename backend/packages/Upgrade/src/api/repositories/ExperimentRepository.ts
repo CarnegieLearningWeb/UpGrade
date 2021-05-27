@@ -83,15 +83,13 @@ export class ExperimentRepository extends Repository<Experiment> {
     experimentId: string,
     state: EXPERIMENT_STATE,
     scheduleDate: Date,
-    endDate: Date = null,
-    startDate: Date = null,
     entityManager?: EntityManager | any
   ): Promise<Experiment> {
-    entityManager = entityManager || this
+    entityManager = entityManager || this;
     const result = await entityManager
       .createQueryBuilder()
       .update(Experiment)
-      .set({ state, startOn: scheduleDate, endDate, startDate })
+      .set({ state, startOn: scheduleDate})
       .where({ id: experimentId })
       .returning('*')
       .execute()

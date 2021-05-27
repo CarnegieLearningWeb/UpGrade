@@ -14,7 +14,7 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
     experimentId: Experiment,
     entityManager?: EntityManager | any
   ): Promise<StateTimeLog> {
-    entityManager = entityManager || this
+    entityManager = entityManager || this;
     const result = await entityManager
       .createQueryBuilder()
       .insert()
