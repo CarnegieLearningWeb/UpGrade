@@ -23,6 +23,6 @@ export class StateTimeLog extends BaseModel {
   @Column()
   public timeLog: Date;
 
-  @ManyToOne((type) => Experiment, (experiment) => experiment.stateTimeLogs)
+  @ManyToOne((type) => Experiment, (experiment) => experiment.stateTimeLogs, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 }
