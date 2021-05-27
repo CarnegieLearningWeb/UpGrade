@@ -12,7 +12,8 @@ import {
   IExperimentEnrollmentDetailDateStats,
   POST_EXPERIMENT_RULE,
   ENROLLMENT_CODE,
-  EXPERIMENT_LOG_TYPE
+  EXPERIMENT_LOG_TYPE,
+  EXPERIMENT_STATE
 } from 'upgrade_types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -245,12 +246,12 @@ export class AnalyticsService {
       // get experiment definition
       const experiment = await this.experimentRepository.findOne({
         where: { id: experimentId },
-        relations: ['partitions', 'conditions'],
+        relations: ['partitions', 'conditions','stateTimeLogs'],
       });
       if (!experiment) {
         return '';
       }
-      const { conditions, partitions, ...experimentInfo } = experiment;
+      const { conditions, partitions, stateTimeLogs, ...experimentInfo } = experiment;
       const experimentIdAndPoint = [];
       partitions.forEach((partition) => {
         const partitionId = partition.id;
@@ -271,8 +272,8 @@ export class AnalyticsService {
           'Experiment ID': experimentInfo.id,
           'Experiment Name': experimentInfo.name,
           'Experiment Description': experimentInfo.description,
-          'Enrollment Start Date': experimentInfo.startDate && experimentInfo.startDate.toISOString(),
-          'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
+          'Enrollment Start Date': stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog).join(','),
+          'Enrollment End Date': stateTimeLogs.filter(state => state.fromState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog).join(','),
           'Unit of Assignment': experimentInfo.assignmentUnit,
           'Consistency Rule': experimentInfo.consistencyRule,
           // tslint:disable-next-line:object-literal-key-quotes

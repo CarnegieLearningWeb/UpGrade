@@ -236,21 +236,10 @@ export class ExperimentService {
       // add experiment audit logs
       this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
-      let endDate = oldExperiment.endDate || null;
-      let startDate = oldExperiment.startDate || null;
-      if (state === EXPERIMENT_STATE.ENROLLING) {
-        startDate = new Date();
-        endDate = null;
-      } else if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-        endDate = new Date();
-      }
-
       const updatedState = await this.experimentRepository.updateState(
         experimentId,
         state,
         scheduleDate,
-        endDate,
-        startDate,
         transactionalEntityManager
       );
 
@@ -321,8 +310,6 @@ export class ExperimentService {
     });
 
     experiment.partitions = experimentPartitions;
-    experiment.endDate = null;
-    experiment.startDate = null;
     experiment.endOn = null;
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
@@ -460,12 +447,6 @@ export class ExperimentService {
 
         let experimentDoc: Experiment;
         try {
-          // if state is enrollment complete add endDate
-          if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-            expDoc.endDate = new Date();
-          } else if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
-            expDoc.startDate = new Date();
-          }
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
           // here
         } catch (error) {
@@ -757,12 +738,6 @@ export class ExperimentService {
       // saving experiment docs
       let experimentDoc: Experiment;
       try {
-        // if state is enrollment complete add endDate
-        if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-          expDoc.endDate = new Date();
-        } else if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
-          expDoc.startDate = new Date();
-        }
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);

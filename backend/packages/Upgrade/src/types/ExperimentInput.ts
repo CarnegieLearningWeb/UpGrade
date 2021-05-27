@@ -23,8 +23,6 @@ export class ExperimentInput {
   @IsNotEmpty()
   public state: EXPERIMENT_STATE;
 
-  public startDate: Date;
-
   @ValidateIf((o) => o.state === EXPERIMENT_STATE.SCHEDULED)
   @IsNotEmpty()
   public startOn: Date;
@@ -41,8 +39,6 @@ export class ExperimentInput {
   public enrollmentCompleteCondition: Partial<IEnrollmentCompleteCondition>;
 
   public endOn: Date;
-
-  public endDate: Date;
 
   public revertTo: string;
 

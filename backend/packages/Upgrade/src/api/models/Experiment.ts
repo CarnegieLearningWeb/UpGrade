@@ -51,15 +51,9 @@ export class Experiment extends BaseModel {
   public state: EXPERIMENT_STATE;
 
   @Column({ nullable: true })
-  public startDate: Date;
-
-  @Column({ nullable: true })
   @ValidateIf((o) => o.state === EXPERIMENT_STATE.SCHEDULED)
   @IsNotEmpty()
   public startOn: Date;
-
-  @Column({ nullable: true })
-  public endDate: Date;
 
   @IsNotEmpty()
   @Column({
