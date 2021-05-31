@@ -246,7 +246,7 @@ export class AnalyticsService {
       // get experiment definition
       const experiment = await this.experimentRepository.findOne({
         where: { id: experimentId },
-        relations: ['partitions', 'conditions','stateTimeLogs'],
+        relations: ['partitions', 'conditions', 'stateTimeLogs'],
       });
       if (!experiment) {
         return '';
