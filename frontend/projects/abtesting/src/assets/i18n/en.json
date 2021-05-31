@@ -134,7 +134,7 @@
   "home.view-experiment.enrollment-start-time.title.text": "Start Time",
   "home.view-experiment.enrollment-time-logs.title.text": "Enrollment Time Logs",
   "home.view-experiment.enrollment-end-time.title.text": "End Time",
-  "home.view-experiment.enrollment-start-time-list.text": "Time_logs",
+  "home.view-experiment.enrollment-start-time-list.text": "Time Logs",
   "home.view-experiment.enrollments-over-time.text": "Enrollments Over Time by Experiment Sites",
   "home.view-experiment.enrollment-over-time.choose-date-range.text": "Choose a range",
   "home.view-experiment.enrollment-over-time.user-enrollments-across-sites.text": "PARTICIPANT ENROLLMENTS ACROSS SITES",
