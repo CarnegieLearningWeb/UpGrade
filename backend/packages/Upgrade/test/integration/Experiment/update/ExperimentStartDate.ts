@@ -30,33 +30,40 @@ export default async function ExperimentEndDate(): Promise<void> {
       }),
     ])
   );
-
-  expect(experiments[0].stateTimeLogs).toBeNull();
+  //console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~exp1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n',experiments[0].stateTimeLogs);
+  expect(experiments[0].stateTimeLogs).toHaveLength(0);
 
   const experiment = { ...experiments[0], state: EXPERIMENT_STATE.ENROLLING };
-  await experimentService.update(experiment.id, experiment, user);
-
+  //await experimentService.update(experiment.id, experiment, user);
+  await experimentService.updateState(experiment.id, experiment.state, user);
   experiments = await experimentService.find();
+  //console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~exp2~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n',experiments[0].stateTimeLogs);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).not.toBeNull();
 
   await experimentService.delete(experiment.id, user);
 
+  /*
   // create another experiment with enrollment complete state
   await experimentService.create({ ...individualAssignmentExperiment, state: EXPERIMENT_STATE.ENROLLING } as any, user);
+  await experimentService.updateState(experiment.id, experiment.state, user);
   experiments = await experimentService.find();
   //expect(experiments[0].startDate).not.toBeNull();
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~exp3~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n',experiments[0].stateTimeLogs);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).not.toBeNull();
 
   await experimentService.delete(experiment.id, user);
-
+    */
+   
   // with updated state
   await experimentService.create({ ...individualAssignmentExperiment } as any, user);
   experiments = await experimentService.find();
   //expect(experiments[0].startDate).toBeNull();
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~exp4~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n',experiments[0].stateTimeLogs);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).not.toBeNull();
 
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user);
   experiments = await experimentService.find();
   //expect(experiments[0].startDate).not.toBeNull();
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~exp5~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n',experiments[0].stateTimeLogs);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).not.toBeNull();  
 }
