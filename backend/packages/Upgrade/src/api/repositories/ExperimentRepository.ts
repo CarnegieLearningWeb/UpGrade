@@ -10,6 +10,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('queries.metric', 'metric')
       .getMany()
       .catch((errorMsg: any) => {
