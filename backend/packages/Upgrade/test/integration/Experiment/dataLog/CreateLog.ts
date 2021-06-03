@@ -23,7 +23,7 @@ export default async function CreateLog(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
   const logRepository = getRepository(Log);
 
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create experiment
   await experimentService.create(experimentObject as any, user);

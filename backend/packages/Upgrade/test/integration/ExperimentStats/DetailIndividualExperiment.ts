@@ -23,7 +23,7 @@ export default async function testCase(): Promise<void> {
   const previewUser = await previewService.create(previewUsers[0]);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
   // experiment object
   const experimentObject = individualExperimentStats;
 

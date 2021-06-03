@@ -21,7 +21,7 @@ export default async function NoExperiment(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;

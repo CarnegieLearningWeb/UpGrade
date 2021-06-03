@@ -18,7 +18,7 @@ export default async function StartExperiment(): Promise<void> {
   const auditService = Container.get<AuditService>(AuditService);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // experiment object
   const experimentObject = scheduleJobStartExperiment;

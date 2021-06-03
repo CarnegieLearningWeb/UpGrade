@@ -165,7 +165,7 @@ export class UserController {
    */
   @Post()
   public create(@Body() user: User): Promise<User> {
-    return this.userService.create(user);
+    return this.userService.upsertUser(user);
   }
 
   /**
