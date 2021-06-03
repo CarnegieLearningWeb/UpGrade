@@ -86,7 +86,7 @@
   "home.new-experiment.overview.context.error.text": "Please enter at least one context",
   "home.new-experiment.design.description.text": "DESCRIPTION",
   "home.new-experiment.design.condition.placeholder.text": "Condition",
-  "home.new-experiment.design.condition.invalid.text": "default",
+  "home.new-experiment.design.condition.invalid.text": "DEFAULT",
   "home.new-experiment.design.assignment-weight.placeholder.text": "Assignment weight",
   "home.new-experiment.design.description.placeholder.text": "Description",
   "home.new-experiment.design.add-condition.text": "Add Condition",

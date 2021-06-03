@@ -246,10 +246,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     let defaultKeywordError = false;
     const conditionCodes = conditions.map(condition => condition.conditionCode);
     conditionCodes.forEach(conditioncode => {
-      if (conditioncode === this.translate.instant('home.new-experiment.design.condition.invalid.text')) {
+      if (conditioncode.toUpperCase() === this.translate.instant('home.new-experiment.design.condition.invalid.text')) {
         defaultKeywordError = true;
         this.conditionCodeError = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
-        // console.log("here: ", this.conditionCodeError )
       }
     })
     if (conditionCodes.length !== new Set(conditionCodes).size) {
@@ -259,7 +258,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.conditionCodeError = null;
       }
     }
-    console.log("out: ", this.conditionCodeError )
   }
 
   validateConditionCount(conditions: ExperimentCondition[]) {

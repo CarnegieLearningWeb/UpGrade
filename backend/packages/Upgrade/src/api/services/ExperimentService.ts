@@ -33,6 +33,7 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
+import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
 
 @Service()
 export class ExperimentService {
@@ -445,19 +446,31 @@ export class ExperimentService {
         } catch (error) {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
         }
-
+        let defaultconditionCodeError = false;
         // creating condition docs
         const conditionDocToSave: Array<Partial<ExperimentCondition>> =
           (conditions &&
             conditions.length > 0 &&
+            // Check for conditionCode is 'default' then return error:
             conditions.map((condition: ExperimentCondition) => {
+              // case insensitive check:
+              if (condition.conditionCode.toUpperCase() === 'DEFAULT') {
+                defaultconditionCodeError = true;
+              }
+              if(defaultconditionCodeError == true) {
+                throw new BadRequestError(
+                  JSON.stringify({
+                    message: `Condition not allowed: ${condition.conditionCode}`,
+                  })
+                );
+              }
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = condition;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
-              return rest;
-            })) ||
-          [];
+              return rest;      
+                })) ||
+              [];
 
         // creating partition docs
         const partitionDocToSave =
@@ -727,6 +740,23 @@ export class ExperimentService {
         uniqueIdentifiers = response[1];
       }
       const { conditions, partitions, ...expDoc } = experiment;
+      
+      let defaultconditionCodeError = false;
+      // Check for conditionCode is 'default' then return error:
+      conditions.map((condition: ExperimentCondition) => {
+        // case insensitive check:
+        if (condition.conditionCode.toUpperCase() === 'DEFAULT') {
+          defaultconditionCodeError = true;
+        }
+        if(defaultconditionCodeError == true) {
+          throw new BadRequestError(
+            JSON.stringify({
+              message: `Condition not allowed: ${condition.conditionCode}`,
+            })
+          );
+        }
+      });
+
 
       // saving experiment docs
       let experimentDoc: Experiment;
