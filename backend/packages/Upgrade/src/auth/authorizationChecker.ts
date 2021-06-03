@@ -28,7 +28,7 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
       return env.auth.authCheck ? false : true;
     }
     try {
-      const userDoc = await authService.validateUser(token);
+      const userDoc = await authService.validateUser(token, action.request);
       log.info(`User document in database ${JSON.stringify(userDoc, null, 2)}`);
       action.request.user = userDoc;
       return true;
