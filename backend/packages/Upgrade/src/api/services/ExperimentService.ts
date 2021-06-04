@@ -125,7 +125,7 @@ export class ExperimentService {
   public getExpPointsAndIds(): object {
     return {
       expPoints: env.initialization.expPoints,
-      expIds: env.initialization.expIds
+      expIds: env.initialization.expIds,
     };
   }
 
@@ -255,7 +255,7 @@ export class ExperimentService {
 
       // updating experiment schedules here
       await this.updateExperimentSchedules(experimentId, transactionalEntityManager);
-      
+
       return {
         ...oldExperiment,
         state: updatedState[0].state,
