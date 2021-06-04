@@ -42,33 +42,24 @@ export default async function ExperimentEndDate(): Promise<void> {
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).toHaveLength(1);
 
   await experimentService.delete(experiment.id, user);
-
-  /*
-  // create another experiment with enrollment complete state
-  await experimentService.create({ ...individualAssignmentExperiment, state: EXPERIMENT_STATE.ENROLLING } as any, user);
-  await experimentService.updateState(experiment.id, experiment.state, user);
-  experiments = await experimentService.find();
-  //expect(experiments[0].startDate).not.toBeNull();
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~exp3~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n',experiments[0].stateTimeLogs);
-  expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).not.toBeNull();
-
-  await experimentService.delete(experiment.id, user);
-  */
-   
+ 
   // with updated state
   await experimentService.create({ ...individualAssignmentExperiment } as any, user);
   experiments = await experimentService.find();
+
   expect(experiments[0].stateTimeLogs).toHaveLength(0);
 
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user);
   experiments = await experimentService.find();
+
   expect(experiments[0].stateTimeLogs).toHaveLength(1);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).toHaveLength(1);
-  
+
   // with second entry
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user);
   experiments = await experimentService.find();
+
   expect(experiments[0].stateTimeLogs).toHaveLength(3);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).toHaveLength(2);
 }

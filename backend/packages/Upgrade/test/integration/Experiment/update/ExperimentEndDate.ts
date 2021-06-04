@@ -39,32 +39,22 @@ export default async function ExperimentEndDate(): Promise<void> {
   //await experimentService.update(experiment.id, experiment, user);
 
   experiments = await experimentService.find();
+  
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE).map((timelogs) => timelogs.timeLog)).toHaveLength(1);
 
   await experimentService.delete(experiment.id, user);
 
-  // create another experiment with enrollment complete state
-  /*
-  await experimentService.create(
-    { ...individualAssignmentExperiment, state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE } as any,
-    user
-  );
-  experiments = await experimentService.find();
-  //expect(experiments[0].endDate).not.toBeNull();
-  expect(experiments[0].stateTimeLogs.filter(state => state.fromState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog)).not.toBeNull();
-
-  await experimentService.delete(experiment.id, user);
-*/
-
   // with updated state
   await experimentService.create({ ...individualAssignmentExperiment } as any, user);
   experiments = await experimentService.find();
+
   expect(experiments[0].stateTimeLogs).toHaveLength(0);
 
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user);
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
   experiments = await experimentService.find();
+
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE).map((timelogs) => timelogs.timeLog)).toHaveLength(1);
 
@@ -72,7 +62,7 @@ export default async function ExperimentEndDate(): Promise<void> {
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user);
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
   experiments = await experimentService.find();
+
   expect(experiments[0].stateTimeLogs).toHaveLength(4);
   expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE).map((timelogs) => timelogs.timeLog)).toHaveLength(2);
-
 }
