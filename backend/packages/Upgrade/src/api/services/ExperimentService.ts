@@ -1,5 +1,6 @@
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
+import {  EntityManager } from 'typeorm';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import {
@@ -34,7 +35,6 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
-// import { StateTimeLog } from '../models/StateTimeLogs';
 
 @Service()
 export class ExperimentService {
@@ -244,7 +244,7 @@ export class ExperimentService {
       );
 
       // updating experiment schedules here
-      await this.updateExperimentSchedules(experimentId);
+      await this.updateExperimentSchedules(experimentId, transactionalEntityManager);
 
       // updating state time logs here
       const timeLogDate = new Date();
@@ -316,10 +316,11 @@ export class ExperimentService {
     return this.create(experiment, user);
   }
 
-  private async updateExperimentSchedules(experimentId: string): Promise<void> {
-    const experiment = await this.experimentRepository.findByIds([experimentId]);
+  private async updateExperimentSchedules(experimentId: string,  entityManager?: EntityManager | any): Promise<void> {
+    entityManager = entityManager || this;
+    const experiment = await entityManager.getRepository(Experiment).findByIds([experimentId]);
     if (experiment.length > 0 && this.scheduledJobService) {
-      await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
+      await this.scheduledJobService.updateExperimentSchedules(experiment[0], entityManager);
     }
   }
 

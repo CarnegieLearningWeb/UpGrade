@@ -13,6 +13,7 @@ import { systemUserDoc } from '../../init/seed/systemUser';
 import { ExperimentService } from './ExperimentService';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { EntityManager } from 'typeorm';
 
 @Service()
 export class ScheduledJobService {
@@ -75,14 +76,16 @@ export class ScheduledJobService {
     });
   }
 
-  public async updateExperimentSchedules(experiment: Experiment): Promise<void> {
+  public async updateExperimentSchedules(experiment: Experiment, entityManager?: EntityManager): Promise<void> {
     try {
+      const scheduledJobRepo = entityManager ? entityManager.getRepository(ScheduledJob) : this.scheduledJobRepository ;
+
       const { state, startOn, endOn } = experiment;
       const experimentStartCondition = state === EXPERIMENT_STATE.SCHEDULED;
       const experimentEndCondition =
         !(state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE || state === EXPERIMENT_STATE.CANCELLED) && endOn;
       // query experiment schedules
-      const scheduledJobs = await this.scheduledJobRepository.find({ experiment });
+      const scheduledJobs = await scheduledJobRepo.find({ experiment });
       const startExperimentDoc = scheduledJobs.find(({ type }) => {
         return type === SCHEDULE_TYPE.START_EXPERIMENT;
       });
@@ -113,11 +116,12 @@ export class ScheduledJobService {
             ...startDoc,
             timeStamp: startOn,
             executionArn: response.executionArn,
-          });
+          }, entityManager);
         }
       } else if (startExperimentDoc) {
         // delete event here
-        await this.scheduledJobRepository.delete({ id: startExperimentDoc.id });
+        // todo: parallel here promise all
+        await scheduledJobRepo.delete({ id: startExperimentDoc.id });
         await this.stopExperimentSchedular(startExperimentDoc.executionArn);
       }
 
@@ -150,11 +154,11 @@ export class ScheduledJobService {
             ...endDoc,
             timeStamp: endOn,
             executionArn: response.executionArn,
-          });
+          }, entityManager);
         }
       } else if (endExperimentDoc) {
         // delete event here
-        await this.scheduledJobRepository.delete({ id: endExperimentDoc.id });
+        await scheduledJobRepo.delete({ id: endExperimentDoc.id });
         await this.stopExperimentSchedular(endExperimentDoc.executionArn);
       }
     } catch (error) {
