@@ -24,7 +24,7 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
         fromState,
         toState,
         timeLog,
-        experiment: experimentId
+        experiment: experimentId,
       })
       .returning('*')
       .execute()
