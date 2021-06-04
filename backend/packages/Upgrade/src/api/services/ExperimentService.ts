@@ -236,31 +236,30 @@ export class ExperimentService {
       // add experiment audit logs
       this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
 
-      const updatedState = await this.experimentRepository.updateState(
-        experimentId,
-        state,
-        scheduleDate,
-        transactionalEntityManager
-      );
-
-      // updating experiment schedules here
-      await this.updateExperimentSchedules(experimentId, transactionalEntityManager);
-
-      // updating state time logs here
       const timeLogDate = new Date();
 
-      const updatedStateTimeLog = await this.stateTimeLogsRepository.insertStateTimeLog(
-        oldExperiment.state,
-        state,
-        timeLogDate,
-        oldExperiment,
-        transactionalEntityManager
-      );
+      // updating the experiment and stateTimeLog
+      const [updatedState, updatedStateTimeLog] = await Promise.all([
+        this.experimentRepository.updateState(
+          experimentId,
+          state,
+          scheduleDate,
+          transactionalEntityManager
+        ),
+        this.stateTimeLogsRepository.insertStateTimeLog(oldExperiment.state,
+          state,
+          timeLogDate,
+          oldExperiment,
+          transactionalEntityManager),
+      ]);
 
+      // updating experiment schedules here
+      this.updateExperimentSchedules(experimentId, transactionalEntityManager);
+      
       return {
         ...oldExperiment,
         state: updatedState[0].state,
-        stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]]
+        stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]],
       };
     });
   }

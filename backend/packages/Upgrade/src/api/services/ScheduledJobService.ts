@@ -120,9 +120,10 @@ export class ScheduledJobService {
         }
       } else if (startExperimentDoc) {
         // delete event here
-        // todo: parallel here promise all
-        await scheduledJobRepo.delete({ id: startExperimentDoc.id });
-        await this.stopExperimentSchedular(startExperimentDoc.executionArn);
+        await Promise.all([
+          scheduledJobRepo.delete({ id: startExperimentDoc.id }),
+          this.stopExperimentSchedular(startExperimentDoc.executionArn),
+        ]);
       }
 
       const endExperimentDoc = scheduledJobs.find(({ type }) => {
@@ -158,8 +159,10 @@ export class ScheduledJobService {
         }
       } else if (endExperimentDoc) {
         // delete event here
-        await scheduledJobRepo.delete({ id: endExperimentDoc.id });
-        await this.stopExperimentSchedular(endExperimentDoc.executionArn);
+        await Promise.all([
+          scheduledJobRepo.delete({ id: endExperimentDoc.id }),
+          this.stopExperimentSchedular(endExperimentDoc.executionArn),
+        ]);
       }
     } catch (error) {
       this.log.error('Error in experiment schedular ', error.message);
