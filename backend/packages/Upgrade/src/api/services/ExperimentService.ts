@@ -254,7 +254,7 @@ export class ExperimentService {
       ]);
 
       // updating experiment schedules here
-      this.updateExperimentSchedules(experimentId, transactionalEntityManager);
+      await this.updateExperimentSchedules(experimentId, transactionalEntityManager);
       
       return {
         ...oldExperiment,
