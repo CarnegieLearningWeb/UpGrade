@@ -142,33 +142,21 @@ export class ExperimentService {
       const experiment = await this.findOne(experimentId);
 
       if (experiment) {
-        // monitoredIds
-        const monitoredIds = experiment.partitions.map((partition) => {
-          return getExperimentPartitionID(partition.expPoint, partition.expId);
-        });
-
-        const promiseArray = [];
-        // deleting data related to experiment
-        promiseArray.push(
-          this.monitoredExperimentPointRepository.deleteByExperimentId(monitoredIds, transactionalEntityManager)
-        );
-        promiseArray.push(this.experimentRepository.deleteById(experimentId, transactionalEntityManager));
+        const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
         // adding entry in audit log
         const deleteAuditLogData = {
           experimentName: experiment.name,
         };
-        promiseArray.push(
-          this.experimentAuditLogRepository.saveRawJson(
-            EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
-            deleteAuditLogData,
-            currentUser
-          )
+
+        // Add log for experiment deleted
+        this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
+          deleteAuditLogData,
+          currentUser
         );
 
-        const promiseResult = await Promise.all(promiseArray);
-
-        return promiseResult[1];
+        return deletedExperiment;
       }
 
       return undefined;
@@ -372,12 +360,14 @@ export class ExperimentService {
     const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
-      // query all user information
-      const groupsToExclude = new Set(
-        userDetails.map((userDetail) => {
-          return userDetail.workingGroup[group];
+      const workingGroups = userDetails
+        .map((userDetail) => {
+          return userDetail.workingGroup && userDetail.workingGroup[group];
         })
-      );
+        .filter((groupName) => !!groupName);
+
+      // query all user information
+      const groupsToExclude = new Set(workingGroups);
 
       // group exclusion documents
       const groupExclusionDocs = [...groupsToExclude].map((groupId) => {

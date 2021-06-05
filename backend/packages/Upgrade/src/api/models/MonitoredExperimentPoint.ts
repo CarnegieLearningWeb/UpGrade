@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, Index } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentUser } from './ExperimentUser';
 import { MonitoredExperimentPointLog } from './MonitorExperimentPointLog';
@@ -9,6 +9,7 @@ export class MonitoredExperimentPoint extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
+  @Index()
   @Column()
   public experimentId: string;
 
