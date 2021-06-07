@@ -27,18 +27,22 @@ export class ScheduledJobService {
   ) {}
 
   public async startExperiment(id: string): Promise<any> {
+    console.log('-----------call 2------------',id);
     const scheduledJob = await this.scheduledJobRepository.findOne(id, { relations: ['experiment'] });
-    if (scheduledJob && scheduledJob.experiment) {
+    //if (scheduledJob && scheduledJob.experiment) {
+      console.log('-----------call 2.5------------',scheduledJob);
       const experiment = await this.experimentRepository.findOne(scheduledJob.experiment.id);
-      if (scheduledJob && experiment) {
+      console.log('-----------call 3------------');
+      //if (scheduledJob && experiment) {
         const systemUser = await this.userRepository.findOne({ email: systemUserDoc.email });
         const experimentService = Container.get<ExperimentService>(ExperimentService);
         // update experiment startOn
         await this.experimentRepository.update({ id: experiment.id }, { startOn: null });
+        console.log('-----------call 4------------');
         return experimentService.updateState(scheduledJob.experiment.id, EXPERIMENT_STATE.ENROLLING, systemUser);
-      }
-    }
-    return {};
+      //}
+    //}
+    //return {};
   }
 
   public async endExperiment(id: string): Promise<any> {
