@@ -8,10 +8,10 @@
   <div class="stateTimeLogs-view">
     <div class="stateTimeLogs-table-container">
 
-      <ng-container *ngIf="filtered_timeLog?.length; else zeroState">    
+      <ng-container *ngIf="filteredTimeLogs?.length; else zeroState">    
         <mat-table
           class="table"
-          [dataSource]="filtered_timeLog"
+          [dataSource]="filteredTimeLogs"
         >
 
           <!-- TIMELOG NUMBER Column -->

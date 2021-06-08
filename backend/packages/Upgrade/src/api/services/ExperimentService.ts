@@ -423,7 +423,6 @@ export class ExperimentService {
     const oldPartitions = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
 
-    console.log(' old experiment data ', oldExperiment);
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
       this.scheduledJobService.updateExperimentSchedules(experiment as any);
@@ -448,7 +447,6 @@ export class ExperimentService {
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
-          // here
         } catch (error) {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
         }

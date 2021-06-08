@@ -78,7 +78,7 @@ export class ScheduledJobService {
 
   public async updateExperimentSchedules(experiment: Experiment, entityManager?: EntityManager): Promise<void> {
     try {
-      const scheduledJobRepo = entityManager ? entityManager.getRepository(ScheduledJob) : this.scheduledJobRepository ;
+      const scheduledJobRepo = entityManager ? entityManager.getRepository(ScheduledJob) : this.scheduledJobRepository;
 
       const { state, startOn, endOn } = experiment;
       const experimentStartCondition = state === EXPERIMENT_STATE.SCHEDULED;

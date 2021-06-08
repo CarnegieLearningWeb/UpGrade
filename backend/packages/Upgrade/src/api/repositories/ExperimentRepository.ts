@@ -90,7 +90,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     const result = await entityManager
       .createQueryBuilder()
       .update(Experiment)
-      .set({ state, startOn: scheduleDate})
+      .set({ state, startOn: scheduleDate })
       .where({ id: experimentId })
       .returning('*')
       .execute()

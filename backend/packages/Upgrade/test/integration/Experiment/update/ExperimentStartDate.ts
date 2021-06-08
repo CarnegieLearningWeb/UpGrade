@@ -34,7 +34,6 @@ export default async function ExperimentEndDate(): Promise<void> {
   expect(experiments[0].stateTimeLogs).toHaveLength(0);
 
   const experiment = { ...experiments[0], state: EXPERIMENT_STATE.ENROLLING };
-  //await experimentService.update(experiment.id, experiment, user);
   await experimentService.updateState(experiment.id, experiment.state, user);
   experiments = await experimentService.find();
 

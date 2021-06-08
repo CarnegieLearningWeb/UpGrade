@@ -11,7 +11,7 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
     fromState: EXPERIMENT_STATE,
     toState: EXPERIMENT_STATE,
     timeLog: Date,
-    experimentId: Experiment,
+    experiment: Experiment,
     entityManager?: EntityManager | any
   ): Promise<StateTimeLog> {
     entityManager = entityManager || this;
@@ -24,7 +24,7 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
         fromState,
         toState,
         timeLog,
-        experiment: experimentId,
+        experiment: experiment,
       })
       .returning('*')
       .execute()
@@ -32,7 +32,7 @@ export class StateTimeLogsRepository extends Repository<StateTimeLog> {
         const errorMsgString = repositoryError(
           'StateTimeLogsRepository',
           'insertStateTimeLog',
-          { fromState, toState, timeLog, experimentId },
+          { fromState, toState, timeLog, experiment },
           errorMsg
         );
         throw new Error(errorMsgString);

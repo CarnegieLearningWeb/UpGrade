@@ -36,7 +36,6 @@ export default async function ExperimentEndDate(): Promise<void> {
   const experiment = { ...experiments[0], state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE };
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user);
   await experimentService.updateState(experiment.id, experiment.state, user);
-  //await experimentService.update(experiment.id, experiment, user);
 
   experiments = await experimentService.find();
   

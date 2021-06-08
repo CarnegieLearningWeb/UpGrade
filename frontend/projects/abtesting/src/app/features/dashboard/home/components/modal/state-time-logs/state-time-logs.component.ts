@@ -11,12 +11,12 @@ import { ExperimentVM, EXPERIMENT_STATE } from '../../../../../../core/experimen
 })
 export class StateTimeLogsComponent implements OnInit {
 
-  timeLogDisplayedColumns = ['timeLogNumber', 'startTime', 'endTime']
+  timeLogDisplayedColumns = ['timeLogNumber', 'startTime', 'endTime'];
   experiment: ExperimentVM;
 
   startTimeLogs = [];
   endTimeLogs = [];
-  filtered_timeLog = [];
+  filteredTimeLogs = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -44,9 +44,9 @@ export class StateTimeLogsComponent implements OnInit {
       return d1 > d2 ? 1 : d1 < d2 ? -1 : 0;
     });
 
-    this.startTimeLogs.forEach((startTimeLog, idx) => {
-      const endTimeLog = idx < this.endTimeLogs.length ?  this.endTimeLogs[idx].timeLog : null;
-      this.filtered_timeLog.push({startTimeLog: startTimeLog.timeLog, endTimeLog: endTimeLog});
+    this.startTimeLogs.forEach((startTimeLog, index) => {
+      const endTimeLog = index < this.endTimeLogs.length ?  this.endTimeLogs[index].timeLog : null;
+      this.filteredTimeLogs.push({startTimeLog: startTimeLog.timeLog, endTimeLog: endTimeLog});
     });
   }
 }

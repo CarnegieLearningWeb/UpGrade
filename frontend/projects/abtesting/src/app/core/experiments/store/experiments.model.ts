@@ -128,7 +128,7 @@ export interface ExperimentNameVM {
   name: string;
 }
 
-export interface ExperimentStateTimeLog{
+export interface ExperimentStateTimeLog {
   id: string;
   fromState: EXPERIMENT_STATE;
   toState: EXPERIMENT_STATE;
