@@ -14,7 +14,7 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition, getExperimentPartitionID } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In } from 'typeorm';
+import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR } from 'upgrade_types';
@@ -206,8 +206,10 @@ export class ExperimentService {
     experimentId: string,
     state: EXPERIMENT_STATE,
     user: User,
+    em?: EntityManager | any,
     scheduleDate?: Date
   ): Promise<Experiment> {
+    em = em || this;
     if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
       await this.populateExclusionTable(experimentId, state);
     }
@@ -243,7 +245,8 @@ export class ExperimentService {
       state,
       scheduleDate,
       endDate,
-      startDate
+      startDate,
+      em
     );
 
     // updating experiment schedules here
