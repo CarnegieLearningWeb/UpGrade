@@ -315,8 +315,7 @@ export class ExperimentService {
     return this.create(experiment, user);
   }
 
-  private async updateExperimentSchedules(experimentId: string,  entityManager?: EntityManager | any): Promise<void> {
-    entityManager = entityManager || this;
+  private async updateExperimentSchedules(experimentId: string,  entityManager?: EntityManager): Promise<void> {
     const experiment = await entityManager.getRepository(Experiment).findByIds([experimentId]);
     if (experiment.length > 0 && this.scheduledJobService) {
       await this.scheduledJobService.updateExperimentSchedules(experiment[0], entityManager);

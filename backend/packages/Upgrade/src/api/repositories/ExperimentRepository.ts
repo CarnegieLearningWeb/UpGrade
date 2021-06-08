@@ -84,9 +84,8 @@ export class ExperimentRepository extends Repository<Experiment> {
     experimentId: string,
     state: EXPERIMENT_STATE,
     scheduleDate: Date,
-    entityManager?: EntityManager | any
+    entityManager?: EntityManager
   ): Promise<Experiment> {
-    entityManager = entityManager || this;
     const result = await entityManager
       .createQueryBuilder()
       .update(Experiment)
