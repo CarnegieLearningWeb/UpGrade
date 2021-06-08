@@ -5,7 +5,7 @@
     height: 108px;
   }
 
-  .stateTimeLogs-view {
+  .state-time-logs-view {
     margin: 20px 0;
     padding: 0 40px;
 
@@ -22,8 +22,7 @@
         }
 
         mat-row {
-          min-height: 46px;
-          max-height: 46px;
+          height: 46px;
         }
 
         mat-header-cell {
