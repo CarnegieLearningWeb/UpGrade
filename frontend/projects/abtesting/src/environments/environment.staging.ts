@@ -25,7 +25,8 @@ export const environment = {
     experimentGraphInfo: `${endpointApi}/stats/enrollment/date`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/experiments/state`,
-    users: `${endpointApi}/users`, // Used to create a new user after login
+    users: `${endpointApi}/users`,
+    loginUser: `${endpointApi}/login/user`, // Used to create a new user after login if doesn't exist in DB
     getAllUsers: `${endpointApi}/users/paginated`,
     userRole: `${endpointApi}/users/role`,
     excludeUsers: `${endpointApi}/exclude/user`,

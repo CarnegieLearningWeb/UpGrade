@@ -19,7 +19,7 @@ export default async function testCase(): Promise<void> {
   const individualAssignmentRepository = getRepository(IndividualAssignment);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
   const context1 = 'login';
   const context2 = 'about';
 

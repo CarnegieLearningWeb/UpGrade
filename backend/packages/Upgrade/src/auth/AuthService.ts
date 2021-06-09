@@ -23,7 +23,7 @@ export class AuthService {
     return authorization && authorization.replace('Bearer ', '').trim();
   }
 
-  public async validateUser(token: string): Promise<User> {
+  public async validateUser(token: string, request: express.Request): Promise<User> {
     const client = new OAuth2Client(env.google.clientId);
     this.log.info(`Validating ID Token`);
     const ticket = await client.verifyIdToken({
@@ -53,6 +53,12 @@ export class AuthService {
     }
     this.log.info(`Domain name validated`);
 
+    if (this.isLoginUserRequestPath(request)) {
+      // No need to fetch user document
+      // This is the case when user is trying to login the portal.
+      // User document doesn't exist if user is visiting the portal for the first time.
+      return null;
+    }
     // add local cache for validating user for each request
     const document = await this.userRepository.find({ email });
     if (document.length === 0) {
@@ -63,5 +69,10 @@ export class AuthService {
     // If request specified a G Suite domain:
     // const domain = payload['hd'];
     return document[0];
+  }
+
+  private isLoginUserRequestPath(request: express.Request): boolean {
+    const loginUserRequestPath = '/api/login/user';
+    return request.path === loginUserRequestPath;
   }
 }

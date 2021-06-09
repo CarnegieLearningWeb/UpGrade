@@ -1,4 +1,4 @@
-import { JsonController, Get } from 'routing-controllers';
+import { JsonController, Get, Authorized } from 'routing-controllers';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
 
@@ -9,6 +9,7 @@ import { env } from '../../env';
  *     description: Get version details
  */
 
+@Authorized()
 @JsonController('/version')
 export class VersionController {
     constructor(@Logger(__filename) private log: LoggerInterface) { }
