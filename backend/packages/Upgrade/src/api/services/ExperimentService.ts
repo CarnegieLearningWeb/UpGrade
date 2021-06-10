@@ -312,6 +312,7 @@ export class ExperimentService {
     experiment.endOn = null;
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
+    experiment.stateTimeLogs = [];
     return this.create(experiment, user);
   }
 
