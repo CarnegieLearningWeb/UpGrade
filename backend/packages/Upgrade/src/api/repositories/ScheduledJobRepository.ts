@@ -6,8 +6,10 @@ import repositoryError from './utils/repositoryError';
 export class ScheduledJobRepository extends Repository<ScheduledJob> {
   public async upsertScheduledJob(
     scheduledJob: Partial<ScheduledJob>,
-    entityManager?: EntityManager): Promise<ScheduledJob> {
-    const result = await entityManager
+    entityManager?: EntityManager
+  ): Promise<ScheduledJob> {
+    const that = entityManager ? entityManager : this;
+    const result = await that
       .createQueryBuilder()
       .insert()
       .into(ScheduledJob)
