@@ -27,13 +27,13 @@
 
         mat-header-cell {
           justify-content: center;
-          margin-right: 15px;
+          margin-right: 13px;
           color: var(--grey-6);
         }
 
         mat-cell {
           justify-content: center;
-          margin-right: 15px;
+          margin-right: 13px;
         }
 
         .cdk-column-timeLogNumber {
@@ -42,7 +42,7 @@
 
         .cdk-column-startTime,
         .cdk-column-endTime {
-          flex: 0 0% 40%;
+          flex: 0% 0% 40%;
           width: 40%;
           justify-content: left;
         }
