@@ -206,10 +206,9 @@ export class ExperimentService {
     experimentId: string,
     state: EXPERIMENT_STATE,
     user: User,
-    em?: EntityManager | any,
-    scheduleDate?: Date
+    scheduleDate?: Date,
+    entityManager?: EntityManager
   ): Promise<Experiment> {
-    em = em || this;
     if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
       await this.populateExclusionTable(experimentId, state);
     }
@@ -228,7 +227,7 @@ export class ExperimentService {
       data = { ...data, startOn: scheduleDate };
     }
     // add experiment audit logs
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
+    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
     let endDate = oldExperiment.endDate || null;
     let startDate = oldExperiment.startDate || null;
@@ -246,7 +245,7 @@ export class ExperimentService {
       scheduleDate,
       endDate,
       startDate,
-      em
+      entityManager
     );
 
     // updating experiment schedules here

@@ -1,5 +1,5 @@
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, EntityManager } from 'typeorm';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';
@@ -35,9 +35,17 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       });
   }
 
-  public async saveRawJson(type: EXPERIMENT_LOG_TYPE, data: any, user: User): Promise<ExperimentAuditLog> {
-    const result = await this.createQueryBuilder()
+  public async saveRawJson(
+    type: EXPERIMENT_LOG_TYPE,
+    data: any,
+    user: User,
+    entityManger?: EntityManager
+  ): Promise<ExperimentAuditLog> {
+    const that = entityManger ? entityManger : this; 
+    const result = await that
+      .createQueryBuilder()
       .insert()
+      .into(ExperimentAuditLog)
       .values({ type, data, user })
       .returning('*')
       .execute()
