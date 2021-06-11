@@ -6,9 +6,7 @@ import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { env } from '../../env';
-import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
-import { UserRepository } from '../repositories/UserRepository';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { ExperimentService } from './ExperimentService';
 import { ErrorRepository } from '../repositories/ErrorRepository';
@@ -20,8 +18,6 @@ import { User } from '../models/User';
 export class ScheduledJobService {
   constructor(
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
-    @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository() private userRepository: UserRepository,
     @OrmRepository() private errorRepository: ErrorRepository,
     @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     private awsService: AWSService,
@@ -36,9 +32,9 @@ export class ScheduledJobService {
         const currentDate = new Date();
         const timeDif = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
-        const errorMsg =  'Time Differnce of more than 5 hours is found';
-
+        
         if (timeDif > fiveHoursInMS) {
+          const errorMsg =  'Time Differnce of more than 5 hours is found';
           await transactionalEntityManager.getRepository(ScheduledJob).delete({id: scheduledJob.id});
           throw new Error(errorMsg);
         }
@@ -62,21 +58,40 @@ export class ScheduledJobService {
   }
 
   public async endExperiment(id: string): Promise<any> {
-    const scheduledJob = await this.scheduledJobRepository.findOne(id, { relations: ['experiment'] });
-    const experiment = await this.experimentRepository.findOne(scheduledJob.experiment.id);
-    if (scheduledJob && experiment) {
-      // get system user
-      const systemUser = await this.userRepository.findOne({ email: systemUserDoc.email });
-      const experimentService = Container.get<ExperimentService>(ExperimentService);
-      // update experiment endOn
-      await this.experimentRepository.update({ id: experiment.id }, { endOn: null });
-      return experimentService.updateState(
-        scheduledJob.experiment.id,
-        EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
-        systemUser
-      );
-    }
-    return {};
+    return await getConnection().transaction(async (transactionalEntityManager) => {
+      try {
+        const scheduledJob = await transactionalEntityManager.getRepository(ScheduledJob).findOne(id, { relations: ['experiment'] });
+        const experiment = await transactionalEntityManager.getRepository(Experiment).findOne(scheduledJob.experiment.id);
+
+        const currentDate = new Date();
+        const timeDif = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
+        const fiveHoursInMS = 18000000;
+        
+        if (timeDif > fiveHoursInMS) {
+          const errorMsg =  'Time Differnce of more than 5 hours is found';
+          await transactionalEntityManager.getRepository(ScheduledJob).delete({id: scheduledJob.id});
+          throw new Error(errorMsg);
+        }
+
+        if (scheduledJob && experiment) {
+          const systemUser = await transactionalEntityManager.getRepository(User).findOne({ email: systemUserDoc.email });
+          const experimentService = Container.get<ExperimentService>(ExperimentService);
+          // update experiment startOn
+          await transactionalEntityManager.getRepository(Experiment).update({ id: experiment.id }, { endOn: null });
+          return experimentService.updateState(
+            scheduledJob.experiment.id,
+            EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+            systemUser,
+            null,
+            transactionalEntityManager
+          );
+        }
+        return {};
+      } catch (error) {
+        this.log.error('Error in end experiment of schedular ', error.message);
+        return error;
+      }
+    });
   }
 
   public getAllStartExperiment(): Promise<ScheduledJob[]> {
