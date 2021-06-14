@@ -406,6 +406,20 @@ export class ExperimentService {
     }
   }
 
+  private hasConditionCodeDefault(conditions: ExperimentCondition[]): any {
+    // Check for conditionCode is 'default' then return error:
+    const hasDefaultConditionCode = conditions.filter(
+      condition => condition.conditionCode.toUpperCase() === 'DEFAULT'
+    );
+    if (!!hasDefaultConditionCode.length) {
+      throw new BadRequestError(
+        JSON.stringify({
+          message: "'default' as ConditionCode is not allowed.",
+        })
+      );
+    }
+  }
+
   private async updateExperimentInDB(experiment: ExperimentInput, user: User): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
@@ -446,30 +460,21 @@ export class ExperimentService {
         } catch (error) {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
         }
-        let defaultconditionCodeError = false;
+
+        // Check for conditionCode is 'default' then return error:
+        this.hasConditionCodeDefault(conditions);
+
         // creating condition docs
         const conditionDocToSave: Array<Partial<ExperimentCondition>> =
           (conditions &&
             conditions.length > 0 &&
-            // Check for conditionCode is 'default' then return error:
             conditions.map((condition: ExperimentCondition) => {
-              // case insensitive check:
-              if (condition.conditionCode.toUpperCase() === 'DEFAULT') {
-                defaultconditionCodeError = true;
-              }
-              if(defaultconditionCodeError == true) {
-                throw new BadRequestError(
-                  JSON.stringify({
-                    message: `Condition not allowed: ${condition.conditionCode}`,
-                  })
-                );
-              }
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = condition;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
-              return rest;      
-                })) ||
+              return rest;
+                } )) ||
               [];
 
         // creating partition docs
@@ -740,23 +745,8 @@ export class ExperimentService {
         uniqueIdentifiers = response[1];
       }
       const { conditions, partitions, ...expDoc } = experiment;
-      
-      let defaultconditionCodeError = false;
       // Check for conditionCode is 'default' then return error:
-      conditions.map((condition: ExperimentCondition) => {
-        // case insensitive check:
-        if (condition.conditionCode.toUpperCase() === 'DEFAULT') {
-          defaultconditionCodeError = true;
-        }
-        if(defaultconditionCodeError == true) {
-          throw new BadRequestError(
-            JSON.stringify({
-              message: `Condition not allowed: ${condition.conditionCode}`,
-            })
-          );
-        }
-      });
-
+      this.hasConditionCodeDefault(conditions);
 
       // saving experiment docs
       let experimentDoc: Experiment;

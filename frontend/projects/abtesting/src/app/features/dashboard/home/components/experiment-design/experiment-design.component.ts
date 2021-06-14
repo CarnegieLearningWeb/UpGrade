@@ -243,20 +243,24 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   validateConditionCodes(conditions: ExperimentCondition[]) {
-    let defaultKeywordError = false;
+
+    let conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
-    conditionCodes.forEach(conditioncode => {
-      if (conditioncode.toUpperCase() === this.translate.instant('home.new-experiment.design.condition.invalid.text')) {
-        defaultKeywordError = true;
-        this.conditionCodeError = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
-      }
-    })
     if (conditionCodes.length !== new Set(conditionCodes).size) {
-      this.conditionCodeError = this.translate.instant('home.new-experiment.design.condition-unique-validation.text')
+      this.conditionCodeError = conditionUniqueErrorText;
     }  else {
-      if (!defaultKeywordError){
         this.conditionCodeError = null;
-      }
+    }
+  }
+
+  validatehasConditionCodeDefault(conditions: ExperimentCondition[]) {
+    let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
+    let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
+    if (conditions.length >= 1 ) {
+      const conditionCodes = conditions.map(condition => condition.conditionCode);
+      conditionCodes.forEach(conditioncode => {
+        conditioncode && conditioncode.toUpperCase() === defaultKeyword ? this.conditionCodeError = defaultConditionCodeErrorText : this.conditionCodeError = null;
+      });
     }
   }
 
@@ -329,6 +333,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
         this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
+        this.validatehasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();

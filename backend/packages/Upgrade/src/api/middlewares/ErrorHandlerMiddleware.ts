@@ -3,7 +3,6 @@ import { ExpressErrorMiddlewareInterface, HttpError, Middleware } from 'routing-
 
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
-import { formatBadReqErrorMessage } from '../../lib/env/utils';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
 import { SERVER_ERROR } from 'upgrade_types';
@@ -86,7 +85,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
       default:
         switch (error.httpCode) {
           case 400:
-            message = formatBadReqErrorMessage(error[`errors`]);
+            message = error.message;
             type = SERVER_ERROR.INCORRECT_PARAM_FORMAT;
             break;
           case 401:
