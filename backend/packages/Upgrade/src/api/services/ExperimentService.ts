@@ -34,7 +34,7 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
-import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
+import { StateTimeLog } from '../models/StateTimeLogs';
 
 @Service()
 export class ExperimentService {
@@ -49,7 +49,6 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
-    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
@@ -238,6 +237,13 @@ export class ExperimentService {
 
       const timeLogDate = new Date();
 
+      const stateTimeLogDoc = new StateTimeLog();
+      stateTimeLogDoc.id = uuid();
+      stateTimeLogDoc.fromState = oldExperiment.state;
+      stateTimeLogDoc.toState = state;
+      stateTimeLogDoc.timeLog = timeLogDate;
+      stateTimeLogDoc.experiment = oldExperiment;
+
       // updating the experiment and stateTimeLog
       const [updatedState, updatedStateTimeLog] = await Promise.all([
         this.experimentRepository.updateState(
@@ -246,11 +252,7 @@ export class ExperimentService {
           scheduleDate,
           transactionalEntityManager
         ),
-        this.stateTimeLogsRepository.insertStateTimeLog(oldExperiment.state,
-          state,
-          timeLogDate,
-          oldExperiment,
-          transactionalEntityManager),
+        transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc),
       ]);
 
       // updating experiment schedules here
@@ -259,7 +261,7 @@ export class ExperimentService {
       return {
         ...oldExperiment,
         state: updatedState[0].state,
-        stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog[0]],
+        stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
       };
     });
   }

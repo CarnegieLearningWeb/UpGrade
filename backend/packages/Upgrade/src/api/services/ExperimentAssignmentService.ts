@@ -29,6 +29,7 @@ import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupE
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { In } from 'typeorm';
+import uuid from 'uuid/v4';
 import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { PreviewUser } from '../models/PreviewUser';
@@ -49,6 +50,7 @@ import flatten from 'lodash.flatten';
 import { ILogInput } from 'upgrade_types';
 import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
+import { StateTimeLog } from '../models/StateTimeLogs';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -768,6 +770,14 @@ export class ExperimentAssignmentService {
      * experiment assignment unit is GROUP
      * ending condition has both groupCount and userCount
      */
+    const timeLogDate = new Date();
+
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = experiment.state;
+    stateTimeLogDoc.toState = EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
+    stateTimeLogDoc.timeLog = timeLogDate;
+    stateTimeLogDoc.experiment = experiment;
 
     if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
       // fetch all the monitored document if exist
@@ -796,8 +806,7 @@ export class ExperimentAssignmentService {
 
       if (groupSatisfied >= groupCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
-        const timeLogDate = new Date();
-        await this.stateTimeLogsRepository.insertStateTimeLog(experiment.state, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, timeLogDate, experiment);
+        await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }
       // check the individual assignment table for the user
     } else if (userCount) {
@@ -809,8 +818,7 @@ export class ExperimentAssignmentService {
       const uniqueUser = new Set(userIds);
       if (uniqueUser.size >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
-        const timeLogDate = new Date();
-        await this.stateTimeLogsRepository.insertStateTimeLog(experiment.state, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, timeLogDate, experiment);
+        await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }
     }
   }
