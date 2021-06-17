@@ -41,7 +41,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     user: User,
     entityManger?: EntityManager
   ): Promise<ExperimentAuditLog> {
-    const that = entityManger ? entityManger : this; 
+    const that = entityManger || this;
     const result = await that
       .createQueryBuilder()
       .insert()
