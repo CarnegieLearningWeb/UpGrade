@@ -29,10 +29,10 @@ export class StateTimeLogsComponent implements OnInit {
   ngOnInit() {
     if (this.experiment.stateTimeLogs) {
       // starting time for an experiment when the experiment state changes to enrolling state
-      this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState===EXPERIMENT_STATE.ENROLLING);
+      this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING);
 
       // ending time for an experiment when the current state is enrolling and it changes to either enrollment complete or cancelled state
-      this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState===EXPERIMENT_STATE.ENROLLING);
+      this.endTimeLogs = this.experiment.stateTimeLogs.filter(state => state.fromState === EXPERIMENT_STATE.ENROLLING);
     }
 
     this.startTimeLogs.sort((a, b) => {
