@@ -27,26 +27,38 @@ export class ScheduledJobService {
   public async startExperiment(id: string): Promise<any> {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       try {
-        const scheduledJob = await transactionalEntityManager.getRepository(ScheduledJob).findOne(id, { relations: ['experiment'] });
+        const scheduledJob = await transactionalEntityManager
+          .getRepository(ScheduledJob)
+          .findOne(id, { relations: ['experiment'] });
 
         const currentDate = new Date();
         const timeDif = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
-        
+
         if (timeDif > fiveHoursInMS) {
-          const errorMsg =  'Time Differnce of more than 5 hours is found';
-          await transactionalEntityManager.getRepository(ScheduledJob).delete({id: scheduledJob.id});
+          const errorMsg = 'Time Differnce of more than 5 hours is found';
+          await transactionalEntityManager.getRepository(ScheduledJob).delete({ id: scheduledJob.id });
           throw new Error(errorMsg);
         }
 
         if (scheduledJob && scheduledJob.experiment) {
-          const experiment = await transactionalEntityManager.getRepository(Experiment).findOne(scheduledJob.experiment.id);
+          const experiment = await transactionalEntityManager
+            .getRepository(Experiment)
+            .findOne(scheduledJob.experiment.id);
           if (scheduledJob && experiment) {
-            const systemUser = await transactionalEntityManager.getRepository(User).findOne({ email: systemUserDoc.email });
+            const systemUser = await transactionalEntityManager
+              .getRepository(User)
+              .findOne({ email: systemUserDoc.email });
             const experimentService = Container.get<ExperimentService>(ExperimentService);
             // update experiment startOn
             await transactionalEntityManager.getRepository(Experiment).update({ id: experiment.id }, { startOn: null });
-            return experimentService.updateState(scheduledJob.experiment.id, EXPERIMENT_STATE.ENROLLING, systemUser, null, transactionalEntityManager);
+            return experimentService.updateState(
+              scheduledJob.experiment.id,
+              EXPERIMENT_STATE.ENROLLING,
+              systemUser,
+              null,
+              transactionalEntityManager
+            );
           }
         }
         return {};
@@ -60,21 +72,27 @@ export class ScheduledJobService {
   public async endExperiment(id: string): Promise<any> {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       try {
-        const scheduledJob = await transactionalEntityManager.getRepository(ScheduledJob).findOne(id, { relations: ['experiment'] });
-        const experiment = await transactionalEntityManager.getRepository(Experiment).findOne(scheduledJob.experiment.id);
+        const scheduledJob = await transactionalEntityManager
+          .getRepository(ScheduledJob)
+          .findOne(id, { relations: ['experiment'] });
+        const experiment = await transactionalEntityManager
+          .getRepository(Experiment)
+          .findOne(scheduledJob.experiment.id);
 
         const currentDate = new Date();
         const timeDif = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
-        
+
         if (timeDif > fiveHoursInMS) {
-          const errorMsg =  'Time Differnce of more than 5 hours is found';
-          await transactionalEntityManager.getRepository(ScheduledJob).delete({id: scheduledJob.id});
+          const errorMsg = 'Time Differnce of more than 5 hours is found';
+          await transactionalEntityManager.getRepository(ScheduledJob).delete({ id: scheduledJob.id });
           throw new Error(errorMsg);
         }
 
         if (scheduledJob && experiment) {
-          const systemUser = await transactionalEntityManager.getRepository(User).findOne({ email: systemUserDoc.email });
+          const systemUser = await transactionalEntityManager
+            .getRepository(User)
+            .findOne({ email: systemUserDoc.email });
           const experimentService = Container.get<ExperimentService>(ExperimentService);
           // update experiment startOn
           await transactionalEntityManager.getRepository(Experiment).update({ id: experiment.id }, { endOn: null });
