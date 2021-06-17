@@ -253,7 +253,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  validatehasConditionCodeDefault(conditions: ExperimentCondition[]) {
+  validateHasConditionCodeDefault(conditions: ExperimentCondition[]) {
     let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
     let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
     if (conditions.length >= 1 ) {
@@ -333,7 +333,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
         this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
-        this.validatehasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
+        this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();
