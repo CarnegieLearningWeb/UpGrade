@@ -6,7 +6,11 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {
-  public async paginatedFind(limit: number, offset: number, filter: EXPERIMENT_LOG_TYPE): Promise<ExperimentAuditLog[]> {
+  public async paginatedFind(
+    limit: number,
+    offset: number,
+    filter: EXPERIMENT_LOG_TYPE
+  ): Promise<ExperimentAuditLog[]> {
     let queryBuilder = this.createQueryBuilder('audit')
       .skip(offset)
       .take(limit)
@@ -14,15 +18,12 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .orderBy('audit.createdAt', 'DESC');
 
     if (filter) {
-      queryBuilder = queryBuilder
-        .where('audit.type = :filter', { filter });
+      queryBuilder = queryBuilder.where('audit.type = :filter', { filter });
     }
-    return queryBuilder
-      .getMany()
-      .catch((error: any) => {
-        const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
-        throw new Error(errorMsg);
-      });
+    return queryBuilder.getMany().catch((error: any) => {
+      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
+      throw new Error(errorMsg);
+    });
   }
 
   public getTotalLogs(filter: EXPERIMENT_LOG_TYPE): Promise<number> {

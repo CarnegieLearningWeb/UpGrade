@@ -44,7 +44,9 @@ export class ScheduledJobService {
           const experimentRepository = transactionalEntityManager.getRepository(Experiment);
           const experiment = await experimentRepository.findOne(scheduledJob.experiment.id);
           if (scheduledJob && experiment) {
-            const systemUser = await transactionalEntityManager.getRepository(User).findOne({ email: systemUserDoc.email });
+            const systemUser = await transactionalEntityManager
+              .getRepository(User)
+              .findOne({ email: systemUserDoc.email });
             const experimentService = Container.get<ExperimentService>(ExperimentService);
             // update experiment startOn
             await experimentRepository.update({ id: experiment.id }, { startOn: null });
@@ -84,7 +86,9 @@ export class ScheduledJobService {
         }
 
         if (scheduledJob && experiment) {
-          const systemUser = await transactionalEntityManager.getRepository(User).findOne({ email: systemUserDoc.email });
+          const systemUser = await transactionalEntityManager
+            .getRepository(User)
+            .findOne({ email: systemUserDoc.email });
           const experimentService = Container.get<ExperimentService>(ExperimentService);
           // update experiment startOn
           await experimentRepository.update({ id: experiment.id }, { endOn: null });
