@@ -257,10 +257,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
     let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
     if (conditions.length >= 1 ) {
-      const conditionCodes = conditions.map(condition => condition.conditionCode);
-      conditionCodes.forEach(conditioncode => {
-        conditioncode && conditioncode.toUpperCase() === defaultKeyword ? this.conditionCodeError = defaultConditionCodeErrorText : this.conditionCodeError = null;
-      });
+      const hasDefaultConditionCode = conditions.filter(
+        condition => condition.conditionCode.toUpperCase() === defaultKeyword
+      );
+      if (!!hasDefaultConditionCode.length) {
+        this.conditionCodeError = defaultConditionCodeErrorText
+      } else {
+        this.conditionCodeError = null;
+      }
     }
   }
 
