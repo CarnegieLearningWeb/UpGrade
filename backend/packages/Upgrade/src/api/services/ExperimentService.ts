@@ -406,12 +406,12 @@ export class ExperimentService {
     }
   }
 
-  private hasConditionCodeDefault(conditions: ExperimentCondition[]): any {
+  private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
     // Check for conditionCode is 'default' then return error:
     const hasDefaultConditionCode = conditions.filter(
       condition => condition.conditionCode.toUpperCase() === 'DEFAULT'
     );
-    if (!!hasDefaultConditionCode.length) {
+    if (hasDefaultConditionCode.length) {
       throw new BadRequestError(
         JSON.stringify({
           message: "'default' as ConditionCode is not allowed.",
@@ -462,7 +462,7 @@ export class ExperimentService {
         }
 
         // Check for conditionCode is 'default' then return error:
-        this.hasConditionCodeDefault(conditions);
+        this.checkConditionCodeDefault(conditions);
 
         // creating condition docs
         const conditionDocToSave: Array<Partial<ExperimentCondition>> =
@@ -746,7 +746,7 @@ export class ExperimentService {
       }
       const { conditions, partitions, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
-      this.hasConditionCodeDefault(conditions);
+      this.checkConditionCodeDefault(conditions);
 
       // saving experiment docs
       let experimentDoc: Experiment;
