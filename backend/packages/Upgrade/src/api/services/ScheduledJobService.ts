@@ -31,10 +31,10 @@ export class ScheduledJobService {
         const scheduledJob = await scheduledJobRepository.findOne(id, { relations: ['experiment'] });
 
         const currentDate = new Date();
-        const timeDif = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
+        const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
 
-        if (timeDif > fiveHoursInMS) {
+        if (timeDiff > fiveHoursInMS) {
           const errorMsg =  'Time Differnce of more than 5 hours is found';
           await scheduledJobRepository.delete({id: scheduledJob.id});
           throw new Error(errorMsg);
@@ -70,18 +70,18 @@ export class ScheduledJobService {
   public async endExperiment(id: string): Promise<any> {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       try {
-        const schedulerJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
-        const scheduledJob = await schedulerJobRepository.findOne(id, { relations: ['experiment'] });
+        const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
+        const scheduledJob = await scheduledJobRepository.findOne(id, { relations: ['experiment'] });
         const experimentRepository = transactionalEntityManager.getRepository(Experiment);
         const experiment = await experimentRepository.findOne(scheduledJob.experiment.id);
 
         const currentDate = new Date();
-        const timeDif = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
+        const timeDiff = Math.abs(currentDate.getTime() - scheduledJob.timeStamp.getTime());
         const fiveHoursInMS = 18000000;
 
-        if (timeDif > fiveHoursInMS) {
+        if (timeDiff > fiveHoursInMS) {
           const errorMsg =  'Time Differnce of more than 5 hours is found';
-          await schedulerJobRepository.delete({id: scheduledJob.id});
+          await scheduledJobRepository.delete({id: scheduledJob.id});
           throw new Error(errorMsg);
         }
 
