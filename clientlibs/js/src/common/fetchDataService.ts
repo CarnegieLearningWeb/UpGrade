@@ -3,15 +3,13 @@ import * as fetch from 'isomorphic-fetch';
 
 // Call this function with url and data which is used in body of request
 export default async function fetchDataService(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, sendAsAnalytics = false): Promise<Interfaces.IResponse> {
-  const requestCount = 0;
-  const requestThreshold = 5;
-  return await fetchDataFromDB(url, token, data, requestType, requestCount, requestThreshold, sendAsAnalytics);
+  return await fetchData(url, token, data, requestType, sendAsAnalytics);
 }
 
-async function fetchDataFromDB(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, requestCount: number, requestThreshold: number, sendAsAnalytics = false): Promise<Interfaces.IResponse> {
+async function fetchData(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, sendAsAnalytics = false, retries = 3, backOff = 300): Promise<Interfaces.IResponse> {
   try {
 
-    let headers: any = {
+    let headers: object = {
       'Content-Type': 'application/json'
     }
     if (!!token) {
@@ -22,7 +20,7 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
     }
 
 
-    let options: any = {
+    let options: Interfaces.IRequestOptions = {
       headers,
       method: requestType,
       keepalive: sendAsAnalytics === true
@@ -44,19 +42,36 @@ async function fetchDataFromDB(url: string, token: string, data: any, requestTyp
         data: responseData
       };
     } else {
-      return {
-        status: false,
-        message: responseData
+      // Retryable error codes
+      // 408 (Request Timeout)
+      // 500 (Internal Server Error)
+      // 502 (Bad Gateway)
+      // 503 (Service Unavailable)
+      // 504 (Gateway Timeout)
+      // 522 (Connection timed out)
+      const retryCodes = [408, 500, 502, 503, 504, 522];
+
+      if (retries > 0 && retryCodes.includes(response.status)) {
+        // Do retry after the backOff time
+        await wait(backOff);
+        return await fetchData(url, token, data, requestType, sendAsAnalytics, retries - 1, backOff * 2);
+      } else {
+        return {
+          status: false,
+          message: responseData
+        }
       }
     }
   } catch (error) {
-    requestCount++;
-    if (requestCount === requestThreshold) {
       return {
         status: false,
         message: error
       };
-    }
-    return await fetchDataFromDB(url, token, data, requestType, requestCount, requestThreshold);
   }
+}
+
+async function wait(ms: number) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
 }
