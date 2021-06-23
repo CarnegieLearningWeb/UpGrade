@@ -75,7 +75,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData;
-      if (this.contextMetaData['groupTypes']) {
+      if (this.contextMetaData && this.contextMetaData['groupTypes']) {
         this.contextMetaData['groupTypes'].forEach(element => {
           this.groupTypes.push({value: element});
         });
