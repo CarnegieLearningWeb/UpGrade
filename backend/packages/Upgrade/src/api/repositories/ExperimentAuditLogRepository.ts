@@ -1,12 +1,16 @@
 import { ExperimentAuditLog } from '../models/ExperimentAuditLog';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, EntityManager } from 'typeorm';
 import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { User } from '../models/User';
 import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExperimentAuditLog)
 export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog> {
-  public async paginatedFind(limit: number, offset: number, filter: EXPERIMENT_LOG_TYPE): Promise<ExperimentAuditLog[]> {
+  public async paginatedFind(
+    limit: number,
+    offset: number,
+    filter: EXPERIMENT_LOG_TYPE
+  ): Promise<ExperimentAuditLog[]> {
     let queryBuilder = this.createQueryBuilder('audit')
       .skip(offset)
       .take(limit)
@@ -14,15 +18,12 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .orderBy('audit.createdAt', 'DESC');
 
     if (filter) {
-      queryBuilder = queryBuilder
-        .where('audit.type = :filter', { filter });
+      queryBuilder = queryBuilder.where('audit.type = :filter', { filter });
     }
-    return queryBuilder
-      .getMany()
-      .catch((error: any) => {
-        const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
-        throw new Error(errorMsg);
-      });
+    return queryBuilder.getMany().catch((error: any) => {
+      const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
+      throw new Error(errorMsg);
+    });
   }
 
   public getTotalLogs(filter: EXPERIMENT_LOG_TYPE): Promise<number> {
@@ -35,9 +36,17 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       });
   }
 
-  public async saveRawJson(type: EXPERIMENT_LOG_TYPE, data: any, user: User): Promise<ExperimentAuditLog> {
-    const result = await this.createQueryBuilder()
+  public async saveRawJson(
+    type: EXPERIMENT_LOG_TYPE,
+    data: any,
+    user: User,
+    entityManger?: EntityManager
+  ): Promise<ExperimentAuditLog> {
+    const that = entityManger || this;
+    const result = await that
+      .createQueryBuilder()
       .insert()
+      .into(ExperimentAuditLog)
       .values({ type, data, user })
       .returning('*')
       .execute()
