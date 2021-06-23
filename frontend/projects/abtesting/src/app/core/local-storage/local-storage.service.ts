@@ -37,8 +37,7 @@ export class LocalStorageService {
       isGraphInfoLoading: false,
       allPartitions: null,
       allExperimentNames: null,
-      context: [],
-      expPointsAndIds: {}
+      contextMetaData: {}
     };
 
     const state = {

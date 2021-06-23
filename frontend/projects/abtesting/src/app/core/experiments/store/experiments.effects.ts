@@ -24,8 +24,7 @@ import {
   selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
-  selectExperimentContext,
-  selectExperimentPointsAndIds
+  selectContextMetaData
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
@@ -344,33 +343,17 @@ export class ExperimentEffects {
     { dispatch: false }
   );
 
-  fetchExperimentContext$ = createEffect(() =>
+  fetchContextMetaData$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(experimentAction.actionFetchExperimentContext),
+      ofType(experimentAction.actionFetchContextMetaData),
       withLatestFrom(
-        this.store$.pipe(select(selectExperimentContext))
+        this.store$.pipe(select(selectContextMetaData))
       ),
-      filter(([, context]) => !context.length),
+      filter(([, contextMetaData]) => !Object.keys(contextMetaData).length),
       switchMap(() =>
-        this.experimentDataService.fetchExperimentContext().pipe(
-          map((context: string[]) => experimentAction.actionFetchExperimentContextSuccess({ context })),
-          catchError(() => [experimentAction.actionFetchExperimentContextFailure()])
-        )
-      )
-    )
-  );
-
-  fetchExperimentPointsAndIds$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(experimentAction.actionFetchExperimentPointsAndIds),
-      withLatestFrom(
-        this.store$.pipe(select(selectExperimentPointsAndIds))
-      ),
-      filter(([, expPointsAndIds]) => !Object.keys(expPointsAndIds).length),
-      switchMap(() =>
-        this.experimentDataService.fetchExperimentPointsAndIds().pipe(
-          map((expPointsAndIds: object) => experimentAction.actionFetchExperimentPointsAndIdsSuccess({ expPointsAndIds })),
-          catchError(() => [experimentAction.actionFetchExperimentPointsAndIdsFailure()])
+        this.experimentDataService.fetchContextMetaData().pipe(
+          map((contextMetaData: object) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData })),
+          catchError(() => [experimentAction.actionFetchContextMetaDataFailure()])
         )
       )
     )

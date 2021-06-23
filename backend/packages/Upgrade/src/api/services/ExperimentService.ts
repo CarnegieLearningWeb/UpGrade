@@ -113,14 +113,12 @@ export class ExperimentService {
     return this.experimentRepository.count();
   }
 
-  public getContext(): string[] {
-    return env.initialization.context;
-  }
-
-  public getExpPointsAndIds(): object {
+  public getContextMetaData(): object {
     return {
+      appContext: env.initialization.appContext,
       expPoints: env.initialization.expPoints,
       expIds: env.initialization.expIds,
+      groupTypes: env.initialization.groupTypes,
     };
   }
 

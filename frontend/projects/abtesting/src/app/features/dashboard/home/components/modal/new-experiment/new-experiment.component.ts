@@ -30,10 +30,8 @@ export class NewExperimentComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Used to fetch context only once
-    this.experimentService.fetchExperimentContext();
-    // Fetch predefined experiment points and ids only once
-    this.experimentService.fetchExperimentPointsAndIds();
+    // Used to fetch contextMetaData only once
+    this.experimentService.fetchContextMetaData();
   }
 
   onNoClick(): void {

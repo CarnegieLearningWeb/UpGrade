@@ -20,7 +20,6 @@ export const environment = {
     createNewExperiments: `${endpointApi}/experiments`,
     importExperiment : `${endpointApi}/experiments/import`,
     updateExperiments: `${endpointApi}/experiments`,
-    experimentContext: `${endpointApi}/experiments/context`,
     getExperimentById: `${endpointApi}/experiments/single`,
     getAllAuditLogs: `${endpointApi}/audit`,
     getAllErrorLogs: `${endpointApi}/error`,
@@ -49,6 +48,6 @@ export const environment = {
     metricsSave: `${endpointApi}/metric/save`,
     queryResult: `${endpointApi}/query/analyse`,
     getVersion: `${endpointApi}/version`,
-    expPointsAndIds: `${endpointApi}/experiments/expPointsAndIds`,
+    contextMetaData: `${endpointApi}/experiments/contextMetaData`,
   }
 };
