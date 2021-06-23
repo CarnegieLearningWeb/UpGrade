@@ -21,7 +21,6 @@ import {
   selectExperimentById,
   selectSearchString,
   selectSearchKey,
-  selectExperimentContext,
   selectExperimentGraphInfo,
   selectSkipExperiment,
   selectTotalExperiment,
@@ -29,7 +28,7 @@ import {
   selectIsGraphLoading,
   selectSortKey,
   selectSortAs,
-  selectExperimentPointsAndIds
+  selectContextMetaData
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -61,11 +60,10 @@ export class ExperimentService {
   selectSearchKey$ = this.store$.pipe(select(selectSearchKey));
   selectExperimentSortKey$ = this.store$.pipe(select(selectSortKey));
   selectExperimentSortAs$ = this.store$.pipe(select(selectSortAs));
-  experimentContext$ = this.store$.pipe(select(selectExperimentContext));
   selectExperimentGraphInfo$ = this.store$.pipe(select(selectExperimentGraphInfo));
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
-  expPointsAndIds$ = this.store$.pipe(select(selectExperimentPointsAndIds));
+  contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
@@ -138,12 +136,8 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionUpdateExperimentState({ experimentId, experimentStateInfo }));
   }
 
-  fetchExperimentContext() {
-    this.store$.dispatch(experimentAction.actionFetchExperimentContext());
-  }
-
-  fetchExperimentPointsAndIds() {
-    this.store$.dispatch(experimentAction.actionFetchExperimentPointsAndIds());
+  fetchContextMetaData() {
+    this.store$.dispatch(experimentAction.actionFetchContextMetaData());
   }
 
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {

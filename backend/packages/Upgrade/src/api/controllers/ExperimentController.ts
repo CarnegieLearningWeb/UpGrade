@@ -161,38 +161,20 @@ export class ExperimentController {
 
   /**
    * @swagger
-   * /experiments/context:
+   * /experiments/contextMetaData:
    *    get:
-   *       description: Get experiments context
+   *       description: Get contextMetaData
    *       tags:
    *         - Experiments
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Experiment List
+   *            description: contextMetaData list
    */
-  @Get('/context')
-  public getContext(): string[] {
-    return this.experimentService.getContext();
-  }
-
-  /**
-   * @swagger
-   * /experiments/expPointsAndIds:
-   *    get:
-   *       description: Get experiment points and ids
-   *       tags:
-   *         - Experiments
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Experiment points and ids list
-   */
-  @Get('/expPointsAndIds')
-  public getExpPointsAndIds(): object {
-    return this.experimentService.getExpPointsAndIds();
+  @Get('/contextMetaData')
+  public getContextMetaData(): object {
+    return this.experimentService.getContextMetaData();
   }
 
   /**

@@ -3,12 +3,13 @@ import { MatTableDataSource, MatPaginator, MatSort } from '@angular/material';
 import { ExcludeEntity, EntityTypes } from '../../../../../core/experiment-users/store/experiment-users.model';
 import { Subscription, Observable } from 'rxjs';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { GroupTypes } from '../../../../../core/experiments/store/experiments.model';
+import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentUsersService } from '../../../../../core/experiment-users/experiment-users.service';
 import { ExperimentUserValidators } from '../../validator/experiment-users-validators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
   selector: 'users-experiment-users',
@@ -24,14 +25,13 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
   excludeEntitiesForm: FormGroup;
   entityTypes = [{ value: EntityTypes.PARTICIPANT_ID }, { value: EntityTypes.GROUP_ID }];
-  groupTypes = [
-    { value: GroupTypes.CLASS },
-    { value: GroupTypes.DISTRICT },
-    { value: GroupTypes.SCHOOL },
-    { value: GroupTypes.TEACHER },
-    { value: GroupTypes.OTHER }
-  ];
+  groupTypes = [];
+  groupTypeOther = 'other';
+  groupTypeClass = 'class';
   isEntityLoading$ = this.experimentUserService.isExcludedEntityLoading$;
+
+  contextMetaData: IContextMetaData | {} = {};
+  contextMetaDataSub: Subscription;
 
   private paginator: MatPaginator;
   private sort: MatSort;
@@ -48,7 +48,8 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   constructor(
     private _formBuilder: FormBuilder,
     private experimentUserService: ExperimentUsersService,
-    private authService: AuthService
+    private authService: AuthService,
+    private experimentService: ExperimentService
   ) {
     this.allExcludedEntitiesSub = this.experimentUserService.allExcludedEntities$.subscribe(entities => {
       this.allExcludedEntities = new MatTableDataSource();
@@ -72,10 +73,19 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     this.allExcludedEntities.paginator = this.paginator;
     this.allExcludedEntities.sort = this.sort;
 
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+      this.contextMetaData = contextMetaData;
+      if (this.contextMetaData['groupTypes']) {
+        this.contextMetaData['groupTypes'].forEach(element => {
+          this.groupTypes.push({value: element});
+        });
+      }
+    });
+
     this.excludeEntitiesForm = this._formBuilder.group(
       {
         entityType: [EntityTypes.GROUP_ID, Validators.required],
-        groupType: [GroupTypes.CLASS],
+        groupType: [this.groupTypeClass],
         id: [null, Validators.required],
         customGroupName: [null]
       },
@@ -92,7 +102,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
         this.experimentUserService.excludeUser(id);
         break;
       case EntityTypes.GROUP_ID:
-        groupType === GroupTypes.OTHER
+        groupType === this.groupTypeOther
           ? this.experimentUserService.excludeGroup(id, customGroupName)
           : this.experimentUserService.excludeGroup(id, groupType);
         break;
@@ -110,7 +120,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   }
 
   get groupTypeValue() {
-    return this.excludeEntitiesForm.get('groupType').value === GroupTypes.OTHER && this.entityTypeValue;
+    return this.excludeEntitiesForm.get('groupType').value === this.groupTypeOther && this.entityTypeValue;
   }
 
   get userRole() {
@@ -123,7 +133,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     if (entityType === EntityTypes.PARTICIPANT_ID) {
       return 'Enter participant ID';
     } else {
-      if (groupType === GroupTypes.OTHER) {
+      if (groupType === this.groupTypeOther) {
         return 'Enter ' + (customGroupName || '') + ' ID';
       } else {
         return 'Enter ' + groupType + ' ID';
@@ -133,5 +143,6 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.allExcludedEntitiesSub.unsubscribe();
+    this.contextMetaDataSub.unsubscribe();
   }
 }

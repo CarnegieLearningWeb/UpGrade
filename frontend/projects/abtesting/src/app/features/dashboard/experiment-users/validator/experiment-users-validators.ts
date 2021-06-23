@@ -1,5 +1,4 @@
 import { AbstractControl } from '@angular/forms';
-import { GroupTypes } from '../../../../core/experiments/store/experiments.model';
 import { EntityTypes } from '../../../../core/experiment-users/store/experiment-users.model';
 
 export class ExperimentUserValidators {
@@ -7,7 +6,8 @@ export class ExperimentUserValidators {
     const entityValue = controls.get('entityType').value;
     const groupValue = controls.get('groupType').value;
     const customGroupValue = controls.get('customGroupName').value;
-    if (groupValue === GroupTypes.OTHER && entityValue === EntityTypes.GROUP_ID) {
+    const groupTypeOther = 'other';
+    if (groupValue === groupTypeOther && entityValue === EntityTypes.GROUP_ID) {
       return !!customGroupValue ? null : { customGroupNameError: true };
     }
     return null;

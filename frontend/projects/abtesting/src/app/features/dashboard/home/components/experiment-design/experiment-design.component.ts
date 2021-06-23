@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IExpPointsAndIds } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -57,8 +57,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Used for experiment point and ids auto complete dropdown
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
-  expPointsAndIds: IExpPointsAndIds | {} = {};
-  expPointsAndIdsSub: Subscription;
+  contextMetaData: IContextMetaData | {} = {};
+  contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
 
   constructor(
@@ -130,8 +130,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.validatePartitionNames(newValues);
     });
 
-    this.expPointsAndIdsSub = this.experimentService.expPointsAndIds$
-      .subscribe(expPointsAndIds => this.expPointsAndIds = expPointsAndIds);
+    this.contextMetaDataSub = this.experimentService.contextMetaData$
+      .subscribe(contextMetaData => this.contextMetaData = contextMetaData);  
   }
 
   manageExpPointAndIdControl(index: number) {
@@ -150,7 +150,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   private filterExpPointsAndIds(value: string, key: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.expPointsAndIds ? (this.expPointsAndIds[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    return this.contextMetaData ? (this.contextMetaData[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null) {
@@ -286,7 +286,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validateExpPoints(partitions: ExperimentPartition[]) {
     const expPoints = partitions.map(partition => partition.expPoint);
     for (let expPointIndex = 0; expPointIndex < expPoints.length; expPointIndex++) {
-      if ((this.expPointsAndIds as IExpPointsAndIds).expPoints.indexOf(expPoints[expPointIndex]) === -1) {
+      if ((this.contextMetaData as IContextMetaData).expPoints.indexOf(expPoints[expPointIndex]) === -1) {
         // Add partition point selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
         break;
@@ -297,7 +297,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validateExpIds(partitions: ExperimentPartition[]) {
     const expIds = partitions.map(partition => partition.expId).filter(expId => expId);
     for (let expIdIndex = 0; expIdIndex < expIds.length; expIdIndex++) {
-      if ((this.expPointsAndIds as IExpPointsAndIds).expIds.indexOf(expIds[expIdIndex]) === -1) {
+      if ((this.contextMetaData as IContextMetaData).expIds.indexOf(expIds[expIdIndex]) === -1) {
         // Add partition id selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
         break;
@@ -365,6 +365,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy() {
     this.allPartitionsSub.unsubscribe();
     this.partitionErrorMessagesSub.unsubscribe();
-    this.expPointsAndIdsSub.unsubscribe();
+    this.contextMetaDataSub.unsubscribe();
   }
 }
