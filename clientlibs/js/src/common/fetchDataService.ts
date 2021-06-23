@@ -2,11 +2,27 @@ import { Interfaces, Types } from '../identifiers';
 import * as fetch from 'isomorphic-fetch';
 
 // Call this function with url and data which is used in body of request
-export default async function fetchDataService(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, sendAsAnalytics = false): Promise<Interfaces.IResponse> {
-  return await fetchData(url, token, data, requestType, sendAsAnalytics);
+export default async function fetchDataService(
+  url: string,
+  token: string,
+  data: any,
+  requestType: Types.REQUEST_TYPES,
+  sendAsAnalytics: boolean = false,
+  skipRetryOnStatusCodes: number[] = []
+): Promise<Interfaces.IResponse> {
+  return await fetchData(url, token, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes);
 }
 
-async function fetchData(url: string, token: string, data: any, requestType: Types.REQUEST_TYPES, sendAsAnalytics = false, retries = 3, backOff = 300): Promise<Interfaces.IResponse> {
+async function fetchData(
+  url: string,
+  token: string,
+  data: any,
+  requestType: Types.REQUEST_TYPES,
+  sendAsAnalytics = false,
+  skipRetryOnStatusCodes: number[],
+  retries = 3, // Retry request 3 times on failure
+  backOff = 300
+): Promise<Interfaces.IResponse> {
   try {
 
     let headers: object = {
@@ -42,19 +58,18 @@ async function fetchData(url: string, token: string, data: any, requestType: Typ
         data: responseData
       };
     } else {
-      // Retryable error codes
-      // 408 (Request Timeout)
-      // 500 (Internal Server Error)
-      // 502 (Bad Gateway)
-      // 503 (Service Unavailable)
-      // 504 (Gateway Timeout)
-      // 522 (Connection timed out)
-      const retryCodes = [408, 500, 502, 503, 504, 522];
+      // If response status code is in the skipRetryOnStatusCodes, don't attempt retry
+      if (skipRetryOnStatusCodes.includes(response.status)) {
+        return {
+          status: false,
+          message: responseData,
+        }
+      }
 
-      if (retries > 0 && retryCodes.includes(response.status)) {
+      if (retries > 0) {
         // Do retry after the backOff time
         await wait(backOff);
-        return await fetchData(url, token, data, requestType, sendAsAnalytics, retries - 1, backOff * 2);
+        return await fetchData(url, token, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes, retries - 1, backOff * 2);
       } else {
         return {
           status: false,
