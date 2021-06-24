@@ -6,8 +6,8 @@ import { HttpClient } from '@angular/common/http';
 export class AuthDataService {
   constructor(private http: HttpClient) {}
 
-  createUser(userInfo: any) {
-    const url = environment.api.users;
+  login(userInfo: any) {
+    const url = environment.api.loginUser;
     return this.http.post(url, userInfo);
   }
 

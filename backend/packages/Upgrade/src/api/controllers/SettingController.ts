@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, Get } from 'routing-controllers';
+import { JsonController, Post, Body, Get, Authorized } from 'routing-controllers';
 import { SettingService } from '../services/SettingService';
 import { Setting } from '../models/Setting';
 import { SettingParamsValidator } from './validators/SettingParamsValidator';
@@ -10,6 +10,7 @@ import { SettingParamsValidator } from './validators/SettingParamsValidator';
  *     description: Setting Endpoint
  */
 
+@Authorized()
 @JsonController('/setting')
 export class SettingController {
   constructor(public settingService: SettingService) {}

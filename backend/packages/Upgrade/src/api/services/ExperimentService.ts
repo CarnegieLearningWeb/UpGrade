@@ -14,7 +14,7 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition, getExperimentPartitionID } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In } from 'typeorm';
+import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR } from 'upgrade_types';
@@ -113,14 +113,12 @@ export class ExperimentService {
     return this.experimentRepository.count();
   }
 
-  public getContext(): string[] {
-    return env.initialization.context;
-  }
-
-  public getExpPointsAndIds(): object {
+  public getContextMetaData(): object {
     return {
+      appContext: env.initialization.appContext,
       expPoints: env.initialization.expPoints,
       expIds: env.initialization.expIds,
+      groupTypes: env.initialization.groupTypes,
     };
   }
 
@@ -142,33 +140,21 @@ export class ExperimentService {
       const experiment = await this.findOne(experimentId);
 
       if (experiment) {
-        // monitoredIds
-        const monitoredIds = experiment.partitions.map((partition) => {
-          return getExperimentPartitionID(partition.expPoint, partition.expId);
-        });
-
-        const promiseArray = [];
-        // deleting data related to experiment
-        promiseArray.push(
-          this.monitoredExperimentPointRepository.deleteByExperimentId(monitoredIds, transactionalEntityManager)
-        );
-        promiseArray.push(this.experimentRepository.deleteById(experimentId, transactionalEntityManager));
+        const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
         // adding entry in audit log
         const deleteAuditLogData = {
           experimentName: experiment.name,
         };
-        promiseArray.push(
-          this.experimentAuditLogRepository.saveRawJson(
-            EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
-            deleteAuditLogData,
-            currentUser
-          )
+
+        // Add log for experiment deleted
+        this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
+          deleteAuditLogData,
+          currentUser
         );
 
-        const promiseResult = await Promise.all(promiseArray);
-
-        return promiseResult[1];
+        return deletedExperiment;
       }
 
       return undefined;
@@ -206,7 +192,8 @@ export class ExperimentService {
     experimentId: string,
     state: EXPERIMENT_STATE,
     user: User,
-    scheduleDate?: Date
+    scheduleDate?: Date,
+    entityManager?: EntityManager
   ): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
       await this.populateExclusionTable(experimentId, state);
@@ -226,7 +213,7 @@ export class ExperimentService {
       data = { ...data, startOn: scheduleDate };
     }
     // add experiment audit logs
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
+    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
     let endDate = oldExperiment.endDate || null;
     let startDate = oldExperiment.startDate || null;
@@ -243,7 +230,8 @@ export class ExperimentService {
       state,
       scheduleDate,
       endDate,
-      startDate
+      startDate,
+      entityManager
     );
 
     // updating experiment schedules here
@@ -372,12 +360,14 @@ export class ExperimentService {
     const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
-      // query all user information
-      const groupsToExclude = new Set(
-        userDetails.map((userDetail) => {
-          return userDetail.workingGroup[group];
+      const workingGroups = userDetails
+        .map((userDetail) => {
+          return userDetail.workingGroup && userDetail.workingGroup[group];
         })
-      );
+        .filter((groupName) => !!groupName);
+
+      // query all user information
+      const groupsToExclude = new Set(workingGroups);
 
       // group exclusion documents
       const groupExclusionDocs = [...groupsToExclude].map((groupId) => {

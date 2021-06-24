@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ExperimentVM, EndExperimentCondition, GroupTypes } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentVM, EndExperimentCondition } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 
 @Component({
@@ -151,9 +151,5 @@ export class ExperimentEndCriteriaComponent implements OnInit {
 
   get groupTypeValue(): boolean {
     return this.experimentEndForm && this.experimentEndForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
-  }
-
-  get GroupTypes() {
-    return GroupTypes;
   }
 }

@@ -16,7 +16,7 @@ export default async function GroupExclude(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const userIn = await userService.create(systemUser as any);
+  const userIn = await userService.upsertUser(systemUser as any);
 
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperiment;

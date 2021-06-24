@@ -116,17 +116,13 @@ export class ExperimentAssignmentService {
 
     let enrollmentCode: ENROLLMENT_CODE | null = null;
     const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
-    const { experiment } = experimentPartition;
 
-    const { logging, state } = experiment;
-
-    if (logging || state === EXPERIMENT_STATE.PREVIEW) {
-      this.log.info(
-        `markExperimentPoint: Experiment: ${experiment.id}, Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
-      );
-    }
+    this.log.info(
+      `markExperimentPoint: Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
+    );
 
     if (experimentPartition) {
+      const { experiment } = experimentPartition;
       const { conditions } = await this.experimentRepository.findOne({
         where: {
           id: experiment.id,
@@ -211,8 +207,9 @@ export class ExperimentAssignmentService {
      * Check the enrollment complete condition for experiments with ending criteria
      * group count and participants count
      */
-    if (experiment.enrollmentCompleteCondition && experiment.state === EXPERIMENT_STATE.ENROLLING) {
-      await this.checkEnrollmentEndingCriteriaForCount(experiment);
+    const experimentDoc = experimentPartition?.experiment;
+    if (experimentDoc && experimentDoc.enrollmentCompleteCondition && experimentDoc.state === EXPERIMENT_STATE.ENROLLING) {
+      await this.checkEnrollmentEndingCriteriaForCount(experimentDoc);
     }
 
     // save monitored log document
@@ -287,6 +284,15 @@ export class ExperimentAssignmentService {
 
         // throw error user group not defined and add experiments which are excluded
         if (addError) {
+          experimentToExclude.forEach(({ id, name }) => {
+            this.log.error(
+              `Experiment Id: ${id},
+              Experiment Name: ${name},
+              Group not valid for experiment user
+              `
+            );
+          });
+
           await this.errorService.create({
             endPoint: '/api/assign',
             errorCode: 417,
@@ -480,7 +486,7 @@ export class ExperimentAssignmentService {
             // TODO add enrollment code here
             this.log.info(
               `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-                conditionAssigned ? conditionAssigned.conditionCode : 'default'
+                conditionAssigned ? conditionAssigned.conditionCode : null
               }`
             );
           }
@@ -489,11 +495,11 @@ export class ExperimentAssignmentService {
             expPoint,
             twoCharacterId,
             assignedCondition: conditionAssigned || {
-              conditionCode: 'default',
+              conditionCode: null,
             },
           };
         });
-        return [...accumulator, ...partitions];
+        return assignment ? [...accumulator, ...partitions] : accumulator;
       }, []);
     } catch (error) {
       throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));

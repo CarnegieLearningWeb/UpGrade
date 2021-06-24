@@ -17,7 +17,7 @@ export default async function testCase(): Promise<void> {
   const previewService = Container.get<PreviewUserService>(PreviewUserService);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create preview user
   await previewService.create(previewUsers[0]);

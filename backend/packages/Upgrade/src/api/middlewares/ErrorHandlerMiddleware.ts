@@ -12,7 +12,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   public isProduction = env.isProduction;
 
-  constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) { }
+  constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) {}
 
   public async error(
     error: HttpError,
@@ -112,7 +112,9 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
 
-    const errorDocument = await this.errorService.create(experimentError);
+    const errorDocument = experimentError.type
+      ? await this.errorService.create(experimentError)
+      : Promise.resolve(error);
 
     if (!res.headersSent) {
       res.status(error.httpCode || 500);

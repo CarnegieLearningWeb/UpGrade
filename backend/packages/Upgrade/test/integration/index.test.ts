@@ -34,6 +34,7 @@ import {
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 // import { StatsGroupExperiment } from './ExperimentStats';
+import { NoExperiment } from './Experiment/markExperimentPoint';
 import {
   NoPreviewUser,
   PreviewAssignments,
@@ -95,6 +96,11 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('Mark Experiment before experiment is created', async (done) => {
+    await NoExperiment();
+    done();
+  });
 
   test('No Group for Experiment', async (done) => {
     await NoGroup();

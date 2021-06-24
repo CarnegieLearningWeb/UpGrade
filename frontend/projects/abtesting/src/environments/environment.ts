@@ -20,17 +20,17 @@ export const environment = {
     createNewExperiments: `${endpointApi}/experiments`,
     importExperiment : `${endpointApi}/experiments/import`,
     updateExperiments: `${endpointApi}/experiments`,
-    experimentContext: `${endpointApi}/experiments/context`,
     getExperimentById: `${endpointApi}/experiments/single`,
     getAllAuditLogs: `${endpointApi}/audit`,
     getAllErrorLogs: `${endpointApi}/error`,
-    experimentsStats: `${endpointApi}/stats/enrolment`,
-    experimentDetailStat: `${endpointApi}/stats/enrolment/detail`,
+    experimentsStats: `${endpointApi}/stats/enrollment`,
+    experimentDetailStat: `${endpointApi}/stats/enrollment/detail`,
     generateCsv: `${endpointApi}/stats/csv`,
-    experimentGraphInfo: `${endpointApi}/stats/enrolment/date`,
+    experimentGraphInfo: `${endpointApi}/stats/enrollment/date`,
     deleteExperiment: `${endpointApi}/experiments`,
     updateExperimentState: `${endpointApi}/experiments/state`,
-    users: `${endpointApi}/users`, // Used to create a new user after login
+    users: `${endpointApi}/users`,
+    loginUser: `${endpointApi}/login/user`, // Used to create a new user after login if doesn't exist in DB
     getAllUsers: `${endpointApi}/users/paginated`,
     userRole: `${endpointApi}/users/role`,
     excludeUsers: `${endpointApi}/exclude/user`,
@@ -48,6 +48,6 @@ export const environment = {
     metricsSave: `${endpointApi}/metric/save`,
     queryResult: `${endpointApi}/query/analyse`,
     getVersion: `${endpointApi}/version`,
-    expPointsAndIds: `${endpointApi}/experiments/expPointsAndIds`,
+    contextMetaData: `${endpointApi}/experiments/contextMetaData`,
   }
 };

@@ -56,31 +56,40 @@ export class ExperimentUserService {
   }
 
   public async setAliasesForUser(userId: string, aliases: string[]): Promise<ExperimentUser[]> {
-    this.log.info('Set aliases for experiment user => ', userId);
+    this.log.info('Set aliases for experiment user => ', userId, aliases);
     let userExist = await this.getOriginalUserDoc(userId);
     if (!userExist) {
       // Create experiment user if it does not exist
       userExist = await this.userRepository.save({ id: userId });
     }
     const promiseArray = [];
-    aliases.map(aliasId => {
-      promiseArray.push(this.userRepository.findOne({
-        where: { id: aliasId },
-        relations: ['originalUser'],
-      }));
+    aliases.map((aliasId) => {
+      promiseArray.push(
+        this.userRepository.findOne({
+          where: { id: aliasId },
+          relations: ['originalUser'],
+        })
+      );
     });
     const promiseResult = await Promise.all(promiseArray);
     const aliasesUserIds = [];
     const aliasesLinkedWithOtherUser = [];
+    const otherRootUser = [];
     let alreadyLinkedAliases = [];
     promiseResult.map((result, index) => {
       if (result) {
         if (result.originalUser && result.originalUser.id === userExist.id) {
+          this.log.info('User already an alias', result);
           // If alias Id is already linked with user
           alreadyLinkedAliases.push(result);
-        } else {
+        } else if (result.originalUser && result.originalUser.id !== userExist.id) {
+          this.log.warn('User already linked with other user', result);
           // If alias Id is associated with other user
-          aliasesLinkedWithOtherUser.push(aliases[index]);
+          aliasesLinkedWithOtherUser.push(result);
+        } else {
+          this.log.warn('User is a rootUser', result);
+          // If originalUser doesn't exist means this is a rootUser
+          otherRootUser.push(result);
         }
       } else {
         // If alias id is not associated with any user
@@ -88,7 +97,34 @@ export class ExperimentUserService {
       }
     });
     if (aliasesLinkedWithOtherUser.length) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: `Users with ids ${aliasesLinkedWithOtherUser} already associated with other users` }));
+      const errorToDisplay = aliasesLinkedWithOtherUser.map((result) => {
+        return {
+          userId: result.id,
+          linkedTo: result.originalUser.id,
+        };
+      });
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.QUERY_FAILED,
+          message: `Users already associated with other users ${JSON.stringify(
+            errorToDisplay,
+            null,
+            2
+          )} and cannot be made alias of ${userId}`,
+        })
+      );
+    }
+    if (otherRootUser.length) {
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.QUERY_FAILED,
+          message: `Users with ids ${JSON.stringify(
+            otherRootUser,
+            null,
+            2
+          )} are root user and should not be converted to an alias of ${userId}`,
+        })
+      );
     }
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {
@@ -97,13 +133,13 @@ export class ExperimentUserService {
       aliasUser.originalUser = userExist;
       return aliasUser;
     });
-    alreadyLinkedAliases = alreadyLinkedAliases.map(user => {
+    alreadyLinkedAliases = alreadyLinkedAliases.map((user) => {
       const { originalUser, ...rest } = user;
       return { ...rest, originalUser: originalUser.id };
     });
     if (userAliasesDocs.length) {
       let aliasesUsers = await this.userRepository.save(userAliasesDocs);
-      aliasesUsers = aliasesUsers.map(user => {
+      aliasesUsers = aliasesUsers.map((user) => {
         const { originalUser, ...rest } = user;
         return { ...rest, originalUser: originalUser.id };
       });
@@ -140,9 +176,7 @@ export class ExperimentUserService {
       await this.removeAssignments(userExist.id, groupMembership, userExist.group);
     }
 
-    const newDocument = userExist
-      ? { ...userExist, group: groupMembership }
-      : { id: userId, group: groupMembership };
+    const newDocument = userExist ? { ...userExist, group: groupMembership } : { id: userId, group: groupMembership };
 
     // update group membership
     return this.userRepository.save(newDocument);
@@ -174,7 +208,7 @@ export class ExperimentUserService {
     // check the groups removed from setGroupMembership
     Object.keys(oldGroupMembership).map((key) => {
       const oldGroupArray: string[] = oldGroupMembership[key] || [];
-      const newGroupArray: string[] = groupMembership && groupMembership[key] || [];
+      const newGroupArray: string[] = (groupMembership && groupMembership[key]) || [];
       oldGroupArray.map((groupId) => {
         if (!(newGroupArray && newGroupArray.includes(groupId))) {
           const groupNames = userGroupRemovedMap.has(key) ? userGroupRemovedMap.get(key) : [];

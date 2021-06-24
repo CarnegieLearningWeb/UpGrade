@@ -11,17 +11,16 @@ import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion
 import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
 import { SupportService } from '../../../src/api/services/SupportService';
 
-export function checkExperimentAssignedIsDefault(
+export function checkExperimentAssignedIsNull(
   experimentConditionAssignments: any,
   experimentName: string,
   experimentPoint: string
 ): void {
-  expect(experimentConditionAssignments).toEqual(
+  expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         expId: experimentName,
-        expPoint: experimentPoint,
-        assignedCondition: { conditionCode: 'default' },
+        expPoint: experimentPoint
       }),
     ])
   );
@@ -138,9 +137,4 @@ export async function checkDeletedExperiment(experimentId: string, user: User): 
   const groupExclusionRepository = getRepository(GroupAssignment);
   const groupExclusions = await groupExclusionRepository.find();
   expect(groupExclusions.length).toEqual(0);
-
-  // no monitored experiment point
-  const monitoredExperimentPointRepository = getRepository(MonitoredExperimentPoint);
-  const monitoredExperimentPoint = await monitoredExperimentPointRepository.find();
-  expect(monitoredExperimentPoint.length).toEqual(0);
 }

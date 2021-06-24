@@ -66,11 +66,6 @@ export class ExperimentDataService {
     return this.http.get(url);
   }
 
-  fetchExperimentContext() {
-    const url = environment.api.experimentContext;
-    return this.http.get(url);
-  }
-
   exportExperimentInfo(experimentId: string, email: string) {
     const url = environment.api.generateCsv;
     return this.http.post(url, { experimentId, email });
@@ -81,8 +76,8 @@ export class ExperimentDataService {
     return this.http.post(url, params);
   }
 
-  fetchExperimentPointsAndIds() {
-    const url = environment.api.expPointsAndIds;
+  fetchContextMetaData() {
+    const url = environment.api.contextMetaData;
     return this.http.get(url);
   }
 }

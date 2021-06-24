@@ -28,8 +28,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isGraphInfoLoading: false,
   allPartitions: null,
   allExperimentNames: null,
-  context: [],
-  expPointsAndIds: {}
+  contextMetaData: {}
 });
 
 const reducer = createReducer(
@@ -161,12 +160,8 @@ const reducer = createReducer(
     (state, { allExperimentNames }) => ({ ...state, allExperimentNames })
   ),
   on(
-    experimentsAction.actionFetchExperimentContextSuccess,
-    (state, { context }) => ({ ...state, context })
-  ),
-  on(
-    experimentsAction.actionFetchExperimentPointsAndIdsSuccess,
-    (state, { expPointsAndIds }) => ({ ...state, expPointsAndIds })
+    experimentsAction.actionFetchContextMetaDataSuccess,
+    (state, { contextMetaData }) => ({ ...state, contextMetaData })
   ),
   on(
     experimentsAction.actionFetchExperimentDetailStatSuccess,
