@@ -16,10 +16,11 @@ export class ExperimentFormValidators {
         if(!conditionWeight[0]) {
           return { assignmentWeightsSumError: false };
         } else {
-          let sumOfAssignmentWeights = 0;
-          conditions.forEach(condition => (sumOfAssignmentWeights += parseInt(condition.assignmentWeight, 10)));
-          // checking if sum is not equal to 100 and its not the new experiment creation where the empty weights sum is NaN:
-          return (sumOfAssignmentWeights !== 100) ? { assignmentWeightsSumError: true } : null;
+          // handling sum of decimal values for assignment weights:
+          let sumOfAssignmentWeights = 0.0;
+          conditions.forEach(condition => (sumOfAssignmentWeights += parseFloat(condition.assignmentWeight)));
+          // checking if sum is not equal to 100
+          return Math.ceil(sumOfAssignmentWeights) !== 100.0 ? { assignmentWeightsSumError: true } : null;
         }
       }
     }
