@@ -113,6 +113,7 @@ export interface ExperimentCondition {
   conditionCode: string;
   assignmentWeight: number;
   twoCharacterId: string;
+  order: number;
 }
 
 export interface ExperimentPartition {
@@ -121,6 +122,7 @@ export interface ExperimentPartition {
   expId: string;
   description: string;
   twoCharacterId: string;
+  order: number;
 }
 
 export interface ExperimentNameVM {
