@@ -7,7 +7,6 @@ import {
   EndExperimentCondition,
   ExperimentVM,
   EXPERIMENT_STATE,
-  GroupTypes
 } from '../../../../../core/experiments/store/experiments.model';
 
 @Component({
@@ -199,9 +198,5 @@ export class ExperimentScheduleComponent implements OnInit {
 
   get groupTypeValue(): boolean {
     return this.experimentScheduleForm && this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
-  }
-
-  get GroupTypes() {
-    return GroupTypes;
   }
 }

@@ -14,7 +14,7 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition, getExperimentPartitionID } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In } from 'typeorm';
+import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR } from 'upgrade_types';
@@ -115,14 +115,12 @@ export class ExperimentService {
     return this.experimentRepository.count();
   }
 
-  public getContext(): string[] {
-    return env.initialization.context;
-  }
-
-  public getExpPointsAndIds(): object {
+  public getContextMetaData(): object {
     return {
+      appContext: env.initialization.appContext,
       expPoints: env.initialization.expPoints,
       expIds: env.initialization.expIds,
+      groupTypes: env.initialization.groupTypes,
     };
   }
 
@@ -196,7 +194,8 @@ export class ExperimentService {
     experimentId: string,
     state: EXPERIMENT_STATE,
     user: User,
-    scheduleDate?: Date
+    scheduleDate?: Date,
+    entityManager?: EntityManager
   ): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
       await this.populateExclusionTable(experimentId, state);
@@ -216,7 +215,7 @@ export class ExperimentService {
       data = { ...data, startOn: scheduleDate };
     }
     // add experiment audit logs
-    this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
+    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
     let endDate = oldExperiment.endDate || null;
     let startDate = oldExperiment.startDate || null;
@@ -233,7 +232,8 @@ export class ExperimentService {
       state,
       scheduleDate,
       endDate,
-      startDate
+      startDate,
+      entityManager
     );
 
     // updating experiment schedules here

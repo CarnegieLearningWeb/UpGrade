@@ -80,10 +80,11 @@ export const env = {
     region: getOsEnv('AWS_REGION'),
   },
   initialization: {
-    context: parseEnvironmentValuesBySpecialChar(getOsEnv('CONTEXT')),
+    appContext: parseEnvironmentValuesBySpecialChar(getOsEnv('APP_CONTEXT')),
     adminUsers: parseAdminUsers(getOsEnv('ADMIN_USERS')),
     expPoints: parseEnvironmentValuesBySpecialChar(getOsEnv('EXP_POINTS')),
     expIds: parseEnvironmentValuesBySpecialChar(getOsEnv('EXP_IDS')),
+    groupTypes: parseEnvironmentValuesBySpecialChar(getOsEnv('GROUP_TYPES')),
   },
   hostUrl: getOsEnv('HOST_URL'),
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),
