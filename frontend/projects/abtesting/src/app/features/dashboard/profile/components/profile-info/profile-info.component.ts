@@ -10,6 +10,7 @@ import { UsersService } from '../../../../../core/users/users.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { NewUserComponent } from '../modals/new-user/new-user.component';
+import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 
 @Component({
@@ -20,7 +21,7 @@ import { ThemeOptions } from '../../../../../core/settings/store/settings.model'
 export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
   theme$ = this.settingsService.theme$;
-  displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit'];
+  displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit', 'deleteUser'];
   userRoleForm: FormGroup;
   editMode = null;
   userRoles = [UserRole.ADMIN, UserRole.CREATOR, UserRole.USER_MANAGER, UserRole.READER];
@@ -158,6 +159,20 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
       panelClass: 'new-user-modal',
       disableClose: false,
       data: { users: this.allUsers.data }
+    });
+  }
+
+  openDeleteUserModal(user: User) {
+    const dialogRef = this._matDialog.open(DeleteComponent, {
+      panelClass: 'delete-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.usersService.deleteUser(user.email);
+        // Reset the form if user is deleted after clicking on edit
+        this.resetForm();
+      }
     });
   }
 

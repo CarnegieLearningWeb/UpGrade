@@ -11,12 +11,12 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
-import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
+import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
 
@@ -101,13 +101,15 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   deleteExperiment() {
-    const dialogRef = this.dialog.open(DeleteExperimentComponent, {
-      panelClass: 'delete-modal',
-      data: { experimentName: this.experiment.name, experimentId: this.experiment.id }
+    const dialogRef = this.dialog.open(DeleteComponent, {
+      panelClass: 'delete-modal'
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after deleting experiment
+      if (result) {
+        this.experimentService.deleteExperiment(this.experiment.id);
+        // Add code of further actions after deleting experiment
+      }
     });
   }
 
