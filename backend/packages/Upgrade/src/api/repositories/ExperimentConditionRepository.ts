@@ -14,12 +14,13 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .into(ExperimentCondition)
       .values(conditionDoc)
       .onConflict(
-        `("id") DO UPDATE SET "name" = :name, "description" = :description, "conditionCode" = :conditionCode, "assignmentWeight" = :assignmentWeight`
+        `("id") DO UPDATE SET "name" = :name, "description" = :description, "conditionCode" = :conditionCode, "assignmentWeight" = :assignmentWeight, "order" = :order`
       )
       .setParameter('name', conditionDoc.name)
       .setParameter('description', conditionDoc.description)
       .setParameter('conditionCode', conditionDoc.conditionCode)
       .setParameter('assignmentWeight', conditionDoc.assignmentWeight)
+      .setParameter('order', conditionDoc.order)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

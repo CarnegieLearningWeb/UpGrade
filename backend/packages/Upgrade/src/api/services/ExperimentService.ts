@@ -77,7 +77,9 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('queries.metric', 'metric');
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -126,6 +128,18 @@ export class ExperimentService {
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
+
+    // order for condition
+    experiment.conditions.forEach((condition, index) => {
+      const newCondition = {...condition, order: index + 1};
+      experiment.conditions[index] = newCondition;
+    });
+
+    // order for partition
+    experiment.partitions.forEach((partition, index) => {
+      const newPartition = {...partition, order: index + 1};
+      experiment.partitions[index] = newPartition;
+    });
     return this.addExperimentInDB(experiment, currentUser);
   }
 

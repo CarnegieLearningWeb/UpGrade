@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
-import { IsNotEmpty, IsAlphanumeric } from 'class-validator';
+import { IsNotEmpty, IsAlphanumeric, IsNumber } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
@@ -22,6 +22,11 @@ export class ExperimentPartition extends BaseModel {
 
   @Column()
   public description: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @Column()
+  public order: number;
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
