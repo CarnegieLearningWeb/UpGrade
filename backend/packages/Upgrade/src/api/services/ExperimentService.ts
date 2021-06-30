@@ -33,6 +33,7 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
+import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
 
 @Service()
 export class ExperimentService {
@@ -395,6 +396,20 @@ export class ExperimentService {
     }
   }
 
+  private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
+    // Check for conditionCode is 'default' then return error:
+    const hasDefaultConditionCode = conditions.filter(
+      condition => condition.conditionCode.toUpperCase() === 'DEFAULT'
+    );
+    if (hasDefaultConditionCode.length) {
+      throw new BadRequestError(
+        JSON.stringify({
+          message: "'default' as ConditionCode is not allowed.",
+        })
+      );
+    }
+  }
+
   private async updateExperimentInDB(experiment: ExperimentInput, user: User): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id);
@@ -436,6 +451,9 @@ export class ExperimentService {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
         }
 
+        // Check for conditionCode is 'default' then return error:
+        this.checkConditionCodeDefault(conditions);
+
         // creating condition docs
         const conditionDocToSave: Array<Partial<ExperimentCondition>> =
           (conditions &&
@@ -446,8 +464,8 @@ export class ExperimentService {
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
               return rest;
-            })) ||
-          [];
+                } )) ||
+              [];
 
         // creating partition docs
         const partitionDocToSave =
@@ -717,6 +735,8 @@ export class ExperimentService {
         uniqueIdentifiers = response[1];
       }
       const { conditions, partitions, ...expDoc } = experiment;
+      // Check for conditionCode is 'default' then return error:
+      this.checkConditionCodeDefault(conditions);
 
       // saving experiment docs
       let experimentDoc: Experiment;
