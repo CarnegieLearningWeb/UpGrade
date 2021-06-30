@@ -1,6 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentVM, EXPERIMENT_STATE } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
@@ -19,7 +18,6 @@ export class StateTimeLogsComponent implements OnInit {
   filteredTimeLogs = [];
 
   constructor(
-    private experimentService: ExperimentService,
     public dialogRef: MatDialogRef<StateTimeLogsComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -27,7 +25,7 @@ export class StateTimeLogsComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.experiment.stateTimeLogs) {
+    if (this.experiment && this.experiment.stateTimeLogs) {
       // starting time for an experiment when the experiment state changes to enrolling state
       this.startTimeLogs = this.experiment.stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING);
 
