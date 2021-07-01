@@ -25,6 +25,7 @@ export class MonitoredExperimentPoint extends BaseModel {
   })
   public condition: string | null;
 
+  @Index()
   @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;
 

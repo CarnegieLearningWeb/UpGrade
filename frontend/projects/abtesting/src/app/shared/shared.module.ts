@@ -38,7 +38,6 @@ import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 import { OperationPipe } from './pipes/operation.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
-import { GroupTypePlural } from './pipes/groupTypes.pipe';
 import { DeleteComponent } from './components/delete/delete.component';
 
 @NgModule({
@@ -83,7 +82,6 @@ import { DeleteComponent } from './components/delete/delete.component';
     ScrollDirective,
     FormatDatePipe,
     OperationPipe,
-    GroupTypePlural,
     QueryResultComponent,
     DeleteComponent
   ],
@@ -129,7 +127,6 @@ import { DeleteComponent } from './components/delete/delete.component';
     FormatDatePipe,
     ScrollDirective,
     OperationPipe,
-    GroupTypePlural,
     QueryResultComponent,
     DeleteComponent
   ],

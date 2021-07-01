@@ -43,8 +43,7 @@ describe('LocalStorageService', () => {
       isGraphInfoLoading: false,
       allPartitions: null,
       allExperimentNames: null,
-      context: [],
-      expPointsAndIds: {}
+      contextMetaData: {}
     }
     service.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_KEY, EXPERIMENT_SORT_KEY.STATUS);
     service.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE, EXPERIMENT_SORT_AS.DESCENDING);

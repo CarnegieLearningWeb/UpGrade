@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IExpPointsAndIds } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -57,8 +57,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Used for experiment point and ids auto complete dropdown
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
-  expPointsAndIds: IExpPointsAndIds | {} = {};
-  expPointsAndIdsSub: Subscription;
+  contextMetaData: IContextMetaData | {} = {};
+  contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
 
   constructor(
@@ -111,10 +111,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.condition.removeAt(0);
       this.partition.removeAt(0);
       this.experimentInfo.conditions.forEach(condition => {
-        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description));
+        this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description, condition.order));
       });
       this.experimentInfo.partitions.forEach(partition => {
-        this.partition.push(this.addPartitions(partition.expPoint, partition.expId, partition.description));
+        this.partition.push(this.addPartitions(partition.expPoint, partition.expId, partition.description, partition.order));
       });
     }
     this.updateView();
@@ -130,8 +130,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.validatePartitionNames(newValues);
     });
 
-    this.expPointsAndIdsSub = this.experimentService.expPointsAndIds$
-      .subscribe(expPointsAndIds => this.expPointsAndIds = expPointsAndIds);
+    this.contextMetaDataSub = this.experimentService.contextMetaData$
+      .subscribe(contextMetaData => this.contextMetaData = contextMetaData);  
   }
 
   manageExpPointAndIdControl(index: number) {
@@ -150,22 +150,24 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   private filterExpPointsAndIds(value: string, key: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.expPointsAndIds ? (this.expPointsAndIds[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    return this.contextMetaData ? (this.contextMetaData[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
   }
 
-  addConditions(conditionCode = null, assignmentWeight = null, description = null) {
+  addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
     return this._formBuilder.group({
       conditionCode: [conditionCode, Validators.required],
       assignmentWeight: [assignmentWeight, Validators.required],
-      description: [description]
+      description: [description],
+      order: [order]
     });
   }
 
-  addPartitions(expPoint = null, expId = null, description = '') {
+  addPartitions(expPoint = null, expId = null, description = '', order = null) {
     return this._formBuilder.group({
       expPoint: [expPoint, Validators.required],
       expId: [expId],
-      description: [description]
+      description: [description],
+      order: [order]
     });
   }
 
@@ -243,11 +245,28 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   validateConditionCodes(conditions: ExperimentCondition[]) {
+
+    let conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
     if (conditionCodes.length !== new Set(conditionCodes).size) {
-      this.conditionCodeError = this.translate.instant('home.new-experiment.design.condition-unique-validation.text')
-    } else {
-      this.conditionCodeError = null;
+      this.conditionCodeError = conditionUniqueErrorText;
+    }  else {
+        this.conditionCodeError = null;
+    }
+  }
+
+  validateHasConditionCodeDefault(conditions: ExperimentCondition[]) {
+    let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
+    let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
+    if (conditions.length >= 1 ) {
+      const hasDefaultConditionCode = conditions.filter(
+        condition => condition.conditionCode.toUpperCase() === defaultKeyword
+      );
+      if (!!hasDefaultConditionCode.length) {
+        this.conditionCodeError = defaultConditionCodeErrorText
+      } else {
+        this.conditionCodeError = null;
+      }
     }
   }
 
@@ -286,7 +305,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validateExpPoints(partitions: ExperimentPartition[]) {
     const expPoints = partitions.map(partition => partition.expPoint);
     for (let expPointIndex = 0; expPointIndex < expPoints.length; expPointIndex++) {
-      if ((this.expPointsAndIds as IExpPointsAndIds).expPoints.indexOf(expPoints[expPointIndex]) === -1) {
+      if ((this.contextMetaData as IContextMetaData).expPoints.indexOf(expPoints[expPointIndex]) === -1) {
         // Add partition point selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
         break;
@@ -297,7 +316,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validateExpIds(partitions: ExperimentPartition[]) {
     const expIds = partitions.map(partition => partition.expId).filter(expId => expId);
     for (let expIdIndex = 0; expIdIndex < expIds.length; expIdIndex++) {
-      if ((this.expPointsAndIds as IExpPointsAndIds).expIds.indexOf(expIds[expIdIndex]) === -1) {
+      if ((this.contextMetaData as IContextMetaData).expIds.indexOf(expIds[expIdIndex]) === -1) {
         // Add partition id selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
         break;
@@ -320,24 +339,29 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
         this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
+        this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
           const experimentDesignFormData = this.experimentDesignForm.value;
-
+          let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
               return this.experimentInfo
-                ? ({ ...this.experimentInfo.conditions[index], ...condition })
-                : ({ id: uuid.v4(), ...condition, name: ''});
+                ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
+                : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
             }
           );
+          order = 1;
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
             (partition, index) => {
               return this.experimentInfo
-                ? ({ ...this.experimentInfo.partitions[index], ...partition })
-                : (partition.expId ? partition : this.removePartitionName(partition));
+                ? ({ ...this.experimentInfo.partitions[index], ...partition, order: order++ })
+                : (partition.expId 
+                  ? ({...partition, order: order++ }) 
+                  : ({...this.removePartitionName(partition), order: order++ })
+                );
             }
           );
           this.emitExperimentDialogEvent.emit({
@@ -365,6 +389,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy() {
     this.allPartitionsSub.unsubscribe();
     this.partitionErrorMessagesSub.unsubscribe();
-    this.expPointsAndIdsSub.unsubscribe();
+    this.contextMetaDataSub.unsubscribe();
   }
 }

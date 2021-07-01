@@ -1,5 +1,5 @@
 import { BaseModel } from './base/BaseModel';
-import { Entity, Column, ManyToMany, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToMany, PrimaryGeneratedColumn, ManyToOne, Index } from 'typeorm';
 import { Metric } from './Metric';
 import { ExperimentUser } from './ExperimentUser';
 
@@ -20,6 +20,7 @@ export class Log extends BaseModel {
   @ManyToMany((type) => Metric, (metric) => metric.logs)
   public metrics: Metric[];
 
+  @Index()
   @ManyToOne((type) => ExperimentUser, (user) => user.logs)
   public user: ExperimentUser;
 }

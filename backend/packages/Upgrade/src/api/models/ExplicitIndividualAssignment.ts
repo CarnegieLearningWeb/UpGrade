@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Entity, Index, ManyToOne, PrimaryColumn } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
 import { ExperimentCondition } from './ExperimentCondition';
@@ -16,6 +16,7 @@ export class ExplicitIndividualAssignment extends BaseModel {
   )
   public previewUser: PreviewUser;
 
+  @Index()
   @ManyToOne(type => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
