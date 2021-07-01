@@ -147,30 +147,30 @@ export class AnalyticsService {
       case DATE_RANGE.LAST_THREE_MONTHS:
         for (let i = 0; i < 3; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       case DATE_RANGE.LAST_SIX_MONTHS:
         for (let i = 0; i < 6; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       default:
         for (let i = 0; i < 12; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
