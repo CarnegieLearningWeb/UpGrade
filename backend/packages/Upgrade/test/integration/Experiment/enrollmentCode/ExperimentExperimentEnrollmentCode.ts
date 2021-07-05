@@ -6,7 +6,7 @@ import { individualAssignmentExperimentConsistencyRuleExperiemnt } from '../../m
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
   checkExperimentAssignedIsNotDefault,
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
@@ -17,7 +17,7 @@ export default async function testCase(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // experiment object
   const experimentObject = individualAssignmentExperimentConsistencyRuleExperiemnt;

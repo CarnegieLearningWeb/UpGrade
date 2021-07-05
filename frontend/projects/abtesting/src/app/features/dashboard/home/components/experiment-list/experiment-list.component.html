@@ -248,8 +248,17 @@
             <span
               class="enrollment-info"
               *ngIf="experiment.stat?.groups"
-              [innerHTML]="'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups, groupName: experiment.group | groupTypePlural: experiment.stat?.groups }"
-            ></span>
+            >
+              {{ 'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups } }}
+              <span
+                *ngIf="experiment.stat?.groups < 2; else groupTypePlural"
+              >
+                {{ 'global.group-type-singular.text' | translate: { groupType: experiment.group } }}
+              </span>
+              <ng-template #groupTypePlural>
+                <span>{{ 'global.group-type-plural.text' | translate: { groupType: experiment.group } }}</span>
+              </ng-template>
+            </span>
             <span
               class="enrollment-info"
               *ngIf="!experiment.stat?.groups && !experiment.stat?.users"

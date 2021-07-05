@@ -10,7 +10,7 @@ import { individualExperimentStats } from '../mockData/experiment/index';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
 } from '../utils/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
@@ -24,10 +24,10 @@ export default async function testCase(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating preview user
-  const previewUser = await previewService.create(previewUsers[0]);
+  const previewUser = await previewService.create(previewUsers[3]);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
   // experiment object
   const experimentObject = individualExperimentStats;
 
@@ -106,7 +106,7 @@ export default async function testCase(): Promise<void> {
   );
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
   // mark experiment point
   markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1);
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);

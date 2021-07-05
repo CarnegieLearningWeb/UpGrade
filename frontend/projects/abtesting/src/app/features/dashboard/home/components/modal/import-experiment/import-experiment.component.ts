@@ -80,6 +80,7 @@ export class ImportExperimentComponent {
       conditionCode: 'string',
       assignmentWeight: 'number',
       twoCharacterId: 'string',
+      order: 'number',
     }
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
@@ -88,6 +89,7 @@ export class ImportExperimentComponent {
       expId: 'string',
       description: 'string',
       twoCharacterId: 'string',
+      order: 'number',
     }
 
     let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });

@@ -23,7 +23,7 @@ export default async function CreateLog(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
   const logRepository = getRepository(Log);
 
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create experiment
   await experimentService.create(experimentObject as any, user);
@@ -143,7 +143,7 @@ export default async function CreateLog(): Promise<void> {
 
   // create query for all the metrics
   const totalTimeSum = makeQuery(`totalTimeSeconds`, OPERATION_TYPES.SUM, experiments[0].id);
-  const totalMastryWorkspaceSum = makeQuery(`totalMasteryWorkspacesCompleted`, OPERATION_TYPES.SUM, experiments[0].id);
+  const totalMasteryWorkspaceSum = makeQuery(`totalMasteryWorkspacesCompleted`, OPERATION_TYPES.SUM, experiments[0].id);
   const totalConceptBuildersCompletedSum = makeQuery(
     `totalConceptBuildersCompleted`,
     OPERATION_TYPES.SUM,
@@ -198,7 +198,7 @@ export default async function CreateLog(): Promise<void> {
     ...experimentObject,
     queries: [
       totalTimeSum,
-      totalMastryWorkspaceSum,
+      totalMasteryWorkspaceSum,
       totalConceptBuildersCompletedSum,
       totalMasteryWorkspacesGraduatedSum,
       totalSessionsCompletedSum,

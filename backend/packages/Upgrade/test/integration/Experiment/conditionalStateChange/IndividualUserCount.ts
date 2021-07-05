@@ -8,7 +8,7 @@ import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNotDefault,
-  checkExperimentAssignedIsDefault,
+  checkExperimentAssignedIsNull,
 } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
@@ -19,7 +19,7 @@ export default async function IndividualUserCount(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // experiment object
   const experimentObject: any = individualAssignmentExperiment;
@@ -95,7 +95,7 @@ export default async function IndividualUserCount(): Promise<void> {
 
   // get all experiment condition for user 1
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
   markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition);

@@ -1,6 +1,5 @@
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import {  EntityManager } from 'typeorm';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import {
@@ -15,7 +14,7 @@ import { ExperimentPartitionRepository } from '../repositories/ExperimentPartiti
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPartition, getExperimentPartitionID } from '../models/ExperimentPartition';
 import { ScheduledJobService } from './ScheduledJobService';
-import { getConnection, In } from 'typeorm';
+import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
 import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR } from 'upgrade_types';
@@ -35,6 +34,8 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { StateTimeLog } from '../models/StateTimeLogs';
+import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
+import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 
 @Service()
 export class ExperimentService {
@@ -49,6 +50,7 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
+    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
@@ -79,7 +81,9 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('queries.metric', 'metric');
+      .leftJoinAndSelect('queries.metric', 'metric')
+      .addOrderBy('conditions.order', 'ASC')
+      .addOrderBy('partitions.order', 'ASC');
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
       // add search query
@@ -117,20 +121,30 @@ export class ExperimentService {
     return this.experimentRepository.count();
   }
 
-  public getContext(): string[] {
-    return env.initialization.context;
-  }
-
-  public getExpPointsAndIds(): object {
+  public getContextMetaData(): object {
     return {
+      appContext: env.initialization.appContext,
       expPoints: env.initialization.expPoints,
       expIds: env.initialization.expIds,
+      groupTypes: env.initialization.groupTypes,
     };
   }
 
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
+
+    // order for condition
+    experiment.conditions.forEach((condition, index) => {
+      const newCondition = {...condition, order: index + 1};
+      experiment.conditions[index] = newCondition;
+    });
+
+    // order for partition
+    experiment.partitions.forEach((partition, index) => {
+      const newPartition = {...partition, order: index + 1};
+      experiment.partitions[index] = newPartition;
+    });
     return this.addExperimentInDB(experiment, currentUser);
   }
 
@@ -146,33 +160,21 @@ export class ExperimentService {
       const experiment = await this.findOne(experimentId);
 
       if (experiment) {
-        // monitoredIds
-        const monitoredIds = experiment.partitions.map((partition) => {
-          return getExperimentPartitionID(partition.expPoint, partition.expId);
-        });
-
-        const promiseArray = [];
-        // deleting data related to experiment
-        promiseArray.push(
-          this.monitoredExperimentPointRepository.deleteByExperimentId(monitoredIds, transactionalEntityManager)
-        );
-        promiseArray.push(this.experimentRepository.deleteById(experimentId, transactionalEntityManager));
+        const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
 
         // adding entry in audit log
         const deleteAuditLogData = {
           experimentName: experiment.name,
         };
-        promiseArray.push(
-          this.experimentAuditLogRepository.saveRawJson(
-            EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
-            deleteAuditLogData,
-            currentUser
-          )
+
+        // Add log for experiment deleted
+        this.experimentAuditLogRepository.saveRawJson(
+          EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED,
+          deleteAuditLogData,
+          currentUser
         );
 
-        const promiseResult = await Promise.all(promiseArray);
-
-        return promiseResult[1];
+        return deletedExperiment;
       }
 
       return undefined;
@@ -210,60 +212,58 @@ export class ExperimentService {
     experimentId: string,
     state: EXPERIMENT_STATE,
     user: User,
-    scheduleDate?: Date
+    scheduleDate?: Date,
+    entityManager?: EntityManager
   ): Promise<Experiment> {
+    if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
+      await this.populateExclusionTable(experimentId, state);
+    }
 
-    return getConnection().transaction(async (transactionalEntityManager) => {
+    const oldExperiment = await this.experimentRepository.findOne(
+      { id: experimentId },
+      { relations: ['stateTimeLogs'] }
+    );
+    let data: AuditLogData = {
+      experimentId,
+      experimentName: oldExperiment.name,
+      previousState: oldExperiment.state,
+      newState: state,
+    };
+    if (scheduleDate) {
+      data = { ...data, startOn: scheduleDate };
+    }
+    // add experiment audit logs
+    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
-      if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
-        await this.populateExclusionTable(experimentId, state);
-      }
+    const timeLogDate = new Date();
 
-      const oldExperiment = await this.experimentRepository.findOne(
-        { id: experimentId },
-        { relations: ['stateTimeLogs'] }
-      );
-      let data: AuditLogData = {
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = oldExperiment.state;
+    stateTimeLogDoc.toState = state;
+    stateTimeLogDoc.timeLog = timeLogDate;
+    stateTimeLogDoc.experiment = oldExperiment;
+
+    // updating the experiment and stateTimeLog
+    const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
+    const [updatedState, updatedStateTimeLog] = await Promise.all([
+      this.experimentRepository.updateState(
         experimentId,
-        experimentName: oldExperiment.name,
-        previousState: oldExperiment.state,
-        newState: state,
-      };
-      if (scheduleDate) {
-        data = { ...data, startOn: scheduleDate };
-      }
-      // add experiment audit logs
-      this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user);
+        state,
+        scheduleDate,
+        entityManager
+      ),
+      stateTimeLogRepo.save(stateTimeLogDoc),
+    ]);
 
-      const timeLogDate = new Date();
+    // updating experiment schedules
+    await this.updateExperimentSchedules(experimentId, entityManager);
 
-      const stateTimeLogDoc = new StateTimeLog();
-      stateTimeLogDoc.id = uuid();
-      stateTimeLogDoc.fromState = oldExperiment.state;
-      stateTimeLogDoc.toState = state;
-      stateTimeLogDoc.timeLog = timeLogDate;
-      stateTimeLogDoc.experiment = oldExperiment;
-
-      // updating the experiment and stateTimeLog
-      const [updatedState, updatedStateTimeLog] = await Promise.all([
-        this.experimentRepository.updateState(
-          experimentId,
-          state,
-          scheduleDate,
-          transactionalEntityManager
-        ),
-        transactionalEntityManager.getRepository(StateTimeLog).save(stateTimeLogDoc),
-      ]);
-
-      // updating experiment schedules here
-      await this.updateExperimentSchedules(experimentId, transactionalEntityManager);
-
-      return {
-        ...oldExperiment,
-        state: updatedState[0].state,
-        stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
-      };
-    });
+    return {
+      ...oldExperiment,
+      state: updatedState[0].state,
+      stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
+    };
   }
 
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
@@ -386,12 +386,14 @@ export class ExperimentService {
     const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
     // populate Individual and Group Exclusion Table
     if (consistencyRule === CONSISTENCY_RULE.GROUP) {
-      // query all user information
-      const groupsToExclude = new Set(
-        userDetails.map((userDetail) => {
-          return userDetail.workingGroup[group];
+      const workingGroups = userDetails
+        .map((userDetail) => {
+          return userDetail.workingGroup && userDetail.workingGroup[group];
         })
-      );
+        .filter((groupName) => !!groupName);
+
+      // query all user information
+      const groupsToExclude = new Set(workingGroups);
 
       // group exclusion documents
       const groupExclusionDocs = [...groupsToExclude].map((groupId) => {
@@ -416,6 +418,20 @@ export class ExperimentService {
         };
       });
       await this.individualExclusionRepository.saveRawJson(individualExclusionDocs);
+    }
+  }
+
+  private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
+    // Check for conditionCode is 'default' then return error:
+    const hasDefaultConditionCode = conditions.filter(
+      condition => condition.conditionCode.toUpperCase() === 'DEFAULT'
+    );
+    if (hasDefaultConditionCode.length) {
+      throw new BadRequestError(
+        JSON.stringify({
+          message: "'default' as ConditionCode is not allowed.",
+        })
+      );
     }
   }
 
@@ -454,6 +470,9 @@ export class ExperimentService {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
         }
 
+        // Check for conditionCode is 'default' then return error:
+        this.checkConditionCodeDefault(conditions);
+
         // creating condition docs
         const conditionDocToSave: Array<Partial<ExperimentCondition>> =
           (conditions &&
@@ -464,8 +483,8 @@ export class ExperimentService {
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
               return rest;
-            })) ||
-          [];
+                } )) ||
+              [];
 
         // creating partition docs
         const partitionDocToSave =
@@ -735,6 +754,8 @@ export class ExperimentService {
         uniqueIdentifiers = response[1];
       }
       const { conditions, partitions, ...expDoc } = experiment;
+      // Check for conditionCode is 'default' then return error:
+      this.checkConditionCodeDefault(conditions);
 
       // saving experiment docs
       let experimentDoc: Experiment;
@@ -794,7 +815,11 @@ export class ExperimentService {
       experimentId: createdExperiment.id,
       experimentName: createdExperiment.name,
     };
-    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED, createAuditLogData, user);
+    await this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+      createAuditLogData,
+      user
+    );
     return createdExperiment;
   }
 

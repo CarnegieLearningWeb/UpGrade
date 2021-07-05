@@ -25,7 +25,7 @@ export default async function LogOperations(): Promise<void> {
   const settingService = Container.get<SettingService>(SettingService);
   const queryService = Container.get<QueryService>(QueryService);
 
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create experiment
   await experimentService.create(experimentObject as any, user);

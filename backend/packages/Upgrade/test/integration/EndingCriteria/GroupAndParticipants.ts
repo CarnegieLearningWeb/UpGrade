@@ -14,7 +14,7 @@ export default async function GroupAndParticipants() {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // experiment object
   const experimentObject = groupAndParticipantsExperiment;

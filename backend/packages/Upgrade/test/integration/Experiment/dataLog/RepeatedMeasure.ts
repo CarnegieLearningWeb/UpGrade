@@ -27,7 +27,7 @@ export default async function RepeatedMeasure(): Promise<void> {
   const queryService = Container.get<QueryService>(QueryService);
   const logRepository = getRepository(Log);
 
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create experiment
   await experimentService.create(experimentObject as any, user);

@@ -2,11 +2,11 @@ import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input
 import { MatChipInputEvent, MatAutocompleteSelectedEvent } from '@angular/material';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'upgrade_types';
 import {
-  GroupTypes,
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   ExperimentVM,
-  NewExperimentPaths
+  NewExperimentPaths,
+  IContextMetaData
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
@@ -28,13 +28,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   overviewForm: FormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 
-  groupTypes = [
-    { value: GroupTypes.CLASS },
-    { value: GroupTypes.SCHOOL },
-    { value: GroupTypes.DISTRICT },
-    { value: GroupTypes.TEACHER },
-    { value: GroupTypes.OTHER }
-  ];
+  groupTypes = [];
+  groupTypeOther = 'other';
 
   consistencyRules = [
     { value: CONSISTENCY_RULE.INDIVIDUAL },
@@ -49,8 +44,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Used for autocomplete context input
   experimentContext$: Observable<string[]>;
-  allContext = [];
-  allContextSub: Subscription;
+  contextMetaData: IContextMetaData | {} = {};
+  contextMetaDataSub: Subscription;
   autoCompleteContext = new FormControl();
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
@@ -61,13 +56,19 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   ) {
     this.experimentContext$ = this.autoCompleteContext.valueChanges.pipe(
       startWith(null),
-      map((context: string | null) => context ? this._filter(context) : this.allContext.slice()));
+      map(context => this._filter(context, 'appContext')));
   }
 
   ngOnInit() {
-    this.allContextSub = this.experimentService.experimentContext$.subscribe(context => {
-      this.allContext = context;
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+      this.contextMetaData = contextMetaData;
+      if (this.contextMetaData && this.contextMetaData['groupTypes']) {
+        this.contextMetaData['groupTypes'].forEach(element => {
+          this.groupTypes.push({value: element});
+        });
+      }
     });
+
     this.overviewForm = this._formBuilder.group(
       {
         experimentName: [null, Validators.required],
@@ -104,7 +105,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     this.overviewForm.get('groupType').valueChanges.subscribe(groupType => {
       switch (groupType) {
-        case GroupTypes.OTHER:
+        case this.groupTypeOther:
           this.overviewForm.get('customGroupName').setValidators(Validators.required);
           break;
         default:
@@ -137,12 +138,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     const result = find(this.groupTypes, type => type.value === this.experimentInfo.group);
     return result
       ? { groupType: result.value }
-      : { groupType: GroupTypes.OTHER, customGroupName: this.experimentInfo.group };
+      : { groupType: this.groupTypeOther, customGroupName: this.experimentInfo.group };
   }
 
-  private _filter(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.allContext.filter(context => context.toLowerCase().indexOf(filterValue) === 0);
+  private _filter(value: string, key: string): string[] {
+    const filterValue = value ?  value.toLocaleLowerCase() : [];
+    return this.contextMetaData ? (this.contextMetaData[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
   }
 
   selectedAutoCompleteContext(event: MatAutocompleteSelectedEvent): void {
@@ -163,7 +164,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if ((value || '').trim()) {
       switch (type) {
         case 'contexts':
-          if (this.allContext.indexOf(value.trim()) !== -1 && this.contexts.value.indexOf(value.trim()) === -1) {
+          if (this.contextMetaData['appContext'].indexOf(value.trim()) !== -1 && this.contexts.value.indexOf(value.trim()) === -1) {
             this[type].setValue([...this[type].value, value.trim()]);
           }
           break;
@@ -215,7 +216,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             description: description || '',
             consistencyRule: consistencyRule,
             assignmentUnit: unitOfAssignment,
-            group: groupType ? (groupType === GroupTypes.OTHER ? customGroupName : groupType) : null,
+            group: groupType ? (groupType === this.groupTypeOther ? customGroupName : groupType) : null,
             context,
             tags,
             logging
@@ -231,7 +232,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.allContextSub.unsubscribe();
+    this.contextMetaDataSub.unsubscribe();
   }
 
   get NewExperimentDialogEvents() {
@@ -239,7 +240,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   get groupTypeValue() {
-    return this.overviewForm.get('groupType').value === GroupTypes.OTHER;
+    return this.overviewForm.get('groupType').value === this.groupTypeOther;
   }
 
   get unitOfAssignmentValue() {

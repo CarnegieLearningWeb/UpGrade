@@ -37,13 +37,13 @@
               type="number"
               matInput
               class="input"
-              [placeholder]="'home.new-experiment.schedule.group-count.placeholder.text' | translate: { groupType: experiment.group | groupTypePlural } "
+              [placeholder]="('home.new-experiment.schedule.group-count.placeholder.text' | translate) + (' ') + ('global.group-type-plural.text' | translate: { groupType: experiment.group })"
               formControlName="groupCount"
             />
           </mat-form-field>
           <span
             class="ft-14-400 group-type"
-            [innerHTML]="'home.new-experiment.schedule.group-count.text' | translate: { groupType: experiment.group | groupTypePlural }"
+            [innerHTML]="('global.group-type-plural.text' | translate: { groupType: experiment.group }) + (' ') + ('home.new-experiment.schedule.group-count.text' | translate)"
             [ngClass]="{'group-type--disable': !groupTypeValue}"
           ></span>
         </div>

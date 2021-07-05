@@ -1,4 +1,4 @@
-import { PrimaryColumn, ManyToOne, Entity, Column } from 'typeorm';
+import { PrimaryColumn, ManyToOne, Entity, Column, Index } from 'typeorm';
 import { ExperimentCondition } from './ExperimentCondition';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
@@ -8,6 +8,7 @@ export class GroupAssignment extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
+  @Index()
   @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
