@@ -7,7 +7,7 @@
         matInput
         class="ft-14-400 name-input"
         [placeholder]="'global.delete.input-placeholder.text' | translate"
-        [(ngModel)]="deleteConfirm"
+        [(ngModel)]="isDeleteButtonClicked"
       />
     </mat-form-field>
   </div>
@@ -22,8 +22,8 @@
     <button
       class="modal-btn default-button delete-btn"
       mat-flat-button
-      [ngClass]="{ 'default-button--disabled': deleteConfirm !== ('global.delete-input-comparison.text' | translate) }"
-      [disabled]="deleteConfirm !== ('global.delete-input-comparison.text' | translate)"
+      [ngClass]="{ 'default-button--disabled': isDeleteButtonClicked !== ('global.delete-input-comparison.text' | translate) }"
+      [disabled]="isDeleteButtonClicked !== ('global.delete-input-comparison.text' | translate)"
       (click)="delete()"
     >
       {{ 'global.delete.text' | translate }}

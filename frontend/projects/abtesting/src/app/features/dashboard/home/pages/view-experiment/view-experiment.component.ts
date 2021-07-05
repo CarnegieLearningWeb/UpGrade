@@ -105,8 +105,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       panelClass: 'delete-modal'
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+      if (isDeleteButtonClicked) {
         this.experimentService.deleteExperiment(this.experiment.id);
         // Add code of further actions after deleting experiment
       }

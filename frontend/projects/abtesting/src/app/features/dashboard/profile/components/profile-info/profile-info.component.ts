@@ -167,8 +167,8 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
       panelClass: 'delete-modal'
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
+    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+      if (isDeleteButtonClicked) {
         this.usersService.deleteUser(user.email);
         // Reset the form if user is deleted after clicking on edit
         this.resetForm();

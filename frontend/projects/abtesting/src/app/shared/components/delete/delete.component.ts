@@ -9,7 +9,7 @@ import { MatDialogRef } from '@angular/material';
 })
 export class DeleteComponent {
 
-  deleteConfirm: string;
+  isDeleteButtonClicked: string;
   message: boolean;
   constructor(
     public dialogRef: MatDialogRef<DeleteComponent>
