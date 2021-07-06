@@ -69,6 +69,10 @@ export class UserService {
     return this.userRepository.updateUserRole(email, role);
   }
 
+  public deleteUser(email: string): Promise<User> {
+    return this.userRepository.deleteUserByEmail(email);
+  }
+
   private postgresSearchString(type: string): string {
     const searchString: string[] = [];
     switch (type) {

@@ -73,4 +73,16 @@ export const actionSetSortingType = createAction(
   props<{ sortingType: SORT_AS }>()
 );
 
+export const actionDeleteUser = createAction(
+  '[User] Delete user by email',
+  props<{ email: string }>()
+);
 
+export const actionDeleteUserSuccess = createAction(
+  '[User] Delete user by email Success',
+  props<{ user: User }>()
+);
+
+export const actionDeleteUserFailure = createAction(
+  '[User] Delete user by email Failure'
+);

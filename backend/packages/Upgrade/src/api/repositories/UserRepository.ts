@@ -37,4 +37,23 @@ export class UserRepository extends Repository<User> {
 
     return result.raw;
   }
+
+  public async deleteUserByEmail(email: string): Promise<User> {
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(User)
+      .where('email=:email', { email })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'UserRepository',
+          'deleteUserByEmail',
+          { email },
+          errorMsg
+        );
+        throw new Error(errorMsgString);
+      });
+    return result.raw;
+  }
 }

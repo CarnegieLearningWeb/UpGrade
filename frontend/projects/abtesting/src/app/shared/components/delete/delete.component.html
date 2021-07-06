@@ -1,0 +1,32 @@
+<div mat-dialog-content class="dialog">
+    <p class="ft-16-600">
+      {{ 'global.delete-confirmation.message.text' | translate }}
+    </p>
+    <mat-form-field class="ft-14-600 name">
+      <input
+        matInput
+        class="ft-14-400 name-input"
+        [placeholder]="'global.delete.input-placeholder.text' | translate"
+        [(ngModel)]="isDeleteButtonClicked"
+      />
+    </mat-form-field>
+  </div>
+  <div mat-dialog-actions class="dialog-actions">
+    <button
+      class="modal-btn"
+      mat-flat-button
+      (click)="onCancelClick()"
+    >
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      class="modal-btn default-button delete-btn"
+      mat-flat-button
+      [ngClass]="{ 'default-button--disabled': isDeleteButtonClicked !== ('global.delete-input-comparison.text' | translate) }"
+      [disabled]="isDeleteButtonClicked !== ('global.delete-input-comparison.text' | translate)"
+      (click)="delete()"
+    >
+      {{ 'global.delete.text' | translate }}
+    </button>
+  </div>
+  
