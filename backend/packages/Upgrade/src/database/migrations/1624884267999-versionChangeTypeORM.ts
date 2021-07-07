@@ -1,7 +1,8 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import {MigrationInterface, QueryRunner} from 'typeorm';
 
+// tslint:disable-next-line: class-name
 export class versionChangeTypeORM1624884267999 implements MigrationInterface {
-    name = 'versionChangeTypeORM1624884267999'
+    public name = 'versionChangeTypeORM1624884267999';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "metric_log" DROP CONSTRAINT "FK_c022cd84fd9fa789cbaee40b41c"`);

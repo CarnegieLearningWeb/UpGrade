@@ -1,7 +1,8 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import {MigrationInterface, QueryRunner} from 'typeorm';
 
+// tslint:disable-next-line: class-name
 export class addOrderToConditionAndPartition1624945247002 implements MigrationInterface {
-    name = 'addOrderToConditionAndPartition1624945247002'
+    public name = 'addOrderToConditionAndPartition1624945247002';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "experiment_condition" ADD "order" integer NOT NULL`);

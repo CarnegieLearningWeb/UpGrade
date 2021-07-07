@@ -25,7 +25,9 @@ export class ExperimentPartition extends BaseModel {
 
   @IsNotEmpty()
   @IsNumber()
-  @Column()
+  @Column({
+    nullable: true,
+  })
   public order: number;
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
