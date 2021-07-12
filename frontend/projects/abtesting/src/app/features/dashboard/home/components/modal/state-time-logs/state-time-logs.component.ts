@@ -50,7 +50,7 @@ export class StateTimeLogsComponent implements OnInit {
       this.startTimeLogs.unshift({timeLog: NaN});
     }
     else if ((this.endTimeLogs.length == this.startTimeLogs.length) &&  (this.experiment && this.experiment.state == EXPERIMENT_STATE.ENROLLING)) {
-      this.startTimeLogs.unshift({timeLog: NaN})
+      this.startTimeLogs.unshift({timeLog: NaN});
     }
 
     this.startTimeLogs.forEach((startTimeLog, index) => {
