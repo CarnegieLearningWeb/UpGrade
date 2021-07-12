@@ -45,6 +45,14 @@ export class StateTimeLogsComponent implements OnInit {
       return endingDate1 > endingDate2 ? 1 : endingDate1 < endingDate2 ? -1 : 0;
     });
 
+    // if the initial state is enrolling state, then push NULL entry for starting time
+    if (this.endTimeLogs.length > this.startTimeLogs.length) {
+      this.startTimeLogs.unshift({timeLog: NaN});
+    }
+    else if ((this.endTimeLogs.length == this.startTimeLogs.length) &&  (this.experiment && this.experiment.state == EXPERIMENT_STATE.ENROLLING)) {
+      this.startTimeLogs.unshift({timeLog: NaN})
+    }
+
     this.startTimeLogs.forEach((startTimeLog, index) => {
       const endTimeLog = index < this.endTimeLogs.length ?  this.endTimeLogs[index].timeLog : null;
       this.filteredTimeLogs.push({startTimeLog: startTimeLog.timeLog, endTimeLog: endTimeLog});
