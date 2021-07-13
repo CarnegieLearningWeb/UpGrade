@@ -28,7 +28,6 @@ export default async function NoPartitionPoint(): Promise<void> {
   experiments[0].partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
-
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -105,8 +104,8 @@ export default async function NoPartitionPoint(): Promise<void> {
     const newPartition = {...partition, order: index + 1};
     newExperimentDoc.partitions[index] = newPartition;
   });
-
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
+
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([

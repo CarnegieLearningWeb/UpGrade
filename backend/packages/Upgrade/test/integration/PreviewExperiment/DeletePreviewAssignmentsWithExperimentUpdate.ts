@@ -98,8 +98,8 @@ export default async function testCase(): Promise<void> {
     const newCondition = {...condition, order: index + 1};
     newExperimentDoc.conditions[index] = newCondition;
   });
-
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
+
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([

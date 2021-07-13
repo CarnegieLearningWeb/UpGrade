@@ -345,7 +345,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         // this.validatePartitions();
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
           const experimentDesignFormData = this.experimentDesignForm.value;
-
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
@@ -354,6 +353,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
             }
           );
+          order = 1;
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
             (partition, index) => {
               return this.experimentInfo
