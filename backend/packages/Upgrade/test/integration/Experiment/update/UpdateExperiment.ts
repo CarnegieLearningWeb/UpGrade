@@ -24,7 +24,7 @@ export default async function UpdateExperiment(): Promise<void> {
   experiments[0].conditions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
-  
+
   // sort partitions
   experiments[0].partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
@@ -100,7 +100,7 @@ export default async function UpdateExperiment(): Promise<void> {
     const newCondition = {...condition, order: index + 1};
     newExperimentDoc.conditions[index] = newCondition;
   });
-  
+
   // order for partition
   newExperimentDoc.partitions.forEach((partition,index) => {    
     const newCondition = {...partition, order: index + 1};
@@ -116,6 +116,7 @@ export default async function UpdateExperiment(): Promise<void> {
           name: condition.name,
           description: condition.description,
           conditionCode: condition.conditionCode,
+          order: condition.order,
         });
       }),
       expect.objectContaining({
@@ -144,6 +145,7 @@ export default async function UpdateExperiment(): Promise<void> {
           expPoint: partition.expPoint,
           expId: partition.expId,
           description: partition.description,
+          order: partition.order,
         });
       }),
       expect.objectContaining({

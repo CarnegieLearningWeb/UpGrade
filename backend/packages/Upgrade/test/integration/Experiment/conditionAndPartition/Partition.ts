@@ -48,8 +48,8 @@ export default async function NoPartitionPoint(): Promise<void> {
       }),
     ])
   );
-  
-  
+
+
   // adding new partition
   const newExperimentDoc = {
     ...experiments[0],

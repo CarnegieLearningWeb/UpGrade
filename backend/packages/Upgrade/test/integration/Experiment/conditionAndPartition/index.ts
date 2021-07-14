@@ -2,8 +2,8 @@ import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import TestCase1 from './condition';
-import TestCase2 from './partition';
+import TestCase1 from './Condition';
+import TestCase2 from './Partition';
 
 const initialChecks = async () => {
   const userService = Container.get<ExperimentUserService>(ExperimentUserService);
