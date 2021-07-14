@@ -70,6 +70,7 @@ export class ImportExperimentComponent {
       conditions: 'interface',
       partitions: 'interface',
       queries: 'array',
+      stateTimeLogs: 'interface',
     };
 
     const conditionSchema: Record<keyof ExperimentCondition, string> = {

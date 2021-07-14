@@ -130,8 +130,6 @@ export default async function UpdateExperiment(): Promise<void> {
     ])
   );
 
-  expect(updatedExperimentDoc.endDate).toBeNull();
-
   // get all experimental conditions
   const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id);
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
@@ -165,5 +163,4 @@ export default async function UpdateExperiment(): Promise<void> {
   // update the experiment state
   await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
   experiments = await experimentService.find();
-  expect(experiments[0].endDate).not.toBeNull();
 }

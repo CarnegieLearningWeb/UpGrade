@@ -30,6 +30,7 @@ import { ExperimentQueryResultComponent } from './components/experiment-query-re
 import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
+import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
 @NgModule({
   declarations: [
     HomeComponent,
@@ -51,7 +52,8 @@ import { ImportExperimentComponent } from './components/modal/import-experiment/
     CreateQueryComponent,
     ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
-    RepeatedMeasurePipe
+    RepeatedMeasurePipe,
+    StateTimeLogsComponent
   ],
   imports: [
     CommonModule,
@@ -71,7 +73,8 @@ import { ImportExperimentComponent } from './components/modal/import-experiment/
     PostExperimentRuleComponent,
     ImportExperimentComponent,
     QueriesModalComponent,
-    ExperimentEndCriteriaComponent
+    ExperimentEndCriteriaComponent,
+    StateTimeLogsComponent
   ]
 })
 export class HomeModule {}

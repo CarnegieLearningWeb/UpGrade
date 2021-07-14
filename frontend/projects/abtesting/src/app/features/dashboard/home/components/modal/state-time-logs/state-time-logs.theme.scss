@@ -1,0 +1,18 @@
+@import '~@angular/material/theming';
+
+@mixin state-time-logs-modal-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .state-time-logs-modal {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+
+    .state-time-logs-view {
+      .icon {
+        color: mat-color($foreground, icon);
+      }
+    }
+  }
+}

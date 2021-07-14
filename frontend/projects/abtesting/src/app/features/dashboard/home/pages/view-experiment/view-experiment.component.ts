@@ -19,12 +19,14 @@ import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
+import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
 
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
   CHANGE_POST_EXPERIMENT_RULE = 'Change post experiment rule',
-  EDIT_EXPERIMENT = 'Edit Experiment'
+  EDIT_EXPERIMENT = 'Edit Experiment',
+  STATE_TIME_LOGS = 'State Time Logs'
 }
 
 @Component({
@@ -84,9 +86,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         ? ExperimentStatusComponent
         : dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE
         ? PostExperimentRuleComponent
+        : dialogType === DialogType.STATE_TIME_LOGS
+        ? StateTimeLogsComponent
         : NewExperimentComponent;
     const dialogRef = this.dialog.open(dialogComponent as any, {
-      panelClass: dialogType === DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' : 'experiment-general-modal',
+      panelClass: dialogType === DialogType.STATE_TIME_LOGS ? 'state-time-logs-modal' : DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' : 'experiment-general-modal',
       data: { experiment: clonedeep(this.experiment) },
       disableClose : dialogType === DialogType.EDIT_EXPERIMENT
     });
