@@ -35,6 +35,10 @@ export class UsersService {
     this.store$.dispatch(UsersActions.actionCreateNewUser({ user: { email, role } }));
   }
 
+  deleteUser(email: string) {
+    this.store$.dispatch(UsersActions.actionDeleteUser({ email }));
+  }
+
   isAllUsersFetched() {
     return combineLatest(
       this.store$.pipe(select(selectSkipUsers)),

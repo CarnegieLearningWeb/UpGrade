@@ -38,6 +38,7 @@ import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 import { OperationPipe } from './pipes/operation.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
+import { DeleteComponent } from './components/delete/delete.component';
 
 @NgModule({
   imports: [
@@ -81,7 +82,8 @@ import { QueryResultComponent } from './components/query-result/query-result.com
     ScrollDirective,
     FormatDatePipe,
     OperationPipe,
-    QueryResultComponent
+    QueryResultComponent,
+    DeleteComponent
   ],
   exports: [
     CommonModule,
@@ -125,8 +127,9 @@ import { QueryResultComponent } from './components/query-result/query-result.com
     FormatDatePipe,
     ScrollDirective,
     OperationPipe,
-    QueryResultComponent
+    QueryResultComponent,
+    DeleteComponent
   ],
-  entryComponents: [QueryResultComponent]
+  entryComponents: [QueryResultComponent, DeleteComponent]
 })
 export class SharedModule {}

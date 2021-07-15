@@ -21,7 +21,6 @@ import { EnrollmentPointPartitionTableComponent } from './components/enrollment-
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
-import { DeleteExperimentComponent } from './components/modal/delete-experiment/delete-experiment.component';
 import { TableRowComponent } from './components/table-row/table-row.component';
 import { QueriesModalComponent } from './components/modal/queries-modal/queries-modal.component';
 import { CreateQueryComponent } from './components/create-query/create-query.component';
@@ -31,6 +30,7 @@ import { ExperimentQueryResultComponent } from './components/experiment-query-re
 import { ExperimentEndCriteriaComponent } from './components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
+import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
 @NgModule({
   declarations: [
     HomeComponent,
@@ -46,14 +46,14 @@ import { ImportExperimentComponent } from './components/modal/import-experiment/
     EnrollmentConditionTableComponent,
     EnrollmentPointPartitionTableComponent,
     ExperimentPostConditionComponent,
-    DeleteExperimentComponent,
     ImportExperimentComponent,
     TableRowComponent,
     QueriesModalComponent,
     CreateQueryComponent,
     ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
-    RepeatedMeasurePipe
+    RepeatedMeasurePipe,
+    StateTimeLogsComponent
   ],
   imports: [
     CommonModule,
@@ -71,10 +71,10 @@ import { ImportExperimentComponent } from './components/modal/import-experiment/
     NewExperimentComponent,
     ExperimentStatusComponent,
     PostExperimentRuleComponent,
-    DeleteExperimentComponent,
     ImportExperimentComponent,
     QueriesModalComponent,
-    ExperimentEndCriteriaComponent
+    ExperimentEndCriteriaComponent,
+    StateTimeLogsComponent
   ]
 })
 export class HomeModule {}

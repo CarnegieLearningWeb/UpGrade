@@ -1,4 +1,5 @@
 import { SERVER_ERROR, IMetricMetaData } from 'upgrade_types';
+import { Types } from './enums';
 
 export namespace Interfaces {
   export interface IConfig {
@@ -11,6 +12,13 @@ export namespace Interfaces {
     status: boolean;
     data?: any;
     message?: any;
+  }
+
+  export interface IRequestOptions {
+    headers: object;
+    method: Types.REQUEST_TYPES;
+    keepalive: boolean;
+    body?: string;
   }
 
   export interface IUserGroup {

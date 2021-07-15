@@ -13,9 +13,10 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .insert()
       .into(ExperimentPartition)
       .values(partitionDoc)
-      .onConflict(`("id") DO UPDATE SET "expId" = :expId, "description" = :description`)
+      .onConflict(`("id") DO UPDATE SET "expId" = :expId, "description" = :description, "order" = :order`)
       .setParameter('expId', partitionDoc.expId)
       .setParameter('description', partitionDoc.description)
+      .setParameter('order', partitionDoc.order)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

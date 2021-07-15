@@ -175,7 +175,17 @@
               </ng-template>
             </td>
           </ng-container>
-
+          <ng-container matColumnDef="deleteUser">
+            <th class="ft-12-700" mat-header-cell *matHeaderCellDef></th>
+            <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
+              <mat-icon
+                class="remove-icon"
+                (click)="openDeleteUserModal(user)"
+              >
+                delete_outline
+              </mat-icon>
+            </td>
+          </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedUsersColumns; sticky: true"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedUsersColumns"></tr>
         </table>

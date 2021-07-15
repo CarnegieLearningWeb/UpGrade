@@ -24,6 +24,7 @@ const reducer = createReducer(
   on(
     UsersActions.actionUpdateUserRole,
     UsersActions.actionCreateNewUser,
+    UsersActions.actionDeleteUser,
     state => ({
     ...state,
     isUsersLoading: true
@@ -42,6 +43,7 @@ const reducer = createReducer(
     UsersActions.actionFetchUsersFailure,
     UsersActions.actionUpdateUserRoleFailure,
     UsersActions.actionCreateNewUserFailure,
+    UsersActions.actionDeleteUserFailure,
     state => ({ ...state, isUsersLoading: false })
   ),
   on(
@@ -77,6 +79,12 @@ const reducer = createReducer(
   on(
     UsersActions.actionSetSortingType,
     (state, { sortingType }) => ({ ...state, sortAs: sortingType })
+  ),
+  on(
+    UsersActions.actionDeleteUserSuccess,
+    (state, { user }) => {
+      return adapter.removeOne(user.email, { ...state, isUsersLoading: false });
+    }
   ),
 );
 

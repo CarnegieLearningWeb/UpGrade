@@ -225,6 +225,16 @@ $font-size-small: 15px;
           }
         }
       }
+
+      .logging {
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+        padding-top: 15px;
+        width: 90px;
+        color: var(--grey-5);
+        font-size: $font-size-small !important;
+      }
     }
 
   }

@@ -105,6 +105,7 @@ export interface ExperimentCondition {
   conditionCode: string;
   assignmentWeight: number;
   twoCharacterId: string;
+  order: number;
 }
 
 export interface ExperimentPartition {
@@ -113,11 +114,19 @@ export interface ExperimentPartition {
   expId: string;
   description: string;
   twoCharacterId: string;
+  order: number;
 }
 
 export interface ExperimentNameVM {
   id: string;
   name: string;
+}
+
+export interface ExperimentStateTimeLog {
+  id: string;
+  fromState: EXPERIMENT_STATE;
+  toState: EXPERIMENT_STATE;
+  timeLog: Date;
 }
 
 export interface Experiment {
@@ -141,6 +150,7 @@ export interface Experiment {
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
   queries: any[];
+  stateTimeLogs: ExperimentStateTimeLog[];
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;

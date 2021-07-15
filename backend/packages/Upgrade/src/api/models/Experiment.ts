@@ -17,6 +17,7 @@ import {
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
+import { StateTimeLog } from './StateTimeLogs';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -50,15 +51,9 @@ export class Experiment extends BaseModel {
   public state: EXPERIMENT_STATE;
 
   @Column({ nullable: true })
-  public startDate: Date;
-
-  @Column({ nullable: true })
   @ValidateIf((o) => o.state === EXPERIMENT_STATE.SCHEDULED)
   @IsNotEmpty()
   public startOn: Date;
-
-  @Column({ nullable: true })
-  public endDate: Date;
 
   @IsNotEmpty()
   @Column({
@@ -115,4 +110,8 @@ export class Experiment extends BaseModel {
 
   @OneToMany((type) => Query, (query) => query.experiment)
   public queries: Query[];
+
+  @OneToMany((type) => StateTimeLog, (state) => state.experiment)
+  @Type(() => StateTimeLog)
+  public stateTimeLogs: StateTimeLog[];
 }

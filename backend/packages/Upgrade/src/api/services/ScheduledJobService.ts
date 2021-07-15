@@ -11,6 +11,7 @@ import { systemUserDoc } from '../../init/seed/systemUser';
 import { ExperimentService } from './ExperimentService';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
+import { EntityManager } from 'typeorm';
 import { getConnection } from 'typeorm';
 import { User } from '../models/User';
 
@@ -50,7 +51,7 @@ export class ScheduledJobService {
             const experimentService = Container.get<ExperimentService>(ExperimentService);
             // update experiment startOn
             await experimentRepository.update({ id: experiment.id }, { startOn: null });
-            return experimentService.updateState(
+            return await experimentService.updateState(
               scheduledJob.experiment.id,
               EXPERIMENT_STATE.ENROLLING,
               systemUser,
@@ -92,7 +93,7 @@ export class ScheduledJobService {
           const experimentService = Container.get<ExperimentService>(ExperimentService);
           // update experiment startOn
           await experimentRepository.update({ id: experiment.id }, { endOn: null });
-          return experimentService.updateState(
+          return await experimentService.updateState(
             scheduledJob.experiment.id,
             EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
             systemUser,
@@ -124,14 +125,16 @@ export class ScheduledJobService {
     });
   }
 
-  public async updateExperimentSchedules(experiment: Experiment): Promise<void> {
+  public async updateExperimentSchedules(experiment: Experiment, entityManager?: EntityManager): Promise<void> {
     try {
+      const scheduledJobRepo = entityManager ? entityManager.getRepository(ScheduledJob) : this.scheduledJobRepository;
+
       const { state, startOn, endOn } = experiment;
       const experimentStartCondition = state === EXPERIMENT_STATE.SCHEDULED;
       const experimentEndCondition =
         !(state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE || state === EXPERIMENT_STATE.CANCELLED) && endOn;
       // query experiment schedules
-      const scheduledJobs = await this.scheduledJobRepository.find({ experiment });
+      const scheduledJobs = await scheduledJobRepo.find({ experiment });
       const startExperimentDoc = scheduledJobs.find(({ type }) => {
         return type === SCHEDULE_TYPE.START_EXPERIMENT;
       });
@@ -162,12 +165,14 @@ export class ScheduledJobService {
             ...startDoc,
             timeStamp: startOn,
             executionArn: response.executionArn,
-          });
+          }, entityManager);
         }
       } else if (startExperimentDoc) {
         // delete event here
-        await this.scheduledJobRepository.delete({ id: startExperimentDoc.id });
-        await this.stopExperimentSchedular(startExperimentDoc.executionArn);
+        await Promise.all([
+          scheduledJobRepo.delete({ id: startExperimentDoc.id }),
+          this.stopExperimentSchedular(startExperimentDoc.executionArn),
+        ]);
       }
 
       const endExperimentDoc = scheduledJobs.find(({ type }) => {
@@ -199,12 +204,14 @@ export class ScheduledJobService {
             ...endDoc,
             timeStamp: endOn,
             executionArn: response.executionArn,
-          });
+          }, entityManager);
         }
       } else if (endExperimentDoc) {
         // delete event here
-        await this.scheduledJobRepository.delete({ id: endExperimentDoc.id });
-        await this.stopExperimentSchedular(endExperimentDoc.executionArn);
+        await Promise.all([
+          scheduledJobRepo.delete({ id: endExperimentDoc.id }),
+          this.stopExperimentSchedular(endExperimentDoc.executionArn),
+        ]);
       }
     } catch (error) {
       this.log.error('Error in experiment schedular ', error.message);

@@ -21,4 +21,9 @@ export class UsersDataService {
     const url = environment.api.users;
     return this.http.post(url, { email, role });
   }
+
+  deleteUser(email: string) {
+    const url = `${environment.api.users}/${email}`;
+    return this.http.delete(url);
+  }
 }
