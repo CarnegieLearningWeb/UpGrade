@@ -18,6 +18,18 @@ export default async function NoPartitionPoint(): Promise<void> {
   // create experiment
   await experimentService.create(experimentObject as any, user);
   const experiments = await experimentService.find();
+
+  // sort conditions
+  experiments[0].conditions.sort((a,b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  });
+  
+  // sort partitions
+  experiments[0].partitions.sort((a,b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  });
+  
+  console.log(experiments[0].conditions);
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -83,6 +95,18 @@ export default async function NoPartitionPoint(): Promise<void> {
     ],
   };
 
+  // order for condition
+  newExperimentDoc.conditions.forEach((condition,index) => {
+    const newCondition = {...condition, order: index + 1};
+    newExperimentDoc.conditions[index] = newCondition;
+  });
+  
+  // order for partition
+  newExperimentDoc.partitions.forEach((partition,index) => {
+    const newPartition = {...partition, order: index + 1};
+    newExperimentDoc.partitions[index] = newPartition;
+  });
+  
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
@@ -92,6 +116,7 @@ export default async function NoPartitionPoint(): Promise<void> {
           name: condition.name,
           description: condition.description,
           conditionCode: condition.conditionCode,
+          order: condition.order,
         });
       }),
       expect.objectContaining({
@@ -100,6 +125,7 @@ export default async function NoPartitionPoint(): Promise<void> {
         conditionCode: 'Condition C',
         assignmentWeight: 50,
         twoCharacterId: 'CC',
+        order: 2,
       }),
     ])
   );
@@ -117,6 +143,7 @@ export default async function NoPartitionPoint(): Promise<void> {
           expPoint: partition.expPoint,
           expId: partition.expId,
           description: partition.description,
+          order: partition.order,
         });
       }),
       expect.objectContaining({
@@ -124,6 +151,7 @@ export default async function NoPartitionPoint(): Promise<void> {
         expId: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
+        order: 3,
       }),
     ])
   );
