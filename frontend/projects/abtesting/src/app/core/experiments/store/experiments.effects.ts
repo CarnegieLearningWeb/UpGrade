@@ -258,16 +258,17 @@ export class ExperimentEffects {
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionFetchExperimentGraphInfo),
-        map(action => ({ experimentId: action.experimentId, range: action.range})),
-        filter(({ experimentId, range }) => !!experimentId && !!range),
+        map(action => ({ experimentId: action.experimentId, range: action.range, clientOffset: action.clientOffset})),
+        filter(({ experimentId, range, clientOffset }) => !!experimentId && !!range && !!clientOffset),
         withLatestFrom(
           this.store$.pipe(select(selectExperimentGraphInfo))
         ),
-        mergeMap(([{ experimentId, range }, graphData]) => {
+        mergeMap(([{ experimentId, range, clientOffset }, graphData]) => {
           if (!graphData) {
             const params = {
               experimentId,
-              dateEnum: range
+              dateEnum: range,
+              clientOffset
             };
             this.store$.dispatch(experimentAction.actionSetIsGraphLoading({ isGraphInfoLoading: true }));
             return this.experimentDataService.fetchExperimentGraphInfo(params).pipe(
@@ -287,11 +288,11 @@ export class ExperimentEffects {
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionSetGraphRange),
-        map(action => ({ experimentId: action.experimentId, range: action.range })),
+        map(action => ({ experimentId: action.experimentId, range: action.range, clientOffset: action.clientOffset })),
         filter(({ experimentId }) => !!experimentId),
-        tap(({ experimentId, range }) => {
+        tap(({ experimentId, range, clientOffset }) => {
           if (range) {
-            this.store$.dispatch(experimentAction.actionFetchExperimentGraphInfo({ experimentId, range }));
+            this.store$.dispatch(experimentAction.actionFetchExperimentGraphInfo({ experimentId, range, clientOffset}));
           } else {
             this.store$.dispatch(experimentAction.actionSetExperimentGraphInfo({ graphInfo: null }));
           }

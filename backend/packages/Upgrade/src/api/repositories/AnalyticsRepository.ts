@@ -257,7 +257,8 @@ export class AnalyticsRepository {
 
   public async getEnrollmentByDateRange(
     experimentId: string,
-    dateRange: DATE_RANGE
+    dateRange: DATE_RANGE,
+    clientOffset: number
   ): Promise<[IEnrollmentConditionAndPartitionDate[], IEnrollmentConditionAndPartitionDate[]]> {
     const experimentRepository: ExperimentRepository = await this.manager.getCustomRepository(ExperimentRepository);
 
@@ -267,19 +268,23 @@ export class AnalyticsRepository {
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         whereDate = `"monitoredExperimentPoint"."createdAt" > current_date - interval '7 days'`;
-        selectRange = `date_trunc('day', "monitoredExperimentPoint"."createdAt") AS date_range`;
+        selectRange = `date_trunc('day', "monitoredExperimentPoint"."createdAt"::timestamptz at time zone 'UTC' 
+        + interval '` + clientOffset + ` minutes') AS date_range`;
         break;
       case DATE_RANGE.LAST_THREE_MONTHS:
         whereDate = `"monitoredExperimentPoint"."createdAt" > current_date - interval '3 months'`;
-        selectRange = `date_trunc('month', "monitoredExperimentPoint"."createdAt") AS date_range`;
+        selectRange = `date_trunc('month', "monitoredExperimentPoint"."createdAt"::timestamptz at time zone 'UTC' 
+        + interval '` + clientOffset + ` minutes') AS date_range`;
         break;
       case DATE_RANGE.LAST_SIX_MONTHS:
         whereDate = `"monitoredExperimentPoint"."createdAt" > current_date - interval '6 months'`;
-        selectRange = `date_trunc('month', "monitoredExperimentPoint"."createdAt") AS date_range`;
+        selectRange = `date_trunc('month', "monitoredExperimentPoint"."createdAt"::timestamptz at time zone 'UTC' 
+        + interval '` + clientOffset + ` minutes') AS date_range`;
         break;
       default:
         whereDate = `"monitoredExperimentPoint"."createdAt" > current_date - interval '12 months'`;
-        selectRange = `date_trunc('month', "monitoredExperimentPoint"."createdAt") AS date_range`;
+        selectRange = `date_trunc('month', "monitoredExperimentPoint"."createdAt"::timestamptz at time zone 'UTC' 
+        + interval '` + clientOffset + ` minutes') AS date_range`;
         break;
     }
 

@@ -131,15 +131,15 @@ export class AnalyticsService {
     };
   }
 
-  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE): Promise<IEnrollmentStatByDate[]> {
+  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE, clientOffset: number): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         for (let i = 0; i < 7; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(date.getDate() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
@@ -177,7 +177,7 @@ export class AnalyticsService {
 
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
-      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange),
+      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
     ]);
 
     const experiment: Experiment = promiseArray[0];
