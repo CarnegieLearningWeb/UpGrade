@@ -18,4 +18,8 @@ export const UserNotDefined = async () => {
   await expect(experimentAssignmentService.markExperimentPoint(experimentUsers[0].id, null, null, null)).rejects.toThrow();
 
   await expect(experimentUserService.setAliasesForUser(experimentUsers[0].id, null)).rejects.toThrow();
+
+  await expect(experimentUserService.updateGroupMembership(experimentUsers[0].id, null)).rejects.toThrow();
+
+  await expect(experimentUserService.updateWorkingGroup(experimentUsers[0].id, null)).rejects.toThrow();
 };

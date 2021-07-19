@@ -292,20 +292,19 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  public blobLog(@Req() request: express.Request): any {
+  public blobLog(@Req() request: express.Request): Promise<Log[] | any> {
     return new Promise((resolve, reject) => {
       request.on('readable', async (data) => {
         const blobData = JSON.parse(request.read());
         try {
-          // The function will throw error is iserId doesn't exist
+          // The function will throw error if userId doesn't exist
           const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
           resolve(response);
-        }
-        catch(error) {
+        } catch (error) {
           // The error is rejected so promise can now handle this error
-          reject(error); 
+          reject(error);
         }
-      })
+      });
     }).catch(error => {
       throw new Error(
         JSON.stringify({

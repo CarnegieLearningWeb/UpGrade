@@ -226,7 +226,7 @@ export class ExperimentAssignmentService {
       this.previewUserService.findOne(userId),
     ]);
 
-    let experimentUser: ExperimentUser = usersData[0];
+    const experimentUser: ExperimentUser = usersData[0];
     const previewUser: PreviewUser = usersData[1];
 
     // throw error if user not defined
@@ -512,7 +512,7 @@ export class ExperimentAssignmentService {
   public async blobDataLog(userId: string, blobLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add blob data userId ${userId} and value ${blobLog}`);
 
-    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -532,7 +532,7 @@ export class ExperimentAssignmentService {
   public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
 
-    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -561,7 +561,7 @@ export class ExperimentAssignmentService {
     experimentId: string
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
-    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
 
     // throw error if user not defined
     if (!userDoc) {
