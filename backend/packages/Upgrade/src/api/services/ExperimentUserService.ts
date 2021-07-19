@@ -168,7 +168,7 @@ export class ExperimentUserService {
     }
 
     // TODO check if workingGroup is the subset of group membership
-    const newDocument = userExist ? { ...userExist, workingGroup } : { id: userId, workingGroup };
+    const newDocument = { ...userExist, workingGroup };
     return this.userRepository.save(newDocument);
   }
 
@@ -200,7 +200,7 @@ export class ExperimentUserService {
       await this.removeAssignments(userExist.id, groupMembership, userExist.group);
     }
 
-    const newDocument = userExist ? { ...userExist, group: groupMembership } : { id: userId, group: groupMembership };
+    const newDocument = { ...userExist, group: groupMembership };
 
     // update group membership
     return this.userRepository.save(newDocument);
