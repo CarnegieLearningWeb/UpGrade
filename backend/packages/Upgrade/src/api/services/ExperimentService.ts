@@ -33,7 +33,9 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
+import { StateTimeLog } from '../models/StateTimeLogs';
 import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
+import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 
 @Service()
 export class ExperimentService {
@@ -48,6 +50,7 @@ export class ExperimentService {
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
+    @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
@@ -77,6 +80,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('queries.metric', 'metric')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC');
@@ -105,6 +109,7 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('queries.metric', 'metric')
       .where({ id })
       .getOne();
@@ -216,7 +221,7 @@ export class ExperimentService {
 
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
-      { select: ['state', 'name', 'startDate', 'endDate'] }
+      { relations: ['stateTimeLogs'] }
     );
     let data: AuditLogData = {
       experimentId,
@@ -230,29 +235,35 @@ export class ExperimentService {
     // add experiment audit logs
     await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
 
-    let endDate = oldExperiment.endDate || null;
-    let startDate = oldExperiment.startDate || null;
-    if (state === EXPERIMENT_STATE.ENROLLING) {
-      startDate = new Date();
-      endDate = null;
-    } else if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-      endDate = new Date();
-    }
+    const timeLogDate = new Date();
 
-    // update experiment
-    const updatedState = await this.experimentRepository.updateState(
-      experimentId,
-      state,
-      scheduleDate,
-      endDate,
-      startDate,
-      entityManager
-    );
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = oldExperiment.state;
+    stateTimeLogDoc.toState = state;
+    stateTimeLogDoc.timeLog = timeLogDate;
+    stateTimeLogDoc.experiment = oldExperiment;
 
-    // updating experiment schedules here
-    await this.updateExperimentSchedules(experimentId);
+    // updating the experiment and stateTimeLog
+    const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
+    const [updatedState, updatedStateTimeLog] = await Promise.all([
+      this.experimentRepository.updateState(
+        experimentId,
+        state,
+        scheduleDate,
+        entityManager
+      ),
+      stateTimeLogRepo.save(stateTimeLogDoc),
+    ]);
 
-    return updatedState;
+    // updating experiment schedules
+    await this.updateExperimentSchedules(experimentId, entityManager);
+
+    return {
+      ...oldExperiment,
+      state: updatedState[0].state,
+      stateTimeLogs: [...oldExperiment.stateTimeLogs, updatedStateTimeLog],
+    };
   }
 
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
@@ -300,18 +311,18 @@ export class ExperimentService {
     });
 
     experiment.partitions = experimentPartitions;
-    experiment.endDate = null;
-    experiment.startDate = null;
     experiment.endOn = null;
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
+    experiment.stateTimeLogs = [];
     return this.create(experiment, user);
   }
 
-  private async updateExperimentSchedules(experimentId: string): Promise<void> {
-    const experiment = await this.experimentRepository.findByIds([experimentId]);
+  private async updateExperimentSchedules(experimentId: string,  entityManager?: EntityManager): Promise<void> {
+    const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
+    const experiment = await experimentRepo.findByIds([experimentId]);
     if (experiment.length > 0 && this.scheduledJobService) {
-      await this.scheduledJobService.updateExperimentSchedules(experiment[0]);
+      await this.scheduledJobService.updateExperimentSchedules(experiment[0], entityManager);
     }
   }
 
@@ -454,12 +465,6 @@ export class ExperimentService {
 
         let experimentDoc: Experiment;
         try {
-          // if state is enrollment complete add endDate
-          if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-            expDoc.endDate = new Date();
-          } else if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
-            expDoc.startDate = new Date();
-          }
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
         } catch (error) {
           throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
@@ -755,12 +760,6 @@ export class ExperimentService {
       // saving experiment docs
       let experimentDoc: Experiment;
       try {
-        // if state is enrollment complete add endDate
-        if (expDoc.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
-          expDoc.endDate = new Date();
-        } else if (expDoc.state === EXPERIMENT_STATE.ENROLLING) {
-          expDoc.startDate = new Date();
-        }
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {
         throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);

@@ -27,7 +27,7 @@ export default async function testCase(): Promise<void> {
   experiments[0].conditions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
-  
+
   // sort partitions
   experiments[0].partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
@@ -98,8 +98,8 @@ export default async function testCase(): Promise<void> {
     const newCondition = {...condition, order: index + 1};
     newExperimentDoc.conditions[index] = newCondition;
   });
-  
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
+
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([

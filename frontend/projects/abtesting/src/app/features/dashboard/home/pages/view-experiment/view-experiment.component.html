@@ -135,7 +135,7 @@
         </div>
 
         <div class="experiment-info-section">
-          <div class="section-data end-criteria-container">
+          <div class="section-data section-data--fixed end-criteria-container">
             <span class="ft-16-600 section-data-title">{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
             <ng-container *ngIf="experiment.endOn || experiment.enrollmentCompleteCondition; else noCriteriaTemplate">
               <!-- if we have custom ending criteria -->
@@ -231,6 +231,19 @@
               <span class="ft-18-700 end-criteria">{{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}</span>
             </ng-template>
           </div>
+
+          <!-- Enrollment Time Logs -->
+          <div class="section-data section-data">
+            <span class="ft-16-600 section-data-title">
+              {{ 'home.view-experiment.enrollment-time-logs.title.text' | translate | uppercase }}
+            </span>
+            <span 
+              class="ft-18-700 section-data-value section-data-value--editable"
+              (click)="openDialog(DialogType.STATE_TIME_LOGS)"
+            >
+            {{ 'home.view-experiment.enrollment-time-logs.text' | translate }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -261,10 +274,12 @@
           </span>
         </div>
       </div>
-      <div>
-        <mat-checkbox [checked]="experiment.logging" class="ft-14-700" color="primary"
+
+      <!-- Logging -->
+      <div class="logging">
+        <mat-checkbox [checked]="experiment.logging" class="ft-16-600" color="primary"
         (change)="toggleVerboseLogging($event)">
-          {{ 'home.view-experiment.logging.text' | translate }}
+          {{ 'home.view-experiment.logging.text' | translate | uppercase}}
         </mat-checkbox>
       </div>
     </div>

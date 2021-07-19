@@ -24,7 +24,7 @@ export default async function UpdateExperiment(): Promise<void> {
   experiments[0].conditions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
-  
+
   // sort partitions
   experiments[0].partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
@@ -100,7 +100,7 @@ export default async function UpdateExperiment(): Promise<void> {
     const newCondition = {...condition, order: index + 1};
     newExperimentDoc.conditions[index] = newCondition;
   });
-  
+
   // order for partition
   newExperimentDoc.partitions.forEach((partition,index) => {    
     const newCondition = {...partition, order: index + 1};
@@ -116,6 +116,7 @@ export default async function UpdateExperiment(): Promise<void> {
           name: condition.name,
           description: condition.description,
           conditionCode: condition.conditionCode,
+          order: condition.order,
         });
       }),
       expect.objectContaining({
@@ -128,8 +129,6 @@ export default async function UpdateExperiment(): Promise<void> {
       }),
     ])
   );
-
-  expect(updatedExperimentDoc.endDate).toBeNull();
 
   // get all experimental conditions
   const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id);
@@ -144,6 +143,7 @@ export default async function UpdateExperiment(): Promise<void> {
           expPoint: partition.expPoint,
           expId: partition.expId,
           description: partition.description,
+          order: partition.order,
         });
       }),
       expect.objectContaining({
@@ -163,5 +163,4 @@ export default async function UpdateExperiment(): Promise<void> {
   // update the experiment state
   await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
   experiments = await experimentService.find();
-  expect(experiments[0].endDate).not.toBeNull();
 }
