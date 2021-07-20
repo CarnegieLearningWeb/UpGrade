@@ -292,7 +292,7 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  public blobLog(@Req() request: express.Request): Promise<Log[] | any> {
+  public blobLog(@Req() request: express.Request): any {
     return new Promise((resolve, reject) => {
       request.on('readable', async (data) => {
         const blobData = JSON.parse(request.read());
