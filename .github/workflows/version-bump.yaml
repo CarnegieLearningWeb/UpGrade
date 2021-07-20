@@ -2,7 +2,7 @@ name: Version Bump
 on:
   push:
     branches:
-      - main
+      - development
     paths-ignore:
       - 'clientlibs/**'
       - '**/*ignore'
@@ -16,7 +16,7 @@ jobs:
   version-bump:
     name: Version Bump
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'CarnegieLearningWeb'
+    if: github.repository_owner == 'PlaypowerLabs'
     steps:
       - uses: 'actions/checkout@v2'
         with:
@@ -51,42 +51,42 @@ jobs:
 
 ############################ Version bumps ############################
 
-      - name: Backend Version Bump
-        id: backend-version-bump
-        uses: phips28/gh-action-bump-version@v8.2.2
-        if: env.BUILD_BACKEND == 'true'
-        with:
-          tag-prefix: upgrade-backend-
-          major-wording: 'backend-major-version-bump'
-          minor-wording: 'backend-minor-version-bump'
-          commit-message: 'CI: bump version for backend to {{version}}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: backend/packages/Upgrade
-      - name: Frontend Version Bump
-        id: frontend-version-bump
-        uses: phips28/gh-action-bump-version@v8.2.2
-        if: env.BUILD_FRONTEND == 'true'
-        with:
-          tag-prefix: upgrade-frontend-
-          major-wording: 'frontend-major-version-bump'
-          minor-wording: 'frontend-minor-version-bump'
-          commit-message: 'CI: bump version for frontend to {{version}}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: frontend
-      - name: Lambda Version Bump
-        id: lambda-version-bump
-        uses: phips28/gh-action-bump-version@v8.2.2
-        if: env.BUILD_LAMBDA == 'true'
-        with:
-          tag-prefix: lambda-frontend-
-          major-wording: 'lambda-major-version-bump'
-          minor-wording: 'lambda-minor-version-bump'
-          commit-message: 'CI: bump version for lambda to {{version}}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: backend/packages/Schedular
+      # - name: Backend Version Bump
+      #   id: backend-version-bump
+      #   uses: phips28/gh-action-bump-version@v8.2.2
+      #   if: env.BUILD_BACKEND == 'true'
+      #   with:
+      #     tag-prefix: upgrade-backend-
+      #     major-wording: 'backend-major-version-bump'
+      #     minor-wording: 'backend-minor-version-bump'
+      #     commit-message: 'CI: bump version for backend to {{version}}'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     PACKAGEJSON_DIR: backend/packages/Upgrade
+      # - name: Frontend Version Bump
+      #   id: frontend-version-bump
+      #   uses: phips28/gh-action-bump-version@v8.2.2
+      #   if: env.BUILD_FRONTEND == 'true'
+      #   with:
+      #     tag-prefix: upgrade-frontend-
+      #     major-wording: 'frontend-major-version-bump'
+      #     minor-wording: 'frontend-minor-version-bump'
+      #     commit-message: 'CI: bump version for frontend to {{version}}'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     PACKAGEJSON_DIR: frontend
+      # - name: Lambda Version Bump
+      #   id: lambda-version-bump
+      #   uses: phips28/gh-action-bump-version@v8.2.2
+      #   if: env.BUILD_LAMBDA == 'true'
+      #   with:
+      #     tag-prefix: lambda-frontend-
+      #     major-wording: 'lambda-major-version-bump'
+      #     minor-wording: 'lambda-minor-version-bump'
+      #     commit-message: 'CI: bump version for lambda to {{version}}'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     PACKAGEJSON_DIR: backend/packages/Schedular
 
 ############################ Trigger builds ############################
 # Use always() to trigger builds even if other unrelated version bumps failed
@@ -94,25 +94,25 @@ jobs:
 
       - name: Trigger Backend Build
         uses: peter-evans/repository-dispatch@v1
-        if: always() && env.BUILD_BACKEND == 'true' && steps.backend-version-bump.outcome == 'success'
+        if: always() && env.BUILD_BACKEND == 'true'
         with:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-backend-build
-          client-payload: '{"tag": "${{ steps.backend-version-bump.outputs.newTag }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
+          client-payload: '{"tag": "latest", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Frontend Build
         uses: peter-evans/repository-dispatch@v1
-        if: always() && env.BUILD_FRONTEND == 'true' && steps.frontend-version-bump.outcome == 'success'
+        if: always() && env.BUILD_FRONTEND == 'true'
         with:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-frontend-build
-          client-payload: '{"tag": "${{ steps.frontend-version-bump.outputs.newTag }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
+          client-payload: '{"tag": "latest", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Lambda Build
         uses: peter-evans/repository-dispatch@v1
-        if: always() && env.BUILD_LAMBDA == 'true' && steps.lambda-version-bump.outcome == 'success'
+        if: always() && env.BUILD_LAMBDA == 'true'
         with:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-lambda-build
-          client-payload: '{"tag": "${{ steps.lambda-version-bump.outputs.newTag }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
+          client-payload: '{"tag": "latest", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
