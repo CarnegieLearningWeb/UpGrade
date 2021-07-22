@@ -1,51 +1,25 @@
-name: Backend Build and Deploy
+name: Development Backend Build and Deploy
 on:
   repository_dispatch:
-    types: [trigger-backend-build]
+    types: [trigger-backend-build-dev]
 jobs:
   backend-build-and-deploy:
-    name: Backend Build and Deploy
+    name: Development Backend Build and Deploy
     runs-on: ubuntu-latest
     steps:
-
-      - uses: actions/checkout@v2
-        with: 
-          ref: ${{ github.event.client_payload.tag }}
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 12.x
-
-      - name: Get Package Version
-        uses: martinbeentjes/npm-get-version-action@v1.1.0
-        id: package-version
-        with:
-          path: backend/packages/Upgrade
-
-      - name: Generate Changelogs
-        run: |
-          echo 'SLACK_CHANGELOG<<EOF' >> $GITHUB_ENV
-          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-          echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
-          git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
-
 #############################################  Build Steps #############################################
-
       - name: Build
         working-directory: backend
         run: |
           npm ci
-          zip -qq -r upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          zip -qq -r upgrade-backend-v-${{ github.sha }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
       
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: backend/upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
-          tag: upgrade-backend-v${{ steps.package-version.outputs.current-version}}
-          name: UpGrade Backend ${{ steps.package-version.outputs.current-version}}
+          artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
+          tag: upgrade-backend-v-${{ github.sha }}
+          name: UpGrade Backend ${{ github.sha }}
           body: ${{ env.RELEASE_CHANGELOG }}
           commit: main
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,27 +30,27 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-backend-deployment
-          client-payload: '{"tag": "${{ steps.lambda-version-bump.outputs.newTag }}"}'
+          client-payload: '{"tag": "upgrade-backend-v-${{ github.sha }}"}'
 
-      - name: Success Slack Message
-        uses: aibexhq/slack-rich-notify@v2.0.1
-        with:
-          token: ${{ secrets.SLACK_TOKEN }}
-          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
-          message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build was successful*
-            ${{ env.SLACK_CHANGELOG }}
+      # - name: Success Slack Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+      #     message: |
+      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v-${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build was successful*
+      #       ${{ env.SLACK_CHANGELOG }}
 
-      - name: Failure Slack Message
-        uses: aibexhq/slack-rich-notify@v2.0.1
-        if: failure()
-        with:
-          token: ${{ secrets.SLACK_TOKEN }}
-          channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
-          message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.package-version.outputs.current-version }} build FAILURE*
-            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-            ${{ env.SLACK_CHANGELOG }}
+      # - name: Failure Slack Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   if: failure()
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+      #     message: |
+      #       ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.package-version.outputs.current-version }} build FAILURE*
+      #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+      #       ${{ env.SLACK_CHANGELOG }}
 
 #############################################  Deploy Steps #############################################
 
@@ -88,26 +62,115 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: ${{ secrets.EB_APP_NAME }}
           environment_name: ${{ secrets.EB_ENV_NAME }}
-          version_label: ${{ steps.package-version.outputs.current-version}}
+          version_label: ${{ github.sha }}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: backend/upgrade-backend-v${{ steps.package-version.outputs.current-version}}.zip
+          deployment_package: backend/upgrade-backend-v${{ github.sha}}.zip
 
-      - name: Success Deploy Message
-        uses: aibexhq/slack-rich-notify@v2.0.1
-        with:
-          token: ${{ secrets.SLACK_TOKEN }}
-          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
-          message: |
-            *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL}}
-            ${{ env.SLACK_CHANGELOG }}
+      # - name: Success Deploy Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+      #     message: |
+      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL}}
+      #       ${{ env.SLACK_CHANGELOG }}
 
-      - name: Failure Deploy Message
-        uses: aibexhq/slack-rich-notify@v2.0.1
-        if: failure() && steps.deploy-backend.outcome == 'failure'
+      # - name: Failure Deploy Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   if: failure() && steps.deploy-backend.outcome == 'failure'
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+      #     message: |
+      #       ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+      #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+      #       ${{ env.SLACK_CHANGELOG }}
+      
+name: BSNL Backend Build and Deploy
+on:
+  repository_dispatch:
+    types: [trigger-backend-build-bsnl]
+jobs:
+  backend-build-and-deploy:
+    name: BSNL Backend Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+#############################################  Build Steps #############################################
+      - name: Build
+        working-directory: backend
+        run: |
+          npm ci
+          zip -qq -r upgrade-backend-v-${{ github.sha }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+      
+      - name: Create Release
+        uses: ncipollo/release-action@v1
         with:
-          token: ${{ secrets.SLACK_TOKEN }}
-          channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
-          message: |
-            ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
-            <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-            ${{ env.SLACK_CHANGELOG }}
+          artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
+          tag: upgrade-backend-v-${{ github.sha }}
+          name: UpGrade Backend ${{ github.sha }}
+          body: ${{ env.RELEASE_CHANGELOG }}
+          commit: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Trigger Deployment Workflow
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_DISPATCH_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: trigger-backend-deployment
+          client-payload: '{"tag": "upgrade-backend-v-${{ github.sha }}"}'
+
+      # - name: Success Slack Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+      #     message: |
+      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v-${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build was successful*
+      #       ${{ env.SLACK_CHANGELOG }}
+
+      # - name: Failure Slack Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   if: failure()
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_BUILD_CHANNEL }}
+      #     message: |
+      #       ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.package-version.outputs.current-version }} build FAILURE*
+      #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+      #       ${{ env.SLACK_CHANGELOG }}
+
+#############################################  Deploy Steps #############################################
+
+      - name: Deploy to QA
+        id: deploy-backend
+        uses: einaregilsson/beanstalk-deploy@v13
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ secrets.EB_APP_NAME }}
+          environment_name: ${{ secrets.EB_ENV_NAME }}
+          version_label: ${{ github.sha }}
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: backend/upgrade-backend-v${{ github.sha}}.zip
+
+      # - name: Success Deploy Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+      #     message: |
+      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL}}
+      #       ${{ env.SLACK_CHANGELOG }}
+
+      # - name: Failure Deploy Message
+      #   uses: aibexhq/slack-rich-notify@v2.0.1
+      #   if: failure() && steps.deploy-backend.outcome == 'failure'
+      #   with:
+      #     token: ${{ secrets.SLACK_TOKEN }}
+      #     channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
+      #     message: |
+      #       ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
+      #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
+      #       ${{ env.SLACK_CHANGELOG }}
+      
