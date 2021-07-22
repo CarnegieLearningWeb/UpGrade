@@ -99,7 +99,7 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-backend-build
-          client-payload: '{"tag": "upgrade-backend-v-"${{GITHUB_SHA}}, "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
+          client-payload: '{"tag": "upgrade-backend-v-"$GITHUB_SHA, "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Frontend Build
         uses: peter-evans/repository-dispatch@v1
         if: always() && env.BUILD_FRONTEND == 'true'
@@ -107,7 +107,7 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-frontend-build
-          client-payload: '{"tag": "upgrade-frontend-v-"${{GITHUB_SHA}}, "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
+          client-payload: '{"tag": "upgrade-frontend-v-"$GITHUB_SHA, "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Lambda Build
         uses: peter-evans/repository-dispatch@v1
         if: always() && env.BUILD_LAMBDA == 'true'
@@ -115,4 +115,4 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-lambda-build
-          client-payload: '{"tag": "lambda-frontend-v-"${{GITHUB_SHA}}, "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
+          client-payload: '{"tag": "lambda-frontend-v-"$GITHUB_SHA, "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
