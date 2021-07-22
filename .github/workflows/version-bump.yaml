@@ -98,7 +98,6 @@ jobs:
         with:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
-          branch: development
           event-type: trigger-backend-build-dev
           client-payload: '{"tag": "upgrade-backend-v-${{ github.sha }}", "before": "${{ github.event.before }}", "after": "${{ github.event.after }}"}'
       - name: Trigger Frontend Build
