@@ -38,14 +38,14 @@ jobs:
         working-directory: backend
         run: |
           npm ci
-          zip -qq -r upgrade-backend-v-${{ GITHUB_SHA}}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          zip -qq -r upgrade-backend-v-${{ github.sha }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
       
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: backend/upgrade-backend-v-${{ GITHUB_SHA}}.zip
-          tag: upgrade-backend-v-${{ GITHUB_SHA}}
-          name: UpGrade Backend ${{ GITHUB_SHA}}
+          artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
+          tag: upgrade-backend-v-${{ github.sha }}
+          name: UpGrade Backend ${{ github.sha }}
           body: ${{ env.RELEASE_CHANGELOG }}
           commit: main
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -56,7 +56,7 @@ jobs:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
           event-type: trigger-backend-deployment
-          client-payload: '{"tag": "upgrade-backend-v-${{ GITHUB_SHA }}"}'
+          client-payload: '{"tag": "upgrade-backend-v-${{ github.sha }}"}'
 
       # - name: Success Slack Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
@@ -88,9 +88,9 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: ${{ secrets.EB_APP_NAME }}
           environment_name: ${{ secrets.EB_ENV_NAME }}
-          version_label: ${{ GITHUB_SHA }}
+          version_label: ${{ github.sha }}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: backend/upgrade-backend-v${{ GITHUB_SHA}}.zip
+          deployment_package: backend/upgrade-backend-v${{ github.sha}}.zip
 
       # - name: Success Deploy Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
