@@ -73,7 +73,7 @@
       "role": "admin"
     }
   ],
-  "context": [
+  "app_context": [
     "app",
     "addition",
     "subtraction",
