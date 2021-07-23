@@ -87,7 +87,7 @@ jobs:
           environment_name: ${{ secrets.EB_ENV_NAME }}
           version_label: ${{ github.sha }}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: backend/upgrade-backend-v${{ github.sha}}.zip
+          deployment_package: backend/upgrade-backend-v-${{ github.sha}}.zip
 
       # - name: Success Deploy Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
