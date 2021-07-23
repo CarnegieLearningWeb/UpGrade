@@ -9,7 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with: 
-          ref: ${{ github.event.client_payload.tag }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v2
