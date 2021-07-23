@@ -7,6 +7,30 @@ jobs:
     name: Development Backend Build and Deploy
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with: 
+          ref: ${{ github.event.client_payload.tag }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+
+      - name: Get Package Version
+        uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
+        with:
+          path: backend/packages/Upgrade
+
+      - name: Generate Changelogs
+        run: |
+          echo 'SLACK_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
 #############################################  Build Steps #############################################
       - name: Build
         working-directory: backend
@@ -54,7 +78,7 @@ jobs:
 
 #############################################  Deploy Steps #############################################
 
-      - name: Deploy to dev
+      - name: Deploy to QA
         id: deploy-backend
         uses: einaregilsson/beanstalk-deploy@v13
         with:
@@ -84,4 +108,4 @@ jobs:
       #     message: |
       #       ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
       #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
-      #       ${{ env.SLACK_CHANGELOG }}
+      #       ${{ env.SLACK_CHANGELOG }}      
