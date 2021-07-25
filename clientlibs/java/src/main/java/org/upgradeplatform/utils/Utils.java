@@ -20,7 +20,8 @@ public class Utils
 	public static final String INVALID_FEATURE_FLAG_KEY= "Feature flag with given key not found";
 	public static final String INVALID_METRIC_META_DATA= "Invalid metadata type provided. It should be of MetricMetaData enum type";
 
-	
+
+	public static final String INITIALIZE_USER= "api/init";
 	public static final String SET_GROUP_MEMBERSHIP= "api/groupmembership";
 	public static final String SET_WORKING_GROUP= "api/workinggroup";
 	public static final String GET_ALL_EXPERIMENTS= "api/assign";
