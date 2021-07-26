@@ -64,9 +64,9 @@ export default class UpgradeClient {
         }
     }
 
-    async init(userId: string, group?: Map<string, Array<string>>, workingGroup?: Map<string, string>): Promise<Interfaces.IUser> {
+    async init(group?: Map<string, Array<string>>, workingGroup?: Map<string, string>): Promise<Interfaces.IUser> {
         this.validateClient();
-        return await init(this.api.init, userId, this.token, group, workingGroup);
+        return await init(this.api.init, this.userId, this.token, group, workingGroup);
     }
 
     async setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser> {
