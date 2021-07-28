@@ -1,10 +1,10 @@
-name: Development Backend Build and Deploy
+name: Backend Build and Deploy
 on:
   repository_dispatch:
-    types: [trigger-backend-build-dev]
+    types: [trigger-backend-build-bsnl]
 jobs:
   backend-build-and-deploy:
-    name: Development Backend Build and Deploy
+    name: Backend Build and Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -95,7 +95,7 @@ jobs:
       #     token: ${{ secrets.SLACK_TOKEN }}
       #     channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
       #     message: |
-      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL}}
+      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.ENV_URL}}
       #       ${{ env.SLACK_CHANGELOG }}
 
       # - name: Failure Deploy Message
