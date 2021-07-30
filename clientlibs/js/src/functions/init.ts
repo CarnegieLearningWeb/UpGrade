@@ -38,11 +38,7 @@ export default async function init(
 
     const response = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST);
     if (response.status) {
-      return {
-        id: userId,
-        group,
-        workingGroup
-      };
+      return response.data;
     } else {
       throw new Error(JSON.stringify(response.message));
     }
