@@ -12,7 +12,7 @@
         "build": "ng build",
         "prebuild:prod": "npm run test",
         "build:prod": "ng build --prod",
-        "build:dev": "ng build -c=development",
+        "build:dev": "ng build -c=develop",
         "lint": "ng lint",
         "test": "ng test",
         "watch": "ng test --configuration=test --browsers ChromeHeadless --watch",
