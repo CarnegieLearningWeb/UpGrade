@@ -34,7 +34,7 @@ jobs:
 
       - run: |
           npm ci
-          npm run build:dev
+          npm run build:bsnl
         working-directory: frontend
 
       - run: zip -r upgrade-frontend-v-${{ github.sha}}.zip *
