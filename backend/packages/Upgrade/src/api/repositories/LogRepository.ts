@@ -210,8 +210,6 @@ export class LogRepository extends Repository<Log> {
           `${operationType}(cast(${valueToUse} as decimal)) as result`,
         ]);
       }
-      const getData = await executeQuery.getRawMany();
-      console.log('getData', getData);
       return executeQuery.getRawMany();
     }
   }
