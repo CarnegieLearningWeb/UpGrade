@@ -164,6 +164,16 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "CLIENT_API_KEY"
+    value     = var.CLIENT_API_KEY
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "CLIENT_API_SECRET"
+    value     = var.CLIENT_API_SECRET
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "CONTEXT"
     value     = var.CONTEXT
   }
