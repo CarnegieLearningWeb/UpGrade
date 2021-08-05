@@ -34,7 +34,7 @@ variable "SWAGGER_PASSWORD"{}
 variable "TYPEORM_SYNCHRONIZE"{}
 variable "TOKEN_SECRET_KEY"{}
 variable "AUTH_CHECK"{}
-variable "CONTEXT"{}
+variable "APP_CONTEXT"{}
 variable "ADMIN_USERS"{}
 variable "RDS_PASSWORD"{}
 variable "NEW_RELIC_APP_NAME" {}

@@ -2,7 +2,7 @@
 current_directory       = "production"
 aws_region              = "us-east-1"
 environment             = "production"
-prefix                  = "cli-upgrade" 
+prefix                  = "upgrade" 
 app_version             = "1.0.0"
 aws_profile             = "upgrade-terraform"
 
@@ -22,14 +22,14 @@ autoscaling_max_size    =  4
 
 # APP environment variables
 GOOGLE_CLIENT_ID        = "google-project-id"
-DOMAIN_NAME             = "carnegielearning.com"
+DOMAIN_NAME             = "company.com"
 MONITOR_PASSWORD        = "password"
 SWAGGER_PASSWORD        = "password"
 TYPEORM_SYNCHRONIZE     = true
-TOKEN_SECRET_KEY        = "carnegielearning"
+TOKEN_SECRET_KEY        = "secret-key"
 AUTH_CHECK              = true
-CONTEXT                 = "app@addition@subtraction@multiplication@division@addition simple@subtraction simple@multiplication simple@division simple@addition medium@subtraction medium@multiplication medium@division medium@addition hard@subtraction hard@multiplication hard@division hard@fraction"
-ADMIN_USERS             = "mglover@carnegielearning.com:admin/\sritter@carnegielearning.com:admin/\sfancsali@carnegielearning.com:admin/\nirmal@playpowerlabs.com:admin/\vivek@playpowerlabs.com:admin/\mmchenry@carnegielearning.com:admin/\apople@carnegielearning.com:admin/\leslie@carnegielearning.com:admin/\sgrieco@carnegielearning.com:admin/\lseaman@carnegielearning.com:admin/\kschaefer@carnegielearning.com:admin/\abright@carnegielearning.com:admin/\amurphy@carnegielearning.com:admin/\derek@playpowerlabs.com:admin/\jaydip.hirapara@playpowerlabs.com:admin/\dhaval.prajapati@playpowerlabs.com:admin/\dev@playpowerlabs.com:admin/\dhrushit@playpowerlabs.com:admin"
+APP_CONTEXT             = "app@addition@subtraction@multiplication@division@addition simple@subtraction simple@multiplication simple@division simple@addition medium@subtraction medium@multiplication medium@division medium@addition hard@subtraction hard@multiplication hard@division hard@fraction"
+ADMIN_USERS             = "user1@company.com:admin/\user2@company.com:admin"
 
 # CICD variables
 repository_name         = "educational-experiment-service"
@@ -39,17 +39,5 @@ build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
 
 # Email detail
-EMAIL_FROM                      = "dev@playpowerlabs.com",
+EMAIL_FROM                      = "upgrade@company.com",
 EMAIL_EXPIRE_AFTER_SECONDS      = 36000
-
-# Real values for secrets for this environment are stored in vault at
-#   internal/upgrade-experiment-service/environments/production
-
-# Create the keyfiles:
-# vault kv get -field=id-rsa secret/internal/upgrade-experiment-service/environments/production > id_rsa
-# vault kv get -field=id-rsa.pub secret/internal/upgrade-experiment-service/environments/production > id_rsa.pub
-
-# Export the secrets into environment variables
-# export TF_VAR_GOOGLE_CLIENT_ID=$(vault kv get -field=GOOGLE_CLIENT_ID secret/internal/upgrade-experiment-service/environments/production)
-# export TF_VAR_MONITOR_PASSWORD=$(vault kv get -field=MONITOR_PASSWORD secret/internal/upgrade-experiment-service/environments/production)
-# export TF_VAR_SWAGGER_PASSWORD=$(vault kv get -field=SWAGGER_PASSWORD secret/internal/upgrade-experiment-service/environments/production)

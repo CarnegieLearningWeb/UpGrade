@@ -91,7 +91,7 @@ module "aws-ebs-app" {
   AUTH_CHECK            = var.AUTH_CHECK
   TOKEN_SECRET_KEY      = var.TOKEN_SECRET_KEY 
   TYPEORM_SYNCHRONIZE   = var.TYPEORM_SYNCHRONIZE
-  CONTEXT               = var.CONTEXT
+  APP_CONTEXT           = var.APP_CONTEXT
   ADMIN_USERS           = var.ADMIN_USERS
   RDS_PASSWORD          = var.RDS_PASSWORD
 
