@@ -25,24 +25,24 @@ variable "s3_lambda_bucket" {}
 variable "s3_lambda_key" {}
 
 # APP environment variables
-variable "GOOGLE_CLIENT_ID"{}
-variable "DOMAIN_NAME"{
-    default     = ""
-}
-variable "MONITOR_PASSWORD"{}
-variable "SWAGGER_PASSWORD"{}
-variable "TYPEORM_SYNCHRONIZE"{}
-variable "TOKEN_SECRET_KEY"{}
-variable "AUTH_CHECK"{}
-variable "APP_CONTEXT"{}
 variable "ADMIN_USERS"{}
-variable "RDS_PASSWORD"{}
+variable "APP_CONTEXT"{}
+variable "AUTH_CHECK"{}
+variable "CLIENT_API_KEY"{}
+variable "CLIENT_API_SECRET"{}
+variable "DOMAIN_NAME"{default = ""}
+variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
+variable "EMAIL_FROM" {}
+variable "EXP_IDS"{}
+variable "GOOGLE_CLIENT_ID"{}
+variable "GROUP_TYPES"{}
+variable "MONITOR_PASSWORD"{}
 variable "NEW_RELIC_APP_NAME" {}
 variable "NEW_RELIC_LICENSE_KEY" {}
-
-# Email
-variable "EMAIL_FROM" {}
-variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
+variable "RDS_PASSWORD"{}
+variable "SWAGGER_PASSWORD"{}
+variable "TOKEN_SECRET_KEY"{}
+variable "TYPEORM_SYNCHRONIZE"{}
 
 # CICD variables
 variable "repository_name"{}
