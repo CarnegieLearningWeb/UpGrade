@@ -174,11 +174,6 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "CONTEXT"
-    value     = var.CONTEXT
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "CONTROLLERS"
     value     = var.CONTROLLERS
   }
