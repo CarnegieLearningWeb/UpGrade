@@ -6,10 +6,10 @@ jobs:
   backend-build-and-deploy:
     name: Backend Build and Deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/development'
-       environment: development
-    if: github.ref == 'refs/heads/bsnl'
-       environment: bsnl
+    # if: github.ref == 'refs/heads/development'
+    #   environment: development
+    # if: github.ref == 'refs/heads/bsnl'
+    #   environment: bsnl
     steps:
       - uses: actions/checkout@v2
         with: 
