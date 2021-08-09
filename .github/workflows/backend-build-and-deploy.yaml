@@ -1,7 +1,7 @@
 name: Backend Build and Deploy
 on:
   repository_dispatch:
-    types: [trigger-backend-build-bsnl]
+    types: [trigger-backend-build]
 jobs:
   backend-build-and-deploy:
     name: Backend Build and Deploy
