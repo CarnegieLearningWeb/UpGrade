@@ -16,10 +16,10 @@ jobs:
         with:
           node-version: 12.x
         
-      - name: Generate logs
-        run: |
-          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
-          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
+      # - name: Generate logs
+      #   run: |
+      #     echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
+      #     echo 'dev eb env url: ${{ secrets.ENV_URL }}'
   
   backend-build-and-deploy-bsnl:
     name: Backend Build and Deploy bsnl
@@ -36,5 +36,5 @@ jobs:
         
       - name: Generate logs
         run: |
-          echo 'bsnl eb env name: ${{ secrets.EB_ENV_NAME }}'
-          echo 'bsnl eb env url: ${{ secrets.ENV_URL }}'
+          echo 'bsnl eb env name:'
+          echo 'bsnl eb env url:' ${{ secrets.ENV_URL }}
