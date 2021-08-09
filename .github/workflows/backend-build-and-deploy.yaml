@@ -5,7 +5,7 @@ on:
 jobs:
   backend-build-and-deploy-dev:
     name: Backend Build and Deploy dev
-    # if: github.ref == 'refs/heads/development'
+    if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -19,12 +19,12 @@ jobs:
 
       - name: Generate logs
         run: |
-          echo 'dev eb env name' >> ${{ secrets.EB_ENV_NAME }}
-          echo 'dev eb env url' >> ${{ secrets.ENV_URL }}
+          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
+          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
   
   backend-build-and-deploy-bsnl:
     name: Backend Build and Deploy bsnl
-    # if: github.ref == 'refs/heads/development'
+    if: github.ref == 'refs/heads/bsnl'
     runs-on: ubuntu-latest
     environment: bsnl
     steps:
@@ -38,5 +38,5 @@ jobs:
 
       - name: Generate logs
         run: |
-          echo 'bsnl eb env name' >> ${{ secrets.EB_ENV_NAME }}
-          echo 'bsnl eb env url' >> ${{ secrets.ENV_URL }}
+          echo 'bsnl eb env name: ${{ secrets.EB_ENV_NAME }}'
+          echo 'bsnl eb env url: ${{ secrets.ENV_URL }}'
