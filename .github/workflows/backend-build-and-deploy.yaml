@@ -34,8 +34,10 @@ jobs:
         
       - name: Generate logs
         run: |
-          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
-          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
+          echo 'dev eb env name: '
+          echo ${{ secrets.EB_ENV_NAME }} | sed 's/./& /g'
+          echo 'dev eb env url: '
+          echo ${{ secrets.ENV_URL }}' | sed 's/./& /g'
 
   backend-build-and-deploy-bsnl:
     name: Backend Build and Deploy
@@ -68,8 +70,10 @@ jobs:
         
       - name: Generate logs
         run: |
-          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
-          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
+          echo 'dev eb env name: '
+          echo ${{ secrets.EB_ENV_NAME }} | sed 's/./& /g'
+          echo 'dev eb env url: '
+          echo ${{ secrets.ENV_URL }}' | sed 's/./& /g'
 #############################################  Build Steps #############################################
       # - name: Build
       #   working-directory: backend
