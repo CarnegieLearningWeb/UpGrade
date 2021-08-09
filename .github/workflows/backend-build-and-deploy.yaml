@@ -3,13 +3,45 @@ on:
   repository_dispatch:
     types: [trigger-backend-build]
 jobs:
-  backend-build-and-deploy:
+  backend-build-and-deploy-dev:
     name: Backend Build and Deploy
     runs-on: ubuntu-latest
-    if:  ${{github.event.client_payload.branch}}== 'development'
-      environment: development
-    if: ${{github.event.client_payload.branch}}== 'bsnl'
-      environment: bsnl
+    if: ${{github.event.client_payload.branch}} == 'development'
+    environment: development
+    steps:
+      - uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+      - name: Get Package Version
+        uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
+        with:
+          path: backend/packages/Upgrade
+      - name: Generate Changelogs
+        run: |
+          echo 'SLACK_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Branch name
+        run: echo running on branch ${GITHUB_REF##*/}
+        
+      - name: Generate logs
+        run: |
+          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
+          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
+
+  backend-build-and-deploy-bsnl:
+    name: Backend Build and Deploy
+    runs-on: ubuntu-latest
+    if: ${{github.event.client_payload.branch}} == 'bsnl'
+    environment: bsnl   
     steps:
       - uses: actions/checkout@v2
         with: 
