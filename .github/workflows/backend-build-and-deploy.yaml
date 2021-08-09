@@ -22,7 +22,7 @@ jobs:
           echo 'dev eb env name' >> ${{ secrets.EB_ENV_NAME }}
           echo 'dev eb env url' >> ${{ secrets.ENV_URL }}
   
-          backend-build-and-deploy-bsnl:
+  backend-build-and-deploy-bsnl:
     name: Backend Build and Deploy bsnl
     # if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
