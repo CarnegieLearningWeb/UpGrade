@@ -6,31 +6,60 @@ jobs:
   backend-build-and-deploy:
     name: Backend Build and Deploy
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/development'
+       environment: development
+    if: github.ref == 'refs/heads/bsnl'
+       environment: bsnl
     steps:
-      - name: Build
-        working-directory: backend
+      - uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+      - name: Get Package Version
+        uses: martinbeentjes/npm-get-version-action@v1.1.0
+        id: package-version
+        with:
+          path: backend/packages/Upgrade
+      - name: Generate Changelogs
         run: |
-          npm ci
-          zip -qq -r upgrade-backend-v-${{ github.sha }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
-      
-      # - name: Create Release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
-      #     tag: upgrade-backend-v-${{ github.sha }}
-      #     name: UpGrade Backend ${{ github.sha }}
-      #     body: ${{ env.RELEASE_CHANGELOG }}
-      #     commit: main
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      
-      # - name: Trigger Deployment Workflow
-      #   uses: peter-evans/repository-dispatch@v1
+          echo 'SLACK_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
+          git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Branch name
+        run: echo running on branch ${GITHUB_REF##*/}
+        
+      - name: Generate logs
+        run: |
+          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
+          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
+#############################################  Build Steps #############################################
+      # - name: Build
+      #   working-directory: backend
+      #   run: |
+      #      npm ci
+      #      zip -qq -r upgrade-backend-v-${{ github.sha }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+       # - name: Create Release
+       #   uses: ncipollo/release-action@v1
+       #   with:
+       #     artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
+       #     tag: upgrade-backend-v-${{ github.sha }}
+       #     name: UpGrade Backend ${{ github.sha }}
+       #     body: ${{ env.RELEASE_CHANGELOG }}
+       #     commit: main
+       #     token: ${{ secrets.GITHUB_TOKEN }}
+      #  - name: Trigger Deployment Workflow
+      #    uses: peter-evans/repository-dispatch@v1
       #   with:
       #     token: ${{ secrets.REPO_DISPATCH_TOKEN }}
       #     repository: ${{ github.repository }}
       #     event-type: trigger-backend-deployment
       #     client-payload: '{"tag": "upgrade-backend-v-${{ github.sha }}"}'
-
       # - name: Success Slack Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
       #   with:
@@ -39,7 +68,6 @@ jobs:
       #     message: |
       #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v-${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> build was successful*
       #       ${{ env.SLACK_CHANGELOG }}
-
       # - name: Failure Slack Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
       #   if: failure()
@@ -50,9 +78,7 @@ jobs:
       #       ${{ secrets.SLACK_FAILURE_PINGS}} *UpGrade Backend ${{ steps.package-version.outputs.current-version }} build FAILURE*
       #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
       #       ${{ env.SLACK_CHANGELOG }}
-
 #############################################  Deploy Steps #############################################
-
       # - name: Deploy to QA
       #   id: deploy-backend
       #   uses: einaregilsson/beanstalk-deploy@v13
@@ -63,17 +89,15 @@ jobs:
       #     environment_name: ${{ secrets.EB_ENV_NAME }}
       #     version_label: ${{ github.sha }}
       #     region: ${{ secrets.AWS_REGION }}
-      #     deployment_package: backend/upgrade-backend-v${{ github.sha}}.zip
-
+      #     deployment_package: backend/upgrade-backend-v-${{ github.sha}}.zip
       # - name: Success Deploy Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
       #   with:
       #     token: ${{ secrets.SLACK_TOKEN }}
       #     channel: ${{ secrets.SLACK_DEPLOY_CHANNEL }}
       #     message: |
-      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.ENV_URL}}
+      #       *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}>* has been deployed to the `staging` environment at ${{ secrets.DEV_URL}}
       #       ${{ env.SLACK_CHANGELOG }}
-
       # - name: Failure Deploy Message
       #   uses: aibexhq/slack-rich-notify@v2.0.1
       #   if: failure() && steps.deploy-backend.outcome == 'failure'
@@ -84,31 +108,3 @@ jobs:
       #       ${{ secrets.SLACK_FAILURE_PINGS}} *<https://github.com/${{ github.event.repository.full_name }}/releases/tag/upgrade-backend-v${{ steps.package-version.outputs.current-version }}|UpGrade Backend ${{ steps.package-version.outputs.current-version }}> deployment FAILURE*
       #       <https://github.com/${{ github.event.repository.full_name }}/actions/runs/${{ github.run_id }}|Click here to view the full log>
       #       ${{ env.SLACK_CHANGELOG }}
-
-      # - uses: actions/checkout@v2
-      #   with: 
-      #     ref: ${{ github.event.client_payload.tag }}
-      #     fetch-depth: 0
-
-      # - uses: actions/setup-node@v2
-      #   with:
-      #     node-version: 12.x
-
-      # - name: Get Package Version
-      #   uses: martinbeentjes/npm-get-version-action@v1.1.0
-      #   id: package-version
-      #   with:
-      #     path: backend/packages/Upgrade
-
-      # - name: Generate Changelogs
-      #   run: |
-      #     echo 'SLACK_CHANGELOG<<EOF' >> $GITHUB_ENV
-      #     git log --color=never --pretty='tformat:%xe2%x80%xa2 `%h` %s (%an)' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
-      #     echo 'EOF' >> $GITHUB_ENV
-      #     echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
-      #     git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
-      #     echo 'EOF' >> $GITHUB_ENV
-
-#############################################  Build Steps #############################################
-
-      
