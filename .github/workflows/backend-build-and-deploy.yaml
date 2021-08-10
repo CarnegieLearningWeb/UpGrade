@@ -6,7 +6,7 @@ jobs:
   backend-build-and-deploy-dev:
     name: Backend Build and Deploy
     runs-on: ubuntu-latest
-    if: ${{github.event.client_payload.branch}} == 'development'
+    # if: ${{github.event.client_payload.branch}} == 'development'
     environment: development
     steps:
       - uses: actions/checkout@v2
@@ -42,7 +42,7 @@ jobs:
   backend-build-and-deploy-bsnl:
     name: Backend Build and Deploy
     runs-on: ubuntu-latest
-    if: ${{github.event.client_payload.branch}} == 'bsnl'
+    # if: ${{github.event.client_payload.branch}} == 'bsnl'
     environment: bsnl   
     steps:
       - uses: actions/checkout@v2
