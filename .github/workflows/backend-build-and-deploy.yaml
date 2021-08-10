@@ -43,9 +43,9 @@ jobs:
        #     body: ${{ env.RELEASE_CHANGELOG }}
        #     commit: main
        #     token: ${{ secrets.GITHUB_TOKEN }}
-
-       - name: Trigger Deployment Workflow
-         uses: peter-evans/repository-dispatch@v1
+       
+      - name: Trigger Deployment Workflow
+        uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_DISPATCH_TOKEN }}
           repository: ${{ github.repository }}
