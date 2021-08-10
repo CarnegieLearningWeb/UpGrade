@@ -7,7 +7,6 @@ jobs:
     name: Backend Build and Deploy BSNL
     runs-on: ubuntu-latest
     environment: bsnl
-    if: github.event.client_payload.branch == 'bsnl'
     steps:
       - uses: actions/checkout@v2
         with: 
@@ -33,6 +32,7 @@ jobs:
         run: echo running on branch ${GITHUB_REF##*/}
         
       - name: Generate logs
+        if: github.event.client_payload.branch == 'bsnl'
         run: |
           echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
           echo 'dev eb env url: ${{ secrets.ENV_URL }}'
