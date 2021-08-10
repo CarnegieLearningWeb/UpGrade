@@ -3,7 +3,7 @@ on:
   repository_dispatch:
     types: [trigger-frontend-build]
 jobs:
-#############################################  DEV ENV #############################################
+  #############################################  DEV ENV #############################################
   frontend-build-and-deploy-dev:
     name: 'Frontend Build and Deploy DEV'
     runs-on: ubuntu-latest
@@ -136,7 +136,6 @@ jobs:
           echo 'EOF' >> $GITHUB_ENV
 
 #############################################  Build Steps #############################################
-
       - run: |
           npm ci
           npm run build:bsnl
