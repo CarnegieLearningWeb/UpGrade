@@ -34,15 +34,15 @@ jobs:
            npm ci
            zip -qq -r upgrade-backend-v-${{ github.sha }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
        
-       - name: Create Release
-         uses: ncipollo/release-action@v1
-         with:
-           artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
-           tag: upgrade-backend-v-${{ github.sha }}
-           name: UpGrade Backend ${{ github.sha }}
-           body: ${{ env.RELEASE_CHANGELOG }}
-           commit: main
-           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: backend/upgrade-backend-v-${{ github.sha }}.zip
+          tag: upgrade-backend-v-${{ github.sha }}
+          name: UpGrade Backend ${{ github.sha }}
+          body: ${{ env.RELEASE_CHANGELOG }}
+          commit: main
+          token: ${{ secrets.GITHUB_TOKEN }}
        
       - name: Trigger Deployment Workflow
         uses: peter-evans/repository-dispatch@v1
