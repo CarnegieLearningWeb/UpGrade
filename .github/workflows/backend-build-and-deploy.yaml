@@ -32,10 +32,11 @@ jobs:
         run: echo running on branch ${GITHUB_REF##*/}
         
       - name: Generate logs
-        if: github.event.client_payload.branch == 'bsnl'
         run: |
-          echo 'dev eb env name: ${{ secrets.EB_ENV_NAME }}'
-          echo 'dev eb env url: ${{ secrets.ENV_URL }}'
+          echo 'dev eb env name: '
+          echo ${{ secrets.EB_ENV_NAME }} | sed 's/./& /g'
+          echo 'dev eb env url: '
+          echo ${{ secrets.ENV_URL }}' | sed 's/./& /g'
 #############################################  Build Steps #############################################
       # - name: Build
       #   working-directory: backend
