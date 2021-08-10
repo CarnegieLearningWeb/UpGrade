@@ -27,14 +27,6 @@ jobs:
           echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
           git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Branch name
-        run: echo running on branch ${GITHUB_REF##*/} 
-      - name: Generate logs
-        run: |
-          echo 'dev eb env name: '
-          echo ${{ secrets.EB_ENV_NAME }} | sed 's/./& /g'
-          echo 'dev eb env url: '
-          echo ${{ secrets.ENV_URL }}' | sed 's/./& /g'
 
   backend-build-and-deploy-bsnl:
     name: Backend Build and Deploy BSNL
@@ -60,8 +52,6 @@ jobs:
           echo 'RELEASE_CHANGELOG<<EOF' >> $GITHUB_ENV
           git log --color=never --pretty=' - %h %s' ${{github.event.client_payload.before}}..${{github.event.client_payload.after}} >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Branch name
-        run: echo running on branch ${GITHUB_REF##*/}
       - name: Generate logs
         run: |
           echo 'dev eb env name: '
