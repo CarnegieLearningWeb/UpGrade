@@ -7,7 +7,6 @@ jobs:
   frontend-build-and-deploy-dev:
     name: 'Frontend Build and Deploy DEV'
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'PlaypowerLabs'
     if: github.event.client_payload.branch == 'development'
     environment: development
     steps:
@@ -109,7 +108,6 @@ jobs:
   frontend-build-and-deploy-bsnl:
     name: 'Frontend Build and Deploy BSNL'
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'PlaypowerLabs'
     if: github.event.client_payload.branch == 'bsnl'
     environment: bsnl
     steps:
