@@ -4,7 +4,7 @@ on:
     types: [trigger-backend-build]
 jobs:
   backend-build-common:
-    name: Backend Build and Deploy DEV
+    name: Backend Build Job
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -73,12 +73,15 @@ jobs:
 
   #############################################  ENV Sepcific Deploy Steps #############################################
   backend-deploy-dev:
-    name: Backend Build and Deploy DEV
+    name: Backend Deploy DEV Job
     runs-on: ubuntu-latest
     needs: backend-build-common 
     if: github.event.client_payload.branch == 'development'
     environment: development
     steps:
+      - uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
       - name: Deploy to DEV
         id: deploy-backend
         uses: einaregilsson/beanstalk-deploy@v13
@@ -110,12 +113,15 @@ jobs:
       #       ${{ env.SLACK_CHANGELOG }}
 
   backend-deploy-bsnl:
-    name: Backend Build and Deploy BSNL
+    name: Backend Deploy BSNL Job
     runs-on: ubuntu-latest
     needs: backend-build-common
     if: github.event.client_payload.branch == 'bsnl'
     environment: bsnl
     steps:
+      - uses: actions/checkout@v2
+        with: 
+          fetch-depth: 0
       - name: Deploy to BSNL
         id: deploy-backend
         uses: einaregilsson/beanstalk-deploy@v13
