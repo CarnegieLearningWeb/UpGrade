@@ -2,7 +2,7 @@
   .condition-table,
   .partition-table {
     max-height: 180px;
-    overflow: scroll;
+    overflow: auto;
 
     mat-header-row {
       min-height: 35px;

@@ -28,6 +28,8 @@ import * as uuid from 'uuid';
 })
 export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
+  @Input() currentContext: string;
+  @Input() contextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -89,9 +91,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (changes.animationCompleteStepperIndex && changes.animationCompleteStepperIndex.currentValue === 1 && this.conditionCode) {
       this.conditionCode.nativeElement.focus();
     }
+
+    console.log('context changed',this.contextChanged);
+    if(this.contextChanged){
+      this.partition.clear();
+      this.partition.push(this.addPartitions());
+      this.partitionDataSource.next(this.partition.controls);
+    }
   }
 
   ngOnInit() {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+      this.contextMetaData = contextMetaData;
+    });
+
     this.allPartitionsSub = this.experimentService.allPartitions$.pipe(
       filter(partitions => !!partitions))
       .subscribe((partitions: any) => {
@@ -129,9 +142,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.experimentDesignForm.get('partitions').valueChanges.subscribe(newValues => {
       this.validatePartitionNames(newValues);
     });
-
-    this.contextMetaDataSub = this.experimentService.contextMetaData$
-      .subscribe(contextMetaData => this.contextMetaData = contextMetaData);  
   }
 
   manageExpPointAndIdControl(index: number) {
@@ -149,8 +159,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private filterExpPointsAndIds(value: string, key: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.contextMetaData ? (this.contextMetaData[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    const filterValue = value ?  value.toLocaleLowerCase() : '';
+
+    if(!this.contextMetaData['contextMetadata'])
+      return [];
+
+    if(key === 'expPoints') {
+      return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || [])
+      .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    }
+    else if(key === 'expIds') {
+      return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || [])
+      .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    }
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
@@ -305,7 +326,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validateExpPoints(partitions: ExperimentPartition[]) {
     const expPoints = partitions.map(partition => partition.expPoint);
     for (let expPointIndex = 0; expPointIndex < expPoints.length; expPointIndex++) {
-      if ((this.contextMetaData as IContextMetaData).expPoints.indexOf(expPoints[expPointIndex]) === -1) {
+      if (this.contextMetaData['contextMetada'][this.currentContext].EXP_POINTS.indexOf(expPoints[expPointIndex]) === -1) {
         // Add partition point selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
         break;
@@ -316,7 +337,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validateExpIds(partitions: ExperimentPartition[]) {
     const expIds = partitions.map(partition => partition.expId).filter(expId => expId);
     for (let expIdIndex = 0; expIdIndex < expIds.length; expIdIndex++) {
-      if ((this.contextMetaData as IContextMetaData).expIds.indexOf(expIds[expIdIndex]) === -1) {
+      if (this.contextMetaData['contextMetada'][this.currentContext].EXP_IDS.indexOf(expIds[expIdIndex]) === -1) {
         // Add partition id selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
         break;

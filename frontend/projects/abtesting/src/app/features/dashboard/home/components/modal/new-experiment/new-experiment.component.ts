@@ -18,6 +18,8 @@ export class NewExperimentComponent implements OnInit {
   selectedStepperIndex = 0;
   experimentInfo: ExperimentVM;
   animationCompletedIndex: Number;
+  currentContext: string;
+  contextChanged: boolean = false;
   @ViewChild('stepper', { static: false }) stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
@@ -49,6 +51,14 @@ export class NewExperimentComponent implements OnInit {
           ...this.newExperimentData,
           ...formData
         };
+        
+        if(this.experimentInfo) {
+          this.currentContext = this.experimentInfo.context[0]
+        }
+
+        this.contextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
+        
+        this.currentContext  = this.newExperimentData.context[0];
         this.stepper.next();
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
           this.newExperimentData.queries = [];

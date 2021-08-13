@@ -163,10 +163,7 @@ export interface ExperimentPaginationParams {
 }
 
 export interface IContextMetaData {
-  appContext: string[],
-  expPoints: string[],
-  expIds: string[],
-  groupTypes: string[]
+  contextMetadata: object[];
 }
 
 export interface IExperimentGraphInfo {

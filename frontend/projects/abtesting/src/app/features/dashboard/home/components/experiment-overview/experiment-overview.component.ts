@@ -29,8 +29,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 
   groupTypes = [];
-  groupTypeOther = 'other';
-
+  enableSave = true;
+  currentContext = null;
   consistencyRules = [
     { value: CONSISTENCY_RULE.INDIVIDUAL },
     { value: CONSISTENCY_RULE.GROUP },
@@ -56,16 +56,15 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   ) {
     this.experimentContext$ = this.autoCompleteContext.valueChanges.pipe(
       startWith(null),
-      map(context => this._filter(context, 'appContext')));
+      map(context => this._filter(context, 'contextMetadata')));
   }
 
   ngOnInit() {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData;
-      if (this.contextMetaData && this.contextMetaData['groupTypes']) {
-        this.contextMetaData['groupTypes'].forEach(element => {
-          this.groupTypes.push({value: element});
-        });
+      
+      if(this.overviewForm && this.contextMetaData && this.experimentInfo) {
+        this.overviewForm.patchValue(this.setGroupTypeControlValue());
       }
     });
 
@@ -75,7 +74,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         description: [null],
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
-        customGroupName: [null],
         consistencyRule: [null, Validators.required],
         context: [[], Validators.required],
         tags: [[]],
@@ -92,8 +90,14 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
           break;
         case ASSIGNMENT_UNIT.GROUP:
+          if(this.overviewForm.get('context').value.length === 0){
+            this.overviewForm.get('groupType').reset();
+            this.overviewForm.get('groupType').disable();
+            break;
+          }
           this.overviewForm.get('groupType').enable();
           this.overviewForm.get('groupType').setValidators(Validators.required);
+          this.setGroupTypes();
           this.consistencyRules = [
             { value: CONSISTENCY_RULE.INDIVIDUAL },
             { value: CONSISTENCY_RULE.GROUP },
@@ -103,26 +107,26 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.overviewForm.get('groupType').valueChanges.subscribe(groupType => {
-      switch (groupType) {
-        case this.groupTypeOther:
-          this.overviewForm.get('customGroupName').setValidators(Validators.required);
-          break;
-        default:
-          this.overviewForm.get('customGroupName').setValidators([]);
-          this.overviewForm.get('customGroupName').reset();
+    this.overviewForm.get('context').valueChanges.subscribe(contexts => {
+      if(contexts.length === 0) {
+        this.overviewForm.get('groupType').reset();
+        this.overviewForm.get('groupType').disable();
+      }
+      else if(this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP) {
+        this.overviewForm.get('groupType').enable();
+        this.overviewForm.get('groupType').setValidators(Validators.required);
       }
     });
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      const { groupType, customGroupName = null } = this.setGroupTypeControlValue();
+      this.currentContext = this.experimentInfo.context[0];
+      const { groupType } = this.setGroupTypeControlValue();
       this.overviewForm.setValue({
         experimentName: this.experimentInfo.name,
         description: this.experimentInfo.description,
         unitOfAssignment: this.experimentInfo.assignmentUnit,
         groupType,
-        customGroupName,
         consistencyRule: this.experimentInfo.consistencyRule,
         context: this.experimentInfo.context,
         tags: this.experimentInfo.tags,
@@ -133,23 +137,41 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   setGroupTypeControlValue() {
     if (!this.experimentInfo.group) {
-      return { groupType: null, customGroupName: null };
+      return { groupType: null };
     }
+
+    this.setGroupTypes();
     const result = find(this.groupTypes, type => type.value === this.experimentInfo.group);
-    return result
-      ? { groupType: result.value }
-      : { groupType: this.groupTypeOther, customGroupName: this.experimentInfo.group };
+    return result ? { groupType: result.value }: { groupType: null };
+  }
+
+  setGroupTypes() {
+    this.groupTypes = [];
+    if(this.contextMetaData['contextMetadata']){
+      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(element => {
+        this.groupTypes.push({value: element});
+      });
+    }
   }
 
   private _filter(value: string, key: string): string[] {
-    const filterValue = value ?  value.toLocaleLowerCase() : [];
-    return this.contextMetaData ? (this.contextMetaData[key] || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    const filterValue = value ?  value.toLocaleLowerCase() : '';
+    const contexts = this.contextMetaData[key] ? Object.keys(this.contextMetaData[key]) : [];
+    return this.contextMetaData ? (contexts || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
   }
 
   selectedAutoCompleteContext(event: MatAutocompleteSelectedEvent): void {
     const contextValue = event.option.viewValue.toLowerCase();
     if (this.contexts.value.indexOf(contextValue.trim()) === -1) {
-      this.contexts.setValue([...this.contexts.value, contextValue.trim()]);
+      this.contexts.setValue([contextValue.trim()]);
+      
+      this.currentContext = this.contexts.value[0];
+      if(this.experimentInfo) {
+        this.enableSave = (this.currentContext === this.experimentInfo.context[0]);
+      }
+
+      this.overviewForm.get('groupType').reset();
+      this.setGroupTypes();
     }
     this.contextInput.nativeElement.value = '';
     this.autoCompleteContext.setValue(null);
@@ -164,7 +186,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if ((value || '').trim()) {
       switch (type) {
         case 'contexts':
-          if (this.contextMetaData['appContext'].indexOf(value.trim()) !== -1 && this.contexts.value.indexOf(value.trim()) === -1) {
+          if (Object.keys(this.contextMetaData['contextMetadata']).indexOf(value.trim()) !== -1 && this.contexts.value.indexOf(value.trim()) === -1) {
             this[type].setValue([...this[type].value, value.trim()]);
           }
           break;
@@ -205,7 +227,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             description,
             unitOfAssignment,
             groupType,
-            customGroupName,
             consistencyRule,
             context,
             tags,
@@ -216,7 +237,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             description: description || '',
             consistencyRule: consistencyRule,
             assignmentUnit: unitOfAssignment,
-            group: groupType ? (groupType === this.groupTypeOther ? customGroupName : groupType) : null,
+            group: groupType,
             context,
             tags,
             logging
@@ -237,10 +258,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
-  }
-
-  get groupTypeValue() {
-    return this.overviewForm.get('groupType').value === this.groupTypeOther;
   }
 
   get unitOfAssignmentValue() {

@@ -11,5 +11,5 @@ export default function repositoryError(className: string, functionName: string,
   const message = JSON.stringify(errorMessage, undefined, 2);
 
   // send error message
-  throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message }));
+  return(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message }));
 }
