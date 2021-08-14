@@ -161,7 +161,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   private filterExpPointsAndIds(value: string, key: string): string[] {
     const filterValue = value ?  value.toLocaleLowerCase() : '';
 
-    if(!this.contextMetaData['contextMetadata'])
+    if(!this.contextMetaData)
       return [];
 
     if(key === 'expPoints') {

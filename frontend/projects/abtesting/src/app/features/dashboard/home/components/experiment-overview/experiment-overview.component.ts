@@ -155,6 +155,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   private _filter(value: string, key: string): string[] {
+
+    if(!this.contextMetaData){
+      return [];
+    }
     const filterValue = value ?  value.toLocaleLowerCase() : '';
     const contexts = this.contextMetaData[key] ? Object.keys(this.contextMetaData[key]) : [];
     return this.contextMetaData ? (contexts || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];

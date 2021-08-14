@@ -83,23 +83,6 @@
         {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
       </mat-error>
     </mat-form-field>
-
-    <mat-form-field
-      class="ft-14-600 group-type"
-      *ngIf="groupTypeValue"
-    >
-      <input
-        matInput
-        class="ft-14-400"
-        [placeholder]="
-          'global.group-custom-type.placeHolder' | translate
-        "
-        formControlName="customGroupName"
-      />
-      <mat-error *ngIf="overviewForm.controls.customGroupName.hasError('required')">
-        {{ 'home.new-experiment.overview.custom-group-name.error.text' | translate }}
-      </mat-error>
-    </mat-form-field>
   </div>
 
   <mat-form-field class="ft-14-600 consistency-rule">
