@@ -92,8 +92,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.conditionCode.nativeElement.focus();
     }
 
-    console.log('context changed',this.contextChanged);
-    if(this.contextChanged){
+    if (this.contextChanged) {
       this.partition.clear();
       this.partition.push(this.addPartitions());
       this.partitionDataSource.next(this.partition.controls);
@@ -161,14 +160,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   private filterExpPointsAndIds(value: string, key: string): string[] {
     const filterValue = value ?  value.toLocaleLowerCase() : '';
 
-    if(!this.contextMetaData)
+    if (!this.contextMetaData) {
       return [];
+    }
 
-    if(key === 'expPoints') {
+    if (key === 'expPoints') {
       return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || [])
       .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
     }
-    else if(key === 'expIds') {
+    else if (key === 'expIds') {
       return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || [])
       .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
     }

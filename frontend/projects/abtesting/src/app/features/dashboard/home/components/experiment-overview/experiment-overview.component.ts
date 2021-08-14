@@ -63,7 +63,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData;
       
-      if(this.overviewForm && this.contextMetaData && this.experimentInfo) {
+      if (this.overviewForm && this.contextMetaData && this.experimentInfo) {
         this.overviewForm.patchValue(this.setGroupTypeControlValue());
       }
     });
@@ -90,7 +90,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
           break;
         case ASSIGNMENT_UNIT.GROUP:
-          if(this.overviewForm.get('context').value.length === 0){
+          if (this.overviewForm.get('context').value.length === 0) {
             this.overviewForm.get('groupType').reset();
             this.overviewForm.get('groupType').disable();
             break;
@@ -108,11 +108,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     });
 
     this.overviewForm.get('context').valueChanges.subscribe(contexts => {
-      if(contexts.length === 0) {
+      if (contexts.length === 0) {
         this.overviewForm.get('groupType').reset();
         this.overviewForm.get('groupType').disable();
       }
-      else if(this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP) {
+      else if (this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP) {
         this.overviewForm.get('groupType').enable();
         this.overviewForm.get('groupType').setValidators(Validators.required);
       }
@@ -147,7 +147,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   setGroupTypes() {
     this.groupTypes = [];
-    if(this.contextMetaData['contextMetadata']){
+    if (this.contextMetaData['contextMetadata']) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(element => {
         this.groupTypes.push({value: element});
       });
@@ -155,10 +155,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   }
 
   private _filter(value: string, key: string): string[] {
-
-    if(!this.contextMetaData){
+    if (!this.contextMetaData) {
       return [];
     }
+
     const filterValue = value ?  value.toLocaleLowerCase() : '';
     const contexts = this.contextMetaData[key] ? Object.keys(this.contextMetaData[key]) : [];
     return this.contextMetaData ? (contexts || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
@@ -170,7 +170,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.contexts.setValue([contextValue.trim()]);
       
       this.currentContext = this.contexts.value[0];
-      if(this.experimentInfo) {
+      if (this.experimentInfo) {
         this.enableSave = (this.currentContext === this.experimentInfo.context[0]);
       }
 

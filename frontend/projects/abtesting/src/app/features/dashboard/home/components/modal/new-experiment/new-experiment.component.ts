@@ -52,7 +52,7 @@ export class NewExperimentComponent implements OnInit {
           ...formData
         };
         
-        if(this.experimentInfo) {
+        if (this.experimentInfo) {
           this.currentContext = this.experimentInfo.context[0]
         }
 
