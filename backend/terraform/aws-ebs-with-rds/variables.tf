@@ -125,6 +125,7 @@ variable "TYPEORM_MIGRATIONS" { default = "src/database/migrations/**/*.ts" }
 variable "TYPEORM_MIGRATIONS_DIR" { default = "src/database/migrations" }
 variable "TYPEORM_SEED" { default = "src/database/seeds/**/*.seed.ts" }
 variable "TYPEORM_SYNCHRONIZE" {}
+variable "TYPEORM_MAX_QUERY_EXECUTION_TIME" { default = 2000 }
 
 
 

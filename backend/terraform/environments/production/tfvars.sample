@@ -26,6 +26,7 @@ DOMAIN_NAME             = "company.com"
 MONITOR_PASSWORD        = "password"
 SWAGGER_PASSWORD        = "password"
 TYPEORM_SYNCHRONIZE     = true
+TYPEORM_MAX_QUERY_EXECUTION_TIME = 2000
 TOKEN_SECRET_KEY        = "secret-key"
 AUTH_CHECK              = true
 APP_CONTEXT             = "app@addition@subtraction@multiplication@division@addition simple@subtraction simple@multiplication simple@division simple@addition medium@subtraction medium@multiplication medium@division medium@addition hard@subtraction hard@multiplication hard@division hard@fraction"
