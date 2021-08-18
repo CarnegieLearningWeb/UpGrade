@@ -43,6 +43,7 @@ variable "RDS_PASSWORD"{}
 variable "SWAGGER_PASSWORD"{}
 variable "TOKEN_SECRET_KEY"{}
 variable "TYPEORM_SYNCHRONIZE"{}
+variable "TYPEORM_MAX_QUERY_EXECUTION_TIME" {}
 
 # CICD variables
 variable "repository_name"{}

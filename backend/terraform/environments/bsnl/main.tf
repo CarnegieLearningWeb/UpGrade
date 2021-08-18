@@ -80,6 +80,7 @@ module "aws-ebs-app" {
   AUTH_CHECK            = var.AUTH_CHECK
   TOKEN_SECRET_KEY      = var.TOKEN_SECRET_KEY 
   TYPEORM_SYNCHRONIZE   = var.TYPEORM_SYNCHRONIZE
+  TYPEORM_MAX_QUERY_EXECUTION_TIME = var.TYPEORM_MAX_QUERY_EXECUTION_TIME
 
   SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "~/.ssh/id_rsa"
