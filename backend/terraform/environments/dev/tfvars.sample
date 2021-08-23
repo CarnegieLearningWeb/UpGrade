@@ -1,14 +1,14 @@
 # General variables
-current_directory       = "bsnl"
+current_directory       = "dev"
 aws_region              = "us-east-1"
-environment             = "bsnl"
-prefix                  = "upgrade" 
+environment             = "development"
+prefix                  = "cli-upgrade" 
 app_version             = "1.0.0"
 
 # RDS related details 
 allocated_storage       = 100
 engine_version          = "11.5"
-identifier              = "bsnl-postgres" 
+identifier              = "dev-postgres" 
 instance_class          = "db.t2.small"
 storage_type            = "gp2"
 multi_az                = "false"
@@ -33,11 +33,11 @@ CLIENT_API_KEY          = "key"
 EXP_POINTS              = "expPoint1@expPoint2@point3@point4@expPoint5"
 EXP_IDS                 = "expId1@expId2@Id3@id4@expId5"
 GROUP_TYPES             = "class@school@district@teacher@other"
-NEW_RELIC_APP_NAME      = "Upgrade_bsnl"
+NEW_RELIC_APP_NAME      = "Upgrade_dev"
 NEW_RELIC_LICENSE_KEY   = "a5917d8b00ee1fa4e6c036ffd71f3fadaa78NRAL"
 # CICD variables
 repository_name         = "educational-experiment-service"
-branch_name             = "bsnl"
+branch_name             = "develop"
 build_image             = "aws/codebuild/standard:1.0"
 build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true

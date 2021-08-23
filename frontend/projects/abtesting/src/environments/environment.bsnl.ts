@@ -1,4 +1,5 @@
-const endpointApi = 'http://new-bsnl-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
+// const endpointApi = 'https://bsnl-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'https://upgrade-bsnl-backend.edoptimize.com/api'
 
 export const environment = {
   appName: 'UpGrade',
