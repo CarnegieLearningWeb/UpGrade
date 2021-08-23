@@ -8,29 +8,45 @@ app_version             = "1.0.0"
 # RDS related details 
 allocated_storage       = 100
 engine_version          = "11.5"
-identifier              = "dev-postgres" 
+identifier              = "bsnl-postgres" 
 instance_class          = "db.t2.small"
 storage_type            = "gp2"
 multi_az                = "false"
-
+RDS_PASSWORD            = "postgres"
 # EBS instance details
-app_instance_type       = "t2.micro"
+app_instance_type       = "t2.small"
 ebs_app_name            = "upgrade-experiment-app"
 autoscaling_min_size    =  1 
 autoscaling_max_size    =  4 
-
 # APP environment variables
-GOOGLE_CLIENT_ID        = "google-project-id"
+GOOGLE_CLIENT_ID        = "135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com"
 DOMAIN_NAME             = "playpowerlabs.com"
-MONITOR_PASSWORD        = "passowrd"
-SWAGGER_PASSWORD        = "passowrd"
-TYPEORM_SYNCHRONIZE     = true
-TOKEN_SECRET_KEY        = carnegielearning
+MONITOR_PASSWORD        = "password"
+SWAGGER_PASSWORD        = "password"
+TYPEORM_SYNCHRONIZE     = false
+TOKEN_SECRET_KEY        = "carnegielearning"
 AUTH_CHECK              = true
-
+APP_CONTEXT             = "app@addition@subtraction@multiplication@division@addition simple@subtraction simple@multiplication simple@division simple@addition medium@subtraction medium@multiplication medium@division medium@addition hard@subtraction hard@multiplication hard@division hard@fraction"
+ADMIN_USERS             = "nirmal@playpowerlabs.com:admin/\\mglover@carnegielearning.com:admin/\\sritter@carnegielearning.com:admin/\\sfancsali@carnegielearning.com:admin/\\vivek@playpowerlabs.com:admin/\\mmchenry@carnegielearning.com:admin/\\apople@carnegielearning.com:admin/\\leslie@carnegielearning.com:admin/\\sgrieco@carnegielearning.com:admin/\\lseaman@carnegielearning.com:admin/\\kschaefer@carnegielearning.com:admin/\\abright@carnegielearning.com:admin/\\amurphy@carnegielearning.com:admin/\\derek@playpowerlabs.com:admin/\\jaydip.hirapara@playpowerlabs.com:admin/\\dhaval.prajapati@playpowerlabs.com:admin/\\dev@playpowerlabs.com:admin/\\pratik.prajapati@playpowerlabs.com:admin/\\ridham.shah@playpowerlabs.com:admin/\\yashil.depani@playpowerlabs.com:admin"
+CLIENT_API_SECRET       = "secret"
+CLIENT_API_KEY          = "key"
+EXP_POINTS              = "expPoint1@expPoint2@point3@point4@expPoint5"
+EXP_IDS                 = "expId1@expId2@Id3@id4@expId5"
+GROUP_TYPES             = "class@school@district@teacher@other"
+NEW_RELIC_APP_NAME      = "Upgrade_bsnl"
+NEW_RELIC_LICENSE_KEY   = "a5917d8b00ee1fa4e6c036ffd71f3fadaa78NRAL"
 # CICD variables
 repository_name         = "educational-experiment-service"
 branch_name             = "bsnl"
 build_image             = "aws/codebuild/standard:1.0"
 build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
+# Email detail
+EMAIL_FROM                      = "dev@playpowerlabs.com"
+EMAIL_EXPIRE_AFTER_SECONDS      = 36000
+# Lambda variables
+s3_lambda_bucket        = "upgrade-schedular"
+s3_lambda_key           = "schedular.zip"
+ssl_certificate_id      = "arn:aws:acm:us-east-1:781188149671:certificate/1f1abbb8-f7b4-4700-9974-6e5b170cb1fa"
+# Real values for secrets for this environment are stored in vault at
+#   internal/upgrade-experiment-service/environments/dev
