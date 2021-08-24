@@ -25,6 +25,9 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   constructor(private _formBuilder: FormBuilder) { }
 
   ngOnChanges() {
+    this.experimentConditions = [
+      { value: 'default', id: 'default' }
+    ];
     if (this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
       this.newExperimentData.conditions.map(value => {
         const isConditionExist = this.experimentConditions.find((condition) => condition.id === value.id);
@@ -32,6 +35,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
           ? this.experimentConditions
           : [ ...this.experimentConditions, { value: value.conditionCode, id: value.id }];
       });
+    console.log(this.experimentConditions);
     }
   }
 
