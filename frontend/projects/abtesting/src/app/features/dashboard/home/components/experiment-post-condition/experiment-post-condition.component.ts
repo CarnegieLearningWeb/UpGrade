@@ -35,7 +35,6 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
           ? this.experimentConditions
           : [ ...this.experimentConditions, { value: value.conditionCode, id: value.id }];
       });
-    console.log(this.experimentConditions);
     }
   }
 
