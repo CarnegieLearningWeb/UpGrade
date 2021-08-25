@@ -22,8 +22,60 @@ import * as express from 'express';
 
 /**
  * @swagger
+ * definitions:
+ *   initResponse:
+ *     type: object
+ *     properties:
+ *       createdAt:
+ *         type: string
+ *         minLength: 1
+ *       updatedAt:
+ *         type: string
+ *         minLength: 1
+ *       versionNumber:
+ *         type: number
+ *       id:
+ *         type: string
+ *         minLength: 1
+ *       group:
+ *         type: object
+ *         properties:
+ *           class:
+ *             type: array
+ *             items:
+ *               required: []
+ *               properties: {}
+ *         required:
+ *           - class
+ *       workingGroup:
+ *         type: object
+ *         properties:
+ *           school:
+ *             type: string
+ *             minLength: 1
+ *           class:
+ *             type: string
+ *             minLength: 1
+ *           instructor:
+ *             type: string
+ *             minLength: 1
+ *         required:
+ *           - school
+ *           - class
+ *           - instructor
+ *     required:
+ *       - createdAt
+ *       - updatedAt
+ *       - versionNumber
+ *       - id
+ *       - group
+ *       - workingGroup
+ */
+
+/**
+ * @swagger
  * tags:
- *   - name: Experiment Point
+ *   - name: Client Side SDK
  *     description: CRUD operations related to experiments points
  */
 
@@ -60,12 +112,14 @@ export class ExperimentClientController {
    *                 type: object
    *           description: ExperimentUser
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Set Group Membership
+   *            schema:
+   *              $ref: '#/definitions/initResponse'
    */
   @Post('init')
   public async init(
@@ -96,12 +150,14 @@ export class ExperimentClientController {
    *                 type: object
    *           description: ExperimentUser
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Set Group Membership
+   *            schema:
+   *              $ref: '#/definitions/initResponse'
    */
   @Post('groupmembership')
   public setGroupMemberShip(
@@ -131,12 +187,14 @@ export class ExperimentClientController {
    *                 type: object
    *           description: ExperimentUser
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Set Group Membership
+   *            schema:
+   *              $ref: '#/definitions/initResponse'
    */
   @Post('workinggroup')
   public setWorkingGroup(
@@ -173,12 +231,47 @@ export class ExperimentClientController {
    *             type: string
    *           description: Partition ID
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Experiment Point is Marked
+   *            schema:
+   *              type: object
+   *              properties:
+   *                createdAt:
+   *                  type: string
+   *                  minLength: 1
+   *                updatedAt:
+   *                  type: string
+   *                  minLength: 1
+   *                versionNumber:
+   *                  type: number
+   *                id:
+   *                  type: string
+   *                  minLength: 1
+   *                experimentId:
+   *                  type: string
+   *                  minLength: 1
+   *                enrollmentCode:
+   *                  type: string
+   *                  minLength: 1
+   *                userId:
+   *                  type: string
+   *                  minLength: 1
+   *                condition:
+   *                  type: string
+   *                  minLength: 1
+   *              required:
+   *                - createdAt
+   *                - updatedAt
+   *                - versionNumber
+   *                - id
+   *                - experimentId
+   *                - enrollmentCode
+   *                - userId
+   *                - condition
    */
   @Post('mark')
   public markExperimentPoint(
@@ -213,12 +306,71 @@ export class ExperimentClientController {
    *                 type: string
    *            description: User Document
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Experiment Point is Assigned
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - expId
+   *                  - expPoint
+   *                  - twoCharacterId
+   *                  - assignedCondition
+   *                properties:
+   *                  expId:
+   *                    type: string
+   *                    minLength: 1
+   *                  expPoint:
+   *                    type: string
+   *                    minLength: 1
+   *                  twoCharacterId:
+   *                    type: string
+   *                    minLength: 1
+   *                  assignedCondition:
+   *                    type: object
+   *                    properties:
+   *                      createdAt:
+   *                        type: string
+   *                        minLength: 1
+   *                      updatedAt:
+   *                        type: string
+   *                        minLength: 1
+   *                      versionNumber:
+   *                        type: number
+   *                      id:
+   *                        type: string
+   *                        minLength: 1
+   *                      twoCharacterId:
+   *                        type: string
+   *                        minLength: 1
+   *                      name:
+   *                        type: string
+   *                      description: {}
+   *                      conditionCode:
+   *                        type: string
+   *                        minLength: 1
+   *                      assignmentWeight:
+   *                        type: number
+   *                      order:
+   *                        type: number
+   *                    required:
+   *                      - createdAt
+   *                      - updatedAt
+   *                      - versionNumber
+   *                      - id
+   *                      - twoCharacterId
+   *                      - name
+   *                      - conditionCode
+   *                      - assignmentWeight
+   *                      - order
    */
   @Post('assign')
   public getAllExperimentConditions(
@@ -248,7 +400,7 @@ export class ExperimentClientController {
    *                 type: string
    *            description: User Document
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
@@ -284,7 +436,7 @@ export class ExperimentClientController {
    *                 format: binary
    *            description: User Document
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
@@ -324,7 +476,7 @@ export class ExperimentClientController {
    *                type: string
    *            description: Experiment Error from client
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
@@ -352,7 +504,7 @@ export class ExperimentClientController {
    *       produces:
    *         - application/json
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       responses:
    *          '200':
    *            description: Feature flags list
@@ -379,7 +531,7 @@ export class ExperimentClientController {
    *                type: object
    *            description: Filtered Metrics
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
@@ -416,12 +568,42 @@ export class ExperimentClientController {
    *                 type: string
    *            description: Set user aliases
    *       tags:
-   *         - Experiment Point
+   *         - Client Side SDK
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Experiment User aliases added
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - id
+   *                  - createdAt
+   *                  - updatedAt
+   *                  - versionNumber
+   *                  - originalUser
+   *                properties:
+   *                  id:
+   *                    type: string
+   *                    minLength: 1
+   *                  group: {}
+   *                  workingGroup: {}
+   *                  createdAt:
+   *                    type: string
+   *                    minLength: 1
+   *                  updatedAt:
+   *                    type: string
+   *                    minLength: 1
+   *                  versionNumber:
+   *                    type: number
+   *                  originalUser:
+   *                    type: string
+   *                    minLength: 1
    */
   @Post('useraliases')
   public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
