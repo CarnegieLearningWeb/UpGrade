@@ -364,6 +364,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "TYPEORM_MAX_QUERY_EXECUTION_TIME"
+    value     = var.TYPEORM_MAX_QUERY_EXECUTION_TIME
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "TYPEORM_LOGGING"
     value     = var.TYPEORM_LOGGING
   }
