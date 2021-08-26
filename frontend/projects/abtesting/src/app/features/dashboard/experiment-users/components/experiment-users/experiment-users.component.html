@@ -11,18 +11,10 @@
 
     <mat-form-field class="ft-14-600 form-control" *ngIf="entityTypeValue">
       <mat-select class="input" formControlName="groupType">
-        <mat-option *ngFor="let groupType of groupTypes" [value]="groupType.value">
-          {{ groupType.value }}
+        <mat-option *ngFor="let groupType of groupTypes" [value]="groupType">
+          {{ groupType }}
         </mat-option>
       </mat-select>
-    </mat-form-field>
-
-    <mat-form-field class="ft-14-600 form-control input" *ngIf="groupTypeValue">
-      <input
-        matInput
-        [placeholder]="'global.group-custom-type.placeHolder' | translate"
-        formControlName="customGroupName"
-      />
     </mat-form-field>
 
     <mat-form-field class="ft-14-600 form-control input">

@@ -25,13 +25,13 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
   excludeEntitiesForm: FormGroup;
   entityTypes = [{ value: EntityTypes.PARTICIPANT_ID }, { value: EntityTypes.GROUP_ID }];
-  groupTypes = [];
-  groupTypeOther = 'other';
+  groupTypes = new Set();
   groupTypeClass = 'class';
   isEntityLoading$ = this.experimentUserService.isExcludedEntityLoading$;
 
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
+  contexts: string[];
 
   private paginator: MatPaginator;
   private sort: MatSort;
@@ -69,15 +69,19 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.experimentService.fetchContextMetaData();
     this.permissions$ = this.authService.userPermissions$;
     this.allExcludedEntities.paginator = this.paginator;
     this.allExcludedEntities.sort = this.sort;
 
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
-      this.contextMetaData = contextMetaData;
-      if (this.contextMetaData && this.contextMetaData['groupTypes']) {
-        this.contextMetaData['groupTypes'].forEach(element => {
-          this.groupTypes.push({value: element});
+      this.contextMetaData = contextMetaData; 
+      if(contextMetaData['contextMetadata']) {
+        this.contexts = Object.keys(contextMetaData['contextMetadata']) || [];
+        this.contexts.forEach(context => {
+          this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
+            this.groupTypes.add(group);
+          });
         });
       }
     });
@@ -86,25 +90,21 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
       {
         entityType: [EntityTypes.GROUP_ID, Validators.required],
         groupType: [this.groupTypeClass],
-        id: [null, Validators.required],
-        customGroupName: [null]
+        id: [null, Validators.required]
       },
       { validators: ExperimentUserValidators.validateExcludedEntityForm }
     );
   }
 
   excludeEntity() {
-    const { entityType, id, groupType, customGroupName } = this.excludeEntitiesForm.value;
+    const { entityType, id, groupType } = this.excludeEntitiesForm.value;
     this.excludeEntitiesForm.get('id').reset();
-    this.excludeEntitiesForm.get('customGroupName').reset();
     switch (entityType) {
       case EntityTypes.PARTICIPANT_ID:
         this.experimentUserService.excludeUser(id);
         break;
       case EntityTypes.GROUP_ID:
-        groupType === this.groupTypeOther
-          ? this.experimentUserService.excludeGroup(id, customGroupName)
-          : this.experimentUserService.excludeGroup(id, groupType);
+        this.experimentUserService.excludeGroup(id, groupType);
         break;
     }
   }
@@ -120,7 +120,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   }
 
   get groupTypeValue() {
-    return this.excludeEntitiesForm.get('groupType').value === this.groupTypeOther && this.entityTypeValue;
+    return this.excludeEntitiesForm.get('groupType').value === this.entityTypeValue;
   }
 
   get userRole() {
@@ -129,15 +129,11 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
   // For getting custom placeholder
   get getIdPlaceholder() {
-    const { entityType, groupType, customGroupName } = this.excludeEntitiesForm.value;
+    const { entityType, groupType } = this.excludeEntitiesForm.value;
     if (entityType === EntityTypes.PARTICIPANT_ID) {
       return 'Enter participant ID';
     } else {
-      if (groupType === this.groupTypeOther) {
-        return 'Enter ' + (customGroupName || '') + ' ID';
-      } else {
-        return 'Enter ' + groupType + ' ID';
-      }
+      return 'Enter ' + groupType + ' ID';
     }
   }
 

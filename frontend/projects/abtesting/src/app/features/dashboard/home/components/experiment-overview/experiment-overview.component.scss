@@ -29,6 +29,7 @@
 
   .chips {
     margin-top: 5px;
+    margin-bottom: 5px;
   }
 
   .button-container {
@@ -39,7 +40,7 @@
 
   ::ng-deep .mat-chip-list-wrapper {
     max-height: 60px;
-    overflow: scroll;
+    overflow: auto;
   }
 
   ::ng-deep .mat-form-field-label {

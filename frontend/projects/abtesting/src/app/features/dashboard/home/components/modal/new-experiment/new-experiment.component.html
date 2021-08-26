@@ -28,6 +28,8 @@
     </ng-template>
     <home-experiment-design
       [experimentInfo]="experimentInfo"
+      [currentContext]="currentContext"
+      [contextChanged]="contextChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>

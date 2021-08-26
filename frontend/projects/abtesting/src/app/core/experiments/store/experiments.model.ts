@@ -162,11 +162,13 @@ export interface ExperimentPaginationParams {
   sortParams?: IExperimentSortParams;
 }
 
+export interface ISingleContextMetadata {
+  EXP_IDS: string[],
+  EXP_POINTS: string[],
+  GROUP_TYPES: string[]
+}
 export interface IContextMetaData {
-  appContext: string[],
-  expPoints: string[],
-  expIds: string[],
-  groupTypes: string[]
+  [key: string]: ISingleContextMetadata[];
 }
 
 export interface IExperimentGraphInfo {

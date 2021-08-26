@@ -22,6 +22,40 @@
     />
   </mat-form-field>
 
+  <mat-form-field class="ft-14-600 chips">
+    <mat-chip-list #contextList aria-label="Context" formControlName="context" >
+      <mat-chip
+        *ngFor="let context of contexts.value"
+        [selectable]="isChipSelectable"
+        [removable]="isChipRemovable"
+        (removed)="removeChip(context, 'contexts')"
+      >
+        {{ context }}
+        <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+      </mat-chip>
+      <input
+        [placeholder]="'App Context'"
+        #contextInput
+        [matChipInputFor]="contextList"
+        [formControl]="autoCompleteContext"
+        [matAutocomplete]="auto"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addChipOnBlur"
+        (matChipInputTokenEnd)="addChip($event, 'contexts')"
+      />
+    </mat-chip-list>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedAutoCompleteContext($event)">
+      <mat-option *ngFor="let context of experimentContext$ | async" [value]="context">
+        {{ context }}
+      </mat-option>
+    </mat-autocomplete>
+    <mat-error
+      *ngIf="overviewForm.controls.context.hasError('required')"
+    >
+      {{ 'home.new-experiment.overview.context.error.text' | translate }}
+    </mat-error>
+  </mat-form-field>
+
   <div class="property-container">
     <mat-form-field class="ft-14-600 unit-of-assignment">
       <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
@@ -49,23 +83,6 @@
         {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
       </mat-error>
     </mat-form-field>
-
-    <mat-form-field
-      class="ft-14-600 group-type"
-      *ngIf="groupTypeValue"
-    >
-      <input
-        matInput
-        class="ft-14-400"
-        [placeholder]="
-          'global.group-custom-type.placeHolder' | translate
-        "
-        formControlName="customGroupName"
-      />
-      <mat-error *ngIf="overviewForm.controls.customGroupName.hasError('required')">
-        {{ 'home.new-experiment.overview.custom-group-name.error.text' | translate }}
-      </mat-error>
-    </mat-form-field>
   </div>
 
   <mat-form-field class="ft-14-600 consistency-rule">
@@ -82,40 +99,6 @@
       *ngIf="overviewForm.controls.consistencyRule.hasError('required')"
     >
       {{ 'home.new-experiment.overview.consistency-rule.error.text' | translate }}
-    </mat-error>
-  </mat-form-field>
-
-  <mat-form-field class="ft-14-600 chips">
-    <mat-chip-list #contextList aria-label="Context" formControlName="context" >
-      <mat-chip
-        *ngFor="let context of contexts.value"
-        [selectable]="isChipSelectable"
-        [removable]="isChipRemovable"
-        (removed)="removeChip(context, 'contexts')"
-      >
-        {{ context }}
-        <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
-      </mat-chip>
-      <input
-        [placeholder]="'Context'"
-        #contextInput
-        [matChipInputFor]="contextList"
-        [formControl]="autoCompleteContext"
-        [matAutocomplete]="auto"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        [matChipInputAddOnBlur]="addChipOnBlur"
-        (matChipInputTokenEnd)="addChip($event, 'contexts')"
-      />
-    </mat-chip-list>
-    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedAutoCompleteContext($event)">
-      <mat-option *ngFor="let context of experimentContext$ | async" [value]="context">
-        {{ context }}
-      </mat-option>
-    </mat-autocomplete>
-    <mat-error
-      *ngIf="overviewForm.controls.context.hasError('required')"
-    >
-      {{ 'home.new-experiment.overview.context.error.text' | translate }}
     </mat-error>
   </mat-form-field>
 
@@ -156,7 +139,7 @@
     </button>
     <button
       type="button"
-      *ngIf="experimentInfo"
+      *ngIf="experimentInfo && enableSave"
       mat-raised-button
       class="modal-btn default-button"
       (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"

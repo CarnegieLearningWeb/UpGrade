@@ -123,10 +123,7 @@ export class ExperimentService {
 
   public getContextMetaData(): object {
     return {
-      appContext: env.initialization.appContext,
-      expPoints: env.initialization.expPoints,
-      expIds: env.initialization.expIds,
-      groupTypes: env.initialization.groupTypes,
+      contextMetadata: env.initialization.contextMetadata,
     };
   }
 
