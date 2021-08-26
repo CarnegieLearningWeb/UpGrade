@@ -65,6 +65,7 @@ import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } fro
 import { MonitoredPointForExport } from './Experiment/analytics';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
+import { UserNotDefined } from './UserNotDefined';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -144,6 +145,11 @@ describe('Integration Tests', () => {
 
   test('Support Get Assignments', async (done) => {
     await GetAssignments();
+    done();
+  });
+
+  test('User not defined', async (done) => {
+    await UserNotDefined();
     done();
   });
 
