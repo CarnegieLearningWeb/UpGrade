@@ -10,10 +10,7 @@ export default async function setGroupMembership(url: string, userId: string, to
     const groupObj = convertMapToObj(group);
     const response = await fetchDataService(url, token, { id: userId, group: groupObj }, Types.REQUEST_TYPES.POST);
     if (response.status) {
-      return {
-        id: userId,
-        group
-      };
+      return response.data;
     } else {
       throw new Error(JSON.stringify(response.message));
     }

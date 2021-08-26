@@ -11,10 +11,12 @@ import log from './functions/log';
 import setAltUserIds from './functions/setAltUserIds';
 import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
+import init from './functions/init';
 
 export default class UpgradeClient {
     // Endpoints URLs
     private api = {
+        init: null,
         getAllExperimentConditions: null,
         markExperimentPoint: null,
         setGroupMemberShip: null,
@@ -40,6 +42,7 @@ export default class UpgradeClient {
         this.hostUrl = hostUrl;
         this.token = token;
         this.api = {
+            init: `${hostUrl}/api/init`,
             getAllExperimentConditions: `${hostUrl}/api/assign`,
             markExperimentPoint: `${hostUrl}/api/mark`,
             setGroupMemberShip: `${hostUrl}/api/groupmembership`,
@@ -59,6 +62,11 @@ export default class UpgradeClient {
         if (!this.userId) {
             throw new Error('Please provide valid user id.');
         }
+    }
+
+    async init(group?: Map<string, Array<string>>, workingGroup?: Map<string, string>): Promise<Interfaces.IUser> {
+        this.validateClient();
+        return await init(this.api.init, this.userId, this.token, group, workingGroup);
     }
 
     async setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser> {

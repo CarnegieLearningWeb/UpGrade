@@ -29,6 +29,7 @@ import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.FailedExperiment;
 import org.upgradeplatform.responsebeans.FeatureFlag;
 import org.upgradeplatform.responsebeans.ExperimentUser;
+import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 import org.upgradeplatform.responsebeans.Metric;
@@ -62,6 +63,53 @@ public class ExperimentClient implements AutoCloseable {
 	@Override
 	public void close() {
 		this.apiService.close();
+	}
+
+	// Initialize user with userId
+	public void init(final ResponseCallback<InitializeUser> callbacks) {
+		InitializeUser initUser = new InitializeUser(this.userId, null, null);
+		initializeUser(initUser, callbacks);
+	}
+
+	// Initialize user with userId and group
+	public void init(Map<String, List<String>> group, final ResponseCallback<InitializeUser> callbacks) {
+		InitializeUser experimentUser = new InitializeUser(this.userId, group, null);
+		initializeUser(experimentUser, callbacks);
+	}
+
+	// Initialize user with userId, group and workingGroup
+	public void init(Map<String, List<String>> group, Map<String, String> workingGroup,
+					 final ResponseCallback<InitializeUser> callbacks) {
+		InitializeUser experimentUser = new InitializeUser(this.userId, group, workingGroup);
+		initializeUser(experimentUser, callbacks);
+	}
+
+	private void initializeUser(InitializeUser initUser, final ResponseCallback<InitializeUser> callbacks) {
+		// Build a request object and prepare invocation method
+		AsyncInvoker invocation = this.apiService.prepareRequest(INITIALIZE_USER);
+		Entity<InitializeUser> requestContent = Entity.json(initUser);
+
+		// Invoke the method
+		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
+			new InvocationCallback<Response>() {
+
+				@Override
+				public void completed(Response response) {
+					if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+						callbacks.onSuccess(response.readEntity(InitializeUser.class));
+					} else {
+						String status = Response.Status.fromStatusCode(response.getStatus()).toString();
+						ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity(String.class), status);
+						if (callbacks != null)
+							callbacks.onError(error);
+					}
+				}
+
+				@Override
+				public void failed(Throwable throwable) {
+					callbacks.onError(new ErrorResponse(throwable.getMessage()));
+				}
+			}));
 	}
 
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<ExperimentUser> callbacks) {

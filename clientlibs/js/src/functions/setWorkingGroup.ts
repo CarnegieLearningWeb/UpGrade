@@ -10,10 +10,7 @@ export default async function setWorkingGroup(url: string, userId: string, token
     const workingGroupObj = convertMapToObj(workingGroup);
     const response = await fetchDataService(url, token, { id: userId, workingGroup: workingGroupObj }, Types.REQUEST_TYPES.POST);
     if (response.status) {
-      return {
-        id: userId,
-        workingGroup
-      };
+      return response.data;
     } else {
       throw new Error(JSON.stringify(response.message));
     }
