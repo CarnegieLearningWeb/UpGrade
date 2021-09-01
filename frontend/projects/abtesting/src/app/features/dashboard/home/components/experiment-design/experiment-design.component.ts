@@ -60,7 +60,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
-
+  
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,

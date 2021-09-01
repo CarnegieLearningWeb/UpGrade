@@ -1,5 +1,5 @@
 import { Component, Inject, ViewChild, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MatSnackBar, MAT_DIALOG_DATA } from '@angular/material';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -22,7 +22,8 @@ export class NewExperimentComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private _snackBar: MatSnackBar
   ) {
     if (this.data) {
       this.experimentInfo = this.data.experiment;
@@ -57,18 +58,22 @@ export class NewExperimentComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
+        this.onNoClick();
       case NewExperimentDialogEvents.SAVE_DATA:
         this.newExperimentData = {
           ...this.experimentInfo,
           ...this.newExperimentData,
           ...formData
         };
+        this.openSnackBar();
         this.experimentService.updateExperiment(this.newExperimentData);
-        this.onNoClick();
         break;
     }
   }
 
+  openSnackBar() {
+    this._snackBar.open(`Experiment changes are updated successfully!`, null, { duration: 2000 })
+  }
   stepChanged(event) {
     this.selectedStepperIndex = event.selectedIndex;
   }
