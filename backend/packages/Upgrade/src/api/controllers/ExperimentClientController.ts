@@ -7,7 +7,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { IExperimentAssignment, ISingleMetric, IGroupMetric } from 'upgrade_types';
+import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR} from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -292,13 +292,26 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  public blobLog(@Req() request: express.Request): Promise<Log[]> {
-    return new Promise((resolve) => {
+  public blobLog(@Req() request: express.Request): any {
+    return new Promise((resolve, reject) => {
       request.on('readable', async (data) => {
         const blobData = JSON.parse(request.read());
-        const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
-        resolve(response);
+        try {
+          // The function will throw error if userId doesn't exist
+          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
+          resolve(response);
+        } catch (error) {
+          // The error is rejected so promise can now handle this error
+          reject(error);
+        }
       });
+    }).catch(error => {
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: error.message,
+        })
+      );
     });
   }
 
