@@ -185,6 +185,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   removeConditionOrPartition(type: string, groupIndex: number) {
     this[type].removeAt(groupIndex);
+    const deletedConditionCode = this.experimentInfo.conditions.find(condition => condition.order === groupIndex+1).id;
+    delete this.experimentInfo.conditions[groupIndex]
+    if (this.experimentInfo.revertTo == deletedConditionCode) {
+      this.experimentInfo.revertTo = null;
+    }
     this.updateView();
   }
 
