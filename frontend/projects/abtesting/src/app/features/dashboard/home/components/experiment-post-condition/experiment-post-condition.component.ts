@@ -17,7 +17,6 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   @Input() experimentInfo: ExperimentVM;
   @Input() newExperimentData: Partial<ExperimentVM>;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
-  @Input() experiment: ExperimentVM;
   postExperimentRuleForm: FormGroup;
   postExperimentRules = [
     { value: POST_EXPERIMENT_RULE.CONTINUE },
@@ -26,34 +25,34 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   experimentConditions = [
     { value: 'default', id: 'default' }
   ];
-  newExperimentStatSub: Subscription;
+  experimentSub: Subscription;
 
   constructor(private experimentService: ExperimentService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _formBuilder: FormBuilder) { }
 
   ngOnChanges() {
-      this.experimentConditions = [
-        { value: 'default', id: 'default' }
-      ];
-      if (this.experimentInfo) {
-        this.newExperimentStatSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe(stat => {
-          this.newExperimentData = stat;
-          this.experimentInfo = stat;
-        });
-      } else if (this.data) {
-        this.experimentInfo = this.data.experiment;
-        this.newExperimentData = this.data.experiment;
-      }
+    this.experimentConditions = [
+      { value: 'default', id: 'default' }
+    ];
+    if (this.experimentInfo) {
+      this.experimentSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe(experimentData => {
+        this.newExperimentData = experimentData;
+        this.experimentInfo = experimentData;
+      });
+    } else if (this.data) {
+      this.experimentInfo = this.data.experiment;
+      this.newExperimentData = this.data.experiment;
+    }
 
-      if (this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
-        this.newExperimentData.conditions.map(value => {
-          const isConditionExist = this.experimentConditions.find((condition) => condition.id === value.id);
-          this.experimentConditions = isConditionExist
-            ? this.experimentConditions
-            : [ ...this.experimentConditions, { value: value.conditionCode, id: value.id }];
-        });
-      }
+    if (this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
+      this.newExperimentData.conditions.map(value => {
+        const isConditionExist = this.experimentConditions.find((condition) => condition.id === value.id);
+        this.experimentConditions = isConditionExist
+          ? this.experimentConditions
+          : [ ...this.experimentConditions, { value: value.conditionCode, id: value.id }];
+      });
+    }
   }
 
   ngOnInit() {

@@ -7,6 +7,7 @@ import {
   ExperimentVM
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'home-new-experiment',
@@ -23,7 +24,8 @@ export class NewExperimentComponent implements OnInit {
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private translate: TranslateService
   ) {
     if (this.data) {
       this.experimentInfo = this.data.experiment;
@@ -72,7 +74,7 @@ export class NewExperimentComponent implements OnInit {
   }
 
   openSnackBar() {
-    this._snackBar.open(`Experiment changes are updated successfully!`, null, { duration: 2000 })
+    this._snackBar.open(this.translate.instant('global.save-confirmation.message.text') , null, { duration: 2000 });
   }
   stepChanged(event) {
     this.selectedStepperIndex = event.selectedIndex;
