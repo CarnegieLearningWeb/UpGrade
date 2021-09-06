@@ -18,7 +18,7 @@ export class UserRepository extends Repository<User> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('UserRepository', 'upsertUser', { user }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
     return result.raw[0];
   }
@@ -32,7 +32,7 @@ export class UserRepository extends Repository<User> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('UserRepository', 'updateUserRole', { email, role }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -46,13 +46,8 @@ export class UserRepository extends Repository<User> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'UserRepository',
-          'deleteUserByEmail',
-          { email },
-          errorMsg
-        );
-        throw new Error(errorMsgString);
+        const errorMsgString = repositoryError('UserRepository', 'deleteUserByEmail', { email }, errorMsg);
+        throw errorMsgString;
       });
     return result.raw;
   }

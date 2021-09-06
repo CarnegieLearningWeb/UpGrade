@@ -19,7 +19,7 @@ export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIn
           { rawData },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -39,7 +39,7 @@ export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIn
           { userId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

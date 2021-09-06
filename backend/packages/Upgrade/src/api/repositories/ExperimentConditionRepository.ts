@@ -45,7 +45,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentConditionRepository', 'deleteByIds', { ids }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -69,7 +69,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
           { conditionDocs },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -84,7 +84,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentConditionRepository', 'deleteCondition', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 

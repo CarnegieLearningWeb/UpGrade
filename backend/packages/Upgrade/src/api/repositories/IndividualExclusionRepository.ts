@@ -20,7 +20,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'saveRawJson', { rawDataArray }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -42,7 +42,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
           { userId, experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -59,7 +59,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -80,7 +80,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
           { userId, experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

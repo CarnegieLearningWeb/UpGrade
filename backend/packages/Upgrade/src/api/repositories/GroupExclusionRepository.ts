@@ -20,7 +20,7 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'saveRawJson', { rawDataArray }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -44,7 +44,7 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
           { groupIds, experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -60,7 +60,7 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -78,7 +78,7 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
           { experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

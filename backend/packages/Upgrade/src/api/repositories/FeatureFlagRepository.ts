@@ -14,7 +14,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FeatureFlagRepository', 'insertFeatureFlag', { flagDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -30,7 +30,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FeatureFlagRepository', 'deleteById', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -50,7 +50,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
           { flagId, status },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -66,7 +66,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FeatureFlagRepository', 'updateFeatureFlag', { flagDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

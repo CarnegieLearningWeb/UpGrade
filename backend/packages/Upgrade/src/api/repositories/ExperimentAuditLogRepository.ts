@@ -22,7 +22,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
     }
     return queryBuilder.getMany().catch((error: any) => {
       const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { limit, offset }, error);
-      throw new Error(errorMsg);
+      throw errorMsg;
     });
   }
 
@@ -32,7 +32,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .getCount()
       .catch((error: any) => {
         const errorMsg = repositoryError('ExperimentAuditLogRepository', 'paginatedFind', { filter }, error);
-        throw new Error(errorMsg);
+        throw errorMsg;
       });
   }
 
@@ -52,7 +52,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .execute()
       .catch((error: any) => {
         const errorMsg = repositoryError('ExperimentAuditLogRepository', 'saveRawJson', { type, data, user }, error);
-        throw new Error(errorMsg);
+        throw errorMsg;
       });
 
     return result.raw;
@@ -72,7 +72,7 @@ export class ExperimentAuditLogRepository extends Repository<ExperimentAuditLog>
       .execute()
       .catch((error: any) => {
         const errorMsgString = repositoryError('ExperimentAuditLogRepository', 'clearLogs', {}, error);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
