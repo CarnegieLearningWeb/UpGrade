@@ -684,10 +684,12 @@ export class ExperimentController {
    *            description: New Experiment is created
    *            schema:
    *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: default as ConditionCode is not allowed
    *          '401':
    *            description: AuthorizationRequiredError
    *          '500':
-   *            description: Inert Error in database
+   *            description: Insert Error in database
    */
 
   @Post()
@@ -726,7 +728,7 @@ export class ExperimentController {
    *          '401':
    *            description: AuthorizationRequiredError
    *          '500':
-   *            description: Inert Error in database
+   *            description: Insert Error in database
    */
 
   @Post('/batch')

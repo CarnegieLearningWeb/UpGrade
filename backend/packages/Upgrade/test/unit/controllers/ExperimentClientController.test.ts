@@ -85,7 +85,6 @@ describe('Experiment Client Controller Testing', () => {
   }
 
   test('Post request for /api/init', async done => {
-    // creating express app here
     await request(app)
       .post('/api/init')
       .send({
@@ -180,7 +179,6 @@ describe('Experiment Client Controller Testing', () => {
   //     .set('Accept', 'application/json')
   //     .expect('Content-Type', /json/)
   //     .expect(200);
-  //     // remaining
   //   done();
   // });
 
@@ -211,13 +209,11 @@ describe('Experiment Client Controller Testing', () => {
     await request(app)
       .post('/api/metric')
       .send({
-          userId: "u21",
-          alia: ["abc"]
+          metricUnit: {},
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
-      // ok done but post request better
     done();
   });
 

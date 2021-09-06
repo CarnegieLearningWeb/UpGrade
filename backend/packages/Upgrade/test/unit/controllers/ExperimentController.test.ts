@@ -172,6 +172,13 @@ describe('Experiment Controller Testing', () => {
     done();
   });
 
+  test('Put request for /api/experiments/:id', async done => {
+    await request(app)
+      .put(`/api/experiments/${expIdNotTypeUUID}`)
+      .expect(500);
+    done();
+  });
+
   test('Post request for /api/experiments/state', async done => {
     await request(app)
       .post('/api/experiments/state')

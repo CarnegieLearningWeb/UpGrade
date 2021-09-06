@@ -158,6 +158,8 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '500':
+   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
   @Post('groupmembership')
   public setGroupMemberShip(
@@ -195,6 +197,8 @@ export class ExperimentClientController {
    *            description: Set Group Membership
    *            schema:
    *              $ref: '#/definitions/initResponse'
+   *          '500':
+   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
   @Post('workinggroup')
   public setWorkingGroup(
@@ -213,23 +217,20 @@ export class ExperimentClientController {
    *         - application/json
    *       parameters:
    *         - in: body
-   *           name: userId
+   *           name: experimentUser
    *           required: true
    *           schema:
-   *             type: string
-   *           description: User ID
-   *         - in: body
-   *           name: experimentPoint
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Experiment Point
-   *         - in: body
-   *           name: partitionId
-   *           required: true
-   *           schema:
-   *             type: string
-   *           description: Partition ID
+   *             type: object
+   *             properties:
+   *               userId:
+   *                 type: string
+   *               experimentPoint:
+   *                 type: string
+   *               partitionId:
+   *                 type: string
+   *               condition:
+   *                 type: string
+   *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
    *       produces:
@@ -272,6 +273,8 @@ export class ExperimentClientController {
    *                - enrollmentCode
    *                - userId
    *                - condition
+   *          '500':
+   *            description: User not defined 
    */
   @Post('mark')
   public markExperimentPoint(
@@ -371,6 +374,8 @@ export class ExperimentClientController {
    *                      - conditionCode
    *                      - assignmentWeight
    *                      - order
+   *          '500':
+   *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
   @Post('assign')
   public getAllExperimentConditions(
@@ -397,7 +402,9 @@ export class ExperimentClientController {
    *               userId:
    *                 type: string
    *               value:
-   *                 type: string
+   *                 type: array
+   *                 items:
+   *                   type: object
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -406,6 +413,8 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('log')
   public log(
@@ -421,7 +430,7 @@ export class ExperimentClientController {
    *    post:
    *       description: Post blob log data
    *       consumes:
-   *         - multipart/form-data
+   *         - application/json
    *       parameters:
    *          - in: body
    *            name: data
@@ -432,8 +441,9 @@ export class ExperimentClientController {
    *               userId:
    *                 type: string
    *               value:
-   *                 type: string
-   *                 format: binary
+   *                 type: array
+   *                 items:
+   *                   type: object
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -472,6 +482,8 @@ export class ExperimentClientController {
    *                type: string
    *              experimentPoint:
    *                type: string
+   *              userId:
+   *                type: string
    *              experimentId:
    *                type: string
    *            description: Experiment Error from client
@@ -482,6 +494,8 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Client side reported error
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('failed')
   public failedExperimentPoint(
@@ -498,7 +512,7 @@ export class ExperimentClientController {
 
   /**
    * @swagger
-   * /featureflags:
+   * /featureflag:
    *    get:
    *       description: Get all feature flags using SDK
    *       produces:
@@ -537,6 +551,8 @@ export class ExperimentClientController {
    *       responses:
    *          '200':
    *            description: Filtered Metrics
+   *          '500':
+   *            description: Insert error in database 
    */
   @Post('metric')
   public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<Metric[]> {
@@ -604,6 +620,8 @@ export class ExperimentClientController {
    *                  originalUser:
    *                    type: string
    *                    minLength: 1
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('useraliases')
   public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
