@@ -63,11 +63,8 @@ export class AuthService {
     const document = await this.userRepository.find({ email });
     if (document.length === 0) {
       this.log.info(`User not found in database`);
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
+      throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in the database' }));
     }
-
-    // If request specified a G Suite domain:
-    // const domain = payload['hd'];
     return document[0];
   }
 

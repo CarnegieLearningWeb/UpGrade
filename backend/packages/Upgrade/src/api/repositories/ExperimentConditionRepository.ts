@@ -23,14 +23,14 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .setParameter('order', conditionDoc.order)
       .returning('*')
       .execute()
-      .catch((errorMsg: any) => {
+      .catch((error: any) => {
         const errorMsgString = repositoryError(
           'ExperimentConditionRepository',
           'upsertExperimentCondition',
           { conditionDoc },
-          errorMsg
+          error
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw[0];
@@ -92,7 +92,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
     const experimentConditions = await this.createQueryBuilder('condition')
       .select('condition.twoCharacterId')
       .getMany();
-    const uniqueIdentifier = experimentConditions.map(experimentCondition => experimentCondition.twoCharacterId);
+    const uniqueIdentifier = experimentConditions.map((experimentCondition) => experimentCondition.twoCharacterId);
     return uniqueIdentifier;
   }
 }

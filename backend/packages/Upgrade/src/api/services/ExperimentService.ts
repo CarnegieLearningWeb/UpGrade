@@ -136,13 +136,13 @@ export class ExperimentService {
 
     // order for condition
     experiment.conditions.forEach((condition, index) => {
-      const newCondition = {...condition, order: index + 1};
+      const newCondition = { ...condition, order: index + 1 };
       experiment.conditions[index] = newCondition;
     });
 
     // order for partition
     experiment.partitions.forEach((partition, index) => {
-      const newPartition = {...partition, order: index + 1};
+      const newPartition = { ...partition, order: index + 1 };
       experiment.partitions[index] = newPartition;
     });
     return this.addExperimentInDB(experiment, currentUser);
@@ -233,7 +233,12 @@ export class ExperimentService {
       data = { ...data, startOn: scheduleDate };
     }
     // add experiment audit logs
-    await this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED, data, user, entityManager);
+    await this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED,
+      data,
+      user,
+      entityManager
+    );
 
     const timeLogDate = new Date();
 
@@ -247,12 +252,7 @@ export class ExperimentService {
     // updating the experiment and stateTimeLog
     const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
     const [updatedState, updatedStateTimeLog] = await Promise.all([
-      this.experimentRepository.updateState(
-        experimentId,
-        state,
-        scheduleDate,
-        entityManager
-      ),
+      this.experimentRepository.updateState(experimentId, state, scheduleDate, entityManager),
       stateTimeLogRepo.save(stateTimeLogDoc),
     ]);
 
@@ -318,7 +318,7 @@ export class ExperimentService {
     return this.create(experiment, user);
   }
 
-  private async updateExperimentSchedules(experimentId: string,  entityManager?: EntityManager): Promise<void> {
+  private async updateExperimentSchedules(experimentId: string, entityManager?: EntityManager): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     const experiment = await experimentRepo.findByIds([experimentId]);
     if (experiment.length > 0 && this.scheduledJobService) {
@@ -424,7 +424,7 @@ export class ExperimentService {
   private checkConditionCodeDefault(conditions: ExperimentCondition[]): any {
     // Check for conditionCode is 'default' then return error:
     const hasDefaultConditionCode = conditions.filter(
-      condition => condition.conditionCode.toUpperCase() === 'DEFAULT'
+      (condition) => condition.conditionCode.toUpperCase() === 'DEFAULT'
     );
     if (hasDefaultConditionCode.length) {
       throw new BadRequestError(
@@ -483,8 +483,8 @@ export class ExperimentService {
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
               return rest;
-                } )) ||
-              [];
+            })) ||
+          [];
 
         // creating partition docs
         const partitionDocToSave =
@@ -597,7 +597,8 @@ export class ExperimentService {
             ) as any,
           ]);
         } catch (error) {
-          throw new Error(`Error in creating conditions, partitions, queries "updateExperimentInDB" ${error}`);
+          this.log.error(`Error in creating conditions, partitions, queries "updateExperimentInDB"`);
+          throw error;
         }
 
         const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
@@ -762,7 +763,8 @@ export class ExperimentService {
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (error) {
-        throw new Error(`Error in creating experiment document "addExperimentInDB" ${error}`);
+        this.log.error('Error in adding experiment in DB');
+        throw new Error(error);
       }
       // creating condition docs
       const conditionDocsToSave =
