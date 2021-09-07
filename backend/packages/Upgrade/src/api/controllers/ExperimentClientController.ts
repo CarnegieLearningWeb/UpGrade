@@ -274,7 +274,7 @@ export class ExperimentClientController {
    *                - userId
    *                - condition
    *          '500':
-   *            description: User not defined 
+   *            description: User not defined
    */
   @Post('mark')
   public markExperimentPoint(
@@ -552,7 +552,7 @@ export class ExperimentClientController {
    *          '200':
    *            description: Filtered Metrics
    *          '500':
-   *            description: Insert error in database 
+   *            description: Insert error in database
    */
   @Post('metric')
   public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<Metric[]> {
