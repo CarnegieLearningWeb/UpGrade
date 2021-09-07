@@ -51,14 +51,15 @@ export class NewExperimentComponent implements OnInit {
           ...this.newExperimentData,
           ...formData
         };
-        
+
+        this.contextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
+
         if (this.experimentInfo) {
           this.currentContext = this.experimentInfo.context[0]
         }
 
-        this.contextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
-        
         this.currentContext  = this.newExperimentData.context[0];
+
         this.stepper.next();
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
           this.newExperimentData.queries = [];
