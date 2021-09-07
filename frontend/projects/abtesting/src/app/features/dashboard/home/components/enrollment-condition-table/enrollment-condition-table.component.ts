@@ -20,7 +20,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   ];
   displayedColumns: string[] = [];
   isStatLoading = true;
-  experimentConditionSub: Subscription;
+  experimentStateSub: Subscription;
 
   constructor(private experimentService: ExperimentService) {}
 
@@ -33,7 +33,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   }
 
   ngOnInit() {
-    this.experimentConditionSub = this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
+    this.experimentStateSub = this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
       this.experimentData = [];
       if (stat && stat.conditions) {
         this.isStatLoading = false;
@@ -84,7 +84,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   }
 
   ngOnDestroy() {
-    this.experimentConditionSub.unsubscribe();
+    this.experimentStateSub.unsubscribe();
   }
 
   get AssignmentUnit() {
