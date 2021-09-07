@@ -49,7 +49,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   graphInfoSub: Subscription;
   isGraphLoading$ = this.experimentService.isGraphLoading$;
 
-  constructor(private experimentService: ExperimentService) { }
+  constructor(private experimentService: ExperimentService) { this.formateXAxisLabel = this.formateXAxisLabel.bind(this); }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.experiment) {
@@ -79,12 +79,15 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       this.populateGraphData(graphInfo);
     });
     // Used to fetch last 7 days graph data
-    this.experimentService.setGraphRange(this.selectedDateFilter, this.experiment.id);
+    this.experimentService.setGraphRange(this.selectedDateFilter, this.experiment.id, -new Date().getTimezoneOffset());
   }
 
   // remove empty series data labels
   formateXAxisLabel(value) {
-    return !isNaN(value) ? '' : value.substring(0, 3);
+    if(this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS) {
+      return !isNaN(value) ? '' : value.substring(0, 5);
+    }
+    return !isNaN(value) ? '' : value.substring(0, 3); 
   }
 
   formateYAxisLabel(value) {
@@ -145,7 +148,9 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         }
       });
       return {
-        name: this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS ? days[new Date(graphData.date).getDay()] : months[new Date(graphData.date).getMonth()],
+        name: this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS 
+          ? this.dateToString(new Date(graphData.date), days)
+          : months[new Date(graphData.date).getMonth()],
         series
       }
     });
@@ -154,7 +159,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   applyExperimentFilter(type: ExperimentFilterType) {
     switch (type) {
       case ExperimentFilterType.DATE_FILTER:
-        this.experimentService.setGraphRange(this.selectedDateFilter, this.experiment.id);
+        this.experimentService.setGraphRange(this.selectedDateFilter, this.experiment.id, -new Date().getTimezoneOffset());
         break;
       default:
         this.populateGraphData(this.copyGraphData);
@@ -199,6 +204,15 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     this.populateGraphData(this.copyGraphData);
   }
 
+  dateToString(date: Date, days: string[]){
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yy = date.getFullYear();
+    const day = days[date.getDay()].substring(0, 3);
+    const new_date = mm + '/' + dd + '/' + yy + '-' + day;
+    return new_date;
+  }
+  
   // Getters
   get ExperimentFilter() {
     return ExperimentFilterType;
@@ -209,7 +223,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   }
 
   ngOnDestroy() {
-    this.experimentService.setGraphRange(null, this.experiment.id);
+    this.experimentService.setGraphRange(null, this.experiment.id, -new Date().getTimezoneOffset());
     this.graphInfoSub.unsubscribe();
   }
 }

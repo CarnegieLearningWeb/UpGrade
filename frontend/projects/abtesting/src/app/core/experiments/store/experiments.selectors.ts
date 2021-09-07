@@ -86,11 +86,6 @@ export const selectAllExperimentNames = createSelector(
   (state) => state.allExperimentNames
 );
 
-export const selectExperimentContext = createSelector(
-  selectExperimentState,
-  (state) => state.context
-);
-
 export const selectIsGraphLoading = createSelector(
   selectExperimentState,
   (state) => state.isGraphInfoLoading
@@ -119,7 +114,7 @@ export const selectExperimentStatById = createSelector(
   }
 );
 
-export const selectExperimentPointsAndIds = createSelector(
+export const selectContextMetaData = createSelector(
   selectExperimentState,
-  (state) => state.expPointsAndIds
+  (state) => state.contextMetaData
 );

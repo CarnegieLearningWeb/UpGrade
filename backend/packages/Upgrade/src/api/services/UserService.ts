@@ -14,8 +14,8 @@ export class UserService {
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async create(user: User): Promise<User> {
-    this.log.info('Create a new user => ', JSON.stringify(user, undefined, 2));
+  public async upsertUser(user: User): Promise<User> {
+    this.log.info('Upsert a new user => ', JSON.stringify(user, undefined, 2));
     return this.userRepository.upsertUser(user);
   }
 
@@ -67,6 +67,10 @@ export class UserService {
 
   public updateUserRole(email: string, role: UserRole): Promise<User> {
     return this.userRepository.updateUserRole(email, role);
+  }
+
+  public deleteUser(email: string): Promise<User> {
+    return this.userRepository.deleteUserByEmail(email);
   }
 
   private postgresSearchString(type: string): string {

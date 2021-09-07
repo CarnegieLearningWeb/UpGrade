@@ -28,7 +28,7 @@ export default async function LogOperations(): Promise<void> {
   const queryService = Container.get<QueryService>(QueryService);
   const emailAddress = 'vivekfitkariwala@gmail.com';
 
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create experiment
   await experimentService.create(experimentObject as any, user);

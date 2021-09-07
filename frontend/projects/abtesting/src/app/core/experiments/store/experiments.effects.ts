@@ -24,8 +24,7 @@ import {
   selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
-  selectExperimentContext,
-  selectExperimentPointsAndIds
+  selectContextMetaData
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
@@ -166,7 +165,7 @@ export class ExperimentEffects {
       switchMap(({ experimentId, experimentState }) =>
         this.experimentDataService.updateExperimentState(experimentId, experimentState).pipe(
           switchMap((result: Experiment) => [
-            experimentAction.actionUpdateExperimentStateSuccess({ experiment: result[0] })
+            experimentAction.actionUpdateExperimentStateSuccess({ experiment: result })
           ]),
           catchError(() => [experimentAction.actionUpdateExperimentStateFailure()])
         )
@@ -259,16 +258,17 @@ export class ExperimentEffects {
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionFetchExperimentGraphInfo),
-        map(action => ({ experimentId: action.experimentId, range: action.range})),
-        filter(({ experimentId, range }) => !!experimentId && !!range),
+        map(action => ({ experimentId: action.experimentId, range: action.range, clientOffset: action.clientOffset})),
+        filter(({ experimentId, range, clientOffset }) => !!experimentId && !!range && !!clientOffset),
         withLatestFrom(
           this.store$.pipe(select(selectExperimentGraphInfo))
         ),
-        mergeMap(([{ experimentId, range }, graphData]) => {
+        mergeMap(([{ experimentId, range, clientOffset }, graphData]) => {
           if (!graphData) {
             const params = {
               experimentId,
-              dateEnum: range
+              dateEnum: range,
+              clientOffset
             };
             this.store$.dispatch(experimentAction.actionSetIsGraphLoading({ isGraphInfoLoading: true }));
             return this.experimentDataService.fetchExperimentGraphInfo(params).pipe(
@@ -288,11 +288,11 @@ export class ExperimentEffects {
     () =>
       this.actions$.pipe(
         ofType(experimentAction.actionSetGraphRange),
-        map(action => ({ experimentId: action.experimentId, range: action.range })),
+        map(action => ({ experimentId: action.experimentId, range: action.range, clientOffset: action.clientOffset })),
         filter(({ experimentId }) => !!experimentId),
-        tap(({ experimentId, range }) => {
+        tap(({ experimentId, range, clientOffset }) => {
           if (range) {
-            this.store$.dispatch(experimentAction.actionFetchExperimentGraphInfo({ experimentId, range }));
+            this.store$.dispatch(experimentAction.actionFetchExperimentGraphInfo({ experimentId, range, clientOffset}));
           } else {
             this.store$.dispatch(experimentAction.actionSetExperimentGraphInfo({ graphInfo: null }));
           }
@@ -344,33 +344,17 @@ export class ExperimentEffects {
     { dispatch: false }
   );
 
-  fetchExperimentContext$ = createEffect(() =>
+  fetchContextMetaData$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(experimentAction.actionFetchExperimentContext),
+      ofType(experimentAction.actionFetchContextMetaData),
       withLatestFrom(
-        this.store$.pipe(select(selectExperimentContext))
+        this.store$.pipe(select(selectContextMetaData))
       ),
-      filter(([, context]) => !context.length),
+      filter(([, contextMetaData]) => !Object.keys(contextMetaData).length),
       switchMap(() =>
-        this.experimentDataService.fetchExperimentContext().pipe(
-          map((context: string[]) => experimentAction.actionFetchExperimentContextSuccess({ context })),
-          catchError(() => [experimentAction.actionFetchExperimentContextFailure()])
-        )
-      )
-    )
-  );
-
-  fetchExperimentPointsAndIds$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(experimentAction.actionFetchExperimentPointsAndIds),
-      withLatestFrom(
-        this.store$.pipe(select(selectExperimentPointsAndIds))
-      ),
-      filter(([, expPointsAndIds]) => !Object.keys(expPointsAndIds).length),
-      switchMap(() =>
-        this.experimentDataService.fetchExperimentPointsAndIds().pipe(
-          map((expPointsAndIds: object) => experimentAction.actionFetchExperimentPointsAndIdsSuccess({ expPointsAndIds })),
-          catchError(() => [experimentAction.actionFetchExperimentPointsAndIdsFailure()])
+        this.experimentDataService.fetchContextMetaData().pipe(
+          map((contextMetaData: object) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData })),
+          catchError(() => [experimentAction.actionFetchContextMetaDataFailure()])
         )
       )
     )

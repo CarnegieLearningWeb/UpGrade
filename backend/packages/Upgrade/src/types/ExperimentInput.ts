@@ -1,6 +1,7 @@
 import { IsNotEmpty, ValidateIf, ValidateNested } from 'class-validator';
 import { ExperimentCondition } from '../api/models/ExperimentCondition';
 import { ExperimentPartition } from '../api/models/ExperimentPartition';
+import { StateTimeLog } from '../api/models/StateTimeLogs';
 import {
   EXPERIMENT_STATE,
   CONSISTENCY_RULE,
@@ -23,8 +24,6 @@ export class ExperimentInput {
   @IsNotEmpty()
   public state: EXPERIMENT_STATE;
 
-  public startDate: Date;
-
   @ValidateIf((o) => o.state === EXPERIMENT_STATE.SCHEDULED)
   @IsNotEmpty()
   public startOn: Date;
@@ -42,8 +41,6 @@ export class ExperimentInput {
 
   public endOn: Date;
 
-  public endDate: Date;
-
   public revertTo: string;
 
   public tags: string[];
@@ -57,6 +54,9 @@ export class ExperimentInput {
 
   @ValidateNested()
   public partitions: ExperimentPartition[];
+
+  @ValidateNested()
+  public stateTimeLogs: StateTimeLog[];
 
   @ValidateNested()
   public queries: Query[];

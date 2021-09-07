@@ -135,7 +135,7 @@
         </div>
 
         <div class="experiment-info-section">
-          <div class="section-data end-criteria-container">
+          <div class="section-data section-data--fixed end-criteria-container">
             <span class="ft-16-600 section-data-title">{{ 'home.view-experiment.ending-criteria.text' | translate }}</span>
             <ng-container *ngIf="experiment.endOn || experiment.enrollmentCompleteCondition; else noCriteriaTemplate">
               <!-- if we have custom ending criteria -->
@@ -144,7 +144,7 @@
                   (
                 </span>
                 <span
-                  *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else endingCriteriaCommonTempReadOnly"
+                  *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endingCriteriaCommonTempReadOnly"
                   (click)="updateEndingCriteria()"
                   [ngClass]="{'end-criteria-underline--blue': permissions?.experiments.update}"
                 >
@@ -161,11 +161,15 @@
                     class="ft-18-700 end-criteria end-criteria--data end-criteria--text"
                     *ngIf="endCondition?.groupCount as groupCount"
                   >
-                    {{
-                      groupCount +
-                        ' ' +
-                      (experiment.group | groupTypePlural: groupCount)
-                    }}
+                    {{ groupCount + ' ' }}
+                    <span
+                      *ngIf="groupCount < 2; else groupTypePlural"
+                    >
+                      {{ 'global.group-type-singular.text' | translate: { groupType: experiment.group }  }}
+                    </span>
+                    <ng-template #groupTypePlural>
+                      <span>{{ 'global.group-type-plural.text' | translate: { groupType: experiment.group } }}</span>
+                    </ng-template>
                   </span>
                   <span class="ft-18-700 end-criteria end-criteria--text" *ngIf="endCondition?.userCount && endCondition.groupCount">
                     {{ 'home.view-experiment.ending-criteria.and.text' | translate }}
@@ -189,7 +193,7 @@
                 </span>
                 <mat-icon
                   class="edit-icon"
-                  *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete"
+                  *ngIf="permissions?.experiments.update && !isExperimentStateCancelled"
                 >
                   create
                 </mat-icon>
@@ -197,7 +201,7 @@
 
               <!-- if we have end date -->
               <span class="ft-18-700 end-criteria" *ngIf="experiment.endOn">
-                <ng-container *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else endOnReadOnly">
+                <ng-container *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else endOnReadOnly">
                   <span class="end-criteria-underline--grey" (click)="updateEndingCriteria()">
                     {{ experiment.endOn | formatDate: 'medium date' }}
                   </span>
@@ -214,7 +218,7 @@
             <ng-template #noCriteriaTemplate>
               <span
                 class="ft-18-700 end-criteria"
-                *ngIf="permissions?.experiments.update && !isStateCancelledOrComplete; else noCriteriaTemplateReadOnly"
+                *ngIf="permissions?.experiments.update && !isExperimentStateCancelled; else noCriteriaTemplateReadOnly"
               >
                 <span (click)="updateEndingCriteria()" class="end-criteria-underline--grey">
                   {{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}
@@ -226,6 +230,19 @@
             <ng-template #noCriteriaTemplateReadOnly>
               <span class="ft-18-700 end-criteria">{{ 'home.view-experiment.ending-criteria.no-criteria.text' | translate }}</span>
             </ng-template>
+          </div>
+
+          <!-- Enrollment Time Logs -->
+          <div class="section-data section-data">
+            <span class="ft-16-600 section-data-title">
+              {{ 'home.view-experiment.enrollment-time-logs.title.text' | translate | uppercase }}
+            </span>
+            <span 
+              class="ft-18-700 section-data-value section-data-value--editable"
+              (click)="openDialog(DialogType.STATE_TIME_LOGS)"
+            >
+            {{ 'home.view-experiment.enrollment-time-logs.text' | translate }}
+            </span>
           </div>
         </div>
       </div>
@@ -257,14 +274,15 @@
           </span>
         </div>
       </div>
-      <div>
-        <mat-checkbox [checked]="experiment.logging" class="ft-14-700" color="primary"
+
+      <!-- Logging -->
+      <div class="logging">
+        <mat-checkbox [checked]="experiment.logging" class="ft-16-600" color="primary"
         (change)="toggleVerboseLogging($event)">
-          {{ 'home.view-experiment.logging.text' | translate }}
+          {{ 'home.view-experiment.logging.text' | translate | uppercase}}
         </mat-checkbox>
       </div>
     </div>
-    
 
     <!-- Experiment Conditions Table -->
     <div class="table-container">

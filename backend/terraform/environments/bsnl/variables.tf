@@ -29,6 +29,7 @@ variable "MONITOR_PASSWORD"{}
 variable "SWAGGER_PASSWORD"{}
 variable "TYPEORM_SYNCHRONIZE"{}
 variable "TOKEN_SECRET_KEY"{}
+variable "TYPEORM_MAX_QUERY_EXECUTION_TIME" {}
 variable "AUTH_CHECK"{}
 
 # CICD variables

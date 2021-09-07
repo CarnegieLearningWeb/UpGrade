@@ -22,13 +22,13 @@ import { IndividualAssignment } from '../models/IndividualAssignment';
 import { GroupAssignment } from '../models/GroupAssignment';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
-import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { Experiment } from '../models/Experiment';
 import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
 import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { In } from 'typeorm';
+import uuid from 'uuid/v4';
 import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { PreviewUser } from '../models/PreviewUser';
@@ -48,6 +48,8 @@ import isequal from 'lodash.isequal';
 import flatten from 'lodash.flatten';
 import { ILogInput } from 'upgrade_types';
 import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
+import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
+import { StateTimeLog } from '../models/StateTimeLogs';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -67,8 +69,6 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
     @OrmRepository()
-    private userRepository: ExperimentUserRepository,
-    @OrmRepository()
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
@@ -78,6 +78,8 @@ export class ExperimentAssignmentService {
     private logRepository: LogRepository,
     @OrmRepository()
     private metricRepository: MetricRepository,
+    @OrmRepository()
+    private stateTimeLogsRepository: StateTimeLogsRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -116,17 +118,13 @@ export class ExperimentAssignmentService {
 
     let enrollmentCode: ENROLLMENT_CODE | null = null;
     const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
-    const { experiment } = experimentPartition;
 
-    const { logging, state } = experiment;
-
-    if (logging || state === EXPERIMENT_STATE.PREVIEW) {
-      this.log.info(
-        `markExperimentPoint: Experiment: ${experiment.id}, Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
-      );
-    }
+    this.log.info(
+      `markExperimentPoint: Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
+    );
 
     if (experimentPartition) {
+      const { experiment } = experimentPartition;
       const { conditions } = await this.experimentRepository.findOne({
         where: {
           id: experiment.id,
@@ -211,8 +209,9 @@ export class ExperimentAssignmentService {
      * Check the enrollment complete condition for experiments with ending criteria
      * group count and participants count
      */
-    if (experiment.enrollmentCompleteCondition && experiment.state === EXPERIMENT_STATE.ENROLLING) {
-      await this.checkEnrollmentEndingCriteriaForCount(experiment);
+    const experimentDoc = experimentPartition?.experiment;
+    if (experimentDoc && experimentDoc.enrollmentCompleteCondition && experimentDoc.state === EXPERIMENT_STATE.ENROLLING) {
+      await this.checkEnrollmentEndingCriteriaForCount(experimentDoc);
     }
 
     // save monitored log document
@@ -232,12 +231,17 @@ export class ExperimentAssignmentService {
       this.previewUserService.findOne(userId),
     ]);
 
-    let experimentUser: ExperimentUser = usersData[0];
+    const experimentUser: ExperimentUser = usersData[0];
     const previewUser: PreviewUser = usersData[1];
 
-    // create user if user not defined
+    // throw error if user not defined
     if (!experimentUser) {
-      experimentUser = await this.userRepository.save({ id: userId });
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User not defined : ${userId}`,
+        })
+      );
     }
 
     // query all experiment and sub experiment
@@ -287,6 +291,15 @@ export class ExperimentAssignmentService {
 
         // throw error user group not defined and add experiments which are excluded
         if (addError) {
+          experimentToExclude.forEach(({ id, name }) => {
+            this.log.error(
+              `Experiment Id: ${id},
+              Experiment Name: ${name},
+              Group not valid for experiment user
+              `
+            );
+          });
+
           await this.errorService.create({
             endPoint: '/api/assign',
             errorCode: 417,
@@ -480,7 +493,7 @@ export class ExperimentAssignmentService {
             // TODO add enrollment code here
             this.log.info(
               `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-                conditionAssigned ? conditionAssigned.conditionCode : 'default'
+                conditionAssigned ? conditionAssigned.conditionCode : null
               }`
             );
           }
@@ -489,11 +502,11 @@ export class ExperimentAssignmentService {
             expPoint,
             twoCharacterId,
             assignedCondition: conditionAssigned || {
-              conditionCode: 'default',
+              conditionCode: null,
             },
           };
         });
-        return [...accumulator, ...partitions];
+        return assignment ? [...accumulator, ...partitions] : accumulator;
       }, []);
     } catch (error) {
       throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));
@@ -504,12 +517,12 @@ export class ExperimentAssignmentService {
   public async blobDataLog(userId: string, blobLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add blob data userId ${userId} and value ${blobLog}`);
 
-    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
 
-    // create user if user does not exist
+    // throw error if user not defined
     if (!userDoc) {
-      userDoc = await this.userRepository.save({ id: userId });
+      throw new Error(`User not defined: ${userId}`);
     }
 
     // extract the array value
@@ -524,12 +537,17 @@ export class ExperimentAssignmentService {
   public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
     this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
 
-    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
     const keyUniqueArray = [];
 
-    // create user if user does not exist
+    // throw error if user not defined
     if (!userDoc) {
-      userDoc = await this.userRepository.save({ id: userId });
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User not defined: ${userId}`,
+        })
+      );
     }
 
     // extract the array value
@@ -548,11 +566,16 @@ export class ExperimentAssignmentService {
     experimentId: string
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
-    let userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
 
-    // create user if user does not exist
+    // throw error if user not defined
     if (!userDoc) {
-      userDoc = await this.userRepository.save({ id: userId });
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+          message: `User not defined: ${userId}`,
+        })
+      );
     }
 
     error.type = SERVER_ERROR.REPORTED_ERROR;
@@ -765,6 +788,14 @@ export class ExperimentAssignmentService {
      * experiment assignment unit is GROUP
      * ending condition has both groupCount and userCount
      */
+    const timeLogDate = new Date();
+
+    const stateTimeLogDoc = new StateTimeLog();
+    stateTimeLogDoc.id = uuid();
+    stateTimeLogDoc.fromState = experiment.state;
+    stateTimeLogDoc.toState = EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
+    stateTimeLogDoc.timeLog = timeLogDate;
+    stateTimeLogDoc.experiment = experiment;
 
     if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
       // fetch all the monitored document if exist
@@ -793,6 +824,7 @@ export class ExperimentAssignmentService {
 
       if (groupSatisfied >= groupCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }
       // check the individual assignment table for the user
     } else if (userCount) {
@@ -804,6 +836,7 @@ export class ExperimentAssignmentService {
       const uniqueUser = new Set(userIds);
       if (uniqueUser.size >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }
     }
   }

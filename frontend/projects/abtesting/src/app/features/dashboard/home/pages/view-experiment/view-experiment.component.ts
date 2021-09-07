@@ -11,20 +11,22 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
-import { DeleteExperimentComponent } from '../../components/modal/delete-experiment/delete-experiment.component';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { Router } from '@angular/router';
 import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
+import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
+import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
 
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
   CHANGE_POST_EXPERIMENT_RULE = 'Change post experiment rule',
-  EDIT_EXPERIMENT = 'Edit Experiment'
+  EDIT_EXPERIMENT = 'Edit Experiment',
+  STATE_TIME_LOGS = 'State Time Logs'
 }
 
 @Component({
@@ -84,9 +86,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         ? ExperimentStatusComponent
         : dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE
         ? PostExperimentRuleComponent
+        : dialogType === DialogType.STATE_TIME_LOGS
+        ? StateTimeLogsComponent
         : NewExperimentComponent;
     const dialogRef = this.dialog.open(dialogComponent as any, {
-      panelClass: dialogType === DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' : 'experiment-general-modal',
+      panelClass: dialogType === DialogType.STATE_TIME_LOGS ? 'state-time-logs-modal' : DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' : 'experiment-general-modal',
       data: { experiment: clonedeep(this.experiment) },
       disableClose : dialogType === DialogType.EDIT_EXPERIMENT
     });
@@ -101,13 +105,15 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   deleteExperiment() {
-    const dialogRef = this.dialog.open(DeleteExperimentComponent, {
-      panelClass: 'delete-modal',
-      data: { experimentName: this.experiment.name, experimentId: this.experiment.id }
+    const dialogRef = this.dialog.open(DeleteComponent, {
+      panelClass: 'delete-modal'
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after deleting experiment
+    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+      if (isDeleteButtonClicked) {
+        this.experimentService.deleteExperiment(this.experiment.id);
+        // Add code of further actions after deleting experiment
+      }
     });
   }
 
@@ -145,11 +151,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   get DialogType() {
     return DialogType;
   }
-  
+
   toggleVerboseLogging(event) {
     this.experimentService.updateExperiment({...this.experiment, logging: event.checked })
   }
-  
+
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
@@ -167,7 +173,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     return ExperimentStatePipeType;
   }
 
-  get isStateCancelledOrComplete() {
-    return this.experiment.state === EXPERIMENT_STATE.CANCELLED || this.experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE;
+  get isExperimentStateCancelled() {
+    return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
   }
 }

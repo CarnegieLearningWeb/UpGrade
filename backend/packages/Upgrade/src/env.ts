@@ -54,6 +54,7 @@ export const env = {
     database: getOsEnvOptional('TYPEORM_DATABASE') || getOsEnvOptional('RDS_DB_NAME'),
     synchronize: toBool(getOsEnvOptional('TYPEORM_SYNCHRONIZE')),
     logging: getOsEnv('TYPEORM_LOGGING'),
+    maxQueryExecutionTime: toNumber(getOsEnvOptional('TYPEORM_MAX_QUERY_EXECUTION_TIME')),
   },
   swagger: {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
@@ -80,11 +81,16 @@ export const env = {
     region: getOsEnv('AWS_REGION'),
   },
   initialization: {
-    context: parseEnvironmentValuesBySpecialChar(getOsEnv('CONTEXT')),
+    appContext: parseEnvironmentValuesBySpecialChar(getOsEnv('APP_CONTEXT')),
     adminUsers: parseAdminUsers(getOsEnv('ADMIN_USERS')),
     expPoints: parseEnvironmentValuesBySpecialChar(getOsEnv('EXP_POINTS')),
     expIds: parseEnvironmentValuesBySpecialChar(getOsEnv('EXP_IDS')),
+    groupTypes: parseEnvironmentValuesBySpecialChar(getOsEnv('GROUP_TYPES')),
   },
   hostUrl: getOsEnv('HOST_URL'),
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),
+  clientApi: {
+    secret: getOsEnv('CLIENT_API_SECRET'),
+    key: getOsEnv('CLIENT_API_KEY'),
+  },
 };

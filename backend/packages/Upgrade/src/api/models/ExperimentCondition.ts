@@ -31,6 +31,13 @@ export class ExperimentCondition extends BaseModel {
   @Column({ type: 'real'})
   public assignmentWeight: number;
 
+  @IsNotEmpty()
+  @IsNumber()
+  @Column({
+    nullable: true,
+  })
+  public order: number;
+
   @ManyToOne((type) => Experiment, (experiment) => experiment.conditions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 }

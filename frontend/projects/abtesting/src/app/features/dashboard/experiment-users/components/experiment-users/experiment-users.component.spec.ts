@@ -4,6 +4,7 @@ import { ExperimentUsersComponent } from './experiment-users.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { ExperimentUsersService } from '../../../../../core/experiment-users/experiment-users.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 describe('ExperimentUsersComponent', () => {
   let component: ExperimentUsersComponent;
@@ -13,7 +14,7 @@ describe('ExperimentUsersComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ExperimentUsersComponent ],
       imports: [TestingModule],
-      providers: [ExperimentUsersService, AuthService]
+      providers: [ExperimentUsersService, AuthService, ExperimentService]
     })
     .compileComponents();
   }));

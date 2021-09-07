@@ -36,14 +36,6 @@ export interface IEnrollmentStatByDate {
   stats: IExperimentEnrollmentDetailDateStats;
 }
 
-export enum GroupTypes {
-  CLASS = 'class',
-  SCHOOL = 'school',
-  DISTRICT = 'district',
-  TEACHER = 'teacher',
-  OTHER = 'other'
-}
-
 export enum NewExperimentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
@@ -113,6 +105,7 @@ export interface ExperimentCondition {
   conditionCode: string;
   assignmentWeight: number;
   twoCharacterId: string;
+  order: number;
 }
 
 export interface ExperimentPartition {
@@ -121,11 +114,19 @@ export interface ExperimentPartition {
   expId: string;
   description: string;
   twoCharacterId: string;
+  order: number;
 }
 
 export interface ExperimentNameVM {
   id: string;
   name: string;
+}
+
+export interface ExperimentStateTimeLog {
+  id: string;
+  fromState: EXPERIMENT_STATE;
+  toState: EXPERIMENT_STATE;
+  timeLog: Date;
 }
 
 export interface Experiment {
@@ -149,6 +150,7 @@ export interface Experiment {
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
   queries: any[];
+  stateTimeLogs: ExperimentStateTimeLog[];
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -160,9 +162,11 @@ export interface ExperimentPaginationParams {
   sortParams?: IExperimentSortParams;
 }
 
-export interface IExpPointsAndIds {
+export interface IContextMetaData {
+  appContext: string[],
   expPoints: string[],
-  expIds: string[]
+  expIds: string[],
+  groupTypes: string[]
 }
 
 export interface IExperimentGraphInfo {
@@ -192,8 +196,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
-  context: string[],
-  expPointsAndIds: {}
+  contextMetaData: {}
 }
 
 export interface State extends AppState {

@@ -23,7 +23,7 @@ export default async function QueryCRUD(): Promise<void> {
 
   // create an experiment
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // experiment object
   let experimentObject = individualAssignmentExperiment;

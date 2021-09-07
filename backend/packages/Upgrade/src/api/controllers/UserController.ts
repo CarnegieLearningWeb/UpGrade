@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, Get, Param } from 'routing-controllers';
+import { JsonController, Post, Body, Get, Param, Authorized, Delete } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
 import { UserRoleValidator } from './validators/UserRoleValidator';
@@ -37,6 +37,7 @@ interface UserPaginationInfo extends PaginationResponse {
  *     description: System Users
  */
 
+@Authorized()
 @JsonController('/users')
 export class UserController {
   constructor(public userService: UserService) { }
@@ -91,10 +92,10 @@ export class UserController {
   public async paginatedFind(
     @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: UserPaginatedParamsValidator
   ): Promise<UserPaginationInfo> {
-    if (!paginatedParams) {
+    if (!paginatedParams || Object.keys(paginatedParams).length === 0) {
       return Promise.reject(
         new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null.' })
+          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null or empty object.' })
         )
       );
     }
@@ -165,7 +166,7 @@ export class UserController {
    */
   @Post()
   public create(@Body() user: User): Promise<User> {
-    return this.userService.create(user);
+    return this.userService.upsertUser(user);
   }
 
   /**
@@ -205,4 +206,32 @@ export class UserController {
   ): Promise<User> {
     return this.userService.updateUserRole(user.email, user.role);
   }
+
+  /**
+   * @swagger
+   * /users/{email}:
+   *    delete:
+   *       description: Delete user
+   *       parameters:
+   *         - in: path
+   *           name: email
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Email id of user
+   *       tags:
+   *         - Users
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Delete User By email
+   */
+   @Delete('/:email')
+   public delete(@Param('email') email: string): Promise<User> {
+     if (!email) {
+       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : email should not be null.'));
+     }
+     return this.userService.deleteUser(email);
+   }
 }

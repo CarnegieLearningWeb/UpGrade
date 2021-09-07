@@ -106,6 +106,18 @@ export class UsersEffects {
     )
   );
 
+  deleteUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UsersActions.actionDeleteUser),
+      map(action => action.email),
+      filter((email) => !!email),
+      switchMap(( email ) => this.usersDataService.deleteUser(email).pipe(
+          map((data: User[]) => UsersActions.actionDeleteUserSuccess({ user: data[0] })),
+          catchError(() => [UsersActions.actionDeleteUserFailure()])
+      ))
+    ),
+  );
+
   fetchUsersOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(

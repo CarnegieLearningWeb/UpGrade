@@ -133,15 +133,6 @@ export const actionFetchAllExperimentNamesSuccess = createAction(
 
 export const actionFetchAllExperimentNamesFailure = createAction('[Experiment] Fetch All Experiment Names Failure');
 
-export const actionFetchExperimentContext = createAction('[Experiment] Fetch Experiment Context');
-
-export const actionFetchExperimentContextSuccess = createAction(
-  '[Experiment] Fetch Experiment Context Success',
-  props<{ context: string[] }>()
-);
-
-export const actionFetchExperimentContextFailure = createAction('[Experiment] Fetch Experiment Context Failure');
-
 export const actionExportExperimentInfo = createAction(
   '[Experiment] Export Experiment Info',
   props<{ experimentId: string; experimentName: string }>()
@@ -162,7 +153,7 @@ export const actionSetIsGraphLoading = createAction(
 
 export const actionFetchExperimentGraphInfo = createAction(
   '[Experiment] Fetch Experiment graph Info',
-  props<{ experimentId: string, range: DATE_RANGE }>()
+  props<{ experimentId: string, range: DATE_RANGE, clientOffset: number }>()
 );
 
 export const actionFetchExperimentGraphInfoSuccess = createAction(
@@ -181,7 +172,7 @@ export const actionSetExperimentGraphInfo = createAction(
 
 export const actionSetGraphRange = createAction(
   '[Experiment] Set Graph Range',
-  props<{ range: DATE_RANGE, experimentId: string }>()
+  props<{ range: DATE_RANGE, experimentId: string, clientOffset: number }>()
 );
 
 export const actionFetchExperimentDetailStat = createAction(
@@ -198,15 +189,15 @@ export const actionFetchExperimentDetailStatFailure = createAction(
   '[Experiment] Fetch Experiment Detail stat Failure',
 );
 
-export const actionFetchExperimentPointsAndIds = createAction(
-  '[Experiment] Fetch Experiment Points and Ids',
+export const actionFetchContextMetaData = createAction(
+  '[Experiment] Fetch contextMetaData',
 );
 
-export const actionFetchExperimentPointsAndIdsSuccess = createAction(
-  '[Experiment] Fetch Experiment Points and Ids Success',
-  props<{ expPointsAndIds: object }>()
+export const actionFetchContextMetaDataSuccess = createAction(
+  '[Experiment] Fetch contextMetaData Success',
+  props<{ contextMetaData: object }>()
 );
 
-export const actionFetchExperimentPointsAndIdsFailure = createAction(
-  '[Experiment] Fetch Experiment Points and Ids Failure',
+export const actionFetchContextMetaDataFailure = createAction(
+  '[Experiment] Fetch contextMetaData Failure',
 );

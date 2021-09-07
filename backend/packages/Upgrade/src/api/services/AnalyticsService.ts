@@ -12,7 +12,8 @@ import {
   IExperimentEnrollmentDetailDateStats,
   POST_EXPERIMENT_RULE,
   ENROLLMENT_CODE,
-  EXPERIMENT_LOG_TYPE
+  EXPERIMENT_LOG_TYPE,
+  EXPERIMENT_STATE
 } from 'upgrade_types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -64,7 +65,7 @@ export class AnalyticsService {
     return this.analyticsRepository.getEnrollments(experimentIds);
   }
 
-  public async getDetailEnrolment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
+  public async getDetailEnrollment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
       this.analyticsRepository.getDetailEnrollment(experimentId),
@@ -79,12 +80,12 @@ export class AnalyticsService {
       groupExclusion,
     ] = promiseArray[1];
 
-    console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
-    console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
-    console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
-    console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
-    console.log('individualExclusion', individualExclusion);
-    console.log('groupExclusion', groupExclusion);
+    this.log.info('individualEnrollmentByCondition', individualEnrollmentByCondition);
+    this.log.info('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
+    this.log.info('groupEnrollmentByCondition', groupEnrollmentByCondition);
+    this.log.info('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
+    this.log.info('individualExclusion', individualExclusion);
+    this.log.info('groupExclusion', groupExclusion);
 
     return {
       id: experimentId,
@@ -131,45 +132,45 @@ export class AnalyticsService {
     };
   }
 
-  public async getEnrolmentStatsByDate(experimentId: string, dateRange: DATE_RANGE): Promise<IEnrollmentStatByDate[]> {
+  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE, clientOffset: number): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         for (let i = 0; i < 7; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(date.getDate() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       case DATE_RANGE.LAST_THREE_MONTHS:
         for (let i = 0; i < 3; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       case DATE_RANGE.LAST_SIX_MONTHS:
         for (let i = 0; i < 6; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       default:
         for (let i = 0; i < 12; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
@@ -177,7 +178,7 @@ export class AnalyticsService {
 
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
-      this.analyticsRepository.getEnrolmentByDateRange(experimentId, dateRange),
+      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
     ]);
 
     const experiment: Experiment = promiseArray[0];
@@ -245,12 +246,12 @@ export class AnalyticsService {
       // get experiment definition
       const experiment = await this.experimentRepository.findOne({
         where: { id: experimentId },
-        relations: ['partitions', 'conditions'],
+        relations: ['partitions', 'conditions', 'stateTimeLogs'],
       });
       if (!experiment) {
         return '';
       }
-      const { conditions, partitions, ...experimentInfo } = experiment;
+      const { conditions, partitions, stateTimeLogs, ...experimentInfo } = experiment;
       const experimentIdAndPoint = [];
       partitions.forEach((partition) => {
         const partitionId = partition.id;
@@ -271,8 +272,8 @@ export class AnalyticsService {
           'Experiment ID': experimentInfo.id,
           'Experiment Name': experimentInfo.name,
           'Experiment Description': experimentInfo.description,
-          'Enrollment Start Date': experimentInfo.startDate && experimentInfo.startDate.toISOString(),
-          'Enrollment End Date': experimentInfo.endDate && experimentInfo.endDate.toISOString(),
+          'Enrollment Start Date': stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog).join(','),
+          'Enrollment End Date': stateTimeLogs.filter(state => state.fromState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog).join(','),
           'Unit of Assignment': experimentInfo.assignmentUnit,
           'Consistency Rule': experimentInfo.consistencyRule,
           // tslint:disable-next-line:object-literal-key-quotes
@@ -505,9 +506,9 @@ export class AnalyticsService {
       } else {
         emailText = `Here are the new exported data
         <br>
-        <a href=\"${signedUrl[0]}\">Experiment Data Json</a>
+        <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
         <br>
-        <a href=\"${signedUrl[1]}\">Experiment Metadata</a>`;
+        <a href=\"${signedUrl[1]}\">Experiment Data Json</a>`;
       }
 
       const emailSubject = `Exported Data for experiment ${experiment.name}`;

@@ -38,6 +38,7 @@
 @import './app/features/dashboard/home/components/experiment-query-result/experiment-query-result.theme.scss';
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
+@import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -68,6 +69,7 @@
   @include experiment-query-result-component-theme($theme);
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
+  @include state-time-logs-modal-component-theme($theme);
 }
 
 .light-theme {
@@ -118,6 +120,14 @@
   }
 }
 
+.state-time-logs-modal {
+  border-radius: 7px;
+
+  .mat-dialog-container {
+    padding: 0px;
+  } 
+}
+
 .delete-modal {
   width: 400px;
   min-height: 192px;
@@ -140,6 +150,10 @@
 .experiment-ending-criteria {
   width: 600px;
   min-height: 400px;
+}
+
+.state-time-logs-modal {
+  width: 400px;
 }
 
 .query-result {

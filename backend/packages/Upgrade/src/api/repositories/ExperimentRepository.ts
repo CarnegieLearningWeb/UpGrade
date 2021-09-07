@@ -10,6 +10,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.conditions', 'conditions')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
+      .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
       .leftJoinAndSelect('queries.metric', 'metric')
       .getMany()
       .catch((errorMsg: any) => {
@@ -83,12 +84,13 @@ export class ExperimentRepository extends Repository<Experiment> {
     experimentId: string,
     state: EXPERIMENT_STATE,
     scheduleDate: Date,
-    endDate: Date = null,
-    startDate: Date = null
+    entityManager?: EntityManager
   ): Promise<Experiment> {
-    const result = await this.createQueryBuilder('experiment')
-      .update()
-      .set({ state, startOn: scheduleDate, endDate, startDate })
+    const that = entityManager ? entityManager : this;
+    const result = await that
+      .createQueryBuilder()
+      .update(Experiment)
+      .set({ state, startOn: scheduleDate })
       .where({ id: experimentId })
       .returning('*')
       .execute()

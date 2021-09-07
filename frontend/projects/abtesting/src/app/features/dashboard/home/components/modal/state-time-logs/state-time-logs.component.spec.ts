@@ -1,20 +1,18 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { DeleteExperimentComponent } from './delete-experiment.component';
-import { TestingModule } from '../../../../../../../testing/testing.module';
-import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { TestingModule } from '../../../../../../../testing/testing.module';
 
-describe('DeleteExperimentComponent', () => {
-  let component: DeleteExperimentComponent;
-  let fixture: ComponentFixture<DeleteExperimentComponent>;
+import { StateTimeLogsComponent } from './state-time-logs.component';
+
+describe('StateTimeLogsComponent', () => {
+  let component: StateTimeLogsComponent;
+  let fixture: ComponentFixture<StateTimeLogsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DeleteExperimentComponent ],
+      declarations: [ StateTimeLogsComponent ],
       imports: [TestingModule],
       providers: [
-        ExperimentService,
         { provide: MatDialogRef, useValue: {} },
 	      { provide: MAT_DIALOG_DATA, useValue: [] },
       ]
@@ -23,7 +21,7 @@ describe('DeleteExperimentComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(DeleteExperimentComponent);
+    fixture = TestBed.createComponent(StateTimeLogsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,7 +1,7 @@
 resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {  
   name                = "${var.environment}-${var.prefix}-experiment-app"
   application         = var.ebs_app_name
-  solution_stack_name = "64bit Amazon Linux 2018.03 v2.15.0 running Docker 19.03.6-ce"
+  solution_stack_name = "64bit Amazon Linux 2 v3.4.4 running Docker"
   setting {
     namespace = "aws:ec2:vpc"
     name      = "VPCId"
@@ -114,33 +114,18 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "RDS_USERNAME"
-    value     = aws_db_instance.app-rds.username
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "RDS_PASSWORD"
-    value     = aws_db_instance.app-rds.password
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "RDS_DB_NAME"
-    value     = aws_db_instance.app-rds.name
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "RDS_HOSTNAME"
-    value     = split(":", aws_db_instance.app-rds.endpoint)[0]
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "RDS_PORT"
-    value     = split(":", aws_db_instance.app-rds.endpoint)[1]
+    name      = "ADMIN_USERS"
+    value     = var.ADMIN_USERS
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "APP_BANNER"
     value     = var.APP_BANNER
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "APP_CONTEXT"
+    value     = var.APP_CONTEXT
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
@@ -179,8 +164,48 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "CLIENT_API_KEY"
+    value     = var.CLIENT_API_KEY
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "CLIENT_API_SECRET"
+    value     = var.CLIENT_API_SECRET
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "CONTROLLERS"
     value     = var.CONTROLLERS
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "DOMAIN_NAME"
+    value     = var.DOMAIN_NAME
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EMAIL_BUCKET"
+    value     = var.EMAIL_BUCKET
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EMAIL_EXPIRE_AFTER_SECONDS"
+    value     = var.EMAIL_EXPIRE_AFTER_SECONDS
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EMAIL_FROM"
+    value     = var.EMAIL_FROM
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EXP_IDS"
+    value     = var.EXP_IDS
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "EXP_POINTS"
+    value     = var.EXP_POINTS
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
@@ -189,8 +214,8 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "DOMAIN_NAME"
-    value     = var.DOMAIN_NAME
+    name      = "GROUP_TYPES"
+    value     = var.GROUP_TYPES
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
@@ -246,6 +271,31 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "NEW_RELIC_LICENSE_KEY"
     value     = var.NEW_RELIC_LICENSE_KEY
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "RDS_DB_NAME"
+    value     = aws_db_instance.app-rds.name
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "RDS_HOSTNAME"
+    value     = split(":", aws_db_instance.app-rds.endpoint)[0]
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "RDS_PASSWORD"
+    value     = aws_db_instance.app-rds.password
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "RDS_PORT"
+    value     = split(":", aws_db_instance.app-rds.endpoint)[1]
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "RDS_USERNAME"
+    value     = aws_db_instance.app-rds.username
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
@@ -314,6 +364,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "TYPEORM_MAX_QUERY_EXECUTION_TIME"
+    value     = var.TYPEORM_MAX_QUERY_EXECUTION_TIME
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "TYPEORM_LOGGING"
     value     = var.TYPEORM_LOGGING
   }
@@ -336,30 +391,5 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "TYPEORM_SYNCHRONIZE"
     value     = var.TYPEORM_SYNCHRONIZE
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "EMAIL_FROM"
-    value     = var.EMAIL_FROM
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "EMAIL_EXPIRE_AFTER_SECONDS"
-    value     = var.EMAIL_EXPIRE_AFTER_SECONDS
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "EMAIL_BUCKET"
-    value     = var.EMAIL_BUCKET
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "CONTEXT"
-    value     = var.CONTEXT
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "ADMIN_USERS"
-    value     = var.ADMIN_USERS
   }
 }

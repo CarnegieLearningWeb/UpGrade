@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryColumn, Column } from 'typeorm';
+import { Entity, ManyToOne, PrimaryColumn, Column, Index } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentCondition } from './ExperimentCondition';
 import { Experiment } from './Experiment';
@@ -10,9 +10,11 @@ export class IndividualAssignment extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
+  @Index()
   @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
+  @Index()
   @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;
 

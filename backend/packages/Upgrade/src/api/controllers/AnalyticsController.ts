@@ -20,7 +20,7 @@ export class AnalyticsController {
 
   /**
    * @swagger
-   * /stats/enrolment:
+   * /stats/enrollment:
    *    post:
    *       description: Get Enrollment Analytics
    *       consumes:
@@ -44,7 +44,7 @@ export class AnalyticsController {
    *          '200':
    *            description: Analytics For Experiment Enrollment
    */
-  @Post('/enrolment')
+  @Post('/enrollment')
   public async analyticsService(
     @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
@@ -53,7 +53,7 @@ export class AnalyticsController {
 
   /**
    * @swagger
-   * /stats/enrolment/detail:
+   * /stats/enrollment/detail:
    *    post:
    *       description: Get Enrollment Analytics Detail
    *       consumes:
@@ -75,17 +75,17 @@ export class AnalyticsController {
    *          '200':
    *            description: Analytics For Experiment Enrollment Detail
    */
-  @Post('/enrolment/detail')
+  @Post('/enrollment/detail')
   public async analyticsDetailService(
     @Body({ validate: { validationError: { target: false, value: false } } })
     auditParams: EnrollmentDetailAnalyticsValidator
   ): Promise<IExperimentEnrollmentDetailStats> {
-    return this.auditService.getDetailEnrolment(auditParams.experimentId);
+    return this.auditService.getDetailEnrollment(auditParams.experimentId);
   }
 
   /**
    * @swagger
-   * /stats/enrolment/date:
+   * /stats/enrollment/date:
    *    post:
    *       description: Get Enrollment Analytics By Date
    *       consumes:
@@ -110,12 +110,12 @@ export class AnalyticsController {
    *          '200':
    *            description: Analytics For Experiment Enrollment
    */
-  @Post('/enrolment/date')
-  public async enrolmentByDate(
+  @Post('/enrollment/date')
+  public async enrollmentByDate(
     @Body({ validate: { validationError: { target: false, value: false } } })
     auditParams: EnrollmentAnalyticsDateValidator
   ): Promise<any> {
-    return this.auditService.getEnrolmentStatsByDate(auditParams.experimentId, auditParams.dateEnum);
+    return this.auditService.getEnrollmentStatsByDate(auditParams.experimentId, auditParams.dateEnum, auditParams.clientOffset);
   }
 
   /**

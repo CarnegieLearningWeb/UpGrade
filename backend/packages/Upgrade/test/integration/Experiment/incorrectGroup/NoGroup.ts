@@ -13,7 +13,8 @@ import {
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { checkExperimentAssignedIsDefault, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { Console } from 'winston/lib/winston/transports';
 
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -23,7 +24,7 @@ export default async function testCase(): Promise<void> {
   const individualAssignmentRepository = getRepository(IndividualAssignment);
 
   // creating new user
-  const user = await userService.create(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any);
 
   // create individual and group experiment
   const experimentObject1 = individualAssignmentExperiment;
@@ -134,5 +135,5 @@ export default async function testCase(): Promise<void> {
 
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
-  checkExperimentAssignedIsDefault(experimentConditionAssignments, experimentName3, experimentPoint3);
+  checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName3, experimentPoint3);
 }

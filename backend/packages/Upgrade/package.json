@@ -1,6 +1,6 @@
 {
     "name": "ab_testing_backend",
-    "version": "1.0.35",
+    "version": "1.0.64",
     "description": "Backend for A/B Testing Project",
     "main": "index.js",
     "scripts": {
@@ -22,23 +22,6 @@
     },
     "keywords": [],
     "author": "",
-    "jest": {
-        "transform": {
-            ".(ts|tsx)": "../../preprocessor.js"
-        },
-        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
-        "moduleFileExtensions": [
-            "ts",
-            "tsx",
-            "js",
-            "json"
-        ],
-        "testEnvironment": "node",
-        "testTimeout": 30000,
-        "setupFilesAfterEnv": [
-            "./test/unit/lib/setup.ts"
-        ]
-    },
     "license": "ISC",
     "devDependencies": {
         "@types/body-parser": "^1.17.1",

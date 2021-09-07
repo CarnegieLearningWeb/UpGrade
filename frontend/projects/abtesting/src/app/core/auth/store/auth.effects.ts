@@ -103,7 +103,9 @@ export class AuthEffects {
                   imageUrl: profile.getImageUrl(),
                 };
                 const token = googleUser.getAuthResponse().id_token;
-                this.authDataService.createUser(user).pipe(
+                // Store the token in the ngrx store as this is being passed in every request via http interceptor
+                this.store$.dispatch(authActions.actionSetUserInfo({ user: { token } as User }));
+                this.authDataService.login(user).pipe(
                     tap((res: User) => {
                       this.hasUserClickedLogin = false;
                       this.store$.dispatch(authActions.actionLoginSuccess());

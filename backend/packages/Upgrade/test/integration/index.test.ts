@@ -34,6 +34,7 @@ import {
 import { MainAuditLog } from './Experiment/auditLogs';
 import { NoPartitionPoint } from './Experiment/onlyExperimentPoint';
 // import { StatsGroupExperiment } from './ExperimentStats';
+import { NoExperiment } from './Experiment/markExperimentPoint';
 import {
   NoPreviewUser,
   PreviewAssignments,
@@ -64,6 +65,8 @@ import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } fro
 import { MonitoredPointForExport } from './Experiment/analytics';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssigmentWeight';
+import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
+import { UserNotDefined } from './UserNotDefined';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -95,6 +98,11 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('Mark Experiment before experiment is created', async (done) => {
+    await NoExperiment();
+    done();
+  });
 
   test('No Group for Experiment', async (done) => {
     await NoGroup();
@@ -138,6 +146,11 @@ describe('Integration Tests', () => {
 
   test('Support Get Assignments', async (done) => {
     await GetAssignments();
+    done();
+  });
+
+  test('User not defined', async (done) => {
+    await UserNotDefined();
     done();
   });
 
@@ -415,6 +428,15 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Order For Condition', async (done) => {
+    await ConditionOrder();
+    done();
+  });
+
+  test('Order For Partition', async (done) => {
+    await PartitionOrder();
+    done();
+  });
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();
