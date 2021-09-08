@@ -14,6 +14,7 @@
   "global.save.text": "SAVE",
   "global.delete.text": "DELETE",
   "global.delete-confirmation.message.text": "Type 'delete' to confirm deletion:",
+  "global.save-confirmation.message.text": "Experiment changes are updated successfully!",
   "global.delete-input-comparison.text": "delete",
   "global.delete.input-placeholder.text": "Type delete",
   "global.update.text": "UPDATE",

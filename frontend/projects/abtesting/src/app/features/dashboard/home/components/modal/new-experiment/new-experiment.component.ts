@@ -1,5 +1,5 @@
 import { Component, Inject, ViewChild, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MatSnackBar, MAT_DIALOG_DATA } from '@angular/material';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -7,6 +7,7 @@ import {
   ExperimentVM
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'home-new-experiment',
@@ -22,7 +23,9 @@ export class NewExperimentComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private _snackBar: MatSnackBar,
+    private translate: TranslateService
   ) {
     if (this.data) {
       this.experimentInfo = this.data.experiment;
@@ -57,18 +60,22 @@ export class NewExperimentComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
+        this.onNoClick();
       case NewExperimentDialogEvents.SAVE_DATA:
         this.newExperimentData = {
           ...this.experimentInfo,
           ...this.newExperimentData,
           ...formData
         };
+        this.openSnackBar();
         this.experimentService.updateExperiment(this.newExperimentData);
-        this.onNoClick();
         break;
     }
   }
 
+  openSnackBar() {
+    this._snackBar.open(this.translate.instant('global.save-confirmation.message.text') , null, { duration: 2000 });
+  }
   stepChanged(event) {
     this.selectedStepperIndex = event.selectedIndex;
   }
