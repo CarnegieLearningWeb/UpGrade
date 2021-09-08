@@ -18,6 +18,7 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'CarnegieLearningWeb'
     defaults:
       run:
         working-directory: clientlibs/js
