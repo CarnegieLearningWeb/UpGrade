@@ -52,6 +52,10 @@ export class NewExperimentComponent implements OnInit {
           ...formData
         };
 
+        if (!this.currentContext && this.experimentInfo) {
+          this.currentContext = this.experimentInfo.context[0];
+        }
+
         this.contextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
 
         if (this.experimentInfo) {

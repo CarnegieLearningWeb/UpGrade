@@ -64,6 +64,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       this.contextMetaData = contextMetaData;
       
       if (this.overviewForm && this.contextMetaData && this.experimentInfo) {
+        this.checkExperiment();
         this.overviewForm.patchValue(this.setGroupTypeControlValue());
       }
     });
@@ -132,6 +133,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         tags: this.experimentInfo.tags,
         logging: this.experimentInfo.logging
       });
+      this.checkExperiment();
     }
   }
 
@@ -147,7 +149,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   setGroupTypes() {
     this.groupTypes = [];
-    if (this.contextMetaData['contextMetadata']) {
+    if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(element => {
         this.groupTypes.push({value: element});
       });
@@ -215,6 +217,14 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     if (index >= 0) {
       this[type].value.splice(index, 1);
       this[type].updateValueAndValidity();
+    }
+  }
+
+  // Check if experiment is created before new context-metadata and reset app-contexts
+  checkExperiment() {
+    if(this.contextMetaData['contextMetadata'] && !this.contextMetaData['contextMetadata'][this.currentContext]) {
+      this.overviewForm.get('context').setValue([]);
+      this.overviewForm.get('groupType').reset();
     }
   }
 
