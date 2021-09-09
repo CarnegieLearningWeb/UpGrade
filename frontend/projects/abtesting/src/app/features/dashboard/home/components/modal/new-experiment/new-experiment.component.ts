@@ -19,7 +19,7 @@ export class NewExperimentComponent implements OnInit {
   experimentInfo: ExperimentVM;
   animationCompletedIndex: Number;
   currentContext: string;
-  contextChanged: boolean = false;
+  isContextChanged: boolean = false;
   @ViewChild('stepper', { static: false }) stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
@@ -56,7 +56,7 @@ export class NewExperimentComponent implements OnInit {
           this.currentContext = this.experimentInfo.context[0];
         }
 
-        this.contextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
+        this.isContextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
 
         if (this.experimentInfo) {
           this.currentContext = this.experimentInfo.context[0]

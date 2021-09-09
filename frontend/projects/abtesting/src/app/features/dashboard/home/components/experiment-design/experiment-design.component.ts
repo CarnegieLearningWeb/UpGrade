@@ -29,7 +29,7 @@ import * as uuid from 'uuid';
 export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
-  @Input() contextChanged: boolean;
+  @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
@@ -92,7 +92,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.conditionCode.nativeElement.focus();
     }
 
-    if (this.contextChanged) {
+    if (this.isContextChanged) {
       this.partition.clear();
       this.partition.push(this.addPartitions());
       this.partitionDataSource.next(this.partition.controls);
@@ -167,8 +167,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (key === 'expPoints') {
       return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || [])
       .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
-    }
-    else if (key === 'expIds') {
+    } else if (key === 'expIds') {
       return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || [])
       .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
     }

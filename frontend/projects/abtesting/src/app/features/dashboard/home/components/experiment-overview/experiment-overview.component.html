@@ -34,7 +34,7 @@
         <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
       </mat-chip>
       <input
-        [placeholder]="'App Context'"
+        [placeholder]="'global.app-context.text' | translate"
         #contextInput
         [matChipInputFor]="contextList"
         [formControl]="autoCompleteContext"

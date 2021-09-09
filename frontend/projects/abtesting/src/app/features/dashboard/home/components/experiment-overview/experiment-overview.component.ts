@@ -112,8 +112,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       if (contexts.length === 0) {
         this.overviewForm.get('groupType').reset();
         this.overviewForm.get('groupType').disable();
-      }
-      else if (this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP) {
+      } else if (this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP) {
         this.overviewForm.get('groupType').enable();
         this.overviewForm.get('groupType').setValidators(Validators.required);
       }

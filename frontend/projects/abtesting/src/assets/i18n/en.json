@@ -23,6 +23,7 @@
   "global.description.text": "DESCRIPTION",
   "global.condition.text": "CONDITION",
   "global.context.text": "CONTEXT",
+  "global.app-context.text": "App Context",
   "global.tags.text": "TAGS",
   "global.search.text": "Search...",
   "global.metrics.text": "Metrics",
