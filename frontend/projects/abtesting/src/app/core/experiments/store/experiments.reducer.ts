@@ -166,7 +166,8 @@ const reducer = createReducer(
   on(
     experimentsAction.actionFetchExperimentDetailStatSuccess,
     (state, { stat }) => {
-      const updatedStat = state.stats[stat.id] = stat;
+      state.stats[stat.id] = stat;
+      const updatedStat = state.stats[stat.id];
       return { ...state, updatedStat };
     }
   )
