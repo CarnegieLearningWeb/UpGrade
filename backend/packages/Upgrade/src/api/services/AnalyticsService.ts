@@ -13,7 +13,7 @@ import {
   POST_EXPERIMENT_RULE,
   ENROLLMENT_CODE,
   EXPERIMENT_LOG_TYPE,
-  EXPERIMENT_STATE
+  EXPERIMENT_STATE,
 } from 'upgrade_types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
@@ -59,7 +59,7 @@ export class AnalyticsService {
     public awsService: AWSService,
     public errorService: ErrorService,
     @Logger(__filename) private log: LoggerInterface
-  ) { }
+  ) {}
 
   public async getEnrollments(experimentIds: string[]): Promise<any> {
     return this.analyticsRepository.getEnrollments(experimentIds);
@@ -132,7 +132,11 @@ export class AnalyticsService {
     };
   }
 
-  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE, clientOffset: number): Promise<IEnrollmentStatByDate[]> {
+  public async getEnrollmentStatsByDate(
+    experimentId: string,
+    dateRange: DATE_RANGE,
+    clientOffset: number
+  ): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
@@ -272,8 +276,14 @@ export class AnalyticsService {
           'Experiment ID': experimentInfo.id,
           'Experiment Name': experimentInfo.name,
           'Experiment Description': experimentInfo.description,
-          'Enrollment Start Date': stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog).join(','),
-          'Enrollment End Date': stateTimeLogs.filter(state => state.fromState === EXPERIMENT_STATE.ENROLLING).map((timelogs) => timelogs.timeLog).join(','),
+          'Enrollment Start Date': stateTimeLogs
+            .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLING)
+            .map((timelogs) => timelogs.timeLog)
+            .join(','),
+          'Enrollment End Date': stateTimeLogs
+            .filter((state) => state.fromState === EXPERIMENT_STATE.ENROLLING)
+            .map((timelogs) => timelogs.timeLog)
+            .join(','),
           'Unit of Assignment': experimentInfo.assignmentUnit,
           'Consistency Rule': experimentInfo.consistencyRule,
           // tslint:disable-next-line:object-literal-key-quotes
@@ -292,8 +302,8 @@ export class AnalyticsService {
             experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
               ? experimentInfo.postExperimentRule
               : experimentInfo.revertTo
-                ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
-                : 'revert (to default)',
+              ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
+              : 'revert (to default)',
           // tslint:disable-next-line: object-literal-key-quotes
           ExperimentPoints: partitions.map((partition) => partition.expPoint).join(','),
           // tslint:disable-next-line: object-literal-key-quotes
@@ -307,12 +317,13 @@ export class AnalyticsService {
       const take = 50;
       for (let i = 1; i <= promiseData[2]; i = i + take) {
         csvRows = [];
-        const monitoredExperimentPoints = await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
-          i - 1,
-          take,
-          experimentIdAndPoint,
-          experimentId
-        );
+        const monitoredExperimentPoints =
+          await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
+            i - 1,
+            take,
+            experimentIdAndPoint,
+            experimentId
+          );
 
         // merge all the data log
         const mergedMonitoredExperimentPoint = {};
@@ -339,26 +350,25 @@ export class AnalyticsService {
 
           mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
             ? {
-              ...mergedMonitoredExperimentPoint[key],
-              logs_data: filteredLogs
-                ? {
-                  ...mergedMonitoredExperimentPoint[key].logs_data,
-                  [metricToTrackWithUniquifier]: filteredLogs,
-                }
-                : { ...mergedMonitoredExperimentPoint[key].logs_data },
-            }
+                ...mergedMonitoredExperimentPoint[key],
+                logs_data: filteredLogs
+                  ? {
+                      ...mergedMonitoredExperimentPoint[key].logs_data,
+                      [metricToTrackWithUniquifier]: filteredLogs,
+                    }
+                  : { ...mergedMonitoredExperimentPoint[key].logs_data },
+              }
             : {
-              ...monitoredPoint,
-              logs_data: filteredLogs ? { [metricToTrackWithUniquifier]: filteredLogs } : filteredLogs,
-            };
+                ...monitoredPoint,
+                logs_data: filteredLogs ? { [metricToTrackWithUniquifier]: filteredLogs } : filteredLogs,
+              };
         });
 
         // get all monitored experiment points ids
-        const monitoredPointIds = monitoredExperimentPoints.map(
-          (monitoredPoint) =>
-            monitoredPoint.partition_expId
-              ? `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
-              : `${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+        const monitoredPointIds = monitoredExperimentPoints.map((monitoredPoint) =>
+          monitoredPoint.partition_expId
+            ? `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
+            : `${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
         );
         // query experiment user
         const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
@@ -372,14 +382,18 @@ export class AnalyticsService {
               relations: ['monitoredExperimentPoint'],
             })
             .catch((error) => {
-              throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
+              this.log.error('Error in finding monitored log document');
+              error.type = SERVER_ERROR.QUERY_FAILED;
+              throw error;
             }),
           this.experimentUserRepository
             .find({
               where: { id: In(experimentUsersArray) },
             })
             .catch((error) => {
-              throw Promise.reject(new Error(SERVER_ERROR.QUERY_FAILED + error));
+              this.log.error('Error in finding user documents in experimentUserRepository');
+              error.type = SERVER_ERROR.QUERY_FAILED;
+              throw error;
             }),
           ,
         ]);
@@ -446,10 +460,10 @@ export class AnalyticsService {
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
       const experimentJson = `${experiment.name}.json`;
-      const experimentJsonPromise =  () => {
+      const experimentJsonPromise = () => {
         return new Promise((resolve) => {
           fs.writeFile(`${folderPath}${experimentJson}`, JSON.stringify(experiment), () => {
-            return resolve();
+            return resolve({});
           });
         });
       };
@@ -477,7 +491,7 @@ export class AnalyticsService {
       // generate signed url
       const signedUrl = await Promise.all([
         this.awsService.generateSignedURL(email_export, experimentCSV, email_expiry_time),
-        this.awsService.generateSignedURL(email_export, experimentJson, email_expiry_time ),
+        this.awsService.generateSignedURL(email_export, experimentJson, email_expiry_time),
       ]);
 
       let emailText;
@@ -487,9 +501,7 @@ export class AnalyticsService {
 
         fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
 
-        await Promise.all([
-          this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV),
-        ]);
+        await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV)]);
 
         signedURLMonitored = await Promise.all([
           this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
@@ -515,15 +527,14 @@ export class AnalyticsService {
       // send email to the user
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
       const user = await this.userRepository.findOne({ email });
-      this.experimentAuditLogRepository.saveRawJson(EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, { experimentName: experimentInfo.name }, user);
-    } catch (error) {
-      await this.errorService.create({
-        endPoint: '/api/stats/csv',
-        errorCode: 417,
-        message: `Email send error: ${JSON.stringify(error, undefined, 2)}`,
-        name: 'Email send error',
-        type: SERVER_ERROR.EMAIL_SEND_ERROR,
-      } as any);
+      this.experimentAuditLogRepository.saveRawJson(
+        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
+        { experimentName: experimentInfo.name },
+        user
+      );
+    } catch (error: any) {
+      error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
+      throw error;
     }
 
     this.log.info('Completing experiment process');

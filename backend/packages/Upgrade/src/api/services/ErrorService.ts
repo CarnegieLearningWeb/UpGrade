@@ -25,8 +25,9 @@ export class ErrorService {
 
   public create(error: ExperimentError): Promise<ExperimentError> {
     this.log.info(`Inserting an error => ${JSON.stringify(error)}`);
-    return this.errorRepository.save(error).catch(errorMsg => {
-      throw new Error(errorMsg);
+    return this.errorRepository.save(error).catch((err) => {
+      err.type = SERVER_ERROR.QUERY_FAILED;
+      throw err;
     });
   }
 }

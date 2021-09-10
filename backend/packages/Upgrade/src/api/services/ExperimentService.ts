@@ -269,11 +269,13 @@ export class ExperimentService {
   public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
     const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
     if (duplicateExperiment && experiment.id !== undefined) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: 'Duplicate experiment' }));
+      const error = new Error('Duplicate experiment');
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     }
     let experimentPartitions = experiment.partitions;
 
-    // Remove the partitions which are already exist
+    // Remove the partitions which already exist
     for (const partition of experimentPartitions) {
       const partitionExist = await this.experimentPartitionRepository.findOne(partition.id);
       if (partitionExist) {
@@ -284,7 +286,9 @@ export class ExperimentService {
     }
 
     if (experimentPartitions.length === 0) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message: 'Duplicate partition' }));
+      const error = new Error('Duplicate partition');
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     }
 
     // Generate new twoCharacterId if it is already exist for conditions
@@ -427,11 +431,8 @@ export class ExperimentService {
       (condition) => condition.conditionCode.toUpperCase() === 'DEFAULT'
     );
     if (hasDefaultConditionCode.length) {
-      throw new BadRequestError(
-        JSON.stringify({
-          message: "'default' as ConditionCode is not allowed.",
-        })
-      );
+      // TODO remove this validation in the class validator end
+      throw new BadRequestError("'default' as ConditionCode is not allowed.");
     }
   }
 
@@ -466,8 +467,10 @@ export class ExperimentService {
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
-        } catch (error) {
-          throw new Error(`Error in updating experiment document "updateExperimentInDB" ${error}`);
+        } catch (error: any) {
+          this.log.error(`Error in updating experiment document "updateExperimentInDB"`);
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          throw error;
         }
 
         // Check for conditionCode is 'default' then return error:
@@ -762,9 +765,10 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
-      } catch (error) {
+      } catch (error: any) {
         this.log.error('Error in adding experiment in DB');
-        throw new Error(error);
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        throw error;
       }
       // creating condition docs
       const conditionDocsToSave =
@@ -795,7 +799,8 @@ export class ExperimentService {
           this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
         ]);
       } catch (error) {
-        throw new Error(`Error in creating conditions and partitions "addExperimentInDB" ${error}`);
+        this.log.error(`Error in creating conditions and partitions "addExperimentInDB"`);
+        throw error;
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
         const { experimentId, ...restDoc } = conditionDoc as any;
@@ -922,7 +927,8 @@ export class ExperimentService {
         // Saving experiment
         experimentDoc = await this.experimentRepository.insertBatchExps(expDocs as any, transactionalEntityManager);
       } catch (error) {
-        throw new Error(`Error in creating experiment document "addBulkExperiments" ${error}`);
+        this.log.error(`Error in creating experiment document "addBulkExperiments"`);
+        throw error;
       }
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
@@ -949,7 +955,8 @@ export class ExperimentService {
         });
         return experimentsToReturn;
       } catch (error) {
-        throw new Error(`Error in creating conditions and partitions "addBulkExperiments" ${error}`);
+        this.log.error(`Error in creating conditions and partitions "addBulkExperiments"`);
+        throw error;
       }
     });
 
