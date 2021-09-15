@@ -110,6 +110,197 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *         type: array
  *         items:
  *           type: object
+ *   ExperimentResponse:
+ *     description: ''
+ *     type: object
+ *     properties:
+ *       createdAt:
+ *         type: string
+ *         minLength: 1
+ *       updatedAt:
+ *         type: string
+ *         minLength: 1
+ *       versionNumber:
+ *         type: number
+ *       id:
+ *         type: string
+ *         minLength: 1
+ *       name:
+ *         type: string
+ *         minLength: 1
+ *       description:
+ *         type: string
+ *         minLength: 1
+ *       context:
+ *         type: array
+ *         items:
+ *           required: []
+ *           properties: {}
+ *       state:
+ *         type: string
+ *         minLength: 1
+ *       startOn: {}
+ *       consistencyRule:
+ *         type: string
+ *         minLength: 1
+ *       assignmentUnit:
+ *         type: string
+ *         minLength: 1
+ *       postExperimentRule:
+ *         type: string
+ *         minLength: 1
+ *       enrollmentCompleteCondition: {}
+ *       endOn: {}
+ *       revertTo: {}
+ *       tags:
+ *         type: array
+ *         items:
+ *           required: []
+ *           properties: {}
+ *       group:
+ *         type: string
+ *         minLength: 1
+ *       logging:
+ *         type: boolean
+ *       conditions:
+ *         type: array
+ *         uniqueItems: true
+ *         minItems: 1
+ *         items:
+ *           required:
+ *             - createdAt
+ *             - updatedAt
+ *             - versionNumber
+ *             - id
+ *             - twoCharacterId
+ *             - name
+ *             - description
+ *             - conditionCode
+ *             - assignmentWeight
+ *           properties:
+ *             createdAt:
+ *               type: string
+ *               minLength: 1
+ *             updatedAt:
+ *               type: string
+ *               minLength: 1
+ *             versionNumber:
+ *               type: number
+ *             id:
+ *               type: string
+ *               minLength: 1
+ *             twoCharacterId:
+ *               type: string
+ *               minLength: 1
+ *             name:
+ *               type: string
+ *               minLength: 1
+ *             description:
+ *               type: string
+ *               minLength: 1
+ *             conditionCode:
+ *               type: string
+ *               minLength: 1
+ *             assignmentWeight:
+ *               type: number
+ *             order: {}
+ *       partitions:
+ *         type: array
+ *         uniqueItems: true
+ *         minItems: 1
+ *         items:
+ *           required:
+ *             - createdAt
+ *             - updatedAt
+ *             - versionNumber
+ *             - id
+ *             - twoCharacterId
+ *             - expPoint
+ *             - expId
+ *             - description
+ *           properties:
+ *             createdAt:
+ *               type: string
+ *               minLength: 1
+ *             updatedAt:
+ *               type: string
+ *               minLength: 1
+ *             versionNumber:
+ *               type: number
+ *             id:
+ *               type: string
+ *               minLength: 1
+ *             twoCharacterId:
+ *               type: string
+ *               minLength: 1
+ *             expPoint:
+ *               type: string
+ *               minLength: 1
+ *             expId:
+ *               type: string
+ *               minLength: 1
+ *             description:
+ *               type: string
+ *               minLength: 1
+ *             order: {}
+ *       queries:
+ *         type: array
+ *         items:
+ *           required: []
+ *           properties: {}
+ *       stateTimeLogs:
+ *         type: array
+ *         uniqueItems: true
+ *         minItems: 1
+ *         items:
+ *           required:
+ *             - createdAt
+ *             - updatedAt
+ *             - versionNumber
+ *             - id
+ *             - fromState
+ *             - toState
+ *             - timeLog
+ *           properties:
+ *             createdAt:
+ *               type: string
+ *               minLength: 1
+ *             updatedAt:
+ *               type: string
+ *               minLength: 1
+ *             versionNumber:
+ *               type: number
+ *             id:
+ *               type: string
+ *               minLength: 1
+ *             fromState:
+ *               type: string
+ *               minLength: 1
+ *             toState:
+ *               type: string
+ *               minLength: 1
+ *             timeLog:
+ *               type: string
+ *               minLength: 1
+ *     required:
+ *       - createdAt
+ *       - updatedAt
+ *       - versionNumber
+ *       - id
+ *       - name
+ *       - description
+ *       - context
+ *       - state
+ *       - consistencyRule
+ *       - assignmentUnit
+ *       - postExperimentRule
+ *       - tags
+ *       - group
+ *       - logging
+ *       - conditions
+ *       - partitions
+ *       - queries
+ *       - stateTimeLogs
  */
 
 /**
@@ -135,6 +326,20 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Experiment Name List
+   *            schema:
+   *              type: array
+   *              items:
+   *                type: object
+   *                required:
+   *                  - id
+   *                  - name
+   *                properties:
+   *                  id:
+   *                    type: string
+   *                  name:
+   *                    type: string
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Get('/names')
   public findName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
@@ -153,6 +358,12 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Experiment List
+   *            schema:
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Get()
   public find(): Promise<Experiment[]> {
@@ -171,6 +382,27 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: contextMetaData list
+   *            schema:
+   *              type: object
+   *              properties:
+   *                appContext:
+   *                  type: array
+   *                  items:
+   *                    properties: {}
+   *                expPoints:
+   *                  type: array
+   *                  items:
+   *                    properties: {}
+   *                expIds:
+   *                  type: array
+   *                  items:
+   *                    properties: {}
+   *                groupTypes:
+   *                  type: array
+   *                  items:
+   *                    properties: {}
+   *          '401':
+   *            description: AuthorizationRequiredError
    */
   @Get('/contextMetaData')
   public getContextMetaData(): object {
@@ -222,6 +454,19 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Get Paginated Experiments
+   *            schema:
+   *              type: object
+   *              properties:
+   *                total:
+   *                  type: number
+   *                nodes:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Insert Error in database
    */
   @Post('/paginated')
   public async paginatedFind(
@@ -264,6 +509,25 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Get All Experiment Partitions
+   *            schema:
+   *               type: array
+   *               description: ''
+   *               minItems: 1
+   *               uniqueItems: true
+   *               items:
+   *                 type: object
+   *                 required:
+   *                   - expPoint
+   *                   - expId
+   *                 properties:
+   *                   expPoint:
+   *                     type: string
+   *                     minLength: 1
+   *                   expId:
+   *                     type: string
+   *                     minLength: 1
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '404':
    *            description: Experiment Partitions not found
    */
@@ -291,8 +555,14 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Get Experiment By Id
+   *            schema:
+   *              $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '404':
    *            description: Experiment not found
+   *          '500':
+   *            description: id should be of type UUID
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
@@ -326,8 +596,56 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Get Experiment By Id
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - createdAt
+   *                  - updatedAt
+   *                  - versionNumber
+   *                  - id
+   *                  - twoCharacterId
+   *                  - name
+   *                  - description
+   *                  - conditionCode
+   *                  - assignmentWeight
+   *                properties:
+   *                  createdAt:
+   *                    type: string
+   *                    minLength: 1
+   *                  updatedAt:
+   *                    type: string
+   *                    minLength: 1
+   *                  versionNumber:
+   *                    type: number
+   *                  id:
+   *                    type: string
+   *                    minLength: 1
+   *                  twoCharacterId:
+   *                    type: string
+   *                    minLength: 1
+   *                  name:
+   *                    type: string
+   *                    minLength: 1
+   *                  description:
+   *                    type: string
+   *                    minLength: 1
+   *                  conditionCode:
+   *                    type: string
+   *                    minLength: 1
+   *                  assignmentWeight:
+   *                    type: number
+   *                  order: {}
+   *          '401':
+   *            description: AuthorizationRequiredError
    *          '404':
    *            description: Experiment not found
+   *          '500':
+   *            description: id should be of type UUID
    */
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
@@ -364,6 +682,14 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: New Experiment is created
+   *            schema:
+   *              $ref: '#/definitions/ExperimentResponse'
+   *          '400':
+   *            description: default as ConditionCode is not allowed
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Insert Error in database
    */
 
   @Post()
@@ -397,6 +723,12 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: New Experiment is created
+   *            schema:
+   *              $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: Insert Error in database
    */
 
   @Post('/batch')
@@ -425,6 +757,14 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Delete Experiment By Id
+   *            schema:
+   *              $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Not found error
+   *          '500':
+   *            description: id should be of type UUID
    */
 
   @Delete('/:id')
@@ -466,6 +806,10 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Experiment State is updated
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: id should be of type UUID, invalid input value for enum 'state' violates not-null constrain
    */
   @Post('/state')
   public async updateState(
@@ -521,6 +865,12 @@ export class ExperimentController {
    *       responses:
    *          '200':
    *            description: Experiment is updated
+   *            schema:
+   *              $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '500':
+   *            description: invalid input syntax for type uuid, Error in experiment schedular (user is not authorized), Insert Error in database
    */
   @Put('/:id')
   public update(
@@ -555,6 +905,8 @@ export class ExperimentController {
   *       responses:
   *          '200':
   *            description: Experiment is imported
+  *          '401':
+  *            description: AuthorizationRequiredError
   */
   @Post('/import')
   public importExperiment(
