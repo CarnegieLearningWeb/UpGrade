@@ -40,12 +40,12 @@ jobs:
         working-directory: frontend
 
       - run: zip -r upgrade-frontend-v${{ steps.package-version.outputs.current-version}}.zip *
-        working-directory: frontend/dist/abtesting
+        working-directory: frontend/dist/upgrade
 
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: frontend/dist/abtesting/upgrade-frontend-v${{ steps.package-version.outputs.current-version}}.zip
+          artifacts: frontend/dist/upgrade/upgrade-frontend-v${{ steps.package-version.outputs.current-version}}.zip
           tag: upgrade-frontend-v${{ steps.package-version.outputs.current-version}}
           name: Upgrade Frontend ${{ steps.package-version.outputs.current-version}}
           body: ${{ env.RELEASE_CHANGELOG }}
@@ -81,7 +81,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
-          SOURCE_DIR: frontend/dist/abtesting
+          SOURCE_DIR: frontend/dist/upgrade
 
       - name: Success Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
