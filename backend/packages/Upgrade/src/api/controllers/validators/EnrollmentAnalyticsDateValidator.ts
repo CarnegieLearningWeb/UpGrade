@@ -1,4 +1,4 @@
-import { IsString, IsEnum } from 'class-validator';
+import { IsString, IsEnum, IsNumber } from 'class-validator';
 import { DATE_RANGE } from 'upgrade_types';
 
 export class EnrollmentAnalyticsDateValidator {
@@ -7,4 +7,7 @@ export class EnrollmentAnalyticsDateValidator {
 
   @IsEnum(DATE_RANGE)
   public dateEnum: DATE_RANGE;
+
+  @IsNumber()
+  public clientOffset: number;
 }

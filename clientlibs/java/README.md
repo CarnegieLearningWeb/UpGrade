@@ -5,12 +5,24 @@ Make a new instance of ExperimentClient class by passing `userId, authToken, bas
 
 # Functions
 
+## Initialise User
+This is the first call from the client lib. It will create the user definition on the server.
+
+To Initialize user with userId
+> init(callback)
+
+To Initialize user with userId and student group definition
+> init(Map<String, List<String>> group, callback)
+
+To Initialize user with userId, student group definition and student workingGroup definition
+> init(Map<String, List<String>> group, Map<String, String> workingGroup, callback)
+
 ## setAltUserIds
 Set alternative user ids for current user
 
 > setAltUserIds(String[] altUserIds, callback)
 
-## SetGroupMemebership
+## SetGroupMembership
 Updates/Set the group membership of the initialized user
 
 > setGroupMembership(HashMap<String, ArrayList<String>> group, callback)

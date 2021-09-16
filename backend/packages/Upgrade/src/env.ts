@@ -54,6 +54,7 @@ export const env = {
     database: getOsEnvOptional('TYPEORM_DATABASE') || getOsEnvOptional('RDS_DB_NAME'),
     synchronize: toBool(getOsEnvOptional('TYPEORM_SYNCHRONIZE')),
     logging: getOsEnv('TYPEORM_LOGGING'),
+    maxQueryExecutionTime: toNumber(getOsEnvOptional('TYPEORM_MAX_QUERY_EXECUTION_TIME')),
   },
   swagger: {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),

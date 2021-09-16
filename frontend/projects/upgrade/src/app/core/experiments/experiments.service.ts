@@ -168,8 +168,8 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionExportExperimentInfo({ experimentId, experimentName }));
   }
 
-  setGraphRange(range: DATE_RANGE, experimentId: string) {
-    this.store$.dispatch(experimentAction.actionSetGraphRange({ range, experimentId }));
+  setGraphRange(range: DATE_RANGE, experimentId: string, clientOffset: number) {
+    this.store$.dispatch(experimentAction.actionSetGraphRange({ range, experimentId, clientOffset }));
   }
 
   fetchExperimentDetailStat(experimentId: string) {

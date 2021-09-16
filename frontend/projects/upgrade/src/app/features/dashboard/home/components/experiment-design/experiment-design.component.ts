@@ -369,7 +369,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
               return this.experimentInfo
-                ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
+                ? ({ ...this.experimentInfo.conditions[index], ...condition, id: uuid.v4(), order: order++ })
                 : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
             }
           );

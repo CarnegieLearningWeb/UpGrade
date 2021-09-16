@@ -153,7 +153,7 @@ export const actionSetIsGraphLoading = createAction(
 
 export const actionFetchExperimentGraphInfo = createAction(
   '[Experiment] Fetch Experiment graph Info',
-  props<{ experimentId: string, range: DATE_RANGE }>()
+  props<{ experimentId: string, range: DATE_RANGE, clientOffset: number }>()
 );
 
 export const actionFetchExperimentGraphInfoSuccess = createAction(
@@ -172,7 +172,7 @@ export const actionSetExperimentGraphInfo = createAction(
 
 export const actionSetGraphRange = createAction(
   '[Experiment] Set Graph Range',
-  props<{ range: DATE_RANGE, experimentId: string }>()
+  props<{ range: DATE_RANGE, experimentId: string, clientOffset: number }>()
 );
 
 export const actionFetchExperimentDetailStat = createAction(

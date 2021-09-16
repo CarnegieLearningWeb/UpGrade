@@ -80,12 +80,12 @@ export class AnalyticsService {
       groupExclusion,
     ] = promiseArray[1];
 
-    console.log('individualEnrollmentByCondition', individualEnrollmentByCondition);
-    console.log('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
-    console.log('groupEnrollmentByCondition', groupEnrollmentByCondition);
-    console.log('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
-    console.log('individualExclusion', individualExclusion);
-    console.log('groupExclusion', groupExclusion);
+    this.log.info('individualEnrollmentByCondition', individualEnrollmentByCondition);
+    this.log.info('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
+    this.log.info('groupEnrollmentByCondition', groupEnrollmentByCondition);
+    this.log.info('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
+    this.log.info('individualExclusion', individualExclusion);
+    this.log.info('groupExclusion', groupExclusion);
 
     return {
       id: experimentId,
@@ -132,45 +132,45 @@ export class AnalyticsService {
     };
   }
 
-  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE): Promise<IEnrollmentStatByDate[]> {
+  public async getEnrollmentStatsByDate(experimentId: string, dateRange: DATE_RANGE, clientOffset: number): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
       case DATE_RANGE.LAST_SEVEN_DAYS:
         for (let i = 0; i < 7; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(date.getDate() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       case DATE_RANGE.LAST_THREE_MONTHS:
         for (let i = 0; i < 3; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       case DATE_RANGE.LAST_SIX_MONTHS:
         for (let i = 0; i < 6; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
       default:
         for (let i = 0; i < 12; i++) {
           const date = new Date();
-          date.setHours(0, 0, 0, 0);
+          date.setTime(date.getTime() + (date.getTimezoneOffset() + clientOffset) * 60000);
           date.setDate(1);
           date.setMonth(date.getMonth() - i);
-          const newDate = new Date(date).toISOString();
+          const newDate = date.toDateString();
           keyToReturn[newDate] = {};
         }
         break;
@@ -178,7 +178,7 @@ export class AnalyticsService {
 
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
-      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange),
+      this.analyticsRepository.getEnrollmentByDateRange(experimentId, dateRange, clientOffset),
     ]);
 
     const experiment: Experiment = promiseArray[0];

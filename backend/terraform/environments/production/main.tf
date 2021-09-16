@@ -85,27 +85,30 @@ module "aws-ebs-app" {
   ssl_certificate_id    = var.ssl_certificate_id
 
   /* APP env config*/
-  GOOGLE_CLIENT_ID      = var.GOOGLE_CLIENT_ID
-  MONITOR_PASSWORD      = var.MONITOR_PASSWORD  
-  SWAGGER_PASSWORD      = var.SWAGGER_PASSWORD 
-  AUTH_CHECK            = var.AUTH_CHECK
-  TOKEN_SECRET_KEY      = var.TOKEN_SECRET_KEY 
-  TYPEORM_SYNCHRONIZE   = var.TYPEORM_SYNCHRONIZE
-  CONTEXT               = var.CONTEXT
-  ADMIN_USERS           = var.ADMIN_USERS
-  RDS_PASSWORD          = var.RDS_PASSWORD
+  ADMIN_USERS                = var.ADMIN_USERS
+  APP_CONTEXT                = var.APP_CONTEXT
+  AUTH_CHECK                 = var.AUTH_CHECK
+  CLIENT_API_KEY             = var.CLIENT_API_KEY
+  CLIENT_API_SECRET          = var.CLIENT_API_SECRET
+  DOMAIN_NAME                = var.DOMAIN_NAME
+  EMAIL_BUCKET               = module.aws-email-bucket.s3-bucket
+  EMAIL_EXPIRE_AFTER_SECONDS = var.EMAIL_EXPIRE_AFTER_SECONDS
+  EMAIL_FROM                 = var.EMAIL_FROM
+  EXP_IDS                    = var.EXP_IDS
+  GOOGLE_CLIENT_ID           = var.GOOGLE_CLIENT_ID
+  GROUP_TYPES                = var.GROUP_TYPES
+  MONITOR_PASSWORD           = var.MONITOR_PASSWORD
+  NEW_RELIC_APP_NAME         = var.NEW_RELIC_APP_NAME
+  NEW_RELIC_LICENSE_KEY      = var.NEW_RELIC_LICENSE_KEY
+  RDS_PASSWORD               = var.RDS_PASSWORD
+  SCHEDULER_STEP_FUNCTION    = module.aws-state-machine.step_function_arn
+  SWAGGER_PASSWORD           = var.SWAGGER_PASSWORD 
+  TOKEN_SECRET_KEY           = var.TOKEN_SECRET_KEY 
+  TYPEORM_SYNCHRONIZE        = var.TYPEORM_SYNCHRONIZE
+  TYPEORM_MAX_QUERY_EXECUTION_TIME = var.TYPEORM_MAX_QUERY_EXECUTION_TIME
 
-  SCHEDULER_STEP_FUNCTION = module.aws-state-machine.step_function_arn
   PATH_TO_PRIVATE_KEY     = "id_rsa"
   PATH_TO_PUBLIC_KEY      = "id_rsa.pub"
-  DOMAIN_NAME             = var.DOMAIN_NAME
-
-  EMAIL_FROM                      = var.EMAIL_FROM
-  EMAIL_EXPIRE_AFTER_SECONDS      = var.EMAIL_EXPIRE_AFTER_SECONDS
-  EMAIL_BUCKET                    = module.aws-email-bucket.s3-bucket
-
-  NEW_RELIC_APP_NAME    = var.NEW_RELIC_APP_NAME
-  NEW_RELIC_LICENSE_KEY = var.NEW_RELIC_LICENSE_KEY
 }
 
 resource "null_resource" "update-ebs-env" { 
