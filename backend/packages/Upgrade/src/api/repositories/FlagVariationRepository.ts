@@ -22,7 +22,7 @@ export class FlagVariationRepository extends Repository<FlagVariation> {
           { variationDocs },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -37,7 +37,7 @@ export class FlagVariationRepository extends Repository<FlagVariation> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('FlagVariationRepository', 'deleteVariation', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -66,7 +66,7 @@ export class FlagVariationRepository extends Repository<FlagVariation> {
           { variationDoc },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw[0];

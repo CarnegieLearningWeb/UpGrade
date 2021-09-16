@@ -26,7 +26,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
           { partitionDoc },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw[0];
@@ -41,7 +41,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'deleteByIds', { ids }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -60,7 +60,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'insertPartitions', { partitionsDocs }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -75,7 +75,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'deletePartition', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -85,7 +85,7 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 

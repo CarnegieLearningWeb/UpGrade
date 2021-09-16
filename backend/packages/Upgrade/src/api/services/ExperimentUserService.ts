@@ -109,28 +109,26 @@ export class ExperimentUserService {
           linkedTo: result.originalUser.id,
         };
       });
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.QUERY_FAILED,
-          message: `Users already associated with other users ${JSON.stringify(
-            errorToDisplay,
-            null,
-            2
-          )} and cannot be made alias of ${userId}`,
-        })
+      const error = new Error(
+        `Users already associated with other users ${JSON.stringify(
+          errorToDisplay,
+          null,
+          2
+        )} and cannot be made alias of ${userId}`
       );
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     }
     if (otherRootUser.length) {
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.QUERY_FAILED,
-          message: `Users with ids ${JSON.stringify(
-            otherRootUser,
-            null,
-            2
-          )} are root user and should not be converted to an alias of ${userId}`,
-        })
+      const error = new Error(
+        `Users with ids ${JSON.stringify(
+          otherRootUser,
+          null,
+          2
+        )} are root user and should not be converted to an alias of ${userId}`
       );
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     }
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {

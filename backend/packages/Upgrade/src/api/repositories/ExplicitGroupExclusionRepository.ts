@@ -19,7 +19,7 @@ export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupEx
           { rawData },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -39,7 +39,7 @@ export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupEx
           { groupId, type },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

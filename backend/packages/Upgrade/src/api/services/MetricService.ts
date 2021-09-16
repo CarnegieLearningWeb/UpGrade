@@ -46,7 +46,9 @@ export class MetricService {
     // check permission for metrics
     const isAllowed = await this.checkMetricsPermission();
     if (!isAllowed) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Metrics filter not enabled' }));
+      const error = new Error('Metrics filter not enabled');
+      (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+      throw error;
     }
     // create query for metrics
     const formattedMetrics = this.parseMetrics(metrics);
@@ -82,11 +84,11 @@ export class MetricService {
         } else if (Array.isArray(metricUnit.key)) {
           keys = metricUnit.key;
         }
-        keys.forEach(key => {
+        keys.forEach((key) => {
           const leafPath = keyName === '' ? key : `${keyName}${METRICS_JOIN_TEXT}${key}`;
           keyArrayAndMeta.push({
             key: leafPath,
-            type: metricUnit.metadata && metricUnit.metadata.type || IMetricMetaData.CONTINUOUS,
+            type: (metricUnit.metadata && metricUnit.metadata.type) || IMetricMetaData.CONTINUOUS,
             allowedData: metricUnit.allowedData,
           });
         });
@@ -100,7 +102,7 @@ export class MetricService {
         } else if (Array.isArray(metricUnit.key)) {
           keys = metricUnit.key;
         }
-        keys.forEach(key => {
+        keys.forEach((key) => {
           const newKey = keyName === '' ? key : `${keyName}${METRICS_JOIN_TEXT}${key}`;
           return `${returnKeyArray(unit, newKey as any)}`;
         });
@@ -173,22 +175,16 @@ export class MetricService {
           allowedData: groupMetric.allowedValues,
         };
       } else if (groupMetric.groupClass) {
-        const newChildren = groupMetric.allowedKeys.map(allowedKey =>
-          ({
-            key: allowedKey,
-            children: groupMetric.attributes || [],
-          })
-        );
+        const newChildren = groupMetric.allowedKeys.map((allowedKey) => ({
+          key: allowedKey,
+          children: groupMetric.attributes || [],
+        }));
         return {
           key: groupMetric.groupClass,
-          children: newChildren.map(child =>
-            ({
-              key: child.key,
-              children: child.children.map(child1 =>
-                formKeyChildrenFormat(child1)
-              ),
-            })
-          ),
+          children: newChildren.map((child) => ({
+            key: child.key,
+            children: child.children.map((child1) => formKeyChildrenFormat(child1)),
+          })),
         };
       }
     }

@@ -13,7 +13,7 @@ export class QueryRepository extends Repository<Query> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('QueryRepository', 'deleteQuery', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -30,7 +30,7 @@ export class QueryRepository extends Repository<Query> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('QueryRepository', 'upsertQuery', { queryDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw[0];
@@ -40,7 +40,11 @@ export class QueryRepository extends Repository<Query> {
     const queryResult = await this.createQueryBuilder('query')
       .innerJoinAndSelect('query.metric', 'metric')
       .where('metric.key = :metricId', { metricId })
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('QueryRepository', 'checkIfQueryExists', { metricId }, errorMsg);
+        throw errorMsgString;
+      });
 
     return queryResult.length > 0 ? true : false;
   }

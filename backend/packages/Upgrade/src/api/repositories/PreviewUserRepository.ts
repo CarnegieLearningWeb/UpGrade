@@ -15,7 +15,7 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('PreviewUserRepository', 'saveRawJson', { rawData }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -30,7 +30,7 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('PreviewUserRepository', 'deleteById', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -47,7 +47,7 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .getOne()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('PreviewUserRepository', 'findOneById', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -58,7 +58,11 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .addSelect(['experiment.id', 'experiment.name'])
       .innerJoin('assignments.experimentCondition', 'experimentCondition')
       .addSelect(['experimentCondition.id', 'experimentCondition.conditionCode'])
-      .getMany();
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('PreviewUserRepository', 'findWithNames', {}, errorMsg);
+        throw errorMsgString;
+      });
   }
 
   public async findPaginated(skip: number, take: number): Promise<PreviewUser[] | undefined> {
@@ -69,7 +73,7 @@ export class PreviewUserRepository extends Repository<PreviewUser> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('PreviewUserRepository', 'findPaginated', { skip, take }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 }

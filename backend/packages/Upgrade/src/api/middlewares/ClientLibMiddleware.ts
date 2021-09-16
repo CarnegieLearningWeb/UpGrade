@@ -26,12 +26,9 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         // throw error if no token
         if (!token) {
           this.log.warn('Token is not present in request header');
-          throw new Error(
-            JSON.stringify({
-              type: SERVER_ERROR.TOKEN_NOT_PRESENT,
-              message: 'Token is not present in request header from client',
-            })
-          );
+          const error = new Error('Token is not present in request header from client');
+          (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
+          throw error;
         }
         const { secret, key } = env.clientApi;
         const decodeToken = jwt.verify(token, secret);
@@ -41,16 +38,20 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         if (isequal(decodeToken, { APIKey: key })) {
           next();
         } else {
-          throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Provided token is invalid' }));
+          const error = new Error('Provided token is invalid');
+          (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+          throw error;
         }
       } else {
         next();
       }
-    } catch (error) {
-      if (error.message === 'jwt expired') {
-        throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: error.message }));
+    } catch (err: any) {
+      if (err.message === 'jwt expired') {
+        err.type = SERVER_ERROR.INVALID_TOKEN;
+        throw err;
       } else {
-        throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Provided token is invalid' }));
+        err.type = SERVER_ERROR.INVALID_TOKEN;
+        throw err;
       }
     }
   }

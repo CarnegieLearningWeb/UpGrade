@@ -15,7 +15,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -25,7 +25,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -50,7 +50,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -76,7 +76,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperimentsWithPreview', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -101,7 +101,7 @@ export class ExperimentRepository extends Repository<Experiment> {
           { experimentId, state },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -117,7 +117,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'updateExperiment', { experimentDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -133,7 +133,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'insertExperiment', { experimentDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -157,7 +157,7 @@ export class ExperimentRepository extends Repository<Experiment> {
           { experimentDocs },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -173,7 +173,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'deleteExperimentById', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

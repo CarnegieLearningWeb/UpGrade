@@ -61,7 +61,7 @@ export class ScheduledJobService {
           }
         }
         return {};
-      } catch (error) {
+      } catch (error: any) {
         this.log.error('Error in start experiment of schedular ', error.message);
         return error;
       }
@@ -102,7 +102,7 @@ export class ScheduledJobService {
           );
         }
         return {};
-      } catch (error) {
+      } catch (error: any) {
         this.log.error('Error in end experiment of schedular ', error.message);
         return error;
       }
@@ -213,7 +213,7 @@ export class ScheduledJobService {
           this.stopExperimentSchedular(endExperimentDoc.executionArn),
         ]);
       }
-    } catch (error) {
+    } catch (error: any) {
       this.log.error('Error in experiment schedular ', error.message);
     }
   }
@@ -224,7 +224,7 @@ export class ScheduledJobService {
       const offset = 500; // Number of logs that we do not want to delete
       await Promise.all([this.experimentAuditLogRepository.clearLogs(offset), this.errorRepository.clearLogs(offset)]);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       this.log.error('Error in clear Logs schedular ', error.message);
       return false;
     }
