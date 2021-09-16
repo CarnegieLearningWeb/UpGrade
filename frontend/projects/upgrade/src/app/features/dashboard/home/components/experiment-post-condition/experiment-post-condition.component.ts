@@ -1,7 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, Inject, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ExperimentVM, POST_EXPERIMENT_RULE, NewExperimentDialogData, NewExperimentDialogEvents, NewExperimentPaths } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
+import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { Subscription } from 'rxjs';
+import { MAT_DIALOG_DATA } from '@angular/material';
 
 @Component({
   selector: 'home-experiment-post-condition',
@@ -22,12 +25,26 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   experimentConditions = [
     { value: 'default', id: 'default' }
   ];
-  constructor(private _formBuilder: FormBuilder) { }
+  experimentSub: Subscription;
+
+  constructor(private experimentService: ExperimentService,
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private _formBuilder: FormBuilder) { }
 
   ngOnChanges() {
     this.experimentConditions = [
       { value: 'default', id: 'default' }
     ];
+    if (this.experimentInfo) {
+      this.experimentSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe(experimentData => {
+        this.newExperimentData = experimentData;
+        this.experimentInfo = experimentData;
+      });
+    } else if (this.data) {
+      this.experimentInfo = this.data.experiment;
+      this.newExperimentData = this.data.experiment;
+    }
+
     if (this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
       this.newExperimentData.conditions.map(value => {
         const isConditionExist = this.experimentConditions.find((condition) => condition.id === value.id);
@@ -73,7 +90,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       }
       this.emitExperimentDialogEvent.emit({
         type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
-        formData: { postExperimentRule, revertTo: revertTo !== 'default' ? revertTo : null },
+        formData: { postExperimentRule, conditions: this.newExperimentData.conditions, revertTo: revertTo !== 'default' ? revertTo : null },
         path: NewExperimentPaths.POST_EXPERIMENT_RULE
       });
     }

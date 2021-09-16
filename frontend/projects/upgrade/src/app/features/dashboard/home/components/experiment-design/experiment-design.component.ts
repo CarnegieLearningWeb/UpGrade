@@ -62,7 +62,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
-
+  
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -205,6 +205,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   removeConditionOrPartition(type: string, groupIndex: number) {
     this[type].removeAt(groupIndex);
+    if (type === 'condition' && this.experimentInfo) {
+      const deletedCondition = this.experimentInfo.conditions.find(condition => condition.order === groupIndex + 1);
+      if (deletedCondition) {
+        delete this.experimentInfo.conditions[groupIndex];
+        if (this.experimentInfo.revertTo === deletedCondition.id) {
+          this.experimentInfo.revertTo = null;
+        }
+      }
+    }
     this.updateView();
   }
 
@@ -369,7 +378,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
               return this.experimentInfo
-                ? ({ ...this.experimentInfo.conditions[index], ...condition, id: uuid.v4(), order: order++ })
+                ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
                 : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
             }
           );
