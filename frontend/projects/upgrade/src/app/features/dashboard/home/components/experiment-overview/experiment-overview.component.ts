@@ -91,19 +91,19 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
           break;
         case ASSIGNMENT_UNIT.GROUP:
-          if (this.overviewForm.get('context').value.length === 0) {
+          if ( this.overviewForm.get('context').value.length ) {
+            this.overviewForm.get('groupType').enable();
+            this.overviewForm.get('groupType').setValidators(Validators.required);
+            this.setGroupTypes();
+            this.consistencyRules = [
+              { value: CONSISTENCY_RULE.INDIVIDUAL },
+              { value: CONSISTENCY_RULE.GROUP },
+              { value: CONSISTENCY_RULE.EXPERIMENT }
+            ];
+          } else {
             this.overviewForm.get('groupType').reset();
             this.overviewForm.get('groupType').disable();
-            break;
           }
-          this.overviewForm.get('groupType').enable();
-          this.overviewForm.get('groupType').setValidators(Validators.required);
-          this.setGroupTypes();
-          this.consistencyRules = [
-            { value: CONSISTENCY_RULE.INDIVIDUAL },
-            { value: CONSISTENCY_RULE.GROUP },
-            { value: CONSISTENCY_RULE.EXPERIMENT }
-          ];
           break;
       }
     });
@@ -149,8 +149,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   setGroupTypes() {
     this.groupTypes = [];
     if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(element => {
-        this.groupTypes.push({value: element});
+      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(groupType => {
+        this.groupTypes.push({ value: groupType });
       });
     }
   }

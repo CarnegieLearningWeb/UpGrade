@@ -5,7 +5,6 @@ import { Subscription, Observable } from 'rxjs';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentUsersService } from '../../../../../core/experiment-users/experiment-users.service';
-import { ExperimentUserValidators } from '../../validator/experiment-users-validators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
@@ -76,7 +75,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData; 
-      if(contextMetaData['contextMetadata']) {
+      if( contextMetaData ) {
         this.contexts = Object.keys(contextMetaData['contextMetadata']) || [];
         this.contexts.forEach(context => {
           this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
@@ -91,8 +90,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
         entityType: [EntityTypes.GROUP_ID, Validators.required],
         groupType: [this.groupTypeClass],
         id: [null, Validators.required]
-      },
-      { validators: ExperimentUserValidators.validateExcludedEntityForm }
+      }
     );
   }
 

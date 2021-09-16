@@ -166,10 +166,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     if (key === 'expPoints') {
       return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || [])
-      .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+        .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
     } else if (key === 'expIds') {
       return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || [])
-      .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+        .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
     }
   }
 

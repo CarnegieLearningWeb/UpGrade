@@ -58,10 +58,6 @@ export class NewExperimentComponent implements OnInit {
 
         this.isContextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
 
-        if (this.experimentInfo) {
-          this.currentContext = this.experimentInfo.context[0]
-        }
-
         this.currentContext  = this.newExperimentData.context[0];
 
         this.stepper.next();
