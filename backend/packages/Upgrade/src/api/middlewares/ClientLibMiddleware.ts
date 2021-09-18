@@ -1,3 +1,4 @@
+import { ErrorWithType } from './../errors/ErrorWithType';
 import * as express from 'express';
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { LoggerInterface, Logger } from '../../decorators/Logger';
@@ -45,7 +46,8 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       } else {
         next();
       }
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as ErrorWithType;
       if (err.message === 'jwt expired') {
         err.type = SERVER_ERROR.INVALID_TOKEN;
         throw err;
