@@ -44,12 +44,9 @@ export class AuthService {
     this.log.info('env.google.domainName', env.google.domainName);
     this.log.info(`Validating domain name`);
     if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== hd) {
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.USER_NOT_FOUND,
-          message: `User domain is not same as required ${env.google.domainName}`,
-        })
-      );
+      const error: any = new Error(`User domain is not same as required ${env.google.domainName}`);
+      error.type = SERVER_ERROR.USER_NOT_FOUND;
+      throw error;
     }
     this.log.info(`Domain name validated`);
 
@@ -63,11 +60,10 @@ export class AuthService {
     const document = await this.userRepository.find({ email });
     if (document.length === 0) {
       this.log.info(`User not found in database`);
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
+      const error: any = 'User not found in the database';
+      error.type = SERVER_ERROR.USER_NOT_FOUND;
+      throw error;
     }
-
-    // If request specified a G Suite domain:
-    // const domain = payload['hd'];
     return document[0];
   }
 

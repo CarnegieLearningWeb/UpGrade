@@ -43,6 +43,25 @@ export class AnalyticsController {
    *       responses:
    *          '200':
    *            description: Analytics For Experiment Enrollment
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - users
+   *                  - groups
+   *                  - id
+   *                properties:
+   *                  users:
+   *                    type: number
+   *                  groups:
+   *                    type: number
+   *                  id:
+   *                    type: string
+   *                    minLength: 1
    */
   @Post('/enrollment')
   public async analyticsService(
@@ -74,6 +93,54 @@ export class AnalyticsController {
    *       responses:
    *          '200':
    *            description: Analytics For Experiment Enrollment Detail
+   *            schema:
+   *              type: object
+   *              properties:
+   *                id:
+   *                  type: string
+   *                  minLength: 1
+   *                users:
+   *                  type: number
+   *                groups:
+   *                  type: number
+   *                usersExcluded:
+   *                  type: number
+   *                groupsExcluded:
+   *                  type: number
+   *                conditions:
+   *                  type: array
+   *                  uniqueItems: true
+   *                  minItems: 1
+   *                  items:
+   *                    required:
+   *                      - id
+   *                      - users
+   *                      - groups
+   *                    properties:
+   *                      id:
+   *                        type: string
+   *                        minLength: 1
+   *                      users:
+   *                        type: number
+   *                      groups:
+   *                        type: number
+   *                      partitions:
+   *                        type: array
+   *                        uniqueItems: true
+   *                        minItems: 1
+   *                        items:
+   *                          required:
+   *                            - id
+   *                            - users
+   *                            - groups
+   *                          properties:
+   *                            id:
+   *                              type: string
+   *                              minLength: 1
+   *                            users:
+   *                              type: number
+   *                            groups:
+   *                              type: number
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
@@ -109,6 +176,57 @@ export class AnalyticsController {
    *       responses:
    *          '200':
    *            description: Analytics For Experiment Enrollment
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - date
+   *                  - stats
+   *                properties:
+   *                  date:
+   *                    type: string
+   *                    minLength: 1
+   *                  stats:
+   *                    type: object
+   *                    properties:
+   *                      id:
+   *                        type: string
+   *                        minLength: 1
+   *                      conditions:
+   *                        type: array
+   *                        uniqueItems: true
+   *                        minItems: 1
+   *                        items:
+   *                          required:
+   *                            - id
+   *                          properties:
+   *                            id:
+   *                              type: string
+   *                              minLength: 1
+   *                            partitions:
+   *                              type: array
+   *                              uniqueItems: true
+   *                              minItems: 1
+   *                              items:
+   *                                required:
+   *                                  - id
+   *                                  - users
+   *                                  - groups
+   *                                properties:
+   *                                  id:
+   *                                    type: string
+   *                                    minLength: 1
+   *                                  users:
+   *                                    type: number
+   *                                  groups:
+   *                                    type: number
+   *                    required:
+   *                      - id
+   *                      - conditions
    */
   @Post('/enrollment/date')
   public async enrollmentByDate(

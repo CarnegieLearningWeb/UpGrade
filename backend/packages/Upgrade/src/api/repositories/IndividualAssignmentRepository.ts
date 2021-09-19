@@ -22,7 +22,7 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
           { userId, experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -41,7 +41,7 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'saveRawJson', { rawData }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -67,7 +67,7 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -88,7 +88,7 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -109,7 +109,7 @@ export class IndividualAssignmentRepository extends Repository<IndividualAssignm
           { userId, experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

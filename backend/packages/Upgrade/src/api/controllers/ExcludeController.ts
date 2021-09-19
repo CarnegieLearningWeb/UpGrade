@@ -6,6 +6,67 @@ import { SERVER_ERROR } from 'upgrade_types';
 
 /**
  * @swagger
+ * definitions:
+ *   userExcludeResponse:
+ *     type: array
+ *     description: ''
+ *     minItems: 1
+ *     uniqueItems: true
+ *     items:
+ *       type: object
+ *       required:
+ *         - createdAt
+ *         - updatedAt
+ *         - versionNumber
+ *         - userId
+ *       properties:
+ *         createdAt:
+ *           type: string
+ *           minLength: 1
+ *         updatedAt:
+ *           type: string
+ *           minLength: 1
+ *         versionNumber:
+ *           type: number
+ *         userId:
+ *           type: string
+ *           minLength: 1
+ *   groupExclude:
+ *     type: array
+ *     description: ''
+ *     minItems: 1
+ *     uniqueItems: true
+ *     items:
+ *       type: object
+ *       required:
+ *         - createdAt
+ *         - updatedAt
+ *         - versionNumber
+ *         - id
+ *         - groupId
+ *         - type
+ *       properties:
+ *         createdAt:
+ *           type: string
+ *           minLength: 1
+ *         updatedAt:
+ *           type: string
+ *           minLength: 1
+ *         versionNumber:
+ *           type: number
+ *         id:
+ *           type: string
+ *           minLength: 1
+ *         groupId:
+ *           type: string
+ *           minLength: 1
+ *         type:
+ *           type: string
+ *           minLength: 1
+ */
+
+/**
+ * @swagger
  * tags:
  *   - name: Exclude
  *     description: To Exclude Users and Groups from experiments
@@ -27,6 +88,8 @@ export class ExcludeController {
    *       responses:
    *          '200':
    *            description: All Excluded Users
+   *            schema:
+   *              $ref: '#/definitions/userExcludeResponse'
    */
   @Get('/user')
   public getExcludedUser(): Promise<ExplicitIndividualExclusion[]> {
@@ -59,6 +122,8 @@ export class ExcludeController {
    *       responses:
    *          '200':
    *            description: Exclude user from experiment
+   *            schema:
+   *              $ref: '#/definitions/userExcludeResponse'
    */
   @Put('/user')
   public excludeUser(@BodyParam('id') id: string): Promise<ExplicitIndividualExclusion> {
@@ -84,6 +149,8 @@ export class ExcludeController {
    *       responses:
    *          '200':
    *            description: Delete User By Id
+   *            schema:
+   *              $ref: '#/definitions/userExcludeResponse'
    */
   @Delete('/user/:id')
   public delete(@Param('id') id: string): Promise<ExplicitIndividualExclusion | undefined> {
@@ -105,6 +172,8 @@ export class ExcludeController {
    *       responses:
    *          '200':
    *            description: All Excluded Groups
+   *            schema:
+   *              $ref: '#/definitions/userExcludeResponse'
    */
   @Get('/group')
   public getExcludedGroups(): Promise<ExplicitGroupExclusion[]> {
@@ -139,6 +208,8 @@ export class ExcludeController {
    *       responses:
    *          '200':
    *            description: Exclude group from experiment
+   *            schema:
+   *              $ref: '#/definitions/userExcludeResponse'
    */
   @Put('/group')
   public excludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitGroupExclusion> {
@@ -170,6 +241,8 @@ export class ExcludeController {
    *       responses:
    *          '200':
    *            description: Delete User By Id
+   *            schema:
+   *              $ref: '#/definitions/userExcludeResponse'
    */
   @Delete('/group/:type/:id')
   public deleteGroup(

@@ -1,15 +1,12 @@
 import { SERVER_ERROR } from 'upgrade_types';
 
-export default function repositoryError(className: string, functionName: string, parameters: any, error: any): string {
-  const errorMessage = {
-    ['Class Name']: className,
-    ['Function Name']: functionName,
-    ['Parameters']: parameters,
-    ['Error']: error,
-  };
-
-  const message = JSON.stringify(errorMessage, undefined, 2);
+export default function repositoryError(className: string, functionName: string, parameters: any, error: any): any {
+  // adding extra information for debugging
+  error.type = SERVER_ERROR.QUERY_FAILED;
+  error.className = className;
+  error.functionName = functionName;
+  error.parameters = parameters;
 
   // send error message
-  throw new Error(JSON.stringify({ type: SERVER_ERROR.QUERY_FAILED, message }));
+  return error;
 }

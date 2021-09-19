@@ -24,7 +24,7 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
           { groupIds, experimentIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -41,7 +41,7 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -62,7 +62,7 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -78,7 +78,7 @@ export class GroupAssignmentRepository extends Repository<GroupAssignment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'saveRawJson', { rawData }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;

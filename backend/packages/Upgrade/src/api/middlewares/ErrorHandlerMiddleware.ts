@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { ExpressErrorMiddlewareInterface, HttpError, Middleware } from 'routing-controllers';
+import { ExpressErrorMiddlewareInterface, Middleware } from 'routing-controllers';
 
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
@@ -14,24 +14,22 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) {}
 
   public async error(
-    error: HttpError,
+    error: any,
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
-    this.log.info('Insert Error in database', error);
+    // this.log.info('Insert Error in database', error);
 
     let message: string;
     let type: SERVER_ERROR;
 
-    let errorObject;
     let errorType;
     let errorMessage;
     try {
-      errorObject = error.message && JSON.parse(error.message);
-      errorType = errorObject && errorObject.type;
-      errorMessage = errorObject && errorObject.message;
+      errorType = error.type;
+      errorMessage = error.message;
     } catch {
       errorType = undefined;
     }
@@ -111,13 +109,11 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
 
-    const errorDocument = experimentError.type
+    experimentError.type
       ? await this.errorService.create(experimentError)
       : await Promise.resolve(error);
-
     if (!res.headersSent) {
-      res.status(error.httpCode || 500);
-      res.json(errorDocument);
+      next(error);
     }
   }
 }

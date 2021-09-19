@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { ASSIGNMENT_UNIT, ExperimentVM, EnrollmentByConditionOrPartitionData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'home-enrollment-condition-table',
@@ -19,6 +20,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   ];
   displayedColumns: string[] = [];
   isStatLoading = true;
+  experimentStateSub: Subscription;
 
   constructor(private experimentService: ExperimentService) {}
 
@@ -31,7 +33,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
   }
 
   ngOnInit() {
-    this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
+    this.experimentStateSub = this.experimentService.experimentStatById$(this.experiment.id).subscribe(stat => {
       this.experimentData = [];
       if (stat && stat.conditions) {
         this.isStatLoading = false;
@@ -79,6 +81,10 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
     return this.experiment.conditions.reduce((acc, condition) =>
       condition.id === conditionId ? acc = condition[key] : acc
       , null);
+  }
+
+  ngOnDestroy() {
+    this.experimentStateSub.unsubscribe();
   }
 
   get AssignmentUnit() {

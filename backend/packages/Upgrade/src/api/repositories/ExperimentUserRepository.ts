@@ -17,7 +17,7 @@ export class ExperimentUserRepository extends Repository<ExperimentUser> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentUserRepository', 'saveRawJson', { rawData }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -31,7 +31,16 @@ export class ExperimentUserRepository extends Repository<ExperimentUser> {
       })
       .where('id = :id', { id: userId })
       .returning('*')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExperimentUserRepository',
+          'updateWorkingGroup',
+          { userId, workingGroup },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
 
     return result.raw[0];
   }
