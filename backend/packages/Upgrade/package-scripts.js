@@ -150,6 +150,11 @@ module.exports = {
       },
     },
 
+    typecheck: {
+      script: "tsc --noEmit",
+      description: "Typecheck the project without emitting the output"
+    },
+
     /**
      * Runs TSLint over your project
      */
