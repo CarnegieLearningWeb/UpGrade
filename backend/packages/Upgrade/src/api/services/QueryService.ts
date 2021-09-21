@@ -6,6 +6,7 @@ import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
 import { SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
+import { ExperimentError } from '../models/ExperimentError';
 
 @Service()
 export class QueryService {
@@ -52,7 +53,7 @@ export class QueryService {
           message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
           name: 'Query Failed error',
           type: SERVER_ERROR.QUERY_FAILED,
-        } as any));
+        } as ExperimentError));
 
         return [];
       }
@@ -62,9 +63,9 @@ export class QueryService {
       await Promise.all(failedQuery);
     }
 
-    modifiedResponse = modifiedResponse.map((res, index) => {
-      return queryIds[index] ? { id: queryIds[index], result: res} : null;
-    }).filter(query => query);
+    modifiedResponse = modifiedResponse.filter(res => res.length).map((res, index) => {
+      return { id: queryIds[index], result: res };
+    });
 
     return modifiedResponse;
   }
