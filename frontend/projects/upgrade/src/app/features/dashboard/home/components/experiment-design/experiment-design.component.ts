@@ -164,13 +164,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       return [];
     }
 
-    if (key === 'expPoints') {
-      return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || [])
-        .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
-    } else if (key === 'expIds') {
-      return this.currentContext ? (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || [])
-        .filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
+    if (key === 'expPoints' && this.currentContext) {
+      const currentContextExpPoints = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || []);
+      return currentContextExpPoints.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+    } else if (key === 'expIds' && this.currentContext) {
+      const currentContextExpIds = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || []);
+      return currentContextExpIds.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
     }
+    return [];
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
@@ -333,8 +334,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateExpPoints(partitions: ExperimentPartition[]) {
     const expPoints = partitions.map(partition => partition.expPoint);
+    const currentContextExpPoints = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS);
+
     for (let expPointIndex = 0; expPointIndex < expPoints.length; expPointIndex++) {
-      if (this.contextMetaData['contextMetada'][this.currentContext].EXP_POINTS.indexOf(expPoints[expPointIndex]) === -1) {
+      if (currentContextExpPoints.indexOf(expPoints[expPointIndex]) === -1) {
         // Add partition point selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
         break;
@@ -344,8 +347,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   
   validateExpIds(partitions: ExperimentPartition[]) {
     const expIds = partitions.map(partition => partition.expId).filter(expId => expId);
+    const currentContextExpIds = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS);
+
     for (let expIdIndex = 0; expIdIndex < expIds.length; expIdIndex++) {
-      if (this.contextMetaData['contextMetada'][this.currentContext].EXP_IDS.indexOf(expIds[expIdIndex]) === -1) {
+      if (currentContextExpIds.indexOf(expIds[expIdIndex]) === -1) {
         // Add partition id selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
         break;

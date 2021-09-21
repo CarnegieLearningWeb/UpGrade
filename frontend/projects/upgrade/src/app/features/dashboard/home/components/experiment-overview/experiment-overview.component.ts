@@ -91,7 +91,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
           break;
         case ASSIGNMENT_UNIT.GROUP:
-          if ( this.overviewForm.get('context').value.length ) {
+          if (this.overviewForm.get('context').value.length) {
             this.overviewForm.get('groupType').enable();
             this.overviewForm.get('groupType').setValidators(Validators.required);
             this.setGroupTypes();

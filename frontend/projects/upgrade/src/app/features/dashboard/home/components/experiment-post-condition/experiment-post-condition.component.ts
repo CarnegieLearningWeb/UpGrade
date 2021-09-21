@@ -45,7 +45,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       this.newExperimentData = this.data.experiment;
     }
 
-    if (this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
+    if (this.newExperimentData && this.newExperimentData.conditions && this.newExperimentData.conditions.length) {
       this.newExperimentData.conditions.map(value => {
         const isConditionExist = this.experimentConditions.find((condition) => condition.id === value.id);
         this.experimentConditions = isConditionExist
