@@ -71,6 +71,14 @@
     {
       "email": "dhrushit@playpowerlabs.com",
       "role": "admin"
+    },
+    {
+      "email": "zlee@carnegielearning.com",
+      "role": "admin"
+    },
+    {
+      "email": "kweldon@carnegielearning.com",
+      "role": "admin"
     }
   ],
   "context": [
