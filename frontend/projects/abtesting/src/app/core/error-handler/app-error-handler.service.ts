@@ -15,7 +15,7 @@ export class AppErrorHandler extends ErrorHandler {
   }
 
   handleError(error: Error | HttpErrorResponse) {
-    let displayMessage = 'Network call failed for "' + error.message.split('"url":"')[1].split('","ok"')[0] + '" !';
+    let displayMessage = 'An error occurred.';
 
     if (!environment.production) {
       displayMessage += ' See console for details.';
