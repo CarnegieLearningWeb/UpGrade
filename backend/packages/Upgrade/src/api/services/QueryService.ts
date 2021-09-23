@@ -63,7 +63,7 @@ export class QueryService {
       await Promise.all(failedQuery);
     }
 
-    modifiedResponse = modifiedResponse.filter(res => res.length).map((res, index) => {
+    modifiedResponse = modifiedResponse.map((res, index) => {
       return { id: queryIds[index], result: res };
     });
 
