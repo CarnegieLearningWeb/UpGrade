@@ -99,12 +99,9 @@ export class ExperimentAssignmentService {
 
     // adding experiment error when user is not defined
     if (!userDoc) {
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
-        })
-      );
+      const error = new Error(`User not defined: ${userId}`);
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      throw error;
     }
     const { workingGroup } = userDoc;
 
@@ -133,12 +130,9 @@ export class ExperimentAssignmentService {
       });
       const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
       if (matchedCondition.length === 0 && condition !== null) {
-        throw new Error(
-          JSON.stringify({
-            type: SERVER_ERROR.CONDTION_NOT_FOUND,
-            message: `Condition not found: ${condition}`,
-          })
-        );
+        const error = new Error(`Condition not found: ${condition}`);
+        (error as any).type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        throw error;
       }
 
       const assignmentPromise: Array<Promise<any>> = [
@@ -210,7 +204,11 @@ export class ExperimentAssignmentService {
      * group count and participants count
      */
     const experimentDoc = experimentPartition?.experiment;
-    if (experimentDoc && experimentDoc.enrollmentCompleteCondition && experimentDoc.state === EXPERIMENT_STATE.ENROLLING) {
+    if (
+      experimentDoc &&
+      experimentDoc.enrollmentCompleteCondition &&
+      experimentDoc.state === EXPERIMENT_STATE.ENROLLING
+    ) {
       await this.checkEnrollmentEndingCriteriaForCount(experimentDoc);
     }
 
@@ -508,8 +506,10 @@ export class ExperimentAssignmentService {
         });
         return assignment ? [...accumulator, ...partitions] : accumulator;
       }, []);
-    } catch (error) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.ASSIGNMENT_ERROR, message: `Assignment Error: ${error}` }));
+    } catch (error: any) {
+      this.log.error('Error in assignment');
+      error.type = SERVER_ERROR.ASSIGNMENT_ERROR;
+      throw error;
     }
   }
 

@@ -20,7 +20,7 @@ export class LogRepository extends Repository<Log> {
         .execute()
         .catch((errorMsg: any) => {
           const errorMsgString = repositoryError(this.constructor.name, 'deleteExceptByIds', { values }, errorMsg);
-          throw new Error(errorMsgString);
+          throw errorMsgString;
         });
 
       return result.raw;
@@ -32,7 +32,7 @@ export class LogRepository extends Repository<Log> {
         .execute()
         .catch((errorMsg: any) => {
           const errorMsgString = repositoryError(this.constructor.name, 'deleteExceptByIds', { values }, errorMsg);
-          throw new Error(errorMsgString);
+          throw errorMsgString;
         });
 
       return result.raw;
@@ -48,7 +48,7 @@ export class LogRepository extends Repository<Log> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('LogRepository', 'updateLog', { logId, data, timeStamp }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -64,7 +64,11 @@ export class LogRepository extends Repository<Log> {
       .select('DISTINCT(logs.id)')
       .innerJoin('query.metric', 'metric')
       .innerJoin('metric.logs', 'logs')
-      .execute();
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('LogRepository', 'deleteByMetricId', { metricKey }, errorMsg);
+        throw errorMsgString;
+      });
 
     const logIds: string[] = subQuery.map(({ id }) => id);
 
@@ -74,9 +78,20 @@ export class LogRepository extends Repository<Log> {
         .delete()
         .from(Log)
         .where('id NOT IN (:...logIds)', { logIds })
-        .execute();
+        .execute()
+        .catch((errorMsg: any) => {
+          const errorMsgString = repositoryError('LogRepository', 'deleteByMetricId', { metricKey }, errorMsg);
+          throw errorMsgString;
+        });
     } else {
-      dataResult = await this.createQueryBuilder('logs').delete().from(Log).execute();
+      dataResult = await this.createQueryBuilder('logs')
+        .delete()
+        .from(Log)
+        .execute()
+        .catch((errorMsg: any) => {
+          const errorMsgString = repositoryError('LogRepository', 'deleteByMetricId', { metricKey }, errorMsg);
+          throw errorMsgString;
+        });
     }
 
     return dataResult;
@@ -109,7 +124,7 @@ export class LogRepository extends Repository<Log> {
           { metricKeys, uniquifierKeys },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -181,8 +196,10 @@ export class LogRepository extends Repository<Log> {
         '"individualAssignment"."conditionId"',
         `count(cast(${valueToUse} as text)) as result`,
       ]);
-      const executeQueryResult = await executeQuery.getRawMany();
-      const percentQueryResult = await percentQuery.getRawMany();
+      const [executeQueryResult, percentQueryResult] = await Promise.all([
+        executeQuery.getRawMany(),
+        percentQuery.getRawMany(),
+      ]);
       const result = executeQueryResult.map((res) => {
         const { conditionId } = res;
         const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);

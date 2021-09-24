@@ -13,7 +13,7 @@ export class MetricRepository extends Repository<Metric> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'deleteMetricsByKeys', { key }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -25,7 +25,7 @@ export class MetricRepository extends Repository<Metric> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'getMetricsByKeys', { key }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -36,7 +36,7 @@ export class MetricRepository extends Repository<Metric> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'findMetricsWithQueries', { ids }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 }

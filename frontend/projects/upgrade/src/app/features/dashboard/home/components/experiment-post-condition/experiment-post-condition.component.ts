@@ -40,7 +40,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
         this.newExperimentData = experimentData;
         this.experimentInfo = experimentData;
       });
-    } else if (this.data) {
+    } else if (this.data && this.data.experiment) {
       this.experimentInfo = this.data.experiment;
       this.newExperimentData = this.data.experiment;
     }

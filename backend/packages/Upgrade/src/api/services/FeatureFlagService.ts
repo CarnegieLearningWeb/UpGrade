@@ -8,7 +8,12 @@ import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { FlagVariation } from '../models/FlagVariation';
 import { FlagVariationRepository } from '../repositories/FlagVariationRepository';
-import { IFeatureFlagSearchParams, IFeatureFlagSortParams, FLAG_SEARCH_SORT_KEY } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
+import {
+  IFeatureFlagSearchParams,
+  IFeatureFlagSortParams,
+  FLAG_SEARCH_SORT_KEY,
+} from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
+import { SERVER_ERROR } from 'upgrade_types';
 
 @Service()
 export class FeatureFlagService {
@@ -16,7 +21,7 @@ export class FeatureFlagService {
     @Logger(__filename) private log: LoggerInterface,
     @OrmRepository() private featureFlagRepository: FeatureFlagRepository,
     @OrmRepository() private flagVariationRepository: FlagVariationRepository
-  ) { }
+  ) {}
 
   public find(): Promise<FeatureFlag[]> {
     this.log.info('Get all feature flags');
@@ -98,8 +103,10 @@ export class FeatureFlagService {
         featureFlagDoc = (
           await this.featureFlagRepository.insertFeatureFlag(flagDoc as any, transactionalEntityManager)
         )[0];
-      } catch (error) {
-        throw new Error(`Error in creating feature flag document "addFeatureFlagInDB" ${error}`);
+      } catch (err) {
+        const error = new Error(`Error in creating feature flag document "addFeatureFlagInDB" ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        throw error;
       }
 
       // creating variations docs
@@ -115,9 +122,14 @@ export class FeatureFlagService {
       // saving variations
       let variationDocs: FlagVariation[];
       try {
-        variationDocs = await this.flagVariationRepository.insertVariations(variationDocsToSave, transactionalEntityManager);
-      } catch (error) {
-        throw new Error(`Error in creating variation "addFeatureFlagInDB" ${error}`);
+        variationDocs = await this.flagVariationRepository.insertVariations(
+          variationDocsToSave,
+          transactionalEntityManager
+        );
+      } catch (err) {
+        const error = new Error(`Error in creating variation "addFeatureFlagInDB" ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        throw error;
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
@@ -144,8 +156,10 @@ export class FeatureFlagService {
       let featureFlagDoc: FeatureFlag;
       try {
         featureFlagDoc = (await this.featureFlagRepository.updateFeatureFlag(flagDoc, transactionalEntityManager))[0];
-      } catch (error) {
-        throw new Error(`Error in updating feature flag document "updateFeatureFlagInDB" ${error}`);
+      } catch (err) {
+        const error = new Error(`Error in updating feature flag document "updateFeatureFlagInDB" ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        throw error;
       }
 
       // creating variations docs
@@ -182,15 +196,14 @@ export class FeatureFlagService {
         [variationDocs] = await Promise.all([
           Promise.all(
             variationDocToSave.map(async (variationDoc) => {
-              return this.flagVariationRepository.upsertFlagVariation(
-                variationDoc,
-                transactionalEntityManager
-              );
+              return this.flagVariationRepository.upsertFlagVariation(variationDoc, transactionalEntityManager);
             })
           ) as any,
         ]);
-      } catch (error) {
-        throw new Error(`Error in creating variations "updateFeatureFlagInDB" ${error}`);
+      } catch (err) {
+        const error = new Error(`Error in creating variations "updateFeatureFlagInDB" ${err}`);
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        throw error;
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {

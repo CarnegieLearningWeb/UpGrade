@@ -13,7 +13,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ErrorRepository', 'saveRawJson', { error }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw && result.raw[0];
@@ -32,7 +32,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
       .getMany()
       .catch((error: any) => {
         const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { limit, offset }, error);
-        throw new Error(errorMsg);
+        throw errorMsg;
       });
   }
 
@@ -42,7 +42,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
       .getCount()
       .catch((error: any) => {
         const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { filter }, error);
-        throw new Error(errorMsg);
+        throw errorMsg;
       });
   }
 
@@ -60,7 +60,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ErrorRepository', 'clearLogs', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
     return result.raw;
   }
