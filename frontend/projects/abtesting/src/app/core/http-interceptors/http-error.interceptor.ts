@@ -4,7 +4,7 @@ import {
   HttpInterceptor,
   HttpHandler,
   HttpRequest} from '@angular/common/http';
-import { EMPTY, Observable } from 'rxjs';
+import { Observable, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../../environments/environment';
@@ -32,8 +32,8 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     }
     if (!((error as any).status === 401) && !environment.production) {
       setTimeout(() => {
-        this.notificationsService.error(displayMessage);
-      }, this.networkErrorCount * (this.timeOut+500));
+        this.notificationsService.error(displayMessage); // this has 1500 as timeout
+      }, this.networkErrorCount * (this.timeOut+500)); // scheduling each snackbar one after the other with a gap of 500ms
     }
   }
 
@@ -46,7 +46,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         }  
         this.openSnackBar(err);
         this.incrementErrorCount();
-        return EMPTY;
+        return EMPTY; // returning EMPTY instead of throwError as Error is handled using snacker here itself
       }))
   }
 }
