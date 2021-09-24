@@ -56,7 +56,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   conditionDisplayedColumns = [ 'conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
   partitionDisplayedColumns = ['partitionNumber', 'expPoint', 'expId', 'removePartition'];
 
-  // Used for experiment point and ids auto complete dropdown
+  // Used for condition code, experiment point and ids auto complete dropdown
+  filteredConditionCodes$: Observable<string[]>[] = [];
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData | {} = {};
@@ -93,9 +94,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (this.isContextChanged) {
+      this.isContextChanged = false;
       this.partition.clear();
+      this.condition.clear();
       this.partition.push(this.addPartitions());
+      this.condition.push(this.addConditions());
       this.partitionDataSource.next(this.partition.controls);
+      this.conditionDataSource.next(this.condition.controls);
     }
   }
 
@@ -131,6 +136,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.updateView();
 
+    // Bind predefined values of experiment conditionCode from backend
+    const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
+    conditionFormControl.controls.forEach((_, index) => {
+      this.manageConditionCodeControl(index)
+    });
+
     // Bind predefined values of experiment points and ids from backend
     const partitionFormControl = this.experimentDesignForm.get('partitions') as FormArray;
     partitionFormControl.controls.forEach((_, index) => {
@@ -141,6 +152,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.experimentDesignForm.get('partitions').valueChanges.subscribe(newValues => {
       this.validatePartitionNames(newValues);
     });
+  }
+
+  manageConditionCodeControl(index: number) {
+    const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
+    this.filteredConditionCodes$[index] = conditionFormControl.at(index).get('conditionCode').valueChanges
+      .pipe(
+        startWith<string>(''),
+        map(conditionCode => this.filterConditionCodes(conditionCode))
+      );
   }
 
   manageExpPointAndIdControl(index: number) {
@@ -155,6 +175,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         startWith<string>(''),
         map(expId => this.filterExpPointsAndIds(expId, 'expIds'))
       );
+  }
+
+  private filterConditionCodes(value: string): string[] {
+    const filterValue = value ?  value.toLocaleLowerCase() : '';
+
+    if (!this.contextMetaData) {
+      return [];
+    }
+
+    if (this.currentContext) {
+      const currentContextConditionCode = (this.contextMetaData['contextMetadata'][this.currentContext].CONDITIONS || []);
+      return currentContextConditionCode.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+    }
+    return [];
   }
 
   private filterExpPointsAndIds(value: string, key: string): string[] {

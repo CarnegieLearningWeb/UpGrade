@@ -35,8 +35,13 @@
                   | translate
               "
               formControlName="conditionCode"
-              #conditionCode
+              [matAutocomplete]="autoCompleteConditionCodes"
             />
+            <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete">
+              <mat-option *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async" [value]="conditionCode">
+                {{ conditionCode }}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </mat-cell>
       </ng-container>
