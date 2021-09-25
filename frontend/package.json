@@ -3,7 +3,6 @@
     "version": "1.0.52",
     "license": "MIT",
     "scripts": {
-        "prepare": "is-ci || cd .. && husky install frontend/.husky",
         "ng": "ng",
         "start": "ng serve --open",
         "cl:build": "npm run build:prod && npm run cl:copy-package-json",
@@ -82,8 +81,6 @@
         "@types/uuid": "^3.4.4",
         "codelyzer": "^5.0.0",
         "express": "^4.16.4",
-        "husky": "^7.0.2",
-        "is-ci": "^3.0.0",
         "jasmine-core": "~3.2.1",
         "jasmine-spec-reporter": "~4.2.1",
         "karma": "~4.1.0",

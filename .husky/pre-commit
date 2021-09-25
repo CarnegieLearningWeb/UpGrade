@@ -1,5 +1,12 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+
+# Testing Frontend
+cd frontend
+npm test
+cd ..
+
+# Testing Backend Upgrade
 cd backend/packages/Upgrade
 npm start lint && npm start typecheck && npm test

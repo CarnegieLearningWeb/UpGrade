@@ -4,7 +4,6 @@
     "description": "Backend for A/B Testing Project",
     "main": "index.js",
     "scripts": {
-        "prepare": "is-ci || cd ../../.. && husky install backend/packages/Upgrade/.husky",
         "start": "nps",
         "dev": "npm start serve",
         "build": "npm start build",
@@ -41,8 +40,6 @@
         "copyfiles": "^2.1.1",
         "cross-env": "^6.0.3",
         "faker": "^4.1.0",
-        "husky": "^7.0.2",
-        "is-ci": "^2.0.0",
         "ncp": "^2.0.0",
         "nps": "^5.9.8",
         "nps-utils": "^1.7.0",
