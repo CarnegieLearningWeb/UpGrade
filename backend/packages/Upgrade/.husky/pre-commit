@@ -2,4 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 cd backend/packages/Upgrade
-npm start lint && npm start typecheck && npm run test
+npm start lint && npm start typecheck && npm test
