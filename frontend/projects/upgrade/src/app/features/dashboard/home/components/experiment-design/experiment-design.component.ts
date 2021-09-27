@@ -235,6 +235,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (isPartition) {
       const partitionFormControl = this.experimentDesignForm.get('partitions') as FormArray;
       this.manageExpPointAndIdControl(partitionFormControl.controls.length - 1);
+    } else {
+      const conditionFormControl = this.experimentDesignForm.get('conditions') as FormArray;
+      this.manageConditionCodeControl(conditionFormControl.controls.length - 1);
     }
   }
 
