@@ -1,0 +1,63 @@
+<mat-horizontal-stepper
+  labelPosition="bottom"
+  #stepper
+  class="experiment-stepper"
+  (selectionChange)="stepChanged($event)"
+  (animationDone)="animationDone()"
+>
+  <ng-template matStepperIcon="edit">
+    <mat-icon>done</mat-icon>
+  </ng-template>
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'home.new-experiment.overview.text' | translate }}
+      </span>
+    </ng-template>
+    <home-experiment-overview
+      [experimentInfo]="experimentInfo"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-experiment-overview>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'home.new-experiment.experiment-design.text' | translate }}
+      </span>
+    </ng-template>
+    <home-experiment-design
+      [experimentInfo]="experimentInfo"
+      [currentContext]="currentContext"
+      [isContextChanged]="isContextChanged"
+      [animationCompleteStepperIndex]="animationCompletedIndex"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-experiment-design>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'home.new-experiment.schedule.text' | translate }}
+      </span>
+    </ng-template>
+    <home-experiment-schedule
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+      [experimentInfo]="experimentInfo"
+      [groupType]="newExperimentData?.group"
+    ></home-experiment-schedule>
+  </mat-step>
+
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
+        {{ 'home.new-experiment.post-condition-rule.text' | translate }}
+      </span>
+    </ng-template>
+    <home-experiment-post-condition
+      [newExperimentData]="newExperimentData"
+      [experimentInfo]="experimentInfo"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-experiment-post-condition>
+  </mat-step>
+</mat-horizontal-stepper>
