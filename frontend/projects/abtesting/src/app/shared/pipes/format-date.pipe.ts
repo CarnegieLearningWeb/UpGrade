@@ -34,15 +34,17 @@ export class FormatDatePipe implements PipeTransform {
           experimentDate.getFullYear()
         );
       } else {
+        console.log(experimentDate.getMinutes());
         return (
           dateNumber +
           this.getSuffix(dateNumber) +
           ' ' +
           months[experimentDate.getMonth()].substring(0, 3) +
           ', ' +
+          (dateHours < 10 || dateHours == 12 ? '0' : '' ) +
           (dateHours < 12 ? dateHours : dateHours - 12) +
           ':' +
-          experimentDate.getMinutes() +
+          (experimentDate.getMinutes() < 10 ? '0' : '' ) + experimentDate.getMinutes() +
           ' ' +
           (experimentDate.getHours() < 12 ? 'AM' : 'PM')
         );

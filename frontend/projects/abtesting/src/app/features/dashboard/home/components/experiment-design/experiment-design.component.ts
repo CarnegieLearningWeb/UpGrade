@@ -266,13 +266,27 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateHasConditionCodeDefault(conditions: ExperimentCondition[]) {
     let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
-    let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text')
+    let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text');
     if (conditions.length >= 1 ) {
       const hasDefaultConditionCode = conditions.filter(
         condition => condition.conditionCode.toUpperCase() === defaultKeyword
       );
       if (!!hasDefaultConditionCode.length) {
-        this.conditionCodeError = defaultConditionCodeErrorText
+        this.conditionCodeError = defaultConditionCodeErrorText;
+      } else {
+        this.conditionCodeError = null;
+      }
+    }
+  }
+
+  validateHasAssignmentWeightsNegative(conditions: ExperimentCondition[]) {
+    let negativeAssignmentWeightErrorText = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
+    if (conditions.length >= 1 ) {
+      const hasNegativeAssignmentWeights = conditions.filter(
+        condition => condition.assignmentWeight < 0
+      );
+      if (!!hasNegativeAssignmentWeights.length) {
+        this.conditionCodeError = negativeAssignmentWeightErrorText;
       } else {
         this.conditionCodeError = null;
       }
@@ -349,6 +363,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
         this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
+        this.validateHasAssignmentWeightsNegative(this.experimentDesignForm.get('conditions').value);
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();
