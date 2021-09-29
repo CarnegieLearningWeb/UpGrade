@@ -9,7 +9,7 @@ phases:
   build:
     commands:
       - npm run build -- -c=$stage
-      - aws s3 sync --delete 'dist/abtesting/' s3://$bucket_name --cache-control max-age=3600
+      - aws s3 sync --delete 'dist/upgrade/' s3://$bucket_name --cache-control max-age=3600
   post_build:
     commands:
       - echo 'Invalidating distribuition cache'
