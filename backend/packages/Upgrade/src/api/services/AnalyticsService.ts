@@ -1,3 +1,4 @@
+import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
@@ -532,7 +533,8 @@ export class AnalyticsService {
         { experimentName: experimentInfo.name },
         user
       );
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
       throw error;
     }
