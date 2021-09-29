@@ -34,7 +34,6 @@ export class FormatDatePipe implements PipeTransform {
           experimentDate.getFullYear()
         );
       } else {
-        console.log(experimentDate.getMinutes());
         return (
           dateNumber +
           this.getSuffix(dateNumber) +
