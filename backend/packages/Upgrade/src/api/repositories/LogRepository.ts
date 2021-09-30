@@ -291,6 +291,7 @@ export class LogRepository extends Repository<Log> {
   ): SelectQueryBuilder<Experiment> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
+    const nullstring = 'null';
     return experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')
@@ -313,6 +314,7 @@ export class LogRepository extends Repository<Log> {
       )
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
-      .andWhere('queries.id = :queryId', { queryId });
+      .andWhere('queries.id = :queryId', { queryId })
+      .andWhere('extracted.value != :nullstring', { nullstring });
   }
 }

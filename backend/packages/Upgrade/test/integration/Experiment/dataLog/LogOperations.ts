@@ -86,6 +86,10 @@ export default async function LogOperations(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
+  // get all experiment condition for user 5
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id);
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+
   // Save queries for various operations
   const querySum = makeQuery('totalProblemsCompleted', OPERATION_TYPES.SUM, experiments[0].id);
 
@@ -221,7 +225,7 @@ export default async function LogOperations(): Promise<void> {
       },
     },
   ]);
-
+  
   await experimentAssignmentService.dataLog(experimentUsers[1].id, [
     {
       timestamp: new Date().toISOString(),
@@ -292,6 +296,29 @@ export default async function LogOperations(): Promise<void> {
             groupKey: 'calculating_area_figures',
             groupUniquifier: '1',
             attributes: { timeSeconds: 500, completion: 'PROMOTED' },
+          },
+        ],
+      },
+    },
+  ]);
+
+  // log data for 5th user with null values:
+  await experimentAssignmentService.dataLog(experimentUsers[4].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: null,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: {
+              timeSeconds: null,
+              completion: null,
+            },
           },
         ],
       },
