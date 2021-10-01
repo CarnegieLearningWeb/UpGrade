@@ -103,7 +103,7 @@
   "home.new-experiment.design.partition-id.placeholder.text": "ID",
   "home.new-experiment.design.add-experiment-partition.text": "Add Experiment Site",
   "home.new-experiment.design.assignment-weight-validation.text": "Assignment weights' sum must be 100",
-  "home.new-experiment.design.assignment-weight-negative.text": "Assignment weights' cannot be negative",
+  "home.new-experiment.design.assignment-weight-negative.text": "Assignment weights' can not be negative",
   "home.new-experiment.design.condition-unique-validation.text": "Condition should be unique",
   "home.new-experiment.design.condition-name-validation.text": "Condition name can not be 'default'",
   "home.new-experiment.design.condition-count-new-exp-error.text": "Please have atleast 1 valid condition to move forward",

@@ -120,8 +120,18 @@
     ></span>
     <span
       class="ft-14-600 validation-message"
-      *ngIf="conditionCodeError"
-      [innerHTML]="conditionCodeError"
+      *ngIf="conditionUniqueCodeError"
+      [innerHTML]="conditionUniqueCodeError"
+    ></span>
+    <span
+      class="ft-14-600 validation-message"
+      *ngIf="conditionDefaultCodeError"
+      [innerHTML]="conditionDefaultCodeError"
+    ></span>
+    <span
+      class="ft-14-600 validation-message"
+      *ngIf="conditionWeightNegativeError"
+      [innerHTML]="conditionWeightNegativeError"
     ></span>
     <span
       class="ft-14-600 validation-message"

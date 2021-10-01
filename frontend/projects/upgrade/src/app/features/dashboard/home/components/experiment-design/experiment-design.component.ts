@@ -43,8 +43,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   allPartitions = [];
   allPartitionsSub: Subscription;
 
-  // Condition Error
-  conditionCodeError: string;
+  // Condition Errors
+  conditionUniqueCodeError: string;
+  conditionDefaultCodeError: string;
+  conditionWeightNegativeError: string;
   conditionCountError: string;
 
   // Partition Errors
@@ -316,37 +318,39 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     let conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
     if (conditionCodes.length !== new Set(conditionCodes).size) {
-      this.conditionCodeError = conditionUniqueErrorText;
+      this.conditionUniqueCodeError = conditionUniqueErrorText;
     }  else {
-        this.conditionCodeError = null;
+        this.conditionUniqueCodeError = null;
     }
   }
 
   validateHasConditionCodeDefault(conditions: ExperimentCondition[]) {
+
     let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
     let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text');
-    if (conditions.length >= 1 ) {
+    if (conditions.length) {
       const hasDefaultConditionCode = conditions.filter(
         condition => condition.conditionCode.toUpperCase() === defaultKeyword
       );
-      if (!!hasDefaultConditionCode.length) {
-        this.conditionCodeError = defaultConditionCodeErrorText;
+      if (hasDefaultConditionCode.length) {
+        this.conditionDefaultCodeError = defaultConditionCodeErrorText;
       } else {
-        this.conditionCodeError = null;
+        this.conditionDefaultCodeError = null;
       }
     }
   }
 
   validateHasAssignmentWeightsNegative(conditions: ExperimentCondition[]) {
+    
     let negativeAssignmentWeightErrorText = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
-    if (conditions.length >= 1 ) {
+    if (conditions.length) {
       const hasNegativeAssignmentWeights = conditions.filter(
         condition => condition.assignmentWeight < 0
       );
-      if (!!hasNegativeAssignmentWeights.length) {
-        this.conditionCodeError = negativeAssignmentWeightErrorText;
+      if (hasNegativeAssignmentWeights.length) {
+        this.conditionWeightNegativeError = negativeAssignmentWeightErrorText;
       } else {
-        this.conditionCodeError = null;
+        this.conditionWeightNegativeError = null;
       }
     }
   }
@@ -429,7 +433,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
+        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionUniqueCodeError && !this.conditionDefaultCodeError && !this.conditionWeightNegativeError ) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
