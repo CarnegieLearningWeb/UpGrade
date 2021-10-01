@@ -4,12 +4,16 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
+import { SERVER_ERROR } from 'upgrade_types';
+import { ErrorService } from './ErrorService';
+import { ExperimentError } from '../models/ExperimentError';
 
 @Service()
 export class QueryService {
   constructor(
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private logRepository: LogRepository,
+    public errorService: ErrorService,
     @Logger(__filename) private log: LoggerInterface
   ) {}
 
@@ -34,13 +38,35 @@ export class QueryService {
 
     const promiseResult = await Promise.all(promiseArray);
     const analysePromise = promiseResult.map((query) => this.logRepository.analysis(query));
-    let response = await Promise.all(analysePromise);
-    response = response.map((res, index) => {
-      return {
-        id: queryIds[index],
-        result: res,
-      };
+    const response = await Promise.allSettled(analysePromise);
+
+    const failedQuery = Array<Promise<any>>();
+
+    let modifiedResponse = response.map((query, index) => {
+      if (query.status === 'fulfilled') {
+        return query.value;
+      } else {
+        this.log.error('Error in Query Id ', queryIds[index]);
+        failedQuery.push(this.errorService.create({
+          endPoint: '/api/query/analyse',
+          errorCode: 500,
+          message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
+          name: 'Query Failed error',
+          type: SERVER_ERROR.QUERY_FAILED,
+        } as ExperimentError));
+
+        return [];
+      }
     });
-    return response;
+
+    if (failedQuery.length) {
+      await Promise.all(failedQuery);
+    }
+
+    modifiedResponse = modifiedResponse.map((res, index) => {
+      return { id: queryIds[index], result: res };
+    });
+
+    return modifiedResponse;
   }
 }

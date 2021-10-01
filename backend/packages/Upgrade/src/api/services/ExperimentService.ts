@@ -1,3 +1,4 @@
+import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
@@ -123,10 +124,7 @@ export class ExperimentService {
 
   public getContextMetaData(): object {
     return {
-      appContext: env.initialization.appContext,
-      expPoints: env.initialization.expPoints,
-      expIds: env.initialization.expIds,
-      groupTypes: env.initialization.groupTypes,
+      contextMetadata: env.initialization.contextMetadata,
     };
   }
 
@@ -467,7 +465,8 @@ export class ExperimentService {
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
-        } catch (error: any) {
+        } catch (err) {
+          const error = err as ErrorWithType;
           this.log.error(`Error in updating experiment document "updateExperimentInDB"`);
           error.type = SERVER_ERROR.QUERY_FAILED;
           throw error;
@@ -765,7 +764,8 @@ export class ExperimentService {
       let experimentDoc: Experiment;
       try {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
-      } catch (error: any) {
+      } catch (err) {
+        const error = err as ErrorWithType;
         this.log.error('Error in adding experiment in DB');
         error.type = SERVER_ERROR.QUERY_FAILED;
         throw error;

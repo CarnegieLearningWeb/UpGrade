@@ -10,6 +10,8 @@
     "experimentalDecorators": true,
     "downlevelIteration": true,
     "importHelpers": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
     "module": "esnext",
     "target": "es2015",
     "typeRoots": ["./node_modules/@types"],

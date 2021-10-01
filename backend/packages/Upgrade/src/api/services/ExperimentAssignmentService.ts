@@ -1,3 +1,4 @@
+import { ErrorWithType } from './../errors/ErrorWithType';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
@@ -506,7 +507,8 @@ export class ExperimentAssignmentService {
         });
         return assignment ? [...accumulator, ...partitions] : accumulator;
       }, []);
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as ErrorWithType;
       this.log.error('Error in assignment');
       error.type = SERVER_ERROR.ASSIGNMENT_ERROR;
       throw error;
