@@ -20,7 +20,7 @@ export class ScheduleJobMiddleware implements ExpressMiddlewareInterface {
         (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
         throw error;
       }
-      const decodeToken = jwt.verify(token, env.tokenSecretKey);
+      const decodeToken = jwt.verify(token, env.tokenSecretKey) as jwt.JwtPayload;
       delete decodeToken.iat;
       delete decodeToken.exp;
 

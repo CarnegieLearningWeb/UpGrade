@@ -5,7 +5,7 @@ import {
   EXPERIMENT_LOG_TYPE,
   SERVER_ERROR
 } from '../../../../../core/logs/store/logs.model';
-import * as Convert from 'ansi-to-html';
+import Convert from 'ansi-to-html';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 
 @Component({

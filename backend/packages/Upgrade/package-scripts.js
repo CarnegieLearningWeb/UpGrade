@@ -128,7 +128,7 @@ module.exports = {
      * Builds the app into the dist directory
      */
     build: {
-      script: series('nps banner.build', 'nps config', 'nps lint', 'nps clean.dist', 'nps transpile', 'nps copy'),
+      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck', 'nps clean.dist', 'nps transpile', 'nps copy'),
       description: 'Builds the app into the dist directory',
     },
     /**
@@ -148,6 +148,11 @@ module.exports = {
         script: runFast('./node_modules/typeorm/cli.js schema:drop'),
         description: 'Drops the schema of the database',
       },
+    },
+
+    typecheck: {
+      script: "tsc --noEmit",
+      description: "Typecheck the project without emitting the output"
     },
 
     /**

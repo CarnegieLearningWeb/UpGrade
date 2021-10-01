@@ -1,0 +1,25 @@
+{
+  "name": "UpGrade",
+  "version": "1.0.0",
+  "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
+  "main": "index.js",
+  "devDependencies": {
+    "husky": "^7.0.2",
+    "is-ci": "^3.0.0"
+  },
+  "scripts": {
+    "prepare": "is-ci || husky install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CarnegieLearningWeb/UpGrade.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CarnegieLearningWeb/UpGrade/issues"
+  },
+  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme"
+}
