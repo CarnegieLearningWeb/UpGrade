@@ -124,11 +124,6 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "APP_CONTEXT"
-    value     = var.APP_CONTEXT
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "APP_HOST"
     value     = var.APP_HOST
   }
@@ -174,6 +169,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "CONTEXT_METADATA"
+    value     = var.CONTEXT_METADATA
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "CONTROLLERS"
     value     = var.CONTROLLERS
   }
@@ -199,23 +199,8 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "EXP_IDS"
-    value     = var.EXP_IDS
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "EXP_POINTS"
-    value     = var.EXP_POINTS
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "GOOGLE_CLIENT_ID"
     value     = var.GOOGLE_CLIENT_ID
-  }
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "GROUP_TYPES"
-    value     = var.GROUP_TYPES
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"

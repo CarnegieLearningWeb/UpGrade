@@ -20,7 +20,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
-    // this.log.info('Insert Error in database', error);
+    this.log.info('Insert Error in database', error);
 
     let message: string;
     let type: SERVER_ERROR;
