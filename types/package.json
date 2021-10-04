@@ -1,5 +1,5 @@
 {
-  "name": "upgrade_types",
+  "name": "@upgrade/upgrade_types",
   "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
