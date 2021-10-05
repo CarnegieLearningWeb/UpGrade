@@ -44,9 +44,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   allPartitionsSub: Subscription;
 
   // Condition Errors
-  conditionUniqueCodeError: string;
-  conditionDefaultCodeError: string;
-  conditionWeightNegativeError: string;
+  conditionCodeError: string = '';
   conditionCountError: string;
 
   // Partition Errors
@@ -318,9 +316,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     let conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
     if (conditionCodes.length !== new Set(conditionCodes).size) {
-      this.conditionUniqueCodeError = conditionUniqueErrorText;
+      this.conditionCodeError += conditionUniqueErrorText;
     }  else {
-        this.conditionUniqueCodeError = null;
+        this.conditionCodeError = '';
     }
   }
 
@@ -333,9 +331,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         condition => condition.conditionCode.toUpperCase() === defaultKeyword
       );
       if (hasDefaultConditionCode.length) {
-        this.conditionDefaultCodeError = defaultConditionCodeErrorText;
+        this.conditionCodeError += defaultConditionCodeErrorText;
       } else {
-        this.conditionDefaultCodeError = null;
+        this.conditionCodeError = '';
       }
     }
   }
@@ -348,9 +346,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         condition => condition.assignmentWeight < 0
       );
       if (hasNegativeAssignmentWeights.length) {
-        this.conditionWeightNegativeError = negativeAssignmentWeightErrorText;
+        this.conditionCodeError += negativeAssignmentWeightErrorText;
       } else {
-        this.conditionWeightNegativeError = null;
+        this.conditionCodeError = '';
       }
     }
   }
@@ -433,7 +431,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionUniqueCodeError && !this.conditionDefaultCodeError && !this.conditionWeightNegativeError ) {
+        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
