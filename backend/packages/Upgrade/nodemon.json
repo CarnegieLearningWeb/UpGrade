@@ -1,8 +1,5 @@
 {
   "delay": "500",
-  "events": {
-    "start": "tslint -c ./tslint.json -t stylish 'src/**/*.ts'"
-  },
   "ignore": ["test", "commands", "src/database"],
   "watch": ["src/**/*.ts", ".env"],
   "ext": "ts",

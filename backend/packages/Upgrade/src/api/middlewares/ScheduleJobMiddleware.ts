@@ -1,3 +1,4 @@
+import { ErrorWithType } from './../errors/ErrorWithType';
 import * as express from 'express';
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import * as jwt from 'jsonwebtoken';
@@ -19,7 +20,7 @@ export class ScheduleJobMiddleware implements ExpressMiddlewareInterface {
         (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
         throw error;
       }
-      const decodeToken = jwt.verify(token, env.tokenSecretKey);
+      const decodeToken = jwt.verify(token, env.tokenSecretKey) as jwt.JwtPayload;
       delete decodeToken.iat;
       delete decodeToken.exp;
 
@@ -31,7 +32,8 @@ export class ScheduleJobMiddleware implements ExpressMiddlewareInterface {
         (error as any).type = SERVER_ERROR.INVALID_TOKEN;
         throw error;
       }
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as ErrorWithType;
       if (error.message === 'jwt expired') {
         error.type = SERVER_ERROR.INVALID_TOKEN;
         throw error;
