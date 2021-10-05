@@ -124,7 +124,7 @@
             class="experiment-schedule ft-10-400"
             *ngIf="experiment.state === ExperimentState.SCHEDULED"
           >
-            {{ '(' + (experiment.startOn | date: 'short') + ')' }}
+            {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
           </span>
         </td>
       </ng-container>
