@@ -44,7 +44,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   allPartitionsSub: Subscription;
 
   // Condition Errors
-  conditionCodeError: string = '';
   conditionCountError: string;
 
   // Partition Errors
