@@ -63,6 +63,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
+  conditionCodeErrors: string[] = [];
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -315,10 +316,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     let conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
-    if (conditionCodes.length !== new Set(conditionCodes).size) {
-      this.conditionCodeError += conditionUniqueErrorText;
-    }  else {
-        this.conditionCodeError = '';
+    const hasUniqueConditionError = conditionCodes.length !== new Set(conditionCodes).size;
+    if (hasUniqueConditionError && this.conditionCodeErrors.indexOf(conditionUniqueErrorText) === -1) {
+      this.conditionCodeErrors.push(conditionUniqueErrorText);
+    } else if (!hasUniqueConditionError) {
+      const index = this.conditionCodeErrors.indexOf(conditionUniqueErrorText, 0);
+      if (index > -1) {
+        this.conditionCodeErrors.splice(index, 1);
+      }
     }
   }
 
@@ -330,10 +335,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const hasDefaultConditionCode = conditions.filter(
         condition => condition.conditionCode.toUpperCase() === defaultKeyword
       );
-      if (hasDefaultConditionCode.length) {
-        this.conditionCodeError += defaultConditionCodeErrorText;
-      } else {
-        this.conditionCodeError = '';
+      if (hasDefaultConditionCode.length && this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText) === -1) {
+        this.conditionCodeErrors.push(defaultConditionCodeErrorText);
+      } else if (!hasDefaultConditionCode.length) {
+        const index = this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText, 0);
+        if (index > -1) {
+          this.conditionCodeErrors.splice(index, 1);
+        }
       }
     }
   }
@@ -345,10 +353,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const hasNegativeAssignmentWeights = conditions.filter(
         condition => condition.assignmentWeight < 0
       );
-      if (hasNegativeAssignmentWeights.length) {
-        this.conditionCodeError += negativeAssignmentWeightErrorText;
-      } else {
-        this.conditionCodeError = '';
+      if (hasNegativeAssignmentWeights.length && this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText) === -1) {
+        this.conditionCodeErrors.push(negativeAssignmentWeightErrorText);
+      } else if (!hasNegativeAssignmentWeights.length) {
+        const index = this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText, 0);
+        if (index > -1) {
+          this.conditionCodeErrors.splice(index, 1);
+        }
       }
     }
   }
@@ -431,7 +442,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         
         // TODO: Uncomment to validate partitions with predefined expPoint and expId
         // this.validatePartitions();
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeError) {
+        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(

@@ -119,10 +119,9 @@
       [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
     ></span>
     <span
-      class="ft-14-600 validation-message"
-      *ngIf="conditionCodeError"
-      [innerHTML]="conditionCodeError"
-    ></span>
+    class="ft-14-600 validation-message"
+    *ngFor="let error of conditionCodeErrors"
+    >{{ error }} </span>
     <span
       class="ft-14-600 validation-message"
       *ngIf="conditionCountError"
