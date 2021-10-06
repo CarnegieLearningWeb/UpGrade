@@ -7,33 +7,28 @@ import {
 import { Observable, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
+import { NotificationsService, NotificationType } from 'angular2-notifications';
 import { environment } from '../../../environments/environment';
-import { NotificationService } from '../notifications/notification.service';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
-    private notificationsService: NotificationService
+    private _notifications: NotificationsService
   ) { }
 
-  timeOut = 1500;
-  networkErrorCount: number = 0;
-
-  incrementErrorCount() {
-      return ++this.networkErrorCount;
-  }
-  
-  openSnackBar(error) {
-    let displayMessage = 'Network call failed for "' + error.url + '".';
-
+  openPopup(error) {
+    const temp = {
+      type: NotificationType.Error,
+      title: 'Network call failed.',
+      content: error.url,
+      animate: 'fromRight'
+    };
     if (!environment.production) {
-      displayMessage += ' See console for details.';
+      temp.title += ' See console for details.';
     }
     if (!((error as any).status === 401) && !environment.production) {
-      setTimeout(() => {
-        this.notificationsService.error(displayMessage); // this has 1500 as timeout
-      }, this.networkErrorCount * (this.timeOut+500)); // scheduling each snackbar one after the other with a gap of 500ms
+    this._notifications.create(temp.title, temp.content, temp.type, temp);
     }
   }
 
@@ -43,9 +38,8 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         if (err.status === 401) {
           // auto logout if 401 response returned from api
           this.authService.authLogout();
-        }  
-        this.openSnackBar(err);
-        this.incrementErrorCount();
+        }
+        this.openPopup(err);
         return EMPTY; // returning EMPTY instead of throwError as Error is handled using snacker here itself
       }))
   }
