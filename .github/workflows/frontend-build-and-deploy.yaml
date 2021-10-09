@@ -34,6 +34,12 @@ jobs:
 
 #############################################  Build Steps #############################################
 
+      - name: Build types
+        working-directory: types
+        run: |
+          npm install
+          npm run build
+
       - run: |
           npm ci
           npm run build:prod
