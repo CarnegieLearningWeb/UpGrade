@@ -91,6 +91,7 @@
         "typescript": "^3.6.4",
         "upgrade_types": "^1.0.4",
         "uuid": "^3.3.3",
-        "winston": "^3.2.1"
+        "winston": "^3.2.1",
+        "winston-splunk-httplogger": "^3.1.0"
     }
 }
