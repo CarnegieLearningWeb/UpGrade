@@ -24,8 +24,8 @@ export class SplunkLogger {
             if (message.meta[0].level == '') {
             message.meta[0].level = severity;
             }
-            if (message.meta[0].message == '') {
-            message.meta[0].message = message.meta['message'];
+            if (message.meta[0].message.stdout == '') {
+            message.meta[0].message.stdout = message.meta['message'];
             }
             var event = message.meta[0];
         } else {
@@ -42,7 +42,7 @@ export class SplunkLogger {
     };
 
     public static payload_json = {
-        message:"",
+        message:{stdout:"",stack_trace:""},
         level: "",
         http_request_id: "",
         client_session_id: "",
@@ -91,7 +91,6 @@ export class SplunkLogger {
     public info(message: string, ...args: any[]): void {
         this.log('info', message, args);
     }
-
     public warn(message: string, ...args: any[]): void {
         this.log('warn', message, args);
     }

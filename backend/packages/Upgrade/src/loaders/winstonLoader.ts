@@ -15,7 +15,7 @@ export const winstonLoader: MicroframeworkLoader = (settings: MicroframeworkSett
         format:
           env.node !== 'development'
             ? format.combine(format.json())
-            : format.combine(format.colorize(), format.simple()),
+            : format.combine(format.simple()),
       }),
       new SplunkStreamEvent({ splunk: SplunkLogger.splunkSettings })
     ],

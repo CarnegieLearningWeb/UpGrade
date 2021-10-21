@@ -1,4 +1,5 @@
-import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
+import { JsonController, Req, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
+import { Request } from 'express';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
@@ -105,8 +106,9 @@ export class UserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: ExperimentUser[]): Promise<ExperimentUser[]> {
-    return this.userService.create(users);
+  public create(@Body() users: ExperimentUser[], @Req() request: Request): Promise<ExperimentUser[]> {
+    console.log('---',request);
+    return this.userService.create(users,request);
   }
 
   /**

@@ -1,4 +1,5 @@
 import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req } from 'routing-controllers';
+import { Request } from 'express';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -124,9 +125,12 @@ export class ExperimentClientController {
   @Post('init')
   public async init(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req() request: Request,
     experimentUser: ExperimentUser
   ): Promise<ExperimentUser> {
-    const document = await this.experimentUserService.create([experimentUser]);
+    const logger = request.logger.child({filename: __filename, function_name: "init"});
+    logger.info({stdout:"Starting the init call for user",stack_trace:"null"});
+    const document = await this.experimentUserService.create([experimentUser],logger);
     return document[0];
   }
 
