@@ -45,6 +45,12 @@ export const env = {
     json: toBool(getOsEnvOptional('LOG_JSON')),
     output: getOsEnv('LOG_OUTPUT'),
   },
+  // Use this when want log directly from the console
+  splunk: {
+    host: getOsEnvOptional('SPLUNK_HOST'),
+    token: getOsEnvOptional('SPLUNK_TOKEN'),
+    index: getOsEnvOptional('SPLUNK_INDEX'),
+  },
   db: {
     type: getOsEnv('TYPEORM_CONNECTION'),
     host: getOsEnvOptional('TYPEORM_HOST') || getOsEnvOptional('RDS_HOSTNAME'),
