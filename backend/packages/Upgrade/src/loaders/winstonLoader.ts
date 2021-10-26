@@ -8,7 +8,9 @@ export const winstonLoader: MicroframeworkLoader = (settings: MicroframeworkSett
   const transportConfig: TransportStream[] = [];
 
   const formatter =
-    env.node !== 'development' ? format.combine(format.json()) : format.combine(format.colorize(), format.simple());
+    env.node !== 'development'
+      ? format.combine(format.json())
+      : format.combine(format.timestamp(), format.json(), format.prettyPrint({ colorize: true }));
 
   // push console stream
   transportConfig.push(
@@ -27,8 +29,12 @@ export const winstonLoader: MicroframeworkLoader = (settings: MicroframeworkSett
           host: env.splunk.host,
           token: env.splunk.token,
           index: env.splunk.index,
-          eventFormatter: (message, severity) => message,
+          eventFormatter: (message, severity) => {
+            const { meta } = message;
+            return { ...meta };
+          },
         },
+        format: formatter,
       })
     );
   }

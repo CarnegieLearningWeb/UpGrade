@@ -52,35 +52,41 @@ export class SplunkLogger {
   }
 
   public scope: string;
+  public logger: winston.Logger;
 
   constructor(scope?: string) {
+    this.logger = winston.child({});
     this.scope = SplunkLogger.parsePathToScope(scope ? scope : SplunkLogger.DEFAULT_SCOPE);
   }
 
-  public debug(message: string, ...args: any[]): void {
+  public debug(message: Record<string, any>, ...args: any[]): void {
     this.log('debug', message, args);
   }
 
-  public info(message: string, ...args: any[]): void {
+  public info(message: Record<string, any>, ...args: any[]): void {
     this.log('info', message, args);
   }
-  public warn(message: string, ...args: any[]): void {
+  public warn(message: Record<string, any>, ...args: any[]): void {
     this.log('warn', message, args);
   }
 
-  public error(message: string, ...args: any[]): void {
+  public error(message: Record<string, any>, ...args: any[]): void {
     this.log('error', message, args);
   }
 
-  private log(level: string, message: string, args: any[]): void {
-    if (winston) {
-      winston[level](`${this.formatScope()} ${message}`, args);
+  public child(override: Record<string, any>): void {
+    this.logger = this.logger.child(override);
+  }
+
+  private log(level: string, message: any, args: any[]): void {
+    if (this.logger) {
+      this.logger[level](message, args);
     }
   }
 
-  private formatScope(): string {
-    return `[${this.scope}]`;
-  }
+//   private formatScope(): string {
+//     return `[${this.scope}]`;
+//   }
 
   // return logger;
 }

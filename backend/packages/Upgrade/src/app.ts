@@ -1,3 +1,4 @@
+import { SplunkLogger } from './lib/logger/SplunkLogger';
 import { env } from './env';
 
 if (env.isProduction) {
@@ -29,6 +30,11 @@ bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 })
   .then((data) => {
+    const logger = new SplunkLogger();
+    logger.info({detail: 'Hello world', from: "app"});
+
+    logger.child({path: 'Upgrade'});
+    logger.error({detail: 'Hello world Seconf', from: "app"})
     // logger = logger.child({requestId: '1'});
     // logging data after the winston is configured
     // logger.info('Server starting at ' + Date.now());
