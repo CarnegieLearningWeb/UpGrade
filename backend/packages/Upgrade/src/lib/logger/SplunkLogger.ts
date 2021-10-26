@@ -78,6 +78,10 @@ export class SplunkLogger {
     this.logger = this.logger.child(override);
   }
 
+  public getLogger(): winston.Logger {
+    return this.logger;
+  }
+
   private log(level: string, message: any, args: any[]): void {
     if (this.logger) {
       this.logger[level](message, args);
