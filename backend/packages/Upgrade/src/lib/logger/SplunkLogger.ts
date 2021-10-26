@@ -4,41 +4,12 @@ import * as winston from 'winston';
 export class SplunkLogger {
   public static DEFAULT_SCOPE = 'app';
 
-  // public static eventFormatter = (message, severity) => {
-  //     delete message['msg'];
-  //     if (message.meta[0]) {
-  //         console.log(message.meta[0])
-  //         if (message.meta[0].level == '') {
-  //         message.meta[0].level = severity;
-  //         }
-  //         if (message.meta[0].message.stdout == '') {
-  //         message.meta[0].message.stdout = message.meta['message'];
-  //         }
-  //         var event = message.meta[0];
-  //     } else {
-  //         var event = message.meta;
-  //     }
-  //     return event;
-  // };
-
-  // public static payload_json = {
-  //     message:{stdout:"",stack_trace:""},
-  //     level: "",
-  //     http_request_id: "",
-  //     client_session_id: "",
-  //     endpoint: "",
-  //     api_request_type: "",
-  //     filepath: "",
-  //     function_name: "",
-  //     category: "",
-  //   };
 
   /*
    * EXPRESS TYPESCRIPT BOILERPLATE
    * ----------------------------------------
    */
 
-  // const log = new Logger(__filename);
   private static parsePathToScope(filepath: string): string {
     if (filepath.indexOf(path.sep) >= 0) {
       filepath = filepath.replace(process.cwd(), '');
@@ -78,7 +49,7 @@ export class SplunkLogger {
     this.logger = this.logger.child(override);
   }
 
-  private log(level: string, message: any, args: any[]): void {
+  public log(level: string, message: any, args: any[]): void {
     if (this.logger) {
       this.logger[level](message, args);
     }
@@ -87,6 +58,4 @@ export class SplunkLogger {
 //   private formatScope(): string {
 //     return `[${this.scope}]`;
 //   }
-
-  // return logger;
 }

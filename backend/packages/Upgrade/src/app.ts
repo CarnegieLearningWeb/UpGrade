@@ -31,13 +31,12 @@ bootstrapMicroframework({
 })
   .then((data) => {
     const logger = new SplunkLogger();
+    // testing logs
     logger.info({detail: 'Hello world', from: "app"});
-
     logger.child({path: 'Upgrade'});
-    logger.error({detail: 'Hello world Seconf', from: "app"})
-    // logger = logger.child({requestId: '1'});
+    logger.error({detail: 'Hello world Second', from: "app"})
     // logging data after the winston is configured
-    // logger.info('Server starting at ' + Date.now());
+    logger.info({detail: 'Server starting at ' + Date.now()});
     return CreateSystemUser();
   })
   .then(() => {
