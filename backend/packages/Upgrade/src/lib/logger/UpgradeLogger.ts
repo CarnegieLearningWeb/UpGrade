@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as winston from 'winston';
 
-export class SplunkLogger {
+export class UpgradeLogger {
   public static DEFAULT_SCOPE = 'app';
 
   /*
@@ -9,7 +9,7 @@ export class SplunkLogger {
    * ----------------------------------------
    */
 
-  private static parsePathToScope(filepath: string): string {
+  public static parsePathToScopeFileName(filepath: string): string {
     if (filepath.indexOf(path.sep) >= 0) {
       filepath = filepath.replace(process.cwd(), '');
       filepath = filepath.replace(`${path.sep}src${path.sep}`, '');
@@ -26,7 +26,7 @@ export class SplunkLogger {
 
   constructor(scope?: string) {
     this.logger = winston.child({});
-    this.scope = SplunkLogger.parsePathToScope(scope ? scope : SplunkLogger.DEFAULT_SCOPE);
+    this.scope = UpgradeLogger.parsePathToScopeFileName(scope ? scope : UpgradeLogger.DEFAULT_SCOPE);
   }
 
   public debug(message: Record<string, any>, ...args: any[]): void {

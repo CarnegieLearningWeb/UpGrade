@@ -1,4 +1,4 @@
-import { SplunkLogger } from './lib/logger/SplunkLogger';
+import { UpgradeLogger } from './lib/logger/UpgradeLogger';
 import { env } from './env';
 
 if (env.isProduction) {
@@ -30,11 +30,7 @@ bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 })
   .then((data) => {
-    const logger = new SplunkLogger();
-    // testing logs
-    logger.info({detail: 'Hello world', from: "app"});
-    logger.child({path: 'Upgrade'});
-    logger.error({detail: 'Hello world Second', from: "app"})
+    const logger = new UpgradeLogger();
     // logging data after the winston is configured
     logger.info({detail: 'Server starting at ' + Date.now()});
     return CreateSystemUser();

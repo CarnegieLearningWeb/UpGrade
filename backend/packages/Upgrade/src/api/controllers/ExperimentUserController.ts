@@ -107,8 +107,7 @@ export class UserController {
    */
   @Post()
   public create(@Body() users: ExperimentUser[], @Req() request: Request): Promise<ExperimentUser[]> {
-    console.log('---',request);
-    return this.userService.create(users,request);
+    return this.userService.create(users, request);
   }
 
   /**
