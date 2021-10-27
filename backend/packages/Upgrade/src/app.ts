@@ -24,12 +24,10 @@ import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
  * ----------------------------------------
  */
 
-// const log = new Logger(__filename);
-
 bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 })
-  .then((data) => {
+  .then(() => {
     const logger = new UpgradeLogger();
     // logging data after the winston is configured
     logger.info({detail: 'Server starting at ' + Date.now()});
@@ -38,7 +36,4 @@ bootstrapMicroframework({
   .then(() => {
     // enable metric filtering
     return enableMetricFiltering();
-  })
-  .then(() => {
-    // banner(childLogger);
   });
