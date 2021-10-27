@@ -4,7 +4,6 @@ import * as winston from 'winston';
 export class SplunkLogger {
   public static DEFAULT_SCOPE = 'app';
 
-
   /*
    * EXPRESS TYPESCRIPT BOILERPLATE
    * ----------------------------------------
@@ -49,13 +48,13 @@ export class SplunkLogger {
     this.logger = this.logger.child(override);
   }
 
-  public log(level: string, message: any, args: any[]): void {
+  public getLogger(): winston.Logger {
+    return this.logger;
+  }
+
+  private log(level: string, message: any, args: any[]): void {
     if (this.logger) {
       this.logger[level](message, args);
     }
   }
-
-//   private formatScope(): string {
-//     return `[${this.scope}]`;
-//   }
 }

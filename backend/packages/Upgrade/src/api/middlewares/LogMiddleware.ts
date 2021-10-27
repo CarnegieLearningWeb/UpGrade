@@ -1,8 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';
-import uuid from 'uuid';
 import { SplunkLogger } from '../../lib/logger/SplunkLogger';
+import uuid from 'uuid';
 declare global {
   namespace Express {
     interface Request {
@@ -29,7 +29,7 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
   public use(req: express.Request, res: express.Response, next: express.NextFunction): any {
     //childlogger creation
     const logger = new SplunkLogger();
-    logger.info({
+    logger.child({
       http_request_id: uuid(),
       endpoint: req.url,
       client_session_id: null,
@@ -37,14 +37,14 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
       filename: __filename,
       function_name: 'use',
       testingLocal: true,
-      from: "logMiddleware"});
-
-    // adding logger instance to the request to pass it to all other requests:
+    });
     req.logger = logger;
 
     return morgan(this.jsonFormat, {
       stream: {
-        write: logger.info.bind(logger),
+        write: (text: string) => {
+          logger.info(JSON.parse(text));
+        },
       },
     })(req, res, next);
   }
