@@ -10,6 +10,7 @@ import org.upgradeplatform.interfaces.ResponseCallback;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
+import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
 
 public class Main {
@@ -25,29 +26,39 @@ public class Main {
 		    CompletableFuture<String> result = new CompletableFuture<>();
 
             System.out.println(prefix() + "initiating requests");
-            experimentClient.getExperimentCondition("assign-prog", experimentPoint, sectionId, new ResponseCallback<ExperimentsResponse>(){
+            experimentClient.init(new ResponseCallback<InitializeUser>() {
                 @Override
-                public void onSuccess(ExperimentsResponse expResult){
-                    AssignedCondition condition = expResult.getAssignedCondition();
-                    String code = condition == null ? null : condition.getConditionCode();
-                    experimentClient.markExperimentPoint(experimentPoint, sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
+                public void onSuccess(InitializeUser t){
+                    experimentClient.getExperimentCondition("assign-prog", experimentPoint, sectionId, new ResponseCallback<ExperimentsResponse>(){
                         @Override
-                        public void onSuccess(@NonNull MarkExperimentPoint markResult){
-                            result.complete("marked " + code + ": " + markResult.toString());
+                        public void onSuccess(ExperimentsResponse expResult){
+                            AssignedCondition condition = expResult.getAssignedCondition();
+                            String code = condition == null ? null : condition.getConditionCode();
+                            experimentClient.markExperimentPoint(experimentPoint, sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
+                                @Override
+                                public void onSuccess(@NonNull MarkExperimentPoint markResult){
+                                    result.complete("marked " + code + ": " + markResult.toString());
+                                }
+
+                                @Override
+                                public void onError(@NonNull ErrorResponse error){
+                                    result.complete("error marking " + code + ": " + error.toString());
+                                }
+                            });
                         }
 
                         @Override
                         public void onError(@NonNull ErrorResponse error){
-                            result.complete("error marking " + code + ": " + error.toString());
+                            result.complete(error.toString());
                         }
+
                     });
                 }
 
                 @Override
                 public void onError(@NonNull ErrorResponse error){
-                    result.complete(error.toString());
+                    result.complete("error initializing: " + error.toString());
                 }
-                
             });
 
             System.out.println(prefix() + result.getNow("not complete yet"));
