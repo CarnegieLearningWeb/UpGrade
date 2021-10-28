@@ -4,7 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.upgradeplatform</groupId>
 	<artifactId>upgrade-client</artifactId>
-	<version>0.11</version>
+	<!-- use https://semver.org when updating this version, and note what has 
+		changed in the next comment. that increases the likelihood that two PRs in-flight 
+		at the same time that happen to rev to the same new version will be caught 
+		by a merge conflict. -->
+    <!-- 0.11 -> 1.0.0: improved logging for failure parsing JSON responses from the server -->
+	<version>1.0.0</version>
 	<build>
 		<plugins>
 			<plugin>
