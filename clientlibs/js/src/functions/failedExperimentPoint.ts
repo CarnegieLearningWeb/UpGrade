@@ -4,6 +4,7 @@ import fetchDataService from '../common/fetchDataService';
 export default async function failedExperimentPoint(
   url: string,
   token: string,
+  clientSessionId: string,
   experimentPoint: string,
   reason: string,
   userId: string,
@@ -21,7 +22,7 @@ export default async function failedExperimentPoint(
         experimentId,
       };
     }
-    const response = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST);
+    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
     if (response.status) {
       return {
         type: response.data.type,

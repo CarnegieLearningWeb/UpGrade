@@ -2,9 +2,9 @@ import fetchDataService from '../common/fetchDataService';
 import { Types } from '../identifiers';
 import { IFeatureFlag } from 'upgrade_types';
 
-export default async function getAllFeatureFlags(url: string, token: string): Promise<IFeatureFlag[]> {
+export default async function getAllFeatureFlags(url: string, token: string, clientSessionId: string): Promise<IFeatureFlag[]> {
   try {
-    const featureFlagResponse = await fetchDataService(url, token, {}, Types.REQUEST_TYPES.GET);
+    const featureFlagResponse = await fetchDataService(url, token, clientSessionId, {}, Types.REQUEST_TYPES.GET);
     if (featureFlagResponse.status) {
       return featureFlagResponse.data.map(flag => {
         const { createdAt, updatedAt, versionNumber, variations, ...rest } = flag;
