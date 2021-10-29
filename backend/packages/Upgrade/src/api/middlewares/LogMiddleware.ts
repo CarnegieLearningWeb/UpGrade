@@ -32,7 +32,6 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     logger.child({
       http_request_id: uuid(),
       endpoint: req.url,
-      client_session_id: null,
       api_request_type: null,
       filename: UpgradeLogger.parsePathToScopeFileName(__filename),
       function_name: 'use',
