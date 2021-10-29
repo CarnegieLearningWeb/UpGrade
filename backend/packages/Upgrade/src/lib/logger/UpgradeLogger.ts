@@ -9,7 +9,7 @@ export class UpgradeLogger {
    * ----------------------------------------
    */
 
-  public static parsePathToScopeFileName(filepath: string): string {
+  public parsePathToScopeFileName(filepath: string): string {
     if (filepath.indexOf(path.sep) >= 0) {
       filepath = filepath.replace(process.cwd(), '');
       filepath = filepath.replace(`${path.sep}src${path.sep}`, '');
@@ -26,7 +26,11 @@ export class UpgradeLogger {
 
   constructor(scope?: string) {
     this.logger = winston.child({});
-    this.scope = UpgradeLogger.parsePathToScopeFileName(scope ? scope : UpgradeLogger.DEFAULT_SCOPE);
+    this.scope = this.parsePathToScopeFileName(scope ? scope : UpgradeLogger.DEFAULT_SCOPE);
+  }
+
+  public addFromDetails(logger: any, filename : string, functionName: string) {
+    logger.child({ filename: this.parsePathToScopeFileName(filename), function_name: functionName })
   }
 
   public debug(message: Record<string, any>, ...args: any[]): void {

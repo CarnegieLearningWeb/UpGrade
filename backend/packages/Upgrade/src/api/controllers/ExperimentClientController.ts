@@ -20,7 +20,6 @@ import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
 import * as express from 'express';
-import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 /**
  * @swagger
@@ -130,9 +129,12 @@ export class ExperimentClientController {
     experimentUser: ExperimentUser
   ): Promise<ExperimentUser> {
 
-    request.logger.child({ filename: UpgradeLogger.parsePathToScopeFileName(__filename), function_name: "init" });
+    request.logger.addFromDetails(request.logger, __filename, "init");
     request.logger.info({ stdout: "Starting the init call for user", stack_trace: "null" });
-    const document = await this.experimentUserService.create( [experimentUser], request.logger );
+    var document = await this.experimentUserService.create( [experimentUser], request.logger );
+    ['createdAt', 'updatedAt', 'versionNumber'].forEach(key => delete document[0][key]);
+    
+    console.log("document: ", document[0]);
     return document[0];
   }
 

@@ -11,7 +11,6 @@ import { In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
-import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ExperimentUserService {
@@ -35,7 +34,7 @@ export class ExperimentUserService {
   }
 
   public async create(users: Array<Partial<ExperimentUser>>, logger: any): Promise<ExperimentUser[]> {
-    logger.child({ filename: UpgradeLogger.parsePathToScopeFileName(__filename), function_name: "create" });
+    logger.addFromDetails(logger, __filename, "create");
     logger.info({ stdout:'Create a new User. Metadata of the user =>', details: users, stack_trace: null });
     const multipleUsers = users.map((user) => {
       user.id = user.id || uuid();

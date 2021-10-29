@@ -29,12 +29,11 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
   public use(req: express.Request, res: express.Response, next: express.NextFunction): any {
     //childlogger creation
     const logger = new UpgradeLogger();
+    logger.addFromDetails(logger, __filename, "use");
     logger.child({
       http_request_id: uuid(),
       endpoint: req.url,
       api_request_type: null,
-      filename: UpgradeLogger.parsePathToScopeFileName(__filename),
-      function_name: 'use',
       testingLocal: true,
     });
     req.logger = logger;
