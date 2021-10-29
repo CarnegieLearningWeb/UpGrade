@@ -31,7 +31,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         session_id = req.get('Session-Id');
       }
       req.logger.child({ client_session_id: session_id, filename: UpgradeLogger.parsePathToScopeFileName(__filename), function_name: "create" });
-      req.logger.info({ stdout: "Session Id updated in logger instance" });
+      req.logger.debug({ stdout: "Session Id updated in logger instance" });
       if (setting.toCheckAuth) {
         // throw error if no token
         if (!token) {
