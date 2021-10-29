@@ -7,6 +7,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 import * as jwt from 'jsonwebtoken';
 import isequal from 'lodash.isequal';
 import { env } from '../../env';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
   constructor(@Logger(__filename) private log: LoggerInterface, public settingService: SettingService) {}
@@ -23,6 +24,14 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       //   const tokenSigned = jwt.sign(data, 'carnegilearning');
       //   console.log('tokenSigned', tokenSigned);
 
+      // adding session id in logger instance:
+      let session_id = null;
+      // if session id received from clientlib request header:
+      if (req.get('Session-Id')) {
+        session_id = req.get('Session-Id');
+      }
+      req.logger.child({ client_session_id: session_id, filename: UpgradeLogger.parsePathToScopeFileName(__filename), function_name: "create" });
+      req.logger.info({ stdout: "Session Id updated in logger instance" });
       if (setting.toCheckAuth) {
         // throw error if no token
         if (!token) {

@@ -130,12 +130,7 @@ export class ExperimentClientController {
     experimentUser: ExperimentUser
   ): Promise<ExperimentUser> {
 
-    let session_id = null;
-    // if session id received from clientlib request header:
-    if (request.get('Session-Id')) {
-      session_id = request.get('Session-Id');
-    }
-    request.logger.child({ client_session_id: session_id, filename: UpgradeLogger.parsePathToScopeFileName(__filename), function_name: "init" });
+    request.logger.child({ filename: UpgradeLogger.parsePathToScopeFileName(__filename), function_name: "init" });
     request.logger.info({ stdout: "Starting the init call for user", stack_trace: "null" });
     const document = await this.experimentUserService.create( [experimentUser], request.logger );
     return document[0];
