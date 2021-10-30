@@ -1,10 +1,10 @@
 import { JsonController, Req, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
-import { Request } from 'express';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
+import { AppRequest } from '../../types';
 
 const validator = new Validator();
 // TODO delete this from experiment system
@@ -106,8 +106,8 @@ export class UserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: ExperimentUser[], @Req() request: Request): Promise<ExperimentUser[]> {
-    return this.userService.create(users, request);
+  public create(@Body() users: ExperimentUser[], @Req() request: AppRequest): Promise<ExperimentUser[]> {
+    return this.userService.create(users, request.logger);
   }
 
   /**

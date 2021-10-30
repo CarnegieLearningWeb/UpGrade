@@ -3,11 +3,13 @@ import * as winston from 'winston';
 
 export class UpgradeLogger {
   public static DEFAULT_SCOPE = 'app';
+  public scope: string;
+  public logger: winston.Logger;
 
-  /*
-   * EXPRESS TYPESCRIPT BOILERPLATE
-   * ----------------------------------------
-   */
+  constructor(scope?: string) {
+    this.logger = winston.child({});
+    this.scope = this.parsePathToScopeFileName(scope ? scope : UpgradeLogger.DEFAULT_SCOPE);
+  }
 
   public parsePathToScopeFileName(filepath: string): string {
     if (filepath.indexOf(path.sep) >= 0) {
@@ -21,16 +23,8 @@ export class UpgradeLogger {
     return filepath;
   }
 
-  public scope: string;
-  public logger: winston.Logger;
-
-  constructor(scope?: string) {
-    this.logger = winston.child({});
-    this.scope = this.parsePathToScopeFileName(scope ? scope : UpgradeLogger.DEFAULT_SCOPE);
-  }
-
-  public addFromDetails(logger: any, filename : string, functionName: string) {
-    logger.child({ filename: this.parsePathToScopeFileName(filename), function_name: functionName })
+  public addFromDetails(filename: string, functionName: string): void {
+    this.child({ filename: this.parsePathToScopeFileName(filename), functionName });
   }
 
   public debug(message: Record<string, any>, ...args: any[]): void {
