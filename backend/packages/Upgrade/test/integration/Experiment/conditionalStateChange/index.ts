@@ -4,6 +4,7 @@ import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import TestCase1 from './IndividualUserCount';
 import TestCase2 from './GroupUserCount';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
   const userService = Container.get<ExperimentUserService>(ExperimentUserService);
@@ -29,7 +30,7 @@ const initialChecks = async () => {
   expect(individualExclusions.length).toEqual(0);
 
   // create users over here
-  await userService.create(experimentUsers as any);
+  await userService.create(experimentUsers as any, new UpgradeLogger());
 
   // get all user here
   const userList = await userService.find();

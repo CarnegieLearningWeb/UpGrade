@@ -7,7 +7,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR} from 'upgrade_types';
+import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -19,6 +19,7 @@ import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
 import * as express from 'express';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -124,9 +125,13 @@ export class ExperimentClientController {
   @Post('init')
   public async init(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experimentUser: ExperimentUser
   ): Promise<ExperimentUser> {
-    const document = await this.experimentUserService.create([experimentUser]);
+    request.logger.addFromDetails(__filename, 'init');
+    request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
+    const document = await this.experimentUserService.create([experimentUser], request.logger);
     return document[0];
   }
 
@@ -467,7 +472,7 @@ export class ExperimentClientController {
           reject(error);
         }
       });
-    }).catch(error => {
+    }).catch((error) => {
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
