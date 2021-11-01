@@ -131,7 +131,14 @@ export class ExperimentClientController {
   ): Promise<ExperimentUser> {
     request.logger.addFromDetails(__filename, 'init');
     request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
-    const document = await this.experimentUserService.create([experimentUser], request.logger);
+    var document = await this.experimentUserService.create( [experimentUser], request.logger );
+    ['createdAt', 'updatedAt', 'versionNumber'].forEach(key => delete document[0][key]);
+    if (document[0].group == null) {
+      delete document[0]['group'];
+    }
+    if (document[0].workingGroup == null) {
+      delete document[0]['workingGroup'];
+    }
     return document[0];
   }
 
