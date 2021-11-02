@@ -131,15 +131,21 @@ export class ExperimentClientController {
   ): Promise<ExperimentUser> {
     request.logger.addFromDetails(__filename, 'init');
     request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
-    var document = await this.experimentUserService.create( [experimentUser], request.logger );
-    ['createdAt', 'updatedAt', 'versionNumber'].forEach(key => delete document[0][key]);
-    if (document[0].group == null) {
-      delete document[0]['group'];
+    var userDocument = await this.experimentUserService.create( [experimentUser], request.logger );
+    // removing fields not required by clientlibs for init call response
+    ['createdAt', 'updatedAt', 'versionNumber'].forEach(key => delete userDocument[0][key]);
+    // if reinit call is made with any of the below fields not included in the call,
+    // then we will fetch the stored values of the field and return them in the response
+    // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
+    if (userDocument[0].group == null) {
+      var fetchedUserDocument = await this.experimentUserService.findOne(userDocument[0].id)
+      userDocument[0].group = fetchedUserDocument.group;
     }
-    if (document[0].workingGroup == null) {
-      delete document[0]['workingGroup'];
+    if (userDocument[0].workingGroup == null) {
+      var fetchedUserDocument = await this.experimentUserService.findOne(userDocument[0].id)
+      userDocument[0].workingGroup = fetchedUserDocument.workingGroup;
     }
-    return document[0];
+    return userDocument[0];
   }
 
   /**
