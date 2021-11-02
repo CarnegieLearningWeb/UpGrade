@@ -15,10 +15,10 @@ import org.glassfish.jersey.client.ClientProperties;
 
 public class APIService implements AutoCloseable{
 
-	private final String baseUrl,authToken;
+	private final String baseUrl, authToken, sessionId;
 	private final Client client;
 	
-	public APIService(String baseUrl, String authToken, Map<String, Object> properties) {
+	public APIService(String baseUrl, String authToken, String sessionId, Map<String, Object> properties) {
         if (isStringNull(baseUrl)) {
             throw new IllegalArgumentException(INVALID_BASE_URL);
         }
@@ -29,6 +29,7 @@ public class APIService implements AutoCloseable{
 		}
 		this.authToken=authToken;
 
+		this.sessionId=sessionId;
 		client = createClient(properties);
 	}
 
@@ -49,12 +50,12 @@ public class APIService implements AutoCloseable{
 		return authToken;
 	}
 
-	public AsyncInvoker prepareRequest(String apiPath, String sessionId) {
+	public AsyncInvoker prepareRequest(String apiPath) {
 		return client.target(this.baseUrl)
 				.path(apiPath)
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer "+this.authToken)
-				.header("Session-Id", sessionId)
+				.header("Session-Id", this.sessionId)
 				.async();
 	}
 

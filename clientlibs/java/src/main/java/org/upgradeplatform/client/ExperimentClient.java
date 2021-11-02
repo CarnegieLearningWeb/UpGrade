@@ -44,20 +44,18 @@ public class ExperimentClient implements AutoCloseable {
 	private List<ExperimentsResponse> allExperiments;
 	private List<FeatureFlag> allFeatureFlag;
 	private final String userId;
-	private final String clientSessionId;
 	private final APIService apiService;
 
     /** @param properties
      *            Properties to permit users to control how the underlying JAX-RS
      *            client behaves. These are passed through to
      *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. */
-	public ExperimentClient(String userId, String authToken, String clientSessionId, String baseUrl, Map<String, Object> properties) {
+	public ExperimentClient(String userId, String authToken, String sessionId, String baseUrl, Map<String, Object> properties) {
 		if (isStringNull(userId)) {
 			throw new IllegalArgumentException(INVALID_STUDENT_ID);
 		}
 		this.userId = userId;
-		this.clientSessionId = clientSessionId;
-		this.apiService = new APIService(baseUrl, authToken, properties);
+		this.apiService = new APIService(baseUrl, authToken, sessionId, properties);
 	}
 
 	// To close jax-rs client connection open when calling ExperimentClient constructor;
@@ -87,7 +85,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	private void initializeUser(InitializeUser initUser, final ResponseCallback<InitializeUser> callbacks) {
 		// Build a request object and prepare invocation method
-		AsyncInvoker invocation = this.apiService.prepareRequest(INITIALIZE_USER, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(INITIALIZE_USER);
 		Entity<InitializeUser> requestContent = Entity.json(initUser);
 
 		// Invoke the method
@@ -116,7 +114,7 @@ public class ExperimentClient implements AutoCloseable {
 	public void setGroupMembership(Map<String, List<String>> group, final ResponseCallback<ExperimentUser> callbacks) {
 		// Build a request object and prepare invocation method
 		ExperimentUser experimentUser = new ExperimentUser(this.userId, group, null);
-		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(SET_GROUP_MEMBERSHIP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		// Invoke the method
@@ -144,7 +142,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void setWorkingGroup(Map<String, String> workingGroup, final ResponseCallback<ExperimentUser> callbacks) {
 		ExperimentUser experimentUser = new ExperimentUser(this.userId, null, workingGroup);
-		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(SET_WORKING_GROUP);
 		Entity<ExperimentUser> requestContent = Entity.json(experimentUser);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
@@ -171,7 +169,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllExperimentCondition(String context, final ResponseCallback<List<ExperimentsResponse>> callbacks) {
 		ExperimentRequest experimentRequest = new ExperimentRequest(this.userId, context);
-		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_EXPERIMENTS);
 		Entity<ExperimentRequest> requestContent = Entity.json(experimentRequest);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
@@ -268,7 +266,7 @@ public class ExperimentClient implements AutoCloseable {
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
 				experimentId, condition);
-		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
 
@@ -312,7 +310,7 @@ public class ExperimentClient implements AutoCloseable {
 			final ResponseCallback<FailedExperiment> callbacks) {
 		FailedExperimentPointRequest failedExperimentPointRequest = new FailedExperimentPointRequest(this.userId,
 				experimentPoint, experimentId, reason);
-		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(FAILED_EXPERIMENT_POINT);
 
 		Entity<FailedExperimentPointRequest> requestContent = Entity.json(failedExperimentPointRequest);
 
@@ -342,7 +340,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void getAllFeatureFlags(final ResponseCallback<List<FeatureFlag>> callbacks) {
 
-		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_FEATURE_FLAGS, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(GET_ALL_FEATURE_FLAGS);
 
 		invocation.get(new PublishingRetryCallback<>(invocation, MAX_RETRIES, RequestType.GET,new InvocationCallback<Response>() {
 
@@ -420,7 +418,7 @@ public class ExperimentClient implements AutoCloseable {
 
 		UserAlias userAlias = new UserAlias(this.userId, altUserIds );
 
-		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(SET_ALT_USER_IDS);
 		Entity<UserAlias> requestContent = Entity.json(userAlias);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
@@ -461,7 +459,7 @@ public class ExperimentClient implements AutoCloseable {
 	
 	private void addMetrics(Entity<MetricUnitBody<?>> requestContent, final ResponseCallback<List<Metric>> callbacks) {
 		
-		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(ADD_MATRIC);
 
 		invocation.post(requestContent,new PublishingRetryCallback<>(invocation, requestContent, MAX_RETRIES, RequestType.POST,
 				new InvocationCallback<Response>() {
@@ -487,7 +485,7 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void log(List<LogInput> value, final ResponseCallback<LogEventResponse> callbacks) {
 
-		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT, this.clientSessionId);
+		AsyncInvoker invocation = this.apiService.prepareRequest(LOG_EVENT);
 		LogRequest logRequest = new LogRequest(this.userId, value );
 		
 		Entity<LogRequest> requestContent = Entity.json(logRequest);
