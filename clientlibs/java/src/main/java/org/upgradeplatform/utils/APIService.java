@@ -49,12 +49,12 @@ public class APIService implements AutoCloseable{
 		return authToken;
 	}
 
-	public AsyncInvoker prepareRequest(String apiPath) {
-
+	public AsyncInvoker prepareRequest(String apiPath, String sessionId) {
 		return client.target(this.baseUrl)
 				.path(apiPath)
 				.request(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer "+this.authToken)
+				.header("Session-Id", sessionId)
 				.async();
 	}
 
