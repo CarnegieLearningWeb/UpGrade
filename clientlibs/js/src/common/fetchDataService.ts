@@ -31,6 +31,7 @@ async function fetchData(
     let headers: object = {
       'Content-Type': 'application/json',
       'Session-Id': clientSessionId || uuid.v4(),
+      'CurrentRetry': retries,
     }
     if (!!token) {
       headers = {
