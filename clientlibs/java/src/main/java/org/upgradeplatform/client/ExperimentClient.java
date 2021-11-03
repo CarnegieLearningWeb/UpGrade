@@ -52,11 +52,7 @@ public class ExperimentClient implements AutoCloseable {
      *            client behaves. These are passed through to
      *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. */
 	public ExperimentClient(String userId, String authToken, String baseUrl, Map<String, Object> properties) {
-		if (isStringNull(userId)) {
-			throw new IllegalArgumentException(INVALID_STUDENT_ID);
-		}
-		this.userId = userId;
-		this.apiService = new APIService(baseUrl, authToken, UUID.randomUUID().toString(), properties);
+		this(userId, authToken, UUID.randomUUID().toString(), baseUrl, properties);
 	}
 
     /** @param properties
