@@ -3,6 +3,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { SettingRepository } from '../repositories/SettingRepository';
 import { Setting } from '../models/Setting';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class SettingService {
@@ -22,8 +23,9 @@ export class SettingService {
     return this.settingRepository.save(newDoc);
   }
 
-  public async getClientCheck(): Promise<Setting> {
-    this.log.info('Get project setting');
+  public async getClientCheck(logger: UpgradeLogger): Promise<Setting> {
+    logger.addFromDetails(__filename, 'getClientCheck');
+    logger.info({ stdout: 'Get project setting' });
     const setting = await this.settingRepository.find();
     if (setting.length === 0) {
       const defaultSetting = new Setting();

@@ -169,9 +169,14 @@ export class ExperimentClientController {
   @Post('groupmembership')
   public setGroupMemberShip(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experimentUser: ExperimentUser
+    
   ): Promise<ExperimentUser> {
-    return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group);
+    request.logger.addFromDetails(__filename, 'groupmembership');
+    request.logger.info({ stdout: 'Starting the groupmembership call for user', stack_trace: 'null' });
+    return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group, request.logger);
   }
 
   /**
@@ -208,9 +213,13 @@ export class ExperimentClientController {
   @Post('workinggroup')
   public setWorkingGroup(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     workingGroupParams: UpdateWorkingGroupValidator
   ): Promise<ExperimentUser> {
-    return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup);
+    request.logger.addFromDetails(__filename, 'workinggroup');
+    request.logger.info({ stdout: 'Starting the workinggroup call for user', stack_trace: 'null' });
+    return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup, request.logger);
   }
 
   /**
@@ -284,12 +293,17 @@ export class ExperimentClientController {
   @Post('mark')
   public markExperimentPoint(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experiment: MarkExperimentValidator
   ): Promise<MonitoredExperimentPoint> {
+    request.logger.addFromDetails(__filename, 'markExperimentPoint');
+    request.logger.info({ stdout: 'Starting the markExperimentPoint call for user', stack_trace: 'null' });
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.experimentPoint,
       experiment.condition,
+      request.logger,
       experiment.partitionId
     );
   }
@@ -385,9 +399,13 @@ export class ExperimentClientController {
   @Post('assign')
   public getAllExperimentConditions(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context);
+    request.logger.addFromDetails(__filename, 'getAllExperimentConditions');
+    request.logger.info({ stdout: 'Starting the getAllExperimentConditions call for user', stack_trace: 'null' });
+    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context, request.logger);
   }
 
   /**
@@ -424,9 +442,13 @@ export class ExperimentClientController {
   @Post('log')
   public log(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     logData: LogValidator
   ): Promise<Log[]> {
-    return this.experimentAssignmentService.dataLog(logData.userId, logData.value);
+    request.logger.addFromDetails(__filename, 'log');
+    request.logger.info({ stdout: 'Starting the log call for user', stack_trace: 'null' });
+    return this.experimentAssignmentService.dataLog(logData.userId, logData.value, request.logger);
   }
 
   /**
@@ -465,7 +487,7 @@ export class ExperimentClientController {
         const blobData = JSON.parse(request.read());
         try {
           // The function will throw error if userId doesn't exist
-          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
+          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value, request.logger);
           resolve(response);
         } catch (error) {
           // The error is rejected so promise can now handle this error
@@ -518,13 +540,16 @@ export class ExperimentClientController {
   @Post('failed')
   public failedExperimentPoint(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     errorBody: FailedParamsValidator
   ): Promise<ExperimentError> {
     return this.experimentAssignmentService.clientFailedExperimentPoint(
       errorBody.reason,
       errorBody.experimentPoint,
       errorBody.userId,
-      errorBody.experimentId
+      errorBody.experimentId,
+      request.logger
     );
   }
 
@@ -542,8 +567,8 @@ export class ExperimentClientController {
    *            description: Feature flags list
    */
   @Get('featureflag')
-  public getAllFlags(): Promise<FeatureFlag[]> {
-    return this.featureFlagService.find();
+  public getAllFlags( @Req() request: AppRequest): Promise<FeatureFlag[]> {
+    return this.featureFlagService.find(request.logger);
   }
 
   /**
@@ -573,8 +598,10 @@ export class ExperimentClientController {
    *            description: Insert error in database
    */
   @Post('metric')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<Metric[]> {
-    return this.metricService.saveAllMetrics(metricUnit);
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
+  @Req()
+  request: AppRequest): Promise<Metric[]> {
+    return this.metricService.saveAllMetrics(metricUnit, request.logger);
   }
 
   /**
@@ -642,7 +669,11 @@ export class ExperimentClientController {
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('useraliases')
-  public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
-    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases);
+  public setUserAliases(
+    @Body()
+    @Req()
+    request: AppRequest,
+    user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
+    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, request.logger);
   }
 }

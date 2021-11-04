@@ -6,6 +6,7 @@ import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { previewIndividualAssignmentExperiment } from '../mockData/experiment';
 import { experimentUsers } from '../mockData/experimentUsers/index';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -34,6 +35,6 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 }

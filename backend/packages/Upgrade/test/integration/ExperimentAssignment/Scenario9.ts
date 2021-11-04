@@ -9,6 +9,7 @@ import { systemUser } from '../mockData/user/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -30,11 +31,11 @@ export default async function testCase(): Promise<void> {
   await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['1'],
     class: ['1'],
-  });
+  }, new UpgradeLogger());
   await experimentUserService.updateWorkingGroup(experimentUsers[0].id, {
     teacher: '1',
     class: '1',
-  });
+  }, new UpgradeLogger());
   let experimentUser = await experimentUserService.find();
   let objectToCheck = {
     ...experimentUsers[0],
@@ -57,11 +58,11 @@ export default async function testCase(): Promise<void> {
   await experimentUserService.updateGroupMembership(experimentUsers[1].id, {
     teacher: ['2'],
     class: ['2'],
-  });
+  }, new UpgradeLogger());
   await experimentUserService.updateWorkingGroup(experimentUsers[1].id, {
     teacher: '2',
     class: '2',
-  });
+  }, new UpgradeLogger());
   experimentUser = await experimentUserService.find();
   objectToCheck = {
     ...experimentUsers[1],
@@ -84,11 +85,11 @@ export default async function testCase(): Promise<void> {
   await experimentUserService.updateGroupMembership(experimentUsers[2].id, {
     teacher: ['2'],
     class: ['2'],
-  });
+  }, new UpgradeLogger());
   await experimentUserService.updateWorkingGroup(experimentUsers[2].id, {
     teacher: '2',
     class: '2',
-  });
+  }, new UpgradeLogger());
   experimentUser = await experimentUserService.find();
   objectToCheck = {
     ...experimentUsers[2],
@@ -111,11 +112,11 @@ export default async function testCase(): Promise<void> {
   await experimentUserService.updateGroupMembership(experimentUsers[3].id, {
     teacher: ['1'],
     class: ['1'],
-  });
+  }, new UpgradeLogger());
   await experimentUserService.updateWorkingGroup(experimentUsers[3].id, {
     teacher: '1',
     class: '1',
-  });
+  }, new UpgradeLogger());
   experimentUser = await experimentUserService.find();
   objectToCheck = {
     ...experimentUsers[3],
@@ -168,30 +169,30 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  const experimentConditionAssignmentsForUser1Old = await getAllExperimentCondition(experimentUsers[0].id);
+  const experimentConditionAssignmentsForUser1Old = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignmentsForUser1Old, experimentName, experimentPoint);
 
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition);
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
-  const experimentConditionAssignmentForUser2 = await getAllExperimentCondition(experimentUsers[1].id);
+  const experimentConditionAssignmentForUser2 = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignmentForUser2, experimentName, experimentPoint);
 
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // update groupMembership for user1
   await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['2'],
     class: ['2'],
-  });
+  }, new UpgradeLogger());
 
   // updating working group for user1
   await experimentUserService.updateWorkingGroup(experimentUsers[0].id, {
     teacher: '2',
     class: '2',
-  });
+  }, new UpgradeLogger());
   const experimentUser1 = await experimentUserService.find();
   const experimentObjectToCheck = {
     ...experimentUsers[0],
@@ -211,7 +212,7 @@ export default async function testCase(): Promise<void> {
   expect(experimentUser1).toEqual(expect.arrayContaining([expect.objectContaining(experimentObjectToCheck)]));
 
   // get all experiment condition for user1
-  const experimentConditionAssignmentForUser1 = await getAllExperimentCondition(experimentUsers[0].id);
+  const experimentConditionAssignmentForUser1 = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignmentForUser1, experimentName, experimentPoint);
 
   experimentConditionAssignmentsForUser1Old.map((experimentCondition) => {
@@ -220,11 +221,11 @@ export default async function testCase(): Promise<void> {
     );
   });
 
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   experimentConditionAssignments.map((experimentCondition) => {
@@ -234,7 +235,7 @@ export default async function testCase(): Promise<void> {
   });
 
   // mark experiment point for user 3
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
@@ -255,7 +256,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   experimentConditionAssignmentForUser1.map((experimentCondition) => {
@@ -265,11 +266,11 @@ export default async function testCase(): Promise<void> {
   });
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   experimentConditionAssignmentForUser2.map((experimentCondition) => {
@@ -279,11 +280,11 @@ export default async function testCase(): Promise<void> {
   });
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   experimentConditionAssignmentForUser2.map((experimentCondition) => {
@@ -293,11 +294,11 @@ export default async function testCase(): Promise<void> {
   });
 
   // mark experiment point for user 3
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   experimentConditionAssignmentsForUser1Old.map((experimentCondition) => {
@@ -307,7 +308,7 @@ export default async function testCase(): Promise<void> {
   });
 
   // mark experiment point for user 4
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   await checkDeletedExperiment(experimentId, user);

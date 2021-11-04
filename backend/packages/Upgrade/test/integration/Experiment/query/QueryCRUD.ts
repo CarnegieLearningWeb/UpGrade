@@ -10,6 +10,7 @@ import { individualAssignmentExperiment } from '../../mockData/experiment/index'
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { systemUser } from '../../mockData/user/index';
 import { metrics } from '../../mockData/metric';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function QueryCRUD(): Promise<void> {
   const metricRepository = getRepository(Metric);
@@ -45,7 +46,7 @@ export default async function QueryCRUD(): Promise<void> {
 
   // create metrics service
 
-  await metricService.saveAllMetrics(metrics as any);
+  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(32);

@@ -9,6 +9,7 @@ import { systemUser } from '../../mockData/user/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { getRepository } from 'typeorm';
 import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -93,7 +94,7 @@ export default async function testCase(): Promise<void> {
   expect(allIndividualAssignments.length).toEqual(0);
 
   // get experiment with context1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, context1);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger(), context1);
   expect(experimentConditionAssignments.length).toEqual(experimentObject1.partitions.length);
 
   // check that no assignment of context 2 is assigned
@@ -101,13 +102,13 @@ export default async function testCase(): Promise<void> {
   expect(allIndividualAssignments.length).toEqual(1);
 
   // get experiment with context2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, context2);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger(), context2);
   expect(experimentConditionAssignments.length).toEqual(experimentObject2.partitions.length);
 
   // check that no assignment of context 2 is assigned
   allIndividualAssignments = await individualAssignmentRepository.find();
   expect(allIndividualAssignments.length).toEqual(2);
 
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   expect(experimentConditionAssignments.length).toEqual(0);
 }

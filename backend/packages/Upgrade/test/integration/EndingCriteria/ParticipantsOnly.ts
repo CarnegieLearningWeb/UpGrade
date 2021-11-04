@@ -7,6 +7,7 @@ import { participantsOnlyExperiment } from '../mockData/experiment/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function ParticipantsOnly() {
   // const logger = new WinstonLogger(__filename);
@@ -44,7 +45,7 @@ export default async function ParticipantsOnly() {
   const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
@@ -52,7 +53,8 @@ export default async function ParticipantsOnly() {
     experimentUsers[0].id,
     experimentName1,
     experimentPoint1,
-    condition
+    condition,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
@@ -75,7 +77,7 @@ export default async function ParticipantsOnly() {
   );
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
@@ -84,7 +86,8 @@ export default async function ParticipantsOnly() {
     experimentUsers[1].id,
     experimentName1,
     experimentPoint1,
-    condition
+    condition,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
 
@@ -107,7 +110,8 @@ export default async function ParticipantsOnly() {
     experimentUsers[1].id,
     experimentName2,
     experimentPoint2,
-    condition
+    condition,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
 
@@ -126,7 +130,7 @@ export default async function ParticipantsOnly() {
   );
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
@@ -135,7 +139,8 @@ export default async function ParticipantsOnly() {
     experimentUsers[2].id,
     experimentName1,
     experimentPoint1,
-    condition
+    condition,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
@@ -157,7 +162,8 @@ export default async function ParticipantsOnly() {
     experimentUsers[2].id,
     experimentName2,
     experimentPoint2,
-    condition
+    condition,
+    new UpgradeLogger()
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
 

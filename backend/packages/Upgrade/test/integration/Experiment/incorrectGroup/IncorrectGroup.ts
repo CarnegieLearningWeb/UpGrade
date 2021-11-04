@@ -14,6 +14,7 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -85,7 +86,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // call get all experiment condition
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
 
   // check the experiment assignment
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
@@ -127,12 +128,12 @@ export default async function testCase(): Promise<void> {
   const group = {...experimentUsers[0].group};
   delete group["teacher"];
   // remove user group
-  await experimentUserService.updateGroupMembership(experimentUsers[0].id, group);
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, group, new UpgradeLogger());
   const experimentUser = await experimentUserService.findOne(experimentUsers[0].id);
   expect(experimentUser.group).not.toHaveProperty("teacher");
 
   // call getAllExperiment
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
 
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);

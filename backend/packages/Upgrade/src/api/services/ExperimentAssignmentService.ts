@@ -1,6 +1,5 @@
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
 import {
   EXPERIMENT_STATE,
@@ -51,6 +50,7 @@ import { ILogInput } from 'upgrade_types';
 import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { StateTimeLog } from '../models/StateTimeLogs';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -87,16 +87,16 @@ export class ExperimentAssignmentService {
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
     public settingService: SettingService,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
     condition: string | null,
-    experimentName?: string
+    logger: UpgradeLogger,
+    experimentName?: string,
   ): Promise<MonitoredExperimentPoint> {
     // find working group for user
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
 
     // adding experiment error when user is not defined
     if (!userDoc) {
@@ -117,9 +117,8 @@ export class ExperimentAssignmentService {
     let enrollmentCode: ENROLLMENT_CODE | null = null;
     const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
 
-    this.log.info(
-      `markExperimentPoint: Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`
-    );
+    logger.addFromDetails(__filename, 'markExperimentPoint');
+    logger.info({ stdout: `markExperimentPoint: Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}`, stack_trace: null });
 
     if (experimentPartition) {
       const { experiment } = experimentPartition;
@@ -222,11 +221,13 @@ export class ExperimentAssignmentService {
   public async getAllExperimentConditions(
     userId: string,
     context: string,
+    logger: UpgradeLogger,
     toAssign: boolean = true
   ): Promise<IExperimentAssignment[]> {
-    this.log.info(`Get all experiment for User Id ${userId}`);
+    logger.addFromDetails(__filename, 'getAllExperimentConditions');
+    logger.info({ stdout: `getAllExperimentConditions: User: ${userId}`, stack_trace: null });
     const usersData: any[] = await Promise.all([
-      this.experimentUserService.getOriginalUserDoc(userId),
+      this.experimentUserService.getOriginalUserDoc(userId, logger),
       this.previewUserService.findOne(userId),
     ]);
 
@@ -275,10 +276,8 @@ export class ExperimentAssignmentService {
         });
 
         if (groupExperimentAssignedIds.length > 0) {
-          this.log.warn(
-            `Experiments Id: ${groupExperimentAssignedIds.join(' ')}
-            Experiment already assigned but working group and group data is not properly set`
-          );
+          logger.warn({ stdout: `Experiments Id: ${groupExperimentAssignedIds.join(' ')}
+          Experiment already assigned but working group and group data is not properly set`});
         }
 
         // exclude experiments which are not previously assigned and throw error
@@ -291,12 +290,10 @@ export class ExperimentAssignmentService {
         // throw error user group not defined and add experiments which are excluded
         if (addError) {
           experimentToExclude.forEach(({ id, name }) => {
-            this.log.error(
-              `Experiment Id: ${id},
-              Experiment Name: ${name},
-              Group not valid for experiment user
-              `
-            );
+            logger.error({ stdout: `Experiment Id: ${id},
+            Experiment Name: ${name},
+            Group not valid for experiment user
+            `});
           });
 
           await this.errorService.create({
@@ -309,7 +306,7 @@ export class ExperimentAssignmentService {
             )}`,
             name: 'Experiment user not defined',
             type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          } as any);
+          } as any, logger);
         }
 
         // exclude user whose group information is not provided
@@ -490,11 +487,9 @@ export class ExperimentAssignmentService {
           // adding info based on experiment state or logging flag
           if (logging || state === EXPERIMENT_STATE.PREVIEW) {
             // TODO add enrollment code here
-            this.log.info(
-              `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-                conditionAssigned ? conditionAssigned.conditionCode : null
-              }`
-            );
+            logger.info({ stdout: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
+              conditionAssigned ? conditionAssigned.conditionCode : null
+            }`, stack_trace: null });
           }
           return {
             expId,
@@ -509,17 +504,18 @@ export class ExperimentAssignmentService {
       }, []);
     } catch (err) {
       const error = err as ErrorWithType;
-      this.log.error('Error in assignment');
+      logger.error({ stdout: 'Error in assignment', stack_trace: error});
       error.type = SERVER_ERROR.ASSIGNMENT_ERROR;
       throw error;
     }
   }
 
   // When browser will be sending the blob data
-  public async blobDataLog(userId: string, blobLog: ILogInput[]): Promise<Log[]> {
-    this.log.info(`Add blob data userId ${userId} and value ${blobLog}`);
+  public async blobDataLog(userId: string, blobLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+    logger.addFromDetails(__filename, 'blobDataLog');
+    logger.info({ stdout: `Add blob data userId ${userId}`, details: blobLog });
 
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -536,10 +532,11 @@ export class ExperimentAssignmentService {
     return flatten(logsToReturn);
   }
 
-  public async dataLog(userId: string, jsonLog: ILogInput[]): Promise<Log[]> {
-    this.log.info(`Add data log userId ${userId} and value ${JSON.stringify(jsonLog, null, 2)}`);
+  public async dataLog(userId: string, jsonLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+    logger.addFromDetails(__filename, 'dataLog');
+    logger.info({ stdout: `Add data log userId ${userId}`, details: jsonLog });
 
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -565,10 +562,11 @@ export class ExperimentAssignmentService {
     reason: string,
     experimentPoint: string,
     userId: string,
-    experimentId: string
+    experimentId: string,
+    logger: UpgradeLogger
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId);
+    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
 
     // throw error if user not defined
     if (!userDoc) {

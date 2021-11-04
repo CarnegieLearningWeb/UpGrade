@@ -11,6 +11,7 @@ import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -54,11 +55,11 @@ export default async function testCase(): Promise<void> {
 
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1);
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   let checkData = await analyticsService.getDetailEnrollment(experimentId);
@@ -180,12 +181,12 @@ export default async function testCase(): Promise<void> {
 
   // user 3 logs in experiment
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName2, experimentPoint2, condition2);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName2, experimentPoint2, condition2, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId);
@@ -199,7 +200,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // when preview user is assigned an experiment condition
-  experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
+  experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
   // because the user was excluded from the experiment
   expect(experimentConditionAssignments).toHaveLength(0);
 
@@ -213,15 +214,15 @@ export default async function testCase(): Promise<void> {
     })
   );
 
-  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2, condition2);
+  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2, condition2, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUser.id, experimentName2, experimentPoint2);
 
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName1, experimentPoint1, condition1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId);
@@ -238,7 +239,7 @@ export default async function testCase(): Promise<void> {
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1, condition1);
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId);
