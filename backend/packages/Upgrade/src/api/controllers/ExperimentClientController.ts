@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -128,24 +128,22 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experimentUser: ExperimentUser
-  ): Promise<ExperimentUser> {
+  ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.addFromDetails(__filename, 'init');
     request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
     var userDocument = await this.experimentUserService.create( [experimentUser], request.logger );
-    // removing fields not required by clientlibs for init call response
-    ['createdAt', 'updatedAt', 'versionNumber'].forEach(key => delete userDocument[0][key]);
+    if (!userDocument || !userDocument[0]) {
+      request.logger.error({
+        details: 'user document not present',
+      });
+      throw new InternalServerError('user document not present');
+    }
     // if reinit call is made with any of the below fields not included in the call,
     // then we will fetch the stored values of the field and return them in the response
     // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
-    if (userDocument[0].group == null) {
-      var fetchedUserDocument = await this.experimentUserService.findOne(userDocument[0].id)
-      userDocument[0].group = fetchedUserDocument.group;
-    }
-    if (userDocument[0].workingGroup == null) {
-      var fetchedUserDocument = await this.experimentUserService.findOne(userDocument[0].id)
-      userDocument[0].workingGroup = fetchedUserDocument.workingGroup;
-    }
-    return userDocument[0];
+    var fetchedUserDocument = await this.experimentUserService.findOne(userDocument[0].id);
+    const { id, group, workingGroup } = fetchedUserDocument;
+    return { id, group, workingGroup };
   }
 
   /**
