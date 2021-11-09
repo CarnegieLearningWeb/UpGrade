@@ -131,7 +131,7 @@ export class ExperimentClientController {
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.addFromDetails(__filename, 'init');
     request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
-    var userDocument = await this.experimentUserService.create( [experimentUser], request.logger );
+    const userDocument = await this.experimentUserService.create( [experimentUser], request.logger );
     if (!userDocument || !userDocument[0]) {
       request.logger.error({
         details: 'user document not present',
@@ -141,10 +141,9 @@ export class ExperimentClientController {
     // if reinit call is made with any of the below fields not included in the call,
     // then we will fetch the stored values of the field and return them in the response
     // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
-    var fetchedUserDocument = await this.experimentUserService.findOne(userDocument[0].id);
-    const { id, group, workingGroup } = fetchedUserDocument;
-    return { id, group, workingGroup };
-  }
+     const { id, group, workingGroup } = userDocument[0];
+     return { id, group, workingGroup };
+   }
 
   /**
    * @swagger
