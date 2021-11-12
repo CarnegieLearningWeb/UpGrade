@@ -11,6 +11,7 @@ public class AssignedCondition {
 	private String description;
 	private String conditionCode;
 	private Integer assignmentWeight;
+	private Integer order;
 	
 	public AssignedCondition() {}
 	
@@ -23,7 +24,7 @@ public class AssignedCondition {
 	}
 	
 	public AssignedCondition(String createdAt, String updatedAt, Integer versionNumber, String id,
-			String twoCharacterId, String name, String description, String conditionCode, Integer assignmentWeight) {
+			String twoCharacterId, String name, String description, String conditionCode, Integer assignmentWeight, Integer order) {
 		super();
 		this.createdAt = createdAt;
 		this.updatedAt = updatedAt;
@@ -34,6 +35,7 @@ public class AssignedCondition {
 		this.description = description;
 		this.conditionCode = conditionCode;
 		this.assignmentWeight = assignmentWeight;
+		this.order = order;
 	}
 	
 	public String getCreatedAt() {
@@ -90,9 +92,10 @@ public class AssignedCondition {
 	public void setAssignmentWeight(Integer assignmentWeight) {
 		this.assignmentWeight = assignmentWeight;
 	}
-
-	
-	
-
-
+	public Integer getOrder() {
+		return order;
+	}
+	public void setOrder(Integer order) {
+		this.order = order;
+	}
 }
