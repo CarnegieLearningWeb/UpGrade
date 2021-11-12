@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -128,12 +128,22 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experimentUser: ExperimentUser
-  ): Promise<ExperimentUser> {
+  ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.addFromDetails(__filename, 'init');
     request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
-    const document = await this.experimentUserService.create([experimentUser], request.logger);
-    return document[0];
-  }
+    const userDocument = await this.experimentUserService.create( [experimentUser], request.logger );
+    if (!userDocument || !userDocument[0]) {
+      request.logger.error({
+        details: 'user document not present',
+      });
+      throw new InternalServerError('user document not present');
+    }
+    // if reinit call is made with any of the below fields not included in the call,
+    // then we will fetch the stored values of the field and return them in the response
+    // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
+     const { id, group, workingGroup } = userDocument[0];
+     return { id, group, workingGroup };
+   }
 
   /**
    * @swagger

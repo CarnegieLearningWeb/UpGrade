@@ -54,7 +54,11 @@ export class ExperimentUserService {
 
     // wait for all assignment update to get complete
     await Promise.all(assignmentUpdated);
-    return updatedUsers;
+
+    // findAll user document here
+    const updatedUserDocument = await this.userRepository.findByIds(updatedUsers.map((user) => user.id));
+
+    return updatedUserDocument;
   }
 
   public async setAliasesForUser(userId: string, aliases: string[]): Promise<ExperimentUser[]> {
