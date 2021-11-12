@@ -5,6 +5,7 @@ export default async function setAltUserIds(
   url: string,
   userId: string,
   token: string,
+  clientSessionId: string,
   altUserIds: string[]
 ): Promise<Interfaces.IExperimentUserAliases[]> {
   try {
@@ -13,7 +14,7 @@ export default async function setAltUserIds(
       aliases: altUserIds
     };
     const skipRetryOnStatusCodes = [500]; // Response status codes for which request retry should be skipped on failure
-    const response = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST, false, skipRetryOnStatusCodes);
+    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST, false, skipRetryOnStatusCodes);
     if (response.status) {
       return response.data;
     } else {

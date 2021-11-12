@@ -12,6 +12,7 @@ import setAltUserIds from './functions/setAltUserIds';
 import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
 import init from './functions/init';
+import * as uuid  from 'uuid';
 
 export default class UpgradeClient {
     // Endpoints URLs
@@ -31,16 +32,18 @@ export default class UpgradeClient {
     private hostUrl: string;
     // Use token if it is given in constructor
     private token: string;
+    private clientSessionId: string;
 
     private group: Map<string, Array<string>> = null;
     private workingGroup: Map<string, string> = null;
     private experimentConditionData: IExperimentAssignment[] = null;
     private featureFlags: IFeatureFlag[] = null;
 
-    constructor(userId: string, hostUrl: string, token?: string) {
+    constructor(userId: string, hostUrl: string, options?: {token?: string, clientSessionId?: string}) {
         this.userId = userId;
         this.hostUrl = hostUrl;
-        this.token = token;
+        this.token = options?.token;
+        this.clientSessionId = options?.clientSessionId || uuid.v4();
         this.api = {
             init: `${hostUrl}/api/init`,
             getAllExperimentConditions: `${hostUrl}/api/assign`,
@@ -66,12 +69,12 @@ export default class UpgradeClient {
 
     async init(group?: Map<string, Array<string>>, workingGroup?: Map<string, string>): Promise<Interfaces.IUser> {
         this.validateClient();
-        return await init(this.api.init, this.userId, this.token, group, workingGroup);
+        return await init(this.api.init, this.userId, this.token, this.clientSessionId, group, workingGroup);
     }
 
     async setGroupMembership(group: Map<string, Array<string>>): Promise<Interfaces.IUser> {
         this.validateClient();
-        let response: Interfaces.IUser = await setGroupMembership(this.api.setGroupMemberShip, this.userId, this.token, group);
+        let response: Interfaces.IUser = await setGroupMembership(this.api.setGroupMemberShip, this.userId, this.token, this.clientSessionId, group);
         if (response.id) {
             // If it does not throw error from setGroupMembership
             this.group = group;
@@ -85,7 +88,7 @@ export default class UpgradeClient {
 
     async setWorkingGroup(workingGroup: Map<string, string>): Promise<Interfaces.IUser> {
         this.validateClient();
-        let response: Interfaces.IUser = await setWorkingGroup(this.api.setWorkingGroup, this.userId, this.token, workingGroup);
+        let response: Interfaces.IUser = await setWorkingGroup(this.api.setWorkingGroup, this.userId, this.token, this.clientSessionId, workingGroup);
         if (response.id) {
             // If it does not throw error from setWorkingGroup
             this.workingGroup = workingGroup;
@@ -99,7 +102,7 @@ export default class UpgradeClient {
 
     async getAllExperimentConditions(context: string): Promise<IExperimentAssignment[]> {
         this.validateClient();
-        const response = await getAllExperimentConditions(this.api.getAllExperimentConditions, this.userId, this.token, context);
+        const response = await getAllExperimentConditions(this.api.getAllExperimentConditions, this.userId, this.token, this.clientSessionId, context);
         if (Array.isArray(response)) {
             this.experimentConditionData = response;
         }
@@ -116,17 +119,17 @@ export default class UpgradeClient {
 
     async markExperimentPoint(experimentPoint: string, condition = null, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
         this.validateClient();
-        return await markExperimentPoint(this.api.markExperimentPoint, this.userId, this.token, experimentPoint, condition, partitionId);
+        return await markExperimentPoint(this.api.markExperimentPoint, this.userId, this.token, this.clientSessionId, experimentPoint, condition, partitionId);
     }
 
     async failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint> {
         this.validateClient();
-        return await failedExperimentPoint(this.api.failedExperimentPoint, this.token, experimentPoint, reason, this.userId, experimentId);
+        return await failedExperimentPoint(this.api.failedExperimentPoint, this.token, this.clientSessionId, experimentPoint, reason, this.userId, experimentId);
     }
 
     async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
         this.validateClient();
-        const response = await getAllFeatureFlags(this.api.getAllFeatureFlag, this.token);
+        const response = await getAllFeatureFlags(this.api.getAllFeatureFlag, this.token, this.clientSessionId);
         if (response.length) {
             this.featureFlags = response;
         }
@@ -140,16 +143,16 @@ export default class UpgradeClient {
 
     async log(value: ILogInput[], sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
         this.validateClient();
-        return await log(this.api.log, this.userId, this.token, value, sendAsAnalytics);
+        return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
     }
 
     async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {
         this.validateClient();
-        return await setAltUserIds(this.api.altUserIds, this.userId, this.token, altUserIds);
+        return await setAltUserIds(this.api.altUserIds, this.userId, this.token, this.clientSessionId, altUserIds);
     }
 
     async addMetrics(metrics: Array<ISingleMetric | IGroupMetric>): Promise<Interfaces.IMetric[]> {
         this.validateClient();
-        return await addMetrics(this.api.addMetrics, this.token, metrics);
+        return await addMetrics(this.api.addMetrics, this.token, this.clientSessionId, metrics);
     }
 }
