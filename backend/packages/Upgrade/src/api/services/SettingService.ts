@@ -24,8 +24,9 @@ export class SettingService {
   }
 
   public async getClientCheck(logger: UpgradeLogger): Promise<Setting> {
-    logger.addFromDetails(__filename, 'getClientCheck');
-    logger.info({ stdout: 'Get project setting' });
+    if (logger) {
+      logger.info({ message: 'Get project setting' });
+    }
     const setting = await this.settingRepository.find();
     if (setting.length === 0) {
       const defaultSetting = new Setting();

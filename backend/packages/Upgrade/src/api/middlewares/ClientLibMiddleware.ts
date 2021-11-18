@@ -1,6 +1,7 @@
 import { ErrorWithType } from './../errors/ErrorWithType';
 import * as express from 'express';
 import { ExpressMiddlewareInterface } from 'routing-controllers';
+import { LoggerInterface, Logger } from '../../decorators/Logger';
 import { SettingService } from '../services/SettingService';
 import { SERVER_ERROR } from 'upgrade_types';
 import * as jwt from 'jsonwebtoken';
@@ -9,7 +10,7 @@ import { env } from '../../env';
 import { AppRequest } from '../../types';
 
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
-  constructor(public settingService: SettingService) {}
+  constructor(@Logger(__filename) private log: LoggerInterface, public settingService: SettingService) {}
 
   public async use(req: AppRequest, res: express.Response, next: express.NextFunction): Promise<any> {
     try {
@@ -29,13 +30,12 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       if (req.get('Session-Id')) {
         session_id = req.get('Session-Id');
       }
-      req.logger.addFromDetails(__filename, 'use');
       req.logger.child({ client_session_id: session_id });
-      req.logger.debug({ stdout: 'Session Id updated in logger instance' });
+      req.logger.debug({ message: 'Session Id updated in logger instance' });
       if (setting.toCheckAuth) {
         // throw error if no token
         if (!token) {
-          req.logger.warn({ stdout: 'Token is not present in request header' });
+          req.logger.warn({ message: 'Token is not present in request header' });
           const error = new Error('Token is not present in request header from client');
           (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
           throw error;
@@ -53,6 +53,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           throw error;
         }
       } else {
+        this.log.info('Next');
         next();
       }
     } catch (error) {

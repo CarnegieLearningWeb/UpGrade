@@ -24,8 +24,7 @@ export class ErrorService {
 
   public create(error: ExperimentError, logger: UpgradeLogger): Promise<ExperimentError> {
     if( logger ) {
-      logger.addFromDetails(__filename, 'create');
-      logger.info({ stdout: 'Inserting an error', details: error });
+      logger.info({ message: 'Inserting an error', details: error });
     }
     return this.errorRepository.save(error).catch((err) => {
       err.type = SERVER_ERROR.QUERY_FAILED;

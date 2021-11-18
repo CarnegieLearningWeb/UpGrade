@@ -4,7 +4,6 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentUser } from '../models/ExperimentUser';
-import uuid from 'uuid/v4';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
@@ -35,10 +34,9 @@ export class ExperimentUserService {
   }
 
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
-    logger.addFromDetails(__filename, 'create');
-    logger.info({ stdout: 'Create a new User. Metadata of the user =>', details: users, stack_trace: null });
+    logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
     const multipleUsers = users.map((user) => {
-      user.id = user.id || uuid();
+      user.id = user.id;
       return user;
     });
     // insert or update in the database
@@ -58,8 +56,8 @@ export class ExperimentUserService {
   }
 
   public async setAliasesForUser(userId: string, aliases: string[], logger: UpgradeLogger): Promise<ExperimentUser[]> {
-    logger.addFromDetails(__filename, 'setAliasesForUser');
-    logger.info({ stdout: 'Set aliases for experiment user => ' + userId, details: aliases});
+    logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
+    // const userExist = logger.userDoc;
     const userExist = await this.getOriginalUserDoc(userId, logger);
 
     // throw error if user not defined
@@ -88,15 +86,15 @@ export class ExperimentUserService {
     promiseResult.map((result, index) => {
       if (result) {
         if (result.originalUser && result.originalUser.id === userExist.id) {
-          logger.info({ stdout: 'User already an alias', details: result });
+          logger.info({ message: 'User already an alias', details: result });
           // If alias Id is already linked with user
           alreadyLinkedAliases.push(result);
         } else if (result.originalUser && result.originalUser.id !== userExist.id) {
-          logger.warn({ stdout: 'User already linked with other user', details: result });
+          logger.warn({ message: 'User already linked with other user', details: result });
           // If alias Id is associated with other user
           aliasesLinkedWithOtherUser.push(result);
         } else {
-          logger.warn({ stdout: 'User is a rootUser', details: result });
+          logger.warn({ message: 'User is a rootUser', details: result });
           // If originalUser doesn't exist means this is a rootUser
           otherRootUser.push(result);
         }
@@ -156,8 +154,8 @@ export class ExperimentUserService {
   }
 
   public async updateWorkingGroup(userId: string, workingGroup: any, logger: UpgradeLogger): Promise<ExperimentUser> {
-    logger.addFromDetails(__filename, 'updateWorkingGroup');
-    logger.info({ stdout: 'Update working group for user: ' + userId, details: workingGroup});
+    logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
+    // const userExist = logger.userDoc;
     const userExist = await this.getOriginalUserDoc(userId, logger);
 
     if (!userExist) {
@@ -182,9 +180,8 @@ export class ExperimentUserService {
 
   // TODO should we check for workingGroup as a subset over here?
   public async updateGroupMembership(userId: string, groupMembership: any, logger: UpgradeLogger ): Promise<ExperimentUser> {
-    logger.addFromDetails(__filename, 'updateGroupMembership');
-    logger.info({ stdout: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership, stack_trace: null });
-
+    logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
+    // const userExist = logger.userDoc;
     const userExist = await this.getOriginalUserDoc(userId, logger);
 
     if (!userExist) {
@@ -208,8 +205,7 @@ export class ExperimentUserService {
   }
 
   public async getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<ExperimentUser | null> {
-    logger.addFromDetails(__filename, 'getOriginalUserDoc');
-    logger.info({ stdout: `Find original user for userId ${userId}` });
+    logger.info({ message: `Find original user for userId ${userId}` });
     const userDoc = await this.userRepository.find({
       where: { id: userId },
       relations: ['originalUser'],

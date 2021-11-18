@@ -19,8 +19,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
-    req.logger.addFromDetails(__filename, 'error');
-    req.logger.info({ stdout: 'Insert Error in database', stack_trace: error.stack});
+    req.logger.info({ message: 'Insert Error in database', stack: error.stack});
 
     let message: string;
     let type: SERVER_ERROR;

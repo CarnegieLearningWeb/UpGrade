@@ -25,8 +25,7 @@ export class MetricService {
   }
 
   public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
-    logger.addFromDetails(__filename, 'saveAllMetrics');
-    logger.info({ stdout:'Save all metrics' });
+    logger.info({ message: 'Save all metrics' });
     return await this.addAllMetrics(metrics);
   }
 

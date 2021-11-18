@@ -25,7 +25,7 @@ export class FeatureFlagService {
   ) {}
 
   public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
-    logger.info({ stdout: 'Get all feature flags' });
+    logger.info({ message: 'Get all feature flags' });
     return this.featureFlagRepository.find({ relations: ['variations'] });
   }
 
