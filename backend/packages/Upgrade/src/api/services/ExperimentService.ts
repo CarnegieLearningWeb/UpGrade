@@ -320,6 +320,15 @@ export class ExperimentService {
     return this.create(experiment, user);
   }
 
+  public async exportExperiment(experimentId: string): Promise<Experiment> {
+    this.log.info('Inside export Experiment JSON', experimentId);
+    const experimentDetails = await this.experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['partitions', 'conditions', 'stateTimeLogs'],
+    });
+    return experimentDetails;
+  }
+
   private async updateExperimentSchedules(experimentId: string, entityManager?: EntityManager): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     const experiment = await experimentRepo.findByIds([experimentId]);
