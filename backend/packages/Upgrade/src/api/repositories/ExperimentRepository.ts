@@ -178,4 +178,19 @@ export class ExperimentRepository extends Repository<Experiment> {
 
     return result.raw;
   }
+
+  public async clearDB(entityManager: EntityManager): Promise<string> {
+    try {
+      const entities = entityManager.connection.entityMetadatas;
+      for (const entity of entities) {
+        if(!(['user', 'metric', 'setting', 'migrations'].includes(entity.tableName))) {
+          const repository = await entityManager.connection.getRepository(entity.name);
+          await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
+        }
+      }
+      return 'DB truncate successful';
+    } catch (error) {
+      throw new Error('DB truncate error. DB truncate not allowed');
+    } 
+  }
 }
