@@ -14,6 +14,7 @@ export const environment = {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
     importExperiment : `${endpointApi}/experiments/import`,
+    exportExperiment : `${endpointApi}/experiments/export`,
     updateExperiments: `${endpointApi}/experiments`,
     experimentContext: `${endpointApi}/experiments/context`,
     getExperimentById: `${endpointApi}/experiments/single`,
