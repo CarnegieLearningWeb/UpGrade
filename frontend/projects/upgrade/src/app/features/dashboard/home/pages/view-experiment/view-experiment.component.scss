@@ -51,6 +51,23 @@ $font-size-small: 15px;
               vertical-align: unset;
             }
           }
+          
+          .button-long {
+            margin-left: 24px !important;
+            border: 1px solid var(--blue);
+            width: 140px;
+            height: 40px;
+            color: var(--blue);
+
+            &--query {
+              width: auto;
+            }
+
+            .icon {
+              margin-right: 3px;
+              vertical-align: unset;
+            }
+          }
         }
       }
     }
