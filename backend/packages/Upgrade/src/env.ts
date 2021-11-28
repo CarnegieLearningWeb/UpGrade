@@ -89,6 +89,7 @@ export const env = {
   initialization: {
     contextMetadata: JSON.parse(getOsEnv('CONTEXT_METADATA')),
     adminUsers: parseAdminUsers(getOsEnv('ADMIN_USERS')),
+    metrics: JSON.parse(getOsEnv('METRICS')),
   },
   hostUrl: getOsEnv('HOST_URL'),
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),

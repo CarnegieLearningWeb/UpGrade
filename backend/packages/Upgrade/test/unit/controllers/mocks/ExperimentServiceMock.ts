@@ -16,6 +16,10 @@ export default class ExperimentServieMock {
     return Promise.resolve([]);
   }
 
+  public getMetricQueries(): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
   public findPaginated(skip: number, take: number, sortParams?: any, searchParams?: any): Promise<[]> {
     return Promise.resolve([]);
   }

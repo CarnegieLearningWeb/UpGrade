@@ -128,6 +128,12 @@ export class ExperimentService {
     };
   }
 
+  public getMetricQueries(): object {
+    return {
+      metricQueries: env.initialization.metrics,
+    };
+  }
+
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
@@ -324,7 +330,7 @@ export class ExperimentService {
     this.log.info('Inside export Experiment JSON', experimentId);
     const experimentDetails = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['partitions', 'conditions', 'stateTimeLogs'],
+      relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries'],
     });
     return experimentDetails;
   }
@@ -470,7 +476,6 @@ export class ExperimentService {
           uniqueIdentifiers = response[1];
         }
         const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
-
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -521,7 +526,11 @@ export class ExperimentService {
           (queries &&
             queries.length > 0 &&
             queries.map((query: any) => {
-              promiseArray.push(this.metricRepository.findOne(query.metric.key));
+              if (query.metric == null) {
+                promiseArray.push(this.metricRepository.findOne(query.query.metric.key));
+              } else {
+                promiseArray.push(this.metricRepository.findOne(query.metric.key));
+              }
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
@@ -765,7 +774,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, ...expDoc } = experiment;
+      const { conditions, partitions, queries, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -798,15 +807,43 @@ export class ExperimentService {
           partition.experiment = experimentDoc;
           return partition;
         });
-
+      
+      // creating queries docs
+      const promiseArray = [];
+      let queryDocsToSave =
+        (queries &&
+          queries.length > 0 &&
+          queries.map((query: Query) => {
+            promiseArray.push(this.metricRepository.findOne(query.metric));
+            // tslint:disable-next-line:no-shadowed-variable
+            const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
+            rest.experiment = experimentDoc;
+            rest.id = rest.id || uuid();
+            return rest;
+          })) ||
+        [];
+      if (promiseArray.length) {
+        const metricsDocs = await Promise.all([...promiseArray]);
+        queryDocsToSave = queryDocsToSave.map((queryDoc, index) => {
+          queryDoc.query.metric = metricsDocs[index];
+          return queryDoc;
+        });
+      }
+      
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
       let partitionDocs: ExperimentPartition[];
+      let queryDocs: Query[];
       try {
         [conditionDocs, partitionDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
         ]);
+        if (queryDocsToSave) {
+          queryDocs = await Promise.all([this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)]);
+        } else {
+          queryDocs = [];
+        }
       } catch (error) {
         this.log.error(`Error in creating conditions and partitions "addExperimentInDB"`);
         throw error;
@@ -819,7 +856,11 @@ export class ExperimentService {
         const { experimentId, ...restDoc } = partitionDoc as any;
         return restDoc;
       });
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
+      const queryDocToReturn = 
+        !!queryDocs && queryDocs.map((queryDoc) => {
+        return queryDoc;
+      });
+      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any, queries: (queryDocToReturn[0] as any) || []};
     });
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
