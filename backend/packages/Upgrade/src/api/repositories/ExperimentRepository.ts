@@ -1,4 +1,4 @@
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
@@ -190,7 +190,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       }
       return 'DB truncate successful';
     } catch (error) {
-      throw new Error('DB truncate error. DB truncate not allowed');
+      error = new Error('DB truncate error. DB truncate unsuccessful');
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     } 
   }
 }

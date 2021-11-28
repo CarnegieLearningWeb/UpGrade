@@ -21,7 +21,6 @@ import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
-import { toBool } from '../../lib/env';
 
 /**
  * @swagger
@@ -661,7 +660,7 @@ export class ExperimentClientController {
   @Delete('clearDB')
   public clearDB(): Promise<string> {
     // if DEMO mode is enabled, then clear the database:
-    if(toBool(env.app.demo)) {
+    if(env.app.demo) {
       return this.experimentUserService.clearDB();
     }
     return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');

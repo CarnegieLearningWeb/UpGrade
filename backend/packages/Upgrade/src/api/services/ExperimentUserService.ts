@@ -394,8 +394,8 @@ export class ExperimentUserService {
     }
   }
 
-  public clearDB(): Promise<string> {
-    getConnection().transaction(async (transactionalEntityManager) => {
+  public async clearDB(): Promise<string> {
+    await getConnection().transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager);
     });
     return Promise.resolve('Cleared DB');
