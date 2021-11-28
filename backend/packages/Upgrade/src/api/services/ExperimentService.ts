@@ -128,12 +128,6 @@ export class ExperimentService {
     };
   }
 
-  public getMetricQueries(): object {
-    return {
-      metricQueries: env.initialization.metrics,
-    };
-  }
-
   public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
     this.log.info('Create a new experiment => ', experiment.toString());
     // TODO add entry in audit log of creating experiment
@@ -522,15 +516,12 @@ export class ExperimentService {
 
         // creating queries docs
         const promiseArray = [];
+        console.log('queries', queries);
         let queriesDocToSave =
           (queries &&
             queries.length > 0 &&
             queries.map((query: any) => {
-              if (query.metric == null) {
-                promiseArray.push(this.metricRepository.findOne(query.query.metric.key));
-              } else {
-                promiseArray.push(this.metricRepository.findOne(query.metric.key));
-              }
+              promiseArray.push(this.metricRepository.findOne(query.metric));
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
@@ -542,7 +533,7 @@ export class ExperimentService {
         if (promiseArray.length) {
           const metricsDocs = await Promise.all([...promiseArray]);
           queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
-            queryDoc.metric = metricsDocs[index];
+            metricsDocs ? queryDoc.metric = metricsDocs[index]: queryDoc.metric = null;
             return queryDoc;
           });
         }
@@ -813,7 +804,7 @@ export class ExperimentService {
       let queryDocsToSave =
         (queries &&
           queries.length > 0 &&
-          queries.map((query: Query) => {
+          queries.map((query: any) => {
             promiseArray.push(this.metricRepository.findOne(query.metric));
             // tslint:disable-next-line:no-shadowed-variable
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
@@ -825,7 +816,7 @@ export class ExperimentService {
       if (promiseArray.length) {
         const metricsDocs = await Promise.all([...promiseArray]);
         queryDocsToSave = queryDocsToSave.map((queryDoc, index) => {
-          queryDoc.query.metric = metricsDocs[index];
+          metricsDocs ? queryDoc.metric = metricsDocs[index]: queryDoc.metric = null;
           return queryDoc;
         });
       }
@@ -833,16 +824,16 @@ export class ExperimentService {
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
       let partitionDocs: ExperimentPartition[];
-      let queryDocs: Query[];
+      let queryDocs: any;
       try {
         [conditionDocs, partitionDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
         ]);
-        if (queryDocsToSave) {
-          queryDocs = await Promise.all([this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)]);
+        if (queryDocsToSave.length > 0) {
+          queryDocs = await this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager);
         } else {
-          queryDocs = [];
+          queryDocs = await Promise.resolve();
         }
       } catch (error) {
         this.log.error(`Error in creating conditions and partitions "addExperimentInDB"`);
@@ -860,7 +851,7 @@ export class ExperimentService {
         !!queryDocs && queryDocs.map((queryDoc) => {
         return queryDoc;
       });
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any, queries: (queryDocToReturn[0] as any) || []};
+      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any, queries: (queryDocToReturn as any) || []};
     });
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
