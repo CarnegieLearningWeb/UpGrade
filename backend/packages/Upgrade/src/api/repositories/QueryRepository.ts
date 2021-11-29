@@ -26,6 +26,7 @@ export class QueryRepository extends Repository<Query> {
       .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name`)
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
+      .setParameter('metric', queryDoc.metric)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
