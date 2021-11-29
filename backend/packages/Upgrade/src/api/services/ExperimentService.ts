@@ -532,7 +532,7 @@ export class ExperimentService {
         if (promiseArray.length) {
           const metricsDocs = await Promise.all([...promiseArray]);
           queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
-            metricsDocs[index] ? queryDoc.metric = metricsDocs[index]: null;
+            metricsDocs[index] ? (queryDoc.metric = metricsDocs[index]) : null;
             return queryDoc;
           });
         }
@@ -797,7 +797,7 @@ export class ExperimentService {
           partition.experiment = experimentDoc;
           return partition;
         });
-      
+
       // creating queries docs
       const promiseArray = [];
       let queryDocsToSave =
@@ -815,11 +815,14 @@ export class ExperimentService {
       if (promiseArray.length) {
         const metricsDocs = await Promise.all([...promiseArray]);
         queryDocsToSave = queryDocsToSave.map((queryDoc, index) => {
-          metricsDocs[index] ? queryDoc.metric = metricsDocs[index]: null;
+          metricsDocs[index] ? (queryDoc.metric = metricsDocs[index]) : null;
           return queryDoc;
         });
+
+        // filter document which is not having valid metrics
+        queryDocsToSave = queryDocsToSave.filter((doc) => doc.metric);
       }
-      
+
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
       let partitionDocs: ExperimentPartition[];
@@ -828,7 +831,9 @@ export class ExperimentService {
         [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
-          queryDocsToSave.length > 0 ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager) : Promise.resolve([]) as any,
+          queryDocsToSave.length > 0
+            ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
+            : (Promise.resolve([]) as any),
         ]);
       } catch (error) {
         this.log.error(`Error in creating conditions, partitions and queries "addExperimentInDB"`);
@@ -843,14 +848,14 @@ export class ExperimentService {
         return restDoc;
       });
       let queryDocToReturn = [];
-      if(queryDocs.length > 0) {
+      if (queryDocs.length > 0) {
         queryDocToReturn = queryDocsToSave;
       }
       const newExperiment = {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: partitionDocToReturn as any,
-        queries: (queryDocToReturn as any) || []
+        queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;
     });
