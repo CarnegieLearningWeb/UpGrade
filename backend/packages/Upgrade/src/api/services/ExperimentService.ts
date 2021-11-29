@@ -324,7 +324,7 @@ export class ExperimentService {
     this.log.info('Inside export Experiment JSON', experimentId);
     const experimentDetails = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries'],
+      relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
     });
     return experimentDetails;
   }
@@ -516,12 +516,11 @@ export class ExperimentService {
 
         // creating queries docs
         const promiseArray = [];
-        console.log('queries', queries);
         let queriesDocToSave =
           (queries &&
             queries.length > 0 &&
             queries.map((query: any) => {
-              promiseArray.push(this.metricRepository.findOne(query.metric));
+              promiseArray.push(this.metricRepository.findOne(query.metric.key));
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
@@ -533,7 +532,7 @@ export class ExperimentService {
         if (promiseArray.length) {
           const metricsDocs = await Promise.all([...promiseArray]);
           queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
-            metricsDocs ? queryDoc.metric = metricsDocs[index]: queryDoc.metric = null;
+            metricsDocs[index] ? queryDoc.metric = metricsDocs[index]: null;
             return queryDoc;
           });
         }
@@ -805,7 +804,7 @@ export class ExperimentService {
         (queries &&
           queries.length > 0 &&
           queries.map((query: any) => {
-            promiseArray.push(this.metricRepository.findOne(query.metric));
+            promiseArray.push(this.metricRepository.findOne(query.metric.key));
             // tslint:disable-next-line:no-shadowed-variable
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
@@ -816,7 +815,7 @@ export class ExperimentService {
       if (promiseArray.length) {
         const metricsDocs = await Promise.all([...promiseArray]);
         queryDocsToSave = queryDocsToSave.map((queryDoc, index) => {
-          metricsDocs ? queryDoc.metric = metricsDocs[index]: queryDoc.metric = null;
+          metricsDocs[index] ? queryDoc.metric = metricsDocs[index]: null;
           return queryDoc;
         });
       }
@@ -826,17 +825,13 @@ export class ExperimentService {
       let partitionDocs: ExperimentPartition[];
       let queryDocs: any;
       try {
-        [conditionDocs, partitionDocs] = await Promise.all([
+        [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
+          queryDocsToSave.length > 0 ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager) : Promise.resolve([]) as any,
         ]);
-        if (queryDocsToSave.length > 0) {
-          queryDocs = await this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager);
-        } else {
-          queryDocs = await Promise.resolve();
-        }
       } catch (error) {
-        this.log.error(`Error in creating conditions and partitions "addExperimentInDB"`);
+        this.log.error(`Error in creating conditions, partitions and queries "addExperimentInDB"`);
         throw error;
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
@@ -847,11 +842,17 @@ export class ExperimentService {
         const { experimentId, ...restDoc } = partitionDoc as any;
         return restDoc;
       });
-      const queryDocToReturn = 
-        !!queryDocs && queryDocs.map((queryDoc) => {
-        return queryDoc;
-      });
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any, queries: (queryDocToReturn as any) || []};
+      let queryDocToReturn = [];
+      if(queryDocs.length > 0) {
+        queryDocToReturn = queryDocsToSave;
+      }
+      const newExperiment = {
+        ...experimentDoc,
+        conditions: conditionDocToReturn as any,
+        partitions: partitionDocToReturn as any,
+        queries: (queryDocToReturn as any) || []
+      };
+      return newExperiment;
     });
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
