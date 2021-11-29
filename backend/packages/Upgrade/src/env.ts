@@ -39,6 +39,7 @@ export const env = {
       middlewares: getOsPaths('MIDDLEWARES'),
       interceptors: getOsPaths('INTERCEPTORS'),
     },
+    demo: toBool(getOsEnvOptional('APP_DEMO')) || false,
   },
   log: {
     level: getOsEnv('LOG_LEVEL'),

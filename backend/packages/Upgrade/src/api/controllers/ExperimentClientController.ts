@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError, Delete } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -20,6 +20,7 @@ import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAlias
 import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
+import { env } from '../../env';
 
 /**
  * @swagger
@@ -654,5 +655,14 @@ export class ExperimentClientController {
   @Post('useraliases')
   public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
     return this.experimentUserService.setAliasesForUser(user.userId, user.aliases);
+  }
+
+  @Delete('clearDB')
+  public clearDB(): Promise<string> {
+    // if DEMO mode is enabled, then clear the database:
+    if(env.app.demo) {
+      return this.experimentUserService.clearDB();
+    }
+    return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');
   }
 }
