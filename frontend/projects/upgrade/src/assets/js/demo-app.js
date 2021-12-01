@@ -1,8 +1,5 @@
 // This file is for making UpGrade communicate with the demo app
 if (window.self !== window.top) { // Execute the code if the page is inside an iframe
-    // The demo app's URL
-    const demoAppURL = "http://localhost:8080";
-
     // For getting UpGrade's element by ID
     const getElementById = (id) => {
         switch (id) {
@@ -111,9 +108,6 @@ if (window.self !== window.top) { // Execute the code if the page is inside an i
 
     // Receive data from the demo app
     window.addEventListener("message", (event) => {
-        if (event.origin !== demoAppURL) {
-            return;
-        }
         const data = event.message || event.data;
         if (data.message === "initCall") {
             initCall(data.type, data.id, data.args || []);
@@ -121,7 +115,7 @@ if (window.self !== window.top) { // Execute the code if the page is inside an i
         else if (data.message === "nextCallback") {
             nextCallback(data.type, data.id, () => {
                 // Send data back to the demo app
-                window.parent.postMessage({ message: "onNextCall" }, demoAppURL);
+                window.parent.postMessage({ message: "onNextCall" }, "*");
             });
         }
     });
