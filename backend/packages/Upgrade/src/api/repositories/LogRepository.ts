@@ -313,6 +313,7 @@ export class LogRepository extends Repository<Log> {
       )
       .where('metric.key = :metric', { metric })
       .andWhere('experiment.id = :experimentId', { experimentId })
-      .andWhere('queries.id = :queryId', { queryId });
-  }
+      .andWhere('queries.id = :queryId', { queryId })
+      .andWhere(`jsonb_typeof(${metricString}) = 'number'`);
+  } 
 }
