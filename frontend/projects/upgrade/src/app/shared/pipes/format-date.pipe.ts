@@ -40,9 +40,10 @@ export class FormatDatePipe implements PipeTransform {
           ' ' +
           months[experimentDate.getMonth()].substring(0, 3) +
           ', ' +
+          (dateHours < 10 || dateHours == 12 ? '0' : '' ) +
           (dateHours < 12 ? dateHours : dateHours - 12) +
           ':' +
-          experimentDate.getMinutes() +
+          (experimentDate.getMinutes() < 10 ? '0' : '' ) + experimentDate.getMinutes() +
           ' ' +
           (experimentDate.getHours() < 12 ? 'AM' : 'PM')
         );
