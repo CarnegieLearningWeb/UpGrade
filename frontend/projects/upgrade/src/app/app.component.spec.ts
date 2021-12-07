@@ -9,6 +9,7 @@ import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { TestingModule } from '../testing/testing.module';
 import { AuthService } from './core/auth/auth.service';
+import { SimpleNotificationsModule } from 'angular2-notifications';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -18,7 +19,15 @@ describe('AppComponent', () => {
         RouterTestingModule,
         NoopAnimationsModule,
         TranslateModule.forRoot(),
-        TestingModule
+        TestingModule,
+        // global configuration for notification
+        SimpleNotificationsModule.forRoot({
+          position: ["bottom", "center"],
+          timeOut: 4000,
+          showProgressBar: false,
+          pauseOnHover: true,
+          clickToClose: false
+      }),
       ],
       providers: [
         provideMockStore({
