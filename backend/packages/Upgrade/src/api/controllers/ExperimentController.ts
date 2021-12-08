@@ -919,6 +919,7 @@ export class ExperimentController {
   @Get('/export/:id')
   public exportExperiment(
     @Param('id') id: string, 
+    @CurrentUser() currentUser: User
   ): Promise<Experiment> {
     if (!validator.isUUID(id)) {
       return Promise.reject(
@@ -927,6 +928,6 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.exportExperiment(id);
+    return this.experimentService.exportExperiment(id, currentUser);
   }
 }
