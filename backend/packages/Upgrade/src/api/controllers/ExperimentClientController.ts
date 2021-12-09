@@ -421,23 +421,26 @@ export class ExperimentClientController {
    *          '500':
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
-  @Post('assign')
-  public async getAllExperimentConditions(
-    @Body({ validate: { validationError: { target: false, value: false } } })
-    @Req()
-    request: AppRequest,
-    experiment: ExperimentAssignmentValidator
-  ): Promise<IExperimentAssignment[]> {
-    request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
-    // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
-      request.logger.info({ message: 'Got the original user doc' });
-    }
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context, request.logger);
-  }
+   @Post('assign')
+   public async getAllExperimentConditions(
+     @Body({ validate: { validationError: { target: false, value: false } } })
+     @Req()
+     request: AppRequest,
+     experiment: ExperimentAssignmentValidator
+   ): Promise<IExperimentAssignment[]> {
+     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
+     // getOriginalUserDoc call for alias
+     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
+     if (experimentUserDoc) {
+       // append userDoc in logger
+       request.logger.child({ userDoc: experimentUserDoc });
+       request.logger.info({ message: 'Got the original user doc' });
+     }
+     return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context, {
+       logger: request.logger,
+       userDoc: experimentUserDoc,
+     });
+   }
 
   /**
    * @swagger

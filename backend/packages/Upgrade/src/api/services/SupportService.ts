@@ -13,6 +13,11 @@ export class SupportService {
 
   public async getAssignments(userId: string, context: string): Promise<IExperimentAssignment[]> {
     this.log.info('Get all assignments');
-    return this.experimentAssignmentService.getAllExperimentConditions(userId, context, new UpgradeLogger(), false);
+    return this.experimentAssignmentService.getAllExperimentConditions(
+      userId,
+      context,
+      { logger: new UpgradeLogger(), userDoc: {} }, // TODO: Update the userDocument  here
+      false
+    );
   }
 }

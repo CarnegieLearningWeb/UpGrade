@@ -222,18 +222,13 @@ export class ExperimentAssignmentService {
   public async getAllExperimentConditions(
     userId: string,
     context: string,
-    logger: UpgradeLogger,
+    requestContext: {logger: UpgradeLogger, userDoc: any},
     toAssign: boolean = true
   ): Promise<IExperimentAssignment[]> {
-    logger.info({ message: `getAllExperimentConditions: User: ${userId}`});
-    const usersData: any[] = await Promise.all([
-      // logger.userDoc,
-      this.experimentUserService.getOriginalUserDoc(userId, logger),
-      this.previewUserService.findOne(userId),
-    ]);
-
-    const experimentUser: ExperimentUser = usersData[0];
-    const previewUser: PreviewUser = usersData[1];
+    const { logger, userDoc } = requestContext;
+    logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
+    const previewUser: PreviewUser = await this.previewUserService.findOne(userId);
+    const experimentUser: ExperimentUser = userDoc;
 
     // throw error if user not defined
     if (!experimentUser) {
