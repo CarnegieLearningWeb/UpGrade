@@ -15,6 +15,7 @@ on:
       - '**/.prettier*'
       - '**/locust/**'
       - '**/.editoreconfig'
+      - '.github/**'
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
