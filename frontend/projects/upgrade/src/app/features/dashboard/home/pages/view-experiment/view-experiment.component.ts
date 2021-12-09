@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import * as clonedeep from 'lodash.clonedeep';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
@@ -39,22 +39,30 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissionsSub: Subscription;
   experiment: ExperimentVM;
   experimentSub: Subscription;
+  experimentIdSub: Subscription;
 
   displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
+  expId;
 
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private _Activatedroute: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
       this.permissions = permission;
     });
+    this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => { 
+      console.log(params);
+      this.expId = params.get('experimentId');
+    });
+    this.experimentService.fetchExperimentById(this.expId);
     this.experimentSub = this.experimentService.selectedExperiment$
       .pipe(filter(experiment => !!experiment))
       .subscribe(experiment => {
@@ -62,7 +70,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           this.experimentService.fetchExperimentDetailStat(experiment.id);
         }
         // By refreshing page if we would have experimentId then only assign it's value
-        if (experiment.id) {
+        if (experiment.id && experiment.name) {
           this.experiment = experiment;
         }
       });
