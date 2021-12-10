@@ -13,11 +13,13 @@ import { individualAssignmentExperiment } from '../../mockData/experiment/index'
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 
 export default async function CreateLog(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const metricRepository = getRepository(Metric);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
   let experimentObject: any = individualAssignmentExperiment;
@@ -138,9 +140,10 @@ export default async function CreateLog(): Promise<void> {
       },
     },
   ];
-
+  // getOriginalUserDoc
+  const experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUser.id, new UpgradeLogger());
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   // create query for all the metrics
   const totalTimeSum = makeQuery(`totalTimeSeconds`, OPERATION_TYPES.SUM, experiments[0].id);
@@ -216,7 +219,7 @@ export default async function CreateLog(): Promise<void> {
   await experimentService.update(experimentObject.id, experimentObject as any, user);
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   let logData = await logRepository.find({
     relations: ['metrics'],
@@ -251,7 +254,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -289,7 +292,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -334,7 +337,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -380,7 +383,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -440,7 +443,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -492,7 +495,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -560,7 +563,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -628,7 +631,7 @@ export default async function CreateLog(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],

@@ -1,7 +1,5 @@
-import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
-import { getRepository } from 'typeorm';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
-import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
+import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Container } from 'typedi';
@@ -18,11 +16,9 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
+  const experimentClientController = Container.get<ExperimentClientController>(ExperimentClientController);
   const userService = Container.get<UserService>(UserService);
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
-
   // creating new user
   const user = await userService.upsertUser(systemUser as any);
 
@@ -127,8 +123,10 @@ export default async function testCase(): Promise<void> {
 
   const workingGroup = {...experimentUsers[0].workingGroup};
   delete workingGroup["teacher"];
+  // getOriginalUserDoc call for alias
+  const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
-  await experimentUserService.updateWorkingGroup(experimentUsers[0].id, workingGroup, new UpgradeLogger());
+  await experimentUserService.updateWorkingGroup(experimentUsers[0].id, workingGroup, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
   const experimentUser = await experimentUserService.findOne(experimentUsers[0].id);
   expect(experimentUser.workingGroup).not.toHaveProperty("teacher");
 

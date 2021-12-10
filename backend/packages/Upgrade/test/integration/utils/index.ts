@@ -11,6 +11,7 @@ import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion
 import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
 import { SupportService } from '../../../src/api/services/SupportService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 
 export function checkExperimentAssignedIsNull(
   experimentConditionAssignments: any,
@@ -91,9 +92,11 @@ export async function getAllExperimentCondition(
   context: string = 'home'
 ): Promise<IExperimentAssignment[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
+  // getOriginalUserDoc
+  const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // getAllExperimentConditions
-  return experimentAssignmentService.getAllExperimentConditions(userId, context, logger);
+  return experimentAssignmentService.getAllExperimentConditions(userId, context, { logger: logger, userDoc: experimentUserDoc});
 }
 
 export async function getUserAssignments(userId: string, context: string = 'home'): Promise<IExperimentAssignment[]> {
@@ -109,10 +112,12 @@ export async function markExperimentPoint(
   logger: UpgradeLogger
 ): Promise<MonitoredExperimentPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const checkService = Container.get<CheckService>(CheckService);
-
+  // getOriginalUserDoc
+  const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // mark experiment point
-  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, condition, logger, experimentName);
+  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, condition, { logger: logger, userDoc: experimentUserDoc}, experimentName);
   return checkService.getAllMarkedExperimentPoints();
 }
 

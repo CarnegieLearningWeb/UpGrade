@@ -15,10 +15,12 @@ import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 import { metrics } from '../../mockData/metric';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 
 export default async function LogOperations(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
@@ -199,7 +201,8 @@ export default async function LogOperations(): Promise<void> {
   };
 
   await experimentService.update(experimentObject.id, experimentObject as any, user);
-
+  // getOriginalUserDoc
+  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // log data here
   await experimentAssignmentService.dataLog(experimentUsers[0].id, [
     {
@@ -221,8 +224,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[1].id, [
     {
       timestamp: new Date().toISOString(),
@@ -240,8 +244,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+// getOriginalUserDoc
+experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[2].id, [
     {
       timestamp: new Date().toISOString(),
@@ -259,8 +264,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[3].id, [
     {
       timestamp: new Date().toISOString(),
@@ -278,7 +284,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   await experimentAssignmentService.dataLog(experimentUsers[3].id, [
     {
@@ -297,7 +303,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(

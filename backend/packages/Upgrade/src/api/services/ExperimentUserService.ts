@@ -55,10 +55,10 @@ export class ExperimentUserService {
     return updatedUsers;
   }
 
-  public async setAliasesForUser(userId: string, aliases: string[], logger: UpgradeLogger): Promise<ExperimentUser[]> {
+  public async setAliasesForUser(userId: string, aliases: string[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser[]> {
+    const { logger, userDoc } = requestContext;
+    const userExist = userDoc['user'];
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
-    // const userExist = logger.userDoc;
-    const userExist = await this.getOriginalUserDoc(userId, logger);
 
     // throw error if user not defined
     if (!userExist) {
@@ -153,11 +153,15 @@ export class ExperimentUserService {
     return alreadyLinkedAliases;
   }
 
-  public async updateWorkingGroup(userId: string, workingGroup: any, logger: UpgradeLogger): Promise<ExperimentUser> {
+  public async updateWorkingGroup(userId: string, workingGroup: any, requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser> {
+    const { logger, userDoc } = requestContext;
+    let userExist;
+    if (userDoc['user']) {
+      userExist = userDoc['user'];
+    } else {
+      userExist = userDoc;
+    }
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
-    // const userExist = logger.userDoc;
-    const userExist = await this.getOriginalUserDoc(userId, logger);
-
     if (!userExist) {
       throw new Error(
         JSON.stringify({
@@ -166,7 +170,6 @@ export class ExperimentUserService {
         })
       );
     }
-
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
     return this.userRepository.save(newDocument);
@@ -179,11 +182,15 @@ export class ExperimentUserService {
   }
 
   // TODO should we check for workingGroup as a subset over here?
-  public async updateGroupMembership(userId: string, groupMembership: any, logger: UpgradeLogger ): Promise<ExperimentUser> {
+  public async updateGroupMembership(userId: string, groupMembership: any, requestContext: {logger: UpgradeLogger, userDoc: any} ): Promise<ExperimentUser> { 
+    const { logger, userDoc } = requestContext;
+    let userExist;
+    if (userDoc['user']) {
+      userExist = userDoc['user'];
+    } else {
+      userExist = userDoc;
+    }
     logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
-    // const userExist = logger.userDoc;
-    const userExist = await this.getOriginalUserDoc(userId, logger);
-
     if (!userExist) {
       throw new Error(
         JSON.stringify({

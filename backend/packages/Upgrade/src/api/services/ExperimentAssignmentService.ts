@@ -92,13 +92,11 @@ export class ExperimentAssignmentService {
     userId: string,
     experimentPoint: string,
     condition: string | null,
-    logger: UpgradeLogger,
+    requestContext: {logger: UpgradeLogger, userDoc: any},
     experimentName?: string,
   ): Promise<MonitoredExperimentPoint> {
     // find working group for user
-    // const userDoc = logger.userDoc;
-    // console.log('markExperimentPoint', userDoc);
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
+    const { logger, userDoc } = requestContext;
 
     // adding experiment error when user is not defined
     if (!userDoc) {
@@ -510,7 +508,6 @@ export class ExperimentAssignmentService {
   // When browser will be sending the blob data
   public async blobDataLog(userId: string, blobLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
     logger.info({ message: `Add blob data userId ${userId}`, details: blobLog });
-    // const userDoc = logger.userDoc;
     const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
     const keyUniqueArray = [];
 
@@ -528,10 +525,9 @@ export class ExperimentAssignmentService {
     return flatten(logsToReturn);
   }
 
-  public async dataLog(userId: string, jsonLog: ILogInput[], logger: UpgradeLogger): Promise<Log[]> {
+  public async dataLog(userId: string, jsonLog: ILogInput[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<Log[]> {
+    const { logger, userDoc } = requestContext;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
-    // const userDoc = logger.userDoc;
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
     const keyUniqueArray = [];
 
     // throw error if user not defined
@@ -558,11 +554,11 @@ export class ExperimentAssignmentService {
     experimentPoint: string,
     userId: string,
     experimentId: string,
-    logger: UpgradeLogger
+    requestContext: {logger: UpgradeLogger, userDoc: any}
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
-    // const userDoc = logger.userDoc;
-    const userDoc = await this.experimentUserService.getOriginalUserDoc(userId, logger);
+    const { logger, userDoc } = requestContext;
+    logger.info({ message: `Failed experiment point for userId ${userId}`});
 
     // throw error if user not defined
     if (!userDoc) {

@@ -1,7 +1,4 @@
-import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
-import { getRepository } from 'typeorm';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
-import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Container } from 'typedi';
@@ -15,14 +12,13 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
+  const experimentClientController = Container.get<ExperimentClientController>(ExperimentClientController);
   const userService = Container.get<UserService>(UserService);
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
-
   // creating new user
   const user = await userService.upsertUser(systemUser as any);
 
@@ -127,8 +123,10 @@ export default async function testCase(): Promise<void> {
 
   const group = {...experimentUsers[0].group};
   delete group["teacher"];
+  // getOriginalUserDoc call for alias
+  const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
-  await experimentUserService.updateGroupMembership(experimentUsers[0].id, group, new UpgradeLogger());
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, group, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
   const experimentUser = await experimentUserService.findOne(experimentUsers[0].id);
   expect(experimentUser.group).not.toHaveProperty("teacher");
 

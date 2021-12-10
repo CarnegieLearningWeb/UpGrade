@@ -16,10 +16,12 @@ import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { Log } from '../../../../src/api/models/Log';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 
 export default async function RepeatedMeasure(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
@@ -212,9 +214,10 @@ export default async function RepeatedMeasure(): Promise<void> {
       },
     },
   ];
-
+  // getOriginalUserDoc
+  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUser.id, new UpgradeLogger());
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   let logData = await logRepository.find({
     relations: ['metrics'],
@@ -257,7 +260,7 @@ export default async function RepeatedMeasure(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -294,8 +297,9 @@ export default async function RepeatedMeasure(): Promise<void> {
       },
     },
   ];
-
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData, new UpgradeLogger());
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
@@ -340,7 +344,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     },
   ];
 
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
   queryResult = await queryService.analyse([queries[0].id]);
   totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);

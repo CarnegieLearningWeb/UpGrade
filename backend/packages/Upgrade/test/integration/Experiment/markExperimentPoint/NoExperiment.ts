@@ -12,7 +12,6 @@ import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
 } from '../../utils';
-import { UpdateValuesMissingError } from 'typeorm';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function NoExperiment(): Promise<void> {

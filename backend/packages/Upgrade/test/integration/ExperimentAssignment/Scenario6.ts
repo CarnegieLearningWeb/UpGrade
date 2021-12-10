@@ -26,17 +26,20 @@ export default async function testCase(): Promise<void> {
 
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment;
-
+  // getOriginalUserDoc
+  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // change user group
   await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['2'],
     class: ['2'],
-  }, new UpgradeLogger());
+  }, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await experimentUserService.updateWorkingGroup(experimentUsers[0].id, {
     teacher: '2',
     class: '2',
-  }, new UpgradeLogger());
-  let experimentUser = await experimentUserService.find();
+  }, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
+  let experimentUser = await experimentUserService.findOne(experimentUserDoc.id);
   let objectToCheck = {
     ...experimentUsers[0],
     group: {
@@ -51,8 +54,10 @@ export default async function testCase(): Promise<void> {
   delete objectToCheck.versionNumber;
   delete objectToCheck.createdAt;
   delete objectToCheck.updatedAt;
-
-  expect(experimentUser).toEqual(expect.arrayContaining([expect.objectContaining(objectToCheck)]));
+  delete experimentUser.versionNumber;
+  delete experimentUser.createdAt;
+  delete experimentUser.updatedAt;
+  expect(experimentUser).toEqual(objectToCheck);
 
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;
@@ -76,22 +81,22 @@ export default async function testCase(): Promise<void> {
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
-
   // mark experiment point
   let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
-
   // change user group
   // experimentUsers[0].group['teacher'] = 1;
   await experimentUserService.updateGroupMembership(experimentUsers[0].id, {
     teacher: ['1'],
     class: ['1'],
-  }, new UpgradeLogger());
+  }, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await experimentUserService.updateWorkingGroup(experimentUsers[0].id, {
     teacher: '1',
     class: '1',
-  }, new UpgradeLogger());
-  experimentUser = await experimentUserService.find();
+  },{ logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
+  experimentUser = await experimentUserService.findOne(experimentUserDoc.id);;
   objectToCheck = {
     ...experimentUsers[0],
     group: {
@@ -106,9 +111,10 @@ export default async function testCase(): Promise<void> {
   delete objectToCheck.versionNumber;
   delete objectToCheck.createdAt;
   delete objectToCheck.updatedAt;
-
-  expect(experimentUser).toEqual(expect.arrayContaining([expect.objectContaining(objectToCheck)]));
-
+  delete experimentUser.versionNumber;
+  delete experimentUser.createdAt;
+  delete experimentUser.updatedAt;
+  expect(experimentUser).toEqual(objectToCheck);
   // change experiment status to scheduled
   let experimentId = experiments[0].id;
   const date = new Date();
@@ -153,7 +159,6 @@ export default async function testCase(): Promise<void> {
       }),
     ])
   );
-
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
