@@ -1,4 +1,4 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError, Delete } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -20,6 +20,7 @@ import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAlias
 import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
+import { env } from '../../env';
 
 /**
  * @swagger
@@ -128,17 +129,27 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experimentUser: ExperimentUser
-  ): Promise<ExperimentUser> {
+  ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
     request.logger.info({ message: 'Starting the init call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
-    const document = await this.experimentUserService.create([experimentUser], request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
       request.logger.child({ userDoc : experimentUserDoc })
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return document[0];
+    const userDocument = await this.experimentUserService.create([experimentUser], request.logger);
+    if (!userDocument || !userDocument[0]) {
+      request.logger.error({
+        details: 'user document not present',
+      });
+      throw new InternalServerError('user document not present');
+    }
+    // if reinit call is made with any of the below fields not included in the call,
+    // then we will fetch the stored values of the field and return them in the response
+    // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
+    const { id, group, workingGroup } = userDocument[0];
+    return { id, group, workingGroup };
   }
 
   /**
@@ -770,5 +781,14 @@ export class ExperimentClientController {
     } else {
       return null; 
     }
+  }
+
+  @Delete('clearDB')
+  public clearDB(): Promise<string> {
+    // if DEMO mode is enabled, then clear the database:
+    if(env.app.demo) {
+      return this.experimentUserService.clearDB();
+    }
+    return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');
   }
 }

@@ -26,6 +26,7 @@ export class QueryRepository extends Repository<Query> {
       .onConflict(`("id") DO UPDATE SET "query" = :query, "name" = :name`)
       .setParameter('query', queryDoc.query)
       .setParameter('name', queryDoc.name)
+      .setParameter('metric', queryDoc.metric)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
@@ -34,6 +35,26 @@ export class QueryRepository extends Repository<Query> {
       });
 
     return result.raw[0];
+  }
+
+  public async insertQueries(queryDoc: Array<Partial<Query>>, entityManager: EntityManager): Promise<Query> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .insert()
+      .into(Query)
+      .values(queryDoc)
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'QueryRepository',
+          'insertQueries',
+          { queryDoc },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+    return result.raw;
   }
 
   public async checkIfQueryExists(metricId: string): Promise<boolean> {

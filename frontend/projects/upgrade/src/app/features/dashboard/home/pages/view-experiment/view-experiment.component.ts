@@ -68,14 +68,16 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       });
   }
 
-  openSnackBar() {
+  openSnackBar(exportType: boolean) {
     this.authService.currentUser$.pipe(
       first()
     ).subscribe(userInfo => {
-      if (userInfo.email) {
-        this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 })
+      if (userInfo.email && exportType) {
+        this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 });
+      } else if (!userInfo.email && !exportType) {
+        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 });
       } else {
-        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 })
+        this._snackBar.open(`Experiment Design JSON downloaded!`, null, { duration: 2000 });
       }
     });
   }
@@ -141,7 +143,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   exportExperimentInfo(experimentId: string, experimentName: string) {
     this.experimentService.exportExperimentInfo(experimentId, experimentName);
-    this.openSnackBar();
+    this.openSnackBar(true);
+  }
+  exportExperimentDesign(experimentId: string) {
+    this.experimentService.exportExperimentDesign(experimentId);
+    this.openSnackBar(false);
   }
 
   getConditionCode(conditionId: string) {

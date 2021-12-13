@@ -1,21 +1,24 @@
 import { Interfaces, Types } from '../identifiers';
 import * as fetch from 'isomorphic-fetch';
+import * as uuid  from 'uuid';
 
 // Call this function with url and data which is used in body of request
 export default async function fetchDataService(
   url: string,
   token: string,
+  clientSessionId: string,
   data: any,
   requestType: Types.REQUEST_TYPES,
   sendAsAnalytics: boolean = false,
   skipRetryOnStatusCodes: number[] = []
 ): Promise<Interfaces.IResponse> {
-  return await fetchData(url, token, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes);
+  return await fetchData(url, token, clientSessionId, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes);
 }
 
 async function fetchData(
   url: string,
   token: string,
+  clientSessionId: string,
   data: any,
   requestType: Types.REQUEST_TYPES,
   sendAsAnalytics = false,
@@ -26,7 +29,9 @@ async function fetchData(
   try {
 
     let headers: object = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Session-Id': clientSessionId || uuid.v4(),
+      'CurrentRetry': retries,
     }
     if (!!token) {
       headers = {
@@ -34,7 +39,6 @@ async function fetchData(
         'Authorization': `Bearer ${token}`
       }
     }
-
 
     let options: Interfaces.IRequestOptions = {
       headers,
@@ -69,7 +73,7 @@ async function fetchData(
       if (retries > 0) {
         // Do retry after the backOff time
         await wait(backOff);
-        return await fetchData(url, token, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes, retries - 1, backOff * 2);
+        return await fetchData(url, token, clientSessionId, data, requestType, sendAsAnalytics, skipRetryOnStatusCodes, retries - 1, backOff * 2);
       } else {
         return {
           status: false,

@@ -7,7 +7,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
-import { In, Not } from 'typeorm';
+import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -52,7 +52,11 @@ export class ExperimentUserService {
 
     // wait for all assignment update to get complete
     await Promise.all(assignmentUpdated);
-    return updatedUsers;
+
+    // findAll user document here
+    const updatedUserDocument = await this.userRepository.findByIds(updatedUsers.map((user) => user.id));
+
+    return updatedUserDocument;
   }
 
   public async setAliasesForUser(userId: string, aliases: string[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser[]> {
@@ -393,5 +397,12 @@ export class ExperimentUserService {
     if (assignedExperimentIds.length > 0) {
       await this.individualAssignmentRepository.deleteExperimentsForUserId(userId, assignedExperimentIds);
     }
+  }
+
+  public async clearDB(): Promise<string> {
+    await getConnection().transaction(async (transactionalEntityManager) => {
+      await this.experimentRepository.clearDB(transactionalEntityManager);
+    });
+    return Promise.resolve('Cleared DB');
   }
 }

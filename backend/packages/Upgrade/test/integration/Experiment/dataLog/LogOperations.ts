@@ -89,6 +89,10 @@ export default async function LogOperations(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
+  // get all experiment condition for user 5
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id, new UpgradeLogger());
+  checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+
   // Save queries for various operations
   const querySum = makeQuery('totalProblemsCompleted', OPERATION_TYPES.SUM, experiments[0].id);
 
@@ -305,6 +309,29 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
     },
   ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
+  // log data for 5th user with null values:
+  await experimentAssignmentService.dataLog(experimentUsers[4].id, [
+    {
+      timestamp: new Date().toISOString(),
+      metrics: {
+        attributes: {
+          totalProblemsCompleted: null,
+        },
+        groupedMetrics: [
+          {
+            groupClass: 'masteryWorkspace',
+            groupKey: 'calculating_area_figures',
+            groupUniquifier: '1',
+            attributes: {
+              timeSeconds: null,
+              completion: null,
+            },
+          },
+        ],
+      },
+    },
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(
     expect.arrayContaining([
@@ -486,9 +513,9 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
         const sum = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
-        expectedValue = 370;
+        expectedValue = 320;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 1100; // For completion metric
+          expectedValue = 600; // For completion metric
         }
         expect(sum).toEqual(expectedValue);
         break;
@@ -504,18 +531,19 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
         const maxValue = Math.max(...res);
         expectedValue = 200;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 500; // For completion metric
+          expectedValue = 300; // For completion metric
         }
         expect(maxValue).toEqual(expectedValue);
         break;
       // Can not check exact values for below operations
       case OPERATION_TYPES.COUNT:
         console.log(consoleString, queryResult);
-
         const count = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
-        expect(count).toEqual(4);
+        if (res.length) {
+         expect(count).toEqual(3);
+        }
         break;
       case OPERATION_TYPES.AVERAGE:
         console.log(consoleString, queryResult);

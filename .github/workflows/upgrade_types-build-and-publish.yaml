@@ -5,9 +5,8 @@ on:
       - main
     paths-ignore:
       - 'backend/**'
-      - 'clientlibs/java/**'
+      - 'clientlibs/**'
       - 'frontend/**'
-      - 'types/**'
       - '**/*ignore'
       - '**/README.md'
       - '**/terraform/**'
@@ -22,7 +21,7 @@ jobs:
     if: github.repository_owner == 'CarnegieLearningWeb'
     defaults:
       run:
-        working-directory: clientlibs/js
+        working-directory: types
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -34,4 +33,4 @@ jobs:
       - uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
-          package: clientlibs/js/package.json
+          package: types/package.json
