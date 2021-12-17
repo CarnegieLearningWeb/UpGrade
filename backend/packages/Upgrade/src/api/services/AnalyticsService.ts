@@ -255,6 +255,12 @@ export class AnalyticsService {
       if (!experiment) {
         return '';
       }
+      const user = await this.userRepository.findOne({ email });
+      this.experimentAuditLogRepository.saveRawJson(
+        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED,
+        { experimentName: experiment.name },
+        user
+      );
       const { conditions, partitions, stateTimeLogs, ...experimentInfo } = experiment;
       const experimentIdAndPoint = [];
       partitions.forEach((partition) => {
@@ -485,7 +491,6 @@ export class AnalyticsService {
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
-      const user = await this.userRepository.findOne({ email });
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentInfo.name },

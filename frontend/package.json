@@ -1,6 +1,6 @@
 {
     "name": "ab-testing",
-    "version": "1.0.65",
+    "version": "1.0.66",
     "license": "MIT",
     "scripts": {
         "ng": "ng",
@@ -66,7 +66,7 @@
         "papaparse": "^5.3.0",
         "rxjs": "~6.5.0",
         "tslib": "^1.9.0",
-        "upgrade_types": "^1.0.4",
+        "upgrade_types": "^1.0.5",
         "uuid": "^3.3.3",
         "zone.js": "~0.9.1"
     },

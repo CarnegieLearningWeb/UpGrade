@@ -320,12 +320,17 @@ export class ExperimentService {
     return this.create(experiment, user);
   }
 
-  public async exportExperiment(experimentId: string): Promise<Experiment> {
+  public async exportExperiment(experimentId: string, user: User): Promise<Experiment> {
     this.log.info('Inside export Experiment JSON', experimentId);
     const experimentDetails = await this.experimentRepository.findOne({
       where: { id: experimentId },
       relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
     });
+    this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
+      { experimentName: experimentDetails.name },
+      user
+    );
     return experimentDetails;
   }
 
