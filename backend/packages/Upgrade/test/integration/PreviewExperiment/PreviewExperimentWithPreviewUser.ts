@@ -8,6 +8,7 @@ import { systemUser } from '../mockData/user/index';
 import { previewIndividualAssignmentExperiment } from '../mockData/experiment';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
 import { previewUsers } from '../mockData/previewUsers/index';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -40,10 +41,10 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for preview user
-  let experimentConditionAssignments = await getAllExperimentCondition(previewUser.id);
+  let experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
 
   // // get all experiment for non preview user
-  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  // experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   // expect(experimentConditionAssignments).toHaveLength(0);
 }

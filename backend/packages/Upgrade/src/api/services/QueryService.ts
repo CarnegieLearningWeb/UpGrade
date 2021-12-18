@@ -46,6 +46,7 @@ export class QueryService {
       if (query.status === 'fulfilled') {
         return query.value;
       } else {
+        
         this.log.error('Error in Query Id ', queryIds[index]);
         failedQuery.push(this.errorService.create({
           endPoint: '/api/query/analyse',
@@ -53,7 +54,7 @@ export class QueryService {
           message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
           name: 'Query Failed error',
           type: SERVER_ERROR.QUERY_FAILED,
-        } as ExperimentError));
+        } as ExperimentError, null));
 
         return [];
       }

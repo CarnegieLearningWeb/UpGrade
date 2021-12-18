@@ -4,7 +4,6 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentUser } from '../models/ExperimentUser';
-import uuid from 'uuid/v4';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
@@ -35,10 +34,9 @@ export class ExperimentUserService {
   }
 
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
-    logger.addFromDetails(__filename, 'create');
-    logger.info({ stdout: 'Create a new User. Metadata of the user =>', details: users, stack_trace: null });
+    logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
     const multipleUsers = users.map((user) => {
-      user.id = user.id || uuid();
+      user.id = user.id;
       return user;
     });
     // insert or update in the database
@@ -61,9 +59,10 @@ export class ExperimentUserService {
     return updatedUserDocument;
   }
 
-  public async setAliasesForUser(userId: string, aliases: string[]): Promise<ExperimentUser[]> {
-    this.log.info('Set aliases for experiment user => ', userId, aliases);
-    const userExist = await this.getOriginalUserDoc(userId);
+  public async setAliasesForUser(userId: string, aliases: string[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser[]> {
+    const { logger, userDoc } = requestContext;
+    const userExist = userDoc['user'];
+    logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
     if (!userExist) {
@@ -91,15 +90,15 @@ export class ExperimentUserService {
     promiseResult.map((result, index) => {
       if (result) {
         if (result.originalUser && result.originalUser.id === userExist.id) {
-          this.log.info('User already an alias', result);
+          logger.info({ message: 'User already an alias', details: result });
           // If alias Id is already linked with user
           alreadyLinkedAliases.push(result);
         } else if (result.originalUser && result.originalUser.id !== userExist.id) {
-          this.log.warn('User already linked with other user', result);
+          logger.warn({ message: 'User already linked with other user', details: result });
           // If alias Id is associated with other user
           aliasesLinkedWithOtherUser.push(result);
         } else {
-          this.log.warn('User is a rootUser', result);
+          logger.warn({ message: 'User is a rootUser', details: result });
           // If originalUser doesn't exist means this is a rootUser
           otherRootUser.push(result);
         }
@@ -158,10 +157,15 @@ export class ExperimentUserService {
     return alreadyLinkedAliases;
   }
 
-  public async updateWorkingGroup(userId: string, workingGroup: any): Promise<ExperimentUser> {
-    this.log.info('Update working group => ', userId, workingGroup);
-    const userExist = await this.getOriginalUserDoc(userId);
-
+  public async updateWorkingGroup(userId: string, workingGroup: any, requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser> {
+    const { logger, userDoc } = requestContext;
+    let userExist;
+    if (userDoc['user']) {
+      userExist = userDoc['user'];
+    } else {
+      userExist = userDoc;
+    }
+    logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
       throw new Error(
         JSON.stringify({
@@ -170,7 +174,6 @@ export class ExperimentUserService {
         })
       );
     }
-
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
     return this.userRepository.save(newDocument);
@@ -183,13 +186,15 @@ export class ExperimentUserService {
   }
 
   // TODO should we check for workingGroup as a subset over here?
-  public async updateGroupMembership(userId: string, groupMembership: any): Promise<ExperimentUser> {
-    this.log.info(
-      `Set Group Membership => userId ${userId} and Group membership ${JSON.stringify(groupMembership, undefined, 2)}`
-    );
-
-    const userExist = await this.getOriginalUserDoc(userId);
-
+  public async updateGroupMembership(userId: string, groupMembership: any, requestContext: {logger: UpgradeLogger, userDoc: any} ): Promise<ExperimentUser> { 
+    const { logger, userDoc } = requestContext;
+    let userExist;
+    if (userDoc['user']) {
+      userExist = userDoc['user'];
+    } else {
+      userExist = userDoc;
+    }
+    logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
     if (!userExist) {
       throw new Error(
         JSON.stringify({
@@ -210,8 +215,8 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public async getOriginalUserDoc(userId: string): Promise<ExperimentUser | null> {
-    this.log.info(`Find original user for userId ${userId}`);
+  public async getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<ExperimentUser | null> {
+    logger.info({ message: `Find original user for userId ${userId}` });
     const userDoc = await this.userRepository.find({
       where: { id: userId },
       relations: ['originalUser'],

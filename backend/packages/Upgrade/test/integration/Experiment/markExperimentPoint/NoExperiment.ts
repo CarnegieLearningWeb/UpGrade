@@ -12,6 +12,7 @@ import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
 } from '../../utils';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function NoExperiment(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -31,7 +32,8 @@ export default async function NoExperiment(): Promise<void> {
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    condition
+    condition,
+    new UpgradeLogger(),
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
@@ -68,6 +70,6 @@ export default async function NoExperiment(): Promise<void> {
   );
 
   // get all experiment condition for user 2
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 }

@@ -130,9 +130,15 @@ export class ExperimentClientController {
     request: AppRequest,
     experimentUser: ExperimentUser
   ): Promise<Pick<ExperimentUser, 'id' | 'group' | 'workingGroup'>> {
-    request.logger.addFromDetails(__filename, 'init');
-    request.logger.info({ stdout: 'Starting the init call for user', stack_trace: 'null' });
-    const userDocument = await this.experimentUserService.create( [experimentUser], request.logger );
+    request.logger.info({ message: 'Starting the init call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
+    const userDocument = await this.experimentUserService.create([experimentUser], request.logger);
     if (!userDocument || !userDocument[0]) {
       request.logger.error({
         details: 'user document not present',
@@ -142,9 +148,9 @@ export class ExperimentClientController {
     // if reinit call is made with any of the below fields not included in the call,
     // then we will fetch the stored values of the field and return them in the response
     // for consistent init response with 3 fields ['userId', 'group', 'workingGroup']
-     const { id, group, workingGroup } = userDocument[0];
-     return { id, group, workingGroup };
-   }
+    const { id, group, workingGroup } = userDocument[0];
+    return { id, group, workingGroup };
+  }
 
   /**
    * @swagger
@@ -178,11 +184,24 @@ export class ExperimentClientController {
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
   @Post('groupmembership')
-  public setGroupMemberShip(
+  public async setGroupMemberShip(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experimentUser: ExperimentUser
   ): Promise<ExperimentUser> {
-    return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group);
+    request.logger.info({ message: 'Starting the groupmembership call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
+    return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group, {
+      logger: request.logger,
+      userDoc: experimentUserDoc,
+    });
   }
 
   /**
@@ -217,11 +236,24 @@ export class ExperimentClientController {
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
   @Post('workinggroup')
-  public setWorkingGroup(
+  public async setWorkingGroup(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     workingGroupParams: UpdateWorkingGroupValidator
   ): Promise<ExperimentUser> {
-    return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup);
+    request.logger.info({ message: 'Starting the workinggroup call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = await this.getUserDoc(workingGroupParams.id, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
+    return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup, {
+      logger: request.logger,
+      userDoc: experimentUserDoc,
+    });
   }
 
   /**
@@ -293,14 +325,28 @@ export class ExperimentClientController {
    *            description: User not defined
    */
   @Post('mark')
-  public markExperimentPoint(
+  public async markExperimentPoint(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experiment: MarkExperimentValidator
   ): Promise<MonitoredExperimentPoint> {
+    request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.experimentPoint,
       experiment.condition,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      },
       experiment.partitionId
     );
   }
@@ -394,11 +440,24 @@ export class ExperimentClientController {
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
    */
   @Post('assign')
-  public getAllExperimentConditions(
+  public async getAllExperimentConditions(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context);
+    request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc: experimentUserDoc });
+      request.logger.info({ message: 'Got the original user doc' });
+    }
+    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context, {
+      logger: request.logger,
+      userDoc: experimentUserDoc,
+    });
   }
 
   /**
@@ -433,11 +492,24 @@ export class ExperimentClientController {
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('log')
-  public log(
+  public async log(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     logData: LogValidator
   ): Promise<Log[]> {
-    return this.experimentAssignmentService.dataLog(logData.userId, logData.value);
+    request.logger.info({ message: 'Starting the log call for user' });
+    // getOriginalUserDoc call for alias
+    const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
+    return this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
+      logger: request.logger,
+      userDoc: experimentUserDoc,
+    });
   }
 
   /**
@@ -470,13 +542,19 @@ export class ExperimentClientController {
    *            description: Log blob data
    */
   @Post('bloblog')
-  public blobLog(@Req() request: express.Request): any {
+  public async blobLog(@Req() request: express.Request): Promise<any> {
     return new Promise((resolve, reject) => {
       request.on('readable', async (data) => {
         const blobData = JSON.parse(request.read());
         try {
           // The function will throw error if userId doesn't exist
-          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value);
+          const experimentUserDoc = await this.getUserDoc(blobData.userId, request.logger);
+          if (experimentUserDoc) {
+            // append userDoc in logger
+            request.logger.child({ userDoc : experimentUserDoc })
+            request.logger.info({ message: 'Got the original user doc' });
+          }
+          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value, request.logger);
           resolve(response);
         } catch (error) {
           // The error is rejected so promise can now handle this error
@@ -527,15 +605,27 @@ export class ExperimentClientController {
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('failed')
-  public failedExperimentPoint(
+  public async failedExperimentPoint(
     @Body({ validate: { validationError: { target: false, value: false } } })
+    @Req()
+    request: AppRequest,
     errorBody: FailedParamsValidator
   ): Promise<ExperimentError> {
+    const experimentUserDoc = await this.getUserDoc(errorBody.userId, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
     return this.experimentAssignmentService.clientFailedExperimentPoint(
       errorBody.reason,
       errorBody.experimentPoint,
       errorBody.userId,
-      errorBody.experimentId
+      errorBody.experimentId,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
     );
   }
 
@@ -553,8 +643,8 @@ export class ExperimentClientController {
    *            description: Feature flags list
    */
   @Get('featureflag')
-  public getAllFlags(): Promise<FeatureFlag[]> {
-    return this.featureFlagService.find();
+  public getAllFlags( @Req() request: AppRequest): Promise<FeatureFlag[]> {
+    return this.featureFlagService.find(request.logger);
   }
 
   /**
@@ -584,8 +674,10 @@ export class ExperimentClientController {
    *            description: Insert error in database
    */
   @Post('metric')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<Metric[]> {
-    return this.metricService.saveAllMetrics(metricUnit);
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
+  @Req()
+  request: AppRequest): Promise<Metric[]> {
+    return this.metricService.saveAllMetrics(metricUnit, request.logger);
   }
 
   /**
@@ -653,8 +745,42 @@ export class ExperimentClientController {
    *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
    */
   @Post('useraliases')
-  public setUserAliases(@Body() user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
-    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases);
+  public async setUserAliases(
+    @Body()
+    @Req()
+    request: AppRequest,
+    user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
+    const experimentUserDoc = await this.getUserDoc(user.userId, request.logger);
+    if (experimentUserDoc) {
+      // append userDoc in logger
+      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.info({ message: 'Got the original user doc' });
+    }
+    return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
+      logger: request.logger,
+      userDoc: experimentUserDoc,
+    });
+  }
+
+  public async getUserDoc(experimentUserId, logger) {
+    const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
+    if ( experimentUserDoc ) {
+      var aliasUserId = experimentUserId;
+        if (!experimentUserDoc.aliases) {
+          aliasUserId = experimentUserId;
+        }
+        const userDoc = {
+          user: {
+            id: aliasUserId,
+            originalUserId: experimentUserDoc.id,
+            group: experimentUserDoc.group,
+            workingGroup: experimentUserDoc.workingGroup
+          }
+        };
+        return userDoc;
+    } else {
+      return null; 
+    }
   }
 
   @Delete('clearDB')

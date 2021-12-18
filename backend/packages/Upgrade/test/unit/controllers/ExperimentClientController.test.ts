@@ -22,7 +22,6 @@ import uuid from 'uuid';
 
 describe('Experiment Client Controller Testing', () => {
   beforeAll(() => {
-    configureLogger();
     routingUseContainer(Container);
     ormUseContainer(Container);
     classValidatorUseContainer(Container);

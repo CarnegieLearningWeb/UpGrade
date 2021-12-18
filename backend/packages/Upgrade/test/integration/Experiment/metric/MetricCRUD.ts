@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { Metric } from '../../../../src/api/models/Metric';
 import { MetricService } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { metrics } from '../../mockData/metric';
 
 export default async function MetricCRUD(): Promise<void> {
@@ -14,7 +15,7 @@ export default async function MetricCRUD(): Promise<void> {
 
   // create metrics service
 
-  await metricService.saveAllMetrics(metrics as any);
+  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   let findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(32);

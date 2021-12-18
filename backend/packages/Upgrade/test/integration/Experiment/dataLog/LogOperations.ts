@@ -14,10 +14,13 @@ import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/M
 import { SettingService } from '../../../../src/api/services/SettingService';
 import { QueryService } from '../../../../src/api/services/QueryService';
 import { metrics } from '../../mockData/metric';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 
 export default async function LogOperations(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
@@ -47,7 +50,7 @@ export default async function LogOperations(): Promise<void> {
 
   await settingService.setClientCheck(false, true);
 
-  await metricService.saveAllMetrics(metrics as any);
+  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(32);
@@ -71,23 +74,23 @@ export default async function LogOperations(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 5
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // Save queries for various operations
@@ -202,7 +205,8 @@ export default async function LogOperations(): Promise<void> {
   };
 
   await experimentService.update(experimentObject.id, experimentObject as any, user);
-
+  // getOriginalUserDoc
+  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // log data here
   await experimentAssignmentService.dataLog(experimentUsers[0].id, [
     {
@@ -224,8 +228,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ]);
-  
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[1].id, [
     {
       timestamp: new Date().toISOString(),
@@ -243,8 +248,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ]);
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+// getOriginalUserDoc
+experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[2].id, [
     {
       timestamp: new Date().toISOString(),
@@ -262,8 +268,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ]);
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[3].id, [
     {
       timestamp: new Date().toISOString(),
@@ -281,7 +288,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ]);
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   await experimentAssignmentService.dataLog(experimentUsers[3].id, [
     {
@@ -300,7 +307,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ]);
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   // log data for 5th user with null values:
   await experimentAssignmentService.dataLog(experimentUsers[4].id, [
@@ -323,7 +330,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ]);
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   const allQuery = await queryService.find();
   expect(allQuery).toEqual(
@@ -506,9 +513,9 @@ export default async function LogOperations(): Promise<void> {
         const sum = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
-        expectedValue = 370;
+        expectedValue = 320;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 1100; // For completion metric
+          expectedValue = 600; // For completion metric
         }
         expect(sum).toEqual(expectedValue);
         break;
@@ -524,7 +531,7 @@ export default async function LogOperations(): Promise<void> {
         const maxValue = Math.max(...res);
         expectedValue = 200;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 500; // For completion metric
+          expectedValue = 300; // For completion metric
         }
         expect(maxValue).toEqual(expectedValue);
         break;
@@ -535,7 +542,7 @@ export default async function LogOperations(): Promise<void> {
           return accu + data;
         }, 0);
         if (res.length) {
-         expect(count).toEqual(4);
+         expect(count).toEqual(3);
         }
         break;
       case OPERATION_TYPES.AVERAGE:

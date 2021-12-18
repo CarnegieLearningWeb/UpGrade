@@ -16,7 +16,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
     try {
       const authorization = req.header('authorization');
       const token = authorization && authorization.replace('Bearer ', '').trim();
-      const setting = await this.settingService.getClientCheck();
+      const setting = await this.settingService.getClientCheck(req.logger);
       //   const data = {
       //     APIKey: '494ae733-53cb-4c64-a24e-dab23d55eeb4',
       //   };
@@ -30,13 +30,12 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
       if (req.get('Session-Id')) {
         session_id = req.get('Session-Id');
       }
-      req.logger.addFromDetails(__filename, 'use');
       req.logger.child({ client_session_id: session_id });
-      req.logger.debug({ stdout: 'Session Id updated in logger instance' });
+      req.logger.debug({ message: 'Session Id updated in logger instance' });
       if (setting.toCheckAuth) {
         // throw error if no token
         if (!token) {
-          this.log.warn('Token is not present in request header');
+          req.logger.warn({ message: 'Token is not present in request header' });
           const error = new Error('Token is not present in request header from client');
           (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
           throw error;
@@ -54,6 +53,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           throw error;
         }
       } else {
+        this.log.info('Next');
         next();
       }
     } catch (error) {

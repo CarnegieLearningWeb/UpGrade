@@ -1,7 +1,6 @@
 import * as express from 'express';
 import { ExpressErrorMiddlewareInterface, Middleware } from 'routing-controllers';
 
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
 import { ErrorService } from '../services/ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
@@ -11,7 +10,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
   public isProduction = env.isProduction;
 
-  constructor(@Logger(__filename) private log: LoggerInterface, public errorService: ErrorService) {}
+  constructor(public errorService: ErrorService) {}
 
   public async error(
     error: any,
@@ -20,7 +19,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
-    this.log.info('Insert Error in database', error);
+    req.logger.info({ message: 'Insert Error in database', stack: error.stack});
 
     let message: string;
     let type: SERVER_ERROR;
@@ -110,7 +109,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.type = type;
 
     experimentError.type
-      ? await this.errorService.create(experimentError)
+      ? await this.errorService.create(experimentError, req.logger)
       : await Promise.resolve(error);
     if (!res.headersSent) {
       next(error);

@@ -5,6 +5,7 @@ export class UpgradeLogger {
   public static DEFAULT_SCOPE = 'app';
   public scope: string;
   public logger: winston.Logger;
+  userDoc: any;
 
   constructor(scope?: string) {
     this.logger = winston.child({});
@@ -21,10 +22,6 @@ export class UpgradeLogger {
       filepath = filepath.replace(path.sep, ':');
     }
     return filepath;
-  }
-
-  public addFromDetails(filename: string, functionName: string): void {
-    this.child({ filename: this.parsePathToScopeFileName(filename), functionName });
   }
 
   public debug(message: Record<string, any>, ...args: any[]): void {

@@ -14,6 +14,7 @@ import {
   FLAG_SEARCH_SORT_KEY,
 } from '../controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { SERVER_ERROR } from 'upgrade_types';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class FeatureFlagService {
@@ -23,8 +24,8 @@ export class FeatureFlagService {
     @OrmRepository() private flagVariationRepository: FlagVariationRepository
   ) {}
 
-  public find(): Promise<FeatureFlag[]> {
-    this.log.info('Get all feature flags');
+  public find(logger: UpgradeLogger): Promise<FeatureFlag[]> {
+    logger.info({ message: 'Get all feature flags' });
     return this.featureFlagRepository.find({ relations: ['variations'] });
   }
 

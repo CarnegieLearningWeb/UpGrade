@@ -29,7 +29,6 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
   public use(req: express.Request, res: express.Response, next: express.NextFunction): any {
     // child logger creation
     const logger = new UpgradeLogger();
-    logger.addFromDetails(__filename, 'use');
     logger.child({
       http_request_id: uuid(),
       endpoint: req.url,
