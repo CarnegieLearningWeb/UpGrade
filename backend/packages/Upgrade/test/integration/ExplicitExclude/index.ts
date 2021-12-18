@@ -11,7 +11,7 @@ const initialCheck = async () => {
   const checkService = Container.get<CheckService>(CheckService);
 
   // check all the tables are empty
-  const users = await userService.find();
+  const users = await userService.find(new UpgradeLogger());
   expect(users.length).toEqual(0);
 
   const monitoredPoints = await checkService.getAllMarkedExperimentPoints();
@@ -33,7 +33,7 @@ const initialCheck = async () => {
   await userService.create(experimentUsers as any, new UpgradeLogger());
 
   // get all user here
-  const userList = await userService.find();
+  const userList = await userService.find(new UpgradeLogger());
   expect(userList.length).toBe(experimentUsers.length);
   experimentUsers.map(user => {
     expect(userList).toContainEqual(user);

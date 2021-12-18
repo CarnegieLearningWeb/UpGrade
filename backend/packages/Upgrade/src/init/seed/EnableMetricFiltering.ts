@@ -7,5 +7,5 @@ export async function enableMetricFiltering(): Promise<Setting> {
   const settingService: SettingService = Container.get(SettingService);
   const settingDoc = await settingService.getClientCheck(new UpgradeLogger());
   // always enable metrics filter
-  return settingService.setClientCheck(settingDoc.toCheckAuth, true);
+  return settingService.setClientCheck(settingDoc.toCheckAuth, true, new UpgradeLogger());
 }
