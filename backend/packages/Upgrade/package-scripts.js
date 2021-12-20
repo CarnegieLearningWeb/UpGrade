@@ -74,7 +74,7 @@ module.exports = {
         description: 'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
       },
       production: {
-        script: 'cross-env NODE_ENV=production node -r tsconfig-paths/register dist/src/app.js',
+        script: 'cross-env NODE_ENV=production ts-node --project tsconfig.build.json -r tsconfig-paths/register dist/src/app.js',
       },
       development: {
         script: 'cross-env NODE_ENV=development node dist/src/app.js',
@@ -118,6 +118,10 @@ module.exports = {
         script: copy('./src/public/*', './dist/src'),
         hiddenFromHelp: true,
       },
+      types: {
+        script: copyDir('../../../types/dist', './dist/types'),
+        hiddenFromHelp: true,
+      },
       tmp: {
         script: copyDir('./.tmp/src', './dist'),
         hiddenFromHelp: true,
@@ -128,7 +132,7 @@ module.exports = {
      * Builds the app into the dist directory
      */
     build: {
-      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck', 'nps clean.dist', 'nps transpile', 'nps copy'),
+      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck', 'nps clean.dist', 'mkdir dist', 'nps copy.types', 'nps transpile', 'nps copy'),
       description: 'Builds the app into the dist directory',
     },
     /**
