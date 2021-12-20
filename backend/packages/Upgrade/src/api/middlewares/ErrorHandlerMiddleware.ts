@@ -108,13 +108,9 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
 
-<<<<<<< HEAD
-    experimentError.type ? await this.errorService.create(experimentError) : await Promise.resolve(error);
-=======
     experimentError.type
       ? await this.errorService.create(experimentError, req.logger)
       : await Promise.resolve(error);
->>>>>>> main
     if (!res.headersSent) {
       next(error);
     }
