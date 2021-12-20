@@ -246,7 +246,6 @@ export class AnalyticsService {
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
       }
-      const experimentCSV = `${email}_experiment_${timeStamp}.csv`;
       const monitoredPointCSV = `${email}_monitoredPoints${timeStamp}.csv`;
       // get experiment definition
       const experiment = await this.experimentRepository.findOne({
@@ -256,6 +255,12 @@ export class AnalyticsService {
       if (!experiment) {
         return '';
       }
+      const user = await this.userRepository.findOne({ email });
+      this.experimentAuditLogRepository.saveRawJson(
+        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED,
+        { experimentName: experiment.name },
+        user
+      );
       const { conditions, partitions, stateTimeLogs, ...experimentInfo } = experiment;
       const experimentIdAndPoint = [];
       partitions.forEach((partition) => {
@@ -312,9 +317,8 @@ export class AnalyticsService {
         },
       ];
 
-      this.log.info('Saving Experiment metadata');
+      this.log.info('Exporting Experiment Data');
       let csv = new ObjectsToCsv(csvRows);
-      await csv.toDisk(`${folderPath}${experimentCSV}`);
       const take = 50;
       for (let i = 1; i <= promiseData[2]; i = i + take) {
         csvRows = [];
@@ -460,15 +464,6 @@ export class AnalyticsService {
         csv = new ObjectsToCsv(csvRows);
         await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
       }
-      const experimentJson = `${experiment.name}.json`;
-      const experimentJsonPromise = () => {
-        return new Promise((resolve) => {
-          fs.writeFile(`${folderPath}${experimentJson}`, JSON.stringify(experiment), () => {
-            return resolve({});
-          });
-        });
-      };
-      await experimentJsonPromise();
       const email_export = env.email.emailBucket;
       const email_expiry_time = env.email.expireAfterSeconds;
       const email_from = env.email.from;
@@ -476,58 +471,26 @@ export class AnalyticsService {
       let monitorFileBuffer;
       let signedURLMonitored;
 
-      const experimentFileBuffer = fs.readFileSync(`${folderPath}${experimentCSV}`);
-      const experimentJsonBuffer = fs.readFileSync(`${folderPath}${experimentJson}`);
-
-      // delete the file from local store
-      fs.unlinkSync(`${folderPath}${experimentCSV}`);
-      fs.unlinkSync(`${folderPath}${experimentJson}`);
-
-      // upload the csv to s3
-      await Promise.all([
-        this.awsService.uploadCSV(experimentFileBuffer, email_export, experimentCSV),
-        this.awsService.uploadCSV(experimentJsonBuffer, email_export, experimentJson),
-      ]);
-
-      // generate signed url
-      const signedUrl = await Promise.all([
-        this.awsService.generateSignedURL(email_export, experimentCSV, email_expiry_time),
-        this.awsService.generateSignedURL(email_export, experimentJson, email_expiry_time),
-      ]);
-
       let emailText;
+      monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+      // delete local file copy:
+      fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
 
-      if (promiseData[2] > 0) {
-        monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
+      await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV)]);
 
-        fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
+      signedURLMonitored = await Promise.all([
+        this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
+      ]);
 
-        await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV)]);
+      emailText = `Hey, 
+      <br>
+      Here is the exported experiment data:
+      <br>
+      <a href=\"${signedURLMonitored[0]}\">Monitored Experiment Data</a>`;
 
-        signedURLMonitored = await Promise.all([
-          this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
-        ]);
-
-        emailText = `Here are the new exported data
-       <br>
-       <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
-       <br>
-       <br>
-       <a href=\"${signedUrl[1]}\">Experiment Data Json</a>
-       <br>
-       <a href=\"${signedURLMonitored[0]}\">Monitored Data</a>`;
-      } else {
-        emailText = `Here are the new exported data
-        <br>
-        <a href=\"${signedUrl[0]}\">Experiment Metadata</a>
-        <br>
-        <a href=\"${signedUrl[1]}\">Experiment Data Json</a>`;
-      }
-
-      const emailSubject = `Exported Data for experiment ${experiment.name}`;
+      const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
-      const user = await this.userRepository.findOne({ email });
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentInfo.name },
@@ -539,7 +502,7 @@ export class AnalyticsService {
       throw error;
     }
 
-    this.log.info('Completing experiment process');
+    this.log.info('Completing experiment data export');
 
     return '';
   }

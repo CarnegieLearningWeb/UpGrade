@@ -16,7 +16,11 @@ export class ExperimentActionMessage implements PipeTransform {
       case EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED:
         return 'logs.audit-log-experiment-updated.text';
       case EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED:
-          return 'logs.audit-log-experiment-data-exported.text';
+        return 'logs.audit-log-experiment-data-exported.text';
+      case EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED:
+        return 'logs.audit-log-experiment-data-requested.text';
+      case EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED:
+        return 'logs.audit-log-experiment-design-exported.text';
     }
   }
 }

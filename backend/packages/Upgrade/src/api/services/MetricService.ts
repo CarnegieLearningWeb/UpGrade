@@ -5,6 +5,7 @@ import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
 import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';
 import { SettingService } from './SettingService';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 export const METRICS_JOIN_TEXT = '@__@';
 
@@ -23,8 +24,8 @@ export class MetricService {
     return this.metricDocumentToJson(metricData);
   }
 
-  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<Metric[]> {
-    this.log.info('Save all metrics');
+  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
+    logger.info({ message: 'Save all metrics' });
     return await this.addAllMetrics(metrics);
   }
 
@@ -62,7 +63,7 @@ export class MetricService {
   }
 
   private async checkMetricsPermission(): Promise<boolean> {
-    const setting = await this.settingService.getClientCheck();
+    const setting = await this.settingService.getClientCheck(new UpgradeLogger());
     return setting.toFilterMetric;
   }
 

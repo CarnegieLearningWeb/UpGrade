@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "es6-promise": "^4.2.8",
-    "isomorphic-fetch": "^2.2.1"
+    "isomorphic-fetch": "^2.2.1",
+    "uuid": "^8.3.2"
   }
 }

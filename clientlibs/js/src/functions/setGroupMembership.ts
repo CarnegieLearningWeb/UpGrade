@@ -2,13 +2,19 @@ import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
 import convertMapToObj from '../common/convertMapToObj';
 
-export default async function setGroupMembership(url: string, userId: string, token: string, group: Map<string, Array<string>>): Promise<Interfaces.IUser> {
+export default async function setGroupMembership(
+  url: string,
+  userId: string,
+  token: string,
+  clientSessionId: string,
+  group: Map<string, Array<string>>
+): Promise<Interfaces.IUser> {
   try {
     if (!(group instanceof Map)) {
       throw new Error('Group type should be Map<string, Array<string>>');
     }
     const groupObj = convertMapToObj(group);
-    const response = await fetchDataService(url, token, { id: userId, group: groupObj }, Types.REQUEST_TYPES.POST);
+    const response = await fetchDataService(url, token, clientSessionId, { id: userId, group: groupObj }, Types.REQUEST_TYPES.POST);
     if (response.status) {
       return response.data;
     } else {

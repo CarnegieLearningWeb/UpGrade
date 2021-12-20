@@ -1,6 +1,6 @@
 {
     "name": "ab_testing_backend",
-    "version": "1.0.73",
+    "version": "1.0.80",
     "description": "Backend for A/B Testing Project",
     "main": "index.js",
     "scripts": {
@@ -58,6 +58,7 @@
         "csv-stringify": "^5.4.3",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
+        "express-request-id": "^1.4.1",
         "figlet": "^1.2.4",
         "google-auth-library": "^5.9.2",
         "helmet": "^3.21.2",
@@ -90,6 +91,7 @@
         "typeorm-typedi-extensions": "^0.2.3",
         "typescript": "^3.6.4",
         "uuid": "^3.3.3",
-        "winston": "^3.2.1"
+        "winston": "^3.2.1",
+        "winston-splunk-httplogger": "^3.1.0"
     }
 }

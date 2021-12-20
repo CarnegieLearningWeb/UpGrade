@@ -1,7 +1,4 @@
-import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
-import { getRepository } from 'typeorm';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
-import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Container } from 'typedi';
@@ -14,14 +11,14 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
+  const experimentClientController = Container.get<ExperimentClientController>(ExperimentClientController);
   const userService = Container.get<UserService>(UserService);
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
-
   // creating new user
   const user = await userService.upsertUser(systemUser as any);
 
@@ -85,7 +82,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // call get all experiment condition
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
 
   // check the experiment assignment
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
@@ -123,14 +120,15 @@ export default async function testCase(): Promise<void> {
       })
     ])
   );
-
+  // getOriginalUserDoc call for alias
+  const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
-  await experimentUserService.updateWorkingGroup(experimentUsers[0].id, null);
+  await experimentUserService.updateWorkingGroup(experimentUsers[0].id, null, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
   const experimentUser = await experimentUserService.findOne(experimentUsers[0].id);
   expect(experimentUser.workingGroup).toBeNull();
 
   // call getAllExperiment
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
 
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);

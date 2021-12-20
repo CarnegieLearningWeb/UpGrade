@@ -2,6 +2,7 @@ import { JsonController, Post, Body, Get, Authorized } from 'routing-controllers
 import { SettingService } from '../services/SettingService';
 import { Setting } from '../models/Setting';
 import { SettingParamsValidator } from './validators/SettingParamsValidator';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 /**
  * @swagger
@@ -30,7 +31,7 @@ export class SettingController {
    */
   @Get()
   public getSetting(): Promise<Setting> {
-    return this.settingService.getClientCheck();
+    return this.settingService.getClientCheck(new UpgradeLogger());
   }
 
   /**

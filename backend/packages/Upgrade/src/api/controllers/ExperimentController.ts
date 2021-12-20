@@ -915,4 +915,19 @@ export class ExperimentController {
   ): Promise<Experiment> {
     return this.experimentService.importExperiment(experiment, currentUser);
   }
+
+  @Get('/export/:id')
+  public exportExperiment(
+    @Param('id') id: string, 
+    @CurrentUser() currentUser: User
+  ): Promise<Experiment> {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : experiment id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentService.exportExperiment(id, currentUser);
+  }
 }

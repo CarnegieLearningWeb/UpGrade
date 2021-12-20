@@ -320,6 +320,20 @@ export class ExperimentService {
     return this.create(experiment, user);
   }
 
+  public async exportExperiment(experimentId: string, user: User): Promise<Experiment> {
+    this.log.info('Inside export Experiment JSON', experimentId);
+    const experimentDetails = await this.experimentRepository.findOne({
+      where: { id: experimentId },
+      relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
+    });
+    this.experimentAuditLogRepository.saveRawJson(
+      EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
+      { experimentName: experimentDetails.name },
+      user
+    );
+    return experimentDetails;
+  }
+
   private async updateExperimentSchedules(experimentId: string, entityManager?: EntityManager): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     const experiment = await experimentRepo.findByIds([experimentId]);
@@ -461,7 +475,6 @@ export class ExperimentService {
           uniqueIdentifiers = response[1];
         }
         const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
-
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -524,7 +537,7 @@ export class ExperimentService {
         if (promiseArray.length) {
           const metricsDocs = await Promise.all([...promiseArray]);
           queriesDocToSave = queriesDocToSave.map((queryDoc, index) => {
-            queryDoc.metric = metricsDocs[index];
+            metricsDocs[index] ? (queryDoc.metric = metricsDocs[index]) : null;
             return queryDoc;
           });
         }
@@ -756,7 +769,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, ...expDoc } = experiment;
+      const { conditions, partitions, queries, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -790,16 +803,45 @@ export class ExperimentService {
           return partition;
         });
 
+      // creating queries docs
+      const promiseArray = [];
+      let queryDocsToSave =
+        (queries &&
+          queries.length > 0 &&
+          queries.map((query: any) => {
+            promiseArray.push(this.metricRepository.findOne(query.metric.key));
+            // tslint:disable-next-line:no-shadowed-variable
+            const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
+            rest.experiment = experimentDoc;
+            rest.id = rest.id || uuid();
+            return rest;
+          })) ||
+        [];
+      if (promiseArray.length) {
+        const metricsDocs = await Promise.all([...promiseArray]);
+        queryDocsToSave = queryDocsToSave.map((queryDoc, index) => {
+          metricsDocs[index] ? (queryDoc.metric = metricsDocs[index]) : null;
+          return queryDoc;
+        });
+
+        // filter document which is not having valid metrics
+        queryDocsToSave = queryDocsToSave.filter((doc) => doc.metric);
+      }
+
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
       let partitionDocs: ExperimentPartition[];
+      let queryDocs: any;
       try {
-        [conditionDocs, partitionDocs] = await Promise.all([
+        [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
+          queryDocsToSave.length > 0
+            ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
+            : (Promise.resolve([]) as any),
         ]);
       } catch (error) {
-        this.log.error(`Error in creating conditions and partitions "addExperimentInDB"`);
+        this.log.error(`Error in creating conditions, partitions and queries "addExperimentInDB"`);
         throw error;
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
@@ -810,7 +852,17 @@ export class ExperimentService {
         const { experimentId, ...restDoc } = partitionDoc as any;
         return restDoc;
       });
-      return { ...experimentDoc, conditions: conditionDocToReturn as any, partitions: partitionDocToReturn as any };
+      let queryDocToReturn = [];
+      if (queryDocs.length > 0) {
+        queryDocToReturn = queryDocsToSave;
+      }
+      const newExperiment = {
+        ...experimentDoc,
+        conditions: conditionDocToReturn as any,
+        partitions: partitionDocToReturn as any,
+        queries: (queryDocToReturn as any) || [],
+      };
+      return newExperiment;
     });
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {

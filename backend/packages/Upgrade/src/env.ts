@@ -39,11 +39,18 @@ export const env = {
       middlewares: getOsPaths('MIDDLEWARES'),
       interceptors: getOsPaths('INTERCEPTORS'),
     },
+    demo: toBool(getOsEnvOptional('APP_DEMO')) || false,
   },
   log: {
     level: getOsEnv('LOG_LEVEL'),
     json: toBool(getOsEnvOptional('LOG_JSON')),
     output: getOsEnv('LOG_OUTPUT'),
+  },
+  // Use this when want log directly from the console
+  splunk: {
+    host: getOsEnvOptional('SPLUNK_HOST'),
+    token: getOsEnvOptional('SPLUNK_TOKEN'),
+    index: getOsEnvOptional('SPLUNK_INDEX'),
   },
   db: {
     type: getOsEnv('TYPEORM_CONNECTION'),
@@ -83,6 +90,7 @@ export const env = {
   initialization: {
     contextMetadata: JSON.parse(getOsEnv('CONTEXT_METADATA')),
     adminUsers: parseAdminUsers(getOsEnv('ADMIN_USERS')),
+    metrics: getOsEnvOptional('METRICS'),
   },
   hostUrl: getOsEnv('HOST_URL'),
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),

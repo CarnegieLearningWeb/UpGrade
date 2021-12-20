@@ -29,9 +29,9 @@ export class ImportExperimentComponent {
   }
 
   importExperiment() {
-    this.isExperimentJSONValid = this.validateExperimentJSON({ ...this.experimentInfo, queries: [] });
+    this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
     if (this.isExperimentJSONValid) {
-      this.experimentService.importExperiment({ ...this.experimentInfo, queries: [] });
+      this.experimentService.importExperiment({ ...this.experimentInfo });
       this.onCancelClick();
     }
   }

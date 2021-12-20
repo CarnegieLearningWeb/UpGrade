@@ -10,6 +10,7 @@ import { getRepository } from 'typeorm';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../../utils/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function UpdateExperimentState(): Promise<void> {
   const individualAssignmentRepository = getRepository(IndividualAssignment);
@@ -44,11 +45,11 @@ export default async function UpdateExperimentState(): Promise<void> {
   const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition);
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
@@ -70,7 +71,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   );
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   let individualAssignments = await individualAssignmentRepository.find();

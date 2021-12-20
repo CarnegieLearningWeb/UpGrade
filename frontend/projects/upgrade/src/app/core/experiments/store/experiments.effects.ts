@@ -379,6 +379,32 @@ export class ExperimentEffects {
     )
   );
 
+  exportExperimentDesign$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionExportExperimentDesign),
+      map(action => ({ experimentId: action.experimentId })),
+      filter(( {experimentId} ) => !!experimentId),
+      switchMap(({ experimentId }) =>
+        this.experimentDataService.exportExperimentDesign(experimentId).pipe(
+          map((data: any) => {
+            this.download(data.name+'.json', data);
+            return experimentAction.actionExportExperimentDesignSuccess();
+          }),
+          catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
+        )
+      )
+    )
+  );
+  
+  private download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
   private getSearchString$ = () =>
     combineLatest(this.store$.pipe(select(selectSearchString))).pipe(
       map(([searchString]) => searchString),

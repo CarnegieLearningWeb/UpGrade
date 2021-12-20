@@ -71,6 +71,11 @@ export class ExperimentDataService {
     return this.http.post(url, { experimentId, email });
   }
 
+  exportExperimentDesign(experimentId: string) {
+    const url = `${environment.api.exportExperiment}/${experimentId}`;
+    return this.http.get(url);
+  }
+
   fetchExperimentGraphInfo(params: any) {
     const url = environment.api.experimentGraphInfo;
     return this.http.post(url, params);

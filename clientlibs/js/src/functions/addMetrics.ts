@@ -5,10 +5,11 @@ import { ISingleMetric, IGroupMetric } from 'upgrade_types';
 export default async function addMetrics(
   url: string,
   token: string,
+  clientSessionId: string,
   metrics: Array<ISingleMetric | IGroupMetric>
 ): Promise<Interfaces.IMetric[]> {
   try {
-    const response = await fetchDataService(url, token, { metricUnit: metrics }, Types.REQUEST_TYPES.POST);
+    const response = await fetchDataService(url, token, clientSessionId, { metricUnit: metrics }, Types.REQUEST_TYPES.POST);
     if (response.status) {
       response.data = response.data.map(metric => {
         const { createdAt, updatedAt, versionNumber, ...rest } = metric;

@@ -1,4 +1,4 @@
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
@@ -177,5 +177,22 @@ export class ExperimentRepository extends Repository<Experiment> {
       });
 
     return result.raw;
+  }
+
+  public async clearDB(entityManager: EntityManager): Promise<string> {
+    try {
+      const entities = entityManager.connection.entityMetadatas;
+      for (const entity of entities) {
+        if(!(['user', 'metric', 'setting', 'migrations'].includes(entity.tableName))) {
+          const repository = await entityManager.connection.getRepository(entity.name);
+          await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
+        }
+      }
+      return 'DB truncate successful';
+    } catch (error) {
+      error = new Error('DB truncate error. DB truncate unsuccessful');
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    } 
   }
 }
