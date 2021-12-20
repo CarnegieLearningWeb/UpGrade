@@ -74,7 +74,7 @@ module.exports = {
         description: 'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
       },
       production: {
-        script: 'cross-env NODE_ENV=production node dist/src/app.js',
+        script: 'cross-env NODE_ENV=production node -r tsconfig-paths/register dist/src/app.js',
       },
       development: {
         script: 'cross-env NODE_ENV=development node dist/src/app.js',

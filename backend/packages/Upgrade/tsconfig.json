@@ -8,11 +8,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "upgrade_types": ["../../../types"]
+      "upgrade_types": ["../types"]
     }
   },
-  "exclude": [
-    "**/*/node_modules",
-    "test"
-  ]
+  "exclude": ["**/*/node_modules", "test"]
 }
