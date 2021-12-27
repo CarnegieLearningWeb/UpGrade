@@ -269,6 +269,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "RDS_HOSTNAME_SLAVE"
+    value     = split(":", aws_db_instance.app-rds-read-replica.endpoint)[0]
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_PASSWORD"
     value     = aws_db_instance.app-rds.password
   }
