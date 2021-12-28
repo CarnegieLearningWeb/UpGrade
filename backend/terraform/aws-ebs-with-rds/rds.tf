@@ -51,14 +51,11 @@ engine_version              = var.engine_version
 instance_class              = var.instance_class
 identifier                  = "${var.environment}-${var.prefix}-${var.identifier}-read-replica"
 name                        = var.RDS_DB_NAME
-username                    = var.RDS_USERNAME
-password                    = var.RDS_PASSWORD
-identifier_prefix           = var.RDS_DB_NAME
-replicate_source_db         = aws_db_instance.postgresql.id
+replicate_source_db         = aws_db_instance.app-rds.id
 multi_az                    = var.multi_az  
 vpc_security_group_ids      = [aws_security_group.allow-rds.id]
 storage_type                = var.storage_type
 # disable backups to create DB faster
-  backup_retention_period   = 0
+backup_retention_period     = 0
 skip_final_snapshot         = true
 }
