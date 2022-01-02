@@ -118,10 +118,6 @@ module.exports = {
         script: copy('./src/public/*', './dist/src'),
         hiddenFromHelp: true,
       },
-      types: {
-        script: copyDir('../../../types/dist', './dist/types'),
-        hiddenFromHelp: true,
-      },
       tmp: {
         script: copyDir('./.tmp/src', './dist'),
         hiddenFromHelp: true,
@@ -132,7 +128,7 @@ module.exports = {
      * Builds the app into the dist directory
      */
     build: {
-      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck', 'nps clean.dist', 'mkdir dist', 'nps copy.types', 'nps transpile', 'nps copy'),
+      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck.build', 'nps clean.dist', 'nps transpile', 'nps copy'),
       description: 'Builds the app into the dist directory',
     },
     /**
@@ -155,8 +151,14 @@ module.exports = {
     },
 
     typecheck: {
-      script: "tsc --noEmit",
-      description: "Typecheck the project without emitting the output"
+      default: {
+        script: "tsc --noEmit" ,
+        description: "Typecheck the project without emitting the output"
+      },
+      build: {
+        script: "tsc --noEmit --project ./tsconfig.build.json",
+        description: "Typecheck the project without emitting the output"
+      }
     },
 
     /**
