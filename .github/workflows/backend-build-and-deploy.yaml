@@ -34,13 +34,7 @@ jobs:
 
 #############################################  Build Steps #############################################
 
-      - name: Build types
-        working-directory: types
-        run: |
-          npm install
-          npm run build
-
-      - name: Build backend
+      - name: Build
         working-directory: backend
         run: |
           cp -R ../types packages/Upgrade
