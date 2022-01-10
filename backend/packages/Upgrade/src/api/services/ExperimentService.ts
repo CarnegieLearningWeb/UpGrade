@@ -2,7 +2,6 @@ import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import {
   Experiment,
   IExperimentSearchParams,
@@ -37,6 +36,7 @@ import { ErrorService } from './ErrorService';
 import { StateTimeLog } from '../models/StateTimeLogs';
 import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ExperimentService {
@@ -55,26 +55,28 @@ export class ExperimentService {
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async find(): Promise<Experiment[]> {
-    this.log.info(`Find all experiments`);
+  public async find(logger: UpgradeLogger): Promise<Experiment[]> {
+    if (logger) {
+      logger.info({ message: `Find all experiments`});
+    }
     return this.experimentRepository.findAllExperiments();
   }
 
-  public findAllName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
-    this.log.info(`Find all names`);
+  public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+    logger.info({ message: `Find all experiment names`});
     return this.experimentRepository.findAllName();
   }
 
   public async findPaginated(
     skip: number,
     take: number,
+    logger: UpgradeLogger,
     searchParams?: IExperimentSearchParams,
-    sortParams?: IExperimentSortParams
+    sortParams?: IExperimentSortParams,
   ): Promise<Experiment[]> {
-    this.log.info(`Find paginated experiments`);
+    logger.info({ message: `Find paginated experiments` });
 
     let queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
@@ -103,8 +105,10 @@ export class ExperimentService {
     return queryBuilder.getMany();
   }
 
-  public async findOne(id: string): Promise<Experiment | undefined> {
-    this.log.info(`Find experiment by id => ${id}`);
+  public async findOne(id: string, logger: UpgradeLogger): Promise<Experiment | undefined> {
+    if (logger) {
+      logger.info({ message: `Find experiment by id => ${id}`});
+    }
     const experiment = await this.experimentRepository
       .createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
@@ -122,14 +126,15 @@ export class ExperimentService {
     return this.experimentRepository.count();
   }
 
-  public getContextMetaData(): object {
+  public getContextMetaData(logger: UpgradeLogger): object {
+    logger.info({ message: `Get context metadata`});
     return {
       contextMetadata: env.initialization.contextMetadata,
     };
   }
 
-  public create(experiment: ExperimentInput, currentUser: User): Promise<Experiment> {
-    this.log.info('Create a new experiment => ', experiment.toString());
+  public create(experiment: ExperimentInput, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
+    logger.info({ message: `Create a new experiment =>  ${experiment.toString()}` });
     // TODO add entry in audit log of creating experiment
 
     // order for condition
@@ -143,19 +148,20 @@ export class ExperimentService {
       const newPartition = { ...partition, order: index + 1 };
       experiment.partitions[index] = newPartition;
     });
-    return this.addExperimentInDB(experiment, currentUser);
+    return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
-  public createMultipleExperiments(experiment: ExperimentInput[]): Promise<Experiment[]> {
-    this.log.info('Generating test experiments => ', experiment.toString());
-    return this.addBulkExperiments(experiment);
+  public createMultipleExperiments(experiment: ExperimentInput[], logger: UpgradeLogger): Promise<Experiment[]> {
+    logger.info({ message: `Generating test experiments => ${experiment.toString()}` });
+    return this.addBulkExperiments(experiment, logger);
   }
 
-  public async delete(experimentId: string, currentUser: User): Promise<Experiment | undefined> {
-    this.log.info('Delete experiment => ', experimentId);
-
+  public async delete(experimentId: string, currentUser: User, logger: UpgradeLogger): Promise<Experiment | undefined> {
+    if ( logger ) {
+      logger.info({ message: `Delete experiment =>  ${ experimentId }` });
+    }
     return getConnection().transaction(async (transactionalEntityManager) => {
-      const experiment = await this.findOne(experimentId);
+      const experiment = await this.findOne(experimentId, logger);
 
       if (experiment) {
         const deletedExperiment = await this.experimentRepository.deleteById(experimentId, transactionalEntityManager);
@@ -179,27 +185,31 @@ export class ExperimentService {
     });
   }
 
-  public update(id: string, experiment: Experiment, currentUser: User): Promise<Experiment> {
-    this.log.info('Update an experiment => ', experiment.toString());
+  public update(id: string, experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
+    logger.info({ message: `Update an experiment => ${experiment.toString()}` });
     // TODO add entry in audit log of updating experiment
-    return this.updateExperimentInDB(experiment as any, currentUser);
+    return this.updateExperimentInDB(experiment as any, currentUser, logger);
   }
 
-  public async getExperimentalConditions(experimentId: string): Promise<ExperimentCondition[]> {
-    const experiment: Experiment = await this.findOne(experimentId);
+  public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
+    logger.info({ message: `getExperimentalConditions experiment => ${ experimentId }` });
+    const experiment: Experiment = await this.findOne(experimentId, logger);
     return experiment.conditions;
   }
 
-  public async getExperimentPartitions(experimentId: string): Promise<ExperimentPartition[]> {
-    const experiment: Experiment = await this.findOne(experimentId);
+  public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentPartition[]> {
+    logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
+    const experiment: Experiment = await this.findOne(experimentId, logger);
     return experiment.partitions;
   }
 
-  public async getAllExperimentPartitions(): Promise<Array<Pick<ExperimentPartition, 'expId' | 'expPoint'>>> {
+  public async getAllExperimentPartitions(logger: UpgradeLogger): Promise<Array<Pick<ExperimentPartition, 'expId' | 'expPoint'>>> {
+    logger.info({ message: 'getAllExperimentPartitions experiment' });
     return this.experimentPartitionRepository.partitionPointAndName();
   }
 
-  public async getAllUniqueIdentifiers(): Promise<string[]> {
+  public async getAllUniqueIdentifiers(logger: UpgradeLogger): Promise<string[]> {
+    logger.info({ message: 'getAllUniqueIdentifiers' });
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
     const partitionsUniqueIdentifier = this.experimentPartitionRepository.getAllUniqueIdentifier();
     const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
@@ -210,11 +220,12 @@ export class ExperimentService {
     experimentId: string,
     state: EXPERIMENT_STATE,
     user: User,
+    logger: UpgradeLogger,
     scheduleDate?: Date,
-    entityManager?: EntityManager
+    entityManager?: EntityManager,
   ): Promise<Experiment> {
     if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
-      await this.populateExclusionTable(experimentId, state);
+      await this.populateExclusionTable(experimentId, state, logger);
     }
 
     const oldExperiment = await this.experimentRepository.findOne(
@@ -255,7 +266,7 @@ export class ExperimentService {
     ]);
 
     // updating experiment schedules
-    await this.updateExperimentSchedules(experimentId, entityManager);
+    await this.updateExperimentSchedules(experimentId, logger, entityManager);
 
     return {
       ...oldExperiment,
@@ -264,7 +275,7 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(experiment: ExperimentInput, user: User): Promise<any> {
+  public async importExperiment(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<any> {
     const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
     if (duplicateExperiment && experiment.id !== undefined) {
       const error = new Error('Duplicate experiment');
@@ -290,7 +301,7 @@ export class ExperimentService {
     }
 
     // Generate new twoCharacterId if it is already exist for conditions
-    let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
     experiment.conditions = experiment.conditions.map((condition) => {
       let twoCharacterId = condition.twoCharacterId;
       if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
@@ -317,11 +328,11 @@ export class ExperimentService {
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
     experiment.stateTimeLogs = [];
-    return this.create(experiment, user);
+    return this.create(experiment, user, logger);
   }
 
-  public async exportExperiment(experimentId: string, user: User): Promise<Experiment> {
-    this.log.info('Inside export Experiment JSON', experimentId);
+  public async exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<Experiment> {
+    logger.info({ message: `Inside export Experiment JSON ${experimentId}` });
     const experimentDetails = await this.experimentRepository.findOne({
       where: { id: experimentId },
       relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
@@ -334,15 +345,15 @@ export class ExperimentService {
     return experimentDetails;
   }
 
-  private async updateExperimentSchedules(experimentId: string, entityManager?: EntityManager): Promise<void> {
+  private async updateExperimentSchedules(experimentId: string, logger: UpgradeLogger, entityManager?: EntityManager): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     const experiment = await experimentRepo.findByIds([experimentId]);
     if (experiment.length > 0 && this.scheduledJobService) {
-      await this.scheduledJobService.updateExperimentSchedules(experiment[0], entityManager);
+      await this.scheduledJobService.updateExperimentSchedules(experiment[0], logger, entityManager);
     }
   }
 
-  private async populateExclusionTable(experimentId: string, state: EXPERIMENT_STATE): Promise<void> {
+  private async populateExclusionTable(experimentId: string, state: EXPERIMENT_STATE, logger: UpgradeLogger): Promise<void> {
     // query all sub-experiment
     const experiment: Experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
@@ -355,7 +366,7 @@ export class ExperimentService {
     });
 
     // get all preview usersData
-    const previewUsers = await this.previewUserService.find();
+    const previewUsers = await this.previewUserService.find(logger);
 
     // query all monitored experiment point for this experiment Id
     let monitoredExperimentPoints: MonitoredExperimentPoint[] = [];
@@ -448,22 +459,22 @@ export class ExperimentService {
     }
   }
 
-  private async updateExperimentInDB(experiment: ExperimentInput, user: User): Promise<Experiment> {
+  private async updateExperimentInDB(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<Experiment> {
     // get old experiment document
-    const oldExperiment = await this.findOne(experiment.id);
+    const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
     const oldPartitions = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
 
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
-      this.scheduledJobService.updateExperimentSchedules(experiment as any);
+      this.scheduledJobService.updateExperimentSchedules(experiment as any, logger);
     }
 
     return getConnection()
       .transaction(async (transactionalEntityManager) => {
         experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-        let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+        let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
         if (experiment.conditions.length) {
           const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
           experiment.conditions = response[0];
@@ -480,8 +491,9 @@ export class ExperimentService {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
         } catch (err) {
           const error = err as ErrorWithType;
-          this.log.error(`Error in updating experiment document "updateExperimentInDB"`);
+          error.details = `Error in updating experiment document "updateExperimentInDB"`;
           error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
           throw error;
         }
 
@@ -611,8 +623,10 @@ export class ExperimentService {
               })
             ) as any,
           ]);
-        } catch (error) {
-          this.log.error(`Error in creating conditions, partitions, queries "updateExperimentInDB"`);
+        } catch (err) {
+          const error = err as Error;
+          error.message = `Error in creating conditions, partitions, queries "updateExperimentInDB"`;
+          logger.error(error);
           throw error;
         }
 
@@ -754,11 +768,11 @@ export class ExperimentService {
     return [updatedData, uniqueIdentifiers];
   }
 
-  private async addExperimentInDB(experiment: ExperimentInput, user: User): Promise<Experiment> {
+  private async addExperimentInDB(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<Experiment> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-      let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+      let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
       if (experiment.conditions.length) {
         const response = this.setConditionOrPartitionIdentifiers(experiment.conditions, uniqueIdentifiers);
         experiment.conditions = response[0];
@@ -779,8 +793,9 @@ export class ExperimentService {
         experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
       } catch (err) {
         const error = err as ErrorWithType;
-        this.log.error('Error in adding experiment in DB');
+        error.details = 'Error in adding experiment in DB';
         error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
         throw error;
       }
       // creating condition docs
@@ -840,8 +855,10 @@ export class ExperimentService {
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
         ]);
-      } catch (error) {
-        this.log.error(`Error in creating conditions, partitions and queries "addExperimentInDB"`);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating conditions, partitions and queries "addExperimentInDB"`;
+        logger.error(error);
         throw error;
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
@@ -866,7 +883,7 @@ export class ExperimentService {
     });
     // create schedules to start experiment and end experiment
     if (this.scheduledJobService) {
-      await this.scheduledJobService.updateExperimentSchedules(createdExperiment);
+      await this.scheduledJobService.updateExperimentSchedules(createdExperiment, logger);
     }
 
     // add auditLog here
@@ -918,7 +935,7 @@ export class ExperimentService {
     }, {});
   }
 
-  private async addBulkExperiments(experiments: ExperimentInput[]): Promise<Experiment[]> {
+  private async addBulkExperiments(experiments: ExperimentInput[], logger: UpgradeLogger): Promise<Experiment[]> {
     // Create data to be entered in experiments table
     const expDocs = experiments.map((experiment) => {
       experiment.id = experiment.id || uuid();
@@ -960,7 +977,7 @@ export class ExperimentService {
     let partitionDocsToSave = [].concat(...allPartitionDocs);
 
     // add unique twoCharacterIds to experiment conditions and partitions
-    let uniqueIdentifiers = await this.getAllUniqueIdentifiers();
+    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
     if (conditionDocsToSave.length) {
       const response = this.setConditionOrPartitionIdentifiers(conditionDocsToSave, uniqueIdentifiers);
       conditionDocsToSave = response[0];
@@ -978,8 +995,10 @@ export class ExperimentService {
       try {
         // Saving experiment
         experimentDoc = await this.experimentRepository.insertBatchExps(expDocs as any, transactionalEntityManager);
-      } catch (error) {
-        this.log.error(`Error in creating experiment document "addBulkExperiments"`);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating experiment document "addBulkExperiments"`;
+        logger.error(error);
         throw error;
       }
       // saving conditions and saving partitions
@@ -1006,8 +1025,10 @@ export class ExperimentService {
           return { ...experiment, conditions, partitions };
         });
         return experimentsToReturn;
-      } catch (error) {
-        this.log.error(`Error in creating conditions and partitions "addBulkExperiments"`);
+      } catch (err) {
+        const error = err as Error;
+        error.message = `Error in creating conditions and partitions "addBulkExperiments"`;
+        logger.error(error);
         throw error;
       }
     });

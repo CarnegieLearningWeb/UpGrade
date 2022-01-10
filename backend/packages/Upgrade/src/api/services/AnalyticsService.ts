@@ -24,12 +24,12 @@ import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorEx
 import { In } from 'typeorm';
 import fs from 'fs';
 import { SERVER_ERROR } from 'upgrade_types';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { env } from '../../env';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { ErrorService } from './ErrorService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { UserRepository } from '../repositories/UserRepository';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -59,14 +59,13 @@ export class AnalyticsService {
     private userRepository: UserRepository,
     public awsService: AWSService,
     public errorService: ErrorService,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async getEnrollments(experimentIds: string[]): Promise<any> {
+  public async getEnrollments(experimentIds: string[], logger: UpgradeLogger): Promise<any> {
     return this.analyticsRepository.getEnrollments(experimentIds);
   }
 
-  public async getDetailEnrollment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
+  public async getDetailEnrollment(experimentId: string, logger: UpgradeLogger): Promise<IExperimentEnrollmentDetailStats> {
     const promiseArray = await Promise.all([
       this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
       this.analyticsRepository.getDetailEnrollment(experimentId),
@@ -81,12 +80,12 @@ export class AnalyticsService {
       groupExclusion,
     ] = promiseArray[1];
 
-    this.log.info('individualEnrollmentByCondition', individualEnrollmentByCondition);
-    this.log.info('individualEnrollmentConditionAndPartition', individualEnrollmentConditionAndPartition);
-    this.log.info('groupEnrollmentByCondition', groupEnrollmentByCondition);
-    this.log.info('groupEnrollmentConditionAndPartition', groupEnrollmentConditionAndPartition);
-    this.log.info('individualExclusion', individualExclusion);
-    this.log.info('groupExclusion', groupExclusion);
+    logger.info({ message : 'individualEnrollmentByCondition', data: individualEnrollmentByCondition });
+    logger.info({ message : 'individualEnrollmentConditionAndPartition', data: individualEnrollmentConditionAndPartition });
+    logger.info({ message : 'groupEnrollmentByCondition', data: groupEnrollmentByCondition });
+    logger.info({ message : 'groupEnrollmentConditionAndPartition', data: groupEnrollmentConditionAndPartition });
+    logger.info({ message : 'individualExclusion', data: individualExclusion });
+    logger.info({ message : 'groupExclusion', data: groupExclusion });
 
     return {
       id: experimentId,
@@ -136,7 +135,8 @@ export class AnalyticsService {
   public async getEnrollmentStatsByDate(
     experimentId: string,
     dateRange: DATE_RANGE,
-    clientOffset: number
+    clientOffset: number, 
+    logger: UpgradeLogger
   ): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
@@ -237,8 +237,8 @@ export class AnalyticsService {
     });
   }
 
-  public async getCSVData(experimentId: string, email: string): Promise<string> {
-    this.log.info('Inside getCSVData', experimentId, email);
+  public async getCSVData(experimentId: string, email: string, logger: UpgradeLogger): Promise<string> {
+    logger.info({ message : `Inside getCSVData ${experimentId} , ${email}` });
     try {
       const timeStamp = new Date().toISOString();
       const folderPath = 'src/api/assets/files/';
@@ -317,7 +317,7 @@ export class AnalyticsService {
         },
       ];
 
-      this.log.info('Exporting Experiment Data');
+      logger.info({ message : 'Exporting Experiment Data' });
       let csv = new ObjectsToCsv(csvRows);
       const take = 50;
       for (let i = 1; i <= promiseData[2]; i = i + take) {
@@ -387,8 +387,9 @@ export class AnalyticsService {
               relations: ['monitoredExperimentPoint'],
             })
             .catch((error) => {
-              this.log.error('Error in finding monitored log document');
+              error.message = `Error while finding monitored experiment point logs document for export: ${error.message}`;
               error.type = SERVER_ERROR.QUERY_FAILED;
+              logger.error(error);
               throw error;
             }),
           this.experimentUserRepository
@@ -396,8 +397,9 @@ export class AnalyticsService {
               where: { id: In(experimentUsersArray) },
             })
             .catch((error) => {
-              this.log.error('Error in finding user documents in experimentUserRepository');
+              error.message = `Error while finding experiment user document for export in experimentUserRepository: ${error.message}`;
               error.type = SERVER_ERROR.QUERY_FAILED;
+              logger.error(error);
               throw error;
             }),
           ,
@@ -502,7 +504,7 @@ export class AnalyticsService {
       throw error;
     }
 
-    this.log.info('Completing experiment data export');
+    logger.info({ message : 'Completing experiment data export' });
 
     return '';
   }

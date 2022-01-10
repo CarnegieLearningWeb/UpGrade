@@ -22,7 +22,7 @@ export default async function testCase(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment;
@@ -39,7 +39,7 @@ export default async function testCase(): Promise<void> {
     class: '2',
   }, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
-  let experimentUser = await experimentUserService.findOne(experimentUserDoc.id);
+  let experimentUser = await experimentUserService.findOne(experimentUserDoc.id, new UpgradeLogger());
   let objectToCheck = {
     ...experimentUsers[0],
     group: {
@@ -64,8 +64,8 @@ export default async function testCase(): Promise<void> {
   const condition = experimentObject.conditions[0].conditionCode;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -96,7 +96,7 @@ export default async function testCase(): Promise<void> {
     class: '1',
   },{ logger: new UpgradeLogger(), userDoc: experimentUserDoc});
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
-  experimentUser = await experimentUserService.findOne(experimentUserDoc.id);;
+  experimentUser = await experimentUserService.findOne(experimentUserDoc.id, new UpgradeLogger());;
   objectToCheck = {
     ...experimentUsers[0],
     group: {
@@ -118,10 +118,10 @@ export default async function testCase(): Promise<void> {
   // change experiment status to scheduled
   let experimentId = experiments[0].id;
   const date = new Date();
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, date);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, new UpgradeLogger(), date);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -144,10 +144,10 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -184,10 +184,10 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

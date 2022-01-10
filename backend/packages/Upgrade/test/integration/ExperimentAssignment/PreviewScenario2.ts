@@ -18,12 +18,12 @@ export default async function testCase(): Promise<void> {
   const previewService = Container.get<PreviewUserService>(PreviewUserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create preview user
-  await previewService.create(previewUsers[0]);
-  await previewService.create(previewUsers[1]);
-  await previewService.create(previewUsers[2]);
+  await previewService.create(previewUsers[0], new UpgradeLogger());
+  await previewService.create(previewUsers[1], new UpgradeLogger());
+  await previewService.create(previewUsers[2], new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperimentConsistencyRuleExperiemnt;
@@ -33,8 +33,8 @@ export default async function testCase(): Promise<void> {
   const condition = experimentObject.conditions[0].conditionCode;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -57,10 +57,10 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Preview
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -98,10 +98,10 @@ export default async function testCase(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 
   // change experiment status to complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

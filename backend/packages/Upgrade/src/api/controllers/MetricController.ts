@@ -1,6 +1,7 @@
-import { Authorized, JsonController, Get, Delete, Param, Post, BodyParam } from 'routing-controllers';
+import { Authorized, JsonController, Get, Delete, Param, Post, BodyParam, Req } from 'routing-controllers';
 import { MetricService } from '../services/MetricService';
 import { IMetricUnit, SERVER_ERROR, ISingleMetric, IGroupMetric } from 'upgrade_types';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -27,8 +28,8 @@ export class MetricController {
    *            description: Get all Metrics
    */
   @Get()
-  public getAllMetrics(): Promise<IMetricUnit[]> {
-    return this.metricService.getAllMetrics();
+  public getAllMetrics(@Req() request: AppRequest): Promise<IMetricUnit[]> {
+    return this.metricService.getAllMetrics(request.logger);
   }
 
   /**
@@ -56,8 +57,9 @@ export class MetricController {
    *            description: Filtered Metrics
    */
   @Post('/save')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>): Promise<IMetricUnit[]> {
-    return this.metricService.upsertAllMetrics(metricUnit);
+  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
+  @Req() request: AppRequest): Promise<IMetricUnit[]> {
+    return this.metricService.upsertAllMetrics(metricUnit, request.logger);
   }
 
   /**
@@ -81,10 +83,10 @@ export class MetricController {
    *            description: Delete metric by key
    */
   @Delete('/:key')
-  public delete(@Param('key') key: string): Promise<IMetricUnit[] | undefined> {
+  public delete(@Param('key') key: string, @Req() request: AppRequest): Promise<IMetricUnit[] | undefined> {
     if (!key) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : key should not be null.'));
     }
-    return this.metricService.deleteMetric(key);
+    return this.metricService.deleteMetric(key, request.logger);
   }
 }

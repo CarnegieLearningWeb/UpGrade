@@ -9,6 +9,7 @@ import {
   Delete,
   Authorized,
   CurrentUser,
+  Req,
 } from 'routing-controllers';
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
@@ -21,7 +22,7 @@ import { User } from '../models/User';
 import { ExperimentPartition } from '../models/ExperimentPartition';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
-import { PaginationResponse } from '../../types';
+import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentInput } from '../../types/ExperimentInput';
 const validator = new Validator();
 
@@ -342,8 +343,8 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get('/names')
-  public findName(): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
-    return this.experimentService.findAllName();
+  public findName( @Req() request: AppRequest ): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+    return this.experimentService.findAllName(request.logger);
   }
 
   /**
@@ -366,8 +367,8 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get()
-  public find(): Promise<Experiment[]> {
-    return this.experimentService.find();
+  public find( @Req() request: AppRequest ): Promise<Experiment[]> {
+    return this.experimentService.find(request.logger);
   }
 
   /**
@@ -405,8 +406,8 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get('/contextMetaData')
-  public getContextMetaData(): object {
-    return this.experimentService.getContextMetaData();
+  public getContextMetaData( @Req() request: AppRequest ): object {
+    return this.experimentService.getContextMetaData(request.logger);
   }
 
   /**
@@ -470,7 +471,8 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Body({ validate: { validationError: { target: true, value: true }}})
+    @Req() request: AppRequest,
     paginatedParams: ExperimentPaginatedParamsValidator
   ): Promise<ExperimentPaginationInfo> {
     if (!paginatedParams) {
@@ -485,6 +487,7 @@ export class ExperimentController {
       this.experimentService.findPaginated(
         paginatedParams.skip,
         paginatedParams.take,
+        request.logger,
         paginatedParams.searchParams,
         paginatedParams.sortParams
       ),
@@ -532,8 +535,8 @@ export class ExperimentController {
    *            description: Experiment Partitions not found
    */
   @Get('/partitions')
-  public getAllExperimentPoints(): Promise<Array<Pick<ExperimentPartition, 'expPoint' | 'expId'>>> {
-    return this.experimentService.getAllExperimentPartitions();
+  public getAllExperimentPoints( @Req() request: AppRequest ): Promise<Array<Pick<ExperimentPartition, 'expPoint' | 'expId'>>> {
+    return this.experimentService.getAllExperimentPartitions(request.logger);
   }
 
   /**
@@ -566,7 +569,7 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Param('id') id: string): Promise<Experiment> | undefined {
+  public one(@Param('id') id: string,  @Req() request: AppRequest ): Promise<Experiment> | undefined {
     if (!validator.isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -574,7 +577,7 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.findOne(id);
+    return this.experimentService.findOne(id, request.logger);
   }
 
   /**
@@ -649,7 +652,7 @@ export class ExperimentController {
    */
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string): Promise<ExperimentCondition[]> {
+  public getCondition(@Param('id') id: string, @Req() request: AppRequest ): Promise<ExperimentCondition[]> {
     if (!validator.isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -657,7 +660,7 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.getExperimentalConditions(id);
+    return this.experimentService.getExperimentalConditions(id, request.logger);
   }
 
   /**
@@ -695,9 +698,10 @@ export class ExperimentController {
   @Post()
   public create(
     @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput,
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest 
   ): Promise<Experiment> {
-    return this.experimentService.create(experiment, currentUser);
+    return this.experimentService.create(experiment, currentUser, request.logger);
   }
 
   /**
@@ -733,9 +737,10 @@ export class ExperimentController {
 
   @Post('/batch')
   public createMultipleExperiments(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput[]
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput[],
+    @Req() request: AppRequest 
   ): Promise<Experiment[]> {
-    return this.experimentService.createMultipleExperiments(experiment);
+    return this.experimentService.createMultipleExperiments(experiment, request.logger);
   }
 
   /**
@@ -768,7 +773,7 @@ export class ExperimentController {
    */
 
   @Delete('/:id')
-  public delete(@Param('id') id: string, @CurrentUser() currentUser: User): Promise<Experiment | undefined> {
+  public delete(@Param('id') id: string, @CurrentUser() currentUser: User, @Req() request: AppRequest ): Promise<Experiment | undefined> {
     if (!validator.isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -776,7 +781,7 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.delete(id, currentUser);
+    return this.experimentService.delete(id, currentUser, request.logger);
   }
 
   /**
@@ -815,7 +820,8 @@ export class ExperimentController {
   public async updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
     experiment: AssignmentStateUpdateValidator,
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
   ): Promise<any> {
     if (env.auth.authCheck) {
       if (!currentUser) {
@@ -833,6 +839,7 @@ export class ExperimentController {
       experiment.experimentId,
       experiment.state,
       currentUser,
+      request.logger,
       experiment.scheduleDate
     );
   }
@@ -877,7 +884,8 @@ export class ExperimentController {
     @Param('id') id: string,
     @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
     experiment: Experiment,
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest 
   ): Promise<Experiment> {
     if (!validator.isUUID(id)) {
       return Promise.reject(
@@ -886,7 +894,7 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.update(id, experiment, currentUser);
+    return this.experimentService.update(id, experiment, currentUser, request.logger);
   }
 
  /**
@@ -911,15 +919,17 @@ export class ExperimentController {
   @Post('/import')
   public importExperiment(
     @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput,
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest 
   ): Promise<Experiment> {
-    return this.experimentService.importExperiment(experiment, currentUser);
+    return this.experimentService.importExperiment(experiment, currentUser, request.logger);
   }
 
   @Get('/export/:id')
   public exportExperiment(
     @Param('id') id: string, 
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest 
   ): Promise<Experiment> {
     if (!validator.isUUID(id)) {
       return Promise.reject(
@@ -928,6 +938,6 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.exportExperiment(id, currentUser);
+    return this.experimentService.exportExperiment(id, currentUser, request.logger);
   }
 }
