@@ -1,16 +1,17 @@
 import { ErrorWithType } from './../errors/ErrorWithType';
 import * as express from 'express';
 import { ExpressMiddlewareInterface } from 'routing-controllers';
-import { LoggerInterface, Logger } from '../../decorators/Logger';
 import { SettingService } from '../services/SettingService';
 import { SERVER_ERROR } from 'upgrade_types';
 import * as jwt from 'jsonwebtoken';
 import isequal from 'lodash.isequal';
 import { env } from '../../env';
 import { AppRequest } from '../../types';
+import { Service } from 'typedi';
 
+@Service()
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
-  constructor(@Logger(__filename) private log: LoggerInterface, public settingService: SettingService) {}
+  constructor(public settingService: SettingService) {}
 
   public async use(req: AppRequest, res: express.Response, next: express.NextFunction): Promise<any> {
     try {
@@ -46,7 +47,6 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
         delete decodeToken.exp;
 
         if (isequal(decodeToken, { APIKey: key })) {
-          this.log.info('');
           next();
         } else {
           const error = new Error('Provided token is invalid');
