@@ -80,12 +80,12 @@ export class AnalyticsService {
       groupExclusion,
     ] = promiseArray[1];
 
-    logger.info({ message : `individualEnrollmentByCondition ${individualEnrollmentByCondition}` });
-    logger.info({ message : `individualEnrollmentConditionAndPartition ${individualEnrollmentConditionAndPartition}` });
-    logger.info({ message : `groupEnrollmentByCondition ${groupEnrollmentByCondition}` });
-    logger.info({ message : `groupEnrollmentConditionAndPartition ${groupEnrollmentConditionAndPartition}` });
-    logger.info({ message : `individualExclusion ${individualExclusion}` });
-    logger.info({ message : `groupExclusion ${groupExclusion}` });
+    logger.info({ message : 'individualEnrollmentByCondition', data: individualEnrollmentByCondition });
+    logger.info({ message : 'individualEnrollmentConditionAndPartition', data: individualEnrollmentConditionAndPartition });
+    logger.info({ message : 'groupEnrollmentByCondition', data: groupEnrollmentByCondition });
+    logger.info({ message : 'groupEnrollmentConditionAndPartition', data: groupEnrollmentConditionAndPartition });
+    logger.info({ message : 'individualExclusion', data: individualExclusion });
+    logger.info({ message : 'groupExclusion', data: groupExclusion });
 
     return {
       id: experimentId,

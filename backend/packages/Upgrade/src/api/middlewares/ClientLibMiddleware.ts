@@ -13,7 +13,7 @@ import { Service } from 'typedi';
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
   constructor(public settingService: SettingService) {}
 
-  public async use(req: AppRequest, res: express.Response, next: express.NextFunction): Promise<any> {
+  public async use(req: AppRequest, res: AppRequest, next: express.NextFunction): Promise<any> {
     try {
       const authorization = req.header('authorization');
       const token = authorization && authorization.replace('Bearer ', '').trim();
