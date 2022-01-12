@@ -13,6 +13,8 @@ identifier              = "dev-postgres"
 instance_class          = "db.t2.small"
 storage_type            = "gp2"
 multi_az                = "false"
+replica_count           = 2
+replica_names           = ["replica1", "replica2"]
 
 # EBS instance details
 app_instance_type       = "t2.micro"

@@ -76,7 +76,9 @@ module "aws-ebs-app" {
   identifier            = var.identifier
   instance_class        = var.instance_class
   storage_type          = var.storage_type
-  multi_az = "false"
+  multi_az              = "false"
+  replica_names         = var.replica_names
+  replica_count         = var.replica_count
   
   /*EBS config*/
   app_instance_type     = var.app_instance_type

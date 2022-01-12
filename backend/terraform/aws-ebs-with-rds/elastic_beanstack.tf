@@ -270,7 +270,7 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "RDS_HOSTNAME_SLAVE"
-    value     = split(":", aws_db_instance.app-rds-read-replica.endpoint)[0]
+    value     = split(":", aws_db_instance.app-rds-read-replica[0].endpoint)[0]
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
@@ -382,4 +382,8 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     name      = "TYPEORM_SYNCHRONIZE"
     value     = var.TYPEORM_SYNCHRONIZE
   }
+}
+
+output "rds-endpoints" {
+  value = split(":", aws_db_instance.app-rds-read-replica[0].endpoint)[0]
 }
