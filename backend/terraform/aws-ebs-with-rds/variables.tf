@@ -46,11 +46,6 @@ variable "storage_type" {
   description = "Instance storage type"
 }
 
-variable "replica_count" {
-  description = "Number of replicas"
-  default     = 0
-}
-
 variable "replica_names" {
   description = "Replica names"
   type        = list(string)
