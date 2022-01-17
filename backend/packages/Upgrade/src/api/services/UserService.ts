@@ -2,19 +2,25 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
-import { UserRole } from 'upgrade_types';
+import { SERVER_ERROR, UserRole } from 'upgrade_types';
 import { IUserSearchParams, IUserSortParams, USER_SEARCH_SORT_KEY } from '../controllers/validators/UserPaginatedParamsValidator';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { AWSService } from './AWSService';
+import { env } from '../../env';
+import { ErrorWithType } from '../errors/ErrorWithType';
 
 @Service()
 export class UserService {
   constructor(
-    @OrmRepository() private userRepository: UserRepository,
+    @OrmRepository()
+    private userRepository: UserRepository,
+    public awsService: AWSService,
   ) {}
 
   public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
+    this.sendWelcomeEmail(user.email);
     return this.userRepository.upsertUser(user);
   }
 
@@ -102,5 +108,24 @@ export class UserService {
     const stringConcat = searchString.join(',');
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
+  }
+
+  public async sendWelcomeEmail(email: string):Promise<string> {
+    try {
+      const email_from = env.email.from;
+      const emailText = `Hey, 
+      <br>
+      Welcome to the Upgrade!
+      <br>`;
+
+      const emailSubject = `Welcome Mail for new User`;
+      await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
+    } catch (err) {
+      const error = err as ErrorWithType;
+      error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
+      throw error;
+    }
+
+    return '';
   }
 }
