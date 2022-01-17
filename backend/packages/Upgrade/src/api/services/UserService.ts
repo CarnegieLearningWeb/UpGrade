@@ -124,7 +124,7 @@ export class UserService {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
       throw error;
-    }
+    } 
 
     return '';
   }
