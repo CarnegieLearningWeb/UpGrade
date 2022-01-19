@@ -26,7 +26,7 @@ import { ASSIGNMENT_TYPE } from '../../types/index';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
-import { AuditLogData } from 'upgrade_types/dist/Experiment/interfaces';
+import { AuditLogData } from 'upgrade_types';
 import { ExperimentInput } from '../../types/ExperimentInput';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';

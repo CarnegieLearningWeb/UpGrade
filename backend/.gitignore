@@ -20,6 +20,7 @@ locust/__pycache__/
 
 # Typing #
 typings/
+types/
 
 #Package lock json
 yarn.lock
