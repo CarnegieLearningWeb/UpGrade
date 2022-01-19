@@ -20,22 +20,22 @@ export default async function testCase(): Promise<void> {
   const experimentClientController = Container.get<ExperimentClientController>(ExperimentClientController);
   const userService = Container.get<UserService>(UserService);
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create individual and group experiment
   const experimentObject1 = individualAssignmentExperiment;
   const experimentName1 = experimentObject1.partitions[0].expId;
   const experimentPoint1 = experimentObject1.partitions[0].expPoint;
   // const condition1 = experimentObject1.conditions[0].conditionCode;
-  await experimentService.create(experimentObject1 as any, user);
+  await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
 
   const experimentObject2 = groupAssignmentWithIndividualConsistencyExperimentSecond;
   const experimentName2 = experimentObject2.partitions[0].expId;
   const experimentPoint2 = experimentObject2.partitions[0].expPoint;
   // const condition2 = experimentObject2.conditions[0].conditionCode;
-  await experimentService.create(experimentObject2 as any, user);
+  await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
 
-  let experiments = await experimentService.find();
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -57,11 +57,11 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   const [experiment1, experiment2] = experiments;
-  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user);
-  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -92,9 +92,9 @@ export default async function testCase(): Promise<void> {
   const experimentObject3 = groupAssignmentWithIndividualConsistencyExperimentThird;
   const experimentName3 = experimentObject3.partitions[0].expId;
   const experimentPoint3 = experimentObject3.partitions[0].expPoint;
-  await experimentService.create(experimentObject3 as any, user);
+  await experimentService.create(experimentObject3 as any, user, new UpgradeLogger());
 
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -107,8 +107,8 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  await experimentService.updateState(experimentObject3.id, EXPERIMENT_STATE.ENROLLING, user);
-  experiments = await experimentService.find();
+  await experimentService.updateState(experimentObject3.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -127,7 +127,7 @@ export default async function testCase(): Promise<void> {
   const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
   await experimentUserService.updateWorkingGroup(experimentUsers[0].id, workingGroup, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
-  const experimentUser = await experimentUserService.findOne(experimentUsers[0].id);
+  const experimentUser = await experimentUserService.findOne(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentUser.workingGroup).not.toHaveProperty("teacher");
 
   // call getAllExperiment

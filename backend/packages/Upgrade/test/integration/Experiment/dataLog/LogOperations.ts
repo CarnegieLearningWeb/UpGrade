@@ -28,11 +28,11 @@ export default async function LogOperations(): Promise<void> {
   const settingService = Container.get<SettingService>(SettingService);
   const queryService = Container.get<QueryService>(QueryService);
 
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -48,7 +48,7 @@ export default async function LogOperations(): Promise<void> {
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;
 
-  await settingService.setClientCheck(false, true);
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
@@ -57,10 +57,10 @@ export default async function LogOperations(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -204,7 +204,7 @@ export default async function LogOperations(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
+  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
   // getOriginalUserDoc
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // log data here
@@ -332,7 +332,7 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
     },
   ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
-  const allQuery = await queryService.find();
+  const allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -498,7 +498,7 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < allQuery.length; i++) {
     const query = allQuery[i];
-    const queryResult = await queryService.analyse([query.id]);
+    const queryResult = await queryService.analyse([query.id], new UpgradeLogger());
     const res = reduceResult(queryResult[0].result);
     let expectedValue;
     // Used for console output

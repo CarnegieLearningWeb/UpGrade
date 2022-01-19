@@ -9,6 +9,7 @@ import { systemUser } from '../../mockData/user/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { AuditService } from '../../../../src/api/services/AuditService';
 import { systemUserDoc } from '../../../../src/init/seed/systemUser';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function StartExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -18,14 +19,14 @@ export default async function StartExperiment(): Promise<void> {
   const auditService = Container.get<AuditService>(AuditService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = scheduleJobStartExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -40,10 +41,10 @@ export default async function StartExperiment(): Promise<void> {
 
   // change experiment status to SCHEDULED
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, experiments[0].startOn);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, new UpgradeLogger(), experiments[0].startOn);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -57,7 +58,7 @@ export default async function StartExperiment(): Promise<void> {
   );
 
   await new Promise(r => setTimeout(r, 1000));
-  const startExperiment = await scheduledJobService.getAllStartExperiment();
+  const startExperiment = await scheduledJobService.getAllStartExperiment(new UpgradeLogger());
 
   expect(startExperiment).toEqual(
     expect.arrayContaining([
@@ -70,10 +71,10 @@ export default async function StartExperiment(): Promise<void> {
   );
 
   // call scheduled service to update state for enrolling
-  await scheduledJobService.startExperiment(startExperiment[0].id);
+  await scheduledJobService.startExperiment(startExperiment[0].id, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

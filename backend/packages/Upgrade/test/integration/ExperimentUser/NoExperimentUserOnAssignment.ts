@@ -16,14 +16,14 @@ export default async function testCase(): Promise<void> {
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -36,12 +36,12 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let experimentUser = await experimentUserService.find();
+  let experimentUser = await experimentUserService.find(new UpgradeLogger());
   expect(experimentUser.length).toEqual(0);
 
   // get all experiment condition for user 1
   await expect(getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger())).rejects.toThrow();
 
-  experimentUser = await experimentUserService.find();
+  experimentUser = await experimentUserService.find(new UpgradeLogger());
   expect(experimentUser.length).toEqual(0);
 }

@@ -11,7 +11,7 @@ export default async function MetricCRUD(): Promise<void> {
   const metricService = Container.get<MetricService>(MetricService);
   const settingService = Container.get<SettingService>(SettingService);
 
-  await settingService.setClientCheck(false, true);
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   // create metrics service
 
@@ -20,7 +20,7 @@ export default async function MetricCRUD(): Promise<void> {
   let findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(32);
 
-  await metricService.deleteMetric('totalProblemsCompleted');
+  await metricService.deleteMetric('totalProblemsCompleted', new UpgradeLogger());
   findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(31);
 }

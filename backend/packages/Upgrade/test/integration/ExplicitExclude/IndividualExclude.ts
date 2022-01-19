@@ -17,14 +17,14 @@ export default async function IndividualExclude(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const userIn = await userService.upsertUser(systemUser as any);
+  const userIn = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any, userIn);
-  let experiments = await experimentService.find();
+  await experimentService.create(individualAssignmentExperiment as any, userIn, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -39,10 +39,10 @@ export default async function IndividualExclude(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

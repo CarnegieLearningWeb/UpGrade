@@ -7,6 +7,7 @@ import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function UpdateExperimentState(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -15,14 +16,14 @@ export default async function UpdateExperimentState(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = scheduleJobUpdateExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -35,7 +36,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ])
   );
 
-  let startExperiment = await scheduledJobService.getAllStartExperiment();
+  let startExperiment = await scheduledJobService.getAllStartExperiment(new UpgradeLogger());
 
   expect(startExperiment).toEqual(
     expect.arrayContaining([
@@ -47,7 +48,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ])
   );
 
-  let endExperiment = await scheduledJobService.getAllEndExperiment();
+  let endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
 
   expect(endExperiment).toEqual(
     expect.arrayContaining([
@@ -61,12 +62,12 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   await new Promise(r => setTimeout(r, 1000));
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -81,10 +82,10 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   await new Promise(r => setTimeout(r, 1000));
 
-  startExperiment = await scheduledJobService.getAllStartExperiment();
+  startExperiment = await scheduledJobService.getAllStartExperiment(new UpgradeLogger());
   expect(startExperiment.length).toEqual(0);
 
-  endExperiment = await scheduledJobService.getAllEndExperiment();
+  endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
 
   expect(endExperiment).toEqual(
     expect.arrayContaining([
@@ -97,11 +98,11 @@ export default async function UpdateExperimentState(): Promise<void> {
   );
 
   // change experiment status to Enrollment Complete
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
 
   await new Promise(r => setTimeout(r, 1000));
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -114,6 +115,6 @@ export default async function UpdateExperimentState(): Promise<void> {
     ])
   );
 
-  endExperiment = await scheduledJobService.getAllEndExperiment();
+  endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
   expect(endExperiment.length).toEqual(0);
 }

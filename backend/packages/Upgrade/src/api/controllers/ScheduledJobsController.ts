@@ -1,8 +1,9 @@
-import { JsonController, Post, Body, UseBefore } from 'routing-controllers';
+import { JsonController, Post, Body, UseBefore, Req } from 'routing-controllers';
 import { ScheduledJobsParamsValidator } from './validators/ScheduledJobsParamsValidator';
 import { ScheduledJobService } from '../services/ScheduledJobService';
 import { ScheduleJobMiddleware } from '../middlewares/ScheduleJobMiddleware';
 import bodyParser from 'body-parser';
+import { AppRequest } from '../../types';
 
 @JsonController('/scheduledJobs')
 @UseBefore(ScheduleJobMiddleware)
@@ -40,9 +41,10 @@ export class ScheduledJobsController {
   @Post('/start')
   public async startExperiment(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    scheduledParams: ScheduledJobsParamsValidator
+    scheduledParams: ScheduledJobsParamsValidator, 
+    @Req() request: AppRequest
   ): Promise<any> {
-    return this.scheduledJobService.startExperiment(scheduledParams.id);
+    return this.scheduledJobService.startExperiment(scheduledParams.id, request.logger);
   }
 
   /**
@@ -75,9 +77,10 @@ export class ScheduledJobsController {
   @Post('/end')
   public async endExperiment(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    scheduledParams: ScheduledJobsParamsValidator
+    scheduledParams: ScheduledJobsParamsValidator, 
+    @Req() request: AppRequest
   ): Promise<any> {
-    return this.scheduledJobService.endExperiment(scheduledParams.id);
+    return this.scheduledJobService.endExperiment(scheduledParams.id, request.logger);
   }
 
   /**
@@ -96,7 +99,7 @@ export class ScheduledJobsController {
    *            description: Clear audit and error logs
    */
   @Post('/clearLogs')
-  public async clearLogs(): Promise<boolean> {
-    return this.scheduledJobService.clearLogs();
+  public async clearLogs(@Req() request: AppRequest): Promise<boolean> {
+    return this.scheduledJobService.clearLogs(request.logger);
   }
 }

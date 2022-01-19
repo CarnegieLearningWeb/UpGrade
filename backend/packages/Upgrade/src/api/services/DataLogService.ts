@@ -1,9 +1,10 @@
 import { Service } from 'typedi';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class DataLogService {
-  constructor(@Logger(__filename) private log: LoggerInterface) {
-    this.log.info('test');
+  constructor() {
+    const logger =  new UpgradeLogger();
+    logger.info({ message: 'test logger' });
   }
 }

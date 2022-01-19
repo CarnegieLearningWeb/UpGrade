@@ -1,7 +1,8 @@
-import { Authorized, JsonController, Post, Body } from 'routing-controllers';
+import { Authorized, JsonController, Post, Body, Req } from 'routing-controllers';
 import { QueryService } from '../services/QueryService';
 import { DataLogAnalysisValidator } from './validators/DataLogAnalysisValidator';
 import { DataLogService } from '../services/DataLogService';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -44,8 +45,9 @@ export class QueryController {
   @Post('/analyse')
   public analyse(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    dataLogParams: DataLogAnalysisValidator
+    dataLogParams: DataLogAnalysisValidator, 
+    @Req() request: AppRequest
   ): Promise<any> {
-    return this.queryService.analyse(dataLogParams.queryIds);
+    return this.queryService.analyse(dataLogParams.queryIds, request.logger);
   }
 }

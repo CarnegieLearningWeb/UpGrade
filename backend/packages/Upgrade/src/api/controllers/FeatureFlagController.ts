@@ -1,10 +1,10 @@
-import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put } from 'routing-controllers';
+import { JsonController, Authorized, Post, Body, CurrentUser, Delete, Param, Put, Req } from 'routing-controllers';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { User } from '../models/User';
 import { FeatureFlagStatusUpdateValidator } from './validators/FeatureFlagStatusUpdateValidator';
 import { FeatureFlagPaginatedParamsValidator } from './validators/FeatureFlagsPaginatedParamsValidator';
-import { PaginationResponse } from '../../types';
+import { AppRequest, PaginationResponse } from '../../types';
 import { SERVER_ERROR } from 'upgrade_types';
 
 interface FeatureFlagsPaginationInfo extends PaginationResponse {
@@ -111,7 +111,8 @@ export class FeatureFlagsController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: FeatureFlagPaginatedParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: FeatureFlagPaginatedParamsValidator, 
+    @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
     if (!paginatedParams) {
       return Promise.reject(
@@ -125,6 +126,7 @@ export class FeatureFlagsController {
       this.featureFlagService.findPaginated(
         paginatedParams.skip,
         paginatedParams.take,
+        request.logger,
         paginatedParams.searchParams,
         paginatedParams.sortParams
       ),
@@ -163,9 +165,10 @@ export class FeatureFlagsController {
   @Post()
   public create(
     @Body({ validate: { validationError: { target: false, value: false } } }) flag: FeatureFlag,
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User, 
+    @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.create(flag, currentUser);
+    return this.featureFlagService.create(flag, currentUser, request.logger);
   }
 
   /**
@@ -199,9 +202,10 @@ export class FeatureFlagsController {
   @Post('/status')
   public async updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    flag: FeatureFlagStatusUpdateValidator
+    flag: FeatureFlagStatusUpdateValidator, 
+    @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.updateState(flag.flagId, flag.status);
+    return this.featureFlagService.updateState(flag.flagId, flag.status, request.logger);
   }
 
   /**
@@ -226,7 +230,7 @@ export class FeatureFlagsController {
    */
 
   @Delete('/:id')
-  public delete(@Param('id') id: string, @CurrentUser() currentUser: User): Promise<FeatureFlag | undefined> {
+  public delete(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
     // TODO: Add server error
     // if (!validator.isUUID(id)) {
     //   return Promise.reject(
@@ -235,7 +239,7 @@ export class FeatureFlagsController {
     //     )
     //   );
     // }
-    return this.featureFlagService.delete(id, currentUser);
+    return this.featureFlagService.delete(id, request.logger);
   }
 
   /**
@@ -272,7 +276,8 @@ export class FeatureFlagsController {
     @Param('id') id: string,
     @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
     flag: FeatureFlag,
-    @CurrentUser() currentUser: User
+    @CurrentUser() currentUser: User, 
+    @Req() request: AppRequest
   ): Promise<FeatureFlag> {
     // TODO: Add error log
     // if (!validator.isUUID(id)) {
@@ -282,6 +287,6 @@ export class FeatureFlagsController {
     //     )
     //   );
     // }
-    return this.featureFlagService.update(id, flag, currentUser);
+    return this.featureFlagService.update(id, flag, currentUser, request.logger);
   }
 }
