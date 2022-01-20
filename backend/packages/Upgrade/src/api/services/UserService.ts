@@ -20,7 +20,17 @@ export class UserService {
 
   public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
-    this.sendWelcomeEmail(user.email);
+
+    const isUserExists = await this.userRepository.findOne({ email: user.email });
+    if (!isUserExists) {
+      this.sendWelcomeEmail(user.email)
+    }
+    return this.userRepository.upsertUser(user);
+  }
+
+  public async upsertAdminUser(user: User, logger: UpgradeLogger): Promise<User> {
+    logger.info({ message: `Upsert a new Admin user => ${JSON.stringify(user, undefined, 2)}` });
+
     return this.userRepository.upsertUser(user);
   }
 
@@ -73,6 +83,7 @@ export class UserService {
   }
 
   public updateUserRole(email: string, role: UserRole): Promise<User> {
+    this.sendRoleChangedEmail(email, role);
     return this.userRepository.updateUserRole(email, role);
   }
 
@@ -109,16 +120,39 @@ export class UserService {
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
   }
+  
+  public sendWelcomeEmail(email: string): void {
+    const emailSubject = `Welcome to UpGrade!`;
+    const emailText = `Greetings!, 
+    <br>
+    A new user account was created for you in UpGrade. You can sign into UpGrade using your Google credentials.
+    <br>
+    To know more about how UpGrade works, please visit 
+    <a href="www.upgradeplatform.com"> www.upgradeplatform.com</a>
+    . To read the documentation, visit 
+    <a href="docs.upgradeplatform.com."> docs.upgradeplatform.com.</a>
+    <br>`;
+    this.sendEmail(email, emailSubject, emailText);
+  }
 
-  public async sendWelcomeEmail(email: string):Promise<string> {
+  public sendRoleChangedEmail(email: string, role: UserRole): void {
+    const emailSubject = `Upgrade Role Changed`;
+    const emailText = `Greetings!, 
+    <br>
+    Your Role in Upgrade is changed to ${role}!
+    <br>
+    To know more about how UpGrade works, please visit 
+    <a href="www.upgradeplatform.com"> www.upgradeplatform.com</a>
+    . To read the documentation, visit 
+    <a href="docs.upgradeplatform.com."> docs.upgradeplatform.com.</a>
+    <br>`;
+
+    this.sendEmail(email, emailSubject, emailText);
+  }
+
+  public async sendEmail(email: string, emailSubject: string, emailText: string):Promise<string> {
     try {
       const email_from = env.email.from;
-      const emailText = `Hey, 
-      <br>
-      Welcome to the Upgrade!
-      <br>`;
-
-      const emailSubject = `Welcome Mail for new User`;
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
     } catch (err) {
       const error = err as ErrorWithType;
