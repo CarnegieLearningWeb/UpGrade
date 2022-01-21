@@ -1,3 +1,4 @@
+from datetime import datetime
 import random
 import uuid
 from  upgrade_mathia_data import modules, workspaces
@@ -333,7 +334,38 @@ class UpgradeUserTask(SequentialTaskSet):
             if response.status_code != 200:
                 print(f"/failed Failed with {response.status_code} for userid: " + self.student["studentId"])
 
-    
+    # Generate mock log data 
+    def genMockLog(self):
+        attributes = {
+            "totalTimeSeconds": random.randint(1,500000),
+            "totalMasteryWorkspacesCompleted": random.randint(1,50),
+            "totalConceptBuildersCompleted": random.randint(1,50),
+            "totalMasteryWorkspacesGraduated": random.randint(1,50),
+            "totalSessions": random.randint(1,100),
+            "totalProblemsCompleted": random.randint(1,1000)
+        }
+        groupedMetrics = {
+            "groupClass": "workspace",
+            "groupKey": random.choice(list(workspaces.keys())),
+            "groupUniquifier": str(datetime.now()),
+            "attributes": {
+                "timeSeconds": random.randint(1,500),
+                "hintCount": random.randint(1,10),
+                "errorCount": random.randint(1,20),
+                "completionCount": 1,
+                "workspaceCompletionStatus": "GRADUATED",
+                "problemsCompleted": random.randint(1,10)
+            }
+        }
+        return {
+            "userId": self.student["studentId"],
+            "timestamp": str(datetime.now()),
+            "metrics": {
+                "attributes": attributes,
+                "groupedMetrics": [groupedMetrics]
+            }
+        }
+
     #UpgradeForwarder
     # Task 9:
     @tag("logger")
@@ -342,7 +374,9 @@ class UpgradeUserTask(SequentialTaskSet):
         url = protocol + f"://{host}/api/log"
         data = {
             "userId": self.student["studentId"],
-            "value": [] #TODO: Populate with more realistic values
+            "value": [
+                    self.genMockLog()
+                ]
         }
 
         with self.client.post(url, json = data, catch_response = True) as response:
