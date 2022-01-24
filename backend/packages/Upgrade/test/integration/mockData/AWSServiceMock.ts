@@ -15,4 +15,13 @@ export default class AWSServiceMock {
       stopDate: Date.now(),
     });
   }
+
+  public sendEmail(
+    fromAddress: string,
+    toAddress: string,
+    text: string,
+    subject: string
+  ): Promise<any> {
+    return;
+  }
 }
