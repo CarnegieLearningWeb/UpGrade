@@ -9,6 +9,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { AWSService } from './AWSService';
 import { env } from '../../env';
 import { ErrorWithType } from '../errors/ErrorWithType';
+import { Emails } from '../../templates/email';
 
 @Service()
 export class UserService {
@@ -16,6 +17,7 @@ export class UserService {
     @OrmRepository()
     private userRepository: UserRepository,
     public awsService: AWSService,
+    public emails: Emails
   ) {}
 
   public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
@@ -110,7 +112,7 @@ export class UserService {
         break;
       default:
         // TODO: Update column name
-        // searchString.push("coalesce(users.firstName::TEXT,'')");
+        // searchString.push("coalesce(users.firstName::TEXT,'')"); 
         // searchString.push("coalesce(users.lastName::TEXT,'')");
         searchString.push("coalesce(users.email::TEXT,'')");
         searchString.push("coalesce(users.role::TEXT,'')");
@@ -123,37 +125,43 @@ export class UserService {
   
   public sendWelcomeEmail(email: string): void {
     const emailSubject = `Welcome to UpGrade!`;
-    const emailText = `Greetings!, 
+    const emailBody = `Greetings!, 
     <br>
     A new user account was created for you in UpGrade. You can sign into UpGrade using your Google credentials.
     <br>
+    Click here to log in: <a href="http://www.localhost:4200">UPGRADE</a>
+    <br>
     To know more about how UpGrade works, please visit 
-    <a href="www.upgradeplatform.com"> www.upgradeplatform.com</a>
+    <a href="https://www.upgradeplatform.org/"> www.upgradeplatform.org</a>
     . To read the documentation, visit 
-    <a href="docs.upgradeplatform.com."> docs.upgradeplatform.com.</a>
+    <a href="https://upgrade-platform.gitbook.io/upgrade-documentation/"> UpGrade-docs</a>
     <br>`;
-    this.sendEmail(email, emailSubject, emailText);
+
+    this.sendEmail(email, emailSubject, emailBody);
   }
 
   public sendRoleChangedEmail(email: string, role: UserRole): void {
-    const emailSubject = `Upgrade Role Changed`;
-    const emailText = `Greetings!, 
+    const emailSubject = `UpGrade Role Changed`;
+    const emailBody = `Greetings!, 
     <br>
     Your Role in Upgrade is changed to ${role}!
     <br>
+    Click here to log in: <a href="http://www.localhost:4200">UPGRADE</a>
+    <br>
     To know more about how UpGrade works, please visit 
-    <a href="www.upgradeplatform.com"> www.upgradeplatform.com</a>
+    <a href="https://www.upgradeplatform.org/"> www.upgradeplatform.org</a>
     . To read the documentation, visit 
-    <a href="docs.upgradeplatform.com."> docs.upgradeplatform.com.</a>
+    <a href="https://upgrade-platform.gitbook.io/upgrade-documentation/"> UpGrade-docs</a>
     <br>`;
 
-    this.sendEmail(email, emailSubject, emailText);
+    this.sendEmail(email, emailSubject, emailBody);
   }
 
-  public async sendEmail(email: string, emailSubject: string, emailText: string):Promise<string> {
+  public async sendEmail(email_to: string, emailSubject: string, emailBody: string):Promise<string> {
     try {
       const email_from = env.email.from;
-      await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
+      const emailText = this.emails.generateEmailText(emailBody);
+      await this.awsService.sendEmail(email_from, email_to, emailText, emailSubject);
     } catch (err) {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
