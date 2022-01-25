@@ -52,12 +52,8 @@ Open <http://localhost:8089>
 Enter the number of experiments to delete
 
 
-## changing from individual level to group level experiment
+## creating experiments
 
-On line 20 in load_test_upgrade_mathia.py, change False to True
+You will be prompted to specify different facets of each experiment created. Current supported options are: 
 
-    groupExp = False
-
-False represents an individual level experiment and is the default value.
-
-True represents a group level experiment.
+group level vs individual level experiment

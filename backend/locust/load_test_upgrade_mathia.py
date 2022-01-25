@@ -15,13 +15,11 @@ protocol = "http"
 host = "localhost:3030"
 
 # create new experiments:
-# set groupExp to True for creating a group level experiment or False for a individual level experiment:
-groupExp = False
 experimentCount = int(input("Enter the number of experiments to be created: "))
 
 for i in range(experimentCount):
     # returning the updated partionconditionpair list:
-    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, groupExp, allExperimentPartitionIDConditionPair)
+    allExperimentPartitionIDConditionPair = createExperiment.createExperiment(protocol, host, allExperimentPartitionIDConditionPair)
 
 ### Start enrolling students in the newly created experiment: ###
 #Return a new Student
