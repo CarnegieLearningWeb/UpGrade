@@ -12,14 +12,9 @@ def getExperimentIds(protocol, host):
             print("Experiment ids found successfully")
             expIds = []
             for x in json.loads(response.content):
-                # count = 0
                 # only grab experiments created for the locust tests
                 if "LocustLoadTest" in x['name']:
                     expIds.append(x['id'])
-                # for i in x.values():
-                #     count += 1
-                #     if count%2 != 0:
-                #         expIds.append(i)
             return expIds
 
 def deleteExperiment(protocol, host, expIds):
