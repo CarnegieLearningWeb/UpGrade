@@ -11,5 +11,4 @@ if option > len(expIds):
     option = len(expIds)
 
 for i in range(option):
-        expIds = deleteExperiment.getExperimentIds(protocol, host)
         deleteExperiment.deleteExperiment(protocol, host, expIds)
