@@ -4,7 +4,7 @@ import deleteExperiment
 protocol = "http"
 host = "localhost:3030"
 
-option = int(input("Enter the number of  experiments to delete: "))
+option = int(input("Enter the number of experiments to delete: "))
 expIds = deleteExperiment.getExperimentIds(protocol, host)
 
 if option > len(expIds):

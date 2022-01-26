@@ -49,7 +49,7 @@ Open <http://localhost:8089>
 
     python cleanup_experiments.py
 
-Enter the number of experiments to delete
+Enter the number of experiments to delete. Only experiments named "LocustLoadTest" will be deleted.
 
 
 ## creating experiments
