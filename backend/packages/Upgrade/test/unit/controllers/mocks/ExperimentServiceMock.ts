@@ -1,5 +1,5 @@
-import { Experiment } from 'packages/Upgrade/src/api/models/Experiment';
-import { User } from 'packages/Upgrade/src/api/models/User';
+import { Experiment } from '../../../../src/api/models/Experiment';
+import { User } from '../../../../src/api/models/User';
 import { Service } from 'typedi';
 
 @Service()

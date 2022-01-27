@@ -1,7 +1,6 @@
 import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { experimentUsers } from '../mockData/experimentUsers/index';
 import TestCase1 from './NoExperimentUserOnAssignment';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
@@ -27,18 +26,9 @@ const initialChecks = async () => {
 
   const individualExclusions = await checkService.getAllIndividualExclusion();
   expect(individualExclusions.length).toEqual(0);
-
-  // create users over here
-  await userService.create(experimentUsers as any, new UpgradeLogger());
-
-  // get all user here
-  const userList = await userService.find(new UpgradeLogger());
-  expect(userList.length).toBe(experimentUsers.length);
-  experimentUsers.map((user) => {
-    expect(userList).toContainEqual(user);
-  });
 };
 
 export const NoExperimentUserOnAssignment = async () => {
+  await initialChecks();
   await TestCase1();
 };
