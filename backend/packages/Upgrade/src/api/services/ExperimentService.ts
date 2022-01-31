@@ -134,8 +134,7 @@ export class ExperimentService {
   }
 
   public create(experiment: ExperimentInput, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ message: `Create a new experiment =>  ${experiment.toString()}` });
-    // TODO add entry in audit log of creating experiment
+    logger.info({ user: currentUser, message: 'Create a new experiment =>', details:  experiment.toString() });
 
     // order for condition
     experiment.conditions.forEach((condition, index) => {
@@ -158,7 +157,7 @@ export class ExperimentService {
 
   public async delete(experimentId: string, currentUser: User, logger: UpgradeLogger): Promise<Experiment | undefined> {
     if ( logger ) {
-      logger.info({ message: `Delete experiment =>  ${ experimentId }` });
+      logger.info({ user: currentUser, message: `Delete experiment =>  ${ experimentId }` });
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
@@ -186,8 +185,7 @@ export class ExperimentService {
   }
 
   public update(id: string, experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ message: `Update an experiment => ${experiment.toString()}` });
-    // TODO add entry in audit log of updating experiment
+    logger.info({ user: currentUser, message: `Update the experiment`, details: experiment.toString() });
     return this.updateExperimentInDB(experiment as any, currentUser, logger);
   }
 
@@ -260,6 +258,7 @@ export class ExperimentService {
 
     // updating the experiment and stateTimeLog
     const stateTimeLogRepo = entityManager ? entityManager.getRepository(StateTimeLog) : this.stateTimeLogsRepository;
+    logger.info({ message: `stateTimeLogDoc =>`, details: stateTimeLogDoc });
     const [updatedState, updatedStateTimeLog] = await Promise.all([
       this.experimentRepository.updateState(experimentId, state, scheduleDate, entityManager),
       stateTimeLogRepo.save(stateTimeLogDoc),
@@ -317,6 +316,7 @@ export class ExperimentService {
       let twoCharacterId = partition.twoCharacterId;
       if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
         twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+        logger.info({ message: `Generate new twoCharacterId for partition =>`, details: twoCharacterId });
         partition.twoCharacterId = twoCharacterId;
       }
       uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
@@ -347,6 +347,7 @@ export class ExperimentService {
 
   private async updateExperimentSchedules(experimentId: string, logger: UpgradeLogger, entityManager?: EntityManager): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
+    logger.info({ message: `Updating experiment schedules for experiment ${experimentId}` });
     const experiment = await experimentRepo.findByIds([experimentId]);
     if (experiment.length > 0 && this.scheduledJobService) {
       await this.scheduledJobService.updateExperimentSchedules(experiment[0], logger, entityManager);
@@ -394,6 +395,7 @@ export class ExperimentService {
     const uniqueUserIds = new Set(
       monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.user.id)
     );
+    logger.info({message: `Found ${monitoredExperimentPoints.length} monitored experiment points`, details: monitoredExperimentPoints});
 
     // end the loop if no users
     if (uniqueUserIds.size === 0) {
@@ -699,7 +701,7 @@ export class ExperimentService {
           delete condition.createdAt;
           delete (condition as any).experimentId;
         });
-
+        logger.info({message:'Updated experiment:', details: newExperiment.toString()})
         // add AuditLogs here
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
