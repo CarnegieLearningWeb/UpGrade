@@ -1,0 +1,13 @@
+name: Types Build
+on: ['push', 'pull_request', 'workflow_dispatch']
+jobs:
+  types-build:
+    name: Types Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Types
+        uses: ./.github/actions/generic-npm-build
+        with:
+          working_directory: types

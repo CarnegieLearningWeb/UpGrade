@@ -1,0 +1,62 @@
+name: Backend Deploy
+on:
+  workflow_call:
+    inputs:
+      application_name:
+        required: true
+        type: string
+      environment_name:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+  workflow_dispatch:
+    inputs:
+      application_name:
+        description: Name of the Elastic Beanstalk application to deploy
+        required: true
+        type: string
+      environment_name:
+        description: Name of the Elastic Beanstalk environment to deploy to
+        required: true
+        type: string
+      version:
+        description: Version to tag this deployment with
+        required: true
+        type: string
+jobs:
+  backend-deploy:
+    name: Backend Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: 'actions/checkout@v2'
+      - name: Load Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Setup NodeJS ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: "12.16.1"
+      - name: Package Backend
+        working-directory: backend
+        run: |
+          cp -R ../types packages/Upgrade
+          npm ci
+          zip -qq -r upgrade-backend-${{ inputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+      - uses: einaregilsson/beanstalk-deploy@v13
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ inputs.application_name }}
+          environment_name: ${{ inputs.environment_name }}
+          version_label: ${{ inputs.version }}
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: backend/upgrade-backend-${{ inputs.version }}.zip

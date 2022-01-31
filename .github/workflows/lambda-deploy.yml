@@ -1,0 +1,49 @@
+name: Lambda Deploy
+on:
+  workflow_call:
+    inputs:
+      function_name:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      function_name:
+        description: Name of the lambda function to deploy to
+        required: true
+        type: string
+      version:
+        description: Version to use for this deployment
+        required: true
+        type: string
+jobs:
+  lambda-deploy:
+    name: Lambda Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Lambda
+        uses: ./.github/actions/generic-npm-build
+        with:
+          working_directory: backend/packages/Schedular
+          version: ${{ inputs.version }}
+      - name: Copy Files
+        working-directory: backend/packages/Schedular
+        run: |
+          mkdir lib
+          cp -a node_modules/ lib/node_modules
+          cp -a dist/schedule lib/schedule
+      - name: Package
+        working-directory: backend/packages/Schedular/lib
+        run: zip -r upgrade-lambda-v${{ input.version }}.zip *
+      - name: Deploy
+        uses: appleboy/lambda-action@v0.1.5
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          function_name: ${{ input.function_name }}
+          zip_file: backend/packages/Schedular/lib/upgrade-lambda-v${{ input.version }}.zip

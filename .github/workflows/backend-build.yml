@@ -1,0 +1,26 @@
+name: Backend Build
+on: ['push', 'pull_request', 'workflow_dispatch']
+jobs:
+  backend-build:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    container: node:12.16.1
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - working-directory: backend
+        run: |
+          npm install -g npm@7.9.0
+          npm run install:all
+        #  npm run test:upgrade
+

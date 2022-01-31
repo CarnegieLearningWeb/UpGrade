@@ -1,0 +1,40 @@
+name: Frontend Deploy
+on:
+  workflow_call:
+    inputs:
+      s3_bucket:
+        required: true
+        type: string
+      version:
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      s3_bucket:
+        description: S3 Bucket to deploy frontend code to
+        required: true
+        type: string
+      version:
+        description: Version of frontend being deployed
+        required: false
+        type: string
+jobs:
+  frontend-deploy:
+    name: Frontend Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Frontend Build
+        uses: ./.github/actions/generic-npm-build
+        with:
+          working_directory: frontend
+          build_script: build:upgrade
+          version: ${{ inputs.version }}
+      - name: Deploy to S3
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ inputs.s3_bucket }}
+          SOURCE_DIR: frontend/dist/upgrade

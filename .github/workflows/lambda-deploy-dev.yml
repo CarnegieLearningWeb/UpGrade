@@ -1,0 +1,26 @@
+name: Lambda Deploy to Dev Environment
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - backend/packages/Schedular/**
+  workflow_dispatch:
+jobs:
+  lambda-deploy-dev:
+    name: Lambda Deploy to Dev Environment
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'CarnegieLearningWeb'
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Get Dev Version
+        id: get-dev-version
+        uses: ./.github/actions/get-dev-version
+        with:
+          dir: backend/packages/Schedular
+      - name: Start Lambda Dev Deployment
+        uses: ./.github/workflows/lambda-deploy.yml
+        with:
+          s3_bucket: ${{ env.DEV_LAMBDA_FUNCTION_NAME }}
+          version: ${{ steps.get-dev-version.outputs.version }}

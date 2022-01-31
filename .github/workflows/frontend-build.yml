@@ -1,0 +1,14 @@
+name: Frontend Build
+on: ['push', 'pull_request', 'workflow_dispatch']
+jobs:
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Frontend Build
+        uses: ./.github/actions/generic-npm-build
+        with:
+          working_directory: frontend
+          build_script: build:prod
