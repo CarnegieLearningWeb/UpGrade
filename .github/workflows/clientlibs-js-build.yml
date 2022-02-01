@@ -1,8 +1,8 @@
-name: UpGrade Client Libs JS Build
+name: Client Libs JS Build
 on: ['push', 'pull_request', 'workflow_dispatch']
 jobs:
   clientlibs-js-build:
-    name: UpGrade Client Libs JS Build
+    name: Client Libs JS Build
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout

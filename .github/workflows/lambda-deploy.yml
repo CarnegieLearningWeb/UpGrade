@@ -8,6 +8,13 @@ on:
       version:
         required: true
         type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
   workflow_dispatch:
     inputs:
       function_name:
@@ -38,12 +45,12 @@ jobs:
           cp -a dist/schedule lib/schedule
       - name: Package
         working-directory: backend/packages/Schedular/lib
-        run: zip -r upgrade-lambda-v${{ input.version }}.zip *
+        run: zip -r upgrade-lambda-v${{ inputs.version }}.zip *
       - name: Deploy
         uses: appleboy/lambda-action@v0.1.5
         with:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
-          function_name: ${{ input.function_name }}
-          zip_file: backend/packages/Schedular/lib/upgrade-lambda-v${{ input.version }}.zip
+          function_name: ${{ inputs.function_name }}
+          zip_file: backend/packages/Schedular/lib/upgrade-lambda-v${{ inputs.version }}.zip

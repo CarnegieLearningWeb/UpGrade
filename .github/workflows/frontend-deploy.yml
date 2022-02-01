@@ -8,6 +8,11 @@ on:
       version:
         required: false
         type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
   workflow_dispatch:
     inputs:
       s3_bucket:
@@ -29,7 +34,7 @@ jobs:
         uses: ./.github/actions/generic-npm-build
         with:
           working_directory: frontend
-          build_script: build:upgrade
+          build_script: build:prod
           version: ${{ inputs.version }}
       - name: Deploy to S3
         uses: jakejarvis/s3-sync-action@v0.5.1
