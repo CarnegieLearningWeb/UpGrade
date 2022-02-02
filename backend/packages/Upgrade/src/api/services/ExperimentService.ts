@@ -391,8 +391,9 @@ export class ExperimentService {
       }
     }
 
+    const filteredPoints = monitoredExperimentPoints.filter(moniteredPoints => moniteredPoints.user != null);
     const uniqueUserIds = new Set(
-      monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.user.id)
+      filteredPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.user.id)
     );
 
     // end the loop if no users
