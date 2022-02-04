@@ -5,6 +5,9 @@ jobs:
     name: Backend Build
     runs-on: ubuntu-latest
     container: node:12.16.1
+    defaults:
+      run:
+        working-directory: backend
     services:
       postgres:
         image: postgres
@@ -18,8 +21,10 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
-      - working-directory: backend
-        run: |
-          npm run install:all
-          npm run test:upgrade
+      - name: Install Dependencies
+        run: npm run install:all
+      - name: Build Backend
+        run: npm run build:upgrade
+      - name: Run Tests
+        run: npm run test:upgrade
 
