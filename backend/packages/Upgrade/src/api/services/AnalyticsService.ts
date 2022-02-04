@@ -492,15 +492,18 @@ export class AnalyticsService {
 
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user
+      logger.info({ message: `Sending export data email to ${email}` });
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentInfo.name },
         user
       );
+      logger.info({ message: `Exported Data emailed successfully to ${email}` });
     } catch (err) {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
+      logger.error({ message: `Export Data email unsuccessful: ${error}` });
       throw error;
     }
 
