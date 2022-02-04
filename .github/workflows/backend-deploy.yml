@@ -60,3 +60,5 @@ jobs:
           version_label: ${{ inputs.version }}
           region: ${{ secrets.AWS_REGION }}
           deployment_package: backend/upgrade-backend-${{ inputs.version }}.zip
+          wait_for_deployment: false
+          use_existing_version_if_available: true
