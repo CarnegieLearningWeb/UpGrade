@@ -59,7 +59,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
   //   state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
   // };
 
-  // await experimentService.update(updatedExperiment.id, updatedExperiment, user);
+  // await experimentService.update(updatedExperiment, user);
   // experiments = await experimentService.find();
   // expect(experiments).toEqual(
   //   expect.arrayContaining([

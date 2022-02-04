@@ -74,7 +74,7 @@ export default async function NoPartitionPoint(): Promise<void> {
     newExperimentDoc.partitions[index] = newPartition;
   });
 
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user, new UpgradeLogger());
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
 
   expect(updatedExperimentDoc.partitions).toEqual(
     expect.arrayContaining([

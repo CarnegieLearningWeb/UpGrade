@@ -221,7 +221,7 @@ export default async function LogOperations(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
 

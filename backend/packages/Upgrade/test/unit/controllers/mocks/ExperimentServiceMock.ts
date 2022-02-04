@@ -48,7 +48,7 @@ export default class ExperimentServieMock {
     return Promise.resolve([]);
   }
 
-  public update(id: string, experiment: Experiment, currentUser: User): Promise<[]> {
+  public update(experiment: Experiment, currentUser: User): Promise<[]> {
     return Promise.resolve([]);
   }
 

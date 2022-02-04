@@ -54,7 +54,7 @@ export default async function CompleteEndExperiment(): Promise<void> {
     state: EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
   };
 
-  await experimentService.update(updatedExperiment.id, updatedExperiment, user, new UpgradeLogger());
+  await experimentService.update(updatedExperiment, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([

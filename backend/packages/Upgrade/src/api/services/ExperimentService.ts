@@ -134,7 +134,7 @@ export class ExperimentService {
   }
 
   public create(experiment: ExperimentInput, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ user: currentUser, message: 'Create a new experiment =>', details:  experiment.toString() });
+    logger.info({ message: 'Create a new experiment =>', details:  experiment.toString() });
 
     // order for condition
     experiment.conditions.forEach((condition, index) => {
@@ -157,7 +157,7 @@ export class ExperimentService {
 
   public async delete(experimentId: string, currentUser: User, logger: UpgradeLogger): Promise<Experiment | undefined> {
     if ( logger ) {
-      logger.info({ user: currentUser, message: `Delete experiment =>  ${ experimentId }` });
+      logger.info({ message: `Delete experiment =>  ${ experimentId }` });
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
@@ -184,8 +184,10 @@ export class ExperimentService {
     });
   }
 
-  public update(id: string, experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ user: currentUser, message: `Update the experiment`, details: experiment.toString() });
+  public update(experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
+    if ( logger ) {
+      logger.info({ message: `Update the experiment`, details: experiment.toString() });
+    }
     return this.updateExperimentInDB(experiment as any, currentUser, logger);
   }
 
