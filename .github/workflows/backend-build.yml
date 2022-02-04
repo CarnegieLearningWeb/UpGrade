@@ -22,7 +22,9 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Install Dependencies
-        run: npm run install:all
+        run: |
+          cp -R ../types packages/Upgrade
+          npm run install:all
       - name: Build Backend
         run: npm run build:upgrade
       - name: Run Tests
