@@ -771,6 +771,7 @@ export class ExperimentClientController {
         }
         const userDoc = {
           user: {
+            createdAt: experimentUserDoc.createdAt,
             id: aliasUserId,
             originalUserId: experimentUserDoc.id,
             group: experimentUserDoc.group,
