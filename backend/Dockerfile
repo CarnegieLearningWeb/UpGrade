@@ -1,7 +1,7 @@
 FROM node:12.7.0-alpine
-RUN apk add g++ make python
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
+ENV NR_NATIVE_METRICS_NO_BUILD=true
 
 # Create app directory
 WORKDIR /usr/src/app
