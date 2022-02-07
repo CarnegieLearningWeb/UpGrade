@@ -30,6 +30,22 @@ jobs:
     name: Lambda Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Check if tag exists
+        id: check-tag
+        uses: mukunku/tag-exists-action@v1.0.0
+        with:
+          tag: ${{ inputs.version }}
+
+      # If the tag already exists, just download the artifact from that release
+      - name: Download Release Artifact
+        if: steps.check-tag.outputs.exists = 'true'
+        uses: robinraju/release-downloader@v1.3
+        with:
+          repository: CarnegieLearningWeb/UpGrade
+          tag: ${{ inputs.version }}
+          fileName: upgrade-lambda-${{ inputs.version }}.zip
+
+      # Otherwise, build the artifact
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Build Lambda
@@ -45,7 +61,10 @@ jobs:
           cp -a dist/schedule lib/schedule
       - name: Package
         working-directory: backend/packages/Schedular/lib
-        run: zip -r upgrade-lambda-v${{ inputs.version }}.zip *
+        run: |
+          zip -r upgrade-lambda-v${{ inputs.version }}.zip *
+          mv upgrade-lambda-v${{ inputs.version }}.zip ../../../..
+
       - name: Deploy
         uses: appleboy/lambda-action@v0.1.5
         with:
@@ -53,4 +72,4 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: ${{ inputs.function_name }}
-          zip_file: backend/packages/Schedular/lib/upgrade-lambda-v${{ inputs.version }}.zip
+          zip_file: upgrade-lambda-v${{ inputs.version }}.zip
