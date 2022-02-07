@@ -37,3 +37,5 @@ src/api/schema.gql
 */**/!test/preprocessor.js
 */**/Dockerrun.aws.json
 */**/mydb.sql
+
+!packages/Upgrade/types

@@ -42,7 +42,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           throw error;
         }
         const { secret, key } = env.clientApi;
-        const decodeToken = jwt.verify(token, secret) as jwt.JwtPayload;
+        const decodeToken: any = jwt.verify(token, secret);
         delete decodeToken.iat;
         delete decodeToken.exp;
 
