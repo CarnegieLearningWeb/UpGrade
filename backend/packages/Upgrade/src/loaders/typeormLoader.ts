@@ -3,13 +3,14 @@ import { createConnection, getConnectionOptions, ConnectionOptions } from 'typeo
 
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
+import { CONNECTION_NAME } from './enums';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   const loadedConnectionOptions = await getConnectionOptions();
   const loadedreplicaConnectionOptions = await getConnectionOptions();
   const host_replicas = JSON.parse(env.db.host_replica);
   const commonConnectionOptions = {
-    name: 'default',
+    name: CONNECTION_NAME.MAIN,
     type: env.db.type, // See createConnection options for valid types
     host: '',
     port: '',
@@ -70,7 +71,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     }];
   }
 
-  replicaConnectionOption['name'] = 'export';
+  replicaConnectionOption['name'] = CONNECTION_NAME.REPLICA;
   const connectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, masterConnectionOptions);
   const replicaConnectionOptions: ConnectionOptions = Object.assign(loadedreplicaConnectionOptions, replicaConnectionOption);
 
