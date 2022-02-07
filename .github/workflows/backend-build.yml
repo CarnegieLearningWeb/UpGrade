@@ -18,7 +18,7 @@ jobs:
     name: Backend Build
     runs-on: ubuntu-latest
     needs: get-node-version
-    container: node:${{ jobs.get-node-version.outputs.node-version }}
+    container: node:${{ needs.get-node-version.outputs.node-version }}
     defaults:
       run:
         working-directory: backend
