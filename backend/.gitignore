@@ -62,6 +62,6 @@ terraform/core/*.tfvars
 terraform/environments/lambda/*
 
 # Serverless compiled files
-packages/Schedular/lib
+packages/Scheduler/lib
 id_rsa
 id_rsa.pub

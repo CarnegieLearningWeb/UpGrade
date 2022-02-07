@@ -34,7 +34,7 @@ jobs:
           BUILD_BACKEND=false
           BUILD_FRONTEND=false
           BACKEND_FILES=".github/workflows/backend backend/packages/Upgrade backend/Docker backend/package"
-          LAMBDA_FILES=".github/workflows/lambda backend/packages/Schedular"
+          LAMBDA_FILES=".github/workflows/lambda backend/packages/Scheduler"
           FRONTEND_FILES=".github/workflows/frontend frontend/"
           for changed_file in ${{ steps.changed-files.outputs.all }}; do
             for backend_file in $BACKEND_FILES; do
@@ -88,7 +88,7 @@ jobs:
           commit-message: 'CI: bump version for lambda to {{version}}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: backend/packages/Schedular
+          PACKAGEJSON_DIR: backend/packages/Scheduler
 
 ############################ Trigger builds ############################
 # Use always() to trigger builds even if other unrelated version bumps failed

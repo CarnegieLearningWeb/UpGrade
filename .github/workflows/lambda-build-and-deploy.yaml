@@ -21,7 +21,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@v1.1.0
         id: package-version
         with:
-          path: backend/packages/Schedular
+          path: backend/packages/Scheduler
 
       - name: Generate Changelogs
         run: |
@@ -35,7 +35,7 @@ jobs:
 #############################################  Build Steps #############################################
 
       - name: Build
-        working-directory: backend/packages/Schedular
+        working-directory: backend/packages/Scheduler
         id: build-lambda
         run: |
           npm ci
@@ -45,14 +45,14 @@ jobs:
           cp -a dist/schedule lib/schedule
 
       - name: Package
-        working-directory: backend/packages/Schedular/lib
+        working-directory: backend/packages/Scheduler/lib
         id: package-lambda
         run: zip -r upgrade-lambda-v${{ steps.package-version.outputs.current-version }}.zip *
 
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: backend/packages/Schedular/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
+          artifacts: backend/packages/Scheduler/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
           tag: upgrade-lambda-v${{ steps.package-version.outputs.current-version}}
           name: UpGrade Lambda ${{ steps.package-version.outputs.current-version}}
           body: ${{ env.RELEASE_CHANGELOG }}
@@ -89,7 +89,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-          zip_file: backend/packages/Schedular/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
+          zip_file: backend/packages/Scheduler/lib/upgrade-lambda-v${{ steps.package-version.outputs.current-version}}.zip
 
       - name: Lambda Success Deploy Message
         uses: aibexhq/slack-rich-notify@v2.0.1
