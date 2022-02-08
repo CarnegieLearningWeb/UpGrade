@@ -1,0 +1,39 @@
+name: Frontend Deploy to Dev Environment
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - frontend/**
+  workflow_dispatch:
+jobs:
+  init:
+    name: Dev Deploy Init
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'CarnegieLearningWeb'
+    outputs:
+      s3_bucket: ${{ steps.get-env-vars.outputs.s3_bucket }}
+      version: ${{ steps.get-dev-version.outputs.version }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Get Dev Version
+        id: get-dev-version
+        uses: ./.github/actions/get-dev-version
+        with:
+          dir: frontend
+      - name: Load Env Vars
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Get Env Vars
+        id: get-env-vars
+        run: |
+          echo "::set-output name=s3_bucket::$DEV_S3_BUCKET"
+  start-dev-deployment:
+    uses: ./.github/workflows/frontend-deploy.yml
+    needs: init
+    with:
+      s3_bucket: ${{ needs.init.outputs.s3_bucket }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
