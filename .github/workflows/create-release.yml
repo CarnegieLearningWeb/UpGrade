@@ -42,7 +42,7 @@ jobs:
   create-release:
     name: Create Release
     needs: init
-    if: jobs.init.outputs.tag-exists == 'false'
+    if: needs.init.outputs.tag-exists == 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
