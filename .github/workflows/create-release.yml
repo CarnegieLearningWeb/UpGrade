@@ -89,7 +89,7 @@ jobs:
     name: Deploy Backend to Staging
     uses: ./.github/workflows/backend-deploy.yml
     needs: create-release
-    if: jobs.version-check.outputs.exists == 'false'
+    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
     with:
       application_name: ${{ needs.init.outputs.application_name }}
       environment_name: ${{ needs.init.outputs.environment_name }}
@@ -102,7 +102,7 @@ jobs:
     name: Deploy Frontend to Staging
     uses: ./.github/workflows/frontend-deploy.yml
     needs: create-release
-    if: jobs.version-check.outputs.exists == 'false'
+    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
     with:
       s3_bucket: ${{ needs.init.outputs.s3_bucket }}
       version: ${{ needs.init.outputs.version }}
@@ -113,7 +113,7 @@ jobs:
     name: Deploy Lambda to Staging
     uses: ./.github/workflows/lambda-deploy.yml
     needs: create-release
-    if: jobs.version-check.outputs.exists == 'false'
+    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
     with:
       function_name: ${{ needs.init.outputs.function_name }}
       version: ${{ needs.init.outputs.version }}
