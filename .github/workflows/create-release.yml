@@ -63,7 +63,7 @@ jobs:
         working-directory: frontend/dist/upgrade
         run: |
           zip -r upgrade-frontend-v${{ needs.init.outputs.version }}.zip *
-          mv upgrade-frontend-v${{ needs.init.outputs.version }}.zip ../
+          mv upgrade-frontend-v${{ needs.init.outputs.version }}.zip ../../..
       - name: Build Lambda
         working-directory: backend/packages/Schedular
         run: |
@@ -77,7 +77,7 @@ jobs:
         id: package-lambda
         run: |
           zip -r upgrade-lambda-v${{ needs.init.outputs.version }}.zip *
-          mv upgrade-lambda-v${{ needs.init.outputs.version }}.zip ../
+          mv upgrade-lambda-v${{ needs.init.outputs.version }}.zip ../../../..
       - uses: ncipollo/release-action@v1
         with:
           artifacts: upgrade-*.zip
