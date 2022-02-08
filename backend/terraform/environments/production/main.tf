@@ -91,6 +91,8 @@ module "aws-ebs-app" {
   CLIENT_API_KEY             = var.CLIENT_API_KEY
   CLIENT_API_SECRET          = var.CLIENT_API_SECRET
   CONTEXT_METADATA           = var.CONTEXT_METADATA
+  METRIC                     = var.METRIC
+  APP_DEMO                   = var.APP_DEMO
   DOMAIN_NAME                = var.DOMAIN_NAME
   EMAIL_BUCKET               = module.aws-email-bucket.s3-bucket
   EMAIL_EXPIRE_AFTER_SECONDS = var.EMAIL_EXPIRE_AFTER_SECONDS

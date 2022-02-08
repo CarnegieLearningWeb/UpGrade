@@ -87,10 +87,12 @@ variable "APP_NAME" { default = "A/B Testing Backend" }
 variable "APP_PORT" { default = 3030 }
 variable "APP_ROUTE_PREFIX" { default = "/api" }
 variable "APP_SCHEMA" { default = "http" }
+variable "APP_DEMO" { default = "false" }
 variable "AUTH_CHECK" {}
 variable "AWS_REGION" { default = "us-east-1" }
 variable "CLIENT_API_KEY"{}
 variable "CLIENT_API_SECRET"{}
+variable "METRIC" {}
 variable "CONTEXT_METADATA" {}
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
 variable "DOMAIN_NAME" { default = "" }
@@ -98,7 +100,7 @@ variable "EMAIL_BUCKET" {}
 variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
 variable "EMAIL_FROM" {}
 variable "GOOGLE_CLIENT_ID" { }
-variable "HOST_URL" { default = "http://upgrade-development.us-east-1.elasticbeanstalk.com/api" }
+variable "HOST_URL" { default = "https://upgrade-dev-backend.edoptimize.com/api" }
 variable "INTERCEPTORS" { default = "src/api/interceptors/**/*Interceptor.ts" }
 variable "LOG_LEVEL" { default = "debug" }
 variable "LOG_OUTPUT" { default = "dev" }
@@ -121,6 +123,8 @@ variable "SWAGGER_USERNAME" { default = "admin" }
 variable "TOKEN_SECRET_KEY" { }
 variable "TYPEORM_CONNECTION" { default = "postgres" }
 variable "TYPEORM_ENTITIES" { default = "src/api/models/**/*.ts" }
+variable "TYPEORM_HOST" { default = "localhost" }
+variable "TYPEORM_HOSTNAME_REPLICAS" { default = [ "localhost" ] }
 variable "TYPEORM_ENTITIES_DIR" { default = "src/api/models" }
 variable "TYPEORM_FACTORY" { default = "src/database/factories/**/*.factory.ts" }
 variable "TYPEORM_LOGGER" { default = "advanced-console" }
