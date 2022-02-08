@@ -1,0 +1,18 @@
+name: Get Dev Version
+description: Appends commit sha to the version number
+inputs:
+  dir:
+    description: Directory that package.json is in
+    required: true
+outputs:
+  version:
+    description: Version string for dev
+    value: ${{ steps.get-version.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - id: get-version
+      shell: bash
+      run: |
+        VERSION=$(jq -r '.version' ${{ inputs.dir }}/package.json)
+        echo "::set-output name=version::$VERSION-${GITHUB_SHA:0:7}"

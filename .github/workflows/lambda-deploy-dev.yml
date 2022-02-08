@@ -1,0 +1,40 @@
+name: Lambda Deploy to Dev Environment
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - backend/packages/Schedular/**
+  workflow_dispatch:
+jobs:
+  init:
+    name: Dev Deploy Init
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'CarnegieLearningWeb'
+    outputs:
+      function_name: ${{ steps.get-env-vars.outputs.function_name }}
+      version: ${{ steps.get-dev-version.outputs.version }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Get Dev Version
+        id: get-dev-version
+        uses: ./.github/actions/get-dev-version
+        with:
+          dir: backend/packages/Schedular
+      - name: Load Env Vars
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Get Env Vars
+        id: get-env-vars
+        run: |
+          echo "::set-output name=function_name::$DEV_LAMBDA_FUNCTION_NAME"
+  start-dev-deployment:
+    uses: ./.github/workflows/lambda-deploy.yml
+    needs: init
+    with:
+      function_name: ${{ needs.init.outputs.function_name }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
