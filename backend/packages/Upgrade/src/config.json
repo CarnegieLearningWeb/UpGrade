@@ -79,6 +79,14 @@
     {
       "email": "kweldon@carnegielearning.com",
       "role": "admin"
+    },
+    {
+      "email": "doswalt@carnegielearning.com",
+      "role": "admin"
+    },
+    {
+      "email": "jreddig@carnegielearning.com",
+      "role": "admin"
     }
   ],
   "context": [
