@@ -17,17 +17,17 @@ export default async function testCase(): Promise<void> {
   const previewService = Container.get<PreviewUserService>(PreviewUserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // creating preview user
-  const previewUser = await previewService.create(previewUsers[0]);
+  const previewUser = await previewService.create(previewUsers[0], new UpgradeLogger());
 
   // experiment object
   const experimentObject = previewIndividualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

@@ -1,10 +1,10 @@
-import { JsonController, Post, Body, Get, Param, Authorized, Delete } from 'routing-controllers';
+import { JsonController, Post, Body, Get, Param, Authorized, Delete, Req } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
 import { UserRoleValidator } from './validators/UserRoleValidator';
 import { UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
 import { SERVER_ERROR } from 'upgrade_types';
-import { PaginationResponse } from '../../types';
+import { AppRequest, PaginationResponse } from '../../types';
 
 interface UserPaginationInfo extends PaginationResponse {
   nodes: User[];
@@ -90,7 +90,8 @@ export class UserController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: UserPaginatedParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: UserPaginatedParamsValidator, 
+    @Req() request: AppRequest
   ): Promise<UserPaginationInfo> {
     if (!paginatedParams || Object.keys(paginatedParams).length === 0) {
       return Promise.reject(
@@ -104,10 +105,11 @@ export class UserController {
       this.userService.findPaginated(
         paginatedParams.skip,
         paginatedParams.take,
+        request.logger,
         paginatedParams.searchParams,
         paginatedParams.sortParams
       ),
-      this.userService.getTotalCount(),
+      this.userService.getTotalCount(request.logger),
     ]);
     return {
       total: count,
@@ -165,8 +167,9 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(@Body() user: User): Promise<User> {
-    return this.userService.upsertUser(user);
+  public create(@Body() user: User, 
+  @Req() request: AppRequest): Promise<User> {
+    return this.userService.upsertUser(user, request.logger);
   }
 
   /**

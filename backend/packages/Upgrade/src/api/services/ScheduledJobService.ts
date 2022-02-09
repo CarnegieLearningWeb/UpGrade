@@ -1,6 +1,5 @@
 import Container, { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ScheduledJobRepository } from '../repositories/ScheduledJobRepository';
 import { ScheduledJob, SCHEDULE_TYPE } from '../models/ScheduledJob';
 import { Experiment } from '../models/Experiment';
@@ -14,6 +13,7 @@ import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLog
 import { EntityManager } from 'typeorm';
 import { getConnection } from 'typeorm';
 import { User } from '../models/User';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ScheduledJobService {
@@ -22,10 +22,9 @@ export class ScheduledJobService {
     @OrmRepository() private errorRepository: ErrorRepository,
     @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     private awsService: AWSService,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async startExperiment(id: string): Promise<any> {
+  public async startExperiment(id: string, logger: UpgradeLogger): Promise<any> {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
@@ -55,6 +54,7 @@ export class ScheduledJobService {
               scheduledJob.experiment.id,
               EXPERIMENT_STATE.ENROLLING,
               systemUser,
+              logger,
               null,
               transactionalEntityManager
             );
@@ -63,13 +63,14 @@ export class ScheduledJobService {
         return {};
       } catch (err) {
         const error = err as Error;
-        this.log.error('Error in start experiment of schedular ', error.message);
+        error.message = `Error in start experiment of schedular: ${error.message}`;
+        logger.error(error);
         return error;
       }
     });
   }
 
-  public async endExperiment(id: string): Promise<any> {
+  public async endExperiment(id: string, logger: UpgradeLogger): Promise<any> {
     return await getConnection().transaction(async (transactionalEntityManager) => {
       try {
         const scheduledJobRepository = transactionalEntityManager.getRepository(ScheduledJob);
@@ -98,36 +99,38 @@ export class ScheduledJobService {
             scheduledJob.experiment.id,
             EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
             systemUser,
+            logger,
             null,
-            transactionalEntityManager
+            transactionalEntityManager,
           );
         }
         return {};
       } catch (err) {
         const error = err as Error;
-        this.log.error('Error in end experiment of schedular ', error.message);
+        error.message = `Error in end experiment of schedular: ${error.message}`;
+        logger.error(error);
         return error;
       }
     });
   }
 
-  public getAllStartExperiment(): Promise<ScheduledJob[]> {
-    this.log.info('get all start experiment scheduled jobs');
+  public getAllStartExperiment(logger: UpgradeLogger): Promise<ScheduledJob[]> {
+    logger.info({ message: 'get all start experiment scheduled jobs' });
     return this.scheduledJobRepository.find({
       where: { type: SCHEDULE_TYPE.START_EXPERIMENT },
       relations: ['experiment'],
     });
   }
 
-  public getAllEndExperiment(): Promise<ScheduledJob[]> {
-    this.log.info('get all end experiment scheduled jobs');
+  public getAllEndExperiment(logger: UpgradeLogger): Promise<ScheduledJob[]> {
+    logger.info({ message: 'get all end experiment scheduled jobs' });
     return this.scheduledJobRepository.find({
       where: { type: SCHEDULE_TYPE.END_EXPERIMENT },
       relations: ['experiment'],
     });
   }
 
-  public async updateExperimentSchedules(experiment: Experiment, entityManager?: EntityManager): Promise<void> {
+  public async updateExperimentSchedules(experiment: Experiment, logger: UpgradeLogger, entityManager?: EntityManager): Promise<void> {
     try {
       const scheduledJobRepo = entityManager ? entityManager.getRepository(ScheduledJob) : this.scheduledJobRepository;
 
@@ -217,11 +220,12 @@ export class ScheduledJobService {
       }
     } catch (err) {
       const error = err as Error;
-      this.log.error('Error in experiment schedular ', error.message);
+      error.message = `Error in experiment schedular ${error.message}`;
+      logger.error(error);
     }
   }
 
-  public async clearLogs(): Promise<boolean> {
+  public async clearLogs(logger: UpgradeLogger): Promise<boolean> {
     try {
       // Do not return deleted logs as number of logs can be very large
       const offset = 500; // Number of logs that we do not want to delete
@@ -229,7 +233,8 @@ export class ScheduledJobService {
       return true;
     } catch (err) {
       const error = err as Error;
-      this.log.error('Error in clear Logs schedular ', error.message);
+      error.message = `Error in clear Logs schedular: ${error.message}`;
+      logger.error(error);
       return false;
     }
   }
@@ -247,7 +252,6 @@ export class ScheduledJobService {
         url,
       }),
     };
-
     return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
   }
 

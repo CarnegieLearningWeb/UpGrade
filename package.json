@@ -1,6 +1,6 @@
 {
   "name": "UpGrade",
-  "version": "1.0.0",
+  "version": "1.0.87",
   "description": "This is a combined repository for UpGrade, an open-source platform to support large-scale A/B testing in educational applications.  Learn more at www.upgradeplatform.org",
   "main": "index.js",
   "devDependencies": {

@@ -1,6 +1,6 @@
-import { JsonController, Get, Authorized } from 'routing-controllers';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
+import { JsonController, Get, Authorized, Req } from 'routing-controllers';
 import { env } from '../../env';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -12,7 +12,7 @@ import { env } from '../../env';
 @Authorized()
 @JsonController('/version')
 export class VersionController {
-    constructor(@Logger(__filename) private log: LoggerInterface) { }
+    constructor() { }
 
     /**
      * @swagger
@@ -26,8 +26,8 @@ export class VersionController {
      *            description: Get Server Version
      */
     @Get('/')
-    public async getVersionNumber(): Promise<string> {
-        this.log.info('Request recieved for version');
+    public async getVersionNumber(@Req() request: AppRequest): Promise<string> {
+        request.logger.info({ message: 'Request recieved for version' });
         return env.app.version;
     }
 }

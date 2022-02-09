@@ -1,30 +1,30 @@
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
 import { UserRole } from 'upgrade_types';
 import { IUserSearchParams, IUserSortParams, USER_SEARCH_SORT_KEY } from '../controllers/validators/UserPaginatedParamsValidator';
 import { systemUserDoc } from '../../init/seed/systemUser';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class UserService {
   constructor(
     @OrmRepository() private userRepository: UserRepository,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async upsertUser(user: User): Promise<User> {
-    this.log.info('Upsert a new user => ', JSON.stringify(user, undefined, 2));
+  public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
+    logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
     return this.userRepository.upsertUser(user);
   }
 
-  public find(): Promise<User[]> {
+  public find(logger: UpgradeLogger): Promise<User[]> {
+    logger.info({ message: 'Find all users' });
     return this.userRepository.find();
   }
 
-  public async getTotalCount(): Promise<number> {
-    this.log.info('Find a count of total users');
+  public async getTotalCount(logger: UpgradeLogger): Promise<number> {
+    logger.info({ message: 'Find a count of total users' });
     const totalUsers = await this.userRepository.count() - 1; // Subtract system User
     return totalUsers;
   }
@@ -32,10 +32,11 @@ export class UserService {
   public async findPaginated(
     skip: number,
     take: number,
+    logger: UpgradeLogger,
     searchParams?: IUserSearchParams,
     sortParams?: IUserSortParams
   ): Promise<any[]> {
-    this.log.info(`Find paginated Users`);
+    logger.info({ message: `Find paginated Users` });
     let queryBuilder  = this.userRepository
     .createQueryBuilder('users');
 

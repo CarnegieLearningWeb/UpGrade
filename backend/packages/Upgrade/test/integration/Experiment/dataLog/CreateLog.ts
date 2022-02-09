@@ -26,11 +26,11 @@ export default async function CreateLog(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
   const logRepository = getRepository(Log);
 
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -46,7 +46,7 @@ export default async function CreateLog(): Promise<void> {
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;
 
-  await settingService.setClientCheck(false, true);
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
@@ -216,7 +216,7 @@ export default async function CreateLog(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
+  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});

@@ -2,11 +2,8 @@
   "name": "upgrade_types",
   "version": "1.0.5",
   "description": "",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/*"
-  ],
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
     "build": "npm run clean && tsc",
     "build:watch": "tsc -w",

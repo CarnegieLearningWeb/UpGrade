@@ -18,7 +18,7 @@ export class ExperimentPartition extends BaseModel {
   public expPoint: string;
 
   @Column({ nullable: true })
-  public expId: string | undefined;
+  public expId: string;
 
   @Column()
   public description: string;

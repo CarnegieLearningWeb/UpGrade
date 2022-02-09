@@ -1,4 +1,5 @@
-import { JsonController, Get } from 'routing-controllers';
+import { JsonController, Get, Req } from 'routing-controllers';
+import { AppRequest } from '../../types';
 import { CheckService } from '../services/CheckService';
 
 // TODO delete this after completing
@@ -6,7 +7,7 @@ import { CheckService } from '../services/CheckService';
 export class Demo {
   constructor(public check: CheckService) {}
   @Get('/groupAssignment')
-  public groupAssignment(): Promise<any> {
+  public groupAssignment(@Req() request: AppRequest): Promise<any> {
     return this.check.getAllGroupAssignments();
   }
 

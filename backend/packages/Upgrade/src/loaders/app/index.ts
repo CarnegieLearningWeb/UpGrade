@@ -6,7 +6,8 @@ import { currentUserChecker } from '../../auth/currentUserChecker';
 
 const expressApp: Application = createExpressServer({
   cors: true,
-  classTransformer: true,
+  classTransformer: false,
+  validation: false,
   defaultErrorHandler: false,
   routePrefix: env.app.routePrefix,
   controllers: env.app.dirs.controllers,

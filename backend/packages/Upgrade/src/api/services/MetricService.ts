@@ -1,5 +1,4 @@
 import { Service } from 'typedi';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
@@ -12,13 +11,12 @@ export const METRICS_JOIN_TEXT = '@__@';
 @Service()
 export class MetricService {
   constructor(
-    @Logger(__filename) private log: LoggerInterface,
     @OrmRepository() private metricRepository: MetricRepository,
     public settingService: SettingService
   ) {}
 
-  public async getAllMetrics(): Promise<IMetricUnit[]> {
-    this.log.info('Get all metrics');
+  public async getAllMetrics( logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message : 'Get all metrics' });
     // check permission for metrics
     const metricData = await this.metricRepository.find();
     return this.metricDocumentToJson(metricData);
@@ -26,26 +24,26 @@ export class MetricService {
 
   public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
     logger.info({ message: 'Save all metrics' });
-    return await this.addAllMetrics(metrics);
+    return await this.addAllMetrics(metrics, logger);
   }
 
-  public async upsertAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<IMetricUnit[]> {
-    this.log.info('Upsert all metrics');
-    const upsertedMetrics = await this.addAllMetrics(metrics);
+  public async upsertAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message : 'Upsert all metrics' });
+    const upsertedMetrics = await this.addAllMetrics(metrics, logger);
     return this.metricDocumentToJson(upsertedMetrics);
   }
 
-  public async deleteMetric(key: string): Promise<IMetricUnit[]> {
-    this.log.info('Delete metric by key ', key);
+  public async deleteMetric(key: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message : `Delete metric by key ${key}` });
     await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
     return this.metricDocumentToJson(updatedMetric);
   }
 
-  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<Metric[]> {
+  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
     // check permission for metrics
-    const isAllowed = await this.checkMetricsPermission();
+    const isAllowed = await this.checkMetricsPermission(logger);
     if (!isAllowed) {
       const error = new Error('Metrics filter not enabled');
       (error as any).type = SERVER_ERROR.INVALID_TOKEN;
@@ -62,8 +60,8 @@ export class MetricService {
     return this.metricRepository.save(metricDoc);
   }
 
-  private async checkMetricsPermission(): Promise<boolean> {
-    const setting = await this.settingService.getClientCheck(new UpgradeLogger());
+  private async checkMetricsPermission(logger: UpgradeLogger): Promise<boolean> {
+    const setting = await this.settingService.getClientCheck(logger);
     return setting.toFilterMetric;
   }
 
