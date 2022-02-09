@@ -28,14 +28,39 @@ jobs:
     name: Frontend Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Check if tag exists
+        id: check-tag
+        uses: mukunku/tag-exists-action@v1.0.0
+        with:
+          tag: ${{ inputs.version }}
+
+        # If the tag already exists, just download the artifact from that release
+      - name: Download Release Artifact
+        if: steps.check-tag.outputs.exists == 'true'
+        uses: robinraju/release-downloader@v1.3
+        with:
+          repository: CarnegieLearningWeb/UpGrade
+          tag: ${{ inputs.version }}
+          fileName: upgrade-frontend-${{ inputs.version }}.zip
+      - name: Unpack Release Artifact
+        if: steps.check-tag.outputs.exists == 'true'
+        working-directory: frontend
+        run: |
+          mkdir -p dist/upgrade
+          unzip ../upgrade-frontend-${{ inputs.version }}.zip -d dist/upgrade
+
+      # Otherwise, build it
       - name: Git Checkout
+        if: steps.check-tag.outputs.exists == 'false'
         uses: actions/checkout@v2
       - name: Frontend Build
+        if: steps.check-tag.outputs.exists == 'false'
         uses: ./.github/actions/generic-npm-build
         with:
           working_directory: frontend
           build_script: build:prod
           version: ${{ inputs.version }}
+
       - name: Deploy to S3
         uses: jakejarvis/s3-sync-action@v0.5.1
         env:

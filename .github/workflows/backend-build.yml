@@ -1,10 +1,24 @@
-name: Backend Build
-on: ['push', 'pull_request', 'workflow_dispatch']
+name: Backend build_script
+on: ["push", "pull_request", "workflow_dispatch"]
 jobs:
+  get-node-version:
+    name: Get Node Version
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ steps.get-node-version.outputs.node-version }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Load Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Get Node Version
+        id: get-node-version
+        run: echo "::set-output name=node-version::$NODE_VERSION"
   backend-build:
     name: Backend Build
     runs-on: ubuntu-latest
-    container: node:12.16.1
+    needs: get-node-version
+    container: node:${{ needs.get-node-version.outputs.node-version }}
     defaults:
       run:
         working-directory: backend
