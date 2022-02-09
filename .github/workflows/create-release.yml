@@ -1,0 +1,123 @@
+name: Create Release
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  init:
+    name: Init
+    runs-on: ubuntu-latest
+    outputs:
+      application_name: ${{ steps.get-env-vars.outputs.application_name }}
+      environment_name: ${{ steps.get-env-vars.outputs.environment_name }}
+      function_name: ${{ steps.get-env-vars.outputs.function_name }}
+      s3_bucket: ${{ steps.get-env-vars.outputs.s3_bucket }}
+      tag-exists: ${{ steps.check-tag.outputs.exists }}
+      version: ${{ steps.get-release-version.outputs.version }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Get Release Version
+        id: get-release-version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "::set-output name=version::$VERSION"
+      - name: Check if tag exists
+        id: check-tag
+        uses: mukunku/tag-exists-action@v1.0.0
+        with:
+          tag: ${{ steps.get-release-version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Load Env Vars
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Get Env Vars
+        id: get-env-vars
+        run: |
+          echo "::set-output name=application_name::$EB_STAGING_APP_NAME"
+          echo "::set-output name=environment_name::$EB_STAGING_ENV_NAME"
+          echo "::set-output name=s3_bucket::$STAGING_S3_BUCKET"
+          echo "::set-output name=function_name::$STAGING_LAMBDA_FUNCTION_NAME"
+  create-release:
+    name: Create Release
+    needs: init
+    if: needs.init.outputs.tag-exists == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Package Backend
+        working-directory: backend
+        run: |
+          cp -R ../types packages/Upgrade
+          npm ci
+          zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          mv upgrade-backend-${{ needs.init.outputs.version }}.zip ../
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build:prod
+      - name: Package Frontend
+        working-directory: frontend/dist/upgrade
+        run: |
+          zip -r upgrade-frontend-v${{ needs.init.outputs.version }}.zip *
+          mv upgrade-frontend-v${{ needs.init.outputs.version }}.zip ../../..
+      - name: Build Lambda
+        working-directory: backend/packages/Schedular
+        run: |
+          npm ci
+          npm run build
+          mkdir lib
+          cp -a node_modules/ lib/node_modules
+          cp -a dist/schedule lib/schedule
+      - name: Package Lambda
+        working-directory: backend/packages/Schedular/lib
+        id: package-lambda
+        run: |
+          zip -r upgrade-lambda-v${{ needs.init.outputs.version }}.zip *
+          mv upgrade-lambda-v${{ needs.init.outputs.version }}.zip ../../../..
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: upgrade-*.zip
+          commit: main
+          generateReleaseNotes: true
+          tag: ${{ needs.init.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+  deploy-backend-staging:
+    name: Deploy Backend to Staging
+    uses: ./.github/workflows/backend-deploy.yml
+    needs: create-release
+    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
+    with:
+      application_name: ${{ needs.init.outputs.application_name }}
+      environment_name: ${{ needs.init.outputs.environment_name }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+  deploy-frontend-staging:
+    name: Deploy Frontend to Staging
+    uses: ./.github/workflows/frontend-deploy.yml
+    needs: create-release
+    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
+    with:
+      s3_bucket: ${{ needs.init.outputs.s3_bucket }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  deploy-lambda-staging:
+    name: Deploy Lambda to Staging
+    uses: ./.github/workflows/lambda-deploy.yml
+    needs: create-release
+    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
+    with:
+      function_name: ${{ needs.init.outputs.function_name }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
