@@ -82,7 +82,7 @@ jobs:
           cp -R ../types packages/Upgrade
           npm ci
           zip -qq -r upgrade-backend-${{ steps.set-vars.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
-          
+          mv upgrade-backend-${{ steps.set-vars.outputs.version }}.zip ../
       - uses: einaregilsson/beanstalk-deploy@v13
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -91,6 +91,6 @@ jobs:
           environment_name: ${{ steps.set-vars.outputs.environment_name }}
           version_label: ${{ steps.set-vars.outputs.version }}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: backend/upgrade-backend-${{ steps.set-vars.outputs.version }}.zip
+          deployment_package: upgrade-backend-${{ steps.set-vars.outputs.version }}.zip
           wait_for_deployment: false
           use_existing_version_if_available: true
