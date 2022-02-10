@@ -13,6 +13,8 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      GITHUB_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       s3_bucket:
