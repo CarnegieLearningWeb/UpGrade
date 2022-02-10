@@ -75,8 +75,8 @@ jobs:
         if: steps.check-tag.outputs.exists == 'false'
         working-directory: backend/packages/Schedular/lib
         run: |
-          zip -r upgrade-lambda-v${{ steps.set-vars.outputs.version }}.zip *
-          mv upgrade-lambda-v${{ steps.set-vars.outputs.version }}.zip ../../../..
+          zip -r upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip *
+          mv upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip ../../../..
 
       - name: Deploy
         uses: appleboy/lambda-action@v0.1.5
@@ -85,4 +85,4 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
           function_name: ${{ steps.set-vars.outputs.function_name }}
-          zip_file: upgrade-lambda-v${{ steps.set-vars.outputs.version }}.zip
+          zip_file: upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip
