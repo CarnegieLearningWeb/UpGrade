@@ -18,7 +18,7 @@ on:
         required: true
       AWS_REGION:
         required: true
-      GITHUB_TOKEN:
+      token:
         required: true
   workflow_dispatch:
     inputs:
@@ -44,6 +44,8 @@ jobs:
         uses: mukunku/tag-exists-action@v1.0.0
         with:
           tag: ${{ inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
 
       # If the tag already exists, just download the artifact from that release
       - name: Download Release Artifact
