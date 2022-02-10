@@ -70,6 +70,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Build Backend
         if: steps.check-tag.outputs.exists == 'false'
+        working-directory: backend
         run: |
           cp -R ../types packages/Upgrade
           npm ci
