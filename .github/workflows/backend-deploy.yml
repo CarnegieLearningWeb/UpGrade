@@ -45,7 +45,6 @@ jobs:
           echo "::set-output name=version::${{ inputs.version || github.event.inputs.version }}"
           echo "::set-output name=application_name::${{ inputs.application_name || github.event.inputs.application_name }}"
           echo "::set-output name=environment_name::${{ inputs.environment_name || github.event.inputs.environment_name }}"
-          echo "::set-output name=token::${{ secrets.token || secrets.GITHUB_TOKEN }}"
       - name: Check if tag exists
         id: check-tag
         uses: mukunku/tag-exists-action@v1.0.0
