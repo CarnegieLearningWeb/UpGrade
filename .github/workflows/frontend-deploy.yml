@@ -53,10 +53,9 @@ jobs:
           fileName: upgrade-frontend-${{ steps.set-vars.outputs.version }}.zip
       - name: Unpack Release Artifact
         if: steps.check-tag.outputs.exists == 'true'
-        working-directory: frontend
         run: |
-          mkdir -p dist/upgrade
-          unzip ../upgrade-frontend-${{ steps.set-vars.outputs.version }}.zip -d dist/upgrade
+          mkdir -p frontend/dist/upgrade
+          unzip upgrade-frontend-${{ steps.set-vars.outputs.version }}.zip -d frontend/dist/upgrade
 
       # Otherwise, build it
       - name: Git Checkout
