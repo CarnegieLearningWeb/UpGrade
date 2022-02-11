@@ -55,4 +55,4 @@ destroy: clean
 
 setup:
 	@echo "---- Setting up the Environment ----"
-	./local-setup.sh
+	./local-docker-setup.sh
