@@ -53,6 +53,10 @@ destroy: clean
 	@echo "---- Removing Persistent Volume Information ----"
 	docker volume prune -f
 
-setup:
-	@echo "---- Setting up the Environment ----"
-	./local-docker-setup.sh
+setup-local:
+	@echo "---- Setup for the Local Environment ----"
+	./docker-setup.sh -l
+
+setup-mirror:
+	@echo "---- Setup for Mirroring QA/Prod Environment ----"
+	./docker-setup.sh -m
