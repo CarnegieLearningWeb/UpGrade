@@ -3,6 +3,8 @@ import { ExperimentIncludeService } from '../services/ExperimentIncludeService';
 import { ExplicitExperimentIndividualInclusion } from '../models/ExplicitExperimentIndividualInclusion';
 import { ExplicitExperimentGroupInclusion } from '../models/ExplicitExperimentGroupInclusion';
 import { SERVER_ERROR } from 'upgrade_types';
+import { Validator } from 'class-validator';
+const validator = new Validator();
 
 /**
  * @swagger
@@ -125,10 +127,13 @@ export class ExperimentIncludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
-  @Put('/user')
-  public experimentIncludeUser(@BodyParam('id') id: string): Promise<ExplicitExperimentIndividualInclusion> {
-    return this.experimentInclude.experimentIncludeUser(id);
-  }
+   @Put('/user')
+   public experimentIncludeUser(
+     @BodyParam('userIds') userIds: Array<string>,
+     @BodyParam('experimentId') experimentId: string,
+   ): Promise<ExplicitExperimentIndividualInclusion[]> {
+     return this.experimentInclude.experimentIncludeUser(userIds, experimentId);
+   }
 
   /**
    * @swagger
@@ -152,13 +157,26 @@ export class ExperimentIncludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
-  @Delete('/user/:id')
-  public delete(@Param('id') id: string): Promise<ExplicitExperimentIndividualInclusion | undefined> {
-    if (!id) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null.'));
-    }
-    return this.experimentInclude.deleteExperimentUser(id);
-  }
+   @Delete('/user/:userId/:experimentId')
+   public delete(
+     @Param('userId') userId: string,
+     @Param('experimentId') experimentId: string
+     ): Promise<ExplicitExperimentIndividualInclusion | undefined> {
+     if (!userId) {
+       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : userId should not be null.'));
+     }
+     if (!experimentId) {
+       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null.'));
+     }
+     if (!validator.isUUID(experimentId)) {
+       return Promise.reject(
+         new Error(
+           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+         )
+       );
+     }
+     return this.experimentInclude.deleteExperimentUser(userId, experimentId);
+   }
 
   /**
    * @swagger
@@ -211,10 +229,13 @@ export class ExperimentIncludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
-  @Put('/group')
-  public experimentIncludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitExperimentGroupInclusion> {
-    return this.experimentInclude.experimentIncludeGroup(id, type);
-  }
+   @Put('/group')
+   public experimentIncludeGroup(
+     @BodyParam('groups') groups: Array<{ groupId: string, type: string }>,
+     @BodyParam('experimentId') experimentId: string    
+    ): Promise<ExplicitExperimentGroupInclusion[]> {
+      return this.experimentInclude.experimentIncludeGroup(groups, experimentId);
+   }
 
   /**
    * @swagger
@@ -244,17 +265,28 @@ export class ExperimentIncludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
-  @Delete('/group/:type/:id')
+  @Delete('/group/:type/:id/:experimentId')
   public deleteExperimentGroup(
     @Param('id') id: string,
-    @Param('type') type: string
+    @Param('type') type: string,
+    @Param('experimentId') experimentId: string
   ): Promise<ExplicitExperimentGroupInclusion | undefined> {
-    if (!id) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null'));
-    }
     if (!type) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : type should be provided for delete'));
     }
-    return this.experimentInclude.deleteExperimentGroup(id, type);
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null'));
+    }
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should be provided for delete'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentInclude.deleteExperimentGroup(id, type, experimentId);
   }
 }

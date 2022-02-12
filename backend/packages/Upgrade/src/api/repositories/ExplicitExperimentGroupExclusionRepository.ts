@@ -1,0 +1,49 @@
+import { Repository, EntityRepository } from 'typeorm';
+import {  ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
+import repositoryError from './utils/repositoryError';
+
+@EntityRepository(ExplicitExperimentGroupExclusion)
+export class ExplicitExperimentGroupExclusionRepository extends Repository<ExplicitExperimentGroupExclusion> {
+  public async insertExplicitExperimentGroupExclusion(
+    data: Array<Partial<ExplicitExperimentGroupExclusion>>
+  ): Promise<ExplicitExperimentGroupExclusion[]> {
+    const result = await this.createQueryBuilder('ExplicitExperimentGroupExclusion')
+      .insert()
+      .into(ExplicitExperimentGroupExclusion)
+      .values(data)
+      .onConflict(`DO NOTHING`)
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitExperimentGroupExclusionRepository',
+          'insertExplicitExperimentGrouplExclusion',
+          { data },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+
+    return result.raw;
+  }
+
+  public async deleteGroup(groupId: string, type: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion | undefined> {
+    const result = await this.createQueryBuilder()
+      .delete()
+      .from(ExplicitExperimentGroupExclusion)
+      .where('groupId=:groupId AND type=:type AND experiment.id=:experimentId', { groupId, type, experimentId })
+      .returning('*')
+      .execute()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitExperimentGroupExclusionRepository',
+          'deleteGroup',
+          { groupId, type, experimentId },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+
+    return result.raw;
+  }
+}

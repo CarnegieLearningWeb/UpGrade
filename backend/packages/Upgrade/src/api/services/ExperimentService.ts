@@ -105,7 +105,7 @@ export class ExperimentService {
     return queryBuilder.getMany();
   }
 
-  public async findOne(id: string, logger: UpgradeLogger): Promise<Experiment | undefined> {
+  public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
     if (logger) {
       logger.info({ message: `Find experiment by id => ${id}`});
     }

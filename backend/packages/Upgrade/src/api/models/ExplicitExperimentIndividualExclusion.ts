@@ -7,6 +7,6 @@ export class ExplicitExperimentIndividualExclusion extends BaseModel {
   @PrimaryColumn()
   public userId: string;
 
-  @ManyToOne((type) => Experiment, (experiment) => experiment.explicitExperimentIndividualExclusion, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => Experiment, (experiment) => experiment.explicitExperimentIndividualExclusion, { onDelete: 'CASCADE', primary: true })
   public experiment: Experiment;
 }

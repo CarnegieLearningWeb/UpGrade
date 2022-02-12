@@ -13,6 +13,6 @@ export class ExplicitExperimentGroupInclusion extends BaseModel {
   @Column()
   public type: string;
 
-  @ManyToOne((type) => Experiment, (experiment) => experiment.explicitExperimentGroupInclusion, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => Experiment, (experiment) => experiment.explicitExperimentGroupInclusion, { onDelete: 'CASCADE', primary: true })
   public experiment: Experiment;
 }

@@ -1,8 +1,10 @@
-import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized, Body } from 'routing-controllers';
 import { ExperimentExcludeService } from '../services/ExperimentExcludeService';
 import { ExplicitExperimentIndividualExclusion } from '../models/ExplicitExperimentIndividualExclusion';
 import { ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
 import { SERVER_ERROR } from 'upgrade_types';
+import { Validator } from 'class-validator';
+const validator  = new Validator();
 
 /**
  * @swagger
@@ -96,6 +98,27 @@ export class ExperimentExcludeController {
     return this.experimentExclude.getAllExperimentUser();
   }
 
+  @Get('/user/:userId/:experimentId')
+  public getExperimentExcludedUserById(
+    @Param('userId') userId: string,
+    @Param('experimentId') experimentId: string
+    ): Promise<ExplicitExperimentIndividualExclusion> {
+    if (!userId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : userId should not be null.'));
+    }
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentExclude.getExperimentUserById(userId, experimentId);
+  }
+
   /**
    * @swagger
    * /experimentExclude/user:
@@ -126,8 +149,11 @@ export class ExperimentExcludeController {
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
   @Put('/user')
-  public experimentExcludeUser(@BodyParam('id') id: string): Promise<ExplicitExperimentIndividualExclusion> {
-    return this.experimentExclude.experimentExcludeUser(id);
+  public experimentExcludeUser(
+    @BodyParam('userIds') userIds: Array<string>,
+    @BodyParam('experimentId') experimentId: string,
+  ): Promise<ExplicitExperimentIndividualExclusion[]> {
+    return this.experimentExclude.experimentExcludeUser(userIds, experimentId);
   }
 
   /**
@@ -152,12 +178,25 @@ export class ExperimentExcludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
-  @Delete('/user/:id')
-  public delete(@Param('id') id: string): Promise<ExplicitExperimentIndividualExclusion | undefined> {
-    if (!id) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null.'));
+  @Delete('/user/:userId/:experimentId')
+  public delete(
+    @Param('userId') userId: string,
+    @Param('experimentId') experimentId: string
+    ): Promise<ExplicitExperimentIndividualExclusion | undefined> {
+    if (!userId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : userId should not be null.'));
     }
-    return this.experimentExclude.deleteExperimentUser(id);
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should be provided for delete.'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentExclude.deleteExperimentUser(userId, experimentId);
   }
 
   /**
@@ -212,8 +251,12 @@ export class ExperimentExcludeController {
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
   @Put('/group')
-  public experimentExcludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitExperimentGroupExclusion> {
-    return this.experimentExclude.experimentExcludeGroup(id, type);
+  public experimentExcludeGroup(
+    @BodyParam('groups') groups: Array<{ groupId: string, type: string }>,
+    @BodyParam('experimentId') experimentId: string    
+    ): Promise<ExplicitExperimentGroupExclusion[]> {
+      console.log(' point 1');
+    return this.experimentExclude.experimentExcludeGroup(groups, experimentId);
   }
 
   /**
@@ -244,17 +287,28 @@ export class ExperimentExcludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
-  @Delete('/group/:type/:id')
+  @Delete('/group/:type/:id/:experimentId')
   public deleteExperimentGroup(
+    @Param('type') type: string,
     @Param('id') id: string,
-    @Param('type') type: string
+    @Param('experimentId') experimentId: string,
   ): Promise<ExplicitExperimentGroupExclusion | undefined> {
-    if (!id) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null'));
-    }
     if (!type) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : type should be provided for delete'));
     }
-    return this.experimentExclude.deleteExperimentGroup(id, type);
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null'));
+    }
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should be provided for delete'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentExclude.deleteExperimentGroup(id, type, experimentId);
   }
 }
