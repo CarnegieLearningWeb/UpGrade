@@ -1,9 +1,10 @@
-import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post, OnUndefined } from 'routing-controllers';
 import { ExperimentIncludeService } from '../services/ExperimentIncludeService';
 import { ExplicitExperimentIndividualInclusion } from '../models/ExplicitExperimentIndividualInclusion';
 import { ExplicitExperimentGroupInclusion } from '../models/ExplicitExperimentGroupInclusion';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
+import { UserNotFoundError } from '../errors/UserNotFoundError';
 const validator = new Validator();
 
 /**
@@ -98,6 +99,28 @@ export class ExperimentIncludeController {
     return this.experimentInclude.getAllExperimentUser();
   }
 
+  @Get('/user/:userId/:experimentId')
+  @OnUndefined(UserNotFoundError)
+  public getExperimentIncludedUserById(
+    @Param('userId') userId: string,
+    @Param('experimentId') experimentId: string
+    ): Promise<ExplicitExperimentIndividualInclusion> {
+    if (!userId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : userId should not be null.'));
+    }
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentInclude.getExperimentUserById(userId, experimentId);
+  }
+
   /**
    * @swagger
    * /experimentInclude/user:
@@ -127,7 +150,7 @@ export class ExperimentIncludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
-   @Put('/user')
+   @Post('/user')
    public experimentIncludeUser(
      @BodyParam('userIds') userIds: Array<string>,
      @BodyParam('experimentId') experimentId: string,
@@ -198,6 +221,31 @@ export class ExperimentIncludeController {
     return this.experimentInclude.getAllExperimentGroups();
   }
 
+  @Get('/group/:type/:id/:experimentId')
+  public getExperimentIncludedGroupById(
+    @Param('type') type: string,
+    @Param('id') groupId: string,
+    @Param('experimentId') experimentId: string
+    ): Promise<ExplicitExperimentGroupInclusion> {
+    if (!type) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : type should not be null.'));
+    }
+    if (!groupId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : groupId should not be null.'));
+    }
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentInclude.getExperimentGroupById(type, groupId, experimentId);
+  }
+
   /**
    * @swagger
    * /experimentInclude/group:
@@ -229,7 +277,7 @@ export class ExperimentIncludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
-   @Put('/group')
+   @Post('/group')
    public experimentIncludeGroup(
      @BodyParam('groups') groups: Array<{ groupId: string, type: string }>,
      @BodyParam('experimentId') experimentId: string    

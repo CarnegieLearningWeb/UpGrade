@@ -5,24 +5,41 @@ import repositoryError from './utils/repositoryError';
 @EntityRepository(ExplicitExperimentIndividualInclusion)
 export class ExplicitExperimentIndividualInclusionRepository extends Repository<ExplicitExperimentIndividualInclusion> {
   public async findAllUsers(): Promise<ExplicitExperimentIndividualInclusion[]> {
-    return this.createQueryBuilder('explicitExperimentIndividualInclusionRepository')
-    .leftJoinAndSelect('explicitExperimentIndividualInclusionRepository.experiment', 'experiment')
-    .getMany()
-    .catch((errorMsg: any) => {
-      const errorMsgString = repositoryError(
-        'explicitExperimentIndividualInclusionRepository',
-        'findAllUsers',
-        {},
-        errorMsg
-      );
-      throw errorMsgString;
-    });
+    return this.createQueryBuilder('explicitExperimentIndividualInclusion')
+      .leftJoinAndSelect('explicitExperimentIndividualInclusion.experiment', 'experiment')
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'explicitExperimentIndividualInclusionRepository',
+          'findAllUsers',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      });
+  }
+
+  public async findOneById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualInclusion> {
+    return this.createQueryBuilder('explicitExperimentIndividualInclusion')
+      .leftJoinAndSelect('explicitExperimentIndividualInclusion.experiment', 'experiment')
+      .where('experiment.id=:experimentId',{experimentId})
+      .andWhere({userId})
+      .getOne()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitExperimentIndividualInclusionRepository',
+          'findOneById',
+          { userId, experimentId },
+          errorMsg
+        );
+        throw errorMsgString;
+      });
   }
 
   public async insertExplicitExperimentIndividualInclusion(
     data: Array<Partial<ExplicitExperimentIndividualInclusion>>,
   ): Promise<ExplicitExperimentIndividualInclusion[]> {
-    const result = await this.createQueryBuilder('explicitExperimentIndividualInclusionRepository')
+    const result = await this.createQueryBuilder('explicitExperimentIndividualInclusion')
       .insert()
       .into(ExplicitExperimentIndividualInclusion)
       .values(data)

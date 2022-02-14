@@ -21,6 +21,10 @@ export class ExperimentIncludeService {
     return this.explicitExperimentIndividualInclusionRepository.findAllUsers();
   }
 
+  public getExperimentUserById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualInclusion> {
+    return this.explicitExperimentIndividualInclusionRepository.findOneById(userId, experimentId);
+  }
+
   public async experimentIncludeUser(userIds: Array<string>, experimentId: string): Promise<ExplicitExperimentIndividualInclusion[]> {
     const experiment: Experiment = await this.experimentService.findOne(experimentId);
     if(!experiment) {
@@ -47,7 +51,12 @@ export class ExperimentIncludeService {
   }
 
   public getAllExperimentGroups(): Promise<ExplicitExperimentGroupInclusion[]> {
-    return this.explicitExperimentGroupInclusionRepository.find();
+    return this.explicitExperimentGroupInclusionRepository.findAllGroups();
+  }
+
+  public getExperimentGroupById(type:string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupInclusion> {
+    const id: string = `${type}_${groupId}`;
+    return this.explicitExperimentGroupInclusionRepository.findOneById(id, experimentId);
   }
 
   public async experimentIncludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string): Promise<ExplicitExperimentGroupInclusion[]> {
@@ -69,7 +78,7 @@ export class ExperimentIncludeService {
       return rest;
     })) || [];
 
-    return this.explicitExperimentGroupInclusionRepository.insertExplicitExperimentGroupExclusion(explicitExperimentGroupIncludeDocToSave);
+    return this.explicitExperimentGroupInclusionRepository.insertExplicitExperimentGroupInclusion(explicitExperimentGroupIncludeDocToSave);
   }
 
   public deleteExperimentGroup(groupId: string, type: string, experimentId): Promise<ExplicitExperimentGroupInclusion | undefined> {

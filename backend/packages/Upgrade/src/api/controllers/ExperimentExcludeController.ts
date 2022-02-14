@@ -1,4 +1,4 @@
-import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized, Body } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post } from 'routing-controllers';
 import { ExperimentExcludeService } from '../services/ExperimentExcludeService';
 import { ExplicitExperimentIndividualExclusion } from '../models/ExplicitExperimentIndividualExclusion';
 import { ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
@@ -148,7 +148,7 @@ export class ExperimentExcludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
-  @Put('/user')
+  @Post('/user')
   public experimentExcludeUser(
     @BodyParam('userIds') userIds: Array<string>,
     @BodyParam('experimentId') experimentId: string,
@@ -219,6 +219,31 @@ export class ExperimentExcludeController {
     return this.experimentExclude.getAllExperimentGroups();
   }
 
+  @Get('/group/:type/:id/:experimentId')
+  public getExperimentExcludedGroupById(
+    @Param('type') type: string,
+    @Param('id') groupId: string,
+    @Param('experimentId') experimentId: string
+    ): Promise<ExplicitExperimentGroupExclusion> {
+    if (!type) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : type should not be null.'));
+    }
+    if (!groupId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : groupId should not be null.'));
+    }
+    if (!experimentId) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
+    }
+    if (!validator.isUUID(experimentId)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentExclude.getExperimentGroupById(type, groupId, experimentId);
+  }
+
   /**
    * @swagger
    * /experimentExclude/group:
@@ -250,7 +275,7 @@ export class ExperimentExcludeController {
    *            schema:
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
-  @Put('/group')
+  @Post('/group')
   public experimentExcludeGroup(
     @BodyParam('groups') groups: Array<{ groupId: string, type: string }>,
     @BodyParam('experimentId') experimentId: string    

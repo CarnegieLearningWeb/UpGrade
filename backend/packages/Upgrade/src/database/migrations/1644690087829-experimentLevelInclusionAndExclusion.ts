@@ -8,7 +8,7 @@ export class experimentLevelInclusionAndExclusion1644689590414 implements Migrat
     	CREATE TABLE "explicit_experiment_group_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" character varying NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_242853c81afc809efbb3a35d28d" PRIMARY KEY ("id", "experimentId"))`
 	  );
     await queryRunner.query(`
-	  	CREATE TABLE "explicit_experiment_group_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" character varying NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid, CONSTRAINT "PK_b1effa322d797547dbcafc72258" RIMARY KEY ("id", "experimentId"))`
+	  	CREATE TABLE "explicit_experiment_group_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" character varying NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid, CONSTRAINT "PK_b1effa322d797547dbcafc72258" PRIMARY KEY ("id", "experimentId"))`
 	  );
     await queryRunner.query(
 	  	`CREATE TABLE "explicit_experiment_individual_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_f8581673a763df1a1702cec57f5" PRIMARY KEY ("userId", "experimentId"))`

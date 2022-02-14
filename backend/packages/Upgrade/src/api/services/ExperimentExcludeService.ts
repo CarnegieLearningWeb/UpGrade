@@ -50,7 +50,12 @@ export class ExperimentExcludeService {
   }
 
   public getAllExperimentGroups(): Promise<ExplicitExperimentGroupExclusion[]> {
-    return this.explicitExperimentGroupExclusionRepository.find();
+    return this.explicitExperimentGroupExclusionRepository.findAllGroups();
+  }
+
+  public getExperimentGroupById(type:string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion> {
+    const id: string = `${type}_${groupId}`;
+    return this.explicitExperimentGroupExclusionRepository.findOneById(id, experimentId);
   }
 
   public async experimentExcludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string): Promise<any> {

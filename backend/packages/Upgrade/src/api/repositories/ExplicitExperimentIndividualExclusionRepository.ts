@@ -5,24 +5,25 @@ import repositoryError from './utils/repositoryError';
 @EntityRepository(ExplicitExperimentIndividualExclusion)
 export class ExplicitExperimentIndividualExclusionRepository extends Repository<ExplicitExperimentIndividualExclusion> {
   public async findAllUsers(): Promise<ExplicitExperimentIndividualExclusion[]> {
-    return this.createQueryBuilder('explicitExperimentIndividualExclusionRepository')
-    .leftJoinAndSelect('explicitExperimentIndividualExclusionRepository.experiment', 'experiment')
-    .getMany()
-    .catch((errorMsg: any) => {
-      const errorMsgString = repositoryError(
-        'ExplicitExperimentIndividualExclusionRepository',
-        'findAllUsers',
-        {},
-        errorMsg
-      );
-      throw errorMsgString;
-    });
+    return this.createQueryBuilder('explicitExperimentIndividualExclusion')
+      .leftJoinAndSelect('explicitExperimentIndividualExclusion.experiment', 'experiment')
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(
+          'ExplicitExperimentIndividualExclusionRepository',
+          'findAllUsers',
+          {},
+          errorMsg
+        );
+        throw errorMsgString;
+      });
   }
 
   public async findOneById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualExclusion> {
-    const explicitExperimentIndividualExclusionData = await this.createQueryBuilder('explicitExperimentIndividualExclusionRepository')
-      .leftJoin('explicitExperimentIndividualExclusionRepository.experiment', 'experiment')
-      .where('userId=:userId AND experiment.id=:experimentId', { userId, experimentId })
+    return this.createQueryBuilder('explicitExperimentIndividualExclusion')
+      .leftJoinAndSelect('explicitExperimentIndividualExclusion.experiment', 'experiment')
+      .where('experiment.id=:experimentId',{experimentId})
+      .andWhere({userId})
       .getOne()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
@@ -33,14 +34,12 @@ export class ExplicitExperimentIndividualExclusionRepository extends Repository<
         );
         throw errorMsgString;
       });
-
-    return explicitExperimentIndividualExclusionData;
   }
 
   public async insertExplicitExperimentIndividualExclusion(
     data: Array<Partial<ExplicitExperimentIndividualExclusion>>,
   ): Promise<ExplicitExperimentIndividualExclusion[]> {
-    const result = await this.createQueryBuilder('explicitExperimentIndividualExclusionRepository')
+    const result = await this.createQueryBuilder('explicitExperimentIndividualExclusion')
       .insert()
       .into(ExplicitExperimentIndividualExclusion)
       .values(data)
