@@ -7,6 +7,11 @@ frontendDockerfile := ./frontend/dev.Dockerfile
 frontendImage := upgrade-frontend:latest
 frontendContainer := upgrade-frontend-1
 
+postgresContainer := upgrade-postgres-1
+postgresOutputPath := __ABSOLUTE_PATH_TO_BACKUP_AND_RESTORE_FILES__
+postgresBackupFile := local-upgrade-dev-postgres.`date +%Y%m%d`.sql
+postgresRestoreFile := staging-cli-upgrade-dev-postgres.20220131.sql
+
 # Commands
 default:
 	@echo "---- Launching Environment ----"
@@ -60,3 +65,11 @@ setup-local:
 setup-mirror:
 	@echo "---- Setup for Mirroring QA/Prod Environment ----"
 	./docker-setup.sh -m
+
+db-dump:
+	@echo "---- Backing Up Database ----"
+	docker exec -t $(postgresContainer) pg_dumpall -c -U postgres > $(addsuffix $(postgresBackupFile),$(postgresOutputPath))
+
+db-restore:
+	@echo "---- Restoring Database ----"
+	cat $(addsuffix $(postgresRestoreFile),$(postgresOutputPath)) | docker exec -i $(postgresContainer) psql -U postgres
