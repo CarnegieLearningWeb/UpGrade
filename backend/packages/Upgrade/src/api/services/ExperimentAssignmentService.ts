@@ -25,6 +25,10 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
 import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
 import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
+import { ExplicitExperimentIndividualExclusionRepository } from '../repositories/ExplicitExperimentIndividualExclusionRepository';
+import { ExplicitExperimentIndividualInclusionRepository } from '../repositories/ExplicitExperimentIndividualInclusionRepository';
+import { ExplicitExperimentGroupExclusionRepository } from '../repositories/ExplicitExperimentGroupExclusionRepository';
+import { ExplicitExperimentGroupInclusionRepository } from '../repositories/ExplicitExperimentGroupInclusionRepository';
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { In } from 'typeorm';
@@ -73,6 +77,14 @@ export class ExperimentAssignmentService {
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
+    @OrmRepository()
+    private explicitExperimentIndividualExclusionRepository: ExplicitExperimentIndividualExclusionRepository,
+    @OrmRepository()
+    private explicitExperimentIndividualInclusionRepository: ExplicitExperimentIndividualInclusionRepository,
+    @OrmRepository()
+    private explicitExperimentGroupExclusionRepository: ExplicitExperimentGroupExclusionRepository,
+    @OrmRepository()
+    private explicitExperimentGroupInclusionRepository: ExplicitExperimentGroupInclusionRepository,
     @OrmRepository()
     private errorRepository: ErrorRepository,
     @OrmRepository()
@@ -434,6 +446,9 @@ export class ExperimentAssignmentService {
         mergedIndividualAssignment = [...(previewAssignment as any), ...mergedIndividualAssignment];
       }
 
+      // experiment level inclusion and exclusion
+      filteredExperiments = await this.experimentLevelExclusionInclusion(filteredExperiments, experimentUser);
+
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
         filteredExperiments.map((experiment) => {
@@ -503,6 +518,80 @@ export class ExperimentAssignmentService {
       logger.error(error);
       throw error;
     }
+  }
+
+  private async experimentLevelExclusionInclusion(filteredExperiments: Experiment[], experimentUser: ExperimentUser): Promise<Experiment[]> {
+
+    let expLevelFilteredExperiments = [];
+
+    const explicitExperimentIndividualExclusionData = (await this.explicitExperimentIndividualExclusionRepository
+      .findAllUsers())
+      .filter(element => element.userId === experimentUser.id)
+      .map(element => ({ userId: element.userId,  experimentId: element.experiment.id }));
+
+    const explicitExperimentIndividualInclusionData = (await this.explicitExperimentIndividualInclusionRepository
+      .findAllUsers())
+      .filter(element => element.userId === experimentUser.id)
+      .map(element => ({ userId: element.userId,  experimentId: element.experiment.id }));
+
+    const explicitExperimentGroupExclusionData = (await this.explicitExperimentGroupExclusionRepository
+      .findAllGroups())
+      .map((element) => ({ groupId: element.groupId,  type: element.type, experimentId: element.experiment.id }));
+
+    const explicitExperimentGroupInclusionData = (await this.explicitExperimentGroupInclusionRepository
+      .findAllGroups())
+      .map((element) => ({ groupId: element.groupId,  type: element.type, experimentId: element.experiment.id }));
+
+    let userGroups = [];
+    if (experimentUser.group) {
+      Object.keys(experimentUser.group).forEach((type) => {
+        experimentUser.group[type].forEach((groupId) => {
+          userGroups.push({ type, groupId });
+        })
+      })
+    }
+
+    // psuedocode for experiment level inclusion and exclusion
+    //
+    // If the user or the user's group is on the global exclude list, exclude the user.
+    //
+    // ELSE If the experiment default is "include all" then
+    //     If the user is on the exclude list, then exclude the user.
+    //     Else if any of the user's groups is on the exclude list then
+    //           If the user is on the include list, include the user
+    //           Else exclude the user
+    //     Else include the user.
+    // ELSE If the experiment default is "exclude all" then
+    //     If the user is on the include list, then include the user.
+    //     Else if any of the user's groups are on the include list then
+    //           If the user is on the exclude list, exclude the user
+    //           Else include the user
+    //     Else exclude the user
+
+    expLevelFilteredExperiments = filteredExperiments.filter(( exp ) => {
+     // if (exp.filterMode === 'includeAll') {
+        if (explicitExperimentIndividualExclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === exp.id ))) {
+          return false;
+        } else {
+          if (explicitExperimentIndividualInclusionData.includes({ userId: experimentUser.id, experimentId: exp.id })) {
+            return true;
+          } else {
+            for(let i = 0; i < userGroups.length; i++)
+            {
+              let userGroup = userGroups[i];
+              if (explicitExperimentGroupExclusionData.some(e => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === exp.id )) {
+                return false;
+              }
+            }
+            return true;
+          }
+        }
+     // }
+     // else
+     //   return true;
+    });
+
+    return expLevelFilteredExperiments;
   }
 
   // When browser will be sending the blob data
