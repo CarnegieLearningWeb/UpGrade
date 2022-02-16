@@ -42,10 +42,9 @@ jobs:
       - name: Set Input Variables
         id: set-vars
         run: |
-          echo "::set-output name=version::${{ inputs.version || github.events.inputs.version }}"
-          echo "::set-output name=application_name::${{ inputs.application_name || github.events.inputs.application_name }}"
-          echo "::set-output name=environment_name::${{ inputs.environment_name || github.events.inputs.environment_name }}"
-          echo "::set-output name=token::${{ secrets.token || secrets.GITHUB_TOKEN }}"
+          echo "::set-output name=version::${{ inputs.version || github.event.inputs.version }}"
+          echo "::set-output name=application_name::${{ inputs.application_name || github.event.inputs.application_name }}"
+          echo "::set-output name=environment_name::${{ inputs.environment_name || github.event.inputs.environment_name }}"
       - name: Check if tag exists
         id: check-tag
         uses: mukunku/tag-exists-action@v1.0.0
@@ -82,7 +81,7 @@ jobs:
           cp -R ../types packages/Upgrade
           npm ci
           zip -qq -r upgrade-backend-${{ steps.set-vars.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
-          
+          mv upgrade-backend-${{ steps.set-vars.outputs.version }}.zip ../
       - uses: einaregilsson/beanstalk-deploy@v13
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -91,6 +90,6 @@ jobs:
           environment_name: ${{ steps.set-vars.outputs.environment_name }}
           version_label: ${{ steps.set-vars.outputs.version }}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: backend/upgrade-backend-${{ steps.set-vars.outputs.version }}.zip
+          deployment_package: upgrade-backend-${{ steps.set-vars.outputs.version }}.zip
           wait_for_deployment: false
           use_existing_version_if_available: true
