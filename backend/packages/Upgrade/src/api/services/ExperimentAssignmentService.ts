@@ -391,11 +391,11 @@ export class ExperimentAssignmentService {
         return [];
       }
 
-      // filter group experiment according to group excluded
-      let filteredExperiments: Experiment[] = [...experiments];
+      // filter group experiment according to group excluded at global level
+      let globalFilteredExperiments: Experiment[] = [...experiments];
       if (groupExcluded.length > 0) {
         const groupNameArray = groupExcluded.map((group) => group.type);
-        filteredExperiments = experiments.filter((experiment) => {
+        globalFilteredExperiments = experiments.filter((experiment) => {
           if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
             return !groupNameArray.includes(experiment.group);
           }
@@ -403,7 +403,7 @@ export class ExperimentAssignmentService {
         });
       }
 
-      const experimentIds = filteredExperiments.map((experiment) => experiment.id);
+      const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
 
       // return if no experiment
       if (experimentIds.length === 0) {
@@ -448,7 +448,7 @@ export class ExperimentAssignmentService {
       }
 
       // experiment level inclusion and exclusion
-      filteredExperiments = await this.experimentLevelExclusionInclusion(filteredExperiments, experimentUser);
+      const filteredExperiments = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, experimentUser);
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
@@ -578,33 +578,31 @@ export class ExperimentAssignmentService {
           if (explicitExperimentIndividualInclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
             return true;
           } else {
-            for(let userGroup of userGroups)
-            {
-              if (explicitExperimentGroupExclusionData.some(e => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id )) {
+            for (let userGroup of userGroups) {
+              if (explicitExperimentGroupExclusionData.some(e => ( e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id ))) {
                 return false;
               }
             }
             return true;
           }
         }
-     }
-     else {
-      if (explicitExperimentIndividualInclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
-        return true;
-      } else {
-        if (explicitExperimentIndividualExclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
-          return false;
+      }
+      else {
+        if (explicitExperimentIndividualInclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
+          return true;
         } else {
-          for(let userGroup of userGroups)
-          {
-            if (explicitExperimentGroupInclusionData.some(e => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id )) {
-              return true;
+          if (explicitExperimentIndividualExclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
+            return false;
+          } else {
+            for (let userGroup of userGroups) {
+              if (explicitExperimentGroupInclusionData.some(e => ( e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id ))) {
+                return true;
+              }
             }
+            return false;
           }
-          return false;
         }
       }
-     }
     });
 
     return expLevelFilteredExperiments;
