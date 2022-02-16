@@ -11,6 +11,7 @@ import {
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_KEY,
   EXPERIMENT_SORT_AS,
+  FILTER_MODE,
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
   IExperimentSortParams,
@@ -101,6 +102,13 @@ export class Experiment extends BaseModel {
     default: false,
   })
   public logging: boolean;
+
+  @IsNotEmpty()
+  @Column({
+    type: 'enum',
+    enum: FILTER_MODE,
+  })
+  public filterMode: FILTER_MODE;
 
   @OneToMany((type) => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()
