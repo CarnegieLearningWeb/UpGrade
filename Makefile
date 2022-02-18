@@ -38,13 +38,21 @@ log-frontend:
 	@echo "---- Frontend Logs ----"
 	docker logs -f -t --details $(frontendContainer)
 
+log-db:
+	@echo "---- Database Logs ----"
+	docker logs -f -t --details $(postgresContainer)
+
 bash-backend-container:
 	@echo "---- Entering Backend Container ----"
-	docker exec -it $(backendContainer) bash
+	docker exec -it $(backendContainer) /bin/sh
 
 bash-frontend-container:
 	@echo "---- Entering Frontend Container ----"
-	docker exec -it $(frontendContainer) bash
+	docker exec -it $(frontendContainer) /bin/sh
+
+bash-db-container:
+	@echo "---- Entering Database Container ----"
+	docker exec -it $(postgresContainer) /bin/sh
 
 down:
 	@echo "---- Taking Environment Down ----"

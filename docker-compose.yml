@@ -34,7 +34,7 @@ services:
       - "postgres"
 
   postgres:
-    image: postgres
+    image: postgres:alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
