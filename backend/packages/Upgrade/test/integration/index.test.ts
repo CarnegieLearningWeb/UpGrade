@@ -66,6 +66,7 @@ import { MonitoredPointForExport } from './Experiment/analytics';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
+import { ExperimentExcludeUser, ExperimentExcludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -97,6 +98,16 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
+
+  test('Experiment Level Inclusion/Exclusion with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeUser();
+    done();
+  });
+
+  test('Experiment Level Inclusion/Exclusion with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentExcludeGroup();
+    done();
+  });
 
   test('Mark Experiment before experiment is created', async (done) => {
     await NoExperiment();
@@ -431,6 +442,7 @@ describe('Integration Tests', () => {
     await PartitionOrder();
     done();
   });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

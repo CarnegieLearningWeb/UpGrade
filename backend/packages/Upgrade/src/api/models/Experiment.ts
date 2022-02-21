@@ -103,10 +103,10 @@ export class Experiment extends BaseModel {
   })
   public logging: boolean;
 
-  @IsNotEmpty()
   @Column({
     type: 'enum',
     enum: FILTER_MODE,
+    default: FILTER_MODE.INCLUDE_ALL,
   })
   public filterMode: FILTER_MODE;
 
