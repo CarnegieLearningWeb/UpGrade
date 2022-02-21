@@ -4,6 +4,8 @@ import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import TestCase1 from './experimentExcludeUser';
 import TestCase2 from './experimentExcludeGroup';
+import TestCase3 from './experimentIncludeUser';
+import TestCase4 from './experimentIncludeGroup';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
@@ -48,4 +50,14 @@ export const ExperimentExcludeUser = async () => {
 export const ExperimentExcludeGroup = async () => {
   await initialChecks();
   await TestCase2();
+};
+
+export const ExperimentIncludeUser = async () => {
+  await initialChecks();
+  await TestCase3();
+};
+
+export const ExperimentIncludeGroup = async () => {
+  await initialChecks();
+  await TestCase4();
 };
