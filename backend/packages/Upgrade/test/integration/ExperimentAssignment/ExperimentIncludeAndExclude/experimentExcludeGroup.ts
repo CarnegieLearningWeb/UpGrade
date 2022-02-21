@@ -9,6 +9,7 @@ import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { getAllExperimentCondition } from '../../utils';
 import { ExperimentExcludeService } from '../../../../src/api/services/ExperimentExcludeService';
 import { ExperimentIncludeService } from '../../../../src/api/services/ExperimentIncludeService';
+import { FILTER_MODE } from '../../../../../../../types/src';
 
 export default async function experimentExcludeGroup(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -21,6 +22,7 @@ export default async function experimentExcludeGroup(): Promise<void> {
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
+  experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
 
   // create experiment
   await experimentService.create(individualAssignmentExperiment as any, userIn, new UpgradeLogger());

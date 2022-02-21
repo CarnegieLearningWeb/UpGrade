@@ -66,7 +66,7 @@ import { MonitoredPointForExport } from './Experiment/analytics';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
-import { ExperimentExcludeUser, ExperimentExcludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
+import { ExperimentExcludeUser, ExperimentExcludeGroup, ExperimentIncludeUser, ExperimentIncludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -98,16 +98,6 @@ describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
   // Test cases
   // -------------------------------------------------------------------------
-
-  test('Experiment Level Inclusion/Exclusion with FilterMode as IncludeAll', async (done) => {
-    await ExperimentExcludeUser();
-    done();
-  });
-
-  test('Experiment Level Inclusion/Exclusion with FilterMode as ExcludeAll', async (done) => {
-    await ExperimentExcludeGroup();
-    done();
-  });
 
   test('Mark Experiment before experiment is created', async (done) => {
     await NoExperiment();
@@ -440,6 +430,26 @@ describe('Integration Tests', () => {
 
   test('Order For Partition', async (done) => {
     await PartitionOrder();
+    done();
+  });
+
+  test('Experiment Level exclusion of user with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeUser();
+    done();
+  });
+
+  test('Experiment Level exclusion of group with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeGroup();
+    done();
+  });
+
+  test('Experiment Level inclusion of user with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentIncludeUser();
+    done();
+  });
+
+  test('Experiment Level inclusion of group with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentIncludeGroup();
     done();
   });
 

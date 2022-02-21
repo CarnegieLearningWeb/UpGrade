@@ -8,19 +8,21 @@ import { EXPERIMENT_STATE } from 'upgrade_types';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { getAllExperimentCondition } from '../../utils';
 import { ExperimentExcludeService } from '../../../../src/api/services/ExperimentExcludeService';
+import { ExperimentIncludeService } from '../../../../src/api/services/ExperimentIncludeService';
 import { FILTER_MODE } from '../../../../../../../types/src';
 
-export default async function experimentExcludeUser(): Promise<void> {
+export default async function experimentIncludeGroup(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const userService = Container.get<UserService>(UserService);
   const experimentExcludeService = Container.get<ExperimentExcludeService>(ExperimentExcludeService);
+  const experimentIncludeService = Container.get<ExperimentIncludeService>(ExperimentIncludeService);
 
   // creating new user
   const userIn = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
-  experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
+	experimentObject.filterMode = FILTER_MODE.EXCLUDE_ALL;
 
   // create experiment
   await experimentService.create(individualAssignmentExperiment as any, userIn, new UpgradeLogger());
@@ -57,13 +59,31 @@ export default async function experimentExcludeUser(): Promise<void> {
 
   // store individual user over here
   const user = experimentUsers[0];
+  const groupType: string = Object.keys(user.group)[0];
+  const groupId: string = user.group[groupType].toString();
 
   let experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
+  expect(experimentCondition.length).toEqual(0);
+
+  // add group to include for this experiment
+  const excludedGroup = await experimentIncludeService.experimentIncludeGroup([{type: groupType, groupId: groupId}], experimentId);
+  expect(excludedGroup).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        groupId: groupId,
+        type: groupType,
+        experimentId: experimentId
+      }),
+    ])
+  );
+
+  // check if group is included for this experiment
+  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
   expect(experimentCondition.length).not.toEqual(0);
 
-  // add user in experiment individual exclude
-  const excludedUser = await experimentExcludeService.experimentExcludeUser([user.id], experimentId);
-  expect(excludedUser).toEqual(
+  // excluding the user in experiment
+  const includedUser = await experimentExcludeService.experimentExcludeUser([user.id], experimentId);
+  expect(includedUser).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         userId: user.id,
