@@ -22,6 +22,7 @@ export default async function experimentIncludeGroup(): Promise<void> {
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
+  const context = experimentObject.context[0];
 	experimentObject.filterMode = FILTER_MODE.EXCLUDE_ALL;
 
   // create experiment
@@ -62,7 +63,7 @@ export default async function experimentIncludeGroup(): Promise<void> {
   const groupType: string = Object.keys(user.group)[0];
   const groupId: string = user.group[groupType].toString();
 
-  let experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
+  let experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger(), context);
   expect(experimentCondition.length).toEqual(0);
 
   // add group to include for this experiment
@@ -78,7 +79,7 @@ export default async function experimentIncludeGroup(): Promise<void> {
   );
 
   // check if group is included for this experiment
-  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
+  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger(), context);
   expect(experimentCondition.length).not.toEqual(0);
 
   // excluding the user in experiment
@@ -93,6 +94,6 @@ export default async function experimentIncludeGroup(): Promise<void> {
   );
 
   // check if user is excluded for this experiment
-  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
+  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger(), context);
   expect(experimentCondition.length).toEqual(0);
 }

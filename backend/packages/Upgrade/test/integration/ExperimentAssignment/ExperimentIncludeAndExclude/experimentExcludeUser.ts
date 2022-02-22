@@ -20,6 +20,7 @@ export default async function experimentExcludeUser(): Promise<void> {
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
+  const context = experimentObject.context[0];
   experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
 
   // create experiment
@@ -58,7 +59,7 @@ export default async function experimentExcludeUser(): Promise<void> {
   // store individual user over here
   const user = experimentUsers[0];
 
-  let experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
+  let experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger(), context);
   expect(experimentCondition.length).not.toEqual(0);
 
   // add user in experiment individual exclude
@@ -73,6 +74,6 @@ export default async function experimentExcludeUser(): Promise<void> {
   );
 
   // check if user is excluded for this experiment
-  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
+  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger(), context);
   expect(experimentCondition.length).toEqual(0);
 }
