@@ -70,10 +70,6 @@ setup-local:
 	@echo "---- Setup for the Local Environment ----"
 	./docker-setup.sh -l
 
-setup-mirror:
-	@echo "---- Setup for Mirroring QA/Prod Environment ----"
-	./docker-setup.sh -m
-
 db-dump:
 	@echo "---- Backing Up Database ----"
 	docker exec -t $(postgresContainer) pg_dumpall -c -U postgres > $(addsuffix $(postgresBackupFile),$(postgresOutputPath))
