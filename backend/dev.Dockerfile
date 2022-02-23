@@ -1,4 +1,4 @@
-FROM node:12.7.0-alpine
+FROM node:12.22.10-alpine
 
 ENV NEW_RELIC_NO_CONFIG_FILE=true
 ENV NR_NATIVE_METRICS_NO_BUILD=true
