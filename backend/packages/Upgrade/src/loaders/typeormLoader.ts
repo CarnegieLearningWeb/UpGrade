@@ -3,14 +3,12 @@ import { createConnection, getConnectionOptions, ConnectionOptions } from 'typeo
 
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
-import { CONNECTION_NAME } from './enums';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
   const loadedConnectionOptions = await getConnectionOptions();
-  const loadedreplicaConnectionOptions = await getConnectionOptions();
-  const host_replicas = JSON.parse(env.db.host_replica);
-  const commonConnectionOptions = {
-    name: CONNECTION_NAME.MAIN,
+  const loadedSlaveConnectionOptions = await getConnectionOptions();
+  const connectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, {
+    name: 'default',
     type: env.db.type, // See createConnection options for valid types
     host: '',
     port: '',
@@ -25,68 +23,57 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
         password: env.db.password,
         database: env.db.database,
       },
-      replicas: [],
+      slaves: [],
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging,
     maxQueryExecutionTime: env.db.maxQueryExecutionTime,
     entities: env.app.dirs.entities,
     migrations: env.app.dirs.migrations,
-  };
-  // connection options:
-  let masterConnectionOptions = [];
-  let replicaConnectionOption = [];
-  const replicas = Object.keys(host_replicas).length;
-
-  if (replicas === 0) {
-    /* tslint:disable:no-string-literal */
-    masterConnectionOptions = commonConnectionOptions['replication']['replicas'] = [];
-    /* tslint:disable:no-string-literal */
-    replicaConnectionOption = commonConnectionOptions['replication']['replicas'] = [];
-  } else {
-    if (replicas === 1) {
-      /* tslint:disable:no-string-literal */
-      masterConnectionOptions = commonConnectionOptions['replication']['replicas'] = [];
-    } else {
-      const replica_hosts = [];
-      for (let i = 1; i < replicas; i++) {
-        replica_hosts.push({
-          host: host_replicas[i],
-          port: env.db.port,
-          username: env.db.username,
-          password: env.db.password,
-          database: env.db.database,
-        });
-      }
-      /* tslint:disable:no-string-literal */
-      masterConnectionOptions = commonConnectionOptions['replication']['replicas'] = replica_hosts;
-    }
-    /* tslint:disable:no-string-literal */
-    replicaConnectionOption = commonConnectionOptions['replication']['replicas'] = [{
-      host: host_replicas[0],
-      port: env.db.port,
-      username: env.db.username,
-      password: env.db.password,
-      database: env.db.database,
-    }];
-  }
-
-  replicaConnectionOption['name'] = CONNECTION_NAME.REPLICA;
-  const connectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, masterConnectionOptions);
-  const replicaConnectionOptions: ConnectionOptions = Object.assign(loadedreplicaConnectionOptions, replicaConnectionOption);
+  });
+  const slaveConnectionOptions: ConnectionOptions = Object.assign(loadedSlaveConnectionOptions, {
+    name: 'export',
+    type: env.db.type, // See createConnection options for valid types
+    host: '',
+    port: '',
+    username: '',
+    password: '',
+    database: '',
+    replication: {
+      master: {
+        host: env.db.host,
+        port: env.db.port,
+        username: env.db.username,
+        password: env.db.password,
+        database: env.db.database,
+      },
+      slaves: [{
+        host: env.db.host_slave,
+        port: env.db.port,
+        username: env.db.username,
+        password: env.db.password,
+        database: env.db.database,
+      }],
+    },
+    synchronize: env.db.synchronize,
+    logging: env.db.logging,
+    maxQueryExecutionTime: env.db.maxQueryExecutionTime,
+    entities: env.app.dirs.entities,
+    migrations: env.app.dirs.migrations,
+  });
 
   try {
     const connection = await createConnection(connectionOptions);
-    const replicaConnection = await createConnection(replicaConnectionOptions);
+    const slaveConnection = await createConnection(slaveConnectionOptions);
     // run the migrations
     await connection.runMigrations();
-    await replicaConnection.runMigrations();
+    await slaveConnection.runMigrations();
 
     if (settings) {
       settings.setData('connection', connection);
-      settings.setData('replicaConnection', replicaConnection);
+      settings.setData('slaveConnection', slaveConnection);
       settings.onShutdown(() => connection.close());
-      settings.onShutdown(() => replicaConnection.close());
+      settings.onShutdown(() => slaveConnection.close());
     }
   } catch (err) {
     const error = err as any;
