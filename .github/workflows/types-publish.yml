@@ -1,0 +1,23 @@
+name: UpGrade Types Publish
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - types/**
+jobs:
+  types-publish:
+    name: UpGrade Types Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Types Package
+        uses: ./.github/actions/generic-npm-build
+        with:
+          working_directory: types
+      - name: Publish Types Package
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: types/package.json
