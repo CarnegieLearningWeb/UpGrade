@@ -28,7 +28,7 @@ image-backend:
 
 image-frontend:
 	@echo "---- Building Frontend Docker Image ----"
-	docker build -f $(backendDockerfile) -t $(frontendImage) .
+	docker build -f $(frontendDockerfile) -t $(frontendImage) .
 
 log-backend:
 	@echo "---- Backend Logs ----"
