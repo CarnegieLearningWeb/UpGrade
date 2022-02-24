@@ -274,8 +274,8 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "RDS_HOSTNAME_REPLICAS"
-    value     = jsonencode([for endPoint in aws_db_instance.app-rds-read-replica.*.endpoint : split(":", endPoint)[0]])
+    name      = "RDS_HOSTNAME_SLAVE"
+    value     = split(":", aws_db_instance.app-rds-read-replica.endpoint)[0]
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
