@@ -9,14 +9,10 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
   const loadedConnectionOptions = await getConnectionOptions();
   const loadedreplicaConnectionOptions = await getConnectionOptions();
   const host_replicas = JSON.parse(env.db.host_replica);
-  const commonConnectionOptions = {
+  // connection options:
+  const masterConnectionOptions = {
     name: CONNECTION_NAME.MAIN,
     type: env.db.type, // See createConnection options for valid types
-    host: '',
-    port: '',
-    username: '',
-    password: '',
-    database: '',
     replication: {
       master: {
         host: env.db.host,
@@ -25,7 +21,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
         password: env.db.password,
         database: env.db.database,
       },
-      replicas: [],
+      slaves: [],
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging,
@@ -33,45 +29,66 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     entities: env.app.dirs.entities,
     migrations: env.app.dirs.migrations,
   };
-  // connection options:
-  let masterConnectionOptions = [];
-  let replicaConnectionOption = [];
-  const replicas = Object.keys(host_replicas).length;
 
+  const replicaConnectionOption = {
+    name: CONNECTION_NAME.REPLICA,
+    type: env.db.type, // See createConnection options for valid types
+    replication: {
+      master: {
+        host: '',
+        port: null,
+        username: '',
+        password: '',
+        database: '',
+      },
+      slaves: [],
+    },
+    synchronize: env.db.synchronize,
+    logging: env.db.logging,
+    maxQueryExecutionTime: env.db.maxQueryExecutionTime,
+    entities: env.app.dirs.entities,
+    migrations: env.app.dirs.migrations,
+  };
+  // number of read replicas:
+  const replicas = Object.keys(host_replicas).length;
+  const replica_hosts = [];
   if (replicas === 0) {
+    // if no read replica is defined, then we use master host for replica connection to handle export data
     /* tslint:disable:no-string-literal */
-    masterConnectionOptions = commonConnectionOptions['replication']['replicas'] = [];
+    replicaConnectionOption['replication']['master'] = {
+      host: env.db.host,
+      port: env.db.port,
+      username: env.db.username,
+      password: env.db.password,
+      database: env.db.database,
+    };
+  } else if (replicas >= 1) {
+    // if a single read replica is defined, then we use the first read replica host to handle export data
     /* tslint:disable:no-string-literal */
-    replicaConnectionOption = commonConnectionOptions['replication']['replicas'] = [];
-  } else {
-    if (replicas === 1) {
-      /* tslint:disable:no-string-literal */
-      masterConnectionOptions = commonConnectionOptions['replication']['replicas'] = [];
-    } else {
-      const replica_hosts = [];
-      for (let i = 1; i < replicas; i++) {
-        replica_hosts.push({
-          host: host_replicas[i],
-          port: env.db.port,
-          username: env.db.username,
-          password: env.db.password,
-          database: env.db.database,
-        });
-      }
-      /* tslint:disable:no-string-literal */
-      masterConnectionOptions = commonConnectionOptions['replication']['replicas'] = replica_hosts;
-    }
-    /* tslint:disable:no-string-literal */
-    replicaConnectionOption = commonConnectionOptions['replication']['replicas'] = [{
+    replicaConnectionOption['replication']['slaves'] = [{
       host: host_replicas[0],
       port: env.db.port,
       username: env.db.username,
       password: env.db.password,
       database: env.db.database,
     }];
-  }
 
-  replicaConnectionOption['name'] = CONNECTION_NAME.REPLICA;
+    for (let i = 1; i < replicas; i++) {
+      replica_hosts.push({
+        host: host_replicas[i],
+        port: env.db.port,
+        username: env.db.username,
+        password: env.db.password,
+        database: env.db.database,
+      });
+    }
+  }
+  // if more than one read replica is defined, then we use all the remaining read replica hosts
+  // as extra read replica db connections to handle load on master db connection.
+  if (replicas >= 2) {
+    /* tslint:disable:no-string-literal */
+    masterConnectionOptions['replication']['slaves'] = replica_hosts;
+  }
   const connectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, masterConnectionOptions);
   const replicaConnectionOptions: ConnectionOptions = Object.assign(loadedreplicaConnectionOptions, replicaConnectionOption);
 
