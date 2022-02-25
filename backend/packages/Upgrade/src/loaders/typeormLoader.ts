@@ -47,20 +47,8 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     name: CONNECTION_NAME.REPLICA,
     type: env.db.type, // See createConnection options for valid types
     replication: {
-      master: {
-        host: '',
-        port: null,
-        username: '',
-        password: '',
-        database: '',
-      },
-      slaves: [{
-        host: '',
-        port: null,
-        username: '',
-        password: '',
-        database: '',
-      }],
+      master: master_host,
+      slaves: [],
     },
     synchronize: env.db.synchronize,
     logging: env.db.logging,
