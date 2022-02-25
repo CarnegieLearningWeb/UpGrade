@@ -75,7 +75,7 @@ const validator = new Validator();
  *     description: To Include Users and Groups from experiments (Experiment level inclusions)
  */
 @Authorized()
-@JsonController('/experimentInclude')
+@JsonController('/explicitInclude/experiment')
 export class ExperimentIncludeController {
   constructor(public experimentInclude: ExperimentIncludeService) {}
 

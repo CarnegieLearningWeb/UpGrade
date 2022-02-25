@@ -74,7 +74,7 @@ const validator  = new Validator();
  *     description: To Exclude Users and Groups from experiments (Experiment level exclusions)
  */
 @Authorized()
-@JsonController('/experimentExclude')
+@JsonController('/explicitExclude/experiment')
 export class ExperimentExcludeController {
   constructor(public experimentExclude: ExperimentExcludeService) {}
 
