@@ -12,6 +12,7 @@ variable "identifier"{}
 variable "instance_class"{}
 variable "storage_type"{}
 variable "multi_az"{}
+variable "replica_names" {}
 
 # EBS instance details
 variable "app_instance_type"{}
