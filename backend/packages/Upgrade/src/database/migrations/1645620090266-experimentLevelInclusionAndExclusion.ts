@@ -1,11 +1,11 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class experimentLevelInclusionAndExclusion1645107347161 implements MigrationInterface {
-    public name = 'experimentLevelInclusionAndExclusion1645107347161'
+export class experimentLevelInclusionAndExclusion1645620090266 implements MigrationInterface {
+    public name = 'experimentLevelInclusionAndExclusion1645620090266'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "explicit_experiment_group_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" character varying NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_242853c81afc809efbb3a35d28d" PRIMARY KEY ("id", "experimentId"))`);
-        await queryRunner.query(`CREATE TABLE "explicit_experiment_group_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" character varying NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_89381fbe2883b3b8fd8b0207c84" PRIMARY KEY ("id", "experimentId"))`);
+        await queryRunner.query(`CREATE TABLE "explicit_experiment_group_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_69db9e251922003412d06070755" PRIMARY KEY ("groupId", "type", "experimentId"))`);
+        await queryRunner.query(`CREATE TABLE "explicit_experiment_group_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_ccfa78f9bd8ef48576b84538ad8" PRIMARY KEY ("groupId", "type", "experimentId"))`);
         await queryRunner.query(`CREATE TABLE "explicit_experiment_individual_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_f8581673a763df1a1702cec57f5" PRIMARY KEY ("userId", "experimentId"))`);
         await queryRunner.query(`CREATE TABLE "explicit_experiment_individual_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_757b62cf84e8ffd940f47d0a919" PRIMARY KEY ("userId", "experimentId"))`);
         await queryRunner.query(`CREATE TYPE "public"."experiment_filtermode_enum" AS ENUM('includeAll', 'excludeAll')`);
@@ -22,10 +22,10 @@ export class experimentLevelInclusionAndExclusion1645107347161 implements Migrat
         await queryRunner.query(`ALTER TABLE "explicit_experiment_group_inclusion" DROP CONSTRAINT "FK_715783397ec4bc97b1f66a3e804"`);
         await queryRunner.query(`ALTER TABLE "explicit_experiment_group_exclusion" DROP CONSTRAINT "FK_2b27448c9c812f4b8034b9d9a83"`);
         await queryRunner.query(`ALTER TABLE "experiment" DROP COLUMN "filterMode"`);
-        await queryRunner.query(`DROP TYPE "public"."experiment_filtermode_enum"`);
-        await queryRunner.query(`DROP TABLE "explicit_experiment_individual_inclusion"`);
+        await queryRunner.query(`DROP TYPE "public"."experiment_filtermode_enum"`);await queryRunner.query(`DROP TABLE "explicit_experiment_individual_inclusion"`);
         await queryRunner.query(`DROP TABLE "explicit_experiment_individual_exclusion"`);
         await queryRunner.query(`DROP TABLE "explicit_experiment_group_inclusion"`);
         await queryRunner.query(`DROP TABLE "explicit_experiment_group_exclusion"`);
     }
+
 }

@@ -4,13 +4,10 @@ import { Experiment } from './Experiment';
 
 @Entity()
 export class ExplicitExperimentGroupExclusion extends BaseModel {
-  @PrimaryColumn()
-  public id: string;
-
-  @Column()
+  @Column({ primary: true })
   public groupId: string;
 
-  @Column()
+  @Column({ primary: true })
   public type: string;
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.explicitExperimentGroupExclusion, { onDelete: 'CASCADE', primary: true })

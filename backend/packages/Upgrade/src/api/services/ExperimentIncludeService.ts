@@ -55,8 +55,7 @@ export class ExperimentIncludeService {
   }
 
   public getExperimentGroupById(type:string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupInclusion> {
-    const id: string = `${type}_${groupId}`;
-    return this.explicitExperimentGroupInclusionRepository.findOneById(id, experimentId);
+    return this.explicitExperimentGroupInclusionRepository.findOneById(type, groupId, experimentId);
   }
 
   public async experimentIncludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string): Promise<ExplicitExperimentGroupInclusion[]> {
@@ -73,8 +72,7 @@ export class ExperimentIncludeService {
       groups.map((group) => {
         const groupId: string = group.groupId;
         const type: string = group.type;
-        const id: string = `${type}_${groupId}`;
-        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitExperimentGroupIncludeDoc, id: id, groupId: groupId, type: type };
+        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitExperimentGroupIncludeDoc, groupId: groupId, type: type };
       return rest;
     })) || [];
 

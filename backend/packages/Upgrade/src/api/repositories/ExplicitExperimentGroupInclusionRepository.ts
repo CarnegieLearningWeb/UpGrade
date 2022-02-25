@@ -19,17 +19,18 @@ export class ExplicitExperimentGroupInclusionRepository extends Repository<Expli
       });
   }
 
-  public async findOneById(id: string, experimentId: string): Promise<ExplicitExperimentGroupInclusion> {
+  public async findOneById(type: string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupInclusion> {
     return this.createQueryBuilder('explicitExperimentGroupInclusion')
       .leftJoinAndSelect('explicitExperimentGroupInclusion.experiment', 'experiment')
       .where('experiment.id=:experimentId',{experimentId})
-      .andWhere({id})
+      .andWhere({type})
+      .andWhere({groupId})
       .getOne()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           'ExplicitExperimentGroupInclusionRepository',
           'findOneById',
-          { id, experimentId },
+          { type, groupId, experimentId },
           errorMsg
         );
         throw errorMsgString;

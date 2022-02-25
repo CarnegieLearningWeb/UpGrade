@@ -24,6 +24,7 @@ export class ExperimentExcludeService {
   public getExperimentUserById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualExclusion> {
     return this.explicitExperimentIndividualExclusionRepository.findOneById(userId, experimentId);
   }
+
   public async experimentExcludeUser(userIds: Array<string>, experimentId: string): Promise<ExplicitExperimentIndividualExclusion[]> {
     const experiment: Experiment = await this.experimentService.findOne(experimentId);
     if(!experiment) {
@@ -54,8 +55,7 @@ export class ExperimentExcludeService {
   }
 
   public getExperimentGroupById(type:string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion> {
-    const id: string = `${type}_${groupId}`;
-    return this.explicitExperimentGroupExclusionRepository.findOneById(id, experimentId);
+    return this.explicitExperimentGroupExclusionRepository.findOneById(type, groupId, experimentId);
   }
 
   public async experimentExcludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string): Promise<any> {
@@ -72,8 +72,7 @@ export class ExperimentExcludeService {
       groups.map((group) => {
         const groupId: string = group.groupId;
         const type: string = group.type;
-        const id: string = `${type}_${groupId}`;
-        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitExperimentGroupExcludeDoc, id: id, groupId: groupId, type: type };
+        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitExperimentGroupExcludeDoc, groupId: groupId, type: type };
       return rest;
     })) || [];
 
