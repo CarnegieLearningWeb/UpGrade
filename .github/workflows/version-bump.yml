@@ -26,13 +26,27 @@ jobs:
       - name: Frontend Version Bump
         working-directory: frontend
         run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
-      - name: Commit Changes
-        run: |
-          git config --global user.name "Automated Version Bump"
-          git config --global user.email "gh-action-bump-version@users.noreply.github.com"
-          git commit -am "Automated version bump to ${{ steps.get-version.outputs.version }}"
-          git push
-  trigger-merge-to-main:
-    name: Trigger Merge to Main
-    uses: ./.github/workflows/merge-dev-to-main.yml
-    needs: version-bump
+      - id: create-pr
+        uses: repo-sync/pull-request@v2
+        with:
+          branch: version-bump-${{ steps.get-version.outputs.version }}
+          destination_branch: dev
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Automated Version Bump: ${{ steps.get-version.outputs.version }}"
+      - name: Approve PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.pulls.createReview({
+              owner: "${{ github.repository_owner }}",
+              repo: "UpGrade",
+              pull_number: ${{ steps.create-pr.outputs.pr_number }},
+              event: "APPROVE"
+            })
+      - name: Enable PR auto merge
+        uses: peter-evans/enable-pull-request-automerge@v1
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          pull-request-number:
+            ${{ steps.create-pr.outputs.pr_number }}
+          merge-method: merge
