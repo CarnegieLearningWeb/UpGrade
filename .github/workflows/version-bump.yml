@@ -40,13 +40,13 @@ jobs:
             await github.pulls.createReview({
               owner: "${{ github.repository_owner }}",
               repo: "UpGrade",
-              pull_number: ${{ steps.create-pr.outputs.pr_number }},
+              pull_number: ${{ steps.create-pr.outputs.pull-request-number }},
               event: "APPROVE"
-            })
+            });
       - name: Enable PR auto merge
         uses: peter-evans/enable-pull-request-automerge@v1
         with:
           token: ${{ secrets.REPO_PAT }}
           pull-request-number:
-            ${{ steps.create-pr.outputs.pr_number }}
+            ${{ steps.create-pr.outputs.pull-request-number }}
           merge-method: merge
