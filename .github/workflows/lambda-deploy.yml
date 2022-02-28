@@ -15,6 +15,8 @@ on:
         required: true
       AWS_REGION:
         required: true
+      token:
+        required: true
   workflow_dispatch:
     inputs:
       function_name:
@@ -30,11 +32,18 @@ jobs:
     name: Lambda Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Set Input Variables
+        id: set-vars
+        run: |
+          echo "::set-output name=version::${{ inputs.version || github.event.inputs.version }}"
+          echo "::set-output name=function_name::${{ inputs.function_name || github.event.inputs.function_name }}"
       - name: Check if tag exists
         id: check-tag
         uses: mukunku/tag-exists-action@v1.0.0
         with:
-          tag: ${{ inputs.version }}
+          tag: ${{ steps.set-vars.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
 
       # If the tag already exists, just download the artifact from that release
       - name: Download Release Artifact
@@ -42,8 +51,8 @@ jobs:
         uses: robinraju/release-downloader@v1.3
         with:
           repository: CarnegieLearningWeb/UpGrade
-          tag: ${{ inputs.version }}
-          fileName: upgrade-lambda-${{ inputs.version }}.zip
+          tag: ${{ steps.set-vars.outputs.version }}
+          fileName: upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip
 
       # Otherwise, build the artifact
       - name: Git Checkout
@@ -54,7 +63,7 @@ jobs:
         uses: ./.github/actions/generic-npm-build
         with:
           working_directory: backend/packages/Schedular
-          version: ${{ inputs.version }}
+          version: ${{ steps.set-vars.outputs.version }}
       - name: Copy Files
         if: steps.check-tag.outputs.exists == 'false'
         working-directory: backend/packages/Schedular
@@ -66,8 +75,8 @@ jobs:
         if: steps.check-tag.outputs.exists == 'false'
         working-directory: backend/packages/Schedular/lib
         run: |
-          zip -r upgrade-lambda-v${{ inputs.version }}.zip *
-          mv upgrade-lambda-v${{ inputs.version }}.zip ../../../..
+          zip -r upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip *
+          mv upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip ../../../..
 
       - name: Deploy
         uses: appleboy/lambda-action@v0.1.5
@@ -75,5 +84,5 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
-          function_name: ${{ inputs.function_name }}
-          zip_file: upgrade-lambda-v${{ inputs.version }}.zip
+          function_name: ${{ steps.set-vars.outputs.function_name }}
+          zip_file: upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip

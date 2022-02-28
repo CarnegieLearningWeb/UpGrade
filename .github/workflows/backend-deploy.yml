@@ -18,6 +18,8 @@ on:
         required: true
       AWS_REGION:
         required: true
+      token:
+        required: true
   workflow_dispatch:
     inputs:
       application_name:
@@ -37,11 +39,19 @@ jobs:
     name: Backend Deployment
     runs-on: ubuntu-latest
     steps:
+      - name: Set Input Variables
+        id: set-vars
+        run: |
+          echo "::set-output name=version::${{ inputs.version || github.event.inputs.version }}"
+          echo "::set-output name=application_name::${{ inputs.application_name || github.event.inputs.application_name }}"
+          echo "::set-output name=environment_name::${{ inputs.environment_name || github.event.inputs.environment_name }}"
       - name: Check if tag exists
         id: check-tag
         uses: mukunku/tag-exists-action@v1.0.0
         with:
-          tag: ${{ inputs.version }}
+          tag: ${{ steps.set-vars.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
 
       # If the tag already exists, just download the artifact from that release
       - name: Download Release Artifact
@@ -49,8 +59,8 @@ jobs:
         uses: robinraju/release-downloader@v1.3
         with:
           repository: CarnegieLearningWeb/UpGrade
-          tag: ${{ inputs.version }}
-          fileName: upgrade-backend-${{ inputs.version }}.zip
+          tag: ${{ steps.set-vars.outputs.version }}
+          fileName: upgrade-backend-${{ steps.set-vars.outputs.version }}.zip
 
       # Otherwise, build the artifact
       - name: Git Checkout
@@ -66,19 +76,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Build Backend
         if: steps.check-tag.outputs.exists == 'false'
+        working-directory: backend
         run: |
           cp -R ../types packages/Upgrade
           npm ci
-          zip -qq -r upgrade-backend-${{ inputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
-          
+          zip -qq -r upgrade-backend-${{ steps.set-vars.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          mv upgrade-backend-${{ steps.set-vars.outputs.version }}.zip ../
       - uses: einaregilsson/beanstalk-deploy@v13
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: ${{ inputs.application_name }}
-          environment_name: ${{ inputs.environment_name }}
-          version_label: ${{ inputs.version }}
+          application_name: ${{ steps.set-vars.outputs.application_name }}
+          environment_name: ${{ steps.set-vars.outputs.environment_name }}
+          version_label: ${{ steps.set-vars.outputs.version }}
           region: ${{ secrets.AWS_REGION }}
-          deployment_package: backend/upgrade-backend-${{ inputs.version }}.zip
+          deployment_package: upgrade-backend-${{ steps.set-vars.outputs.version }}.zip
           wait_for_deployment: false
           use_existing_version_if_available: true

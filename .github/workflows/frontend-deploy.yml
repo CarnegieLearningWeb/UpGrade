@@ -13,6 +13,8 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      token:
+        required: true
   workflow_dispatch:
     inputs:
       s3_bucket:
@@ -28,11 +30,18 @@ jobs:
     name: Frontend Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Set Input Variables
+        id: set-vars
+        run: |
+          echo "::set-output name=version::${{ inputs.version || github.event.inputs.version }}"
+          echo "::set-output name=s3_bucket::${{ inputs.s3_bucket || github.event.inputs.s3_bucket }}"
       - name: Check if tag exists
         id: check-tag
         uses: mukunku/tag-exists-action@v1.0.0
         with:
-          tag: ${{ inputs.version }}
+          tag: ${{ steps.set-vars.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || secrets.GITHUB_TOKEN }}
 
         # If the tag already exists, just download the artifact from that release
       - name: Download Release Artifact
@@ -40,14 +49,13 @@ jobs:
         uses: robinraju/release-downloader@v1.3
         with:
           repository: CarnegieLearningWeb/UpGrade
-          tag: ${{ inputs.version }}
-          fileName: upgrade-frontend-${{ inputs.version }}.zip
+          tag: ${{ steps.set-vars.outputs.version }}
+          fileName: upgrade-frontend-${{ steps.set-vars.outputs.version }}.zip
       - name: Unpack Release Artifact
         if: steps.check-tag.outputs.exists == 'true'
-        working-directory: frontend
         run: |
-          mkdir -p dist/upgrade
-          unzip ../upgrade-frontend-${{ inputs.version }}.zip -d dist/upgrade
+          mkdir -p frontend/dist/upgrade
+          unzip upgrade-frontend-${{ steps.set-vars.outputs.version }}.zip -d frontend/dist/upgrade
 
       # Otherwise, build it
       - name: Git Checkout
@@ -59,12 +67,12 @@ jobs:
         with:
           working_directory: frontend
           build_script: build:prod
-          version: ${{ inputs.version }}
+          version: ${{ steps.set-vars.outputs.version }}
 
       - name: Deploy to S3
         uses: jakejarvis/s3-sync-action@v0.5.1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_S3_BUCKET: ${{ inputs.s3_bucket }}
+          AWS_S3_BUCKET: ${{ steps.set-vars.outputs.s3_bucket }}
           SOURCE_DIR: frontend/dist/upgrade
