@@ -13,5 +13,5 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'github@github.com'
-          git merge dev
+          git merge origin/dev
           git push
