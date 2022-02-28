@@ -1,5 +1,5 @@
 name: Client Libs JS Build
-on: ['push', 'pull_request', 'workflow_dispatch']
+on: ['pull_request', 'workflow_dispatch']
 jobs:
   clientlibs-js-build:
     name: Client Libs JS Build
