@@ -33,6 +33,7 @@ jobs:
           destination_branch: dev
           token: ${{ secrets.REPO_PAT }}
           commit-message: "Automated Version Bump: ${{ steps.get-version.outputs.version }}"
+          title: "Automated Version Bump: ${{ steps.get-version.outputs.version }}"
       - name: Approve PR
         uses: actions/github-script@v6
         with:
