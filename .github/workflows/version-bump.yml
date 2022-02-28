@@ -8,7 +8,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Main Version Bump
-        run: npm version patch
+        run: npm version patch --git-tag-version=false
       - name: Get New Version
         id: get-version
         run: |
@@ -16,16 +16,16 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Backend Version Bump
         working-directory: backend
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Backend App Version Bump
         working-directory: backend/packages/Upgrade
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Lambda App Version Bump
         working-directory: backend/packages/Schedular
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Frontend Version Bump
         working-directory: frontend
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Commit Changes
         run: |
           git config --global user.name "Automated Version Bump"
