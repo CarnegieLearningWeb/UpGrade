@@ -22,7 +22,7 @@ localsetup() {
 
     cd ../../../frontend
     rm -rf package-lock.json node_modules
-    npm install
+    npm install --force
 }
 
 mirrorsetup() {

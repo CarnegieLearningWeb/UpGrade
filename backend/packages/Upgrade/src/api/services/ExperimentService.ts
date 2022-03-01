@@ -34,7 +34,7 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { StateTimeLog } from '../models/StateTimeLogs';
-import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
+import { BadRequestError } from 'routing-controllers';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 

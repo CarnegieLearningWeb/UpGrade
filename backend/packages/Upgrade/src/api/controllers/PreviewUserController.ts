@@ -3,11 +3,9 @@ import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { PreviewUserService } from '../services/PreviewUserService';
 import { PreviewUser } from '../models/PreviewUser';
-import { Validator } from 'class-validator';
+import { isString } from 'class-validator';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
 import { AppRequest, PaginationResponse } from '../../types';
-
-const validator = new Validator();
 
 interface PreviewUserPaginationInfo extends PaginationResponse {
   nodes: PreviewUser[];
@@ -132,7 +130,7 @@ export class PreviewUserController {
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
   public one(@Param('id') id: string, @Req() request: AppRequest): Promise<PreviewUser | undefined> {
-    if (!validator.isString(id)) {
+    if (!isString(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type string.' })
