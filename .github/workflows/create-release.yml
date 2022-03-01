@@ -59,6 +59,10 @@ jobs:
           echo "::set-output name=environment_name::$EB_STAGING_ENV_NAME"
           echo "::set-output name=s3_bucket::$STAGING_S3_BUCKET"
           echo "::set-output name=function_name::$STAGING_LAMBDA_FUNCTION_NAME"
+      - id: get-major-minor-version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "::set-output name=version::$VERSION"
       - id: get-version
         uses: actions/github-script@v6
         with:
@@ -70,8 +74,8 @@ jobs:
               {owner: "${{ github.repository_owner }}", repo: "UpGrade"},
               (response) => response.data.map((tag) => tag.name)
             );
-            const tags = tagNames.filter(tag => tag.startsWith("${{ steps.get-version.outputs.version }}."));
-            const result = tags.length ? semver.inc(tags.sort(semver.rcompare)[0], 'patch') : "${{ steps.get-version.outputs.version }}.0"
+            const tags = tagNames.filter(tag => tag.startsWith("${{ steps.get-major-minor-version.outputs.version }}."));
+            const result = tags.length ? semver.inc(tags.sort(semver.rcompare)[0], 'patch') : "${{ steps.get-major-minor-version.outputs.version }}.0"
             console.log(result);
             return result;
       - name: Set Backend App Version
