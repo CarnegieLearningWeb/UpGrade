@@ -525,23 +525,26 @@ export class ExperimentAssignmentService {
 
     let expLevelFilteredExperiments = [];
 
-    const explicitExperimentIndividualExclusionData = (await this.explicitExperimentIndividualExclusionRepository
-      .findAllUsers())
+    const [explicitExperimentIndividualExclusionData, explicitExperimentIndividualInclusionData, explicitExperimentGroupExclusionData, explicitExperimentGroupInclusionData] = await Promise.all([
+      this.explicitExperimentIndividualExclusionRepository.findAllUsers(),
+      this.explicitExperimentIndividualInclusionRepository.findAllUsers(),
+      this.explicitExperimentGroupExclusionRepository.findAllGroups(),
+      this.explicitExperimentGroupInclusionRepository.findAllGroups(),
+    ]);
+
+    const explicitExperimentIndividualExclusionFilteredData = explicitExperimentIndividualExclusionData
       .filter(element => element.userId === experimentUser.id)
       .map(element => ({ userId: element.userId,  experimentId: element.experiment.id }));
 
-    const explicitExperimentIndividualInclusionData = (await this.explicitExperimentIndividualInclusionRepository
-      .findAllUsers())
+    const explicitExperimentIndividualInclusionFilteredData = explicitExperimentIndividualInclusionData
       .filter(element => element.userId === experimentUser.id)
       .map(element => ({ userId: element.userId,  experimentId: element.experiment.id }));
 
-    const explicitExperimentGroupExclusionData = (await this.explicitExperimentGroupExclusionRepository
-      .findAllGroups())
-      .map((element) => ({ groupId: element.groupId,  type: element.type, experimentId: element.experiment.id }));
+    const explicitExperimentGroupExclusionFilteredData = explicitExperimentGroupExclusionData
+      .map(element => ({ groupId: element.groupId,  type: element.type, experimentId: element.experiment.id }));
 
-    const explicitExperimentGroupInclusionData = (await this.explicitExperimentGroupInclusionRepository
-      .findAllGroups())
-      .map((element) => ({ groupId: element.groupId,  type: element.type, experimentId: element.experiment.id }));
+    const explicitExperimentGroupInclusionFilteredData = explicitExperimentGroupInclusionData
+      .map(element => ({ groupId: element.groupId,  type: element.type, experimentId: element.experiment.id }));
 
     let userGroups = [];
     if (experimentUser.group) {
@@ -572,14 +575,14 @@ export class ExperimentAssignmentService {
     expLevelFilteredExperiments = experiments.filter(( experiment ) => {
 
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
-        if (explicitExperimentIndividualExclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
+        if (explicitExperimentIndividualExclusionFilteredData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
           return false;
         } else {
-          if (explicitExperimentIndividualInclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
+          if (explicitExperimentIndividualInclusionFilteredData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
             return true;
           } else {
             for (let userGroup of userGroups) {
-              if (explicitExperimentGroupExclusionData.some(e => ( e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id ))) {
+              if (explicitExperimentGroupExclusionFilteredData.some(e => ( e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id ))) {
                 return false;
               }
             }
@@ -588,14 +591,14 @@ export class ExperimentAssignmentService {
         }
       }
       else {
-        if (explicitExperimentIndividualInclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
+        if (explicitExperimentIndividualInclusionFilteredData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
           return true;
         } else {
-          if (explicitExperimentIndividualExclusionData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
+          if (explicitExperimentIndividualExclusionFilteredData.some(e => ( e.userId === experimentUser.id && e.experimentId === experiment.id ))) {
             return false;
           } else {
             for (let userGroup of userGroups) {
-              if (explicitExperimentGroupInclusionData.some(e => ( e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id ))) {
+              if (explicitExperimentGroupInclusionFilteredData.some(e => ( e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id ))) {
                 return true;
               }
             }
