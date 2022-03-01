@@ -8,7 +8,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Main Version Bump
-        run: npm version patch
+        run: npm version patch --git-tag-version=false
       - name: Get New Version
         id: get-version
         run: |
@@ -16,23 +16,38 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Backend Version Bump
         working-directory: backend
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Backend App Version Bump
         working-directory: backend/packages/Upgrade
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Lambda App Version Bump
         working-directory: backend/packages/Schedular
-        run: npm version ${{ steps.get-version.outputs.version }}
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
       - name: Frontend Version Bump
         working-directory: frontend
-        run: npm version ${{ steps.get-version.outputs.version }}
-      - name: Commit Changes
-        run: |
-          git config --global user.name "Automated Version Bump"
-          git config --global user.email "gh-action-bump-version@users.noreply.github.com"
-          git commit -am "Automated version bump to ${{ steps.get-version.outputs.version }}"
-          git push
-  trigger-merge-to-main:
-    name: Trigger Merge to Main
-    uses: ./.github/workflows/merge-dev-to-main.yml
-    needs: version-bump
+        run: npm version ${{ steps.get-version.outputs.version }} --git-tag-version=false
+      - id: create-pr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: version-bump-${{ steps.get-version.outputs.version }}
+          destination_branch: dev
+          token: ${{ secrets.REPO_PAT }}
+          commit-message: "Automated Version Bump: ${{ steps.get-version.outputs.version }}"
+          title: "Automated Version Bump: ${{ steps.get-version.outputs.version }}"
+      - name: Approve PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            await github.rest.pulls.createReview({
+              owner: "${{ github.repository_owner }}",
+              repo: "UpGrade",
+              pull_number: ${{ steps.create-pr.outputs.pull-request-number }},
+              event: "APPROVE"
+            });
+      - name: Enable PR auto merge
+        uses: peter-evans/enable-pull-request-automerge@v1
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          pull-request-number:
+            ${{ steps.create-pr.outputs.pull-request-number }}
+          merge-method: merge

@@ -1,10 +1,11 @@
 {
     "name": "ab-testing",
-    "version": "1.0.69",
+    "version": "1.0.88",
     "license": "MIT",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --open",
+        "docker:local": "ng serve --open --host 0.0.0.0",
         "cl:build": "npm run build:prod && npm run cl:copy-package-json",
         "cl:copy-package-json": "cp projects/abtesting/package.json dist/abtesting/",
         "start:prod": "npm run build:prod && npm run server",
