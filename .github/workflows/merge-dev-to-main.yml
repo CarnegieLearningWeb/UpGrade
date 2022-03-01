@@ -1,5 +1,5 @@
 name: Merge dev into main
-on: ['workflow_call', 'workflow_dispatch']
+on: workflow_dispatch
 jobs:
   merge-dev-into-main:
     name: Merge dev into main
