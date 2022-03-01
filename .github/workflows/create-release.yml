@@ -1,35 +1,55 @@
 name: Create Release
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
   workflow_dispatch:
 jobs:
-  init:
-    name: Init
+  check-if-already-released:
+    name: Check if Already Released
+    runs-on: ubuntu-latest
+    outputs:
+      already-released: ${{ steps.check-if-already-released.outputs.result }}
+    steps:
+      - id: check-if-already-released
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const repo = "${{ github.repository }}".split("/").pop()
+            const tags = await github.paginate(
+              github.rest.repos.listTags, 
+              {owner: "${{ github.repository_owner }}", repo: repo}
+            );
+            console.log(tags)
+            const latestRelease = await github.rest.repos.getLatestRelease({
+              owner: "${{ github.repository_owner }}",
+              repo: repo
+            });
+            const branch = await github.rest.repos.getBranch({
+              owner: "${{ github.repository_owner }}",
+              repo: repo,
+              branch: "${{ github.ref }}"
+            });
+            const result = tags.find(element => element.name === latestRelease.data.tag_name).commit.sha === branch.data.commit.sha;
+            console.log(result);
+            return result;
+      
+  create-release:
+    name: Create Release
+    needs: check-if-already-released
+    if: needs.check-if-already-released.outputs.already-released == 'false'
     runs-on: ubuntu-latest
     outputs:
       application_name: ${{ steps.get-env-vars.outputs.application_name }}
       environment_name: ${{ steps.get-env-vars.outputs.environment_name }}
       function_name: ${{ steps.get-env-vars.outputs.function_name }}
       s3_bucket: ${{ steps.get-env-vars.outputs.s3_bucket }}
-      tag-exists: ${{ steps.check-tag.outputs.exists }}
-      version: ${{ steps.get-release-version.outputs.version }}
+      version: ${{ steps.get-version.outputs.result }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
-      - name: Get Release Version
-        id: get-release-version
-        run: |
-          VERSION=$(jq -r '.version' package.json)
-          echo "::set-output name=version::$VERSION"
-      - name: Check if tag exists
-        id: check-tag
-        uses: mukunku/tag-exists-action@v1.0.0
+      - uses: actions/setup-node@v2
         with:
-          tag: ${{ steps.get-release-version.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          node-version: 16
+      - run: npm install semver
       - name: Load Env Vars
         uses: tw3lveparsecs/github-actions-setvars@v0.1
       - name: Get Env Vars
@@ -39,34 +59,47 @@ jobs:
           echo "::set-output name=environment_name::$EB_STAGING_ENV_NAME"
           echo "::set-output name=s3_bucket::$STAGING_S3_BUCKET"
           echo "::set-output name=function_name::$STAGING_LAMBDA_FUNCTION_NAME"
-  create-release:
-    name: Create Release
-    needs: init
-    if: needs.init.outputs.tag-exists == 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v2
+      - id: get-version
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            var semver = require('semver');
+            const tagNames = await github.paginate(
+              github.rest.repos.listTags, 
+              {owner: "${{ github.repository_owner }}", repo: "UpGrade"},
+              (response) => response.data.map((tag) => tag.name)
+            );
+            const tags = tagNames.filter(tag => tag.startsWith("${{ steps.get-version.outputs.version }}."));
+            const result = tags.length ? semver.inc(tags.sort(semver.rcompare)[0], 'patch') : "${{ steps.get-version.outputs.version }}.0"
+            console.log(result);
+            return result;
+      - name: Set Backend App Version
+        working-directory: backend/packages/Upgrade
+        run: npm version ${{ steps.get-version.outputs.result }} --git-tag-version=false
       - name: Package Backend
         working-directory: backend
         run: |
+          npm version ${{ steps.get-version.outputs.result }} --git-tag-version=false
           cp -R ../types packages/Upgrade
           npm ci
-          zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
-          mv upgrade-backend-${{ needs.init.outputs.version }}.zip ../
+          zip -qq -r upgrade-backend-${{ steps.get-version.outputs.result }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          mv upgrade-backend-${{ steps.get-version.outputs.result }}.zip ../
       - name: Build Frontend
         working-directory: frontend
         run: |
+          npm version ${{ steps.get-version.outputs.result }} --git-tag-version=false
           npm ci
           npm run build:prod
       - name: Package Frontend
         working-directory: frontend/dist/upgrade
         run: |
-          zip -r upgrade-frontend-${{ needs.init.outputs.version }}.zip *
-          mv upgrade-frontend-${{ needs.init.outputs.version }}.zip ../../..
+          zip -r upgrade-frontend-${{ steps.get-version.outputs.result }}.zip *
+          mv upgrade-frontend-${{ steps.get-version.outputs.result }}.zip ../../..
       - name: Build Lambda
         working-directory: backend/packages/Schedular
         run: |
+          npm version ${{ steps.get-version.outputs.result }} --git-tag-version=false
           npm ci
           npm run build
           mkdir lib
@@ -76,24 +109,24 @@ jobs:
         working-directory: backend/packages/Schedular/lib
         id: package-lambda
         run: |
-          zip -r upgrade-lambda-${{ needs.init.outputs.version }}.zip *
-          mv upgrade-lambda-${{ needs.init.outputs.version }}.zip ../../../..
+          zip -r upgrade-lambda-${{ steps.get-version.outputs.result }}.zip *
+          mv upgrade-lambda-${{ steps.get-version.outputs.result }}.zip ../../../..
       - uses: ncipollo/release-action@v1
         with:
           artifacts: upgrade-*.zip
           commit: main
           generateReleaseNotes: true
-          tag: ${{ needs.init.outputs.version }}
+          tag: ${{ steps.get-version.outputs.result }}
           token: ${{ secrets.GITHUB_TOKEN }}
   deploy-backend-staging:
     name: Deploy Backend to Staging
     uses: ./.github/workflows/backend-deploy.yml
-    needs: create-release
-    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
+    needs: [create-release, check-if-already-released]
+    if: needs.check-if-already-released.outputs.already-released == 'false' && github.repository_owner == 'CarnegieLearningWeb'
     with:
-      application_name: ${{ needs.init.outputs.application_name }}
-      environment_name: ${{ needs.init.outputs.environment_name }}
-      version: ${{ needs.init.outputs.version }}
+      application_name: ${{ needs.create-release.outputs.application_name }}
+      environment_name: ${{ needs.create-release.outputs.environment_name }}
+      version: ${{ needs.create-release.outputs.version }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -102,11 +135,11 @@ jobs:
   deploy-frontend-staging:
     name: Deploy Frontend to Staging
     uses: ./.github/workflows/frontend-deploy.yml
-    needs: create-release
-    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
+    needs: [create-release, check-if-already-released]
+    if: needs.check-if-already-released.outputs.already-released == 'false' && github.repository_owner == 'CarnegieLearningWeb'
     with:
-      s3_bucket: ${{ needs.init.outputs.s3_bucket }}
-      version: ${{ needs.init.outputs.version }}
+      s3_bucket: ${{ needs.create-release.outputs.s3_bucket }}
+      version: ${{ needs.create-release.outputs.version }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -114,11 +147,11 @@ jobs:
   deploy-lambda-staging:
     name: Deploy Lambda to Staging
     uses: ./.github/workflows/lambda-deploy.yml
-    needs: create-release
-    if: needs.init.outputs.exists == 'false' && github.repository_owner == 'CarnegieLearningWeb'
+    needs: [create-release, check-if-already-released]
+    if: needs.check-if-already-released.outputs.already-released == 'false' && github.repository_owner == 'CarnegieLearningWeb'
     with:
-      function_name: ${{ needs.init.outputs.function_name }}
-      version: ${{ needs.init.outputs.version }}
+      function_name: ${{ needs.create-release.outputs.function_name }}
+      version: ${{ needs.create-release.outputs.version }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
