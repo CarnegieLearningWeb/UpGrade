@@ -1,37 +1,24 @@
-#!/usr/bin/env bash
+#! /usr/bin/env nix-shell
+#! nix-shell docker.nix --pure -i bash
+
+# to execute this script, you only need to install nix-shell:
+# sh <(curl -L https://nixos.org/nix/install)
+# (see https://nixos.org/nix/ for more)
 
 set -e;
 set -u;
 
-localsetup() {
-    rm -rf package-lock.json node_modules
-    npm install
+setuplocal() {
+    npm ci
 
     cd types
-    rm -rf package-lock.json node_modules
-    npm install
+    npm ci
 
     cd ../backend
-    rm -rf package-lock.json node_modules
-    npm install
-
-    cp -R ../types packages/Upgrade
-    cd packages/Upgrade
-    rm -rf package-lock.json node_modules
-    npm install
-
-    cd ../../../frontend
-    rm -rf package-lock.json node_modules
-    npm install --force
-}
-
-mirrorsetup() {
-    cd backend
     npm ci
 
     cp -R ../types packages/Upgrade
     cd packages/Upgrade
-    cp .env.docker.local .env
     npm ci
 
     cd ../../../frontend
@@ -43,16 +30,14 @@ help() {
 Usage:
     -h: this help guide
     -l: run setup for local development environment
-    -m: run setup for mirroring qa/prod environment
 EOF
     exit 0;
 }
 
-while getopts hlm opt
+while getopts hl opt
 do
     case "$opt" in
         h) help;;
-	    l) localsetup;;
-        m) mirrorsetup;;
+        l) setuplocal;;
     esac
 done

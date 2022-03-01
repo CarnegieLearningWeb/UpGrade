@@ -28,7 +28,7 @@ image-backend:
 
 image-frontend:
 	@echo "---- Building Frontend Docker Image ----"
-	docker build -f $(backendDockerfile) -t $(frontendImage) .
+	docker build -f $(frontendDockerfile) -t $(frontendImage) .
 
 log-backend:
 	@echo "---- Backend Logs ----"
@@ -69,10 +69,6 @@ destroy: clean
 setup-local:
 	@echo "---- Setup for the Local Environment ----"
 	./docker-setup.sh -l
-
-setup-mirror:
-	@echo "---- Setup for Mirroring QA/Prod Environment ----"
-	./docker-setup.sh -m
 
 db-dump:
 	@echo "---- Backing Up Database ----"
