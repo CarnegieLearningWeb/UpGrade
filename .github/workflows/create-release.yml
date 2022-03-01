@@ -98,7 +98,7 @@ jobs:
           zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
       - uses: actions/upload-artifact@v2
         with:
-          name: backend-artifact
+          name: upgrade-backend-${{ needs.init.outputs.version }}.zip
           path: backend/upgrade-backend-${{ needs.init.outputs.version }}.zip
 
   build-frontend:
@@ -120,7 +120,7 @@ jobs:
           zip -r upgrade-frontend-${{ needs.init.outputs.version }}.zip *
       - uses: actions/upload-artifact@v2
         with:
-          name: frontend-artifact
+          name: upgrade-frontend-${{ needs.init.outputs.version }}.zip
           path: frontend/dist/upgrade/upgrade-frontend-${{ needs.init.outputs.version }}.zip
 
   build-lambda:
@@ -146,7 +146,7 @@ jobs:
           zip -r upgrade-lambda-${{ needs.init.outputs.version }}.zip *
       - uses: actions/upload-artifact@v2
         with:
-          name: lambda-artifact
+          name: upgrade-lambda-${{ needs.init.outputs.version }}.zip
           path: backend/packages/Schedular/lib/upgrade-lambda-${{ needs.init.outputs.version }}.zip
       
   create-release:
