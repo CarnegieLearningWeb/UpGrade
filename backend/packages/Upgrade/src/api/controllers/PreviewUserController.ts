@@ -1,11 +1,11 @@
-import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized, Delete } from 'routing-controllers';
+import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized, Delete, Req } from 'routing-controllers';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { PreviewUserService } from '../services/PreviewUserService';
 import { PreviewUser } from '../models/PreviewUser';
 import { Validator } from 'class-validator';
 import { PaginatedParamsValidator } from './validators/PaginatedParamsValidator';
-import { PaginationResponse } from '../../types';
+import { AppRequest, PaginationResponse } from '../../types';
 
 const validator = new Validator();
 
@@ -81,7 +81,8 @@ export class PreviewUserController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: PaginatedParamsValidator
+    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: PaginatedParamsValidator, 
+    @Req() request: AppRequest
   ): Promise<PreviewUserPaginationInfo> {
     if (!paginatedParams) {
       return Promise.reject(
@@ -94,9 +95,10 @@ export class PreviewUserController {
     const [previewUsers, count] = await Promise.all([
       this.previewUserService.findPaginated(
         paginatedParams.skip,
-        paginatedParams.take
+        paginatedParams.take,
+        request.logger
       ),
-      this.previewUserService.getTotalCount(),
+      this.previewUserService.getTotalCount(request.logger),
     ]);
     return {
       total: count,
@@ -129,7 +131,7 @@ export class PreviewUserController {
    */
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
-  public one(@Param('id') id: string): Promise<PreviewUser | undefined> {
+  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<PreviewUser | undefined> {
     if (!validator.isString(id)) {
       return Promise.reject(
         new Error(
@@ -137,7 +139,7 @@ export class PreviewUserController {
         )
       );
     }
-    return this.previewUserService.findOne(id);
+    return this.previewUserService.findOne(id, request.logger);
   }
 
   /**
@@ -164,8 +166,8 @@ export class PreviewUserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: PreviewUser): Promise<PreviewUser> {
-    return this.previewUserService.create(users);
+  public create(@Body() users: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
+    return this.previewUserService.create(users, request.logger);
   }
 
   /**
@@ -200,9 +202,10 @@ export class PreviewUserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false } } }) user: PreviewUser
+    @Body({ validate: { validationError: { target: false, value: false } } }) user: PreviewUser, 
+    @Req() request: AppRequest
   ): Promise<PreviewUser> {
-    return this.previewUserService.update(id, user);
+    return this.previewUserService.update(id, user, request.logger);
   }
 
   /**
@@ -226,8 +229,8 @@ export class PreviewUserController {
    *            description: Delete User By Id
    */
   @Delete('/:id')
-  public delete(@Param('id') id: string): Promise<PreviewUser | undefined> {
-    return this.previewUserService.delete(id);
+  public delete(@Param('id') id: string, @Req() request: AppRequest): Promise<PreviewUser | undefined> {
+    return this.previewUserService.delete(id, request.logger);
   }
 
   /**
@@ -254,7 +257,7 @@ export class PreviewUserController {
    *            description: Assignment is created
    */
   @Post('/assign')
-  public assign(@Body() user: PreviewUser): Promise<PreviewUser> {
-    return this.previewUserService.upsertExperimentConditionAssignment(user);
+  public assign(@Body() user: PreviewUser, @Req() request: AppRequest): Promise<PreviewUser> {
+    return this.previewUserService.upsertExperimentConditionAssignment(user, request.logger);
   }
 }

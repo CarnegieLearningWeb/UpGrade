@@ -16,9 +16,11 @@ import { QueryService } from '../../../../src/api/services/QueryService';
 import { metrics } from '../../mockData/metric';
 import { AnalyticsService } from '../../../../src/api/services/AnalyticsService';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 
 export default async function LogOperations(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
@@ -29,11 +31,11 @@ export default async function LogOperations(): Promise<void> {
   const queryService = Container.get<QueryService>(QueryService);
   const emailAddress = 'vivekfitkariwala@gmail.com';
 
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -50,7 +52,7 @@ export default async function LogOperations(): Promise<void> {
   const experimentPoint = experimentObject.partitions[0].expPoint;
   const condition = experimentObject.conditions[0].conditionCode;
 
-  await settingService.setClientCheck(false, true);
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
@@ -59,10 +61,10 @@ export default async function LogOperations(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -219,11 +221,12 @@ export default async function LogOperations(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
+  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
 
-  await analyticsService.getCSVData(experimentObject.id, emailAddress);
+  await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
 
   // log data here
+  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[0].id, [
     {
       timestamp: new Date().toISOString(),
@@ -244,8 +247,8 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[0].id, [
     {
       timestamp: new Date().toISOString(),
@@ -266,8 +269,8 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[1].id, [
     {
       timestamp: new Date().toISOString(),
@@ -285,10 +288,10 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
-  await analyticsService.getCSVData(experimentObject.id, emailAddress);
-
+  await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[2].id, [
     {
       timestamp: new Date().toISOString(),
@@ -306,8 +309,8 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[3].id, [
     {
       timestamp: new Date().toISOString(),
@@ -325,8 +328,8 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
-
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
   await experimentAssignmentService.dataLog(experimentUsers[3].id, [
     {
       timestamp: new Date().toISOString(),
@@ -344,9 +347,9 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], new UpgradeLogger());
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc}));
 
-  const allQuery = await queryService.find();
+  const allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

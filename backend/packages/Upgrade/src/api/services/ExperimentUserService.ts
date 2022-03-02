@@ -2,7 +2,6 @@ import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
@@ -20,16 +19,17 @@ export class ExperimentUserService {
     @OrmRepository() private individualAssignmentRepository: IndividualAssignmentRepository,
     @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public find(): Promise<ExperimentUser[]> {
-    this.log.info(`Find all users`);
-    return this.userRepository.find();
+  public find(logger: UpgradeLogger): Promise<ExperimentUser[]> {
+    if (logger) {
+      logger.info({ message: `Find all users` });
+    }
+      return this.userRepository.find();
   }
 
-  public findOne(id: string): Promise<ExperimentUser> {
-    this.log.info(`Find user by id => ${id}`);
+  public findOne(id: string, logger: UpgradeLogger): Promise<ExperimentUser> {
+    logger.info({ message: `Find user by id => ${id}` });
     return this.userRepository.findOne({ id });
   }
 
@@ -61,7 +61,7 @@ export class ExperimentUserService {
 
   public async setAliasesForUser(userId: string, aliases: string[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser[]> {
     const { logger, userDoc } = requestContext;
-    const userExist = userDoc['user'];
+    const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
@@ -159,12 +159,7 @@ export class ExperimentUserService {
 
   public async updateWorkingGroup(userId: string, workingGroup: any, requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
-    let userExist;
-    if (userDoc['user']) {
-      userExist = userDoc['user'];
-    } else {
-      userExist = userDoc;
-    }
+    let userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
       throw new Error(
@@ -179,8 +174,8 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public update(id: string, user: ExperimentUser): Promise<ExperimentUser> {
-    this.log.info('Update a user => ', user.toString());
+  public update(id: string, user: ExperimentUser, logger: UpgradeLogger): Promise<ExperimentUser> {
+    logger.info({ message: `Update a user ${user.toString()}` });
     user.id = id;
     return this.userRepository.save(user);
   }
@@ -188,12 +183,7 @@ export class ExperimentUserService {
   // TODO should we check for workingGroup as a subset over here?
   public async updateGroupMembership(userId: string, groupMembership: any, requestContext: {logger: UpgradeLogger, userDoc: any} ): Promise<ExperimentUser> { 
     const { logger, userDoc } = requestContext;
-    let userExist;
-    if (userDoc['user']) {
-      userExist = userDoc['user'];
-    } else {
-      userExist = userDoc;
-    }
+    let userExist = userDoc;
     logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
     if (!userExist) {
       throw new Error(
@@ -216,7 +206,9 @@ export class ExperimentUserService {
   }
 
   public async getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<ExperimentUser | null> {
-    logger.info({ message: `Find original user for userId ${userId}` });
+    if (logger) {
+      logger.info({ message: `Find original user for userId ${userId}` });
+    }
     const userDoc = await this.userRepository.find({
       where: { id: userId },
       relations: ['originalUser'],

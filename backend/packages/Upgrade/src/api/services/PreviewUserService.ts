@@ -1,22 +1,21 @@
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import uuid from 'uuid/v4';
 import { PreviewUser } from '../models/PreviewUser';
 import { PreviewUserRepository } from '../repositories/PreviewUserRepository';
 import { ExplicitIndividualAssignmentRepository } from '../repositories/ExplicitIndividualAssignmentRepository';
 import { ExplicitIndividualAssignment } from '../models/ExplicitIndividualAssignment';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class PreviewUserService {
   constructor(
     @OrmRepository() private userRepository: PreviewUserRepository,
     @OrmRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async find(): Promise<PreviewUser[]> {
-    this.log.info(`Find all preview users`);
+  public async find(logger: UpgradeLogger): Promise<PreviewUser[]> {
+    logger.info({ message : `Find all preview users` });
     const [previewUsers, assignments] = await Promise.all([
       this.userRepository.find(),
       this.userRepository.findWithNames(),
@@ -29,8 +28,8 @@ export class PreviewUserService {
     });
   }
 
-  public async findOne(id: string): Promise<PreviewUser | undefined> {
-    this.log.info(`Find user by id => ${id}`);
+  public async findOne(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
+    logger.info({ message : `Find user by id => ${id}` });
     const [previewUser, assignments] = await Promise.all([
       this.userRepository.findOne({ id }),
       this.userRepository.findOneById(id),
@@ -38,16 +37,17 @@ export class PreviewUserService {
     return assignments ? assignments : previewUser;
   }
 
-  public getTotalCount(): Promise<number> {
-    this.log.info(`Find count of preview users`);
+  public getTotalCount(logger: UpgradeLogger): Promise<number> {
+    logger.info({ message : `Find count of preview users` });
     return this.userRepository.count();
   }
 
   public async findPaginated(
     skip: number,
-    take: number
+    take: number,
+    logger: UpgradeLogger
   ): Promise<PreviewUser[]> {
-    this.log.info(`Find paginated preview users`);
+    logger.info({ message : `Find paginated preview users` });
     const [previewUsers, assignments] = await Promise.all([
       this.userRepository.findPaginated(skip, take),
       this.userRepository.findWithNames(),
@@ -60,29 +60,29 @@ export class PreviewUserService {
     });
   }
 
-  public create(user: Partial<PreviewUser>): Promise<PreviewUser> {
-    this.log.info('Create a new user => ', user);
+  public create(user: Partial<PreviewUser>,logger: UpgradeLogger): Promise<PreviewUser> {
+    logger.info({ message : `Create a new user => ${user}` });
     user.id = user.id || uuid();
 
     return this.userRepository.save(user);
   }
 
-  public update(id: string, user: PreviewUser): Promise<PreviewUser> {
-    this.log.info('Update a user => ', user.toString());
+  public update(id: string, user: PreviewUser, logger: UpgradeLogger): Promise<PreviewUser> {
+    logger.info({ message : `Update a user => ${user.toString()}` });
     user.id = id;
     return this.userRepository.save(user);
   }
 
-  public async delete(id: string): Promise<PreviewUser | undefined> {
-    this.log.info('Delete a user => ', id.toString());
+  public async delete(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
+    logger.info({ message : `Delete a user => ${id.toString()}` });
     const deletedDoc = await this.userRepository.deleteById(id);
     return deletedDoc;
   }
 
-  public async upsertExperimentConditionAssignment(previewUser: PreviewUser): Promise<PreviewUser | undefined> {
-    this.log.info('Upsert Experiment Condition Assignment => ', JSON.stringify(previewUser, undefined, 1));
+  public async upsertExperimentConditionAssignment(previewUser: PreviewUser, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
+    logger.info({ message : `Upsert Experiment Condition Assignment ${JSON.stringify(previewUser, undefined, 1)}` });
 
-    const previewDocumentWithOldAssignments = await this.findOne(previewUser.id);
+    const previewDocumentWithOldAssignments = await this.findOne(previewUser.id, logger);
     const newAssignments = previewUser.assignments;
 
     const assignmentDocToSave: Array<Partial<ExplicitIndividualAssignment>> =
@@ -122,7 +122,7 @@ export class PreviewUserService {
     if (assignmentDocToSave.length > 0) {
       await this.explicitIndividualAssignmentRepository.save(assignmentDocToSave);
     }
-    const getDocument = await this.findOne(previewUser.id);
+    const getDocument = await this.findOne(previewUser.id, logger);
     return getDocument;
   }
 }

@@ -1,12 +1,12 @@
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { QueryRepository } from '../repositories/QueryRepository';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { Query } from '../models/Query';
 import { LogRepository } from '../repositories/LogRepository';
 import { SERVER_ERROR } from 'upgrade_types';
 import { ErrorService } from './ErrorService';
 import { ExperimentError } from '../models/ExperimentError';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class QueryService {
@@ -14,11 +14,10 @@ export class QueryService {
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private logRepository: LogRepository,
     public errorService: ErrorService,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public async find(): Promise<Query[]> {
-    this.log.info('Find all query');
+  public async find(logger: UpgradeLogger): Promise<Query[]> {
+    logger.info({ message: 'Find all query' });
     const queries = await this.queryRepository.find({
       relations: ['metric', 'experiment'],
     });
@@ -28,8 +27,8 @@ export class QueryService {
     });
   }
 
-  public async analyse(queryIds: string[]): Promise<any> {
-    this.log.info(`Get analysis of query with queryIds ${queryIds}`);
+  public async analyse(queryIds: string[], logger: UpgradeLogger): Promise<any> {
+    logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
     const promiseArray = queryIds.map((queryId) =>
       this.queryRepository.findOne(queryId, {
         relations: ['metric', 'experiment'],
@@ -46,15 +45,14 @@ export class QueryService {
       if (query.status === 'fulfilled') {
         return query.value;
       } else {
-        
-        this.log.error('Error in Query Id ', queryIds[index]);
+        logger.error({ message: `Error in Query Id ${queryIds[index]}` });
         failedQuery.push(this.errorService.create({
           endPoint: '/api/query/analyse',
           errorCode: 500,
           message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
           name: 'Query Failed error',
           type: SERVER_ERROR.QUERY_FAILED,
-        } as ExperimentError, null));
+        } as ExperimentError, logger));
 
         return [];
       }

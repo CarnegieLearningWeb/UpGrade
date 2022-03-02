@@ -1,0 +1,13 @@
+name: Client Libs Java Build
+on: ['pull_request', 'workflow_dispatch']
+jobs:
+  clientlibs-java-build:
+    name: Client Libs Java Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Maven Build
+        working-directory: clientlibs/java
+        run: mvn install
+        

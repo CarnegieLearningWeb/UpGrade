@@ -15,12 +15,12 @@ export default async function GroupAndParticipants() {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = groupAndParticipantsExperiment;
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -61,10 +61,10 @@ export default async function GroupAndParticipants() {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -117,7 +117,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -146,7 +146,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -169,7 +169,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName2, experimentPoint2);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -198,7 +198,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName1, experimentPoint1);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -221,7 +221,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName2, experimentPoint2);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -250,7 +250,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[5].id, experimentName1, experimentPoint1);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -273,7 +273,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName2, experimentPoint2);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

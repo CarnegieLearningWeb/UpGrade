@@ -1,4 +1,5 @@
-import { JsonController, Post, Body, Authorized } from 'routing-controllers';
+import { JsonController, Post, Body, Authorized, Req } from 'routing-controllers';
+import { AppRequest } from '../../types';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
 
@@ -58,12 +59,12 @@ export class LoginController {
    *            description: User will be created if doesn't exist in the DB
    */
   @Post('/user')
-  public upsertUser(@Body() user: User): Promise<User> {
+  public upsertUser(@Body() user: User, @Req() request: AppRequest): Promise<User> {
     if (user.role) {
         // Create a user with default role reader if user doesn't exist as anyone with accepted google account domain can login
         // Role can be updated later by admin users only
         delete user.role;
     }
-    return this.userService.upsertUser(user);
+    return this.userService.upsertUser(user, request.logger);
   }
 }
