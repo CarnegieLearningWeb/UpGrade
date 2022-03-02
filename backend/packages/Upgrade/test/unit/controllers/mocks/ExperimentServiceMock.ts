@@ -1,6 +1,7 @@
 import { Experiment } from 'packages/Upgrade/src/api/models/Experiment';
 import { User } from 'packages/Upgrade/src/api/models/User';
 import { Service } from 'typedi';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 @Service()
 export default class ExperimentServieMock {
@@ -59,4 +60,9 @@ export default class ExperimentServieMock {
   public importExperiment(experiment: Experiment, currentUser: User): Promise<[]> {
     return Promise.resolve([]);
   }
+
+  public  exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<[]> {
+    return Promise.resolve([]);
+  }
+
 }
