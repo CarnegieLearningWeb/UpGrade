@@ -1,4 +1,3 @@
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
@@ -15,7 +14,6 @@ import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function IndividualUserCount(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const userService = Container.get<UserService>(UserService);
 
