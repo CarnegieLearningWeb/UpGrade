@@ -1,0 +1,81 @@
+import { NextFunction } from 'express';
+import { ScheduleJobMiddleware } from '../../../src/api/middlewares/ScheduleJobMiddleware';
+import { AppRequest } from 'upgrade_types';
+import { SERVER_ERROR } from 'upgrade_types';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { Setting } from '../../../src/api/models/Setting';
+import jwt from 'jsonwebtoken';
+
+
+
+class SettingServiceAuthCheck {
+    public getClientCheck(logger: UpgradeLogger): Promise<Setting> {
+        const defaultSetting = new Setting();
+        defaultSetting.toCheckAuth = true;
+        defaultSetting.toFilterMetric = false;
+        return Promise.resolve(defaultSetting);
+    }
+}
+
+describe('ScheduleJob Middleware tests', () => {
+    let mockRequest: any;
+    let mockResponse: any;
+    let nextFunction: NextFunction = jest.fn();
+    let schedulelib = new ScheduleJobMiddleware();
+
+
+    let mockjson: any;
+
+    beforeEach(() => {
+        mockjson = error => mockResponse.body = error.message;
+
+        mockRequest = {
+            header: jest.fn(),
+            logger: new UpgradeLogger(),
+            get: jest.fn()
+        };
+      
+        mockResponse = {
+            json: jest.fn(mockjson),
+            status: jest.fn(),
+            statusCode: 200,
+            headersSent: false,
+            body: {}
+          };
+    });
+
+    test('JWT Expired error test', async () => {
+        let error = new Error();
+        error.message = 'jwt expired';
+        mockRequest.header = jest.fn(() => {throw error});
+        expect(()=>{schedulelib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)}).toThrow(error);
+
+    })
+
+    test('Invalid token error test', async () => {
+        let error = new Error();
+        error.message = 'invalid token';
+        mockRequest.header = jest.fn(() => {throw error});
+        expect(()=>{schedulelib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)}).toThrow(error);
+    })
+
+    test('Auth Check no token test', async () => {
+        const error = new Error('Token is not present in request header');
+        (error as any).type = SERVER_ERROR.TOKEN_NOT_PRESENT;
+        expect(()=>{schedulelib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)}).toThrow(error);
+    })
+
+    test('Auth Check no token test', async () => {
+        let headerAuth = x => {return x + ' Bearer abd'};
+        mockRequest.header = headerAuth;
+        let getSessionId = x => {return x + ' 123'}
+        mockRequest.get = getSessionId;
+
+        const verify = jest.spyOn(jwt, 'verify');
+        verify.mockImplementation(() => () => ({ verified: 'true' }));
+        const error = new Error('Provided token is invalid');
+        (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+        expect(()=>{schedulelib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)}).toThrow(error);
+    })
+
+});

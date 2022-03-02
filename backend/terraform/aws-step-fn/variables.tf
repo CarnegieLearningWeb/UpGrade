@@ -14,11 +14,11 @@ variable "app_version" {}
 # SFN SPECIFIC VARIABLES
 # -------------------------------------------------------------------------------------------
 variable "aws_sfn_state_machine_name" {
-  default     = "experiment-schedular"
+  default     = "experiment-scheduler"
 }
 
 variable "lambda_arn" {
-  description = "Arn of the schedular lambda function"
+  description = "Arn of the scheduler lambda function"
 }
 
 # -------------------------------------------------------------------------------------------

@@ -12,7 +12,7 @@ variable "app_version" {}
 
 variable "lambda_iam_role_name" {
   description = "Role name for lambda IAM"
-  default     = "schedular-lambda-iam"
+  default     = "scheduler-lambda-iam"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -21,14 +21,14 @@ variable "lambda_iam_role_name" {
 
 variable "s3_lambda_bucket" {
   description = "s3 bucket to store lambda zip"
-  default     = "schedular"
+  default     = "scheduler"
 }
 
 variable "s3_lambda_key" {}
 
 #variable "lambda_zip" {
 #  description = "Name of the compressed lambda zip file."
-#  default     = "schedular.zip"
+#  default     = "scheduler.zip"
 #}
 
 #variable "lambda_path" {
