@@ -1,6 +1,5 @@
 import app from '../../utils/expressApp';
 import request from 'supertest';
-import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
@@ -62,27 +61,27 @@ describe('Experiment Client Controller Testing', () => {
     ]
   }
 
-  const blobLogData = {
-    "userId": "u23",
-    "value": [
-      {
-        "userId": "u23",
-        "timestamp": "1970-01-01T00:00:00Z",
-        "metrics": {
-          "groupedMetrics": [
-            {
-              "groupClass": "masteryWorkspace",
-              "groupKey": "calculating_area_of_square",
-              "groupUniquifier": "1990-10-10T00:00:00Z",
-              "attributes": {
-                "hintCount": 31
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
+  // const blobLogData = {
+  //   "userId": "u23",
+  //   "value": [
+  //     {
+  //       "userId": "u23",
+  //       "timestamp": "1970-01-01T00:00:00Z",
+  //       "metrics": {
+  //         "groupedMetrics": [
+  //           {
+  //             "groupClass": "masteryWorkspace",
+  //             "groupKey": "calculating_area_of_square",
+  //             "groupUniquifier": "1990-10-10T00:00:00Z",
+  //             "attributes": {
+  //               "hintCount": 31
+  //             }
+  //           }
+  //         ]
+  //       }
+  //     }
+  //   ]
+  // }
 
   test('Post request for /api/init', async done => {
     await request(app)
