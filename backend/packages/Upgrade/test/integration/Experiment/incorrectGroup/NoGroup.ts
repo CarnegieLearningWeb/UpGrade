@@ -10,8 +10,7 @@ import {
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
-import { Console } from 'winston/lib/winston/transports';
+import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, getAllExperimentCondition } from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 
