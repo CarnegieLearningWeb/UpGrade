@@ -45,4 +45,14 @@ describe('Scheduled Job Controller Testing', () => {
 
     done();
   });
+
+  test('Post request for /api/scheduledJobs/clearLogs', async done => {
+    await request(app)
+      .post('/api/scheduledJobs/clearLogs')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    done();
+  });
 });
