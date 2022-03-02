@@ -134,7 +134,7 @@ export class ExperimentService {
   }
 
   public create(experiment: ExperimentInput, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ message: 'Create a new experiment =>', details:  experiment.toString() });
+    logger.info({ message: 'Create a new experiment =>', details:  experiment });
 
     // order for condition
     experiment.conditions.forEach((condition, index) => {
@@ -151,7 +151,7 @@ export class ExperimentService {
   }
 
   public createMultipleExperiments(experiment: ExperimentInput[], logger: UpgradeLogger): Promise<Experiment[]> {
-    logger.info({ message: `Generating test experiments => ${experiment.toString()}` });
+    logger.info({ message: `Generating test experiments`, details: experiment });
     return this.addBulkExperiments(experiment, logger);
   }
 
@@ -186,7 +186,7 @@ export class ExperimentService {
 
   public update(experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
     if ( logger ) {
-      logger.info({ message: `Update the experiment`, details: experiment.toString() });
+      logger.info({ message: `Update the experiment`, details: experiment });
     }
     return this.updateExperimentInDB(experiment as any, currentUser, logger);
   }
@@ -703,7 +703,7 @@ export class ExperimentService {
           delete condition.createdAt;
           delete (condition as any).experimentId;
         });
-        logger.info({message:'Updated experiment:', details: newExperiment.toString()})
+        logger.info({ message:'Updated experiment:', details: newExperiment })
         // add AuditLogs here
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,

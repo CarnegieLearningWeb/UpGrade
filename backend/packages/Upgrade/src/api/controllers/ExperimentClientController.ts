@@ -770,13 +770,11 @@ export class ExperimentClientController {
           aliasUserId = experimentUserId;
         }
         const userDoc = {
-          user: {
             createdAt: experimentUserDoc.createdAt,
             id: aliasUserId,
             originalUserId: experimentUserDoc.id,
             group: experimentUserDoc.group,
             workingGroup: experimentUserDoc.workingGroup
-          }
         };
         return userDoc;
     } else {

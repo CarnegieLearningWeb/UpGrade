@@ -32,6 +32,7 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     logger.child({
       http_request_id: uuid(),
       endpoint: req.url,
+      request_method_type: req.method,
     });
     req.logger = logger;
 
