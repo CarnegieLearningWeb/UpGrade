@@ -1,7 +1,8 @@
-import { JsonController, Post, Body } from 'routing-controllers';
+import { JsonController, Post, Body, Req } from 'routing-controllers';
 import { SupportGetAssignmentParamsValidator } from './validators/SupportGetAssignmentParamsValidator';
 import { IExperimentAssignment } from 'upgrade_types';
 import { SupportService } from '../services/SupportService';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -44,8 +45,9 @@ export class SupportToolController {
   @Post('/assignment')
   public getAssignments(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    assignmentParams: SupportGetAssignmentParamsValidator
+    assignmentParams: SupportGetAssignmentParamsValidator, 
+    @Req() request: AppRequest
   ): Promise<IExperimentAssignment[]> {
-    return this.supportService.getAssignments(assignmentParams.userId, assignmentParams.context);
+    return this.supportService.getAssignments(assignmentParams.userId, assignmentParams.context, request.logger);
   }
 }

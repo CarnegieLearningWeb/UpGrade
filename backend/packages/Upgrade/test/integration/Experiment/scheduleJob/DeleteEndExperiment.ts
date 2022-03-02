@@ -7,6 +7,7 @@ import { SCHEDULE_TYPE } from '../../../../src/api/models/ScheduledJob';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function DeleteEndExperiment(): Promise<void> {
   const logger = new WinstonLogger(__filename);
@@ -15,14 +16,14 @@ export default async function DeleteEndExperiment(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = scheduleJobEndExperiment;
 
   // create experiment
-  await experimentService.create(scheduleJobEndExperiment as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(scheduleJobEndExperiment as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -36,7 +37,7 @@ export default async function DeleteEndExperiment(): Promise<void> {
   );
 
   await new Promise(r => setTimeout(r, 1000));
-  let endExperiment = await scheduledJobService.getAllEndExperiment();
+  let endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
 
   expect(endExperiment).toEqual(
     expect.arrayContaining([
@@ -48,9 +49,9 @@ export default async function DeleteEndExperiment(): Promise<void> {
     ])
   );
 
-  await experimentService.delete(experiments[0].id, user);
+  await experimentService.delete(experiments[0].id, user, new UpgradeLogger());
 
-  endExperiment = await scheduledJobService.getAllEndExperiment();
+  endExperiment = await scheduledJobService.getAllEndExperiment(new UpgradeLogger());
   expect(endExperiment.length).toEqual(0);
 
   // const updatedExperiment = {

@@ -1,0 +1,13 @@
+name: Auto Merge PRs
+on:
+  pull_request:
+    types: [opened, edited, synchronize, closed, reopened]
+jobs:
+  auto-merge-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/enable-pull-request-automerge@v1
+        with:
+          token: ${{ secrets.REPO_PAT }}
+          pull-request-number: ${{ github.event.number }}
+          merge-method: squash

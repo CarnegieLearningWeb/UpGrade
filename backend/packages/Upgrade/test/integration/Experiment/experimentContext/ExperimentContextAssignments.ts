@@ -20,7 +20,7 @@ export default async function testCase(): Promise<void> {
   const individualAssignmentRepository = getRepository(IndividualAssignment);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
   const context1 = 'login';
   const context2 = 'about';
 
@@ -29,8 +29,8 @@ export default async function testCase(): Promise<void> {
   experimentObject1.context = [context1];
 
   // create experiment 1
-  await experimentService.create(experimentObject1 as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -47,8 +47,8 @@ export default async function testCase(): Promise<void> {
   const experimentObject2 = secondExperiment;
   experimentObject2.context = [context2];
   // create experiment 2
-  await experimentService.create(experimentObject2 as any, user);
-  experiments = await experimentService.find();
+  await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -64,11 +64,11 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   const [experiment1, experiment2] = experiments;
-  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user);
-  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

@@ -2,6 +2,7 @@ import { User } from '../../api/models/User';
 import Container from 'typedi';
 import { UserService } from '../../api/services/UserService';
 import { env } from '../../env';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 export const systemUserDoc = {
   email: 'system@gmail.com',
@@ -17,8 +18,8 @@ export function CreateSystemUser(): Promise<User> {
   // Create default admin user in system
   if (env.initialization.adminUsers && env.initialization.adminUsers.length) {
     env.initialization.adminUsers.forEach(async (adminUser) => {
-      await userService.upsertUser(adminUser as any);
+      await userService.upsertUser(adminUser as any, new UpgradeLogger());
     });
   }
-  return userService.upsertUser(systemUserDoc as any);
+  return userService.upsertUser(systemUserDoc as any, new UpgradeLogger());
 }

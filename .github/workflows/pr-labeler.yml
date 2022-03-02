@@ -1,0 +1,11 @@
+name: "Pull Request Labeler"
+on: pull_request
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: srvaroa/labeler@v0.8
+        with:
+          config_path: .github/pr-labeler-config.yml
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

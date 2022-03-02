@@ -20,7 +20,7 @@ export default async function IndividualUserCount(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject: any = individualAssignmentExperiment;
@@ -29,8 +29,8 @@ export default async function IndividualUserCount(): Promise<void> {
   };
 
   // create experiment 1
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -57,10 +57,10 @@ export default async function IndividualUserCount(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -81,7 +81,7 @@ export default async function IndividualUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -110,7 +110,7 @@ export default async function IndividualUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -131,7 +131,7 @@ export default async function IndividualUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
