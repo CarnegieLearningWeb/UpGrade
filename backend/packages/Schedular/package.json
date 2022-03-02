@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "source-map-support": "^0.5.10"
   },
   "devDependencies": {
