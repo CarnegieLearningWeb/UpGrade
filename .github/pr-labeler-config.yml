@@ -12,7 +12,7 @@ labels:
       - backend/ts.*
   - label: lambda
     files:
-      - backend/packages/Schedular/.*
+      - backend/packages/Scheduler/.*
   - label: types
     files:
       - types/.*

@@ -3,12 +3,12 @@
     "version": "1.0.0",
     "description": "Backend for A/B Testing Project",
     "scripts": {
-        "install:all": "npm ci && cd packages/Schedular && npm ci && cd ../Upgrade && npm ci",
+        "install:all": "npm ci && cd packages/Scheduler && npm ci && cd ../Upgrade && npm ci",
         "production:upgrade": "cd packages/Upgrade && npm run production",
         "build:upgrade": "cd packages/Upgrade && npm run build",
         "test:upgrade": "cd packages/Upgrade && npm run test",
         "dockerConfig": "ts-node --transpile-only ./commands/dockerrun.ts",
-        "deploy:schedule": "cd packages/Schedular && npm run deploy"
+        "deploy:schedule": "cd packages/Scheduler && npm run deploy"
     },
     "license": "ISC",
     "dependencies": {
