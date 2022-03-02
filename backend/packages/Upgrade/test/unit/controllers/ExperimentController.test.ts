@@ -126,7 +126,7 @@ describe('Experiment Controller Testing', () => {
   });
 
   const expIdNotTypeUUID = 'abc';
-  test('Get request for /api/experiments/single/:id', async done => {
+  test('Get request for /api/experiments/single/:id with no uuid', async done => {
     await request(app)
       .get(`/api/experiments/single/${expIdNotTypeUUID}`)
       .expect(500)
@@ -141,9 +141,9 @@ describe('Experiment Controller Testing', () => {
     done();
   });
 
-  test('Get request for /api/experiments/conditions/:id', async done => {
+  test('Get request for /api/experiments/conditions/:id with no uuid', async done => {
     await request(app)
-    .get(`/api/experiments/single/${expIdNotTypeUUID}`)
+    .get(`/api/experiments/conditions/${expIdNotTypeUUID}`)
       .expect(500);
     done();
   });
@@ -162,6 +162,13 @@ describe('Experiment Controller Testing', () => {
       .delete(`/api/experiments/${uuid()}`)
       .expect('Content-Type', /json/)
       .expect(200);
+    done();
+  });
+
+  test('Delete request for /api/experiments/:id with no uuid', async done => {
+    await request(app)
+      .delete(`/api/experiments/${expIdNotTypeUUID}`)
+      .expect(500);
     done();
   });
 
@@ -196,6 +203,20 @@ describe('Experiment Controller Testing', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
+    done();
+  });
+
+  test('Get request for /api/experiments/export/:id', async done => {
+    await request(app)
+      .get(`/api/experiments/export/${uuid()}`)
+      .expect(200);
+    done();
+  });
+
+  test('Get request for /api/experiments/export/:id with no uuid', async done => {
+    await request(app)
+      .get(`/api/experiments/export/${expIdNotTypeUUID}`)
+      .expect(500);
     done();
   });
 });

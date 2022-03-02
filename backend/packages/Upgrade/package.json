@@ -11,6 +11,7 @@
         "test": "npm start test",
         "test:watch": "npm start test.watch",
         "test:coverage": "npm start test.coverage",
+        "test:unit": "npm start test.unit",
         "seed": "npm start db.seed",
         "drop": "npm start db.drop",
         "help": "npm start help",
