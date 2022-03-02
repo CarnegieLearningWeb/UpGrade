@@ -1,5 +1,5 @@
 name: Client Libs Java Build
-on: ['push', 'pull_request', 'workflow_dispatch']
+on: ['pull_request', 'workflow_dispatch']
 jobs:
   clientlibs-java-build:
     name: Client Libs Java Build

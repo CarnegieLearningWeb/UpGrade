@@ -110,7 +110,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
       ? await this.errorService.create(experimentError, req.logger)
       : await Promise.resolve(error);
     if (!res.headersSent) {
-      res.statusCode = error.httpCode;
+      res.statusCode = error.httpCode || 500;
       res.json(error);
       next(error);
     }
