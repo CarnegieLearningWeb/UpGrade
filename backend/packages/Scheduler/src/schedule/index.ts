@@ -14,7 +14,7 @@ export const schedule = async event => {
       },
       body: JSON.stringify(event.body)
     }).catch(error => {
-      console.log('Error in schedular endpoint invocation ', error.message);
+      console.log('Error in scheduler endpoint invocation ', error.message);
       return { status: false, message: 'Failed' };
     });
     return { status: true, message: 'Success' };

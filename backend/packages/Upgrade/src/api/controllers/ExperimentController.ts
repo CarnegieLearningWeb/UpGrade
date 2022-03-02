@@ -879,7 +879,7 @@ export class ExperimentController {
    *          '401':
    *            description: AuthorizationRequiredError
    *          '500':
-   *            description: invalid input syntax for type uuid, Error in experiment schedular (user is not authorized), Insert Error in database
+   *            description: invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database
    */
   @Put('/:id')
   public update(

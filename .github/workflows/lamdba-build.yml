@@ -11,4 +11,4 @@ jobs:
         uses: ./.github/actions/generic-npm-build
         with:
           name: Lambda
-          working_directory: backend/packages/Schedular
+          working_directory: backend/packages/Scheduler
