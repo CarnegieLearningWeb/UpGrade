@@ -19,8 +19,6 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     next: express.NextFunction
   ): Promise<void> {
     // It seems like some decorators handle setting the response (i.e. class-validators)
-    req.logger.info({ message: 'Insert Error in database', stack: error.stack});
-
     let message: string;
     let type: SERVER_ERROR;
 
@@ -107,11 +105,13 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.endPoint = req.originalUrl;
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
-
+    req.logger.error(experimentError);
     experimentError.type
       ? await this.errorService.create(experimentError, req.logger)
       : await Promise.resolve(error);
     if (!res.headersSent) {
+      res.statusCode = error.httpCode || 500;
+      res.json(error);
       next(error);
     }
   }

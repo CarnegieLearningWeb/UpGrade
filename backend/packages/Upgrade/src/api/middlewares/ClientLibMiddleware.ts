@@ -1,18 +1,19 @@
 import { ErrorWithType } from './../errors/ErrorWithType';
 import * as express from 'express';
 import { ExpressMiddlewareInterface } from 'routing-controllers';
-import { LoggerInterface, Logger } from '../../decorators/Logger';
 import { SettingService } from '../services/SettingService';
 import { SERVER_ERROR } from 'upgrade_types';
 import * as jwt from 'jsonwebtoken';
 import isequal from 'lodash.isequal';
 import { env } from '../../env';
 import { AppRequest } from '../../types';
+import { Service } from 'typedi';
 
+@Service()
 export class ClientLibMiddleware implements ExpressMiddlewareInterface {
-  constructor(@Logger(__filename) private log: LoggerInterface, public settingService: SettingService) {}
+  constructor(public settingService: SettingService) {}
 
-  public async use(req: AppRequest, res: express.Response, next: express.NextFunction): Promise<any> {
+  public async use(req: AppRequest, res: AppRequest, next: express.NextFunction): Promise<any> {
     try {
       const authorization = req.header('authorization');
       const token = authorization && authorization.replace('Bearer ', '').trim();
@@ -41,7 +42,7 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           throw error;
         }
         const { secret, key } = env.clientApi;
-        const decodeToken = jwt.verify(token, secret) as jwt.JwtPayload;
+        const decodeToken: any = jwt.verify(token, secret);
         delete decodeToken.iat;
         delete decodeToken.exp;
 
@@ -53,7 +54,6 @@ export class ClientLibMiddleware implements ExpressMiddlewareInterface {
           throw error;
         }
       } else {
-        this.log.info('Next');
         next();
       }
     } catch (error) {

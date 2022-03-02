@@ -22,20 +22,20 @@ export default async function testCase(): Promise<void> {
   const previewService = Container.get<PreviewUserService>(PreviewUserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create preview user
-  await previewService.create(previewUsers[0]);
-  await previewService.create(previewUsers[1]);
-  await previewService.create(previewUsers[2]);
-  await previewService.create(previewUsers[3]);
+  await previewService.create(previewUsers[0], new UpgradeLogger());
+  await previewService.create(previewUsers[1], new UpgradeLogger());
+  await previewService.create(previewUsers[2], new UpgradeLogger());
+  await previewService.create(previewUsers[3], new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -62,10 +62,10 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to PREVIEW
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.PREVIEW, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -79,8 +79,8 @@ export default async function testCase(): Promise<void> {
   );
 
   // get preview user
-  let previewUser1 = await previewService.findOne(previewUsers[0].id);
-  let previewUser2 = await previewService.findOne(previewUsers[1].id);
+  let previewUser1 = await previewService.findOne(previewUsers[0].id, new UpgradeLogger());
+  let previewUser2 = await previewService.findOne(previewUsers[1].id, new UpgradeLogger());
   expect((previewUser1.assignments && previewUser1.assignments.length) || 0).toEqual(0);
 
   const assignedConditionUser1 = experiments[0].conditions[0];
@@ -94,9 +94,10 @@ export default async function testCase(): Promise<void> {
         experimentCondition: { id: assignedConditionUser1.id },
       },
     ],
-  } as any);
+  } as any,
+  new UpgradeLogger());
 
-  previewUser1 = await previewService.findOne(previewUsers[0].id);
+  previewUser1 = await previewService.findOne(previewUsers[0].id, new UpgradeLogger());
   expect((previewUser1.assignments && previewUser1.assignments.length) || 0).toEqual(1);
 
   // get all experiment condition for user 2
@@ -131,9 +132,10 @@ export default async function testCase(): Promise<void> {
         experimentCondition: { id: assignedConditionUser2.id },
       },
     ],
-  } as any);
+  } as any,
+  new UpgradeLogger());
 
-  previewUser2 = await previewService.findOne(previewUsers[1].id);
+  previewUser2 = await previewService.findOne(previewUsers[1].id, new UpgradeLogger());
   expect((previewUser2.assignments && previewUser2.assignments.length) || 0).toEqual(1);
 
   // get all experiment condition for user 3
@@ -144,10 +146,10 @@ export default async function testCase(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -172,14 +174,15 @@ export default async function testCase(): Promise<void> {
   await previewService.upsertExperimentConditionAssignment({
     ...previewUser1,
     assignments: [],
-  } as any);
+  } as any,
+  new UpgradeLogger());
 
   // check assignment is the one assigned
   expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
     assignedConditionUser2.conditionCode
   );
 
-  previewUser1 = await previewService.findOne(previewUsers[0].id);
+  previewUser1 = await previewService.findOne(previewUsers[0].id, new UpgradeLogger());
   expect((previewUser1.assignments && previewUser1.assignments.length) || 0).toEqual(0);
 
   // get all experiment condition for user 1

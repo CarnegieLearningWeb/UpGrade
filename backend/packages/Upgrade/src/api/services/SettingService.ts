@@ -1,5 +1,4 @@
 import { Service } from 'typedi';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { SettingRepository } from '../repositories/SettingRepository';
 import { Setting } from '../models/Setting';
@@ -8,12 +7,11 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 @Service()
 export class SettingService {
   constructor(
-    @Logger(__filename) private log: LoggerInterface,
     @OrmRepository() private settingRepository: SettingRepository
   ) {}
 
-  public async setClientCheck(checkAuth: boolean | null, filterMetric: boolean | null): Promise<Setting> {
-    this.log.info(`Update project setting: checkAuth ${checkAuth}, filterMetric ${filterMetric}`);
+  public async setClientCheck(checkAuth: boolean | null, filterMetric: boolean | null, logger: UpgradeLogger): Promise<Setting> {
+    logger.info({ message: `Update project setting: checkAuth ${checkAuth}, filterMetric ${filterMetric}` });
     const settingDoc: Setting = await this.settingRepository.findOne();
     const newDoc = {
       ...settingDoc,

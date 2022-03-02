@@ -3,5 +3,5 @@
   "ignore": ["test", "commands", "src/database"],
   "watch": ["src/**/*.ts", ".env"],
   "ext": "ts",
-  "exec": "node --inspect=0.0.0.0:9200 -r ts-node/register ./src/app.ts"
+  "exec": "ts-node -r tsconfig-paths/register ./src/app.ts"
 }

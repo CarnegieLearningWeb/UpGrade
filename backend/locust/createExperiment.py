@@ -1,14 +1,14 @@
 import random
 import requests
 
-def createExperiment(protocol, host, groupExp, allExperimentPartitionIDConditionPair):
+def createExperiment(protocol, host, allExperimentPartitionIDConditionPair):
     url = protocol + f"://{host}/api/experiments"
     # context = ["assign-prog", "app", "addition"]
     context = ["addition"]
     states = ["enrolling"]
     postExperimentRules = ["assign", "continue"]
 
-    if( groupExp == True):
+    if( getGroupExp() == True):
         # parameters for group experiment testing:
         consistencyRules = ["group"]
         asssignmentUnits = ["group"]
@@ -39,11 +39,11 @@ def createExperiment(protocol, host, groupExp, allExperimentPartitionIDCondition
 
     # JSON data for creating an experiment:
     data = {
-        "name": "TestExp"+ str(random.randint(1,n)),
+        "name": "LocustLoadTestExp"+ str(random.randint(1,n)),
         "description": "Test experiment is created here",
-        "consistencyRule": random.choice(consistencyRules),
-        "assignmentUnit": random.choice(asssignmentUnits),
-        "group": random.choice(groups),
+        "consistencyRule": consistencyRules[0],
+        "assignmentUnit": asssignmentUnits[0],
+        "group": groups[0],
         "postExperimentRule": random.choice(postExperimentRules),
         "state": random.choice(states),
         "tags": ["Workspace", "Content"],
@@ -85,3 +85,8 @@ def createExperiment(protocol, host, groupExp, allExperimentPartitionIDCondition
         print("New Experiment is created")
     
     return allExperimentPartitionIDConditionPair
+
+
+def getGroupExp():
+    option = input("Is this a group level experiment? Y/N ")
+    return option == "Y" or option == 'y'

@@ -1,5 +1,4 @@
 import { Service } from 'typedi';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
@@ -19,7 +18,6 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 @Service()
 export class FeatureFlagService {
   constructor(
-    @Logger(__filename) private log: LoggerInterface,
     @OrmRepository() private featureFlagRepository: FeatureFlagRepository,
     @OrmRepository() private flagVariationRepository: FlagVariationRepository
   ) {}
@@ -29,8 +27,8 @@ export class FeatureFlagService {
     return this.featureFlagRepository.find({ relations: ['variations'] });
   }
 
-  public create(flag: FeatureFlag, currentUser: User): Promise<FeatureFlag> {
-    this.log.info('Create a new feature flag');
+  public create(flag: FeatureFlag, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+    logger.info({ message : 'Create a new feature flag' });
     return this.addFeatureFlagInDB(flag, currentUser);
   }
 
@@ -41,10 +39,11 @@ export class FeatureFlagService {
   public findPaginated(
     skip: number,
     take: number,
+    logger: UpgradeLogger,
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
   ): Promise<FeatureFlag[]> {
-    this.log.info('Find paginated Feature flags');
+    logger.info({ message : 'Find paginated Feature flags' });
 
     let queryBuilder = this.featureFlagRepository
       .createQueryBuilder('feature_flag')
@@ -66,8 +65,8 @@ export class FeatureFlagService {
     return queryBuilder.getMany();
   }
 
-  public async delete(featureFlagId: string, currentUser: User): Promise<FeatureFlag | undefined> {
-    this.log.info('Delete Feature Flag => ', featureFlagId);
+  public async delete(featureFlagId: string, logger: UpgradeLogger): Promise<FeatureFlag | undefined> {
+    logger.info({ message : `Delete Feature Flag => ${featureFlagId}` });
     const featureFlag = await this.featureFlagRepository.find({
       where: { id: featureFlagId },
       relations: ['variations'],
@@ -82,14 +81,14 @@ export class FeatureFlagService {
     return undefined;
   }
 
-  public async updateState(flagId: string, status: boolean): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: boolean, logger: UpgradeLogger): Promise<FeatureFlag> {
     // TODO: Add log for updating flag state
     const updatedState = await this.featureFlagRepository.updateState(flagId, status);
     return updatedState;
   }
 
-  public update(id: string, flag: FeatureFlag, currentUser: User): Promise<FeatureFlag> {
-    this.log.info('Update a Feature Flag => ', flag.toString());
+  public update(id: string, flag: FeatureFlag, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+    logger.info({ message : `Update a Feature Flag => ${flag.toString()}` });
     // TODO add entry in log of updating feature flag
     return this.updateFeatureFlagInDB(flag, currentUser);
   }

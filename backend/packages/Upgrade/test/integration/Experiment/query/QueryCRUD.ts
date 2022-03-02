@@ -20,18 +20,18 @@ export default async function QueryCRUD(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
 
-  await settingService.setClientCheck(false, true);
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   // create an experiment
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   let experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -68,9 +68,9 @@ export default async function QueryCRUD(): Promise<void> {
     queries: [query],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
+  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
 
-  let allQuery = await queryService.find();
+  let allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -89,8 +89,8 @@ export default async function QueryCRUD(): Promise<void> {
     queries: [],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
+  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
 
-  allQuery = await queryService.find();
+  allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery.length).toEqual(0);
 }
