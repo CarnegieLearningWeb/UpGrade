@@ -30,6 +30,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   groupTypes = [];
   enableSave = true;
+  allContexts = [];
   currentContext = null;
   consistencyRules = [
     { value: CONSISTENCY_RULE.INDIVIDUAL },
@@ -43,21 +44,15 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   addChipOnBlur = true;
 
   // Used for autocomplete context input
-  experimentContext$: Observable<string[]>;
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
-  autoCompleteContext = new FormControl();
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService
-  ) {
-    this.experimentContext$ = this.autoCompleteContext.valueChanges.pipe(
-      startWith(null),
-      map(context => this._filter(context, 'contextMetadata')));
-  }
+  ) {}
 
   ngOnInit() {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
@@ -66,6 +61,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       if (this.overviewForm && this.contextMetaData && this.experimentInfo) {
         this.checkExperiment();
         this.overviewForm.patchValue(this.setGroupTypeControlValue());
+      }
+
+      if (this.contextMetaData && this.contextMetaData['contextMetadata']) {
+        this.allContexts = Object.keys(this.contextMetaData['contextMetadata']);
       }
     });
 
@@ -76,7 +75,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         consistencyRule: [null, Validators.required],
-        context: [[], Validators.required],
+        context: [null, Validators.required],
         tags: [[]],
         logging: [false]
       }
@@ -91,7 +90,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
           break;
         case ASSIGNMENT_UNIT.GROUP:
-          if (this.overviewForm.get('context').value.length) {
+          if (this.overviewForm.get('context')) {
             this.overviewForm.get('groupType').enable();
             this.overviewForm.get('groupType').setValidators(Validators.required);
             this.setGroupTypes();
@@ -108,14 +107,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.overviewForm.get('context').valueChanges.subscribe(contexts => {
-      if (contexts.length === 0) {
-        this.overviewForm.get('groupType').reset();
-        this.overviewForm.get('groupType').disable();
-      } else if (this.overviewForm.get('unitOfAssignment').value === ASSIGNMENT_UNIT.GROUP) {
-        this.overviewForm.get('groupType').enable();
-        this.overviewForm.get('groupType').setValidators(Validators.required);
-      }
+    this.overviewForm.get('context').valueChanges.subscribe(context => {
+      this.currentContext = context;
+      this.setGroupTypes();
     });
 
     // populate values in form to update experiment if experiment data is available
@@ -128,7 +122,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment: this.experimentInfo.assignmentUnit,
         groupType,
         consistencyRule: this.experimentInfo.consistencyRule,
-        context: this.experimentInfo.context,
+        context: this.currentContext,
         tags: this.experimentInfo.tags,
         logging: this.experimentInfo.logging
       });
@@ -155,33 +149,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     }
   }
 
-  private _filter(value: string, key: string): string[] {
-    if (!this.contextMetaData) {
-      return [];
-    }
-
-    const filterValue = value ?  value.toLocaleLowerCase() : '';
-    const contexts = this.contextMetaData[key] ? Object.keys(this.contextMetaData[key]) : [];
-    return this.contextMetaData ? (contexts || []).filter(option => option.toLowerCase().indexOf(filterValue) === 0) : [];
-  }
-
-  selectedAutoCompleteContext(event: MatAutocompleteSelectedEvent): void {
-    const contextValue = event.option.viewValue.toLowerCase();
-    if (this.contexts.value.indexOf(contextValue.trim()) === -1) {
-      this.contexts.setValue([contextValue.trim()]);
-      
-      this.currentContext = this.contexts.value[0];
-      if (this.experimentInfo) {
-        this.enableSave = (this.currentContext === this.experimentInfo.context[0]);
-      }
-
-      this.overviewForm.get('groupType').reset();
-      this.setGroupTypes();
-    }
-    this.contextInput.nativeElement.value = '';
-    this.autoCompleteContext.setValue(null);
-  }
-
   // Used to add tags or contexts
   addChip(event: MatChipInputEvent, type: string): void {
     const input = event.input;
@@ -190,11 +157,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     // Add chip
     if ((value || '').trim()) {
       switch (type) {
-        case 'contexts':
-          if (Object.keys(this.contextMetaData['contextMetadata']).indexOf(value.trim()) !== -1 && this.contexts.value.indexOf(value.trim()) === -1) {
-            this[type].setValue([...this[type].value, value.trim()]);
-          }
-          break;
         case 'tags':
           if (this.tags.value.indexOf(value.toLowerCase().trim()) === -1) {
             this[type].setValue([...this[type].value, value.trim()]);
@@ -222,7 +184,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   // Check if experiment is created before new context-metadata and reset app-contexts
   checkExperiment() {
     if(this.contextMetaData['contextMetadata'] && !this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.overviewForm.get('context').setValue([]);
+      this.overviewForm.get('context').setValue(null);
       this.overviewForm.get('groupType').reset();
     }
   }
@@ -251,7 +213,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
             consistencyRule: consistencyRule,
             assignmentUnit: unitOfAssignment,
             group: groupType,
-            context,
+            context: [context],
             tags,
             logging
           };
