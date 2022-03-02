@@ -1,0 +1,17 @@
+name: Merge dev into main
+on: workflow_dispatch
+jobs:
+  merge-dev-into-main:
+    name: Merge dev into main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Merge dev into main
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github@github.com'
+          git merge origin/dev
+          git push

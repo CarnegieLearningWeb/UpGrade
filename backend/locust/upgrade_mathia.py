@@ -309,7 +309,7 @@ class UpgradeUserTask(SequentialTaskSet):
                 print("/mark for userid: " + student["studentId"])
 
                 # pick a random pair of PartitionIdConditionId from allExperimentPartitionIDConditionPair
-                markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair);
+                markPartitionIDConditionPair = random.choice(allExperimentPartitionIDConditionPair)
 
                 data = {
                     "userId": student["studentId"],
