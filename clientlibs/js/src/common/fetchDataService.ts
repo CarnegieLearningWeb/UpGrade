@@ -32,6 +32,7 @@ async function fetchData(
       'Content-Type': 'application/json',
       'Session-Id': clientSessionId || uuid.v4(),
       'CurrentRetry': retries,
+      'URL': url,
     }
     if (!!token) {
       headers = {
@@ -39,6 +40,10 @@ async function fetchData(
         'Authorization': `Bearer ${token}`
       }
     }
+
+    typeof window !== 'undefined'
+      ? headers = {...headers, 'Client source': 'Browser'} 
+      : headers = {...headers, 'Client source': 'Node'};
 
     let options: Interfaces.IRequestOptions = {
       headers,

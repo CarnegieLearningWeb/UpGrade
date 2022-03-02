@@ -11,14 +11,14 @@ terraform {
 #   CREATE A STATE MACHINE
 # ----------------------------------------------------------------------------------------------------------------------
 
-resource "aws_sfn_state_machine" "upgrade-experimentSchedular-sfn" {
+resource "aws_sfn_state_machine" "upgrade-experimentScheduler-sfn" {
   
   name     = "${var.environment}-${var.prefix}-${var.aws_sfn_state_machine_name}"
   role_arn = aws_iam_role.iam_for_sfn.arn
 
   definition = <<EOF
   {
-  "Comment": "Experiment schedular ${var.environment} mode",
+  "Comment": "Experiment scheduler ${var.environment} mode",
   "StartAt": "InitialState",
   "States": {
     "InitialState": {
