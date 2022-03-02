@@ -347,7 +347,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc}));
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   const allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(

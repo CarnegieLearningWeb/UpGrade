@@ -10,7 +10,6 @@ import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } 
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function GroupAndParticipants() {
-  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const userService = Container.get<UserService>(UserService);
 
@@ -93,7 +92,7 @@ export default async function GroupAndParticipants() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

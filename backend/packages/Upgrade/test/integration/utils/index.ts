@@ -18,7 +18,7 @@ export function checkExperimentAssignedIsNull(
   experimentName: string,
   experimentPoint: string
 ): void {
-  expect(experimentConditionAssignments).not.toEqual(
+  expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         expId: experimentName,
@@ -101,7 +101,7 @@ export async function getAllExperimentCondition(
 
 export async function getUserAssignments(userId: string, context: string = 'home'): Promise<IExperimentAssignment[]> {
   const supportService = Container.get<SupportService>(SupportService);
-  return supportService.getAssignments(userId, context);
+  return supportService.getAssignments(userId, context, new UpgradeLogger);
 }
 
 export async function markExperimentPoint(
@@ -124,7 +124,7 @@ export async function markExperimentPoint(
 export async function checkDeletedExperiment(experimentId: string, user: User): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // delete experiment and check assignments operations
-  await experimentService.delete(experimentId, user);
+  await experimentService.delete(experimentId, user, new UpgradeLogger);
 
   // no individual assignments
   const individualAssignmentRepository = getRepository(IndividualAssignment);

@@ -1,7 +1,6 @@
 import { groupAssignmentWithGroupConsistencyExperiment } from '../mockData/experiment/index';
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
-import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ExcludeService } from '../../../src/api/services/ExcludeService';
 import { UserService } from '../../../src/api/services/UserService';
@@ -11,7 +10,6 @@ import { getAllExperimentCondition } from '../utils';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function GroupExclude(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const excludeService = Container.get<ExcludeService>(ExcludeService);
   const userService = Container.get<UserService>(UserService);
