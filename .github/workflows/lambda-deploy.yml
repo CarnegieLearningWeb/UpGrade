@@ -62,18 +62,18 @@ jobs:
         if: steps.check-tag.outputs.exists == 'false'
         uses: ./.github/actions/generic-npm-build
         with:
-          working_directory: backend/packages/Schedular
+          working_directory: backend/packages/Scheduler
           version: ${{ steps.set-vars.outputs.version }}
       - name: Copy Files
         if: steps.check-tag.outputs.exists == 'false'
-        working-directory: backend/packages/Schedular
+        working-directory: backend/packages/Scheduler
         run: |
           mkdir lib
           cp -a node_modules/ lib/node_modules
           cp -a dist/schedule lib/schedule
       - name: Package
         if: steps.check-tag.outputs.exists == 'false'
-        working-directory: backend/packages/Schedular/lib
+        working-directory: backend/packages/Scheduler/lib
         run: |
           zip -r upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip *
           mv upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip ../../../..

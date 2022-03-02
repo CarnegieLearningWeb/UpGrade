@@ -131,7 +131,7 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Build Lambda
-        working-directory: backend/packages/Schedular
+        working-directory: backend/packages/Scheduler
         run: |
           npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           npm ci
@@ -140,14 +140,14 @@ jobs:
           cp -a node_modules/ lib/node_modules
           cp -a dist/schedule lib/schedule
       - name: Package Lambda
-        working-directory: backend/packages/Schedular/lib
+        working-directory: backend/packages/Scheduler/lib
         id: package-lambda
         run: |
           zip -r upgrade-lambda-${{ needs.init.outputs.version }}.zip *
       - uses: actions/upload-artifact@v2
         with:
           name: upgrade-lambda-${{ needs.init.outputs.version }}.zip
-          path: backend/packages/Schedular/lib/upgrade-lambda-${{ needs.init.outputs.version }}.zip
+          path: backend/packages/Scheduler/lib/upgrade-lambda-${{ needs.init.outputs.version }}.zip
       
   create-release:
     name: Create Release
