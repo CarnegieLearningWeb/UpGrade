@@ -5,7 +5,6 @@ on:
 jobs:
   auto-merge-prs:
     runs-on: ubuntu-latest
-    if: github.event.user.login != "dependabot[bot]"
     steps:
       - uses: peter-evans/enable-pull-request-automerge@v1
         with:
