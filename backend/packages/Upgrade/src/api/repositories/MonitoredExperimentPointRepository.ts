@@ -81,9 +81,10 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     offset: number,
     limit: number,
     monitorPointIds: string[],
-    experimentId: string
+    experimentId: string,
+    connectionName: string,
   ): Promise<any> {
-    return getConnection()
+    return getConnection(connectionName)
       .createQueryBuilder()
       .select([
         'user.id',

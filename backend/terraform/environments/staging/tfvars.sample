@@ -13,6 +13,7 @@ identifier              = "dev-postgres"
 instance_class          = "db.t2.small"
 storage_type            = "gp2"
 multi_az                = "false"
+replica_names           = ["replica1", "replica2"]
 
 # EBS instance details
 app_instance_type       = "t2.micro"
@@ -26,10 +27,12 @@ DOMAIN_NAME             = "company.com"
 MONITOR_PASSWORD        = "passowrd"
 SWAGGER_PASSWORD        = "passowrd"
 TYPEORM_SYNCHRONIZE     = true
+APP_DEMO                = false
 TYPEORM_MAX_QUERY_EXECUTION_TIME = 2000
 TOKEN_SECRET_KEY        = "secret-key"
 AUTH_CHECK              = true
 CONTEXT_METADATA        = "{'add':{'EXP_IDS':['add-id1','add-id2'],'EXP_POINTS':['add-point1','add-point2'],'GROUP_TYPES':['add-group1','add-group2'],'CONDITIONS':['add-con1','add-con2','add-con3']},'sub':{'EXP_IDS':['sub-id1','sub-id2'],'EXP_POINTS':['sub-point1','sub-point2'],'GROUP_TYPES':['sub-group1','sub-group2'],'CONDITIONS':['sub-con1','sub-con2','sub-con3']},'mul':{'EXP_IDS':['mul-id1','mul-id2'],'EXP_POINTS':['mul-point1','mul-point2'],'GROUP_TYPES':['mul-group1','mul-group2'],'CONDITIONS':['mul-con1','mul-con2','mul-con3']},'div':{'EXP_IDS':['div-id1','div-id2'],'EXP_POINTS':['div-point1','div-point2'],'GROUP_TYPES':['div-group1','div-group2'],'CONDITIONS':['div-con1','div-con2','div-con3']}}"
+METRIC                  = "[{'metric': 'totalTimeSeconds','datatype': 'continuous'}, { 'groupClass': 'masteryWorkspace', 'allowedKeys': [ 'calculating_area_various_figures', 'Compare_functions_diff_reps_quadratic' ], 'attributes': [{ 'metric': 'timeSeconds', 'datatype': 'continuous'}]}]"
 ADMIN_USERS             = "user1@company.com:admin/\user2@company.com:admin"
 
 # CICD variables

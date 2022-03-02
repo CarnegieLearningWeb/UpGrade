@@ -1,0 +1,206 @@
+name: Create Release
+on:
+  workflow_call:
+  workflow_dispatch:
+jobs:
+  check-if-already-released:
+    name: Check if Already Released
+    runs-on: ubuntu-latest
+    outputs:
+      already-released: ${{ steps.check-if-already-released.outputs.result }}
+    steps:
+      - id: check-if-already-released
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const repo = "${{ github.repository }}".split("/").pop()
+            const tags = await github.paginate(
+              github.rest.repos.listTags, 
+              {owner: "${{ github.repository_owner }}", repo: repo}
+            );
+            console.log(tags)
+            const latestRelease = await github.rest.repos.getLatestRelease({
+              owner: "${{ github.repository_owner }}",
+              repo: repo
+            });
+            const branch = await github.rest.repos.getBranch({
+              owner: "${{ github.repository_owner }}",
+              repo: repo,
+              branch: "${{ github.ref }}"
+            });
+            const result = tags.find(element => element.name === latestRelease.data.tag_name).commit.sha === branch.data.commit.sha;
+            console.log(result);
+            return result;
+
+  init:
+    name: Init
+    needs: check-if-already-released
+    if: needs.check-if-already-released.outputs.already-released == 'false'
+    runs-on: ubuntu-latest
+    outputs:
+      application_name: ${{ steps.get-env-vars.outputs.application_name }}
+      environment_name: ${{ steps.get-env-vars.outputs.environment_name }}
+      function_name: ${{ steps.get-env-vars.outputs.function_name }}
+      s3_bucket: ${{ steps.get-env-vars.outputs.s3_bucket }}
+      version: ${{ steps.get-version.outputs.result }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - run: npm install semver
+      - name: Load Env Vars
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Get Env Vars
+        id: get-env-vars
+        run: |
+          echo "::set-output name=application_name::$EB_STAGING_APP_NAME"
+          echo "::set-output name=environment_name::$EB_STAGING_ENV_NAME"
+          echo "::set-output name=s3_bucket::$STAGING_S3_BUCKET"
+          echo "::set-output name=function_name::$STAGING_LAMBDA_FUNCTION_NAME"
+      - id: get-major-minor-version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "::set-output name=version::$VERSION"
+      - id: get-version
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            var semver = require('semver');
+            const tagNames = await github.paginate(
+              github.rest.repos.listTags, 
+              {owner: "${{ github.repository_owner }}", repo: "UpGrade"},
+              (response) => response.data.map((tag) => tag.name)
+            );
+            const tags = tagNames.filter(tag => tag.startsWith("${{ steps.get-major-minor-version.outputs.version }}."));
+            const result = tags.length ? semver.inc(tags.sort(semver.rcompare)[0], 'patch') : "${{ steps.get-major-minor-version.outputs.version }}.0"
+            console.log(result);
+            return result;
+
+  build-backend:
+    name: Build Backend
+    needs: init
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Set Backend App Version
+        working-directory: backend/packages/Upgrade
+        run: npm version ${{ needs.init.outputs.version }} --git-tag-version=false
+      - name: Package Backend
+        working-directory: backend
+        run: |
+          npm version ${{ needs.init.outputs.version }} --git-tag-version=false
+          cp -R ../types packages/Upgrade
+          npm ci
+          zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+      - uses: actions/upload-artifact@v2
+        with:
+          name: upgrade-backend-${{ needs.init.outputs.version }}.zip
+          path: backend/upgrade-backend-${{ needs.init.outputs.version }}.zip
+
+  build-frontend:
+    name: Build Frontend
+    needs: init
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          npm version ${{ needs.init.outputs.version }} --git-tag-version=false
+          npm ci
+          npm run build:prod
+      - name: Package Frontend
+        working-directory: frontend/dist/upgrade
+        run: |
+          zip -r upgrade-frontend-${{ needs.init.outputs.version }}.zip *
+      - uses: actions/upload-artifact@v2
+        with:
+          name: upgrade-frontend-${{ needs.init.outputs.version }}.zip
+          path: frontend/dist/upgrade/upgrade-frontend-${{ needs.init.outputs.version }}.zip
+
+  build-lambda:
+    name: Build Lambda
+    needs: init
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Lambda
+        working-directory: backend/packages/Schedular
+        run: |
+          npm version ${{ needs.init.outputs.version }} --git-tag-version=false
+          npm ci
+          npm run build
+          mkdir lib
+          cp -a node_modules/ lib/node_modules
+          cp -a dist/schedule lib/schedule
+      - name: Package Lambda
+        working-directory: backend/packages/Schedular/lib
+        id: package-lambda
+        run: |
+          zip -r upgrade-lambda-${{ needs.init.outputs.version }}.zip *
+      - uses: actions/upload-artifact@v2
+        with:
+          name: upgrade-lambda-${{ needs.init.outputs.version }}.zip
+          path: backend/packages/Schedular/lib/upgrade-lambda-${{ needs.init.outputs.version }}.zip
+      
+  create-release:
+    name: Create Release
+    needs: [build-backend, build-frontend, build-lambda, init]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: .
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: upgrade-*.zip
+          commit: main
+          generateReleaseNotes: true
+          tag: ${{ needs.init.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-backend-staging:
+    name: Deploy Backend to Staging
+    uses: ./.github/workflows/backend-deploy.yml
+    needs: [init, create-release]
+    with:
+      application_name: ${{ needs.init.outputs.application_name }}
+      environment_name: ${{ needs.init.outputs.environment_name }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-frontend-staging:
+    name: Deploy Frontend to Staging
+    uses: ./.github/workflows/frontend-deploy.yml
+    needs: [init, create-release]
+    with:
+      s3_bucket: ${{ needs.init.outputs.s3_bucket }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-lambda-staging:
+    name: Deploy Lambda to Staging
+    uses: ./.github/workflows/lambda-deploy.yml
+    needs: [init, create-release]
+    with:
+      function_name: ${{ needs.init.outputs.function_name }}
+      version: ${{ needs.init.outputs.version }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      token: ${{ secrets.GITHUB_TOKEN }}

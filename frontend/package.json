@@ -1,10 +1,11 @@
 {
     "name": "ab-testing",
-    "version": "1.0.68",
+    "version": "1.0.0",
     "license": "MIT",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --open",
+        "docker:local": "ng serve --open --host 0.0.0.0",
         "cl:build": "npm run build:prod && npm run cl:copy-package-json",
         "cl:copy-package-json": "cp projects/abtesting/package.json dist/abtesting/",
         "start:prod": "npm run build:prod && npm run server",
@@ -83,7 +84,7 @@
         "express": "^4.16.4",
         "jasmine-core": "~3.2.1",
         "jasmine-spec-reporter": "~4.2.1",
-        "karma": "~4.1.0",
+        "karma": "~6.3.16",
         "karma-chrome-launcher": "~2.2.0",
         "karma-coverage-istanbul-reporter": "~2.0.4",
         "karma-jasmine": "~2.0.1",
