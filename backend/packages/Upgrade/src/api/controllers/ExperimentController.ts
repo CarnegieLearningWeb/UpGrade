@@ -701,6 +701,7 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment> {
+    request.logger.child({ user: currentUser });
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
 
@@ -781,6 +782,7 @@ export class ExperimentController {
         )
       );
     }
+    request.logger.child({ user: currentUser });
     return this.experimentService.delete(id, currentUser, request.logger);
   }
 
@@ -894,7 +896,8 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.update(id, experiment, currentUser, request.logger);
+    request.logger.child({ user: currentUser });
+    return this.experimentService.update(experiment, currentUser, request.logger);
   }
 
  /**
