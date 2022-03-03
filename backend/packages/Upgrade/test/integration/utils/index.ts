@@ -18,7 +18,7 @@ export function checkExperimentAssignedIsNull(
   experimentName: string,
   experimentPoint: string
 ): void {
-  expect(experimentConditionAssignments).toEqual(
+  expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         expId: experimentName,
