@@ -4,7 +4,6 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 
 import { User } from '../api/models/User';
 import { UserRepository } from '../api/repositories/UserRepository';
-import { Logger, LoggerInterface } from '../decorators/Logger';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '../env';
 import { SERVER_ERROR } from 'upgrade_types';
@@ -12,12 +11,11 @@ import { SERVER_ERROR } from 'upgrade_types';
 @Service()
 export class AuthService {
   constructor(
-    @Logger(__filename) private log: LoggerInterface,
     @OrmRepository() private userRepository: UserRepository
   ) {}
 
   public parseBasicAuthFromRequest(req: express.Request): string {
-    this.log.info('Inside parseBasicAuthFromRequest');
+    req.logger.info({ message: 'Inside parseBasicAuthFromRequest' });
 
     const authorization = req.header('authorization');
     return authorization && authorization.replace('Bearer ', '').trim();
@@ -25,33 +23,36 @@ export class AuthService {
 
   public async validateUser(token: string, request: express.Request): Promise<User> {
     const client = new OAuth2Client(env.google.clientId);
-    this.log.info(`Validating ID Token`);
+    request.logger.info({ message: 'Validating ID Token' });
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: env.google.clientId, // Specify the CLIENT_ID of the app that accesses the backend
       // Or, if multiple clients access the backend:
       // [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
-    this.log.info(`Token Validated`);
+    request.logger.info({ message: 'Token Validated' });
 
     const payload = ticket.getPayload();
 
     // check if user exist in the user repo
     const email = payload.email;
-    const hd = payload.hd;
-
-    this.log.info('hd', hd);
-    this.log.info('env.google.domainName', env.google.domainName);
-    this.log.info(`Validating domain name`);
-    if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== hd) {
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.USER_NOT_FOUND,
-          message: `User domain is not same as required ${env.google.domainName}`,
-        })
-      );
+    // session id in logger:
+    let session_id = null;
+    // if session id received from clientlib request header:
+    if (request.header('Session-Id')) {
+      session_id = request.header('Session-Id');
     }
-    this.log.info(`Domain name validated`);
+    const domain = payload.hd;
+    request.logger.info({ message: `session-id: ${session_id}` });
+    request.logger.info({ message: `domain: ${domain}` });
+    request.logger.info({ message: `env.google.domainName allowed: ${env.google.domainName}` });
+    request.logger.info({ message: 'Validating domain name' });
+    if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== domain) {
+      const error: any = new Error(`User domain is not same as required ${env.google.domainName}`);
+      error.type = SERVER_ERROR.USER_NOT_FOUND;
+      throw error;
+    }
+    request.logger.info({ message: 'Domain name validated' });
 
     if (this.isLoginUserRequestPath(request)) {
       // No need to fetch user document
@@ -61,13 +62,14 @@ export class AuthService {
     }
     // add local cache for validating user for each request
     const document = await this.userRepository.find({ email });
+    request.logger.child({ client_session_id: session_id, user: document });
+    request.logger.info({ message: 'User document fetched' });
     if (document.length === 0) {
-      this.log.info(`User not found in database`);
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.USER_NOT_FOUND, message: 'User not found in idToken' }));
+      request.logger.info({ message: 'User not found in database' });
+      const error: any = 'User not found in the database';
+      error.type = SERVER_ERROR.USER_NOT_FOUND;
+      throw error;
     }
-
-    // If request specified a G Suite domain:
-    // const domain = payload['hd'];
     return document[0];
   }
 

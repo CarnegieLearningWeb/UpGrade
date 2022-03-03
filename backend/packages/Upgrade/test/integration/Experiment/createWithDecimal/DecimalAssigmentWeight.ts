@@ -4,6 +4,7 @@ import { ExperimentService } from '../../../../src/api/services/ExperimentServic
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function DecimalAssignmentWeight(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -13,11 +14,11 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -84,7 +85,7 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
     ],
   };
 
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([
@@ -106,7 +107,7 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
   );
 
   // get all experimental conditions
-  const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id);
+  const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id, new UpgradeLogger());
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
 
   // check the partitions
@@ -130,14 +131,14 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
   );
 
   // get all experimental partitions
-  const experimentPartition = await experimentService.getExperimentPartitions(updatedExperimentDoc.id);
+  const experimentPartition = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
   expect(experimentPartition.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // delete the experiment
-  await experimentService.delete(updatedExperimentDoc.id, user);
-  const allExperiments = await experimentService.find();
+  await experimentService.delete(updatedExperimentDoc.id, user, new UpgradeLogger());
+  const allExperiments = await experimentService.find(new UpgradeLogger());
   expect(allExperiments.length).toEqual(0);
 
-  const experimentPartitions = await experimentService.getAllExperimentPartitions();
+  const experimentPartitions = await experimentService.getAllExperimentPartitions(new UpgradeLogger());
   expect(experimentPartitions.length).toEqual(0);
 }

@@ -1,11 +1,15 @@
-import 'newrelic/index';
+import { UpgradeLogger } from './lib/logger/UpgradeLogger';
+import { env } from './env';
+
+if (env.isProduction) {
+  // tslint:disable-next-line: no-var-requires
+  require('newrelic/index');
+}
 
 import 'reflect-metadata';
 
 import { bootstrapMicroframework } from 'microframework';
 import { expressLoader } from './loaders/expressLoader';
-import { banner } from './lib/banner';
-import { Logger } from './lib/logger/Logger';
 import { winstonLoader } from './loaders/winstonLoader';
 import { homeLoader } from './loaders/homeLoader';
 import { publicLoader } from './loaders/publicLoader';
@@ -14,20 +18,20 @@ import { typeormLoader } from './loaders/typeormLoader';
 import { swaggerLoader } from './loaders/swaggerLoader';
 import { CreateSystemUser } from './init/seed/systemUser';
 import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
+import { InitMetrics } from './init/seed/initMetrics';
+import { banner } from './lib/banner';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
  * ----------------------------------------
  */
-
-const log = new Logger(__filename);
-
+const logger = new UpgradeLogger();
 bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 })
   .then(() => {
     // logging data after the winston is configured
-    log.info('Server starting at', Date.now());
+    logger.info({detail: 'Server starting at ' + Date.now()});
     return CreateSystemUser();
   })
   .then(() => {
@@ -35,5 +39,10 @@ bootstrapMicroframework({
     return enableMetricFiltering();
   })
   .then(() => {
-    banner(log);
+    // metric initalization
+    return InitMetrics();
+  })
+  .then(() => {
+    banner(logger);
   });
+

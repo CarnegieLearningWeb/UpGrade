@@ -1,4 +1,4 @@
-import { EXPERIMENT_STATE } from 'upgrade_types';
+import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
@@ -15,7 +15,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -25,7 +25,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -50,7 +50,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperiments', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -76,7 +76,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'getValidExperimentsWithPreview', {}, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -101,7 +101,7 @@ export class ExperimentRepository extends Repository<Experiment> {
           { experimentId, state },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -117,7 +117,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'updateExperiment', { experimentDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -133,7 +133,7 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'insertExperiment', { experimentDoc }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -157,7 +157,7 @@ export class ExperimentRepository extends Repository<Experiment> {
           { experimentDocs },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -173,9 +173,26 @@ export class ExperimentRepository extends Repository<Experiment> {
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'deleteExperimentById', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
+  }
+
+  public async clearDB(entityManager: EntityManager): Promise<string> {
+    try {
+      const entities = entityManager.connection.entityMetadatas;
+      for (const entity of entities) {
+        if(!(['user', 'metric', 'setting', 'migrations'].includes(entity.tableName))) {
+          const repository = await entityManager.connection.getRepository(entity.name);
+          await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
+        }
+      }
+      return 'DB truncate successful';
+    } catch (error) {
+      error = new Error('DB truncate error. DB truncate unsuccessful');
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
+    } 
   }
 }

@@ -1,0 +1,23 @@
+name: UpGrade Client Libs JS Publish
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - clientlibs/js/**
+jobs:
+  clientlibs-js-publish:
+    name: UpGrade Client Libs JS Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Types Package
+        uses: ./.github/actions/generic-npm-build
+        with:
+          working_directory: clientlibs/js
+      - name: Publish Client Libs js Package
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: clientlibs/js/package.json

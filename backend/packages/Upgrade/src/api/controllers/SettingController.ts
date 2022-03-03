@@ -1,7 +1,8 @@
-import { JsonController, Post, Body, Get, Authorized } from 'routing-controllers';
+import { JsonController, Post, Body, Get, Authorized, Req } from 'routing-controllers';
 import { SettingService } from '../services/SettingService';
 import { Setting } from '../models/Setting';
 import { SettingParamsValidator } from './validators/SettingParamsValidator';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -29,8 +30,8 @@ export class SettingController {
    *            description: Project settings
    */
   @Get()
-  public getSetting(): Promise<Setting> {
-    return this.settingService.getClientCheck();
+  public getSetting(@Req() request: AppRequest): Promise<Setting> {
+    return this.settingService.getClientCheck(request.logger);
   }
 
   /**
@@ -63,9 +64,9 @@ export class SettingController {
   @Post()
   public upsertSetting(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    settingParams: SettingParamsValidator
+    settingParams: SettingParamsValidator,
+    @Req() request: AppRequest
   ): Promise<Setting> {
-    console.log('settingParams', settingParams);
-    return this.settingService.setClientCheck(settingParams.toCheckAuth, settingParams.toFilterMetric);
+    return this.settingService.setClientCheck(settingParams.toCheckAuth, settingParams.toFilterMetric, request.logger);
   }
 }

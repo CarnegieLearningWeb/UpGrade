@@ -1,9 +1,10 @@
-import { JsonController, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
+import { JsonController, Req, Get, OnUndefined, Param, Post, Put, Body, Authorized } from 'routing-controllers';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
+import { AppRequest } from '../../types';
 
 const validator = new Validator();
 // TODO delete this from experiment system
@@ -46,8 +47,8 @@ export class UserController {
    *            description: Successful
    */
   @Get()
-  public find(): Promise<ExperimentUser[]> {
-    return this.userService.find();
+  public find( @Req() request: AppRequest ): Promise<ExperimentUser[]> {
+    return this.userService.find(request.logger);
   }
 
   /**
@@ -74,11 +75,11 @@ export class UserController {
    */
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
-  public one(@Param('id') id: string): Promise<ExperimentUser> {
+  public one(@Param('id') id: string, @Req() request: AppRequest ): Promise<ExperimentUser> {
     if (!validator.isUUID(id)) {
       return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
     }
-    return this.userService.findOne(id);
+    return this.userService.findOne(id, request.logger);
   }
 
   /**
@@ -105,8 +106,8 @@ export class UserController {
    *            description: New ExperimentUser is created
    */
   @Post()
-  public create(@Body() users: ExperimentUser[]): Promise<ExperimentUser[]> {
-    return this.userService.create(users);
+  public create(@Body() users: ExperimentUser[], @Req() request: AppRequest): Promise<ExperimentUser[]> {
+    return this.userService.create(users, request.logger);
   }
 
   /**
@@ -141,8 +142,9 @@ export class UserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false } } }) user: ExperimentUser
+    @Body({ validate: { validationError: { target: false, value: false } } }) user: ExperimentUser, 
+    @Req() request: AppRequest 
   ): Promise<ExperimentUser> {
-    return this.userService.update(id, user);
+    return this.userService.update(id, user, request.logger);
   }
 }

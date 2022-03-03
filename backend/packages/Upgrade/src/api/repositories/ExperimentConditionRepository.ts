@@ -23,14 +23,14 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .setParameter('order', conditionDoc.order)
       .returning('*')
       .execute()
-      .catch((errorMsg: any) => {
+      .catch((error: any) => {
         const errorMsgString = repositoryError(
           'ExperimentConditionRepository',
           'upsertExperimentCondition',
           { conditionDoc },
-          errorMsg
+          error
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw[0];
@@ -45,7 +45,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentConditionRepository', 'deleteByIds', { ids }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -69,7 +69,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
           { conditionDocs },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -84,7 +84,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentConditionRepository', 'deleteCondition', { id }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -92,7 +92,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
     const experimentConditions = await this.createQueryBuilder('condition')
       .select('condition.twoCharacterId')
       .getMany();
-    const uniqueIdentifier = experimentConditions.map(experimentCondition => experimentCondition.twoCharacterId);
+    const uniqueIdentifier = experimentConditions.map((experimentCondition) => experimentCondition.twoCharacterId);
     return uniqueIdentifier;
   }
 }

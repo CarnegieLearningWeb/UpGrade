@@ -75,7 +75,8 @@ module "aws-ebs-app" {
   identifier            = var.identifier
   instance_class        = var.instance_class
   storage_type          = var.storage_type
-  multi_az = "false"
+  multi_az              = "false"
+  replica_names         = var.replica_names
   
   /*EBS config*/
   app_instance_type     = var.app_instance_type
@@ -86,17 +87,17 @@ module "aws-ebs-app" {
 
   /* APP env config*/
   ADMIN_USERS                = var.ADMIN_USERS
-  APP_CONTEXT                = var.APP_CONTEXT
   AUTH_CHECK                 = var.AUTH_CHECK
   CLIENT_API_KEY             = var.CLIENT_API_KEY
   CLIENT_API_SECRET          = var.CLIENT_API_SECRET
+  CONTEXT_METADATA           = var.CONTEXT_METADATA
+  METRIC                     = var.METRIC
+  APP_DEMO                   = var.APP_DEMO
   DOMAIN_NAME                = var.DOMAIN_NAME
   EMAIL_BUCKET               = module.aws-email-bucket.s3-bucket
   EMAIL_EXPIRE_AFTER_SECONDS = var.EMAIL_EXPIRE_AFTER_SECONDS
   EMAIL_FROM                 = var.EMAIL_FROM
-  EXP_IDS                    = var.EXP_IDS
   GOOGLE_CLIENT_ID           = var.GOOGLE_CLIENT_ID
-  GROUP_TYPES                = var.GROUP_TYPES
   MONITOR_PASSWORD           = var.MONITOR_PASSWORD
   NEW_RELIC_APP_NAME         = var.NEW_RELIC_APP_NAME
   NEW_RELIC_LICENSE_KEY      = var.NEW_RELIC_LICENSE_KEY

@@ -15,10 +15,13 @@ import { getAllExperimentCondition } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { Log } from '../../../../src/api/models/Log';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 
 export default async function RepeatedMeasure(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   let experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
   const metricRepository = getRepository(Metric);
@@ -27,11 +30,11 @@ export default async function RepeatedMeasure(): Promise<void> {
   const queryService = Container.get<QueryService>(QueryService);
   const logRepository = getRepository(Log);
 
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -47,16 +50,16 @@ export default async function RepeatedMeasure(): Promise<void> {
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;
 
-  await settingService.setClientCheck(false, true);
+  await settingService.setClientCheck(false, true, new UpgradeLogger());
 
-  await metricService.saveAllMetrics(metrics as any);
+  await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -70,19 +73,19 @@ export default async function RepeatedMeasure(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   const findMetric = await metricRepository.find();
@@ -189,7 +192,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user);
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   const experimentUser = experimentUsers[0];
 
@@ -211,9 +214,10 @@ export default async function RepeatedMeasure(): Promise<void> {
       },
     },
   ];
-
+  // getOriginalUserDoc
+  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUser.id, new UpgradeLogger());
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   let logData = await logRepository.find({
     relations: ['metrics'],
@@ -256,22 +260,22 @@ export default async function RepeatedMeasure(): Promise<void> {
   ];
 
   // log data here
-  await experimentAssignmentService.dataLog(experimentUser.id, jsonData);
+  await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
   });
   expect(logData.length).toEqual(2);
 
-  const queries = await queryService.find();
+  const queries = await queryService.find(new UpgradeLogger());
   // now do the query
-  let queryResult = await queryService.analyse([queries[0].id]);
+  let queryResult = await queryService.analyse([queries[0].id], new UpgradeLogger());
   expect(parseInt(queryResult[0].result[0].result, 10)).toEqual(20);
 
-  queryResult = await queryService.analyse([queries[1].id]);
+  queryResult = await queryService.analyse([queries[1].id], new UpgradeLogger());
   expect(parseInt(queryResult[0].result[0].result, 10)).toEqual(10);
 
-  queryResult = await queryService.analyse([queries[2].id]);
+  queryResult = await queryService.analyse([queries[2].id], new UpgradeLogger());
   expect(parseInt(queryResult[0].result[0].result, 10)).toEqual(15);
 
   // create log for second user
@@ -293,27 +297,28 @@ export default async function RepeatedMeasure(): Promise<void> {
       },
     },
   ];
-
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData);
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   logData = await logRepository.find({
     relations: ['metrics'],
   });
   expect(logData.length).toEqual(3);
 
-  queryResult = await queryService.analyse([queries[0].id]);
+  queryResult = await queryService.analyse([queries[0].id], new UpgradeLogger());
   let totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(30);
 
-  queryResult = await queryService.analyse([queries[1].id]);
+  queryResult = await queryService.analyse([queries[1].id], new UpgradeLogger());
   totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(20);
 
-  queryResult = await queryService.analyse([queries[2].id]);
+  queryResult = await queryService.analyse([queries[2].id], new UpgradeLogger());
   totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
@@ -339,20 +344,20 @@ export default async function RepeatedMeasure(): Promise<void> {
     },
   ];
 
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData);
-  queryResult = await queryService.analyse([queries[0].id]);
+  await experimentAssignmentService.dataLog(experimentUsers[1].id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  queryResult = await queryService.analyse([queries[0].id], new UpgradeLogger());
   totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(40);
 
-  queryResult = await queryService.analyse([queries[1].id]);
+  queryResult = await queryService.analyse([queries[1].id], new UpgradeLogger());
   totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);
   expect(parseInt(totalSum, 10)).toEqual(20);
 
-  queryResult = await queryService.analyse([queries[2].id]);
+  queryResult = await queryService.analyse([queries[2].id], new UpgradeLogger());
   totalSum = queryResult[0].result.reduce((acc, { result }) => {
     return acc + parseInt(result, 10);
   }, 0);

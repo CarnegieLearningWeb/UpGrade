@@ -23,7 +23,7 @@ export class MonitoredExperimentPoint extends BaseModel {
   @Column({
     nullable: true,
   })
-  public condition: string | null;
+  public condition: string;
 
   @Index()
   @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })

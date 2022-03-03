@@ -1,13 +1,12 @@
+import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { ExperimentUser } from '../models/ExperimentUser';
-import uuid from 'uuid/v4';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
-import { In, Not } from 'typeorm';
+import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Experiment } from '../models/Experiment';
@@ -20,23 +19,24 @@ export class ExperimentUserService {
     @OrmRepository() private individualAssignmentRepository: IndividualAssignmentRepository,
     @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @Logger(__filename) private log: LoggerInterface
   ) {}
 
-  public find(): Promise<ExperimentUser[]> {
-    this.log.info(`Find all users`);
-    return this.userRepository.find();
+  public find(logger: UpgradeLogger): Promise<ExperimentUser[]> {
+    if (logger) {
+      logger.info({ message: `Find all users` });
+    }
+      return this.userRepository.find();
   }
 
-  public findOne(id: string): Promise<ExperimentUser> {
-    this.log.info(`Find user by id => ${id}`);
+  public findOne(id: string, logger: UpgradeLogger): Promise<ExperimentUser> {
+    logger.info({ message: `Find user by id => ${id}` });
     return this.userRepository.findOne({ id });
   }
 
-  public async create(users: Array<Partial<ExperimentUser>>): Promise<ExperimentUser[]> {
-    this.log.info('Create a new user => ', users.toString());
+  public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
+    logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
     const multipleUsers = users.map((user) => {
-      user.id = user.id || uuid();
+      user.id = user.id;
       return user;
     });
     // insert or update in the database
@@ -52,12 +52,17 @@ export class ExperimentUserService {
 
     // wait for all assignment update to get complete
     await Promise.all(assignmentUpdated);
-    return updatedUsers;
+
+    // findAll user document here
+    const updatedUserDocument = await this.userRepository.findByIds(updatedUsers.map((user) => user.id));
+
+    return updatedUserDocument;
   }
 
-  public async setAliasesForUser(userId: string, aliases: string[]): Promise<ExperimentUser[]> {
-    this.log.info('Set aliases for experiment user => ', userId, aliases);
-    const userExist = await this.getOriginalUserDoc(userId);
+  public async setAliasesForUser(userId: string, aliases: string[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser[]> {
+    const { logger, userDoc } = requestContext;
+    const userExist = userDoc;
+    logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
 
     // throw error if user not defined
     if (!userExist) {
@@ -85,15 +90,15 @@ export class ExperimentUserService {
     promiseResult.map((result, index) => {
       if (result) {
         if (result.originalUser && result.originalUser.id === userExist.id) {
-          this.log.info('User already an alias', result);
+          logger.info({ message: 'User already an alias', details: result });
           // If alias Id is already linked with user
           alreadyLinkedAliases.push(result);
         } else if (result.originalUser && result.originalUser.id !== userExist.id) {
-          this.log.warn('User already linked with other user', result);
+          logger.warn({ message: 'User already linked with other user', details: result });
           // If alias Id is associated with other user
           aliasesLinkedWithOtherUser.push(result);
         } else {
-          this.log.warn('User is a rootUser', result);
+          logger.warn({ message: 'User is a rootUser', details: result });
           // If originalUser doesn't exist means this is a rootUser
           otherRootUser.push(result);
         }
@@ -109,28 +114,26 @@ export class ExperimentUserService {
           linkedTo: result.originalUser.id,
         };
       });
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.QUERY_FAILED,
-          message: `Users already associated with other users ${JSON.stringify(
-            errorToDisplay,
-            null,
-            2
-          )} and cannot be made alias of ${userId}`,
-        })
+      const error = new Error(
+        `Users already associated with other users ${JSON.stringify(
+          errorToDisplay,
+          null,
+          2
+        )} and cannot be made alias of ${userId}`
       );
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     }
     if (otherRootUser.length) {
-      throw new Error(
-        JSON.stringify({
-          type: SERVER_ERROR.QUERY_FAILED,
-          message: `Users with ids ${JSON.stringify(
-            otherRootUser,
-            null,
-            2
-          )} are root user and should not be converted to an alias of ${userId}`,
-        })
+      const error = new Error(
+        `Users with ids ${JSON.stringify(
+          otherRootUser,
+          null,
+          2
+        )} are root user and should not be converted to an alias of ${userId}`
       );
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      throw error;
     }
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {
@@ -154,10 +157,10 @@ export class ExperimentUserService {
     return alreadyLinkedAliases;
   }
 
-  public async updateWorkingGroup(userId: string, workingGroup: any): Promise<ExperimentUser> {
-    this.log.info('Update working group => ', userId, workingGroup);
-    const userExist = await this.getOriginalUserDoc(userId);
-
+  public async updateWorkingGroup(userId: string, workingGroup: any, requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser> {
+    const { logger, userDoc } = requestContext;
+    let userExist = userDoc;
+    logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
       throw new Error(
         JSON.stringify({
@@ -166,26 +169,22 @@ export class ExperimentUserService {
         })
       );
     }
-
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
     return this.userRepository.save(newDocument);
   }
 
-  public update(id: string, user: ExperimentUser): Promise<ExperimentUser> {
-    this.log.info('Update a user => ', user.toString());
+  public update(id: string, user: ExperimentUser, logger: UpgradeLogger): Promise<ExperimentUser> {
+    logger.info({ message: `Update a user ${user.toString()}` });
     user.id = id;
     return this.userRepository.save(user);
   }
 
   // TODO should we check for workingGroup as a subset over here?
-  public async updateGroupMembership(userId: string, groupMembership: any): Promise<ExperimentUser> {
-    this.log.info(
-      `Set Group Membership => userId ${userId} and Group membership ${JSON.stringify(groupMembership, undefined, 2)}`
-    );
-
-    const userExist = await this.getOriginalUserDoc(userId);
-
+  public async updateGroupMembership(userId: string, groupMembership: any, requestContext: {logger: UpgradeLogger, userDoc: any} ): Promise<ExperimentUser> { 
+    const { logger, userDoc } = requestContext;
+    let userExist = userDoc;
+    logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
     if (!userExist) {
       throw new Error(
         JSON.stringify({
@@ -206,8 +205,10 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public async getOriginalUserDoc(userId: string): Promise<ExperimentUser | null> {
-    this.log.info(`Find original user for userId ${userId}`);
+  public async getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<ExperimentUser | null> {
+    if (logger) {
+      logger.info({ message: `Find original user for userId ${userId}` });
+    }
     const userDoc = await this.userRepository.find({
       where: { id: userId },
       relations: ['originalUser'],
@@ -388,5 +389,12 @@ export class ExperimentUserService {
     if (assignedExperimentIds.length > 0) {
       await this.individualAssignmentRepository.deleteExperimentsForUserId(userId, assignedExperimentIds);
     }
+  }
+
+  public async clearDB(): Promise<string> {
+    await getConnection().transaction(async (transactionalEntityManager) => {
+      await this.experimentRepository.clearDB(transactionalEntityManager);
+    });
+    return Promise.resolve('Cleared DB');
   }
 }

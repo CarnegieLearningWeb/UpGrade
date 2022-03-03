@@ -1,0 +1,14 @@
+name: Lambda Build
+on: ['pull_request', 'workflow_dispatch']
+jobs:
+  lambda-build:
+    name: Lambda Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Build Lambda
+        uses: ./.github/actions/generic-npm-build
+        with:
+          name: Lambda
+          working_directory: backend/packages/Scheduler

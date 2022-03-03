@@ -1,12 +1,11 @@
 import { Action } from 'routing-controllers';
 import { Container } from 'typedi';
-
-import { Logger } from '../lib/logger';
 import { AuthService } from './AuthService';
 import { env } from '../env';
+import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 
 export function authorizationChecker(): (action: Action, roles: any[]) => Promise<boolean> | boolean {
-  const log = new Logger(__filename);
+  const log = new UpgradeLogger();
 
   return async function innerAuthorizationChecker(action: Action, roles: string[]): Promise<boolean> {
     // here you can use request/response objects from action
@@ -22,14 +21,13 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
 
     const authService = Container.get<AuthService>(AuthService);
     const token = authService.parseBasicAuthFromRequest(action.request);
-    log.info(`Token found ${token}`);
     if (token === undefined) {
-      log.warn('No token provided');
+      log.warn({ message: 'No token provided'});
       return env.auth.authCheck ? false : true;
     }
     try {
       const userDoc = await authService.validateUser(token, action.request);
-      log.info(`User document in database ${JSON.stringify(userDoc, null, 2)}`);
+      log.info({ message: `User document in database ${JSON.stringify(userDoc, null, 2)}`});
       action.request.user = userDoc;
       return true;
     } catch (error) {

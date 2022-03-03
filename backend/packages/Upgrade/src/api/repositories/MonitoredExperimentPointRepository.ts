@@ -22,7 +22,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'saveRawJson', { rawData }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw.length > 0 ? result.raw[0] : {};
@@ -37,7 +37,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'deleteByExperimentId', { ids }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw;
@@ -60,7 +60,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'getByDateRange', { ids, from, to }, errorMsg);
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -81,9 +81,10 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     offset: number,
     limit: number,
     monitorPointIds: string[],
-    experimentId: string
+    experimentId: string,
+    connectionName: string,
   ): Promise<any> {
-    return getConnection()
+    return getConnection(connectionName)
       .createQueryBuilder()
       .select([
         'user.id',
@@ -134,7 +135,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
           { offset, limit, monitorPointIds, experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 
@@ -149,7 +150,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
           { monitorPointIds },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
   }
 }

@@ -26,7 +26,7 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
           { scheduledJob },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
 
     return result.raw[0];
@@ -46,7 +46,7 @@ export class ScheduledJobRepository extends Repository<ScheduledJob> {
           { experimentId },
           errorMsg
         );
-        throw new Error(errorMsgString);
+        throw errorMsgString;
       });
     return result.raw;
   }

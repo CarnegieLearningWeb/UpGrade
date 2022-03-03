@@ -10,6 +10,8 @@ import { IndividualAssignment } from '../../../src/api/models/IndividualAssignme
 import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
 import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
 import { SupportService } from '../../../src/api/services/SupportService';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 
 export function checkExperimentAssignedIsNull(
   experimentConditionAssignments: any,
@@ -86,37 +88,43 @@ export function checkMarkExperimentPointForUser(
 
 export async function getAllExperimentCondition(
   userId: string,
+  logger: UpgradeLogger,
   context: string = 'home'
 ): Promise<IExperimentAssignment[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
+  // getOriginalUserDoc
+  const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // getAllExperimentConditions
-  return experimentAssignmentService.getAllExperimentConditions(userId, context);
+  return experimentAssignmentService.getAllExperimentConditions(userId, context, { logger: logger, userDoc: experimentUserDoc});
 }
 
 export async function getUserAssignments(userId: string, context: string = 'home'): Promise<IExperimentAssignment[]> {
   const supportService = Container.get<SupportService>(SupportService);
-  return supportService.getAssignments(userId, context);
+  return supportService.getAssignments(userId, context, new UpgradeLogger);
 }
 
 export async function markExperimentPoint(
   userId: string,
   experimentName: string,
   experimentPoint: string,
-  condition: string | null
+  condition: string | null,
+  logger: UpgradeLogger
 ): Promise<MonitoredExperimentPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
+  const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const checkService = Container.get<CheckService>(CheckService);
-
+  // getOriginalUserDoc
+  const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // mark experiment point
-  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, condition, experimentName);
+  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, condition, { logger: logger, userDoc: experimentUserDoc}, experimentName);
   return checkService.getAllMarkedExperimentPoints();
 }
 
 export async function checkDeletedExperiment(experimentId: string, user: User): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // delete experiment and check assignments operations
-  await experimentService.delete(experimentId, user);
+  await experimentService.delete(experimentId, user, new UpgradeLogger);
 
   // no individual assignments
   const individualAssignmentRepository = getRepository(IndividualAssignment);

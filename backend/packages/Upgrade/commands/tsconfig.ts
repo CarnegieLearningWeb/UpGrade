@@ -6,6 +6,7 @@ import * as tsconfig from '../tsconfig.json';
 const content: any = tsconfig;
 content.compilerOptions.outDir = 'dist';
 content.include = ['src/**/*'];
+content.compilerOptions.paths.upgrade_types = ['./types'];
 
 const filePath = path.join(process.cwd(), 'tsconfig.build.json');
 jsonfile.writeFile(filePath, content, { spaces: 2 }, err => {

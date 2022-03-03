@@ -6,6 +6,7 @@ export default async function init(
   url: string,
   userId: string,
   token: string,
+  clientSessionId: string,
   group?: Map<string, Array<string>>,
   workingGroup?: Map<string, string>,
 ): Promise<Interfaces.IUser> {
@@ -36,7 +37,7 @@ export default async function init(
       }
     }
 
-    const response = await fetchDataService(url, token, data, Types.REQUEST_TYPES.POST);
+    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
     if (response.status) {
       return response.data;
     } else {

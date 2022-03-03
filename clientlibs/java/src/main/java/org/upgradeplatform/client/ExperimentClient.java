@@ -5,7 +5,11 @@ import static org.upgradeplatform.utils.Utils.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.UnaryOperator;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.InvocationCallback;
@@ -25,10 +29,10 @@ import org.upgradeplatform.requestbeans.SingleMetric;
 import org.upgradeplatform.requestbeans.UserAlias;
 import org.upgradeplatform.responsebeans.AssignedCondition;
 import org.upgradeplatform.responsebeans.ErrorResponse;
+import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.FailedExperiment;
 import org.upgradeplatform.responsebeans.FeatureFlag;
-import org.upgradeplatform.responsebeans.ExperimentUser;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.LogEventResponse;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
@@ -37,8 +41,6 @@ import org.upgradeplatform.responsebeans.Variation;
 import org.upgradeplatform.utils.APIService;
 import org.upgradeplatform.utils.PublishingRetryCallback;
 
-
-
 public class ExperimentClient implements AutoCloseable {
 
 	private List<ExperimentsResponse> allExperiments;
@@ -46,17 +48,24 @@ public class ExperimentClient implements AutoCloseable {
 	private final String userId;
 	private final APIService apiService;
 
-    /** @param properties
+	/** @param properties
      *            Properties to permit users to control how the underlying JAX-RS
      *            client behaves. These are passed through to
      *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. */
 	public ExperimentClient(String userId, String authToken, String baseUrl, Map<String, Object> properties) {
+		this(userId, authToken, UUID.randomUUID().toString(), baseUrl, properties);
+	}
+
+    /** @param properties
+     *            Properties to permit users to control how the underlying JAX-RS
+     *            client behaves. These are passed through to
+     *            {@link javax.ws.rs.core.Configurable#property(String, Object)}. */
+	public ExperimentClient(String userId, String authToken, String sessionId, String baseUrl, Map<String, Object> properties) {
 		if (isStringNull(userId)) {
 			throw new IllegalArgumentException(INVALID_STUDENT_ID);
 		}
 		this.userId = userId;
-
-		this.apiService = new APIService(baseUrl, authToken, properties);
+		this.apiService = new APIService(baseUrl, authToken, sessionId, properties);
 	}
 
 	// To close jax-rs client connection open when calling ExperimentClient constructor;
@@ -96,7 +105,7 @@ public class ExperimentClient implements AutoCloseable {
 				@Override
 				public void completed(Response response) {
 					if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-						callbacks.onSuccess(response.readEntity(InitializeUser.class));
+					    readResponseToCallback(response, callbacks, InitializeUser.class);
 					} else {
 						String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 						ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity(String.class), status);
@@ -125,7 +134,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(ExperimentUser.class));
+				    readResponseToCallback(response, callbacks, ExperimentUser.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -152,7 +161,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(ExperimentUser.class));
+				    readResponseToCallback(response, callbacks, ExperimentUser.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -180,8 +189,8 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					// Cache allExperiment data for future requests
-					allExperiments = response.readEntity(new GenericType<List<ExperimentsResponse>>() {});
-					callbacks.onSuccess(allExperiments);
+				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentsResponse>>() {})
+				        .ifPresent(ae -> allExperiments = ae);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -279,8 +288,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-					MarkExperimentPoint data = response.readEntity(MarkExperimentPoint.class);
-					callbacks.onSuccess(new MarkExperimentPoint(data.getUserId(), experimentId, experimentPoint));
+				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), experimentId, experimentPoint));
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -322,7 +330,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(FailedExperiment.class));
+				    readResponseToCallback(response, callbacks, FailedExperiment.class);
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -348,8 +356,8 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					allFeatureFlag = response.readEntity(new GenericType<List<FeatureFlag>>() {});
-					callbacks.onSuccess(allFeatureFlag);
+				    readResponseToCallback(response, callbacks, new GenericType<List<FeatureFlag>>() {})
+				        .ifPresent(aff -> allFeatureFlag = aff);
 
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
@@ -428,7 +436,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(new GenericType<List<ExperimentUser>>() {}));
+				    readResponseToCallback(response, callbacks, new GenericType<List<ExperimentUser>>() {});
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -468,7 +476,7 @@ public class ExperimentClient implements AutoCloseable {
 			@Override
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
-					callbacks.onSuccess(response.readEntity(new GenericType<List<Metric>>() {}));
+				    readResponseToCallback(response, callbacks, new GenericType<List<Metric>>() {});
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
@@ -498,7 +506,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 					try {
-						callbacks.onSuccess(response.readEntity(LogEventResponse.class));
+					    readResponseToCallback(response, callbacks, LogEventResponse.class);
 					} catch(Exception e) {
 						callbacks.onError(new ErrorResponse(e.toString()));
 					}
@@ -517,4 +525,31 @@ public class ExperimentClient implements AutoCloseable {
 		}));	
 	}
 
+    /**helper method to include more useful information in the ErrorResponse for a ProcessingException*/
+    private static <T> Optional<T> readResponseToCallback(Response response, ResponseCallback<T> callback, GenericType<T> typeToken) {
+        response.bufferEntity();
+        try {
+            T entity = response.readEntity(typeToken);
+            callback.onSuccess(entity);
+            return Optional.of(entity);
+        } catch (ProcessingException pe) {
+            callback.onError(new ErrorResponse(pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
+            return Optional.empty();
+        }
+    }
+
+    /**helper method to include more useful information in the ErrorResponse for a ProcessingException*/
+    private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback, Class<T> clazz) {
+        readResponseToCallback(response, callback, clazz, UnaryOperator.identity());
+    }
+
+    /**helper method to include more useful information in the ErrorResponse for a ProcessingException*/
+    private static <T> void readResponseToCallback(Response response, ResponseCallback<T> callback, Class<T> clazz, UnaryOperator<T> finisher) {
+	    response.bufferEntity();
+	    try {
+	        callback.onSuccess(finisher.apply(response.readEntity(clazz)));
+	    } catch (ProcessingException pe) {
+	        callback.onError(new ErrorResponse(pe.getMessage() + "; cause: " + pe.getCause() + "; body: " + response.readEntity(String.class)));
+	    }
+	}
 }

@@ -8,6 +8,7 @@ import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { getAllExperimentCondition } from '../utils';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function IndividualExclude(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -16,14 +17,14 @@ export default async function IndividualExclude(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const userIn = await userService.upsertUser(systemUser as any);
+  const userIn = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any, userIn);
-  let experiments = await experimentService.find();
+  await experimentService.create(individualAssignmentExperiment as any, userIn, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -38,10 +39,10 @@ export default async function IndividualExclude(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, userIn, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -57,7 +58,7 @@ export default async function IndividualExclude(): Promise<void> {
   // store individual user over here
   const user = experimentUsers[0];
 
-  let experimentCondition = await getAllExperimentCondition(user.id);
+  let experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
   expect(experimentCondition.length).not.toEqual(0);
 
   // add user in individual exclude
@@ -70,6 +71,6 @@ export default async function IndividualExclude(): Promise<void> {
     ])
   );
 
-  experimentCondition = await getAllExperimentCondition(user.id);
+  experimentCondition = await getAllExperimentCondition(user.id, new UpgradeLogger());
   expect(experimentCondition.length).toEqual(0);
 }

@@ -27,9 +27,9 @@ const ses = new AWS.SES({
 @Service()
 export class AWSService {
   public stepFunctionStartExecution(
-    experimentSchedularStateMachine: StepFunctionStartInput
+    experimentSchedulerStateMachine: StepFunctionStartInput
   ): Promise<PromiseResult<AWS.StepFunctions.StartExecutionOutput, AWS.AWSError>> {
-    return stepFunction.startExecution(experimentSchedularStateMachine).promise();
+    return stepFunction.startExecution(experimentSchedulerStateMachine).promise();
   }
 
   public stepFunctionStopExecution(

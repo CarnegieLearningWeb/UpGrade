@@ -9,6 +9,7 @@ import { AuditService } from '../../../../src/api/services/AuditService';
 import { EXPERIMENT_STATE, EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function UpdateExperimentState(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -17,14 +18,14 @@ export default async function UpdateExperimentState(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = scheduleJobUpdateExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -52,7 +53,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ...experimentObject,
     name: 'Updated Experiment',
   };
-  const updateExperiment = await experimentService.update(updatedExperiment.id, updatedExperiment as any, user);
+  const updateExperiment = await experimentService.update(updatedExperiment as any, user, new UpgradeLogger());
 
   expect(updateExperiment).toEqual(
     // expect.arrayContaining([
@@ -79,7 +80,7 @@ export default async function UpdateExperimentState(): Promise<void> {
 
   // change experiment status to Enrolling
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   await new Promise(r => setTimeout(r, 1000));
 

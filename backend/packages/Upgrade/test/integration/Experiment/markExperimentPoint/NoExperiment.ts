@@ -1,5 +1,4 @@
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
@@ -12,16 +11,16 @@ import {
   checkMarkExperimentPointForUser,
   checkExperimentAssignedIsNull,
 } from '../../utils';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function NoExperiment(): Promise<void> {
-  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   const experimentName = experimentObject.partitions[0].expId;
   const experimentPoint = experimentObject.partitions[0].expPoint;
@@ -31,13 +30,14 @@ export default async function NoExperiment(): Promise<void> {
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
-    condition
+    condition,
+    new UpgradeLogger(),
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -51,10 +51,10 @@ export default async function NoExperiment(): Promise<void> {
   );
 
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -68,6 +68,6 @@ export default async function NoExperiment(): Promise<void> {
   );
 
   // get all experiment condition for user 2
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 }

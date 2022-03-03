@@ -1,7 +1,4 @@
-import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
-import { getRepository } from 'typeorm';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
-import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { Container } from 'typedi';
@@ -13,33 +10,32 @@ import {
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
-import { Console } from 'winston/lib/winston/transports';
+import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, getAllExperimentCondition } from '../../utils';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 
 export default async function testCase(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
-  const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
+  const experimentClientController = Container.get<ExperimentClientController>(ExperimentClientController);
   const userService = Container.get<UserService>(UserService);
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
-
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create individual and group experiment
   const experimentObject1 = individualAssignmentExperiment;
   const experimentName1 = experimentObject1.partitions[0].expId;
   const experimentPoint1 = experimentObject1.partitions[0].expPoint;
   // const condition1 = experimentObject1.conditions[0].conditionCode;
-  await experimentService.create(experimentObject1 as any, user);
+  await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
 
   const experimentObject2 = groupAssignmentWithIndividualConsistencyExperimentSecond;
   const experimentName2 = experimentObject2.partitions[0].expId;
   const experimentPoint2 = experimentObject2.partitions[0].expPoint;
   // const condition2 = experimentObject2.conditions[0].conditionCode;
-  await experimentService.create(experimentObject2 as any, user);
+  await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
 
-  let experiments = await experimentService.find();
+  let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -61,11 +57,11 @@ export default async function testCase(): Promise<void> {
 
   // change experiment status to Enrolling
   const [experiment1, experiment2] = experiments;
-  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user);
-  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user);
+  await experimentService.updateState(experiment1.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  await experimentService.updateState(experiment2.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
   // fetch experiment
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -86,7 +82,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // call get all experiment condition
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
 
   // check the experiment assignment
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
@@ -96,9 +92,9 @@ export default async function testCase(): Promise<void> {
   const experimentObject3 = groupAssignmentWithIndividualConsistencyExperimentThird;
   const experimentName3 = experimentObject3.partitions[0].expId;
   const experimentPoint3 = experimentObject3.partitions[0].expPoint;
-  await experimentService.create(experimentObject3 as any, user);
+  await experimentService.create(experimentObject3 as any, user, new UpgradeLogger());
 
-  experiments = await experimentService.find();
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -111,8 +107,8 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  await experimentService.updateState(experimentObject3.id, EXPERIMENT_STATE.ENROLLING, user);
-  experiments = await experimentService.find();
+  await experimentService.updateState(experimentObject3.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+  experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -124,14 +120,15 @@ export default async function testCase(): Promise<void> {
       })
     ])
   );
-
+  // getOriginalUserDoc call for alias
+  const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
-  await experimentUserService.updateGroupMembership(experimentUsers[0].id, null);
-  const experimentUser = await experimentUserService.findOne(experimentUsers[0].id);
+  await experimentUserService.updateGroupMembership(experimentUsers[0].id, null, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  const experimentUser = await experimentUserService.findOne(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentUser.group).toBeNull();
 
   // call getAllExperiment
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id);
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
 
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);

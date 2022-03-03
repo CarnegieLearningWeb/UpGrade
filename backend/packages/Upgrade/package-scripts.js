@@ -74,7 +74,7 @@ module.exports = {
         description: 'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
       },
       production: {
-        script: 'cross-env NODE_ENV=production node dist/src/app.js',
+        script: 'cross-env NODE_ENV=production ts-node --project tsconfig.build.json -r tsconfig-paths/register dist/src/app.js',
       },
       development: {
         script: 'cross-env NODE_ENV=development node dist/src/app.js',
@@ -128,7 +128,7 @@ module.exports = {
      * Builds the app into the dist directory
      */
     build: {
-      script: series('nps banner.build', 'nps config', 'nps lint', 'nps clean.dist', 'nps transpile', 'nps copy'),
+      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck.build', 'nps clean.dist', 'nps transpile', 'nps copy'),
       description: 'Builds the app into the dist directory',
     },
     /**
@@ -148,6 +148,17 @@ module.exports = {
         script: runFast('./node_modules/typeorm/cli.js schema:drop'),
         description: 'Drops the schema of the database',
       },
+    },
+
+    typecheck: {
+      default: {
+        script: "tsc --noEmit" ,
+        description: "Typecheck the project without emitting the output"
+      },
+      build: {
+        script: "tsc --noEmit --project ./tsconfig.build.json",
+        description: "Typecheck the project without emitting the output"
+      }
     },
 
     /**

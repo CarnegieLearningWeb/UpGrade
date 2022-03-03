@@ -5,6 +5,7 @@ import { individualAssignmentExperiment } from '../../mockData/experiment/index'
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function UpdateExperiment(): Promise<void> {
   // const logger = new WinstonLogger(__filename);
@@ -14,11 +15,11 @@ export default async function UpdateExperiment(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(individualAssignmentExperiment as any, user);
-  let experiments = await experimentService.find();
+  await experimentService.create(individualAssignmentExperiment as any, user, new UpgradeLogger());
+  let experiments = await experimentService.find(new UpgradeLogger());
 
   // sort conditions
   experiments[0].conditions.sort((a,b) => {
@@ -107,7 +108,7 @@ export default async function UpdateExperiment(): Promise<void> {
     newExperimentDoc.partitions[index] = newCondition;
   });
 
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([
@@ -131,7 +132,7 @@ export default async function UpdateExperiment(): Promise<void> {
   );
 
   // get all experimental conditions
-  const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id);
+  const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id, new UpgradeLogger());
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
 
   // check the partitions
@@ -157,10 +158,10 @@ export default async function UpdateExperiment(): Promise<void> {
   );
 
   // get all experimental partitions
-  const experimentPartition = await experimentService.getExperimentPartitions(updatedExperimentDoc.id);
+  const experimentPartition = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
   expect(experimentPartition.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // update the experiment state
-  await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user);
-  experiments = await experimentService.find();
+  await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  experiments = await experimentService.find(new UpgradeLogger());
 }

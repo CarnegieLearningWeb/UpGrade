@@ -1,7 +1,7 @@
 resource "aws_security_group" "app-prod" {
   
   vpc_id      = aws_vpc.main.id
-  name        = "${var.environment}-${var.prefix}-schedular-security group"
+  name        = "${var.environment}-${var.prefix}-scheduler-security group"
   description = "${var.environment}-${var.prefix}-security group for for the app"
   egress {
     from_port   = 0

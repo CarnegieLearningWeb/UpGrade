@@ -1,23 +1,22 @@
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
+import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function NoPartitionPoint(): Promise<void> {
-  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;
   const userService = Container.get<UserService>(UserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
 
   // sort conditions
   experiments[0].conditions.sort((a,b) => {
@@ -69,7 +68,7 @@ export default async function NoPartitionPoint(): Promise<void> {
     newExperimentDoc.conditions[index] = newCondition;
   });
 
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user);
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
 
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([

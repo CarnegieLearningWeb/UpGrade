@@ -1,52 +1,53 @@
 import { Service } from 'typedi';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { Metric } from '../models/Metric';
 import { SERVER_ERROR, IMetricUnit, IMetricMetaData, IGroupMetric, ISingleMetric } from 'upgrade_types';
 import { SettingService } from './SettingService';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 export const METRICS_JOIN_TEXT = '@__@';
 
 @Service()
 export class MetricService {
   constructor(
-    @Logger(__filename) private log: LoggerInterface,
     @OrmRepository() private metricRepository: MetricRepository,
     public settingService: SettingService
   ) {}
 
-  public async getAllMetrics(): Promise<IMetricUnit[]> {
-    this.log.info('Get all metrics');
+  public async getAllMetrics( logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message : 'Get all metrics' });
     // check permission for metrics
     const metricData = await this.metricRepository.find();
     return this.metricDocumentToJson(metricData);
   }
 
-  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<Metric[]> {
-    this.log.info('Save all metrics');
-    return await this.addAllMetrics(metrics);
+  public async saveAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
+    logger.info({ message: 'Save all metrics' });
+    return await this.addAllMetrics(metrics, logger);
   }
 
-  public async upsertAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<IMetricUnit[]> {
-    this.log.info('Upsert all metrics');
-    const upsertedMetrics = await this.addAllMetrics(metrics);
+  public async upsertAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message : 'Upsert all metrics' });
+    const upsertedMetrics = await this.addAllMetrics(metrics, logger);
     return this.metricDocumentToJson(upsertedMetrics);
   }
 
-  public async deleteMetric(key: string): Promise<IMetricUnit[]> {
-    this.log.info('Delete metric by key ', key);
+  public async deleteMetric(key: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message : `Delete metric by key ${key}` });
     await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
     return this.metricDocumentToJson(updatedMetric);
   }
 
-  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>): Promise<Metric[]> {
+  private async addAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<Metric[]> {
     // check permission for metrics
-    const isAllowed = await this.checkMetricsPermission();
+    const isAllowed = await this.checkMetricsPermission(logger);
     if (!isAllowed) {
-      throw new Error(JSON.stringify({ type: SERVER_ERROR.INVALID_TOKEN, message: 'Metrics filter not enabled' }));
+      const error = new Error('Metrics filter not enabled');
+      (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+      throw error;
     }
     // create query for metrics
     const formattedMetrics = this.parseMetrics(metrics);
@@ -59,8 +60,8 @@ export class MetricService {
     return this.metricRepository.save(metricDoc);
   }
 
-  private async checkMetricsPermission(): Promise<boolean> {
-    const setting = await this.settingService.getClientCheck();
+  private async checkMetricsPermission(logger: UpgradeLogger): Promise<boolean> {
+    const setting = await this.settingService.getClientCheck(logger);
     return setting.toFilterMetric;
   }
 
@@ -82,11 +83,11 @@ export class MetricService {
         } else if (Array.isArray(metricUnit.key)) {
           keys = metricUnit.key;
         }
-        keys.forEach(key => {
+        keys.forEach((key) => {
           const leafPath = keyName === '' ? key : `${keyName}${METRICS_JOIN_TEXT}${key}`;
           keyArrayAndMeta.push({
             key: leafPath,
-            type: metricUnit.metadata && metricUnit.metadata.type || IMetricMetaData.CONTINUOUS,
+            type: (metricUnit.metadata && metricUnit.metadata.type) || IMetricMetaData.CONTINUOUS,
             allowedData: metricUnit.allowedData,
           });
         });
@@ -100,7 +101,7 @@ export class MetricService {
         } else if (Array.isArray(metricUnit.key)) {
           keys = metricUnit.key;
         }
-        keys.forEach(key => {
+        keys.forEach((key) => {
           const newKey = keyName === '' ? key : `${keyName}${METRICS_JOIN_TEXT}${key}`;
           return `${returnKeyArray(unit, newKey as any)}`;
         });
@@ -173,22 +174,16 @@ export class MetricService {
           allowedData: groupMetric.allowedValues,
         };
       } else if (groupMetric.groupClass) {
-        const newChildren = groupMetric.allowedKeys.map(allowedKey =>
-          ({
-            key: allowedKey,
-            children: groupMetric.attributes || [],
-          })
-        );
+        const newChildren = groupMetric.allowedKeys.map((allowedKey) => ({
+          key: allowedKey,
+          children: groupMetric.attributes || [],
+        }));
         return {
           key: groupMetric.groupClass,
-          children: newChildren.map(child =>
-            ({
-              key: child.key,
-              children: child.children.map(child1 =>
-                formKeyChildrenFormat(child1)
-              ),
-            })
-          ),
+          children: newChildren.map((child) => ({
+            key: child.key,
+            children: child.children.map((child1) => formKeyChildrenFormat(child1)),
+          })),
         };
       }
     }

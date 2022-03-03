@@ -1,6 +1,15 @@
 {
   "extends": "../../tsconfig.json",
+  "ts-node": {
+    "transpileOnly": true,
+    "pretty": true
+  },
   "compilerOptions": {
-    "rootDir": "."
-  }
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "upgrade_types": ["../../../types"]
+    }
+  },
+  "exclude": ["**/*/node_modules"]
 }

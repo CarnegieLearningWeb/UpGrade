@@ -2,27 +2,26 @@ import { Container } from 'typedi';
 import { individualAssignmentExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { UserService } from '../../../src/api/services/UserService';
-import { Logger as WinstonLogger } from '../../../src/lib/logger';
 import { systemUser } from '../mockData/user/index';
-import { getAllExperimentCondition, markExperimentPoint } from '../utils';
+import { getAllExperimentCondition } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const userService = Container.get<UserService>(UserService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
 
   // creating new user
-  const user = await userService.upsertUser(systemUser as any);
+  const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 
   // create experiment
-  await experimentService.create(experimentObject as any, user);
-  const experiments = await experimentService.find();
+  await experimentService.create(experimentObject as any, user, new UpgradeLogger());
+  const experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -35,12 +34,12 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let experimentUser = await experimentUserService.find();
+  let experimentUser = await experimentUserService.find(new UpgradeLogger());
   expect(experimentUser.length).toEqual(0);
 
   // get all experiment condition for user 1
-  await expect(getAllExperimentCondition(experimentUsers[0].id)).rejects.toThrow();
+  await expect(getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger())).rejects.toThrow();
 
-  experimentUser = await experimentUserService.find();
+  experimentUser = await experimentUserService.find(new UpgradeLogger());
   expect(experimentUser.length).toEqual(0);
 }

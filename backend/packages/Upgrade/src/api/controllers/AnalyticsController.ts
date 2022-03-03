@@ -1,11 +1,11 @@
-import { JsonController, Post, Body, Authorized } from 'routing-controllers';
+import { JsonController, Post, Body, Authorized, Req } from 'routing-controllers';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { IExperimentEnrollmentStats, IExperimentEnrollmentDetailStats } from 'upgrade_types';
 import { EnrollmentAnalyticsValidator } from './validators/EnrollmentAnalyticsValidator';
 import { EnrollmentAnalyticsDateValidator } from './validators/EnrollmentAnalyticsDateValidator';
 import { EnrollmentDetailAnalyticsValidator } from './validators/EnrollmentDetailAnalyticsValidator';
 import { DataExportValidator } from './validators/DataExportValidator';
-import { Logger, LoggerInterface } from '../../decorators/Logger';
+import { AppRequest } from '../../types';
 
 /**
  * @swagger
@@ -16,7 +16,7 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 @Authorized()
 @JsonController('/stats')
 export class AnalyticsController {
-  constructor(public auditService: AnalyticsService, @Logger(__filename) private log: LoggerInterface) {}
+  constructor(public auditService: AnalyticsService) {}
 
   /**
    * @swagger
@@ -43,12 +43,32 @@ export class AnalyticsController {
    *       responses:
    *          '200':
    *            description: Analytics For Experiment Enrollment
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - users
+   *                  - groups
+   *                  - id
+   *                properties:
+   *                  users:
+   *                    type: number
+   *                  groups:
+   *                    type: number
+   *                  id:
+   *                    type: string
+   *                    minLength: 1
    */
   @Post('/enrollment')
   public async analyticsService(
-    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
+    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator, 
+    @Req() request: AppRequest 
   ): Promise<IExperimentEnrollmentStats[]> {
-    return this.auditService.getEnrollments(auditParams.experimentIds);
+    return this.auditService.getEnrollments(auditParams.experimentIds, request.logger);
   }
 
   /**
@@ -74,13 +94,62 @@ export class AnalyticsController {
    *       responses:
    *          '200':
    *            description: Analytics For Experiment Enrollment Detail
+   *            schema:
+   *              type: object
+   *              properties:
+   *                id:
+   *                  type: string
+   *                  minLength: 1
+   *                users:
+   *                  type: number
+   *                groups:
+   *                  type: number
+   *                usersExcluded:
+   *                  type: number
+   *                groupsExcluded:
+   *                  type: number
+   *                conditions:
+   *                  type: array
+   *                  uniqueItems: true
+   *                  minItems: 1
+   *                  items:
+   *                    required:
+   *                      - id
+   *                      - users
+   *                      - groups
+   *                    properties:
+   *                      id:
+   *                        type: string
+   *                        minLength: 1
+   *                      users:
+   *                        type: number
+   *                      groups:
+   *                        type: number
+   *                      partitions:
+   *                        type: array
+   *                        uniqueItems: true
+   *                        minItems: 1
+   *                        items:
+   *                          required:
+   *                            - id
+   *                            - users
+   *                            - groups
+   *                          properties:
+   *                            id:
+   *                              type: string
+   *                              minLength: 1
+   *                            users:
+   *                              type: number
+   *                            groups:
+   *                              type: number
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentDetailAnalyticsValidator
+    auditParams: EnrollmentDetailAnalyticsValidator, 
+    @Req() request: AppRequest 
   ): Promise<IExperimentEnrollmentDetailStats> {
-    return this.auditService.getDetailEnrollment(auditParams.experimentId);
+    return this.auditService.getDetailEnrollment(auditParams.experimentId, request.logger);
   }
 
   /**
@@ -109,13 +178,65 @@ export class AnalyticsController {
    *       responses:
    *          '200':
    *            description: Analytics For Experiment Enrollment
+   *            schema:
+   *              type: array
+   *              description: ''
+   *              minItems: 1
+   *              uniqueItems: true
+   *              items:
+   *                type: object
+   *                required:
+   *                  - date
+   *                  - stats
+   *                properties:
+   *                  date:
+   *                    type: string
+   *                    minLength: 1
+   *                  stats:
+   *                    type: object
+   *                    properties:
+   *                      id:
+   *                        type: string
+   *                        minLength: 1
+   *                      conditions:
+   *                        type: array
+   *                        uniqueItems: true
+   *                        minItems: 1
+   *                        items:
+   *                          required:
+   *                            - id
+   *                          properties:
+   *                            id:
+   *                              type: string
+   *                              minLength: 1
+   *                            partitions:
+   *                              type: array
+   *                              uniqueItems: true
+   *                              minItems: 1
+   *                              items:
+   *                                required:
+   *                                  - id
+   *                                  - users
+   *                                  - groups
+   *                                properties:
+   *                                  id:
+   *                                    type: string
+   *                                    minLength: 1
+   *                                  users:
+   *                                    type: number
+   *                                  groups:
+   *                                    type: number
+   *                    required:
+   *                      - id
+   *                      - conditions
    */
   @Post('/enrollment/date')
   public async enrollmentByDate(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentAnalyticsDateValidator
+    auditParams: EnrollmentAnalyticsDateValidator, 
+    @Req() request: AppRequest 
   ): Promise<any> {
-    return this.auditService.getEnrollmentStatsByDate(auditParams.experimentId, auditParams.dateEnum, auditParams.clientOffset);
+    return this.auditService.getEnrollmentStatsByDate(auditParams.experimentId, auditParams.dateEnum, auditParams.clientOffset, request.logger);
   }
 
   /**
@@ -144,9 +265,10 @@ export class AnalyticsController {
   @Post('/csv')
   public async downloadCSV(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    csvInfo: DataExportValidator
+    csvInfo: DataExportValidator, 
+    @Req() request: AppRequest 
   ): Promise<string> {
-    this.log.info('Request received for csv download', JSON.stringify(csvInfo, null, 2));
-    return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email);
+    request.logger.info({ message: `Request received for csv download ${JSON.stringify(csvInfo, null, 2)}` });
+    return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email, request.logger);
   }
 }
