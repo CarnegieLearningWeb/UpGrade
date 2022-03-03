@@ -67,7 +67,7 @@ export default async function experimentIncludeGroup(): Promise<void> {
   expect(experimentCondition.length).toEqual(0);
 
   // add group to include for this experiment
-  const excludedGroup = await experimentIncludeService.experimentIncludeGroup([{type: groupType, groupId: groupId}], experimentId);
+  const excludedGroup = await experimentIncludeService.experimentIncludeGroup([{type: groupType, groupId: groupId}], experimentId, new UpgradeLogger());
   expect(excludedGroup).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -83,7 +83,7 @@ export default async function experimentIncludeGroup(): Promise<void> {
   expect(experimentCondition.length).not.toEqual(0);
 
   // excluding the user in experiment
-  const includedUser = await experimentExcludeService.experimentExcludeUser([user.id], experimentId);
+  const includedUser = await experimentExcludeService.experimentExcludeUser([user.id], experimentId, new UpgradeLogger());
   expect(includedUser).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

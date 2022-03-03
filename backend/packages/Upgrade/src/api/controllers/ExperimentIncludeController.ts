@@ -1,10 +1,11 @@
-import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post, OnUndefined } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post, OnUndefined, Req } from 'routing-controllers';
 import { ExperimentIncludeService } from '../services/ExperimentIncludeService';
 import { ExplicitExperimentIndividualInclusion } from '../models/ExplicitExperimentIndividualInclusion';
 import { ExplicitExperimentGroupInclusion } from '../models/ExplicitExperimentGroupInclusion';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
+import { AppRequest } from '../../types';
 const validator = new Validator();
 
 /**
@@ -95,13 +96,14 @@ export class ExperimentIncludeController {
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
   @Get('/user')
-  public getExperimentIncludedUser(): Promise<ExplicitExperimentIndividualInclusion[]> {
-    return this.experimentInclude.getAllExperimentUser();
+  public getExperimentIncludedUser( @Req() request: AppRequest ): Promise<ExplicitExperimentIndividualInclusion[]> {
+    return this.experimentInclude.getAllExperimentUser(request.logger);
   }
 
   @Get('/user/:userId/:experimentId')
   @OnUndefined(UserNotFoundError)
   public getExperimentIncludedUserById(
+    @Req() request: AppRequest,
     @Param('userId') userId: string,
     @Param('experimentId') experimentId: string
     ): Promise<ExplicitExperimentIndividualInclusion> {
@@ -118,7 +120,7 @@ export class ExperimentIncludeController {
         )
       );
     }
-    return this.experimentInclude.getExperimentUserById(userId, experimentId);
+    return this.experimentInclude.getExperimentUserById(userId, experimentId, request.logger);
   }
 
   /**
@@ -152,10 +154,11 @@ export class ExperimentIncludeController {
    */
    @Post('/user')
    public experimentIncludeUser(
+     @Req() request: AppRequest,
      @BodyParam('userIds') userIds: Array<string>,
      @BodyParam('experimentId') experimentId: string,
    ): Promise<ExplicitExperimentIndividualInclusion[]> {
-     return this.experimentInclude.experimentIncludeUser(userIds, experimentId);
+     return this.experimentInclude.experimentIncludeUser(userIds, experimentId, request.logger);
    }
 
   /**
@@ -182,6 +185,7 @@ export class ExperimentIncludeController {
    */
    @Delete('/user/:userId/:experimentId')
    public delete(
+     @Req() request: AppRequest,
      @Param('userId') userId: string,
      @Param('experimentId') experimentId: string
      ): Promise<ExplicitExperimentIndividualInclusion | undefined> {
@@ -198,7 +202,7 @@ export class ExperimentIncludeController {
          )
        );
      }
-     return this.experimentInclude.deleteExperimentUser(userId, experimentId);
+     return this.experimentInclude.deleteExperimentUser(userId, experimentId, request.logger);
    }
 
   /**
@@ -217,12 +221,13 @@ export class ExperimentIncludeController {
    *              $ref: '#/definitions/userExperimentIncludeResponse'
    */
   @Get('/group')
-  public getExperimentIncludedGroups(): Promise<ExplicitExperimentGroupInclusion[]> {
-    return this.experimentInclude.getAllExperimentGroups();
+  public getExperimentIncludedGroups( @Req() request: AppRequest ): Promise<ExplicitExperimentGroupInclusion[]> {
+    return this.experimentInclude.getAllExperimentGroups(request.logger);
   }
 
   @Get('/group/:type/:id/:experimentId')
   public getExperimentIncludedGroupById(
+    @Req() request: AppRequest,
     @Param('type') type: string,
     @Param('id') groupId: string,
     @Param('experimentId') experimentId: string
@@ -243,7 +248,7 @@ export class ExperimentIncludeController {
         )
       );
     }
-    return this.experimentInclude.getExperimentGroupById(type, groupId, experimentId);
+    return this.experimentInclude.getExperimentGroupById(type, groupId, experimentId, request.logger);
   }
 
   /**
@@ -279,10 +284,11 @@ export class ExperimentIncludeController {
    */
    @Post('/group')
    public experimentIncludeGroup(
+     @Req() request: AppRequest,
      @BodyParam('groups') groups: Array<{ groupId: string, type: string }>,
      @BodyParam('experimentId') experimentId: string    
     ): Promise<ExplicitExperimentGroupInclusion[]> {
-      return this.experimentInclude.experimentIncludeGroup(groups, experimentId);
+      return this.experimentInclude.experimentIncludeGroup(groups, experimentId, request.logger);
    }
 
   /**
@@ -315,6 +321,7 @@ export class ExperimentIncludeController {
    */
   @Delete('/group/:type/:id/:experimentId')
   public deleteExperimentGroup(
+    @Req() request: AppRequest,
     @Param('id') id: string,
     @Param('type') type: string,
     @Param('experimentId') experimentId: string
@@ -335,6 +342,6 @@ export class ExperimentIncludeController {
         )
       );
     }
-    return this.experimentInclude.deleteExperimentGroup(id, type, experimentId);
+    return this.experimentInclude.deleteExperimentGroup(id, type, experimentId, request.logger);
   }
 }

@@ -63,7 +63,7 @@ export default async function experimentIncludeUser(): Promise<void> {
   expect(experimentCondition.length).toEqual(0);
 
   // add user in experiment individual include
-  const excludedUser = await experimentIncludeService.experimentIncludeUser([user.id], experimentId);
+  const excludedUser = await experimentIncludeService.experimentIncludeUser([user.id], experimentId, new UpgradeLogger());
   expect(excludedUser).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

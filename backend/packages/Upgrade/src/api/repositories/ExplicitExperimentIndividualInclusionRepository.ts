@@ -1,10 +1,11 @@
 import { Repository, EntityRepository } from 'typeorm';
 import {  ExplicitExperimentIndividualInclusion } from '../models/ExplicitExperimentIndividualInclusion';
 import repositoryError from './utils/repositoryError';
+import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
 @EntityRepository(ExplicitExperimentIndividualInclusion)
 export class ExplicitExperimentIndividualInclusionRepository extends Repository<ExplicitExperimentIndividualInclusion> {
-  public async findAllUsers(): Promise<ExplicitExperimentIndividualInclusion[]> {
+  public async findAllUsers(logger: UpgradeLogger): Promise<ExplicitExperimentIndividualInclusion[]> {
     return this.createQueryBuilder('explicitExperimentIndividualInclusion')
       .leftJoinAndSelect('explicitExperimentIndividualInclusion.experiment', 'experiment')
       .getMany()
@@ -15,11 +16,12 @@ export class ExplicitExperimentIndividualInclusionRepository extends Repository<
           {},
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
   }
 
-  public async findOneById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualInclusion> {
+  public async findOneById(userId: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentIndividualInclusion> {
     return this.createQueryBuilder('explicitExperimentIndividualInclusion')
       .leftJoinAndSelect('explicitExperimentIndividualInclusion.experiment', 'experiment')
       .where('experiment.id=:experimentId',{experimentId})
@@ -32,12 +34,14 @@ export class ExplicitExperimentIndividualInclusionRepository extends Repository<
           { userId, experimentId },
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
   }
 
   public async insertExplicitExperimentIndividualInclusion(
     data: Array<Partial<ExplicitExperimentIndividualInclusion>>,
+    logger: UpgradeLogger
   ): Promise<ExplicitExperimentIndividualInclusion[]> {
     const result = await this.createQueryBuilder('explicitExperimentIndividualInclusion')
       .insert()
@@ -53,13 +57,14 @@ export class ExplicitExperimentIndividualInclusionRepository extends Repository<
           { data },
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
 
     return result.raw;
   }
 
-  public async deleteById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualInclusion> {
+  public async deleteById(userId: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentIndividualInclusion> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(ExplicitExperimentIndividualInclusion)
@@ -73,6 +78,7 @@ export class ExplicitExperimentIndividualInclusionRepository extends Repository<
           { userId },
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
 

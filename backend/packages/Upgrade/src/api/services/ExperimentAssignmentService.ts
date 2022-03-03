@@ -448,7 +448,7 @@ export class ExperimentAssignmentService {
       }
 
       // experiment level inclusion and exclusion
-      const filteredExperiments = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, experimentUser);
+      const filteredExperiments = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, experimentUser, logger);
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
@@ -522,15 +522,15 @@ export class ExperimentAssignmentService {
     }
   }
 
-  private async experimentLevelExclusionInclusion(experiments: Experiment[], experimentUser: ExperimentUser): Promise<Experiment[]> {
+  private async experimentLevelExclusionInclusion(experiments: Experiment[], experimentUser: ExperimentUser, logger: UpgradeLogger): Promise<Experiment[]> {
 
     let expLevelFilteredExperiments = [];
 
     const [explicitExperimentIndividualExclusionData, explicitExperimentIndividualInclusionData, explicitExperimentGroupExclusionData, explicitExperimentGroupInclusionData] = await Promise.all([
-      this.explicitExperimentIndividualExclusionRepository.findAllUsers(),
-      this.explicitExperimentIndividualInclusionRepository.findAllUsers(),
-      this.explicitExperimentGroupExclusionRepository.findAllGroups(),
-      this.explicitExperimentGroupInclusionRepository.findAllGroups(),
+      this.explicitExperimentIndividualExclusionRepository.findAllUsers(logger),
+      this.explicitExperimentIndividualInclusionRepository.findAllUsers(logger),
+      this.explicitExperimentGroupExclusionRepository.findAllGroups(logger),
+      this.explicitExperimentGroupInclusionRepository.findAllGroups(logger),
     ]);
 
     const explicitExperimentIndividualExclusionFilteredData = explicitExperimentIndividualExclusionData

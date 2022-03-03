@@ -6,6 +6,7 @@ import { ExplicitExperimentIndividualExclusion } from '../models/ExplicitExperim
 import { ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
 import { ExperimentService } from './ExperimentService';
 import { Experiment } from '../models/Experiment';
+import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ExperimentExcludeService {
@@ -17,17 +18,20 @@ export class ExperimentExcludeService {
     public experimentService: ExperimentService
   ) {}
 
-  public getAllExperimentUser(): Promise<ExplicitExperimentIndividualExclusion[]> {
-    return this.explicitExperimentIndividualExclusionRepository.findAllUsers();
+  public getAllExperimentUser(logger: UpgradeLogger): Promise<ExplicitExperimentIndividualExclusion[]> {
+    logger.info({ message: `Find all users who are explicitly excluded at experiment level`});
+    return this.explicitExperimentIndividualExclusionRepository.findAllUsers(logger);
   }
 
-  public getExperimentUserById(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualExclusion> {
-    return this.explicitExperimentIndividualExclusionRepository.findOneById(userId, experimentId);
+  public getExperimentUserById(userId: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentIndividualExclusion> {
+    logger.info({ message: `Find the user who is explicitly excluded for the given experiment. experimentId => ${experimentId}, userId => ${userId}`});
+    return this.explicitExperimentIndividualExclusionRepository.findOneById(userId, experimentId, logger);
   }
 
-  public async experimentExcludeUser(userIds: Array<string>, experimentId: string): Promise<ExplicitExperimentIndividualExclusion[]> {
-    const experiment: Experiment = await this.experimentService.findOne(experimentId);
-    if(!experiment) {
+  public async experimentExcludeUser(userIds: Array<string>, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentIndividualExclusion[]> {
+    logger.info({ message: `Explicitly exclude users from the experiment. experimentId => ${experimentId}, userIds => ${userIds}`});
+    const experiment: Experiment = await this.experimentService.findOne(experimentId, logger);
+    if (!experiment) {
       throw new Error('experiment not found');
     }
 
@@ -42,26 +46,36 @@ export class ExperimentExcludeService {
       return rest;
     })) || [];
   
-    return this.explicitExperimentIndividualExclusionRepository.insertExplicitExperimentIndividualExclusion(ExplicitExperimentIndividualExcludeDocToSave);
+    return this.explicitExperimentIndividualExclusionRepository.insertExplicitExperimentIndividualExclusion(ExplicitExperimentIndividualExcludeDocToSave, logger);
   }
 
-  public async deleteExperimentUser(userId: string, experimentId: string): Promise<ExplicitExperimentIndividualExclusion | undefined> {
-    const deletedDoc = await this.explicitExperimentIndividualExclusionRepository.deleteById(userId, experimentId);
+  public async deleteExperimentUser(userId: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentIndividualExclusion | undefined> {
+    logger.info({ message: `Delete explicitly excluded user from the experiment. experimentId: ${experimentId}, userId: ${userId}`});
+    const deletedDoc = await this.explicitExperimentIndividualExclusionRepository.deleteById(userId, experimentId, logger);
     return deletedDoc;
   }
 
-  public getAllExperimentGroups(): Promise<ExplicitExperimentGroupExclusion[]> {
-    return this.explicitExperimentGroupExclusionRepository.findAllGroups();
+  public getAllExperimentGroups(logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion[]> {
+    logger.info({ message: `Find all groups who are explicitly excluded at experiment level`});
+    return this.explicitExperimentGroupExclusionRepository.findAllGroups(logger);
   }
 
-  public getExperimentGroupById(type:string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion> {
-    return this.explicitExperimentGroupExclusionRepository.findOneById(type, groupId, experimentId);
+  public getExperimentGroupById(type:string, groupId: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion> {
+    logger.info({ message: `Find the group which is explicitly excluded for the given experiment. experimentId => ${experimentId}, type => ${type}, groupId => ${groupId}`});
+    return this.explicitExperimentGroupExclusionRepository.findOneById(type, groupId, experimentId, logger);
   }
 
-  public async experimentExcludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string): Promise<any> {
-    const experiment: Experiment = await this.experimentService.findOne(experimentId);
-    if(!experiment) {
-      throw new Error(' experiment not found');
+  public async experimentExcludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string, logger: UpgradeLogger): Promise<any> {
+    let groupIdInfoForLogger = [];
+    let groupTypeInfoForLogger = [];
+    groups.forEach( group => {
+      groupIdInfoForLogger.push(group.groupId);
+      groupTypeInfoForLogger.push(group.type);
+    });
+    logger.info({ message: `Explicitly exclude groups from the experiment. experimentId => ${experimentId}, groupIds => ${groupIdInfoForLogger}, types => ${groupTypeInfoForLogger}`});
+    const experiment: Experiment = await this.experimentService.findOne(experimentId, logger);
+    if (!experiment) {
+      throw new Error('experiment not found');
     }
     let explicitExperimentGroupExcludeDoc = new ExplicitExperimentGroupExclusion();
     explicitExperimentGroupExcludeDoc.experiment = experiment;
@@ -76,10 +90,11 @@ export class ExperimentExcludeService {
       return rest;
     })) || [];
 
-    return this.explicitExperimentGroupExclusionRepository.insertExplicitExperimentGroupExclusion(explicitExperimentGroupExcludeDocToSave);
+    return this.explicitExperimentGroupExclusionRepository.insertExplicitExperimentGroupExclusion(explicitExperimentGroupExcludeDocToSave, logger);
   }
 
-  public deleteExperimentGroup(groupId: string, type: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion | undefined> {
-    return this.explicitExperimentGroupExclusionRepository.deleteGroup(groupId, type, experimentId);
+  public deleteExperimentGroup(groupId: string, type: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion | undefined> {
+    logger.info({ message: `Delete explicitly excluded group from the experiment. experimentId: ${experimentId}, type => ${type}, groupId: ${groupId}`});
+    return this.explicitExperimentGroupExclusionRepository.deleteGroup(groupId, type, experimentId, logger);
   }
 }

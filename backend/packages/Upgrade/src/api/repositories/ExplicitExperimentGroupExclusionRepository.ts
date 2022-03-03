@@ -1,10 +1,11 @@
 import { Repository, EntityRepository } from 'typeorm';
 import {  ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
 import repositoryError from './utils/repositoryError';
+import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
 @EntityRepository(ExplicitExperimentGroupExclusion)
 export class ExplicitExperimentGroupExclusionRepository extends Repository<ExplicitExperimentGroupExclusion> {
-  public async findAllGroups(): Promise<ExplicitExperimentGroupExclusion[]> {
+  public async findAllGroups(logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion[]> {
     return this.createQueryBuilder('explicitExperimentGroupExclusion')
       .leftJoinAndSelect('explicitExperimentGroupExclusion.experiment', 'experiment')
       .getMany()
@@ -15,11 +16,12 @@ export class ExplicitExperimentGroupExclusionRepository extends Repository<Expli
           {},
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
   }
 
-  public async findOneById(type: string, groupId: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion> {
+  public async findOneById(type: string, groupId: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion> {
     return this.createQueryBuilder('explicitExperimentGroupExclusion')
       .leftJoinAndSelect('explicitExperimentGroupExclusion.experiment', 'experiment')
       .where('experiment.id=:experimentId',{experimentId})
@@ -33,12 +35,14 @@ export class ExplicitExperimentGroupExclusionRepository extends Repository<Expli
           { type, groupId, experimentId },
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
   }
 
   public async insertExplicitExperimentGroupExclusion(
-    data: Array<Partial<ExplicitExperimentGroupExclusion>>
+    data: Array<Partial<ExplicitExperimentGroupExclusion>>,
+    logger: UpgradeLogger
   ): Promise<ExplicitExperimentGroupExclusion[]> {
     const result = await this.createQueryBuilder('ExplicitExperimentGroupExclusion')
       .insert()
@@ -54,13 +58,14 @@ export class ExplicitExperimentGroupExclusionRepository extends Repository<Expli
           { data },
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
 
     return result.raw;
   }
 
-  public async deleteGroup(groupId: string, type: string, experimentId: string): Promise<ExplicitExperimentGroupExclusion | undefined> {
+  public async deleteGroup(groupId: string, type: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion | undefined> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(ExplicitExperimentGroupExclusion)
@@ -74,6 +79,7 @@ export class ExplicitExperimentGroupExclusionRepository extends Repository<Expli
           { groupId, type, experimentId },
           errorMsg
         );
+        logger.error(errorMsg);
         throw errorMsgString;
       });
 

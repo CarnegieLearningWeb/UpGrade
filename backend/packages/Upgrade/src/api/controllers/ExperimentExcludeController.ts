@@ -1,9 +1,11 @@
-import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post, OnUndefined, Req } from 'routing-controllers';
 import { ExperimentExcludeService } from '../services/ExperimentExcludeService';
 import { ExplicitExperimentIndividualExclusion } from '../models/ExplicitExperimentIndividualExclusion';
 import { ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
+import { UserNotFoundError } from '../errors/UserNotFoundError';
+import { AppRequest } from '../../types';
 const validator  = new Validator();
 
 /**
@@ -94,12 +96,14 @@ export class ExperimentExcludeController {
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
   @Get('/user')
-  public getExperimentExcludedUser(): Promise<ExplicitExperimentIndividualExclusion[]> {
-    return this.experimentExclude.getAllExperimentUser();
+  public getExperimentExcludedUser( @Req() request: AppRequest ): Promise<ExplicitExperimentIndividualExclusion[]> {
+    return this.experimentExclude.getAllExperimentUser(request.logger);
   }
 
   @Get('/user/:userId/:experimentId')
+  @OnUndefined(UserNotFoundError)
   public getExperimentExcludedUserById(
+    @Req() request: AppRequest,
     @Param('userId') userId: string,
     @Param('experimentId') experimentId: string
     ): Promise<ExplicitExperimentIndividualExclusion> {
@@ -116,7 +120,7 @@ export class ExperimentExcludeController {
         )
       );
     }
-    return this.experimentExclude.getExperimentUserById(userId, experimentId);
+    return this.experimentExclude.getExperimentUserById(userId, experimentId, request.logger);
   }
 
   /**
@@ -150,10 +154,11 @@ export class ExperimentExcludeController {
    */
   @Post('/user')
   public experimentExcludeUser(
+    @Req() request: AppRequest,
     @BodyParam('userIds') userIds: Array<string>,
     @BodyParam('experimentId') experimentId: string,
   ): Promise<ExplicitExperimentIndividualExclusion[]> {
-    return this.experimentExclude.experimentExcludeUser(userIds, experimentId);
+    return this.experimentExclude.experimentExcludeUser(userIds, experimentId, request.logger);
   }
 
   /**
@@ -180,6 +185,7 @@ export class ExperimentExcludeController {
    */
   @Delete('/user/:userId/:experimentId')
   public delete(
+    @Req() request: AppRequest,
     @Param('userId') userId: string,
     @Param('experimentId') experimentId: string
     ): Promise<ExplicitExperimentIndividualExclusion | undefined> {
@@ -196,7 +202,7 @@ export class ExperimentExcludeController {
         )
       );
     }
-    return this.experimentExclude.deleteExperimentUser(userId, experimentId);
+    return this.experimentExclude.deleteExperimentUser(userId, experimentId, request.logger);
   }
 
   /**
@@ -215,12 +221,13 @@ export class ExperimentExcludeController {
    *              $ref: '#/definitions/userExperimentExcludeResponse'
    */
   @Get('/group')
-  public getExperimentExcludedGroups(): Promise<ExplicitExperimentGroupExclusion[]> {
-    return this.experimentExclude.getAllExperimentGroups();
+  public getExperimentExcludedGroups( @Req() request: AppRequest ): Promise<ExplicitExperimentGroupExclusion[]> {
+    return this.experimentExclude.getAllExperimentGroups(request.logger);
   }
 
   @Get('/group/:type/:id/:experimentId')
   public getExperimentExcludedGroupById(
+    @Req() request: AppRequest,
     @Param('type') type: string,
     @Param('id') groupId: string,
     @Param('experimentId') experimentId: string
@@ -241,7 +248,7 @@ export class ExperimentExcludeController {
         )
       );
     }
-    return this.experimentExclude.getExperimentGroupById(type, groupId, experimentId);
+    return this.experimentExclude.getExperimentGroupById(type, groupId, experimentId, request.logger);
   }
 
   /**
@@ -277,11 +284,12 @@ export class ExperimentExcludeController {
    */
   @Post('/group')
   public experimentExcludeGroup(
+    @Req() request: AppRequest,
     @BodyParam('groups') groups: Array<{ groupId: string, type: string }>,
     @BodyParam('experimentId') experimentId: string    
     ): Promise<ExplicitExperimentGroupExclusion[]> {
       console.log(' point 1');
-    return this.experimentExclude.experimentExcludeGroup(groups, experimentId);
+    return this.experimentExclude.experimentExcludeGroup(groups, experimentId, request.logger);
   }
 
   /**
@@ -314,6 +322,7 @@ export class ExperimentExcludeController {
    */
   @Delete('/group/:type/:id/:experimentId')
   public deleteExperimentGroup(
+    @Req() request: AppRequest,
     @Param('type') type: string,
     @Param('id') id: string,
     @Param('experimentId') experimentId: string,
@@ -334,6 +343,6 @@ export class ExperimentExcludeController {
         )
       );
     }
-    return this.experimentExclude.deleteExperimentGroup(id, type, experimentId);
+    return this.experimentExclude.deleteExperimentGroup(id, type, experimentId, request.logger);
   }
 }
