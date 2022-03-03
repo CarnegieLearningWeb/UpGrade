@@ -35,14 +35,14 @@ export class ExperimentExcludeService {
       throw new Error('experiment not found');
     }
 
-    let ExplicitExperimentIndividualExcludeDoc = new ExplicitExperimentIndividualExclusion();
-    ExplicitExperimentIndividualExcludeDoc.experiment = experiment;
+    let explicitExperimentIndividualExcludeDoc = new ExplicitExperimentIndividualExclusion();
+    explicitExperimentIndividualExcludeDoc.experiment = experiment;
 
     const ExplicitExperimentIndividualExcludeDocToSave: Array<Partial<ExplicitExperimentIndividualExclusion>> =
     (userIds &&
       userIds.length > 0 &&
       userIds.map((userId: string) => {
-        const { createdAt, updatedAt, versionNumber, ...rest } = { ...ExplicitExperimentIndividualExcludeDoc, userId: userId };
+        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitExperimentIndividualExcludeDoc, userId: userId };
       return rest;
     })) || [];
   

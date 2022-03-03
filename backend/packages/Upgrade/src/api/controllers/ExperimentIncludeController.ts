@@ -11,7 +11,7 @@ const validator = new Validator();
 /**
  * @swagger
  * definitions:
- *   userExperimentIncludeResponse:
+ *   userExplicitExperimentIncludeResponse:
  *     type: array
  *     description: ''
  *     minItems: 1
@@ -23,6 +23,7 @@ const validator = new Validator();
  *         - updatedAt
  *         - versionNumber
  *         - userId
+ *         - experimentId
  *       properties:
  *         createdAt:
  *           type: string
@@ -35,7 +36,10 @@ const validator = new Validator();
  *         userId:
  *           type: string
  *           minLength: 1
- *   groupExperimentInclude:
+ *         experimentId:
+ *           type: string
+ *           minLength: 1
+ *   groupExplicitExperimentIncludeResponse:
  *     type: array
  *     description: ''
  *     minItems: 1
@@ -46,9 +50,9 @@ const validator = new Validator();
  *         - createdAt
  *         - updatedAt
  *         - versionNumber
- *         - id
- *         - groupId
  *         - type
+ *         - id
+ *         - experimentId
  *       properties:
  *         createdAt:
  *           type: string
@@ -58,13 +62,13 @@ const validator = new Validator();
  *           minLength: 1
  *         versionNumber:
  *           type: number
+ *         type:
+ *           type: string
+ *           minLength: 1
  *         id:
  *           type: string
  *           minLength: 1
- *         groupId:
- *           type: string
- *           minLength: 1
- *         type:
+ *         experimentId:
  *           type: string
  *           minLength: 1
  */
@@ -72,8 +76,8 @@ const validator = new Validator();
 /**
  * @swagger
  * tags:
- *   - name: ExperimentInclude
- *     description: To Include Users and Groups from experiments (Experiment level inclusions)
+ *   - name: ExplicitExperimentInclude
+ *     description: To Include Users and Groups for experiments (Experiment level inclusions)
  */
 @Authorized()
 @JsonController('/explicitInclude/experiment')
@@ -82,24 +86,60 @@ export class ExperimentIncludeController {
 
   /**
    * @swagger
-   * /experimentInclude/user:
+   * /explicitInclude/experiment/user:
    *    get:
-   *       description: Get all Included Users for an experiment
+   *       description: Get all included users for an experiment
    *       tags:
-   *         - ExperimentInclude
+   *         - ExplicitExperimentInclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: All Included Users for an experiment
+   *            description: All included users for an experiment
    *            schema:
-   *              $ref: '#/definitions/userExperimentIncludeResponse'
+   *              $ref: '#/definitions/userExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
    */
   @Get('/user')
   public getExperimentIncludedUser( @Req() request: AppRequest ): Promise<ExplicitExperimentIndividualInclusion[]> {
     return this.experimentInclude.getAllExperimentUser(request.logger);
   }
 
+  /**
+   * @swagger
+   * /explicitInclude/experiment/user/{userId}/{experimentId}:
+   *    get:
+   *       description: Get an included user for an experiment from userId and experimentId
+   *       parameters:
+   *        - in: path
+   *          name: userId
+   *          required: true
+   *          schema:
+   *            type: string
+   *          description: User Id
+   *        - in: path
+   *          name: experimentId
+   *          required: true
+   *          schema:
+   *            type: string
+   *          description: Experiment Id
+   *       tags:
+   *         - ExplicitExperimentInclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get an included user for an experiment
+   *            schema:
+   *              $ref: '#/definitions/userExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '404':
+   *            description: User not found, Experiment not found
+   *          '500':
+   *            description: Internal Server Error, ExperimentId is not valid
+   */
   @Get('/user/:userId/:experimentId')
   @OnUndefined(UserNotFoundError)
   public getExperimentIncludedUserById(
@@ -125,9 +165,9 @@ export class ExperimentIncludeController {
 
   /**
    * @swagger
-   * /experimentInclude/user:
-   *    put:
-   *       description: Include an User from an experiment
+   * /explicitInclude/experiment/user:
+   *    post:
+   *       description: Include users for an experiment
    *       consumes:
    *         - application/json
    *       parameters:
@@ -137,20 +177,29 @@ export class ExperimentIncludeController {
    *           schema:
    *             type: object
    *             required:
-   *               - id
+   *               - userIds
+   *               - experimentId
    *             properties:
-   *               id:
+   *               userIds:
+   *                type: array
+   *                items:
+   *                 type: string
+   *               experimentId:
    *                type: string
-   *           description: UserId to include from an experiment
+   *           description: User Ids and experimentId
    *       tags:
-   *         - ExperimentInclude
+   *         - ExplicitExperimentInclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Include user from an experiment
+   *            description: Include users for an experiment
    *            schema:
-   *              $ref: '#/definitions/userExperimentIncludeResponse'
+   *              $ref: '#/definitions/userExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, Insert Error in database, ExperimentId is not valid, JSON Format is not valid
    */
    @Post('/user')
    public experimentIncludeUser(
@@ -163,25 +212,35 @@ export class ExperimentIncludeController {
 
   /**
    * @swagger
-   * /experimentInclude/user/{id}:
+   * /explicitInclude/experiment/user/{userId}/{experimentId}:
    *    delete:
    *       description: Delete included user from an experiment
    *       parameters:
    *         - in: path
-   *           name: id
+   *           name: userId
    *           required: true
    *           schema:
    *             type: string
    *           description: User Id
+   *         - in: path
+   *           name: experimentId
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment Id
    *       tags:
-   *         - ExperimentInclude
+   *         - ExplicitExperimentInclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Delete User By Id from an experiment
+   *            description: Delete included user from an experiment
    *            schema:
-   *              $ref: '#/definitions/userExperimentIncludeResponse'
+   *              $ref: '#/definitions/userExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, ExperimentId is not valid
    */
    @Delete('/user/:userId/:experimentId')
    public delete(
@@ -207,24 +266,66 @@ export class ExperimentIncludeController {
 
   /**
    * @swagger
-   * /experimentInclude/group:
+   * /explicitInclude/experiment/group:
    *    get:
-   *       description: Get all Included Groups for an experiment
+   *       description: Get all included groups for an experiment
    *       tags:
-   *         - Include
+   *         - ExplicitExperimentInclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: All Included Groups for an experiment
+   *            description: All included groups for an experiment
    *            schema:
-   *              $ref: '#/definitions/userExperimentIncludeResponse'
+   *              $ref: '#/definitions/groupExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
    */
   @Get('/group')
   public getExperimentIncludedGroups( @Req() request: AppRequest ): Promise<ExplicitExperimentGroupInclusion[]> {
     return this.experimentInclude.getAllExperimentGroups(request.logger);
   }
 
+  /**
+   * @swagger
+   * /explicitInclude/experiment/group/{type}/{id}/{experimentId}:
+   *    get:
+   *       description: Get a included group for an experiment from type, id and experimentId
+   *       parameters:
+   *        - in: path
+   *          name: type
+   *          required: true
+   *          schema:
+   *            type: string
+   *          description: Group type
+   *        - in: path
+   *          name: id
+   *          required: true
+   *          schema:
+   *            type: string
+   *          description: Group Id
+   *        - in: path
+   *          name: experimentId
+   *          required: true
+   *          schema:
+   *            type: string
+   *          description: Experiment Id
+   *       tags:
+   *         - ExplicitExperimentInclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Get a included group for an experiment
+   *            schema:
+   *              $ref: '#/definitions/groupExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '404':
+   *            description: GroupType or GroupId not found, Experiment not found
+   *          '500':
+   *            description: Internal Server Error, ExperimentId is not valid
+   */
   @Get('/group/:type/:id/:experimentId')
   public getExperimentIncludedGroupById(
     @Req() request: AppRequest,
@@ -253,9 +354,9 @@ export class ExperimentIncludeController {
 
   /**
    * @swagger
-   * /experimentInclude/group:
-   *    put:
-   *       description: Include a Group from an experiment
+   * /explicitInclude/experiment/group:
+   *    post:
+   *       description: Include groups from an experiment
    *       consumes:
    *         - application/json
    *       parameters:
@@ -265,22 +366,34 @@ export class ExperimentIncludeController {
    *           schema:
    *             type: object
    *             required:
-   *               - id
-   *               - type
+   *               - groups
+   *               - experimentId
    *             properties:
-   *               id:
+   *              groups:
+   *                type: array
+   *                items:
+   *                  type: object
+   *                  properties:
+   *                    type:
+   *                      type: string
+   *                    groupId:
+   *                      type: string
+   *              experimentId:
    *                type: string
-   *               type:
-   *                type: string
+   *           description: Group types with group Ids and experimetId
    *       tags:
-   *         - ExperimentInclude
+   *         - ExplicitExperimentInclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
    *            description: Include group from an experiment
    *            schema:
-   *              $ref: '#/definitions/userExperimentIncludeResponse'
+   *              $ref: '#/definitions/groupExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, Insert Error in database, ExperimentId is not valid, JSON Format is not valid
    */
    @Post('/group')
    public experimentIncludeGroup(
@@ -293,10 +406,16 @@ export class ExperimentIncludeController {
 
   /**
    * @swagger
-   * /experimentInclude/group/{type}/{id}:
+   * /explicitInclude/experiment/group/{type}/{id}/{experimentId}:
    *    delete:
-   *       description: Delete included user from an experiment
+   *       description: Delete included group from an experiment
    *       parameters:
+   *         - in: path
+   *           name: type
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Group Type
    *         - in: path
    *           name: id
    *           required: true
@@ -304,20 +423,24 @@ export class ExperimentIncludeController {
    *             type: string
    *           description: Group Id
    *         - in: path
-   *           name: type
+   *           name: experimentId
    *           required: true
    *           schema:
    *             type: string
-   *           description: Group Id
+   *           description: Experiment Id
    *       tags:
-   *         - ExperimentInclude
+   *         - ExplicitExperimentInclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Delete User By Id from an experiment
+   *            description: Delete included group from an experiment
    *            schema:
-   *              $ref: '#/definitions/userExperimentIncludeResponse'
+   *              $ref: '#/definitions/groupExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, ExperimentId is not valid
    */
   @Delete('/group/:type/:id/:experimentId')
   public deleteExperimentGroup(
