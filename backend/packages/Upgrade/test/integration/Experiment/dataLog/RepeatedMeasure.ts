@@ -192,7 +192,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   const experimentUser = experimentUsers[0];
 

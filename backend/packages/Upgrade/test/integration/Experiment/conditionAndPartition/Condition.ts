@@ -68,7 +68,7 @@ export default async function NoPartitionPoint(): Promise<void> {
     newExperimentDoc.conditions[index] = newCondition;
   });
 
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user, new UpgradeLogger());
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
 
   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([
