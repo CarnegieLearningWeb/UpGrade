@@ -44,7 +44,7 @@ describe('ErrorHandler Middleware tests', () => {
             httpCode: 500
         };
 
-        await errorhandler.error(error, mockRequest as AppRequest, mockResponse as Response, nextFunction);
+        await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
         expect(mockResponse.statusCode).toBe(error.httpCode);
         expect(mockResponse.body).toBe(error.message);
     })
