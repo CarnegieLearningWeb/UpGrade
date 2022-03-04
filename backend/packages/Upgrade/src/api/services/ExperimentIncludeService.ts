@@ -32,6 +32,8 @@ export class ExperimentIncludeService {
     logger.info({ message: `Explicitly include users for the experiment. experimentId => ${experimentId}, userIds => ${userIds}`});
     const experiment: Experiment = await this.experimentService.findOne(experimentId, logger);
     if (!experiment) {
+      const error: any = `experiment not found`;
+      logger.error(error);
       throw new Error('experiment not found');
     }
 
@@ -66,15 +68,11 @@ export class ExperimentIncludeService {
   }
 
   public async experimentIncludeGroup(groups: Array<{ groupId: string, type: string }>, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentGroupInclusion[]> {
-    let groupIdInfoForLogger = [];
-    let groupTypeInfoForLogger = [];
-    groups.forEach( group => {
-      groupIdInfoForLogger.push(group.groupId);
-      groupTypeInfoForLogger.push(group.type);
-    });
-    logger.info({ message: `Explicitly include groups for the experiment. experimentId => ${experimentId}, groupIds => ${groupIdInfoForLogger}, types => ${groupTypeInfoForLogger}`});
+    logger.info({ message: `Explicitly include groups from the experiment. experimentId => ${experimentId}`, groupDetails: groups });
     const experiment: Experiment = await this.experimentService.findOne(experimentId, logger);
     if (!experiment) {
+      const error: any = `experiment not found`;
+      logger.error(error);
       throw new Error('experiment not found');
     }
     let explicitExperimentGroupIncludeDoc = new ExplicitExperimentGroupInclusion();
