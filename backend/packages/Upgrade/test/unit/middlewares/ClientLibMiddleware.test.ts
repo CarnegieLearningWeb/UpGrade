@@ -1,7 +1,6 @@
 import { NextFunction } from 'express';
 import { ClientLibMiddleware } from '../../../src/api/middlewares/ClientLibMiddleware';
 import { SettingService } from '../../../src/api/services/SettingService';
-import { AppRequest } from 'upgrade_types';
 import SettingServiceMock from '../controllers/mocks/SettingServiceMock';
 import jwt from 'jsonwebtoken';
 import Container from 'typedi';
@@ -50,18 +49,18 @@ describe('ClientLib Middleware tests', () => {
         let error = new Error();
         error.message = 'jwt expired';
         mockRequest.header = jest.fn(() => {throw error});
-        await expect(clientlib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)).rejects.toThrow(error);
+        await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(error);
     })
 
     test('Invalid token error test', async () => {
         let error = new Error();
         error.message = 'invalid token';
         mockRequest.header = jest.fn(() => {throw error});
-        await expect(clientlib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)).rejects.toThrow(error);
+        await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow(error);
     })
 
     test('No Auth check test', async () => {
-        await clientlib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction);
+        await clientlib.use(mockRequest, mockResponse, nextFunction);
         expect(nextFunction).toHaveBeenCalled();
     })
 
@@ -69,7 +68,7 @@ describe('ClientLib Middleware tests', () => {
         Container.set(SettingService, new SettingServiceAuthCheck());
         clientlib = new ClientLibMiddleware(Container.get(SettingService));
 
-        await expect(clientlib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)).rejects.toThrow('Token is not present in request header from client')
+        await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow('Token is not present in request header from client')
     })
 
     test('Auth Check no token test', async () => {
@@ -83,7 +82,7 @@ describe('ClientLib Middleware tests', () => {
         const verify = jest.spyOn(jwt, 'verify');
         verify.mockImplementation(() => () => ({ verified: 'true' }));
 
-        await expect(clientlib.use(mockRequest as AppRequest, mockResponse as AppRequest, nextFunction)).rejects.toThrow('Provided token is invalid')
+        await expect(clientlib.use(mockRequest, mockResponse, nextFunction)).rejects.toThrow('Provided token is invalid')
     })
 
 });
