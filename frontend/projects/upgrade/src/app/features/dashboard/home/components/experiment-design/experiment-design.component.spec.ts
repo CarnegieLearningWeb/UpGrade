@@ -4,7 +4,7 @@ import { ExperimentDesignComponent } from './experiment-design.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
-describe('ExperimentDesignComponent', () => {
+xdescribe('ExperimentDesignComponent', () => {
   let component: ExperimentDesignComponent;
   let fixture: ComponentFixture<ExperimentDesignComponent>;
 
@@ -23,7 +23,7 @@ describe('ExperimentDesignComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

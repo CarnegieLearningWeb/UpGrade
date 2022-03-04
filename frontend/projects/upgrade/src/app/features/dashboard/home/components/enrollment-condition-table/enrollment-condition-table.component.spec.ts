@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../testing/testing.module';
 import { TableRowComponent } from '../table-row/table-row.component';
 import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-partition-table/enrollment-point-partition-table.component';
 
-describe('EnrollmentConditionTableComponent', () => {
+xdescribe('EnrollmentConditionTableComponent', () => {
   let component: EnrollmentConditionTableComponent;
   let fixture: ComponentFixture<EnrollmentConditionTableComponent>;
 
@@ -23,7 +23,7 @@ describe('EnrollmentConditionTableComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

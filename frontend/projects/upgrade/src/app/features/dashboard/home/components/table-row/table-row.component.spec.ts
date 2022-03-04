@@ -4,7 +4,7 @@ import { TableRowComponent } from './table-row.component';
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { EnrollmentPointPartitionTableComponent } from '../enrollment-point-partition-table/enrollment-point-partition-table.component';
 
-describe('TableRowComponent', () => {
+xdescribe('TableRowComponent', () => {
   let component: TableRowComponent;
   let fixture: ComponentFixture<TableRowComponent>;
 
