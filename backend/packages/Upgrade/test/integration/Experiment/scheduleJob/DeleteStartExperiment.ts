@@ -1,5 +1,4 @@
 import { scheduleJobStartExperiment } from '../../mockData/experiment/index';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { ScheduledJobService } from '../../../../src/api/services/ScheduledJobService';
@@ -10,7 +9,6 @@ import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function DeleteStartExperiment(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const scheduledJobService = Container.get<ScheduledJobService>(ScheduledJobService);
   const userService = Container.get<UserService>(UserService);
@@ -54,7 +52,7 @@ export default async function DeleteStartExperiment(): Promise<void> {
     state: EXPERIMENT_STATE.ENROLLING,
   };
 
-  await experimentService.update(updatedExperiment.id, updatedExperiment, user, new UpgradeLogger());
+  await experimentService.update(updatedExperiment, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([

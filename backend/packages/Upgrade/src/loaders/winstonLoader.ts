@@ -22,7 +22,7 @@ export const winstonLoader: MicroframeworkLoader = (settings: MicroframeworkSett
   );
 
   // push splunk stream
-  if (env.splunk.host && env.splunk.token) {
+  if (env.splunk.host && env.splunk.token && env.splunk.index) {
     transportConfig.push(
       new SplunkStreamEvent({
         splunk: {

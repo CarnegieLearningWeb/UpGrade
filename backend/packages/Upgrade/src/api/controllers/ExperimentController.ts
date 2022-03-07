@@ -700,6 +700,7 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment> {
+    request.logger.child({ user: currentUser });
     return this.experimentService.create(experiment, currentUser, request.logger);
   }
 
@@ -780,6 +781,7 @@ export class ExperimentController {
         )
       );
     }
+    request.logger.child({ user: currentUser });
     return this.experimentService.delete(id, currentUser, request.logger);
   }
 
@@ -876,7 +878,7 @@ export class ExperimentController {
    *          '401':
    *            description: AuthorizationRequiredError
    *          '500':
-   *            description: invalid input syntax for type uuid, Error in experiment schedular (user is not authorized), Insert Error in database
+   *            description: invalid input syntax for type uuid, Error in experiment scheduler (user is not authorized), Insert Error in database
    */
   @Put('/:id')
   public update(
@@ -893,7 +895,8 @@ export class ExperimentController {
         )
       );
     }
-    return this.experimentService.update(id, experiment, currentUser, request.logger);
+    request.logger.child({ user: currentUser });
+    return this.experimentService.update(experiment, currentUser, request.logger);
   }
 
  /**

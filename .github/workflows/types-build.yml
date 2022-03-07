@@ -1,5 +1,5 @@
 name: Types Build
-on: ['push', 'pull_request', 'workflow_dispatch']
+on: ['pull_request', 'workflow_dispatch']
 jobs:
   types-build:
     name: Types Build

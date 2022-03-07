@@ -19,17 +19,17 @@ import { swaggerLoader } from './loaders/swaggerLoader';
 import { CreateSystemUser } from './init/seed/systemUser';
 import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
 import { InitMetrics } from './init/seed/initMetrics';
+import { banner } from './lib/banner';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
  * ----------------------------------------
  */
-
+const logger = new UpgradeLogger();
 bootstrapMicroframework({
   loaders: [winstonLoader, iocLoader, typeormLoader, expressLoader, swaggerLoader, homeLoader, publicLoader],
 })
   .then(() => {
-    const logger = new UpgradeLogger();
     // logging data after the winston is configured
     logger.info({detail: 'Server starting at ' + Date.now()});
     return CreateSystemUser();
@@ -41,5 +41,8 @@ bootstrapMicroframework({
   .then(() => {
     // metric initalization
     return InitMetrics();
+  })
+  .then(() => {
+    banner(logger);
   });
 

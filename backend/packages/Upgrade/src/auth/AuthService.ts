@@ -36,12 +36,18 @@ export class AuthService {
 
     // check if user exist in the user repo
     const email = payload.email;
-    const hd = payload.hd;
-
-    request.logger.info({ message: `hd ${hd}` });
-    request.logger.info({ message: `env.google.domainName ${env.google.domainName}` });
+    // session id in logger:
+    let session_id = null;
+    // if session id received from clientlib request header:
+    if (request.header('Session-Id')) {
+      session_id = request.header('Session-Id');
+    }
+    const domain = payload.hd;
+    request.logger.info({ message: `session-id: ${session_id}` });
+    request.logger.info({ message: `domain: ${domain}` });
+    request.logger.info({ message: `env.google.domainName allowed: ${env.google.domainName}` });
     request.logger.info({ message: 'Validating domain name' });
-    if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== hd) {
+    if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== domain) {
       const error: any = new Error(`User domain is not same as required ${env.google.domainName}`);
       error.type = SERVER_ERROR.USER_NOT_FOUND;
       throw error;
@@ -56,6 +62,8 @@ export class AuthService {
     }
     // add local cache for validating user for each request
     const document = await this.userRepository.find({ email });
+    request.logger.child({ client_session_id: session_id, user: document });
+    request.logger.info({ message: 'User document fetched' });
     if (document.length === 0) {
       request.logger.info({ message: 'User not found in database' });
       const error: any = 'User not found in the database';

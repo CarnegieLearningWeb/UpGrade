@@ -63,7 +63,7 @@ export class ScheduledJobService {
         return {};
       } catch (err) {
         const error = err as Error;
-        error.message = `Error in start experiment of schedular: ${error.message}`;
+        error.message = `Error in start experiment of scheduler: ${error.message}`;
         logger.error(error);
         return error;
       }
@@ -107,7 +107,7 @@ export class ScheduledJobService {
         return {};
       } catch (err) {
         const error = err as Error;
-        error.message = `Error in end experiment of schedular: ${error.message}`;
+        error.message = `Error in end experiment of scheduler: ${error.message}`;
         logger.error(error);
         return error;
       }
@@ -154,7 +154,7 @@ export class ScheduledJobService {
             timeStamp: startOn,
           };
 
-          const response: any = await this.startExperimentSchedular(
+          const response: any = await this.startExperimentScheduler(
             startOn,
             { id: startDoc.id },
             SCHEDULE_TYPE.START_EXPERIMENT
@@ -162,7 +162,7 @@ export class ScheduledJobService {
 
           // If experiment is already scheduled with old date
           if (startExperimentDoc && startExperimentDoc.executionArn) {
-            await this.stopExperimentSchedular(startExperimentDoc.executionArn);
+            await this.stopExperimentScheduler(startExperimentDoc.executionArn);
           }
 
           // add or update document
@@ -176,7 +176,7 @@ export class ScheduledJobService {
         // delete event here
         await Promise.all([
           scheduledJobRepo.delete({ id: startExperimentDoc.id }),
-          this.stopExperimentSchedular(startExperimentDoc.executionArn),
+          this.stopExperimentScheduler(startExperimentDoc.executionArn),
         ]);
       }
 
@@ -194,7 +194,7 @@ export class ScheduledJobService {
             timeStamp: endOn,
           };
 
-          const response: any = await this.startExperimentSchedular(
+          const response: any = await this.startExperimentScheduler(
             endOn,
             { id: endDoc.id },
             SCHEDULE_TYPE.END_EXPERIMENT
@@ -202,7 +202,7 @@ export class ScheduledJobService {
 
           // If experiment is already scheduled with old date
           if (endExperimentDoc && endExperimentDoc.executionArn) {
-            await this.stopExperimentSchedular(endExperimentDoc.executionArn);
+            await this.stopExperimentScheduler(endExperimentDoc.executionArn);
           }
           // add or update document
           await this.scheduledJobRepository.upsertScheduledJob({
@@ -215,12 +215,12 @@ export class ScheduledJobService {
         // delete event here
         await Promise.all([
           scheduledJobRepo.delete({ id: endExperimentDoc.id }),
-          this.stopExperimentSchedular(endExperimentDoc.executionArn),
+          this.stopExperimentScheduler(endExperimentDoc.executionArn),
         ]);
       }
     } catch (err) {
       const error = err as Error;
-      error.message = `Error in experiment schedular ${error.message}`;
+      error.message = `Error in experiment scheduler ${error.message}`;
       logger.error(error);
     }
   }
@@ -233,29 +233,29 @@ export class ScheduledJobService {
       return true;
     } catch (err) {
       const error = err as Error;
-      error.message = `Error in clear Logs schedular: ${error.message}`;
+      error.message = `Error in clear Logs scheduler: ${error.message}`;
       logger.error(error);
       return false;
     }
   }
 
-  private async startExperimentSchedular(timeStamp: Date, body: any, type: SCHEDULE_TYPE): Promise<any> {
+  private async startExperimentScheduler(timeStamp: Date, body: any, type: SCHEDULE_TYPE): Promise<any> {
     const url =
       type === SCHEDULE_TYPE.START_EXPERIMENT
         ? env.hostUrl + '/scheduledJobs/start'
         : env.hostUrl + '/scheduledJobs/end';
-    const experimentSchedularStateMachine = {
-      stateMachineArn: env.schedular.stepFunctionArn,
+    const experimentSchedulerStateMachine = {
+      stateMachineArn: env.scheduler.stepFunctionArn,
       input: JSON.stringify({
         timeStamp,
         body,
         url,
       }),
     };
-    return this.awsService.stepFunctionStartExecution(experimentSchedularStateMachine);
+    return this.awsService.stepFunctionStartExecution(experimentSchedulerStateMachine);
   }
 
-  private async stopExperimentSchedular(executionArn: string): Promise<any> {
+  private async stopExperimentScheduler(executionArn: string): Promise<any> {
     return this.awsService.stepFunctionStopExecution({ executionArn });
   }
 }

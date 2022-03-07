@@ -204,7 +204,7 @@ export default async function LogOperations(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
   // getOriginalUserDoc
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // log data here
