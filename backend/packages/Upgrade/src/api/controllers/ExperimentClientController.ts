@@ -764,15 +764,15 @@ export class ExperimentClientController {
 
   public async getUserDoc(experimentUserId, logger) {
     const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
-    if ( experimentUserDoc ) {
-        const userDoc = {
-            createdAt: experimentUserDoc.createdAt,
-            id: experimentUserDoc.id,
-            requestedUserId: experimentUserId,
-            group: experimentUserDoc.group,
-            workingGroup: experimentUserDoc.workingGroup
-        };
-        return userDoc;
+    if (experimentUserDoc) {
+      const userDoc = {
+        createdAt: experimentUserDoc.createdAt,
+        id: experimentUserDoc.id,
+        requestedUserId: experimentUserId,
+        group: experimentUserDoc.group,
+        workingGroup: experimentUserDoc.workingGroup
+      };
+      return userDoc;
     } else {
       return null; 
     }
