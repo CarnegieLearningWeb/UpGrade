@@ -765,14 +765,10 @@ export class ExperimentClientController {
   public async getUserDoc(experimentUserId, logger) {
     const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
     if ( experimentUserDoc ) {
-      var aliasUserId = experimentUserId;
-        if (!experimentUserDoc.aliases) {
-          aliasUserId = experimentUserId;
-        }
         const userDoc = {
             createdAt: experimentUserDoc.createdAt,
-            id: aliasUserId,
-            originalUserId: experimentUserDoc.id,
+            id: experimentUserDoc.id,
+            requestedUserId: experimentUserId,
             group: experimentUserDoc.group,
             workingGroup: experimentUserDoc.workingGroup
         };

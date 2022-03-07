@@ -89,11 +89,11 @@ export class ExperimentUserService {
     let alreadyLinkedAliases = [];
     promiseResult.map((result, index) => {
       if (result) {
-        if (result.originalUser && result.originalUser.id === userExist.id) {
+        if (result.originalUser && result.originalUser.id === userExist.requestedUserId) {
           logger.info({ message: 'User already an alias', details: result });
           // If alias Id is already linked with user
           alreadyLinkedAliases.push(result);
-        } else if (result.originalUser && result.originalUser.id !== userExist.id) {
+        } else if (result.originalUser && result.originalUser.id !== userExist.requestedUserId) {
           logger.warn({ message: 'User already linked with other user', details: result });
           // If alias Id is associated with other user
           aliasesLinkedWithOtherUser.push(result);
