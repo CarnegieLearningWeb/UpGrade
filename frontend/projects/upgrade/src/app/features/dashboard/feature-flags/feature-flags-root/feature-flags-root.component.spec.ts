@@ -6,7 +6,7 @@ import { FeatureFlagsListComponent } from '../components/feature-flags-list/feat
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 
-describe('FeatureFlagsRootComponent', () => {
+xdescribe('FeatureFlagsRootComponent', () => {
   let component: FeatureFlagsRootComponent;
   let fixture: ComponentFixture<FeatureFlagsRootComponent>;
 

@@ -4,7 +4,7 @@ import { TestingModule } from '../../../../../../../testing/testing.module';
 
 import { StateTimeLogsComponent } from './state-time-logs.component';
 
-describe('StateTimeLogsComponent', () => {
+xdescribe('StateTimeLogsComponent', () => {
   let component: StateTimeLogsComponent;
   let fixture: ComponentFixture<StateTimeLogsComponent>;
 

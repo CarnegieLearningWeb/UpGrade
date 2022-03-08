@@ -7,7 +7,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { OwlNativeDateTimeModule, OwlDateTimeModule } from 'ng-pick-datetime';
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
 
-describe('ExperimentEndCriteriaComponent', () => {
+xdescribe('ExperimentEndCriteriaComponent', () => {
   let component: ExperimentEndCriteriaComponent;
   let fixture: ComponentFixture<ExperimentEndCriteriaComponent>;
 

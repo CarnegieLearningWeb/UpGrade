@@ -6,7 +6,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { TestMockData } from '../../../../../../testing/test.mock.data';
 
-describe('ExperimentQueryResultComponent', () => {
+xdescribe('ExperimentQueryResultComponent', () => {
   let component: ExperimentQueryResultComponent;
   let fixture: ComponentFixture<ExperimentQueryResultComponent>;
 

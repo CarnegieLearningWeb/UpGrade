@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../testing/testing.module';
 import { ErrorLogPipe } from '../../pipes/error-log.pipe';
 import { ExperimentActionMessage } from '../../pipes/experiment-action-message.pipe';
 
-describe('TimelineComponent', () => {
+xdescribe('TimelineComponent', () => {
   let component: TimelineComponent;
   let fixture: ComponentFixture<TimelineComponent>;
 
