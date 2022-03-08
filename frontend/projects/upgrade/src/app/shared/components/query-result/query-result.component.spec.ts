@@ -6,7 +6,7 @@ import { AnalysisService } from '../../../core/analysis/analysis.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { TestMockData } from '../../../../testing/test.mock.data';
 
-describe('QueryResultComponent', () => {
+xdescribe('QueryResultComponent', () => {
   let component: QueryResultComponent;
   let fixture: ComponentFixture<QueryResultComponent>;
 

@@ -7,7 +7,7 @@ import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
 
-describe('ExperimentStatusComponent', () => {
+xdescribe('ExperimentStatusComponent', () => {
   let component: ExperimentStatusComponent;
   let fixture: ComponentFixture<ExperimentStatusComponent>;
 

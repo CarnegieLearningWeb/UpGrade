@@ -3,7 +3,7 @@ import { MatDialogRef } from '@angular/material';
 import { TestingModule } from '../../../../testing/testing.module';
 import { DeleteComponent } from './delete.component';
 
-describe('DeleteComponent', () => {
+xdescribe('DeleteComponent', () => {
   let component: DeleteComponent;
   let fixture: ComponentFixture<DeleteComponent>;
 

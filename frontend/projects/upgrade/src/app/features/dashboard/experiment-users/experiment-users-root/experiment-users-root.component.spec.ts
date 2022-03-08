@@ -9,7 +9,7 @@ import { PreviewUserComponent } from '../components/preview-user/preview-user.co
 import { ExperimentUsersService } from '../../../../core/experiment-users/experiment-users.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 
-describe('UserRootComponent', () => {
+xdescribe('UserRootComponent', () => {
   let component: ExperimentUsersRootComponent;
   let fixture: ComponentFixture<ExperimentUsersRootComponent>;
 

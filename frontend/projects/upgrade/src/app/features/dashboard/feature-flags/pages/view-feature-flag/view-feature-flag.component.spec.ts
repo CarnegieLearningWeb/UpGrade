@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../testing/testing.module';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 
-describe('ViewFeatureFlagComponent', () => {
+xdescribe('ViewFeatureFlagComponent', () => {
   let component: ViewFeatureFlagComponent;
   let fixture: ComponentFixture<ViewFeatureFlagComponent>;
 
@@ -24,7 +24,7 @@ describe('ViewFeatureFlagComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

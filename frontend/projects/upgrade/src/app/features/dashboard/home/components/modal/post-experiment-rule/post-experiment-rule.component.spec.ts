@@ -6,7 +6,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 
-describe('PostExperimentRuleComponent', () => {
+xdescribe('PostExperimentRuleComponent', () => {
   let component: PostExperimentRuleComponent;
   let fixture: ComponentFixture<PostExperimentRuleComponent>;
 

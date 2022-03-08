@@ -11,7 +11,7 @@ import { ExperimentQueryResultComponent } from '../../components/experiment-quer
 import { TableRowComponent } from '../../components/table-row/table-row.component';
 import { EnrollmentPointPartitionTableComponent } from '../../components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 
-describe('ViewExperimentComponent', () => {
+xdescribe('ViewExperimentComponent', () => {
   let component: ViewExperimentComponent;
   let fixture: ComponentFixture<ViewExperimentComponent>;
 
