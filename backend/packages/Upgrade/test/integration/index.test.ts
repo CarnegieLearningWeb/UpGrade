@@ -65,6 +65,7 @@ import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } fro
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
+import { ExperimentExcludeUser, ExperimentExcludeGroup, ExperimentIncludeUser, ExperimentIncludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -430,6 +431,27 @@ describe('Integration Tests', () => {
     await PartitionOrder();
     done();
   });
+
+  test('Experiment Level exclusion of user with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeUser();
+    done();
+  });
+
+  test('Experiment Level exclusion of group with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeGroup();
+    done();
+  });
+
+  test('Experiment Level inclusion of user with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentIncludeUser();
+    done();
+  });
+
+  test('Experiment Level inclusion of group with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentIncludeGroup();
+    done();
+  });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

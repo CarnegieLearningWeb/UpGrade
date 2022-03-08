@@ -11,7 +11,7 @@ export class SupportService {
     public experimentUserService: ExperimentUserService
   ) {}
 
-  public async getAssignments(userId: string, context: string, logger: UpgradeLogger): Promise<IExperimentAssignment[]> {
+  public async getAssignments(userId: string, context: string, logger?: UpgradeLogger): Promise<IExperimentAssignment[]> {
     if (logger) {
       logger.info({ message: 'Get all assignments' });
     }

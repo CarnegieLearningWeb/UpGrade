@@ -72,7 +72,7 @@ import { SERVER_ERROR } from 'upgrade_types';
  *     description: To Exclude Users and Groups from experiments
  */
 @Authorized()
-@JsonController('/exclude')
+@JsonController('/explicitExclude/global')
 export class ExcludeController {
   constructor(public exclude: ExcludeService) {}
 

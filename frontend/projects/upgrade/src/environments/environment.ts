@@ -35,8 +35,8 @@ export const environment = {
     loginUser: `${endpointApi}/login/user`, // Used to create a new user after login if doesn't exist in DB
     getAllUsers: `${endpointApi}/users/paginated`,
     userRole: `${endpointApi}/users/role`,
-    excludeUsers: `${endpointApi}/exclude/user`,
-    excludeGroups: `${endpointApi}/exclude/group`,
+    excludeUsers: `${endpointApi}/explicitExclude/global/user`,
+    excludeGroups: `${endpointApi}/explicitExclude/global/group`,
     previewUsers: `${endpointApi}/previewUsers`,
     getAllPreviewUsers: `${endpointApi}/previewUsers/paginated`,
     previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,

@@ -21,7 +21,7 @@ export class ExperimentUserService {
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
   ) {}
 
-  public find(logger: UpgradeLogger): Promise<ExperimentUser[]> {
+  public find(logger?: UpgradeLogger): Promise<ExperimentUser[]> {
     if (logger) {
       logger.info({ message: `Find all users` });
     }
@@ -205,7 +205,7 @@ export class ExperimentUserService {
     return this.userRepository.save(newDocument);
   }
 
-  public async getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<ExperimentUser | null> {
+  public async getOriginalUserDoc(userId: string, logger?: UpgradeLogger): Promise<ExperimentUser | null> {
     if (logger) {
       logger.info({ message: `Find original user for userId ${userId}` });
     }
