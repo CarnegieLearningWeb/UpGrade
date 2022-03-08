@@ -510,8 +510,7 @@ export class ExperimentAssignmentService {
             },
           };
         });
-
-        return [...accumulator, ...partitions]
+        return assignment ? [...accumulator, ...partitions] : accumulator;
       }, []);
     } catch (err) {
       const error = err as ErrorWithType;
