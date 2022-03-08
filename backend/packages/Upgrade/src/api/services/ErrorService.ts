@@ -28,6 +28,7 @@ export class ErrorService {
     }
     return this.errorRepository.save(error).catch((err) => {
       err.type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(err);
       throw err;
     });
   }

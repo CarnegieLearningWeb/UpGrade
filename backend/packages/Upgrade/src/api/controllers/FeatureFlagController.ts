@@ -168,7 +168,7 @@ export class FeatureFlagsController {
     @CurrentUser() currentUser: User, 
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.create(flag, currentUser, request.logger);
+    return this.featureFlagService.create(flag, request.logger);
   }
 
   /**
@@ -287,6 +287,6 @@ export class FeatureFlagsController {
     //     )
     //   );
     // }
-    return this.featureFlagService.update(id, flag, currentUser, request.logger);
+    return this.featureFlagService.update(flag, request.logger);
   }
 }

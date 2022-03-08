@@ -2,7 +2,6 @@ import { Service } from 'typedi';
 import { FeatureFlag } from '../models/FeatureFlag';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { FeatureFlagRepository } from '../repositories/FeatureFlagRepository';
-import { User } from '../models/User';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { FlagVariation } from '../models/FlagVariation';
@@ -27,9 +26,9 @@ export class FeatureFlagService {
     return this.featureFlagRepository.find({ relations: ['variations'] });
   }
 
-  public create(flag: FeatureFlag, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public create(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message : 'Create a new feature flag' });
-    return this.addFeatureFlagInDB(flag, currentUser);
+    return this.addFeatureFlagInDB(flag, logger);
   }
 
   public getTotalCount(): Promise<number> {
@@ -87,13 +86,13 @@ export class FeatureFlagService {
     return updatedState;
   }
 
-  public update(id: string, flag: FeatureFlag, currentUser: User, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public update(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
     logger.info({ message : `Update a Feature Flag => ${flag.toString()}` });
     // TODO add entry in log of updating feature flag
-    return this.updateFeatureFlagInDB(flag, currentUser);
+    return this.updateFeatureFlagInDB(flag, logger);
   }
 
-  private async addFeatureFlagInDB(flag: FeatureFlag, currentUser: User): Promise<FeatureFlag> {
+  private async addFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
     const createdFeatureFlag = await getConnection().transaction(async (transactionalEntityManager) => {
       flag.id = uuid();
       const { variations, ...flagDoc } = flag;
@@ -106,6 +105,7 @@ export class FeatureFlagService {
       } catch (err) {
         const error = new Error(`Error in creating feature flag document "addFeatureFlagInDB" ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
         throw error;
       }
 
@@ -129,6 +129,7 @@ export class FeatureFlagService {
       } catch (err) {
         const error = new Error(`Error in creating variation "addFeatureFlagInDB" ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
         throw error;
       }
 
@@ -143,7 +144,7 @@ export class FeatureFlagService {
     return createdFeatureFlag;
   }
 
-  private async updateFeatureFlagInDB(flag: FeatureFlag, user: User): Promise<FeatureFlag> {
+  private async updateFeatureFlagInDB(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
     // get old feature flag document
     const oldFeatureFlag = await this.featureFlagRepository.find({
       where: { id: flag.id },
@@ -159,6 +160,7 @@ export class FeatureFlagService {
       } catch (err) {
         const error = new Error(`Error in updating feature flag document "updateFeatureFlagInDB" ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
         throw error;
       }
 
@@ -203,6 +205,7 @@ export class FeatureFlagService {
       } catch (err) {
         const error = new Error(`Error in creating variations "updateFeatureFlagInDB" ${err}`);
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
         throw error;
       }
 
