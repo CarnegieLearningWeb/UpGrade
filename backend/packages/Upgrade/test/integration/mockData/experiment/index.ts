@@ -1,4 +1,4 @@
-import { experiment, experimentSecond, experimentThird } from './raw';
+import { experiment, experimentSecond, experimentThird, experimentFourth } from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
@@ -174,4 +174,8 @@ export const groupAssignmentWithIndividualConsistencyExperimentThird = {
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
+}
+
+export const decimalWeightExperiment = {
+  ...experimentFourth,
 }
