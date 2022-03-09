@@ -113,8 +113,9 @@ export class ExperimentAssignmentService {
 
     // adding experiment error when user is not defined
     if (!userDoc) {
-      const error = new Error(`User not defined: ${userId}`);
+      const error = new Error(`User not defined in markExperimentPoint: ${userId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      logger.error(error);
       throw error;
     }
     const { workingGroup } = userDoc;
@@ -144,6 +145,7 @@ export class ExperimentAssignmentService {
       if (matchedCondition.length === 0 && condition !== null) {
         const error = new Error(`Condition not found: ${condition}`);
         (error as any).type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        logger.error(error);
         throw error;
       }
 
@@ -243,10 +245,11 @@ export class ExperimentAssignmentService {
 
     // throw error if user not defined
     if (!experimentUser) {
+      logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}`});
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined : ${userId}`,
+          message: `User not defined in getAllExperimentConditions: ${userId}`,
         })
       );
     }
@@ -619,12 +622,13 @@ export class ExperimentAssignmentService {
 
     // throw error if user not defined
     if (!userDoc) {
-      throw new Error(`User not defined: ${userId}`);
+      logger.error({ message: `User not found in blobDataLog, userId => ${userId}`, details: blobLog });
+      throw new Error(`User not defined in blobDataLog: ${userId}`);
     }
 
     // extract the array value
     const promise = blobLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc);
+      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
     });
 
     const logsToReturn = await Promise.all(promise);
@@ -638,17 +642,18 @@ export class ExperimentAssignmentService {
 
     // throw error if user not defined
     if (!userDoc) {
+      logger.error({ message: `User not found in dataLog, userId => ${userId}`, details: jsonLog });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined dataLog: ${userId}`,
         })
       );
     }
 
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc);
+      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
     });
 
     const logsToReturn = await Promise.all(promise);
@@ -668,10 +673,11 @@ export class ExperimentAssignmentService {
 
     // throw error if user not defined
     if (!userDoc) {
+      logger.error({ message: `User not found in clientFailedExperimentPoint, userId => ${userId}`});
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined clientFailedExperimentPoint: ${userId}`,
         })
       );
     }
@@ -689,7 +695,8 @@ export class ExperimentAssignmentService {
   private async createLog(
     individualMetrics: ILogInput,
     keyUniqueArray: any[],
-    userDoc: ExperimentUser
+    userDoc: ExperimentUser,
+    logger: UpgradeLogger
   ): Promise<Log[]> {
     const userId = userDoc.id;
     const {
@@ -697,7 +704,7 @@ export class ExperimentAssignmentService {
       metrics,
       metrics: { groupedMetrics },
     } = individualMetrics;
-
+    logger.info({ message: `Add data log in createLog: userId => ${userId}`, details: individualMetrics });
     // add individual metrics in the database
     if (metrics && metrics.attributes) {
       // search metrics log with default uniquifier
@@ -710,6 +717,7 @@ export class ExperimentAssignmentService {
 
     // add group metrics in the database
     if (groupedMetrics) {
+      logger.info({ message: `Add group metrics userId ${userId}`, details: groupedMetrics });
       // search metrics log with specific uniquifier
       groupedMetrics.forEach(({ groupClass, groupKey, groupUniquifier, attributes }) => {
         const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}`;
@@ -769,7 +777,7 @@ export class ExperimentAssignmentService {
     // array for dataLogs
 
     const toUpdateLogGroup = [];
-    let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc);
+    let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc, logger);
 
     rawDataLogs.forEach((rawLogs) => {
       // tslint:disable-next-line:no-shadowed-variable
@@ -952,7 +960,8 @@ export class ExperimentAssignmentService {
     metrics: any,
     groupedMetrics: any,
     metricDocs: Metric[],
-    userDoc: ExperimentUser
+    userDoc: ExperimentUser,
+    logger: UpgradeLogger
   ): Log[] {
     const dataLogs = [];
     if (metrics && metrics.attributes) {
@@ -1004,7 +1013,7 @@ export class ExperimentAssignmentService {
         }
       });
     }
-
+    logger.info({ message: 'data logs created in createDataLogsFromCLFormat', details: dataLogs });
     return dataLogs;
   }
 

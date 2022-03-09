@@ -496,7 +496,7 @@ export class AnalyticsService {
     } catch (err) {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
-      logger.error({ message: `Export Data email unsuccessful: ${error}` });
+      logger.error({ message: `Export Data email unsuccessful:`, details: error });
       throw error;
     }
 

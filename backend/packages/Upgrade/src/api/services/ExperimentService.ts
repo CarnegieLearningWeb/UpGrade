@@ -281,6 +281,7 @@ export class ExperimentService {
     if (duplicateExperiment && experiment.id !== undefined) {
       const error = new Error('Duplicate experiment');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     }
     let experimentPartitions = experiment.partitions;
@@ -298,6 +299,7 @@ export class ExperimentService {
     if (experimentPartitions.length === 0) {
       const error = new Error('Duplicate partition');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     }
 

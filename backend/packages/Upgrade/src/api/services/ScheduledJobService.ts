@@ -35,8 +35,9 @@ export class ScheduledJobService {
         const fiveHoursInMS = 18000000;
 
         if (timeDiff > fiveHoursInMS) {
-          const errorMsg =  'Time Differnce of more than 5 hours is found';
+          const errorMsg =  'Time Difference of more than 5 hours is found';
           await scheduledJobRepository.delete({id: scheduledJob.id});
+          logger.error({ message: errorMsg });
           throw new Error(errorMsg);
         }
 
@@ -83,8 +84,9 @@ export class ScheduledJobService {
         const fiveHoursInMS = 18000000;
 
         if (timeDiff > fiveHoursInMS) {
-          const errorMsg =  'Time Differnce of more than 5 hours is found';
+          const errorMsg =  'Time Difference of more than 5 hours is found';
           await scheduledJobRepository.delete({id: scheduledJob.id});
+          logger.error({ message: errorMsg });
           throw new Error(errorMsg);
         }
 

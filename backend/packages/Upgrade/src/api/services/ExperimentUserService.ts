@@ -66,10 +66,11 @@ export class ExperimentUserService {
 
     // throw error if user not defined
     if (!userExist) {
+      logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined setAliasesForUser: ${userId}`,
         })
       );
     }
@@ -89,11 +90,11 @@ export class ExperimentUserService {
     let alreadyLinkedAliases = [];
     promiseResult.map((result, index) => {
       if (result) {
-        if (result.originalUser && result.originalUser.id === userExist.id) {
+        if (result.originalUser && result.originalUser.id === userExist.requestedUserId) {
           logger.info({ message: 'User already an alias', details: result });
           // If alias Id is already linked with user
           alreadyLinkedAliases.push(result);
-        } else if (result.originalUser && result.originalUser.id !== userExist.id) {
+        } else if (result.originalUser && result.originalUser.id !== userExist.requestedUserId) {
           logger.warn({ message: 'User already linked with other user', details: result });
           // If alias Id is associated with other user
           aliasesLinkedWithOtherUser.push(result);
@@ -122,6 +123,7 @@ export class ExperimentUserService {
         )} and cannot be made alias of ${userId}`
       );
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     }
     if (otherRootUser.length) {
@@ -133,6 +135,7 @@ export class ExperimentUserService {
         )} are root user and should not be converted to an alias of ${userId}`
       );
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     }
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
@@ -162,10 +165,11 @@ export class ExperimentUserService {
     let userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
+      logger.error({ message: 'User not defined updateWorkingGroup', details: userId });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined updateWorkingGroup: ${userId}`,
         })
       );
     }
@@ -186,10 +190,11 @@ export class ExperimentUserService {
     let userExist = userDoc;
     logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
     if (!userExist) {
+      logger.error({ message: 'User not defined updateGroupMembership', details: userId });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined updateGroupMembership: ${userId}`,
         })
       );
     }
@@ -209,21 +214,32 @@ export class ExperimentUserService {
     if (logger) {
       logger.info({ message: `Find original user for userId ${userId}` });
     }
-    const userDoc = await this.userRepository.find({
-      where: { id: userId },
-      relations: ['originalUser'],
-    });
-    if (userDoc.length) {
-      if (userDoc[0].originalUser) {
-        // If user is alias user
-        return userDoc[0].originalUser;
+    try {
+      const userDoc = await this.userRepository.find({
+        where: { id: userId },
+        relations: ['originalUser'],
+      });
+      if (userDoc.length) {
+        if (userDoc[0].originalUser) {
+          // If user is alias user
+          return userDoc[0].originalUser;
+        } else {
+          // If user is original user
+          const { originalUser, ...rest } = userDoc[0];
+          return rest as any;
+        }
       } else {
-        // If user is original user
-        const { originalUser, ...rest } = userDoc[0];
-        return rest as any;
+        return null;
       }
-    } else {
-      return null;
+    } catch (error) {
+      logger.error(error);
+      throw new Error(
+        JSON.stringify({
+          type: SERVER_ERROR.QUERY_FAILED,
+          message: `Error while finding original user for userId ${userId}`,
+          details: error,
+        })
+      );
     }
   }
 
@@ -391,9 +407,9 @@ export class ExperimentUserService {
     }
   }
 
-  public async clearDB(): Promise<string> {
+  public async clearDB(logger: UpgradeLogger): Promise<string> {
     await getConnection().transaction(async (transactionalEntityManager) => {
-      await this.experimentRepository.clearDB(transactionalEntityManager);
+      await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
     return Promise.resolve('Cleared DB');
   }
