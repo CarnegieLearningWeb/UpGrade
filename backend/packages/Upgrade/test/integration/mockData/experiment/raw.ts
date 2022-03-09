@@ -1,3 +1,5 @@
+import { FILTER_MODE } from "../../../../../../../types/src/index";
+
 export const experiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
   name: 'Test Experiment',
@@ -11,6 +13,7 @@ export const experiment = {
   context: ['home'],
   tags: [],
   queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -63,6 +66,7 @@ export const experimentSecond = {
   context: ['home'],
   tags: [],
   queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   conditions: [
     {
       id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',
@@ -110,6 +114,7 @@ export const experimentThird = {
   context: ['home'],
   tags: [],
   queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   conditions: [
     {
       id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e1',

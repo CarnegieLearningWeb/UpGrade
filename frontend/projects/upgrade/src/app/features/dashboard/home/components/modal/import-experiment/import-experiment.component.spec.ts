@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../../testing/testing.module';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
-describe('ImportExperimentComponent', () => {
+xdescribe('ImportExperimentComponent', () => {
   let component: ImportExperimentComponent;
   let fixture: ComponentFixture<ImportExperimentComponent>;
 

@@ -50,6 +50,7 @@ export class AuthService {
     if (env.google.domainName && env.google.domainName !== '' && env.google.domainName !== domain) {
       const error: any = new Error(`User domain is not same as required ${env.google.domainName}`);
       error.type = SERVER_ERROR.USER_NOT_FOUND;
+      request.logger.error(error);
       throw error;
     }
     request.logger.info({ message: 'Domain name validated' });
@@ -68,6 +69,7 @@ export class AuthService {
       request.logger.info({ message: 'User not found in database' });
       const error: any = 'User not found in the database';
       error.type = SERVER_ERROR.USER_NOT_FOUND;
+      request.logger.error(error);
       throw error;
     }
     return document[0];

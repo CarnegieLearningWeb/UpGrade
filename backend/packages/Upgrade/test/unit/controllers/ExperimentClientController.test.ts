@@ -21,7 +21,6 @@ import uuid from 'uuid';
 
 describe('Experiment Client Controller Testing', () => {
   beforeAll(() => {
-    configureLogger();
     routingUseContainer(Container);
     ormUseContainer(Container);
     classValidatorUseContainer(Container);
@@ -165,16 +164,6 @@ describe('Experiment Client Controller Testing', () => {
           userId: "u21",
           logData
       })
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
-    done();
-  });
-
-  test('Post request for /api/bloblog', async done => {
-    await request(app)
-      .post('/api/bloblog')
-      .send({blobLogData})
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);

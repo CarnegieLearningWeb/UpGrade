@@ -47,6 +47,7 @@ export class MetricService {
     if (!isAllowed) {
       const error = new Error('Metrics filter not enabled');
       (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+      logger.error(error);
       throw error;
     }
     // create query for metrics

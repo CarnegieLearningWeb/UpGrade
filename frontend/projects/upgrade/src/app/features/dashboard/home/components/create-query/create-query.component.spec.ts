@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../testing/testing.module';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
-describe('CreateQueryComponent', () => {
+xdescribe('CreateQueryComponent', () => {
   let component: CreateQueryComponent;
   let fixture: ComponentFixture<CreateQueryComponent>;
 

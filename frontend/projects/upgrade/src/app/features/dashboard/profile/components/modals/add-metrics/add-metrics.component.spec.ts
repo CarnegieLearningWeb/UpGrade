@@ -6,7 +6,7 @@ import { AnalysisService } from '../../../../../../core/analysis/analysis.servic
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { NgJsonEditorModule } from 'ang-jsoneditor';
 
-describe('AddMetricsComponent', () => {
+xdescribe('AddMetricsComponent', () => {
   let component: AddMetricsComponent;
   let fixture: ComponentFixture<AddMetricsComponent>;
 
