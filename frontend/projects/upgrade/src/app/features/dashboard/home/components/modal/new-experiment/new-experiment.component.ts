@@ -1,5 +1,6 @@
 import { Component, Inject, ViewChild, OnInit } from '@angular/core';
-import { MatDialogRef, MatSnackBar, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,

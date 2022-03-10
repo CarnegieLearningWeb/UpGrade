@@ -1,12 +1,14 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { Observable, Subscription, fromEvent } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
-import { MatTableDataSource, MatSort, MatDialog } from '@angular/material';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { FeatureFlag, FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { NewFlagComponent } from '../modal/new-flag/new-flag.component';
 import { debounceTime } from 'rxjs/operators';
+import { MatSort } from '@angular/material/sort';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'feature-flags-list',

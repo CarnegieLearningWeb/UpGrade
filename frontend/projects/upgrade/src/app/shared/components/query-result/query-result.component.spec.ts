@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { QueryResultComponent } from './query-result.component';
 import { TestingModule } from '../../../../testing/testing.module';
 import { AnalysisService } from '../../../core/analysis/analysis.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TestMockData } from '../../../../testing/test.mock.data';
 
 describe('QueryResultComponent', () => {

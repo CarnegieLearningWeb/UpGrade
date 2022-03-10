@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NewUserComponent } from './new-user.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { UsersService } from '../../../../../../core/users/users.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 describe('NewUserComponent', () => {
   let component: NewUserComponent;

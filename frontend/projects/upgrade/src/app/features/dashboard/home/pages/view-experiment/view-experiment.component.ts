@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { MatDialog, MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';

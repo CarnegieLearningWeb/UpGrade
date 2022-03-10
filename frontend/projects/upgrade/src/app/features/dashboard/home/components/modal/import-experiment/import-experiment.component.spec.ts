@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ImportExperimentComponent } from './import-experiment.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 describe('ImportExperimentComponent', () => {
   let component: ImportExperimentComponent;

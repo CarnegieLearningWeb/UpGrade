@@ -28,7 +28,7 @@ import {
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable()
 export class ExperimentEffects {

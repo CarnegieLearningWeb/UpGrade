@@ -11,7 +11,7 @@ import { MatSort } from '@angular/material/sort';
 import { Experiment, EXPERIMENT_STATE, EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription, fromEvent, Observable } from 'rxjs';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { debounceTime } from 'rxjs/operators';

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { Subscription } from 'rxjs';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { FeatureFlag } from '../../../../../core/feature-flags/store/feature-flags.model';
