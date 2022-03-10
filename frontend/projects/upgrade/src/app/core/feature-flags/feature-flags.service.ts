@@ -84,7 +84,7 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchString({ searchString }));
   }
 

@@ -14,6 +14,7 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
 import { NewUserComponent } from '../modals/new-user/new-user.component';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
+import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'profile-info',
@@ -190,7 +191,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.usersService.setSearchKey(this.selectedUserFilterOption);
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.usersService.setSearchString(searchString);
   }
 

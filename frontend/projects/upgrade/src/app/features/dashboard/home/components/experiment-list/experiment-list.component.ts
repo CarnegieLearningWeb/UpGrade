@@ -20,6 +20,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
+import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'home-experiment-list',
@@ -143,7 +144,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.setSearchKey(this.selectedExperimentFilterOption);
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.experimentService.setSearchString(searchString);
   }
 
@@ -157,12 +158,11 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.loadExperiments(true);
   }
 
-  filterExperimentByChips(tagValue: string, type: EXPERIMENT_SEARCH_KEY) {
-    this.searchValue = tagValue;
+  filterExperimentByChips(tagValue: FLAG_SEARCH_SORT_KEY, type: EXPERIMENT_SEARCH_KEY) {
     this.selectedExperimentFilterOption = type;
     this.applyFilter(tagValue);
     this.setSearchKey();
-    this.setSearchString(this.searchValue);
+    this.setSearchString(tagValue);
   }
 
   openNewExperimentDialog() {

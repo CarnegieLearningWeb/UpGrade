@@ -74,7 +74,7 @@ export const actionSetSearchKey = createAction(
 
 export const actionSetSearchString = createAction(
   '[Feature Flags] Set Search String',
-  props<{ searchString: string }>()
+  props<{ searchString: FLAG_SEARCH_SORT_KEY }>()
 );
 
 export const actionSetSortKey = createAction(

@@ -97,7 +97,7 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
     this.featureFlagsService.setSearchKey(this.selectedFlagFilterOption);
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.featureFlagsService.setSearchString(searchString);
   }
 

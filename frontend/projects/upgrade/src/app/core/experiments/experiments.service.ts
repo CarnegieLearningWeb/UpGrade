@@ -34,6 +34,7 @@ import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map, first, filter } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { FLAG_SEARCH_SORT_KEY } from '../feature-flags/store/feature-flags.model';
 
 @Injectable()
 export class ExperimentService {
@@ -145,7 +146,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING, searchString);
     this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
   }
