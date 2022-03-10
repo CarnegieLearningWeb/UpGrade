@@ -57,7 +57,7 @@ export class ExperimentService {
     public errorService: ErrorService,
   ) {}
 
-  public async find(logger: UpgradeLogger): Promise<Experiment[]> {
+  public async find(logger?: UpgradeLogger): Promise<Experiment[]> {
     if (logger) {
       logger.info({ message: `Find all experiments`});
     }
@@ -105,7 +105,7 @@ export class ExperimentService {
     return queryBuilder.getMany();
   }
 
-  public async findOne(id: string, logger: UpgradeLogger): Promise<Experiment | undefined> {
+  public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
     if (logger) {
       logger.info({ message: `Find experiment by id => ${id}`});
     }
@@ -155,8 +155,8 @@ export class ExperimentService {
     return this.addBulkExperiments(experiment, logger);
   }
 
-  public async delete(experimentId: string, currentUser: User, logger: UpgradeLogger): Promise<Experiment | undefined> {
-    if ( logger ) {
+  public async delete(experimentId: string, currentUser: User, logger?: UpgradeLogger): Promise<Experiment | undefined> {
+    if (logger) {
       logger.info({ message: `Delete experiment =>  ${ experimentId }` });
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
@@ -281,6 +281,7 @@ export class ExperimentService {
     if (duplicateExperiment && experiment.id !== undefined) {
       const error = new Error('Duplicate experiment');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     }
     let experimentPartitions = experiment.partitions;
@@ -298,6 +299,7 @@ export class ExperimentService {
     if (experimentPartitions.length === 0) {
       const error = new Error('Duplicate partition');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     }
 

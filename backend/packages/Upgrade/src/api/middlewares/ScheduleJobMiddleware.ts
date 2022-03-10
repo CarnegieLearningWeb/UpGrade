@@ -29,12 +29,14 @@ export class ScheduleJobMiddleware implements ExpressMiddlewareInterface {
       } else {
         const error = new Error('Provided token is invalid');
         (error as any).type = SERVER_ERROR.INVALID_TOKEN;
+        req.logger.error(error);
         throw error;
       }
     } catch (err) {
       const error = err as ErrorWithType;
       if (error.message === 'jwt expired') {
         error.type = SERVER_ERROR.INVALID_TOKEN;
+        req.logger.error(error);
         throw error;
       } else {
         throw new Error(error.message);

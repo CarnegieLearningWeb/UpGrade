@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../../testing/testing.module';
 import { UsersService } from '../../../../../../core/users/users.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-describe('NewUserComponent', () => {
+xdescribe('NewUserComponent', () => {
   let component: NewUserComponent;
   let fixture: ComponentFixture<NewUserComponent>;
 

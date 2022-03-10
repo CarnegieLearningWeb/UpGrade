@@ -40,7 +40,7 @@ bootstrapMicroframework({
   })
   .then(() => {
     // metric initalization
-    return InitMetrics();
+    return InitMetrics(logger);
   })
   .then(() => {
     banner(logger);

@@ -562,6 +562,7 @@ export class ExperimentClientController {
         }
       });
     }).catch((error) => {
+      request.logger.error(error);     
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
@@ -763,30 +764,32 @@ export class ExperimentClientController {
   }
 
   public async getUserDoc(experimentUserId, logger) {
-    const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
-    if ( experimentUserDoc ) {
-      var aliasUserId = experimentUserId;
-        if (!experimentUserDoc.aliases) {
-          aliasUserId = experimentUserId;
-        }
+    try {
+      const experimentUserDoc = await this.experimentUserService.getOriginalUserDoc(experimentUserId, logger);
+      if (experimentUserDoc) {
         const userDoc = {
-            createdAt: experimentUserDoc.createdAt,
-            id: aliasUserId,
-            originalUserId: experimentUserDoc.id,
-            group: experimentUserDoc.group,
-            workingGroup: experimentUserDoc.workingGroup
+          createdAt: experimentUserDoc.createdAt,
+          id: experimentUserDoc.id,
+          requestedUserId: experimentUserId,
+          group: experimentUserDoc.group,
+          workingGroup: experimentUserDoc.workingGroup
         };
+        logger.info({ message: 'Got the user doc', details: userDoc });
         return userDoc;
-    } else {
-      return null; 
+      } else {
+        return null;
+      }
+    } catch (error) {
+      logger.error({ message: `Error in getting user doc for user => ${experimentUserId}`, error });
+      return null;
     }
   }
 
   @Delete('clearDB')
-  public clearDB(): Promise<string> {
+  public clearDB(@Req() request: AppRequest): Promise<string> {
     // if DEMO mode is enabled, then clear the database:
-    if(env.app.demo) {
-      return this.experimentUserService.clearDB();
+    if (env.app.demo) {
+      return this.experimentUserService.clearDB(request.logger);
     }
     return Promise.resolve('DEMO mode is disabled. You cannot clear DB.');
   }

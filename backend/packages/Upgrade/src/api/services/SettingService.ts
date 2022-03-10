@@ -21,7 +21,7 @@ export class SettingService {
     return this.settingRepository.save(newDoc);
   }
 
-  public async getClientCheck(logger: UpgradeLogger): Promise<Setting> {
+  public async getClientCheck(logger?: UpgradeLogger): Promise<Setting> {
     if (logger) {
       logger.info({ message: 'Get project setting' });
     }

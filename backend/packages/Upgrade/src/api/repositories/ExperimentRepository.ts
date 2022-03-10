@@ -2,6 +2,7 @@ import { EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
 import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
+import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
@@ -179,7 +180,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     return result.raw;
   }
 
-  public async clearDB(entityManager: EntityManager): Promise<string> {
+  public async clearDB(entityManager: EntityManager, logger: UpgradeLogger): Promise<string> {
     try {
       const entities = entityManager.connection.entityMetadatas;
       for (const entity of entities) {
@@ -192,6 +193,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     } catch (error) {
       error = new Error('DB truncate error. DB truncate unsuccessful');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
       throw error;
     } 
   }

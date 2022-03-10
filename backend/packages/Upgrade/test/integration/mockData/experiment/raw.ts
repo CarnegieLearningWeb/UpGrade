@@ -1,3 +1,5 @@
+import { FILTER_MODE } from "../../../../../../../types/src/index";
+
 export const experiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
   name: 'Test Experiment',
@@ -11,6 +13,7 @@ export const experiment = {
   context: ['home'],
   tags: [],
   queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -63,6 +66,7 @@ export const experimentSecond = {
   context: ['home'],
   tags: [],
   queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   conditions: [
     {
       id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',
@@ -110,6 +114,7 @@ export const experimentThird = {
   context: ['home'],
   tags: [],
   queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
   conditions: [
     {
       id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e1',
@@ -124,6 +129,53 @@ export const experimentThird = {
       name: 'Condition B',
       description: 'Condition B',
       assignmentWeight: 60,
+      conditionCode: 'ConditionB',
+      twoCharacterId: 'AB',
+    },
+  ],
+  partitions: [
+    {
+      expPoint: 'CurriculumSequence3',
+      expId: 'W1',
+      description: 'Partition on Workspace 1',
+      twoCharacterId: 'Y1',
+    },
+    {
+      expPoint: 'CurriculumSequence3',
+      expId: 'W2',
+      description: 'Partition on Workspace 2',
+      twoCharacterId: 'Y2',
+    },
+  ],
+};
+
+export const experimentFourth = {
+  id: '3711346b-49d4-4f49-92b9-0d0ce7fa6e08',
+  name: 'Test Experiment 4',
+  description: 'Test Experiment Description',
+  consistencyRule: 'individual',
+  assignmentUnit: 'individual',
+  postExperimentRule: 'continue',
+  state: 'scheduled',
+  startOn: new Date().toISOString(),
+  group: 'teacher',
+  context: ['home'],
+  tags: [],
+  queries: [],
+  conditions: [
+    {
+      id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e2',
+      name: 'Condition A',
+      description: 'Condition A',
+      assignmentWeight: 55.5,
+      conditionCode: 'ConditionA',
+      twoCharacterId: 'AA',
+    },
+    {
+      id: '8c7b2951-f9a7-4d2e-a1ed-0572e1ede878',
+      name: 'Condition B',
+      description: 'Condition B',
+      assignmentWeight: 44.5,
       conditionCode: 'ConditionB',
       twoCharacterId: 'AB',
     },

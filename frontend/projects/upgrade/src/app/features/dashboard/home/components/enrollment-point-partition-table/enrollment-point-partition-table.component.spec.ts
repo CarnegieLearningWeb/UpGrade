@@ -4,7 +4,7 @@ import { EnrollmentPointPartitionTableComponent } from './enrollment-point-parti
 import { TestingModule } from '../../../../../../testing/testing.module';
 import { TableRowComponent } from '../table-row/table-row.component';
 
-describe('EnrollmentPointPartitionTableComponent', () => {
+xdescribe('EnrollmentPointPartitionTableComponent', () => {
   let component: EnrollmentPointPartitionTableComponent;
   let fixture: ComponentFixture<EnrollmentPointPartitionTableComponent>;
 

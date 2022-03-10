@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../testing/testing.module';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
-describe('EnrollmentOverTimeComponent', () => {
+xdescribe('EnrollmentOverTimeComponent', () => {
   let component: EnrollmentOverTimeComponent;
   let fixture: ComponentFixture<EnrollmentOverTimeComponent>;
 
@@ -24,7 +24,7 @@ describe('EnrollmentOverTimeComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });
