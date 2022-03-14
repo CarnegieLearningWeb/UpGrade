@@ -25,7 +25,8 @@ describe('Audit Service Testing', () => {
                     useValue: {
                         find: jest.fn().mockResolvedValue(auditArr),
                         paginatedFind: jest.fn().mockResolvedValue(auditArr),
-                        getTotalLogs: jest.fn().mockResolvedValue(auditArr.length)
+                        getTotalLogs: jest.fn().mockResolvedValue(auditArr.length),
+                        count: jest.fn().mockResolvedValue(auditArr.length)
                     }
                 }
             ]
@@ -46,6 +47,11 @@ describe('Audit Service Testing', () => {
 
     it('should return a count of audit logs', async() => {
         const flags = await service.getTotalLogs(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
+        expect(flags).toEqual(auditArr.length)
+    })
+
+    it('should return a count of audit logs', async() => {
+        const flags = await service.getTotalLogs(null);
         expect(flags).toEqual(auditArr.length)
     })
 
