@@ -5,10 +5,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 import { ExperimentError } from '../../../src/api/models/ExperimentError';
 import { SERVER_ERROR } from '../../../../../../types/src';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 
 let errorArr = [1, 2, 3];
 let error = new ExperimentError();
+let logger = new UpgradeLogger();
 
 
 describe('Error Service Testing', () => {
@@ -28,6 +30,7 @@ describe('Error Service Testing', () => {
                         find: jest.fn().mockResolvedValue(errorArr),
                         paginatedFind: jest.fn().mockResolvedValue(errorArr),
                         getTotalLogs: jest.fn().mockResolvedValue(errorArr.length),
+                        count: jest.fn().mockResolvedValue(errorArr.length),
                         save: jest.fn().mockResolvedValue(error)
                     }
                 }
@@ -52,13 +55,23 @@ describe('Error Service Testing', () => {
         expect(flags).toEqual(errorArr.length)
     })
 
+    it('should return a count of error logs', async () => {
+        const flags = await service.getTotalLogs(null);
+        expect(flags).toEqual(errorArr.length)
+    })
+
     it('should return an array of error logs', async () => {
         const flags = await service.getErrorLogs(1, 0, SERVER_ERROR.QUERY_FAILED);
         expect(flags).toEqual(errorArr)
     })
 
     it('should return an error log', async () => {
-        const flags = await service.create(error);
+        const flags = await service.create(error, logger);
+        expect(flags).toBe(error)
+    })
+
+    it('should return an error log', async () => {
+        const flags = await service.create(error, null);
         expect(flags).toBe(error)
     })
 });
