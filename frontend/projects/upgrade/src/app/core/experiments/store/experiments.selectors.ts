@@ -118,3 +118,13 @@ export const selectContextMetaData = createSelector(
   selectExperimentState,
   (state) => state.contextMetaData
 );
+
+export const selectGroupAssignmentStatus = createSelector(
+  selectExperimentState,
+  (state, { experimentId }) => {
+    if (state.entities[experimentId]) {
+      return state.entities[experimentId].groupSatisfied;
+    }
+    return null;
+  }
+);

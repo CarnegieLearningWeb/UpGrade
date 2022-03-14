@@ -58,8 +58,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
       this.permissions = permission;
     });
-    this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => { 
-      console.log(params);
+    this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => {
       this.expId = params.get('experimentId');
     });
     this.experimentService.fetchExperimentById(this.expId);
@@ -74,6 +73,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
           this.experiment = experiment;
         }
       });
+
+      if (this.experiment) {
+        this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
+        this.experimentService.groupSatisfied$(this.experiment.id).subscribe(data => this.experiment.groupSatisfied = data);
+      }
   }
 
   openSnackBar(exportType: boolean) {
@@ -173,6 +177,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+    this.experimentIdSub.unsubscribe();
   }
 
   get ExperimentState() {

@@ -14,6 +14,7 @@ import {
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
+import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService'; 
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator, validate } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -313,7 +314,10 @@ interface ExperimentPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/experiments')
 export class ExperimentController {
-  constructor(public experimentService: ExperimentService) {}
+  constructor(
+    public experimentService: ExperimentService,
+    public experimentAssignmentService: ExperimentAssignmentService
+  ) {}
 
   /**
    * @swagger
@@ -942,5 +946,48 @@ export class ExperimentController {
       );
     }
     return this.experimentService.exportExperiment(id, currentUser, request.logger);
+  }
+
+ /**
+  * @swagger
+  * /experiments/getGroupAssignmentStatus/{id}:
+  *    get:
+  *       description: Get all the groups assignment status having met the ending criteria
+  *       parameters:
+  *         - in: path
+  *           name: id
+  *           required: true
+  *           schema:
+  *             type: string
+  *           description: Experiment Id
+  *       tags:
+  *         - Experiments
+  *       produces:
+  *         - application/json
+  *       responses:
+  *          '200':
+  *            description: Experiment List
+  *            schema:
+  *              type: number
+  *              items:
+  *                $ref: '#/definitions/ExperimentResponse'
+  *          '401':
+  *            description: AuthorizationRequiredError
+  *          '404':
+  *            description: Not found error
+  *          '500':
+  *            description: id should be of type UUID
+  */
+  @Get('/getGroupAssignmentStatus/:id')
+  @OnUndefined(ExperimentNotFoundError)
+  public async getGroupAssignmentStatus(@Param('id') id: string, @Req() request: AppRequest ): Promise<number> | undefined {
+    if (!validator.isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+        )
+      );
+    }
+    return this.experimentAssignmentService.getGroupAssignmentStatus(id, request.logger);
   }
 }

@@ -47,5 +47,6 @@ export const environment = {
     queryResult: `${endpointApi}/query/analyse`,
     getVersion: `${endpointApi}/version`,
     contextMetaData: `${endpointApi}/experiments/contextMetaData`,
+    getGroupAssignmentStatus: `${endpointApi}/experiments/getGroupAssignmentStatus`,
   }
 };

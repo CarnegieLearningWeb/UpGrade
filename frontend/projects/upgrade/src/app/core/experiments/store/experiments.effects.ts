@@ -24,7 +24,8 @@ import {
   selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
-  selectContextMetaData
+  selectContextMetaData,
+  selectExperimentById
 } from './experiments.selectors';
 import { combineLatest } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
@@ -249,6 +250,25 @@ export class ExperimentEffects {
             (data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data }),
             catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
           )
+        )
+      )
+    )
+  );
+
+  fetchGroupAssignmentStatus$ = createEffect(() => 
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchGroupAssignmentStatus),
+      map(action => action.experimentId),
+      switchMap(( experimentId ) => 
+        this.experimentDataService.fetchGroupAssignmentStatus(experimentId).pipe(
+          withLatestFrom(
+            this.store$.pipe(select(selectExperimentById, { experimentId }))
+          ),
+          map(([ actionData, experimentData ]) => {
+            experimentData.groupSatisfied = actionData;
+            return experimentAction.actionFetchGroupAssignmentStatusSuccess({ experiment: experimentData });
+          }),
+          catchError(() => [experimentAction.actionFetchGroupAssignmentStatusFailure()])
         )
       )
     )

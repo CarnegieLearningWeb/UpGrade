@@ -125,6 +125,7 @@
   "home.new-experiment.schedule.user-count-per-group.title.text": "Participants enrolled per {{ groupType }}",
   "home.new-experiment.schedule.group-count.placeholder.text": "Number of",
   "home.new-experiment.schedule.group-count.text": "enrolled",
+  "home.new-experiment.schedule.group-count-having-met-ending-criters.text": "Number of groups having met ending criteria: {{ groupSatisfied }}",
   "home.view-experiment-global.experiment-point.text": "EXPERIMENT POINT",
   "home.view-experiment-global.experiment-partition.text": "ID",
   "home.view-experiment.global.weight.text": "WEIGHT",

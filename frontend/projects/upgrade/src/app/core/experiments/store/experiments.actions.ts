@@ -214,3 +214,17 @@ export const actionFetchContextMetaDataSuccess = createAction(
 export const actionFetchContextMetaDataFailure = createAction(
   '[Experiment] Fetch contextMetaData Failure',
 );
+
+export const actionFetchGroupAssignmentStatus = createAction(
+  '[Experiment] Fetch group counts having met ending criteria',
+  props<{ experimentId: string }>()
+);
+
+export const actionFetchGroupAssignmentStatusSuccess = createAction(
+  '[Experiment] Fetch group counts having met ending criteria Success',
+  props<{ experiment: Experiment }>()
+);
+
+export const actionFetchGroupAssignmentStatusFailure = createAction(
+  '[Experiment] Fetch group counts having met ending criteria Failure'
+);

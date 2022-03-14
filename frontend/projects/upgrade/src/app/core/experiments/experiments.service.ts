@@ -28,7 +28,8 @@ import {
   selectIsGraphLoading,
   selectSortKey,
   selectSortAs,
-  selectContextMetaData
+  selectContextMetaData,
+  selectGroupAssignmentStatus
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -64,6 +65,7 @@ export class ExperimentService {
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
+  groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
@@ -178,5 +180,9 @@ export class ExperimentService {
 
   fetchExperimentDetailStat(experimentId: string) {
     this.store$.dispatch(experimentAction.actionFetchExperimentDetailStat({ experimentId }));
+  }
+
+  fetchGroupAssignmentStatus(experimentId: string) {
+    this.store$.dispatch(experimentAction.actionFetchGroupAssignmentStatus({ experimentId }));
   }
 }
