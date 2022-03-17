@@ -860,19 +860,19 @@ export class ExperimentAssignmentService {
     const { groupCount, userCount } = enrollmentCompleteCondition;
 
     // get assignments and fetch monitored document for those assignments
-    const getMonitoredDocumentOfExperiment = async (experimentDoc: Experiment) => {
+    const getMonitoredDocumentOfExperimentTypeGroup = async (experimentDoc: Experiment) => {
 
       const partitionId = experimentDoc.partitions.map((p) => {
         return `${p.expId}_${p.expPoint}`
       })
 
       const result = await this.monitoredExperimentPointRepository
-        .createQueryBuilder('mep')
+        .createQueryBuilder('monitoredExperimentPoint')
         .select([`"experimentUser"."workingGroup"  -> '${experimentDoc.group}' #>> '{}' as types`, 'count(distinct("experimentUser"."id"))'])
         .innerJoin(
           ExperimentUser,
           'experimentUser',
-          '"mep"."userId" = "experimentUser".id'
+          '"monitoredExperimentPoint"."userId" = "experimentUser"."id"'
         )
         .innerJoin(
           GroupAssignment,
@@ -880,8 +880,33 @@ export class ExperimentAssignmentService {
           `"experimentUser"."workingGroup"  -> '${experimentDoc.group}' #>> '{}' = "groupAssignment"."groupId"`
         )
         .groupBy('types')
-        .where(`mep.experimentId in (:...partitionId)`, { partitionId: partitionId })
+        .where(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionId })
         .having("COUNT(experimentUser.id) >= :groupCount", { groupCount: experimentDoc.enrollmentCompleteCondition.userCount })
+        .execute() as any;
+
+      return result;
+    };
+
+    const getMonitoredDocumentOfExperimentTypeIndividual = async (experimentDoc: Experiment) => {
+
+      const partitionId = experimentDoc.partitions.map((p) => {
+        return `${p.expId}_${p.expPoint}`
+      })
+
+      const result = await this.monitoredExperimentPointRepository
+        .createQueryBuilder('monitoredExperimentPoint')
+        .select('count(distinct("experimentUser"."id"))')
+        .innerJoin(
+          ExperimentUser,
+          'experimentUser',
+          '"monitoredExperimentPoint"."userId" = "experimentUser"."id"'
+        )
+        .innerJoin(
+          IndividualAssignment,
+          'individualAssignment',
+          '"experimentUser"."id" = "individualAssignment"."userId"'
+        )
+        .where(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionId })
         .execute() as any;
 
       return result;
@@ -903,7 +928,7 @@ export class ExperimentAssignmentService {
 
     if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
       // fetch all the monitored document if exist
-      const monitoredDocuments = await getMonitoredDocumentOfExperiment(experiment);
+      const monitoredDocuments = await getMonitoredDocumentOfExperimentTypeGroup(experiment);
 
       // check if the group count is more than ending criteria
       if (Object.keys(monitoredDocuments).length >= groupCount) {
@@ -913,13 +938,9 @@ export class ExperimentAssignmentService {
       // check the individual assignment table for the user
     } else if (userCount) {
       // fetch all the monitored document if exist
-      // TODO:- update this monitored document query
-      const monitoredDocuments = await getMonitoredDocumentOfExperiment(experiment);
-      const userIds = monitoredDocuments.map((doc) => {
-        return doc.user.id;
-      });
-      const uniqueUser = new Set(userIds);
-      if (uniqueUser.size >= userCount) {
+      const monitoredDocuments = await getMonitoredDocumentOfExperimentTypeIndividual(experiment);
+
+      if (monitoredDocuments[0].count >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
         await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }
