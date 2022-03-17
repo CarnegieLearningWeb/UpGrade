@@ -1,7 +1,12 @@
+import { of } from "rxjs/internal/observable/of";
 import { UserRole } from "../../../../../../../types/src/Experiment/enums";
-import { MockStateStore } from "../../../testing/common.dependencies.mock";
 import { AuthService } from "./auth.service";
 import { actionBindAttachHandlerWithButton, actionInitializeGapi, actionLoginStart, actionLogoutStart, actionSetRedirectUrl } from "./store/auth.actions";
+
+export class MockStateStore {
+    dispatch = jest.fn();
+    pipe = jest.fn().mockReturnValue(of());
+}
 
 describe('AnalysisService', () => {
     let mockStore: MockStateStore;

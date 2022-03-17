@@ -1,8 +1,14 @@
 import { HttpClient } from "@angular/common/http";
+import { of } from "rxjs/internal/observable/of";
 import { environment } from "../../../environments/environment";
-import { MockHTTPClient } from "../../../testing/common.dependencies.mock";
 import { AnalysisDataService } from "./analysis.data.service";
 import { UpsertMetrics } from "./store/analysis.models";
+
+class MockHTTPClient {
+    get = jest.fn().mockReturnValue(of());
+    post = jest.fn().mockReturnValue(of());
+    delete = jest.fn().mockReturnValue(of());
+}
 
 describe('AnalysisDataService', () => {
     let mockHttpClient: any; 

@@ -20,7 +20,7 @@ describe('AppComponent', () => {
       component.ngOnInit();
 
       expect(mockAuthService.initializeGapi).toHaveBeenCalled();
-      expect(mockTranslateService.setDefaultLang).toHaveBeenCalledWith(expectedLangConstant)
+      expect(mockTranslateService.setDefaultLang).toHaveBeenCalledWith(expectedLangConstant);
     })
   })
 });

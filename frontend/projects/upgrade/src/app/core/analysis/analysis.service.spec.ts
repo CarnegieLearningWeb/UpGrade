@@ -1,7 +1,12 @@
-import { MockStateStore } from "../../../testing/common.dependencies.mock";
+import { of } from "rxjs/internal/observable/of";
 import { AnalysisService } from "./analysis.service";
 import { actionDeleteMetric, actionExecuteQuery, actionSetMetricsFilterValue, actionSetQueryResult, actionUpsertMetrics } from "./store/analysis.actions";
 import { UpsertMetrics } from "./store/analysis.models";
+
+export class MockStateStore {
+    dispatch = jest.fn();
+    pipe = jest.fn().mockReturnValue(of());
+}
 
 describe('AnalysisService', () => {
     let mockStore: MockStateStore;
