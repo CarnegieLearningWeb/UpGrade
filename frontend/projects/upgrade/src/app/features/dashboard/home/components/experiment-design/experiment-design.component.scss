@@ -74,6 +74,12 @@
     color: var(--blue);
   }
 
+  mat-checkbox {
+    &.mat-checkbox-checked {
+      color: var(--blue);
+    }
+  }
+
   .partition-table {
     margin-top: 30px;
   }
