@@ -856,7 +856,7 @@ export class ExperimentAssignmentService {
    * experiment - Experiment definition
    */
   private async checkEnrollmentEndingCriteriaForCount(experiment: Experiment): Promise<void> {
-    const { enrollmentCompleteCondition, group, partitions } = experiment;
+    const { enrollmentCompleteCondition } = experiment;
     const { groupCount, userCount } = enrollmentCompleteCondition;
 
     // get assignments and fetch monitored document for those assignments
@@ -881,7 +881,7 @@ export class ExperimentAssignmentService {
         )
         .groupBy('types')
         .where(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionId })
-        .having("COUNT(experimentUser.id) >= :groupCount", { groupCount: experimentDoc.enrollmentCompleteCondition.userCount })
+        .having("COUNT(distinct(experimentUser.id)) >= :groupCount", { groupCount: experimentDoc.enrollmentCompleteCondition.userCount })
         .execute() as any;
 
       return result;
