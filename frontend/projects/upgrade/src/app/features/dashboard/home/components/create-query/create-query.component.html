@@ -25,9 +25,14 @@
                     formControlName="metricKey"
                     [matAutocomplete]="auto"
                     >
-                  <mat-autocomplete (optionSelected)="selectedOption($event)" #auto="matAutocomplete" [displayWith]="displayFn">
+                  <mat-autocomplete
+                    (optionSelected)="selectedOption($event)"
+                    #auto="matAutocomplete"
+                    [displayWith]="displayFn"
+                    panelWidth="fit-content"
+                    >
                     <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
-                      {{option.key}}
+                      long_long_long_long_long_long_long_long_long_long_long_long_text
                     </mat-option>
                   </mat-autocomplete>
                 </mat-form-field>

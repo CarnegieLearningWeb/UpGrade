@@ -37,7 +37,7 @@
               formControlName="conditionCode"
               [matAutocomplete]="autoCompleteConditionCodes"
             />
-            <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete">
+            <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
               <mat-option *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async" [value]="conditionCode">
                 {{ conditionCode }}
               </mat-option>
@@ -189,7 +189,7 @@
               formControlName="expPoint"
               [matAutocomplete]="autoCompleteExperimentPoints"
             />
-            <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete">
+            <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
               <mat-option *ngFor="let expPoint of filteredExpPoints$[groupIndex] | async" [value]="expPoint">
                 {{ expPoint }}
               </mat-option>
@@ -217,7 +217,7 @@
               formControlName="expId"
               [matAutocomplete]="autoCompleteExperimentIds"
             />
-            <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete">
+            <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
               <mat-option *ngFor="let expId of filteredExpIds$[groupIndex] | async" [value]="expId">
                 {{ expId }}
               </mat-option>
