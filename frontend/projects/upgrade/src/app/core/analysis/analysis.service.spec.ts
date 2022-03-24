@@ -1,21 +1,39 @@
-import { of } from "rxjs/internal/observable/of";
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
 import { AnalysisService } from "./analysis.service";
 import { actionDeleteMetric, actionExecuteQuery, actionSetMetricsFilterValue, actionSetQueryResult, actionUpsertMetrics } from "./store/analysis.actions";
 import { UpsertMetrics } from "./store/analysis.models";
 
-export class MockStateStore {
-    dispatch = jest.fn();
-    pipe = jest.fn().mockReturnValue(of());
-}
+const MockStateStore$ = new BehaviorSubject({});
+(MockStateStore$ as any).dispatch = jest.fn();
+
+jest.mock('./store/analysis.selectors', () => {
+    return {
+        selectMetrics: jest.fn(),
+        selectIsMetricsLoading: jest.fn(),
+        selectQueryResult: jest.fn(),
+        selectIsQueryExecuting: jest.fn(),
+        selectQueryResultById: jest.fn(),
+    }
+});
 
 describe('AnalysisService', () => {
-    let mockStore: MockStateStore;
+    let mockStore: any = MockStateStore$;
     let service: AnalysisService;
     
     beforeEach(() => {
-        mockStore = new MockStateStore();
-        service = new AnalysisService(mockStore as any);
+        service = new AnalysisService(mockStore);
     });
+
+    describe('#queryResultById$', () => {
+        it('should ', () => {
+            const mockId = 'test';
+            const pipeSpy = jest.spyOn(mockStore, 'pipe');
+
+            service.queryResultById$(mockId);
+
+            expect(pipeSpy).toHaveBeenCalled();
+        })
+    })
 
     describe('#setMetricsFilterValue', () => {
         it('should dispatch actionSetMetricsFilterValue with the supplied string input', () => {
