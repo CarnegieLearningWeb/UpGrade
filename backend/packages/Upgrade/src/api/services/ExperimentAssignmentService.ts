@@ -32,7 +32,6 @@ import { ExplicitExperimentGroupExclusionRepository } from '../repositories/Expl
 import { ExplicitExperimentGroupInclusionRepository } from '../repositories/ExplicitExperimentGroupInclusionRepository';
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { In } from 'typeorm';
 import uuid from 'uuid/v4';
 import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
@@ -381,12 +380,14 @@ export class ExperimentAssignmentService {
       // ============= check if user or group is excluded
       let userGroup = [];
       userGroup = Object.keys(experimentUser.workingGroup || {}).map((type: string) => {
-        return `${type}_${experimentUser.workingGroup[type]}`;
+        return {type: type, groupId: experimentUser.workingGroup[type]};
       });
+
+      const userGroupsToString = this.arrayToString(userGroup);
 
       const [userExcluded, groupExcluded] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId: experimentUser.id }),
-        userGroup.length > 0 ? this.explicitGroupExclusionRepository.find({ where: { id: In(userGroup) } }) : [],
+        userGroup.length > 0 ? await this.explicitGroupExclusionRepository.getExcludedGroups(userGroupsToString) : [],
       ]);
 
       if (userExcluded.length > 0) {
@@ -1212,5 +1213,14 @@ export class ExperimentAssignmentService {
       }
     }
     return 0;
+  }
+
+  private arrayToString(groups: any[]): string {
+    let query = '(';
+    groups.forEach((group) => {
+      query += ( '(' + '\'' + group.type + '\'' + ',' + '\'' +group.groupId + '\'' + '),' );
+    });
+    query = query.substring(0, query.length - 1) + ')';
+    return query;
   }
 }

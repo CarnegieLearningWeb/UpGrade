@@ -18,8 +18,17 @@ export class ExcludeService {
     return this.explicitIndividualExclusionRepository.find();
   }
 
-  public excludeUser(userId: string): Promise<ExplicitIndividualExclusion> {
-    return this.explicitIndividualExclusionRepository.saveRawJson({ userId });
+  public excludeUser(userIds: Array<string>): Promise<ExplicitIndividualExclusion[]> {
+    let explicitIndividualExclusionDoc = new ExplicitIndividualExclusion();
+
+    const ExplicitIndividualExclusionDocToSave: Array<Partial<ExplicitIndividualExclusion>> =
+    (userIds &&
+      userIds.length > 0 &&
+      userIds.map((userId: string) => {
+        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitIndividualExclusionDoc, userId: userId };
+      return rest;
+    })) || [];
+    return this.explicitIndividualExclusionRepository.saveRawJson(ExplicitIndividualExclusionDocToSave);
   }
 
   public async deleteUser(userId: string): Promise<ExplicitIndividualExclusion | undefined> {
@@ -31,9 +40,17 @@ export class ExcludeService {
     return this.explicitGroupExclusionRepository.find();
   }
 
-  public excludeGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion> {
-    const id = `${type}_${groupId}`;
-    return this.explicitGroupExclusionRepository.saveRawJson({ id, groupId, type });
+  public excludeGroup(groups: Array<{ groupId: string, type: string }>): Promise<ExplicitGroupExclusion[]> {
+    let explicitGroupExclusionDoc = new ExplicitGroupExclusion();
+    
+    const ExplicitGroupExclusionDocToSave: Array<Partial<ExplicitGroupExclusion>> =
+    (groups &&
+      groups.length > 0 &&
+      groups.map((group: { groupId: string, type: string }) => {
+        const { createdAt, updatedAt, versionNumber, ...rest } = { ...explicitGroupExclusionDoc, groupId: group.groupId, type: group.type };
+      return rest;
+    })) || [];
+    return this.explicitGroupExclusionRepository.saveRawJson(ExplicitGroupExclusionDocToSave);
   }
 
   public deleteGroup(groupId: string, type: string): Promise<ExplicitGroupExclusion | undefined> {

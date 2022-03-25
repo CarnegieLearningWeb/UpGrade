@@ -16,14 +16,14 @@ export class ExperimentUsersDataService {
     return this.http.get(url);
   }
 
-  excludeUser(id: string) {
+  excludeUser(userIds: string[]) {
     const url = environment.api.excludeUsers;
-    return this.http.put(url, { id });
+    return this.http.post(url, { userIds });
   }
 
-  excludeGroup(id: string, type: string) {
+  excludeGroup(groups: Array<{groupId: string, type: string}>) {
     const url = environment.api.excludeGroups;
-    return this.http.put(url, { id, type });
+    return this.http.post(url, { groups });
   }
 
   deleteExcludedUser(id: string) {

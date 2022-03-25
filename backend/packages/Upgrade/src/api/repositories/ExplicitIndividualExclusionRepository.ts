@@ -4,7 +4,7 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExplicitIndividualExclusion)
 export class ExplicitIndividualExclusionRepository extends Repository<ExplicitIndividualExclusion> {
-  public async saveRawJson(rawData: Partial<ExplicitIndividualExclusion>): Promise<ExplicitIndividualExclusion> {
+  public async saveRawJson(rawData: Array<Partial<ExplicitIndividualExclusion>>): Promise<ExplicitIndividualExclusion[]> {
     const result = await this.createQueryBuilder('explicitIndividualExclusion')
       .insert()
       .into(ExplicitIndividualExclusion)

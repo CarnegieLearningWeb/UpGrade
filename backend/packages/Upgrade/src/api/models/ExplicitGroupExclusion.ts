@@ -1,14 +1,11 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 
 @Entity()
 export class ExplicitGroupExclusion extends BaseModel {
-  @PrimaryColumn()
-  public id: string;
-
-  @Column()
+  @Column({ primary: true })
   public groupId: string;
 
-  @Column()
+  @Column({ primary: true })
   public type: string;
 }

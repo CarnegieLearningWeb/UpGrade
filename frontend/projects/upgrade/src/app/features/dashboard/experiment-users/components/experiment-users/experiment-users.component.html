@@ -10,6 +10,7 @@
     </mat-form-field>
 
     <mat-form-field class="ft-14-600 form-control" *ngIf="entityTypeValue">
+      <mat-label>{{ 'users-global.form-grouptype-placeholder.text' | translate }}</mat-label>
       <mat-select class="input" formControlName="groupType">
         <mat-option *ngFor="let groupType of groupTypes" [value]="groupType">
           {{ groupType }}

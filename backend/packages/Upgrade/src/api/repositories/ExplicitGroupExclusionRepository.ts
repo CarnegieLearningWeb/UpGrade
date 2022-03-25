@@ -4,7 +4,7 @@ import repositoryError from './utils/repositoryError';
 
 @EntityRepository(ExplicitGroupExclusion)
 export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupExclusion> {
-  public async saveRawJson(rawData: Partial<ExplicitGroupExclusion>): Promise<ExplicitGroupExclusion> {
+  public async saveRawJson(rawData: Array<Partial<ExplicitGroupExclusion>>): Promise<ExplicitGroupExclusion[]> {
     const result = await this.createQueryBuilder('explicitGroupExclusion')
       .insert()
       .into(ExplicitGroupExclusion)
@@ -43,5 +43,12 @@ export class ExplicitGroupExclusionRepository extends Repository<ExplicitGroupEx
       });
 
     return result.raw;
+  }
+
+  public async getExcludedGroups(groupIds: string) {
+    let result = await this.manager.query(
+      `SELECT * FROM explicit_group_exclusion ege WHERE ( "ege"."type", "ege"."groupId" ) IN ${groupIds}`
+    );
+    return result;
   }
 }

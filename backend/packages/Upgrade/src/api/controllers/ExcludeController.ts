@@ -1,4 +1,4 @@
-import { JsonController, BodyParam, Get, Put, Delete, Param, Authorized } from 'routing-controllers';
+import { JsonController, BodyParam, Get, Delete, Param, Authorized, Post } from 'routing-controllers';
 import { ExcludeService } from '../services/ExcludeService';
 import { ExplicitIndividualExclusion } from '../models/ExplicitIndividualExclusion';
 import { ExplicitGroupExclusion } from '../models/ExplicitGroupExclusion';
@@ -31,7 +31,7 @@ import { SERVER_ERROR } from 'upgrade_types';
  *         userId:
  *           type: string
  *           minLength: 1
- *   groupExclude:
+ *   groupExcludeResponse:
  *     type: array
  *     description: ''
  *     minItems: 1
@@ -42,7 +42,6 @@ import { SERVER_ERROR } from 'upgrade_types';
  *         - createdAt
  *         - updatedAt
  *         - versionNumber
- *         - id
  *         - groupId
  *         - type
  *       properties:
@@ -54,9 +53,6 @@ import { SERVER_ERROR } from 'upgrade_types';
  *           minLength: 1
  *         versionNumber:
  *           type: number
- *         id:
- *           type: string
- *           minLength: 1
  *         groupId:
  *           type: string
  *           minLength: 1
@@ -78,18 +74,20 @@ export class ExcludeController {
 
   /**
    * @swagger
-   * /exclude/user:
+   * /explicitExclude/global/user:
    *    get:
-   *       description: Get all Excluded Users
+   *       description: Get all globally Excluded Users
    *       tags:
    *         - Exclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: All Excluded Users
+   *            description: All globally Excluded Users
    *            schema:
    *              $ref: '#/definitions/userExcludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
    */
   @Get('/user')
   public getExcludedUser(): Promise<ExplicitIndividualExclusion[]> {
@@ -98,9 +96,9 @@ export class ExcludeController {
 
   /**
    * @swagger
-   * /exclude/user:
-   *    put:
-   *       description: Exclude an User
+   * /explicitExclude/global/user:
+   *    post:
+   *       description: Exclude an User globally
    *       consumes:
    *         - application/json
    *       parameters:
@@ -110,34 +108,40 @@ export class ExcludeController {
    *           schema:
    *             type: object
    *             required:
-   *               - id
+   *               - userIds
    *             properties:
-   *               id:
-   *                type: string
-   *           description: UserId to exclude
+   *               userIds:
+   *                type: array
+   *                items:
+   *                  type: string
+   *           description: UserIds to exclude globally
    *       tags:
    *         - Exclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Exclude user from experiment
+   *            description: Exclude user globally
    *            schema:
    *              $ref: '#/definitions/userExcludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, Insert Error in database, JSON format is not valid
    */
-  @Put('/user')
-  public excludeUser(@BodyParam('id') id: string): Promise<ExplicitIndividualExclusion> {
-    return this.exclude.excludeUser(id);
+  @Post('/user')
+  public excludeUser(@BodyParam('userIds') userIds: Array<string>): Promise<ExplicitIndividualExclusion[]> {
+    return this.exclude.excludeUser(userIds);
   }
 
   /**
    * @swagger
-   * /exclude/user/{id}:
+   * /explicitExclude/global/user/{userId}:
    *    delete:
-   *       description: Delete excluded user
+   *       description: Delete excluded user globally
    *       parameters:
    *         - in: path
-   *           name: id
+   *           name: userId
    *           required: true
    *           schema:
    *             type: string
@@ -148,32 +152,38 @@ export class ExcludeController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Delete User By Id
+   *            description: Delete globally excluded User By Id
    *            schema:
    *              $ref: '#/definitions/userExcludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error
    */
-  @Delete('/user/:id')
-  public delete(@Param('id') id: string): Promise<ExplicitIndividualExclusion | undefined> {
-    if (!id) {
+  @Delete('/user/:userId')
+  public delete(@Param('userId') userId: string): Promise<ExplicitIndividualExclusion | undefined> {
+    if (!userId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : id should not be null.'));
     }
-    return this.exclude.deleteUser(id);
+    return this.exclude.deleteUser(userId);
   }
 
   /**
    * @swagger
-   * /exclude/group:
+   * /explicitExclude/global/group:
    *    get:
-   *       description: Get all Excluded Groups
+   *       description: Get all globally Excluded Groups
    *       tags:
    *         - Exclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: All Excluded Groups
+   *            description: All globally Excluded Groups
    *            schema:
-   *              $ref: '#/definitions/userExcludeResponse'
+   *              $ref: '#/definitions/groupExcludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
    */
   @Get('/group')
   public getExcludedGroups(): Promise<ExplicitGroupExclusion[]> {
@@ -182,9 +192,9 @@ export class ExcludeController {
 
   /**
    * @swagger
-   * /exclude/group:
-   *    put:
-   *       description: Exclude a Group
+   * /explicitExclude/global/group:
+   *    post:
+   *       description: Exclude a Group globally
    *       consumes:
    *         - application/json
    *       parameters:
@@ -194,33 +204,41 @@ export class ExcludeController {
    *           schema:
    *             type: object
    *             required:
-   *               - id
-   *               - type
+   *               - groups
    *             properties:
-   *               id:
-   *                type: string
-   *               type:
-   *                type: string
+   *              groups:
+   *                type: array
+   *                items:
+   *                  type: object
+   *                  properties:
+   *                    groupId:
+   *                      type: string
+   *                    type:
+   *                      type: string
    *       tags:
    *         - Exclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Exclude group from experiment
+   *            description: Exclude group globally
    *            schema:
-   *              $ref: '#/definitions/userExcludeResponse'
+   *              $ref: '#/definitions/groupExcludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, Insert Error in database, JSON format is not valid
    */
-  @Put('/group')
-  public excludeGroup(@BodyParam('type') type: string, @BodyParam('id') id: string): Promise<ExplicitGroupExclusion> {
-    return this.exclude.excludeGroup(id, type);
+  @Post('/group')
+  public excludeGroup(@BodyParam('groups') groups: Array<{ groupId: string, type: string }>): Promise<ExplicitGroupExclusion[]> {
+    return this.exclude.excludeGroup(groups);
   }
 
   /**
    * @swagger
-   * /exclude/group/{type}/{id}:
+   * /explicitExclude/global/group/{type}/{id}:
    *    delete:
-   *       description: Delete excluded user
+   *       description: Delete excluded group globally
    *       parameters:
    *         - in: path
    *           name: id
@@ -233,16 +251,20 @@ export class ExcludeController {
    *           required: true
    *           schema:
    *             type: string
-   *           description: Group Id
+   *           description: Group Type
    *       tags:
    *         - Exclude
    *       produces:
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Delete User By Id
+   *            description: Delete globally excluded Group By groupId and type
    *            schema:
-   *              $ref: '#/definitions/userExcludeResponse'
+   *              $ref: '#/definitions/groupExcludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error
    */
   @Delete('/group/:type/:id')
   public deleteGroup(

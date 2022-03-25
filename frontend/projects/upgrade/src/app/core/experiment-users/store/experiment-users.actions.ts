@@ -29,7 +29,7 @@ export const actionFetchExcludedGroupsFailure = createAction(
 
 export const actionExcludeUser = createAction(
   '[Experiment Users] Exclude User',
-  props<{ id: string }>()
+  props<{ userIds: string[] }>()
 );
 
 export const actionExcludeUserSuccess = createAction(
@@ -43,7 +43,7 @@ export const actionExcludedUserFailure = createAction(
 
 export const actionExcludeGroup = createAction(
   '[Experiment Users] Exclude Group',
-  props<{ id: string, groupType: string }>()
+  props<{ groups: Array<{groupId: string, type: string}> }>()
 );
 
 export const actionExcludeGroupSuccess = createAction(

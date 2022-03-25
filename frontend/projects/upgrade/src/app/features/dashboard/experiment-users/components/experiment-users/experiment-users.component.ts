@@ -75,7 +75,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
 
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData; 
-      if (contextMetaData) {
+      if (this.contextMetaData && this.contextMetaData['contextMetadata']) {
         this.contexts = Object.keys(contextMetaData['contextMetadata']) || [];
         this.contexts.forEach(context => {
           this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
@@ -99,10 +99,14 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     this.excludeEntitiesForm.get('id').reset();
     switch (entityType) {
       case EntityTypes.PARTICIPANT_ID:
-        this.experimentUserService.excludeUser(id);
+        this.experimentUserService.excludeUser([id]);
         break;
       case EntityTypes.GROUP_ID:
-        this.experimentUserService.excludeGroup(id, groupType);
+        const group = {
+          groupId: id,
+          type: groupType
+        };
+        this.experimentUserService.excludeGroup( [group] );
         break;
     }
   }

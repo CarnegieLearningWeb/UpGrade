@@ -22,12 +22,12 @@ export class ExperimentUsersService {
     this.store$.dispatch(experimentUsersActions.actionFetchExcludedGroups());
   }
 
-  excludeUser(id: string) {
-    this.store$.dispatch(experimentUsersActions.actionExcludeUser({ id }));
+  excludeUser(userIds: string[]) {
+    this.store$.dispatch(experimentUsersActions.actionExcludeUser({ userIds }));
   }
 
-  excludeGroup(id: string, groupType: string) {
-    this.store$.dispatch(experimentUsersActions.actionExcludeGroup({ id, groupType }));
+  excludeGroup(groups: Array<{groupId: string, type: string}>) {
+    this.store$.dispatch(experimentUsersActions.actionExcludeGroup({ groups }));
   }
 
   deleteExcludedUser(id: string) {
