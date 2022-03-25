@@ -61,4 +61,18 @@ describe('Setting Service Testing', () => {
         const flags = await service.getClientCheck(logger);
         expect(flags).toEqual(setting)
     })
+
+    it('should return a setting without logger', async() => {
+        const flags = await service.getClientCheck(null);
+        expect(flags).toEqual(setting)
+    })
+
+    it('should return a setting when no setting found', async() => {
+        repo.find = jest.fn().mockReturnValue([])
+        const setting = await service.getClientCheck(logger);
+        const defaultSetting = new Setting();
+        defaultSetting.toCheckAuth = false;
+        defaultSetting.toFilterMetric = false;
+        expect(setting).toEqual(defaultSetting)
+    })
 });
