@@ -56,6 +56,7 @@ import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorEx
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { StateTimeLog } from '../models/StateTimeLogs';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import repositoryError from '../repositories/utils/repositoryError';
 
 @Service()
 export class ExperimentAssignmentService {
@@ -862,8 +863,8 @@ export class ExperimentAssignmentService {
     // get assignments and fetch monitored document for those assignments
     const getMonitoredDocumentOfExperimentTypeGroup = async (experimentDoc: Experiment) => {
 
-      const partitionId = experimentDoc.partitions.map((p) => {
-        return `${p.expId}_${p.expPoint}`
+      const partitionIds = experimentDoc.partitions.map((p) => {
+        return getExperimentPartitionID(p.expPoint, p.expId);
       })
 
       const result = await this.monitoredExperimentPointRepository
@@ -875,39 +876,58 @@ export class ExperimentAssignmentService {
           '"monitoredExperimentPoint"."userId" = "experimentUser"."id"'
         )
         .innerJoin(
+          IndividualAssignment,
+          'individualAssignment',
+          '"experimentUser"."id" = "individualAssignment"."userId" AND "individualAssignment"."experimentId" = :experimentId', { experimentId: experimentDoc.id }
+        )
+        .innerJoin(
           GroupAssignment,
           'groupAssignment',
           `"experimentUser"."workingGroup"  -> '${experimentDoc.group}' #>> '{}' = "groupAssignment"."groupId"`
         )
         .groupBy('types')
-        .where(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionId })
+        .where('individualAssignment.experimentId = :experimentId', { experimentId: experimentDoc.id })
+        .andWhere(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionIds })
         .having("COUNT(distinct(experimentUser.id)) >= :groupCount", { groupCount: experimentDoc.enrollmentCompleteCondition.userCount })
-        .execute() as any;
+        .execute()
+        .catch((errorMsg: any) => {
+          const errorMsgString = repositoryError(
+            'MonitoredExperimentPointRepository',
+            'getMonitoredDocumentOfExperimentTypeGroup',
+            { experimentDoc },
+            errorMsg
+          );
+          throw errorMsgString;
+        });
 
       return result;
     };
 
     const getMonitoredDocumentOfExperimentTypeIndividual = async (experimentDoc: Experiment) => {
 
-      const partitionId = experimentDoc.partitions.map((p) => {
-        return `${p.expId}_${p.expPoint}`
+      const partitionIds = experimentDoc.partitions.map((p) => {
+        return getExperimentPartitionID(p.expPoint, p.expId);
       })
 
       const result = await this.monitoredExperimentPointRepository
         .createQueryBuilder('monitoredExperimentPoint')
-        .select('count(distinct("experimentUser"."id"))')
-        .innerJoin(
-          ExperimentUser,
-          'experimentUser',
-          '"monitoredExperimentPoint"."userId" = "experimentUser"."id"'
-        )
+        .select('count(distinct("individualAssignment"."userId"))')
         .innerJoin(
           IndividualAssignment,
           'individualAssignment',
-          '"experimentUser"."id" = "individualAssignment"."userId"'
+          '"monitoredExperimentPoint"."userId" = "individualAssignment"."userId" AND "individualAssignment"."experimentId" = :experimentId', { experimentId: experimentDoc.id }
         )
-        .where(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionId })
-        .execute() as any;
+        .where(`monitoredExperimentPoint.experimentId in (:...partitionId)`, { partitionId: partitionIds })
+        .execute()
+        .catch((errorMsg: any) => {
+          const errorMsgString = repositoryError(
+            'MonitoredExperimentPointRepository',
+            'getMonitoredDocumentOfExperimentTypeIndividual',
+            { experimentDoc },
+            errorMsg
+          );
+          throw errorMsgString;
+        });
 
       return result;
     };
@@ -928,19 +948,18 @@ export class ExperimentAssignmentService {
 
     if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
       // fetch all the monitored document if exist
-      const monitoredDocuments = await getMonitoredDocumentOfExperimentTypeGroup(experiment);
+      const groupTypesWithUserEnrollmentCounts = await getMonitoredDocumentOfExperimentTypeGroup(experiment);
 
       // check if the group count is more than ending criteria
-      if (Object.keys(monitoredDocuments).length >= groupCount) {
+      if (groupTypesWithUserEnrollmentCounts.length >= groupCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
         await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }
       // check the individual assignment table for the user
     } else if (userCount) {
       // fetch all the monitored document if exist
-      const monitoredDocuments = await getMonitoredDocumentOfExperimentTypeIndividual(experiment);
-
-      if (monitoredDocuments[0].count >= userCount) {
+      const userEnrolledCounts = await getMonitoredDocumentOfExperimentTypeIndividual(experiment);
+      if (userEnrolledCounts[0]?.count >= userCount) {
         await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
         await this.stateTimeLogsRepository.save(stateTimeLogDoc);
       }

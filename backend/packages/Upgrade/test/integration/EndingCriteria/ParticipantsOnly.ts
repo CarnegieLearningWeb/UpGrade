@@ -3,7 +3,7 @@ import { UserService } from './../../../src/api/services/UserService';
 import { ExperimentService } from './../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { systemUser } from '../mockData/user/index';
-import { participantsOnlyExperiment } from '../mockData/experiment/index';
+import { participantsOnlyExperiment, secondExperiment } from '../mockData/experiment/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../utils';
 import { experimentUsers } from '../mockData/experimentUsers/index';
 import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../utils/index';
@@ -19,6 +19,8 @@ export default async function ParticipantsOnly() {
 
   // experiment object
   const experimentObject = participantsOnlyExperiment;
+  // changing the ending criteria temporarily
+  experimentObject.enrollmentCompleteCondition.userCount = 1;
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
   let experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -59,22 +61,75 @@ export default async function ParticipantsOnly() {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   // change experiment status to Enrolling
-  const experimentId = experiments[0].id;
+  let experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
-  // fetch experiment
+  // creating another experiment
+  const secondExperimentObject = {
+    ...secondExperiment,
+    state: EXPERIMENT_STATE.INACTIVE,
+    enrollmentCompleteCondition: {
+      userCount: 2,
+    },
+  };
+
+  await experimentService.create(secondExperimentObject as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        name: experimentObject.name,
-        state: EXPERIMENT_STATE.ENROLLING,
-        postExperimentRule: experimentObject.postExperimentRule,
-        assignmentUnit: experimentObject.assignmentUnit,
-        consistencyRule: experimentObject.consistencyRule,
+        name: secondExperimentObject.name,
+        state: secondExperimentObject.state,
+        postExperimentRule: secondExperimentObject.postExperimentRule,
+        assignmentUnit: secondExperimentObject.assignmentUnit,
+        consistencyRule: secondExperimentObject.consistencyRule,
+        enrollmentCompleteCondition: expect.objectContaining({
+          userCount: secondExperimentObject.enrollmentCompleteCondition.userCount,
+        }),
       }),
     ])
   );
+
+  const secondExperimentName1 = secondExperimentObject.partitions[0].expId;
+  const secondExperimentPoint1 = secondExperimentObject.partitions[0].expPoint;
+
+  const secondCondition = secondExperimentObject.conditions[0].conditionCode;
+
+  experimentId = experiments[1].id;
+  await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
+
+  // get all experiment condition for user 1
+  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
+  expect(experimentConditionAssignments).toHaveLength(2);
+
+  // mark experiment point
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    secondExperimentName1,
+    secondExperimentPoint1,
+    secondCondition,
+    new UpgradeLogger()
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, secondExperimentName1, secondExperimentPoint1);
+
+  // fetch experiment
+  experiments = await experimentService.find(new UpgradeLogger());
+
+  // the user included for the above experiment should be excluded from first experiment and hence not change the state to enrollment complete
+  expect(experiments[0]).toEqual(
+    expect.objectContaining({
+      name: experimentObject.name,
+      state: EXPERIMENT_STATE.ENROLLING,
+      postExperimentRule: experimentObject.postExperimentRule,
+      assignmentUnit: experimentObject.assignmentUnit,
+      consistencyRule: experimentObject.consistencyRule,
+    }),
+  );
+
+  // getting back to the original ending criteria
+  experiments[0].enrollmentCompleteCondition.userCount = 2;
+  await experimentService.update( experiments[0] as any, user, new UpgradeLogger());
+  experiments = await experimentService.find(new UpgradeLogger());
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
