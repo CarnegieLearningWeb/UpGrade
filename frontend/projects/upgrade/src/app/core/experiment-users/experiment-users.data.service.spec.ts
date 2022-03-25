@@ -44,9 +44,9 @@ describe('ExperimentUsersDataService', () => {
             const expectedUrl = environment.api.excludeUsers;
             const mockId = 'testId';
 
-            service.excludeUser(mockId);
+            service.excludeUser([mockId]);
 
-            expect(mockHttpClient.put).toHaveBeenCalledWith(expectedUrl, { id: mockId });
+            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { userIds: [mockId] });
         })
     })
 
@@ -56,9 +56,9 @@ describe('ExperimentUsersDataService', () => {
             const mockId = 'testId';
             const mockType = 'testType';
 
-            service.excludeGroup(mockId, mockType);
+            service.excludeGroup([ {groupId:mockId, type:mockType} ]);
 
-            expect(mockHttpClient.put).toHaveBeenCalledWith(expectedUrl, { id: mockId, type: mockType });
+            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { groups: [ {groupId:mockId, type: mockType} ] });
         })
     })
 

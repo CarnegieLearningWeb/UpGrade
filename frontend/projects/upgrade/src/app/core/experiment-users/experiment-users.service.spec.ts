@@ -61,9 +61,9 @@ describe('ExperimentUsersService', () => {
         it('should dispatch actionLoginStart', () => {
             const mockId = 'testId';
 
-            service.excludeUser(mockId);
+            service.excludeUser([mockId]);
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(actionExcludeUser( { id: mockId }));
+            expect(mockStore.dispatch).toHaveBeenCalledWith(actionExcludeUser( { userIds: [mockId] }));
         })
     })
 
@@ -72,11 +72,13 @@ describe('ExperimentUsersService', () => {
             const mockId = 'testId';
             const mockGroupType = 'testGroupType';
 
-            service.excludeGroup(mockId, mockGroupType);
+            service.excludeGroup([ {groupId: mockId, type: mockGroupType} ]);
 
             expect(mockStore.dispatch).toHaveBeenCalledWith(actionExcludeGroup({
-                id: mockId,
-                groupType: mockGroupType
+                groups: [{
+                    groupId: mockId,
+                    type: mockGroupType
+                }]
             }));
         })
     })
