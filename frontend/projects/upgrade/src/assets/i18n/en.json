@@ -192,6 +192,7 @@
   "users.main-heading.text": "Participants",
   "users.sub-heading.text": "Track experiment participants and preview participants",
   "users-global.form-id-placeholder.text": "Enter Participant ID",
+  "users-global.form-grouptype-placeholder.text": "Enter Group Type",
   "users.excluded-entity.text": "Excluded Entities",
   "users.no-excluded-entity.text": "No Excluded Entities",
   "users.exclude-btn.text": "EXCLUDE",
