@@ -28,20 +28,25 @@
           [formGroupName]="groupIndex"
         >
           <mat-form-field floatLabel="never">
-            <input
-              matInput
-              [placeholder]="
-                'home.new-experiment.design.condition.placeholder.text'
-                  | translate
-              "
-              formControlName="conditionCode"
-              [matAutocomplete]="autoCompleteConditionCodes"
-            />
-            <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete">
-              <mat-option *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async" [value]="conditionCode">
-                {{ conditionCode }}
-              </mat-option>
-            </mat-autocomplete>
+            <span 
+              [matTooltip]="experimentDesignForm.getRawValue('conditionCode')?.conditions[groupIndex]?.conditionCode"
+              matTooltipPosition="above"
+              >
+              <input
+                matInput
+                [placeholder]="
+                  'home.new-experiment.design.condition.placeholder.text'
+                    | translate
+                "
+                formControlName="conditionCode"
+                [matAutocomplete]="autoCompleteConditionCodes"
+              />
+              <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
+                <mat-option *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async" [value]="conditionCode">
+                  {{ conditionCode }}
+                </mat-option>
+              </mat-autocomplete>
+            </span>
           </mat-form-field>
         </mat-cell>
       </ng-container>
@@ -180,20 +185,25 @@
           [formGroupName]="groupIndex"
         >
           <mat-form-field floatLabel="never">
-            <input
-              matInput
-              [placeholder]="
-                'home.new-experiment.design.partition-point.placeholder.text'
-                  | translate
-              "
-              formControlName="expPoint"
-              [matAutocomplete]="autoCompleteExperimentPoints"
-            />
-            <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete">
-              <mat-option *ngFor="let expPoint of filteredExpPoints$[groupIndex] | async" [value]="expPoint">
-                {{ expPoint }}
-              </mat-option>
-            </mat-autocomplete>
+            <span
+              [matTooltip]="experimentDesignForm.getRawValue('expPoint')?.partitions[groupIndex]?.expPoint"
+              matTooltipPosition="above"
+              >
+              <input
+                matInput
+                [placeholder]="
+                  'home.new-experiment.design.partition-point.placeholder.text'
+                    | translate
+                "
+                formControlName="expPoint"
+                [matAutocomplete]="autoCompleteExperimentPoints"
+              />
+              <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
+                <mat-option *ngFor="let expPoint of filteredExpPoints$[groupIndex] | async" [value]="expPoint">
+                  {{ expPoint }}
+                </mat-option>
+              </mat-autocomplete>
+            </span>
           </mat-form-field>
         </mat-cell>
       </ng-container>
@@ -208,20 +218,24 @@
           [formGroupName]="groupIndex"
         >
           <mat-form-field floatLabel="never">
-            <input
-              matInput
-              [placeholder]="
-                'home.new-experiment.design.partition-id.placeholder.text'
-                  | translate
-              "
-              formControlName="expId"
-              [matAutocomplete]="autoCompleteExperimentIds"
-            />
-            <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete">
-              <mat-option *ngFor="let expId of filteredExpIds$[groupIndex] | async" [value]="expId">
-                {{ expId }}
-              </mat-option>
-            </mat-autocomplete>
+            <span
+              [matTooltip]="experimentDesignForm.getRawValue('expId')?.partitions[groupIndex]?.expId"
+              matTooltipPosition="above">
+              <input
+                matInput
+                [placeholder]="
+                  'home.new-experiment.design.partition-id.placeholder.text'
+                    | translate
+                "
+                formControlName="expId"
+                [matAutocomplete]="autoCompleteExperimentIds"
+              />
+              <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
+                <mat-option *ngFor="let expId of filteredExpIds$[groupIndex] | async" [value]="expId">
+                  {{ expId }}
+                </mat-option>
+              </mat-autocomplete>
+            </span>
           </mat-form-field>
         </mat-cell>
       </ng-container>
