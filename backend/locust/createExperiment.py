@@ -47,7 +47,12 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair):
         "postExperimentRule": random.choice(postExperimentRules),
         "state": random.choice(states),
         "tags": ["Workspace", "Content"],
+        # "enrollmentCompleteCondition": {
+        #     "userCount": 100,
+        #     "groupCount": 20
+	    # },
         "context": [random.choice(context)],
+        "logging": False,
         "conditions": [
             {
                 "name": "condition1",
@@ -67,13 +72,15 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair):
                 "name": expPoint1,
                 "expId": expId1,
                 "expPoint": expPoint1,
-                "description": expId1
+                "description": expId1,
+                "order": 1
             },
             {
                 "name": expPoint2,
                 "expId": expId2,
                 "expPoint": expPoint2,
-                "description": expId2
+                "description": expId2,
+                "order": 2
             }
         ]
     }
@@ -82,7 +89,7 @@ def createExperiment(protocol, host, allExperimentPartitionIDConditionPair):
     if response.status_code != 200:
         print(f"createExperiment Failed with {response.status_code}")
     else:
-        print("New Experiment is created")
+        print("New Experiment is created", str(data))
     
     return allExperimentPartitionIDConditionPair
 
