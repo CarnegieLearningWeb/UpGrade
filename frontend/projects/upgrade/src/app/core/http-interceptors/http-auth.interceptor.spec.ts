@@ -1,7 +1,4 @@
-import { fakeAsync, tick } from "@angular/core/testing"
 import { BehaviorSubject } from "rxjs"
-import { of } from "rxjs/internal/observable/of"
-import { AuthService } from "../auth/auth.service"
 import { HttpAuthInterceptor } from "./http-auth.interceptor"
 
 
