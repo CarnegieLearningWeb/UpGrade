@@ -76,7 +76,7 @@ export class ExperimentService {
   isInitialExperimentsLoading() {
     return combineLatest(this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$).pipe(
       map(([isLoading, experiments]) => {
-        return !isLoading || experiments.length;
+        return !isLoading || !!experiments.length;
       })
     );
   }
@@ -117,6 +117,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
 
+  // TODO: is this implementation correct? combineLatest and map seem misused,
   selectExperimentById(experimentId: string) {
     return combineLatest(this.store$.pipe(select(selectExperimentById, { experimentId }))).pipe(
       map(([experiment]) => {
