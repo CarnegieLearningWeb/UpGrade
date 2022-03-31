@@ -47,7 +47,7 @@ module.exports = {
             hiddenFromHelp: true,
           },
           coverage: {
-            script: 'cross-env NODE_ENV=test jest --runInBand --watch --testPathPattern=unit -i --coverage',
+            script: 'cross-env NODE_ENV=test jest --runInBand --testPathPattern=unit -i --coverage',
             hiddenFromHelp: true,
           },
         },
