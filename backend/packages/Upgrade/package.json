@@ -12,7 +12,7 @@
         "test:watch": "npm start test.watch",
         "test:coverage": "npm start test.coverage",
         "test:unit": "npm start test.unit",
-        "test:badges": "npm run test:unit && coverage-badge-creator",
+        "test:badges": "npm start test.unit.run.coverage && coverage-badge-creator",
         "seed": "npm start db.seed",
         "drop": "npm start db.drop",
         "help": "npm start help",
