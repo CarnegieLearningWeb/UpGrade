@@ -88,6 +88,7 @@
         "pg": "^7.12.1",
         "reflect-metadata": "^0.1.13",
         "routing-controllers": "^0.8.0",
+        "rxjs": "^7.2.0",
         "serve-favicon": "^2.5.0",
         "supertest": "^4.0.2",
         "swagger-jsdoc": "^3.4.0",
