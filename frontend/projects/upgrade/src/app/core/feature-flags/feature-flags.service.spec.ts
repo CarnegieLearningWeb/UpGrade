@@ -378,7 +378,7 @@ describe('FeatureFlagService', () => {
     })
 
     describe('#setSearchKey', () => {
-        it('should set localStorage item and dispatch actionSetSearchKey with the given input', () => {
+        it('should dispatch actionSetSearchKey with the given input', () => {
             const searchKey = FLAG_SEARCH_SORT_KEY.ALL;
 
             service.setSearchKey(searchKey);
@@ -388,7 +388,7 @@ describe('FeatureFlagService', () => {
     })
 
     describe('#setSearchString', () => {
-        it('should set localStorage item and dispatch actionSetSearchKey with the given input', () => {
+        it('should dispatch actionSetSearchKey with the given input', () => {
             const searchString = 'test';
 
             service.setSearchString(searchString);
@@ -398,7 +398,7 @@ describe('FeatureFlagService', () => {
     })
 
     describe('#setSortKey', () => {
-        it('should set localStorage item and dispatch actionSetSortKey with the given input', () => {
+        it('should dispatch actionSetSortKey with the given input', () => {
             const sortKey = FLAG_SEARCH_SORT_KEY.ALL;
 
             service.setSortKey(sortKey);
@@ -408,7 +408,7 @@ describe('FeatureFlagService', () => {
     })
 
     describe('#setSortingType', () => {
-        it('should set localStorage item and dispatch actionSetSortingType with the given input', () => {
+        it('should dispatch actionSetSortingType with the given input', () => {
             const sortingType = SORT_AS.ASCENDING;
 
             service.setSortingType(sortingType);
