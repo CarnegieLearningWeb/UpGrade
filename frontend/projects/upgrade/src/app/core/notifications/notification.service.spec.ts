@@ -1,50 +1,90 @@
-import { TestBed } from '@angular/core/testing';
+import { NotificationService } from "./notification.service"
 
-import { NotificationService } from './notification.service';
-import { MatSnackBar } from '@angular/material';
-import { Overlay } from '@angular/cdk/overlay';
+describe('#NotificationService', () => {
+    let mockSnackBar: any;
+    let mockZone: any;
+    let service: NotificationService;
+    let mockMessage = 'test123';
 
-xdescribe('NotificationsService', () => {
-  let service: NotificationService;
+    beforeEach(() => {
+        mockSnackBar = {
+            open: jest.fn()
+        };
+        mockZone = {
+            run: (callback: any) => {
+                callback()
+            }
+        }
+        service = new NotificationService(mockSnackBar, mockZone);
+    })
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [NotificationService, MatSnackBar, Overlay]
-    });
-    service = TestBed.get(NotificationService);
-  });
+    describe('#default', () => {
+        it('should call snackbar.open correct message and options', () => {
+            const message = mockMessage;
+            const configuration = {
+                duration: 2000,
+                panelClass: 'default-notification-overlay'
+            };
+            
+            service.default(message);
+    
+            expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+        })
+    })
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
+    describe('#info', () => {
+        it('should call snackbar.open correct message and options', () => {
+            const message = mockMessage;
+            const configuration = {
+                duration: 2000,
+                panelClass: 'info-notification-overlay'
+            };
+            
+            service.info(message);
 
-  it('default method should be executable', () => {
-    spyOn(service, 'default');
-    service.default('default message');
-    expect(service.default).toHaveBeenCalled();
-  });
+            expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+        })
+    })
 
-  it('info method should be executable', () => {
-    spyOn(service, 'info');
-    service.info('info message');
-    expect(service.info).toHaveBeenCalled();
-  });
+    describe('#success', () => {
+        it('should call snackbar.open correct message and options', () => {
+            const message = mockMessage;
+            const configuration = {
+                duration: 2000,
+                panelClass: 'success-notification-overlay'
+            };
+            
+            service.success(message);
 
-  it('success method should be executable', () => {
-    spyOn(service, 'success');
-    service.success('success message');
-    expect(service.success).toHaveBeenCalled();
-  });
+            expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+        })
+    })
 
-  it('warning method should be executable', () => {
-    spyOn(service, 'warn');
-    service.warn('warning message');
-    expect(service.warn).toHaveBeenCalled();
-  });
+    describe('#warn', () => {
+        it('should call snackbar.open correct message and options', () => {
+            const message = mockMessage;
+            const configuration = {
+                duration: 2500,
+                panelClass: 'warning-notification-overlay'
+            };
+            
+            service.warn(message);
 
-  it('error method should be executable', () => {
-    spyOn(service, 'error');
-    service.error('error message');
-    expect(service.error).toHaveBeenCalled();
-  });
-});
+            expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+        })
+    })
+
+    describe('#error', () => {
+        it('should call snackbar.open correct message and options', () => {
+            const message = mockMessage;
+            const configuration = {
+                duration: 1500,
+                panelClass: 'error-notification-overlay'
+            };
+            
+            service.error(message);
+
+            expect(mockSnackBar.open).toHaveBeenCalledWith(message, null, configuration);
+        })
+    })
+})
