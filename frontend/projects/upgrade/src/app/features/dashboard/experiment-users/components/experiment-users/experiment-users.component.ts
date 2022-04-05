@@ -106,7 +106,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
           groupId: id,
           type: groupType
         };
-        this.experimentUserService.excludeGroup( [group] );
+        this.experimentUserService.excludeGroup([group]);
         break;
     }
   }

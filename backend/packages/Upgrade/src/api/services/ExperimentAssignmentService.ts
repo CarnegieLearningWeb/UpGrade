@@ -387,7 +387,7 @@ export class ExperimentAssignmentService {
 
       const [userExcluded, groupExcluded] = await Promise.all([
         this.explicitIndividualExclusionRepository.find({ userId: experimentUser.id }),
-        userGroup.length > 0 ? await this.explicitGroupExclusionRepository.getExcludedGroups(userGroupsToString) : [],
+        userGroup.length > 0 ? this.explicitGroupExclusionRepository.getExcludedGroups(userGroupsToString) : [],
       ]);
 
       if (userExcluded.length > 0) {
@@ -1215,7 +1215,7 @@ export class ExperimentAssignmentService {
     return 0;
   }
 
-  private arrayToString(groups: any[]): string {
+  private arrayToString(groups: Array<{groupId: string, type: string}>): string {
     let query = '(';
     groups.forEach((group) => {
       query += ( '(' + '\'' + group.type + '\'' + ',' + '\'' +group.groupId + '\'' + '),' );
