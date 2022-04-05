@@ -36,7 +36,7 @@ export class FeatureFlagsService {
       this.allFeatureFlags$
       ).pipe(
       map(([isLoading, experiments]) => {
-        return !isLoading || experiments.length;
+        return !isLoading || !!experiments.length;
       })
     );
   }
