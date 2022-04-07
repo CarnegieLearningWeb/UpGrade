@@ -113,7 +113,7 @@ export const actionSetSearchKey = createAction(
   props<{ searchKey: EXPERIMENT_SEARCH_KEY }>()
 );
 
-export const actionSetSearchString = createAction('[Experiment] Set Search String', props<{ searchString: FLAG_SEARCH_SORT_KEY }>());
+export const actionSetSearchString = createAction('[Experiment] Set Search String', props<{ searchString: string }>());
 
 export const actionSetSortKey = createAction(
   '[Experiment] Set Sort key value',

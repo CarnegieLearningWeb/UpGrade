@@ -1,0 +1,30 @@
+{
+    "coverage_file_path": "coverage/coverage-summary.json",
+    "badges": {
+        "coverage": {
+            "style": "flat",
+            "logo": "jest",
+            "label": "Overall"
+        },
+        "statements": {
+            "style": "flat",
+            "logo": "jest",
+            "label": "Statements"
+        },
+        "branches": {
+            "style": "flat",
+            "logo": "jest",
+            "label": "Branches"
+        },
+        "functions": {
+            "style": "flat",
+            "logo": "jest",
+            "label": "Functions"
+        },
+        "lines": {
+            "style": "flat",
+            "logo": "jest",
+            "label": "Lines"
+        }
+    }
+ }

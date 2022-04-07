@@ -77,7 +77,7 @@ export class ExperimentService {
   isInitialExperimentsLoading() {
     return combineLatest(this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$).pipe(
       map(([isLoading, experiments]) => {
-        return !isLoading || experiments.length;
+        return !isLoading || !!experiments.length;
       })
     );
   }
@@ -118,6 +118,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
 
+  // TODO: is this implementation correct? combineLatest and map seem misused,
   selectExperimentById(experimentId: string) {
     return combineLatest(this.store$.pipe(select(selectExperimentById, { experimentId }))).pipe(
       map(([experiment]) => {
@@ -146,7 +147,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
   }
 
-  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
+  setSearchString(searchString: string) {
     this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_STRING, searchString);
     this.store$.dispatch(experimentAction.actionSetSearchString({ searchString }));
   }

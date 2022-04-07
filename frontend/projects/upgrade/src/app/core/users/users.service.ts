@@ -53,7 +53,7 @@ export class UsersService {
     this.store$.dispatch(UsersActions.actionSetSearchKey({ searchKey }));
   }
 
-  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
+  setSearchString(searchString: string) {
     this.store$.dispatch(UsersActions.actionSetSearchString({ searchString }));
   }
 

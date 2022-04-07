@@ -36,7 +36,7 @@ export class FeatureFlagsService {
       this.allFeatureFlags$
       ).pipe(
       map(([isLoading, experiments]) => {
-        return !isLoading || experiments.length;
+        return !isLoading || !!experiments.length;
       })
     );
   }
@@ -84,7 +84,7 @@ export class FeatureFlagsService {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchKey({ searchKey }));
   }
 
-  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
+  setSearchString(searchString: string) {
     this.store$.dispatch(FeatureFlagsActions.actionSetSearchString({ searchString }));
   }
 
