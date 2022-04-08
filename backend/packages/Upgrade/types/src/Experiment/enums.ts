@@ -117,3 +117,8 @@ export enum REPEATED_MEASURE {
   earliest = 'EARLIEST',
   mostRecent = 'MOST_RECENT',
 }
+
+export enum FILTER_MODE {
+  INCLUDE_ALL = 'includeAll',
+  EXCLUDE_ALL = 'excludeAll',
+}
