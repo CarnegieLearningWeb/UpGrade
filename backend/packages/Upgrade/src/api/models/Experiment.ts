@@ -143,6 +143,6 @@ export class Experiment extends BaseModel {
   @Type(() => ExplicitExperimentIndividualInclusion)
   public explicitExperimentIndividualInclusion: ExplicitExperimentIndividualInclusion[];
   
-  @Column()
+  @Column({ default: '1.0.0'})
   public backendVersion: string;
 }

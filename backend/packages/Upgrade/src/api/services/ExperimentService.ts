@@ -147,6 +147,7 @@ export class ExperimentService {
       const newPartition = { ...partition, order: index + 1 };
       experiment.partitions[index] = newPartition;
     });
+    experiment.backendVersion = env.app.version;
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
