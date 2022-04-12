@@ -14,6 +14,13 @@
       <span class="error-msg" *ngIf="!isExperimentJSONValid">
         {{ 'home.import-experiment.error.message.text' | translate }}
       </span>
+      <div class="error-msg" *ngIf="!isExperimentJSONValid">
+        {{ missingAllProperties }}
+      </div>
+      
+      <span class="warn-msg" *ngIf="!isExperimentJSONVersionValid">
+        {{ 'home.import-experiment.version-error.message.text' | translate }}
+      </span>
   </div>
 
   <div class="button-container">

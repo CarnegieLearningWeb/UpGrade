@@ -27,7 +27,7 @@ export class VersionController {
      */
     @Get('/')
     public async getVersionNumber(@Req() request: AppRequest): Promise<string> {
-        request.logger.info({ message: 'Request recieved for version' });
+        request.logger.info({ message: 'Request received for version' });
         return env.app.version;
     }
 }

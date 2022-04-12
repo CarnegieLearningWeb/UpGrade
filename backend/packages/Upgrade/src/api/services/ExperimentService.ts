@@ -341,6 +341,7 @@ export class ExperimentService {
       where: { id: experimentId },
       relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
     });
+    experimentDetails.backendVersion = env.app.version;
     this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
       { experimentName: experimentDetails.name },
