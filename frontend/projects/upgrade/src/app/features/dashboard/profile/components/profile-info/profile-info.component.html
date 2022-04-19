@@ -82,7 +82,7 @@
       #usersTable
       class="users-list-container"
     >
-      <form [formGroup]="userRoleForm">
+      <form [formGroup]="userDetailsForm">
         <table
           class="users-list"
           mat-table
@@ -96,10 +96,23 @@
                 {{ 'profile.table.firstName.text' | translate | uppercase }}
               </span>
             </th>
-            <td class="ft-12-600" mat-cell *matCellDef="let user">
-              <span>
-                {{ user.firstName }}
-              </span>
+            <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
+              <div *ngIf="editMode === index; else firstNameReadOnly">
+                <mat-form-field class="ft-14-600 input">
+                <input
+                  matInput
+                  class="ft-14-400"
+                  [placeholder]="
+                    'profile.table.firstName.text' | translate"
+                  formControlName="firstName"
+                />
+                </mat-form-field>
+              </div>
+              <ng-template #firstNameReadOnly>
+                <span>
+                  {{ user.firstName }}
+                </span>
+              </ng-template>
             </td>
           </ng-container>
           <ng-container matColumnDef="lastName">
@@ -108,10 +121,23 @@
                 {{ 'profile.table.lastName.text' | translate | uppercase }}
               </span>
             </th>
-            <td class="ft-12-600" mat-cell *matCellDef="let user">
-              <span>
-                {{ user.lastName }}
-              </span>
+            <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
+              <div *ngIf="editMode === index; else lastNameReadOnly">
+                <mat-form-field class="ft-14-600 input">
+                <input
+                  matInput
+                  class="ft-14-400"
+                  [placeholder]="
+                    'profile.table.lastName.text' | translate"
+                  formControlName="lastName"
+                />
+                </mat-form-field>
+              </div>
+              <ng-template #lastNameReadOnly>
+                <span>
+                  {{ user.lastName }}
+                </span>
+              </ng-template>
             </td>
           </ng-container>
           <ng-container matColumnDef="email">
@@ -120,10 +146,23 @@
                 {{ 'profile.global.email.text' | translate | uppercase }}
               </span>
             </th>
-            <td class="ft-12-600" mat-cell *matCellDef="let user">
-              <span>
-                {{ user.email }}
-              </span>
+            <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
+              <div *ngIf="editMode === index; else emailReadOnly">
+                <mat-form-field class="ft-14-600 input">
+                <input
+                  matInput
+                  class="ft-14-400"
+                  [placeholder]="
+                    'profile.global.email.text' | translate"
+                  formControlName="email"
+                />
+                </mat-form-field>
+              </div>
+              <ng-template #emailReadOnly>
+                <span>
+                  {{ user.email }}
+                </span>
+            </ng-template>
             </td>
           </ng-container>
           <ng-container matColumnDef="role">
@@ -166,8 +205,8 @@
                 <button
                   mat-raised-button
                   class="default-button form-control"
-                  [ngClass]="{ 'default-button--disabled': !this.userRoleForm.valid }"
-                  [disabled]="!this.userRoleForm.valid"
+                  [ngClass]="{ 'default-button--disabled': !this.userDetailsForm.valid }"
+                  [disabled]="!this.userDetailsForm.valid"
                   (click)="updatePermission(user)"
                 >
                   {{ 'users.preview-users.save.text' | translate }}

@@ -66,8 +66,8 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public updateUserRole(email: string, role: UserRole): Promise<User> {
-    return this.userRepository.updateUserRole(email, role);
+  public updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
+    return this.userRepository.updateUserDetails(firstName, lastName, email, role);
   }
 
   public deleteUser(email: string): Promise<User> {

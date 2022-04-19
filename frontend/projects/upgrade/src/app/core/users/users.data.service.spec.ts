@@ -38,13 +38,13 @@ describe('SettingsDataService', () => {
         })
     })
 
-    describe('#updateUserRole', () => {
-        it('should get the updateUserRole http observable', () => {
-            const expectedUrl = environment.api.userRole;
-            const email = mockParams;
+    describe('#updateUserDetails', () => {
+        it('should get the updateUserDetails http observable', () => {
+            const expectedUrl = environment.api.userDetails;
+            const { firstName, lastName, email } = mockParams;
             const role = mockRole;
 
-            service.updateUserRole(email, role);
+            service.updateUserDetails(firstName, lastName, email, role);
 
             expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { email, role});
         })
@@ -53,10 +53,10 @@ describe('SettingsDataService', () => {
     describe('#createNewUser', () => {
         it('should get the createNewUser http observable', () => {
             const expectedUrl = environment.api.users;
-            const email = mockParams;
+            const { firstName, lastName, email } = mockParams;
             const role = mockRole;
 
-            service.createNewUser(email, role);
+            service.createNewUser(firstName, lastName, email, role);
 
             expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { email, role});
         })
