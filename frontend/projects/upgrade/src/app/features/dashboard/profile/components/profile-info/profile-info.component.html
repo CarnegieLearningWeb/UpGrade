@@ -147,22 +147,9 @@
               </span>
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
-              <div *ngIf="editMode === index; else emailReadOnly">
-                <mat-form-field class="ft-14-600 input">
-                <input
-                  matInput
-                  class="ft-14-400"
-                  [placeholder]="
-                    'profile.global.email.text' | translate"
-                  formControlName="email"
-                />
-                </mat-form-field>
-              </div>
-              <ng-template #emailReadOnly>
-                <span>
-                  {{ user.email }}
-                </span>
-            </ng-template>
+              <span>
+                {{ user.email }}
+              </span>
             </td>
           </ng-container>
           <ng-container matColumnDef="role">
