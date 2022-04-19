@@ -15,6 +15,7 @@ import {
   DATE_RANGE,
   REPEATED_MEASURE,
   FILTER_MODE,
+  SEGMENT_TYPE
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -64,4 +65,5 @@ export {
   IGroupMetric,
   ISingleMetric,
   FILTER_MODE,
+  SEGMENT_TYPE
 };

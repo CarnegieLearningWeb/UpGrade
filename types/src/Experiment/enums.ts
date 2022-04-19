@@ -122,3 +122,8 @@ export enum FILTER_MODE {
   INCLUDE_ALL = 'includeAll',
   EXCLUDE_ALL = 'excludeAll',
 }
+
+export enum SEGMENT_TYPE {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+}
