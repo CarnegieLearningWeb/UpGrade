@@ -41,7 +41,7 @@ export class SegmentService {
     .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
     .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
     .leftJoinAndSelect('segment.subSegments', 'subSegment')
-    .where('segment.type = :public', {public: SEGMENT_TYPE.PUBLIC})
+    .where('segment.type = :public', { public: SEGMENT_TYPE.PUBLIC })
     .andWhere({ id })
     .getOne()
 
@@ -118,6 +118,7 @@ export class SegmentService {
         throw error;
       }
 
+      // todo remove this
       console.log('Individual docs', individualDocs);
       console.log('Group docs', groupDocs);
       

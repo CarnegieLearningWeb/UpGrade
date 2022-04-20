@@ -41,6 +41,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'segments',
+        loadChildren: () => import('./segments/segments.module').then(m => m.SegmentsModule),
+        data: {
+          title: 'app-header.title.segments'
+        }
+      },
+      {
         path: 'profile',
         loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule),
         data: {

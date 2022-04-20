@@ -1,0 +1,81 @@
+.segment-members {
+  .members-table {
+    max-height: 200px;
+    overflow: scroll;
+
+    mat-header-row {
+      min-height: 35px;
+    }
+
+    mat-row {
+      min-height: 46px;
+      max-height: 46px;
+    }
+
+    mat-header-cell {
+      justify-content: center;
+      margin-right: 15px;
+      color: var(--grey-6);
+    }
+
+    mat-cell {
+      justify-content: center;
+      margin-right: 15px;
+    }
+
+    .cdk-column-removeMember {
+      margin-right: 0;
+      padding-right: 0;
+    }
+
+    .cdk-column-memberNumber,
+    .cdk-column-removeMember {
+      flex: 0 0 10%;
+      width: 10%;
+    }
+
+    .remove-icon {
+      position: relative;
+      top: -3px;
+      width: 18px;
+      height: 18px;
+      font-size: var(--text-size-x-large);
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    mat-form-field {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  .add-member {
+    margin-top: 10px;
+    outline: 0;
+    border: 0;
+    background-color: transparent;
+    color: var(--blue);
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+
+    .btn-back {
+      margin-left: 0 !important;
+    }
+  }
+
+  ::ng-deep .form-control .mat-form-field-underline {
+    bottom: unset;
+    background-color: unset !important;
+  }
+
+  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
+    display: none;
+  }
+}

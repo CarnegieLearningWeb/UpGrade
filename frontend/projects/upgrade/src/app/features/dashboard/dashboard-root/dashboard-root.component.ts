@@ -35,6 +35,11 @@ export class DashboardRootComponent implements OnInit {
       path: ['/logs'],
       text: 'global.logs.title',
       iconType: 'list'
+    },
+    {
+      path: ['/segments'],
+      text: 'global.segments.title',
+      iconType: 'group'
     }
   ];
 

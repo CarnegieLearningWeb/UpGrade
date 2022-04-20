@@ -31,6 +31,11 @@
 @import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
 @import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
+@import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
+@import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
+@import './app/features/dashboard/segments/components/modal/new-flag/new-segment.theme.scss';
+@import './app/features/dashboard/segments/components/segment-members/segment-members.theme.scss';
+@import './app/features/dashboard/segments/pages/view-segment/view-segment.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
@@ -61,6 +66,11 @@
   @include feature-flags-list-component-theme($theme);
   @include new-flag-component-theme($theme);
   @include flag-variations-component-theme($theme);
+  @include view-segment-component-theme($theme);
+  @include segments-root-component-theme($theme);
+  @include segments-list-component-theme($theme);
+  @include new-segment-component-theme($theme);
+  @include segment-members-component-theme($theme);
   @include view-feature-flag-component-theme($theme);
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
@@ -107,6 +117,7 @@
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
+.new-segment-modal,
 .new-user-modal,
 .queries-modal,
 .query-result,
@@ -170,6 +181,10 @@
 }
 
 .new-flag-modal {
+  width: 844px;
+}
+
+.new-segment-modal {
   width: 844px;
 }
 
