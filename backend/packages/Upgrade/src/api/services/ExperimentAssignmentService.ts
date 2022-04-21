@@ -9,6 +9,7 @@ import {
   SERVER_ERROR,
   IExperimentAssignment,
   ENROLLMENT_CODE,
+  FILTER_MODE,
 } from 'upgrade_types';
 import { getExperimentPartitionID } from '../models/ExperimentPartition';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
@@ -25,6 +26,10 @@ import { GroupExclusion } from '../models/GroupExclusion';
 import { Experiment } from '../models/Experiment';
 import { ExplicitIndividualExclusionRepository } from '../repositories/ExplicitIndividualExclusionRepository';
 import { ExplicitGroupExclusionRepository } from '../repositories/ExplicitGroupExclusionRepository';
+import { ExplicitExperimentIndividualExclusionRepository } from '../repositories/ExplicitExperimentIndividualExclusionRepository';
+import { ExplicitExperimentIndividualInclusionRepository } from '../repositories/ExplicitExperimentIndividualInclusionRepository';
+import { ExplicitExperimentGroupExclusionRepository } from '../repositories/ExplicitExperimentGroupExclusionRepository';
+import { ExplicitExperimentGroupInclusionRepository } from '../repositories/ExplicitExperimentGroupInclusionRepository';
 import { ScheduledJobService } from './ScheduledJobService';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { In } from 'typeorm';
@@ -52,6 +57,12 @@ import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository
 import { StateTimeLog } from '../models/StateTimeLogs';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
+// TODO delete this after x-prize competition
+import {
+  assignAlternateCondition,
+  replaceAlternateConditionWithValidCondition,
+} from '../../../patch/AlternateConditionFunctions';
+
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -74,6 +85,14 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private explicitGroupExclusionRepository: ExplicitGroupExclusionRepository,
     @OrmRepository()
+    private explicitExperimentIndividualExclusionRepository: ExplicitExperimentIndividualExclusionRepository,
+    @OrmRepository()
+    private explicitExperimentIndividualInclusionRepository: ExplicitExperimentIndividualInclusionRepository,
+    @OrmRepository()
+    private explicitExperimentGroupExclusionRepository: ExplicitExperimentGroupExclusionRepository,
+    @OrmRepository()
+    private explicitExperimentGroupInclusionRepository: ExplicitExperimentGroupInclusionRepository,
+    @OrmRepository()
     private errorRepository: ErrorRepository,
     @OrmRepository()
     private logRepository: LogRepository,
@@ -86,38 +105,45 @@ export class ExperimentAssignmentService {
     public experimentUserService: ExperimentUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
-    public settingService: SettingService,
+    public settingService: SettingService
   ) {}
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
     condition: string | null,
-    requestContext: {logger: UpgradeLogger, userDoc: any},
-    experimentName?: string,
+    requestContext: { logger: UpgradeLogger; userDoc: any },
+    experimentId?: string
   ): Promise<MonitoredExperimentPoint> {
     // find working group for user
     const { logger, userDoc } = requestContext;
 
     // adding experiment error when user is not defined
     if (!userDoc) {
-      const error = new Error(`User not defined: ${userId}`);
+      const error = new Error(`User not defined in markExperimentPoint: ${userId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      logger.error(error);
       throw error;
     }
+
+    // TODO delete this after x-prize competitionTODO
+    condition = replaceAlternateConditionWithValidCondition(experimentPoint, experimentId, condition, userDoc);
+
     const { workingGroup } = userDoc;
 
     // query root experiment details
     const experimentPartition = await this.experimentPartitionRepository.findOne({
       where: {
-        id: getExperimentPartitionID(experimentPoint, experimentName),
+        id: getExperimentPartitionID(experimentPoint, experimentId),
       },
       relations: ['experiment', 'experiment.partitions'],
     });
 
     let enrollmentCode: ENROLLMENT_CODE | null = null;
-    const experimentId = getExperimentPartitionID(experimentPoint, experimentName);
+    const experimentPointId = getExperimentPartitionID(experimentPoint, experimentId);
 
-    logger.info({ message: `markExperimentPoint: Experiment Name: ${experimentName}, Experiment Point: ${experimentPoint} for User: ${userId}` });
+    logger.info({
+      message: `markExperimentPoint: Experiment Name: ${experimentId}, Experiment Point: ${experimentPoint} for User: ${userId}`,
+    });
 
     if (experimentPartition) {
       const { experiment } = experimentPartition;
@@ -131,6 +157,7 @@ export class ExperimentAssignmentService {
       if (matchedCondition.length === 0 && condition !== null) {
         const error = new Error(`Condition not found: ${condition}`);
         (error as any).type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        logger.error(error);
         throw error;
       }
 
@@ -154,7 +181,7 @@ export class ExperimentAssignmentService {
 
       // find monitored document
       const monitoredDocumentExist = await this.monitoredExperimentPointRepository.findOne({
-        id: getMonitoredExperimentPointID(experimentId, userDoc.id),
+        id: getMonitoredExperimentPointID(experimentPointId, userDoc.id),
       });
 
       // new document of user will be saved
@@ -194,7 +221,7 @@ export class ExperimentAssignmentService {
     const monitoredDocument = await this.monitoredExperimentPointRepository.saveRawJson({
       user: userDoc,
       condition,
-      experimentId,
+      experimentId: experimentPointId,
       enrollmentCode,
     });
 
@@ -220,7 +247,7 @@ export class ExperimentAssignmentService {
   public async getAllExperimentConditions(
     userId: string,
     context: string,
-    requestContext: {logger: UpgradeLogger, userDoc: any},
+    requestContext: { logger: UpgradeLogger; userDoc: any },
     toAssign: boolean = true
   ): Promise<IExperimentAssignment[]> {
     const { logger, userDoc } = requestContext;
@@ -230,10 +257,11 @@ export class ExperimentAssignmentService {
 
     // throw error if user not defined
     if (!experimentUser) {
+      logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined : ${userId}`,
+          message: `User not defined in getAllExperimentConditions: ${userId}`,
         })
       );
     }
@@ -270,8 +298,10 @@ export class ExperimentAssignmentService {
         });
 
         if (groupExperimentAssignedIds.length > 0) {
-          logger.warn({ message: `Experiments Id: ${groupExperimentAssignedIds.join(' ')}
-          Experiment already assigned but working group and group data is not properly set`});
+          logger.warn({
+            message: `Experiments Id: ${groupExperimentAssignedIds.join(' ')}
+          Experiment already assigned but working group and group data is not properly set`,
+          });
         }
 
         // exclude experiments which are not previously assigned and throw error
@@ -284,23 +314,28 @@ export class ExperimentAssignmentService {
         // throw error user group not defined and add experiments which are excluded
         if (addError) {
           experimentToExclude.forEach(({ id, name }) => {
-            logger.error({ message: `Experiment Id: ${id},
+            logger.error({
+              message: `Experiment Id: ${id},
             Experiment Name: ${name},
             Group not valid for experiment user
-            ` });
+            `,
+            });
           });
 
-          await this.errorService.create({
-            endPoint: '/api/assign',
-            errorCode: 417,
-            message: `Group not defined for experiment User: ${JSON.stringify(
-              { ...experimentUser, experiment: experimentToExcludeIds },
-              undefined,
-              2
-            )}`,
-            name: 'Experiment user not defined',
-            type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          } as any, logger);
+          await this.errorService.create(
+            {
+              endPoint: '/api/assign',
+              errorCode: 417,
+              message: `Group not defined for experiment User: ${JSON.stringify(
+                { ...experimentUser, experiment: experimentToExcludeIds },
+                undefined,
+                2
+              )}`,
+              name: 'Experiment user not defined',
+              type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
+            } as any,
+            logger
+          );
         }
 
         // exclude user whose group information is not provided
@@ -378,11 +413,11 @@ export class ExperimentAssignmentService {
         return [];
       }
 
-      // filter group experiment according to group excluded
-      let filteredExperiments: Experiment[] = [...experiments];
+      // filter group experiment according to group excluded at global level
+      let globalFilteredExperiments: Experiment[] = [...experiments];
       if (groupExcluded.length > 0) {
         const groupNameArray = groupExcluded.map((group) => group.type);
-        filteredExperiments = experiments.filter((experiment) => {
+        globalFilteredExperiments = experiments.filter((experiment) => {
           if (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
             return !groupNameArray.includes(experiment.group);
           }
@@ -390,7 +425,7 @@ export class ExperimentAssignmentService {
         });
       }
 
-      const experimentIds = filteredExperiments.map((experiment) => experiment.id);
+      const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
 
       // return if no experiment
       if (experimentIds.length === 0) {
@@ -434,6 +469,13 @@ export class ExperimentAssignmentService {
         mergedIndividualAssignment = [...(previewAssignment as any), ...mergedIndividualAssignment];
       }
 
+      // experiment level inclusion and exclusion
+      const filteredExperiments = await this.experimentLevelExclusionInclusion(
+        globalFilteredExperiments,
+        experimentUser,
+        logger
+      );
+
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
         filteredExperiments.map((experiment) => {
@@ -472,37 +514,172 @@ export class ExperimentAssignmentService {
         })
       );
 
-      return filteredExperiments.reduce((accumulator, experiment, index) => {
-        const assignment = experimentAssignment[index];
-        const { state, logging, name } = experiment;
-        const partitions = experiment.partitions.map((partition) => {
-          const { expId, expPoint, twoCharacterId } = partition;
-          const conditionAssigned = assignment;
-          // adding info based on experiment state or logging flag
-          if (logging || state === EXPERIMENT_STATE.PREVIEW) {
-            // TODO add enrollment code here
-            logger.info({ message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
-              conditionAssigned ? conditionAssigned.conditionCode : null
-            }` });
-          }
-          return {
-            expId,
-            expPoint,
-            twoCharacterId,
-            assignedCondition: conditionAssigned || {
-              conditionCode: null,
-            },
-          };
-        });
-        return assignment ? [...accumulator, ...partitions] : accumulator;
-      }, []);
+      // TODO delete map after x-prize competition
+      const mapForAlternateCondition = assignAlternateCondition(userDoc);
+
+      return filteredExperiments
+        .reduce((accumulator, experiment, index) => {
+          const assignment = experimentAssignment[index];
+          const { state, logging, name } = experiment;
+          const partitions = experiment.partitions.map((partition) => {
+            const { expId, expPoint, twoCharacterId } = partition;
+            const conditionAssigned = assignment;
+            // adding info based on experiment state or logging flag
+            if (logging || state === EXPERIMENT_STATE.PREVIEW) {
+              // TODO add enrollment code here
+              logger.info({
+                message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
+                  conditionAssigned ? conditionAssigned.conditionCode : null
+                }`,
+              });
+            }
+            return {
+              expId,
+              expPoint,
+              twoCharacterId,
+              assignedCondition: conditionAssigned || {
+                conditionCode: null,
+              },
+            };
+          });
+          return assignment ? [...accumulator, ...partitions] : accumulator;
+        }, [])
+        .map(mapForAlternateCondition); // TODO delete map after x-prize competition
     } catch (err) {
       const error = err as ErrorWithType;
-      error.details = 'Error in assignment'
+      error.details = 'Error in assignment';
       error.type = SERVER_ERROR.ASSIGNMENT_ERROR;
       logger.error(error);
       throw error;
     }
+  }
+
+  private async experimentLevelExclusionInclusion(
+    experiments: Experiment[],
+    experimentUser: ExperimentUser,
+    logger: UpgradeLogger
+  ): Promise<Experiment[]> {
+    let expLevelFilteredExperiments = [];
+
+    const [
+      explicitExperimentIndividualExclusionData,
+      explicitExperimentIndividualInclusionData,
+      explicitExperimentGroupExclusionData,
+      explicitExperimentGroupInclusionData,
+    ] = await Promise.all([
+      this.explicitExperimentIndividualExclusionRepository.findAllUsers(logger),
+      this.explicitExperimentIndividualInclusionRepository.findAllUsers(logger),
+      this.explicitExperimentGroupExclusionRepository.findAllGroups(logger),
+      this.explicitExperimentGroupInclusionRepository.findAllGroups(logger),
+    ]);
+
+    const explicitExperimentIndividualExclusionFilteredData = explicitExperimentIndividualExclusionData
+      .filter((element) => element.userId === experimentUser.id)
+      .map((element) => ({ userId: element.userId, experimentId: element.experiment.id }));
+
+    const explicitExperimentIndividualInclusionFilteredData = explicitExperimentIndividualInclusionData
+      .filter((element) => element.userId === experimentUser.id)
+      .map((element) => ({ userId: element.userId, experimentId: element.experiment.id }));
+
+    const explicitExperimentGroupExclusionFilteredData = explicitExperimentGroupExclusionData.map((element) => ({
+      groupId: element.groupId,
+      type: element.type,
+      experimentId: element.experiment.id,
+    }));
+
+    const explicitExperimentGroupInclusionFilteredData = explicitExperimentGroupInclusionData.map((element) => ({
+      groupId: element.groupId,
+      type: element.type,
+      experimentId: element.experiment.id,
+    }));
+
+    let userGroups = [];
+    if (experimentUser.group) {
+      Object.keys(experimentUser.group).forEach((type) => {
+        experimentUser.group[type].forEach((groupId) => {
+          userGroups.push({ type, groupId });
+        });
+      });
+    }
+
+    // psuedocode for experiment level inclusion and exclusion
+    //
+    // If the user or the user's group is on the global exclude list, exclude the user.
+    //
+    // ELSE If the experiment default is "include all" then
+    //     If the user is on the exclude list, then exclude the user.
+    //     Else if any of the user's groups is on the exclude list then
+    //           If the user is on the include list, include the user
+    //           Else exclude the user
+    //     Else include the user.
+    // ELSE If the experiment default is "exclude all" then
+    //     If the user is on the include list, then include the user.
+    //     Else if any of the user's groups are on the include list then
+    //           If the user is on the exclude list, exclude the user
+    //           Else include the user
+    //     Else exclude the user
+
+    expLevelFilteredExperiments = experiments.filter((experiment) => {
+      if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
+        if (
+          explicitExperimentIndividualExclusionFilteredData.some(
+            (e) => e.userId === experimentUser.id && e.experimentId === experiment.id
+          )
+        ) {
+          return false;
+        } else {
+          if (
+            explicitExperimentIndividualInclusionFilteredData.some(
+              (e) => e.userId === experimentUser.id && e.experimentId === experiment.id
+            )
+          ) {
+            return true;
+          } else {
+            for (let userGroup of userGroups) {
+              if (
+                explicitExperimentGroupExclusionFilteredData.some(
+                  (e) =>
+                    e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+                )
+              ) {
+                return false;
+              }
+            }
+            return true;
+          }
+        }
+      } else {
+        if (
+          explicitExperimentIndividualInclusionFilteredData.some(
+            (e) => e.userId === experimentUser.id && e.experimentId === experiment.id
+          )
+        ) {
+          return true;
+        } else {
+          if (
+            explicitExperimentIndividualExclusionFilteredData.some(
+              (e) => e.userId === experimentUser.id && e.experimentId === experiment.id
+            )
+          ) {
+            return false;
+          } else {
+            for (let userGroup of userGroups) {
+              if (
+                explicitExperimentGroupInclusionFilteredData.some(
+                  (e) =>
+                    e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+                )
+              ) {
+                return true;
+              }
+            }
+            return false;
+          }
+        }
+      }
+    });
+
+    return expLevelFilteredExperiments;
   }
 
   // When browser will be sending the blob data
@@ -513,36 +690,42 @@ export class ExperimentAssignmentService {
 
     // throw error if user not defined
     if (!userDoc) {
-      throw new Error(`User not defined: ${userId}`);
+      logger.error({ message: `User not found in blobDataLog, userId => ${userId}`, details: blobLog });
+      throw new Error(`User not defined in blobDataLog: ${userId}`);
     }
 
     // extract the array value
     const promise = blobLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc);
+      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
     });
 
     const logsToReturn = await Promise.all(promise);
     return flatten(logsToReturn);
   }
 
-  public async dataLog(userId: string, jsonLog: ILogInput[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<Log[]> {
+  public async dataLog(
+    userId: string,
+    jsonLog: ILogInput[],
+    requestContext: { logger: UpgradeLogger; userDoc: any }
+  ): Promise<Log[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `Add data log userId ${userId}`, details: jsonLog });
     const keyUniqueArray = [];
 
     // throw error if user not defined
     if (!userDoc) {
+      logger.error({ message: `User not found in dataLog, userId => ${userId}`, details: jsonLog });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined dataLog: ${userId}`,
         })
       );
     }
 
     // extract the array value
     const promise = jsonLog.map(async (individualMetrics) => {
-      return this.createLog(individualMetrics, keyUniqueArray, userDoc);
+      return this.createLog(individualMetrics, keyUniqueArray, userDoc, logger);
     });
 
     const logsToReturn = await Promise.all(promise);
@@ -554,18 +737,19 @@ export class ExperimentAssignmentService {
     experimentPoint: string,
     userId: string,
     experimentId: string,
-    requestContext: {logger: UpgradeLogger, userDoc: any}
+    requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
     const { logger, userDoc } = requestContext;
-    logger.info({ message: `Failed experiment point for userId ${userId}`});
+    logger.info({ message: `Failed experiment point for userId ${userId}` });
 
     // throw error if user not defined
     if (!userDoc) {
+      logger.error({ message: `User not found in clientFailedExperimentPoint, userId => ${userId}` });
       throw new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
-          message: `User not defined: ${userId}`,
+          message: `User not defined clientFailedExperimentPoint: ${userId}`,
         })
       );
     }
@@ -583,7 +767,8 @@ export class ExperimentAssignmentService {
   private async createLog(
     individualMetrics: ILogInput,
     keyUniqueArray: any[],
-    userDoc: ExperimentUser
+    userDoc: ExperimentUser,
+    logger: UpgradeLogger
   ): Promise<Log[]> {
     const userId = userDoc.id;
     const {
@@ -591,7 +776,7 @@ export class ExperimentAssignmentService {
       metrics,
       metrics: { groupedMetrics },
     } = individualMetrics;
-
+    logger.info({ message: `Add data log in createLog: userId => ${userId}`, details: individualMetrics });
     // add individual metrics in the database
     if (metrics && metrics.attributes) {
       // search metrics log with default uniquifier
@@ -604,6 +789,7 @@ export class ExperimentAssignmentService {
 
     // add group metrics in the database
     if (groupedMetrics) {
+      logger.info({ message: `Add group metrics userId ${userId}`, details: groupedMetrics });
       // search metrics log with specific uniquifier
       groupedMetrics.forEach(({ groupClass, groupKey, groupUniquifier, attributes }) => {
         const key = `${groupClass}${METRICS_JOIN_TEXT}${groupKey}${METRICS_JOIN_TEXT}`;
@@ -663,7 +849,7 @@ export class ExperimentAssignmentService {
     // array for dataLogs
 
     const toUpdateLogGroup = [];
-    let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc);
+    let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc, logger);
 
     rawDataLogs.forEach((rawLogs) => {
       // tslint:disable-next-line:no-shadowed-variable
@@ -846,7 +1032,8 @@ export class ExperimentAssignmentService {
     metrics: any,
     groupedMetrics: any,
     metricDocs: Metric[],
-    userDoc: ExperimentUser
+    userDoc: ExperimentUser,
+    logger: UpgradeLogger
   ): Log[] {
     const dataLogs = [];
     if (metrics && metrics.attributes) {
@@ -898,7 +1085,7 @@ export class ExperimentAssignmentService {
         }
       });
     }
-
+    logger.info({ message: 'data logs created in createDataLogsFromCLFormat', details: dataLogs });
     return dataLogs;
   }
 

@@ -221,7 +221,7 @@ export default async function LogOperations(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   await analyticsService.getCSVData(experimentObject.id, emailAddress, new UpgradeLogger());
 
@@ -347,7 +347,7 @@ export default async function LogOperations(): Promise<void> {
         ],
       },
     },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc}));
+  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
 
   const allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(

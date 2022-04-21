@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { SharedIconsComponent } from './shared-icons.component';
 import { TestingModule } from '../../../../testing/testing.module';
 
-describe('SharedIconsComponent', () => {
+xdescribe('SharedIconsComponent', () => {
   let component: SharedIconsComponent;
   let fixture: ComponentFixture<SharedIconsComponent>;
 

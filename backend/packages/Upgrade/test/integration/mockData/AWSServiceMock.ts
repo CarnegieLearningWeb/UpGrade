@@ -22,6 +22,6 @@ export default class AWSServiceMock {
     text: string,
     subject: string
   ): Promise<any> {
-    return;
+    return Promise.resolve({});
   }
 }

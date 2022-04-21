@@ -11,7 +11,7 @@ import { systemUser } from '../../mockData/user/index';
 import { Metric } from '../../../../src/api/models/Metric';
 import { metrics } from '../../mockData/metric/index';
 import { EXPERIMENT_STATE, IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
-import { getAllExperimentCondition } from '../../utils';
+import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { Log } from '../../../../src/api/models/Log';
@@ -71,22 +71,40 @@ export default async function RepeatedMeasure(): Promise<void> {
       }),
     ])
   );
+  
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-
+  
+  // mark experiment point for user 1
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
+  
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-
+  
+  // mark experiment point for user 2
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
+  
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  
+  // mark experiment point for user 3
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  
+  // mark experiment point for user 4
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   const findMetric = await metricRepository.find();
   expect(findMetric.length).toEqual(32);
@@ -192,7 +210,7 @@ export default async function RepeatedMeasure(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   const experimentUser = experimentUsers[0];
 

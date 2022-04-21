@@ -1,7 +1,7 @@
 export class Emails {
 
-    header = '';
-    footer = `<br>
+    public header = '';
+    public footer = `<br>
     <br>
     UpGrade -LOGO-`;
 

@@ -7,7 +7,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
-describe('ExperimentListComponent', () => {
+xdescribe('ExperimentListComponent', () => {
   let component: ExperimentListComponent;
   let fixture: ComponentFixture<ExperimentListComponent>;
 

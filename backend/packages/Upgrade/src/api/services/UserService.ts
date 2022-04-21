@@ -23,7 +23,7 @@ export class UserService {
   public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
 
-    const isUserExists = await this.userRepository.findOne({ email: user.email });
+    const isUserExists = await this.userRepository.find({ where: {email: user.email }});
     if (!isUserExists) {
       this.sendWelcomeEmail(user.email)
     }

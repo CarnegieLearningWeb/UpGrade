@@ -55,6 +55,7 @@ export const env = {
   db: {
     type: getOsEnv('TYPEORM_CONNECTION'),
     host: getOsEnvOptional('TYPEORM_HOST') || getOsEnvOptional('RDS_HOSTNAME'),
+    host_replica: getOsEnvOptional('TYPEORM_HOSTNAME_REPLICAS') || getOsEnvOptional('RDS_HOSTNAME_REPLICAS'),
     port: toNumber(getOsEnvOptional('TYPEORM_PORT') || getOsEnvOptional('RDS_PORT')),
     username: getOsEnvOptional('TYPEORM_USERNAME') || getOsEnvOptional('RDS_USERNAME'),
     password: getOsEnvOptional('TYPEORM_PASSWORD') || getOsEnvOptional('RDS_PASSWORD'),
@@ -81,7 +82,7 @@ export const env = {
   auth: {
     authCheck: toBool(getOsEnvOptional('AUTH_CHECK')),
   },
-  schedular: {
+  scheduler: {
     stepFunctionArn: getOsEnv('SCHEDULER_STEP_FUNCTION'),
   },
   aws: {

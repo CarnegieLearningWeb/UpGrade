@@ -53,7 +53,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ...experimentObject,
     name: 'Updated Experiment',
   };
-  const updateExperiment = await experimentService.update(updatedExperiment.id, updatedExperiment as any, user, new UpgradeLogger());
+  const updateExperiment = await experimentService.update(updatedExperiment as any, user, new UpgradeLogger());
 
   expect(updateExperiment).toEqual(
     // expect.arrayContaining([

@@ -2,7 +2,6 @@ import { Container } from 'typedi';
 import { individualAssignmentExperiment, secondExperiment } from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { getAllExperimentCondition } from '../../utils';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
@@ -12,7 +11,6 @@ import { IndividualAssignment } from '../../../../src/api/models/IndividualAssig
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
-  const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   const userService = Container.get<UserService>(UserService);
 

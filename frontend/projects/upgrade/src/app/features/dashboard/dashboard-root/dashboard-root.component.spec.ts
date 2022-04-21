@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../testing/testing.module';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
-describe('DashboardRootComponent', () => {
+xdescribe('DashboardRootComponent', () => {
   let component: DashboardRootComponent;
   let fixture: ComponentFixture<DashboardRootComponent>;
 

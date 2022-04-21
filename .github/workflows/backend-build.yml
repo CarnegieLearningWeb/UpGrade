@@ -1,0 +1,46 @@
+name: Backend build_script
+on: ["pull_request", "workflow_dispatch"]
+jobs:
+  get-node-version:
+    name: Get Node Version
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ steps.get-node-version.outputs.node-version }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Load Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+      - name: Get Node Version
+        id: get-node-version
+        run: echo "::set-output name=node-version::$NODE_VERSION"
+  backend-build:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    needs: get-node-version
+    container: node:${{ needs.get-node-version.outputs.node-version }}
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: |
+          cp -R ../types packages/Upgrade
+          npm run install:all
+      - name: Build Backend
+        run: npm run build:upgrade
+      - name: Run Tests
+        run: npm run test:upgrade
+

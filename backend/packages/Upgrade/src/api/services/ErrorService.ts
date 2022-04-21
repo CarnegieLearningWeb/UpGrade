@@ -22,12 +22,13 @@ export class ErrorService {
     return this.errorRepository.paginatedFind(limit, offset, filter);
   }
 
-  public create(error: ExperimentError, logger: UpgradeLogger): Promise<ExperimentError> {
-    if( logger ) {
+  public create(error: ExperimentError, logger?: UpgradeLogger): Promise<ExperimentError> {
+    if (logger) {
       logger.info({ message: 'Inserting an error', details: error });
     }
     return this.errorRepository.save(error).catch((err) => {
       err.type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(err);
       throw err;
     });
   }

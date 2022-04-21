@@ -43,9 +43,6 @@ export default async function CreateLog(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
-
   await settingService.setClientCheck(false, true, new UpgradeLogger());
 
   await metricService.saveAllMetrics(metrics as any, new UpgradeLogger());
@@ -216,7 +213,7 @@ export default async function CreateLog(): Promise<void> {
     ],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   // log data here
   await experimentAssignmentService.dataLog(experimentUser.id, jsonData, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});

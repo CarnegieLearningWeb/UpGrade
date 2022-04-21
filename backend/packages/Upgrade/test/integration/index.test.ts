@@ -62,10 +62,11 @@ import { QueryCRUD } from './Experiment/query';
 import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
 import { IndividualExperimentEnrollmentCode } from './Experiment/enrollmentCode';
 import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode/index';
-import { MonitoredPointForExport } from './Experiment/analytics';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
+import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssigmentWeight';
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
+import { ExperimentExcludeUser, ExperimentExcludeGroup, ExperimentIncludeUser, ExperimentIncludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -357,6 +358,11 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Experiment with decimal assignment weights', async (done) => {
+    await DecimalAssignmentWeight();
+    done();
+  });
+
   test('Delete Preview Assignment with experiment Update', async (done) => {
     await DeletePreviewAssignmentWithExperimentUpdate();
     done();
@@ -431,6 +437,27 @@ describe('Integration Tests', () => {
     await PartitionOrder();
     done();
   });
+
+  test('Experiment Level exclusion of user with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeUser();
+    done();
+  });
+
+  test('Experiment Level exclusion of group with FilterMode as IncludeAll', async (done) => {
+    await ExperimentExcludeGroup();
+    done();
+  });
+
+  test('Experiment Level inclusion of user with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentIncludeUser();
+    done();
+  });
+
+  test('Experiment Level inclusion of group with FilterMode as ExcludeAll', async (done) => {
+    await ExperimentIncludeGroup();
+    done();
+  });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

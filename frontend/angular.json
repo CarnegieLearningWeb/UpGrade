@@ -211,28 +211,6 @@
             "browserTarget": "upgrade:build"
           }
         },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "projects/upgrade/src/test.ts",
-            "polyfills": "projects/upgrade/src/polyfills.ts",
-            "tsConfig": "projects/upgrade/tsconfig.spec.json",
-            "karmaConfig": "projects/upgrade/karma.conf.js",
-            "assets": ["projects/upgrade/src/favicon.ico", "projects/upgrade/src/assets"],
-            "styles": ["projects/upgrade/src/styles.scss"],
-            "scripts": []
-          },
-          "configurations": {
-            "test": {
-              "fileReplacements": [
-                {
-                  "replace": "projects/upgrade/src/environments/environment.ts",
-                  "with": "projects/upgrade/src/environments/environment.test.ts"
-                }
-              ]
-            }
-          }
-        },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {

@@ -6,7 +6,7 @@ import { PreviewUsersService } from '../../../../../core/preview-users/preview-u
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 
-describe('PreviewUserComponent', () => {
+xdescribe('PreviewUserComponent', () => {
   let component: PreviewUserComponent;
   let fixture: ComponentFixture<PreviewUserComponent>;
 

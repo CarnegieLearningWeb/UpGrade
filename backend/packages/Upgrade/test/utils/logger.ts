@@ -7,7 +7,7 @@ export const configureLogger = () => {
       new transports.Console({
         level: env.log.level,
         handleExceptions: true,
-        format: format.combine(format.colorize(), format.simple()),
+        format: format.combine(format.json(), format.prettyPrint({ colorize: true })),
       }),
     ],
   });

@@ -68,7 +68,7 @@ export default async function QueryCRUD(): Promise<void> {
     queries: [query],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   let allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(
@@ -89,7 +89,7 @@ export default async function QueryCRUD(): Promise<void> {
     queries: [],
   };
 
-  await experimentService.update(experimentObject.id, experimentObject as any, user, new UpgradeLogger());
+  await experimentService.update(experimentObject as any, user, new UpgradeLogger());
 
   allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery.length).toEqual(0);

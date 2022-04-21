@@ -1,5 +1,4 @@
 import { IMetricMetaData, ISingleMetric, IGroupMetric } from 'upgrade_types';
-import {} from 'packages/Upgrade/src/api/services/MetricService';
 
 export const metrics: Array<Partial<ISingleMetric | IGroupMetric>> = [
   {

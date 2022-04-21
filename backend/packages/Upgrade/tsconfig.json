@@ -2,14 +2,14 @@
   "extends": "../../tsconfig.json",
   "ts-node": {
     "transpileOnly": true,
-    "transpiler": "ts-node/transpilers/swc-experimental",
     "pretty": true
   },
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "upgrade_types": ["../../../types"]
+    }
   },
-  "exclude": [
-    "**/*/node_modules",
-    "test"
-  ]
+  "exclude": ["**/*/node_modules"]
 }

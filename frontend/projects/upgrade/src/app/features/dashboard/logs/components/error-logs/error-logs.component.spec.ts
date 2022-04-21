@@ -9,7 +9,7 @@ import { LogDateFormatPipe } from '../../pipes/logs-date-format.pipe';
 import { ErrorLogPipe } from '../../pipes/error-log.pipe';
 import { ExperimentActionMessage } from '../../pipes/experiment-action-message.pipe';
 
-describe('ErrorLogsComponent', () => {
+xdescribe('ErrorLogsComponent', () => {
   let component: ErrorLogsComponent;
   let fixture: ComponentFixture<ErrorLogsComponent>;
 

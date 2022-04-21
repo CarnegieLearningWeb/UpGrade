@@ -21,7 +21,7 @@ import { Experiment } from '../models/Experiment';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import ObjectsToCsv from 'objects-to-csv';
 import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
-import { In } from 'typeorm';
+import { getCustomRepository, In } from 'typeorm';
 import fs from 'fs';
 import { SERVER_ERROR } from 'upgrade_types';
 import { env } from '../../env';
@@ -42,21 +42,9 @@ export class AnalyticsService {
     @OrmRepository()
     private experimentRepository: ExperimentRepository,
     @OrmRepository()
-    private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
-    @OrmRepository()
-    private monitoredExperimentPointLogRepository: MonitoredExperimentPointLogRepository,
-    @OrmRepository()
-    private individualAssignmentRepository: IndividualAssignmentRepository,
-    @OrmRepository()
-    private groupAssignmentRepository: GroupAssignmentRepository,
-    @OrmRepository()
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
-    private experimentUserRepository: ExperimentUserRepository,
-    @OrmRepository()
     private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    @OrmRepository()
-    private userRepository: UserRepository,
     public awsService: AWSService,
     public errorService: ErrorService,
   ) {}
@@ -255,7 +243,8 @@ export class AnalyticsService {
       if (!experiment) {
         return '';
       }
-      const user = await this.userRepository.findOne({ email });
+      const userRepository: UserRepository = await getCustomRepository(UserRepository, 'export');
+      const user = await userRepository.findOne({ email });
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED,
         { experimentName: experiment.name },
@@ -267,11 +256,13 @@ export class AnalyticsService {
         const partitionId = partition.id;
         experimentIdAndPoint.push(partitionId);
       });
-
+      const individualAssignmentRepository: IndividualAssignmentRepository= await getCustomRepository(IndividualAssignmentRepository, 'export');
+      const groupAssignmentRepository: GroupAssignmentRepository= await getCustomRepository(GroupAssignmentRepository, 'export');
+      const monitoredExperimentPointRepository: MonitoredExperimentPointRepository= await getCustomRepository(MonitoredExperimentPointRepository, 'export');
       const promiseData = await Promise.all([
-        this.individualAssignmentRepository.findIndividualAssignmentsByConditions(experimentId),
-        this.groupAssignmentRepository.findGroupAssignmentsByConditions(experimentId),
-        this.monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
+        individualAssignmentRepository.findIndividualAssignmentsByConditions(experimentId),
+        groupAssignmentRepository.findGroupAssignmentsByConditions(experimentId),
+        monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
       ]);
 
       let csvRows: any = [
@@ -323,11 +314,12 @@ export class AnalyticsService {
       for (let i = 1; i <= promiseData[2]; i = i + take) {
         csvRows = [];
         const monitoredExperimentPoints =
-          await this.monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
+          await monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
             i - 1,
             take,
             experimentIdAndPoint,
-            experimentId
+            experimentId,
+            'export'
           );
 
         // merge all the data log
@@ -379,9 +371,10 @@ export class AnalyticsService {
         const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
         const experimentUserSet = new Set(experimentUsers);
         const experimentUsersArray = Array.from(experimentUserSet);
-
+        const experimentUserRepository: ExperimentUserRepository= await getCustomRepository(ExperimentUserRepository, 'export');
+        const monitoredExperimentPointLogRepository: MonitoredExperimentPointLogRepository= await getCustomRepository(MonitoredExperimentPointLogRepository, 'export');
         const [monitoredLogDocuments, experimentUserDocuments] = await Promise.all([
-          this.monitoredExperimentPointLogRepository
+          monitoredExperimentPointLogRepository
             .find({
               where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
               relations: ['monitoredExperimentPoint'],
@@ -392,7 +385,7 @@ export class AnalyticsService {
               logger.error(error);
               throw error;
             }),
-          this.experimentUserRepository
+          experimentUserRepository
             .find({
               where: { id: In(experimentUsersArray) },
             })
@@ -492,15 +485,18 @@ export class AnalyticsService {
 
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user
+      logger.info({ message: `Sending export data email to ${email}` });
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
         { experimentName: experimentInfo.name },
         user
       );
+      logger.info({ message: `Exported Data emailed successfully to ${email}` });
     } catch (err) {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
+      logger.error({ message: `Export Data email unsuccessful:`, details: error });
       throw error;
     }
 

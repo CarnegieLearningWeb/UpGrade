@@ -1,5 +1,4 @@
 import { individualAssignmentExperiment } from '../../mockData/experiment/index';
-import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
@@ -7,7 +6,6 @@ import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function NoPartitionPoint(): Promise<void> {
-  // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
   const experimentObject = individualAssignmentExperiment;
@@ -105,7 +103,7 @@ export default async function NoPartitionPoint(): Promise<void> {
     const newPartition = {...partition, order: index + 1};
     newExperimentDoc.partitions[index] = newPartition;
   });
-  const updatedExperimentDoc = await experimentService.update(newExperimentDoc.id, newExperimentDoc as any, user, new UpgradeLogger());
+  const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
 
   // check the conditions
   expect(updatedExperimentDoc.conditions).toEqual(

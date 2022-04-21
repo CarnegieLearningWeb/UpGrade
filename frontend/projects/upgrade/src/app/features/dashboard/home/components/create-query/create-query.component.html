@@ -17,20 +17,27 @@
           <ng-container formArrayName="keys">
             <div *ngFor="let key of keys.controls; let formIndex = index">
               <ng-container [formGroupName]="formIndex">
-                <mat-form-field class="auto-complete">
-                  <input
-                    type="text"
-                    [placeholder]="tabIndex === 0 ? 'Metric' : controlTitles[formIndex] || 'Metric'"
-                    matInput
-                    formControlName="metricKey"
-                    [matAutocomplete]="auto"
-                    >
-                  <mat-autocomplete (optionSelected)="selectedOption($event)" #auto="matAutocomplete" [displayWith]="displayFn">
-                    <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
-                      {{option.key}}
-                    </mat-option>
-                  </mat-autocomplete>
-                </mat-form-field>
+                <span [matTooltip]="queryForm.getRawValue().keys[formIndex]?.metricKey?.key" matTooltipPosition="above">
+                  <mat-form-field class="auto-complete">
+                    <input
+                      type="text"
+                      [placeholder]="tabIndex === 0 ? 'Metric' : controlTitles[formIndex] || 'Metric'"
+                      matInput
+                      formControlName="metricKey"
+                      [matAutocomplete]="auto"
+                      >
+                    <mat-autocomplete 
+                      (optionSelected)="selectedOption($event)"
+                      #auto="matAutocomplete"
+                      [displayWith]="displayFn"
+                      panelWidth="fit-content"
+                      >
+                      <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
+                        {{option.key}}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </span>
               </ng-container>
               <mat-icon *ngIf="(formIndex + 1) !== keys.controls.length" class="icon">arrow_right_alt</mat-icon>
             </div>

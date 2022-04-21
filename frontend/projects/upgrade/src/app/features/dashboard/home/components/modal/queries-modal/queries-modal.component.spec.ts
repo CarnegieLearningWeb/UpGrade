@@ -6,7 +6,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
 import { CreateQueryComponent } from '../../create-query/create-query.component';
 
-describe('QueriesModalComponent', () => {
+xdescribe('QueriesModalComponent', () => {
   let component: QueriesModalComponent;
   let fixture: ComponentFixture<QueriesModalComponent>;
 
@@ -25,7 +25,7 @@ describe('QueriesModalComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

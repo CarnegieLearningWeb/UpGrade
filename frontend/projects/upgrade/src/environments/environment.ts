@@ -3,7 +3,8 @@
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
-const endpointApi = 'http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'http://localhost:3030/api'
+// const endpointApi = 'http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
 
 export const environment = {
   appName: 'UpGrade',
@@ -34,8 +35,8 @@ export const environment = {
     loginUser: `${endpointApi}/login/user`, // Used to create a new user after login if doesn't exist in DB
     getAllUsers: `${endpointApi}/users/paginated`,
     userRole: `${endpointApi}/users/role`,
-    excludeUsers: `${endpointApi}/exclude/user`,
-    excludeGroups: `${endpointApi}/exclude/group`,
+    excludeUsers: `${endpointApi}/explicitExclude/global/user`,
+    excludeGroups: `${endpointApi}/explicitExclude/global/group`,
     previewUsers: `${endpointApi}/previewUsers`,
     getAllPreviewUsers: `${endpointApi}/previewUsers/paginated`,
     previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,

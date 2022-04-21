@@ -196,3 +196,17 @@
     opacity: 0 !important;
   }
 }
+
+// Material library doesn't expose any params to prevent content truncation for these widgets.
+// Therefore we override the css. If option appears in future, these can go away.
+
+// Added to globally prevent truncation of content dropdowns
+.mat-select-panel-wrap .mat-select-panel {
+  max-width: fit-content;
+}
+
+// Added to globally prevent truncation in tooltips
+.mat-tooltip {
+  word-break: break-all;
+  white-space: normal;
+}

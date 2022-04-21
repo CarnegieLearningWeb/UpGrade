@@ -1,0 +1,33 @@
+version: 1
+labels:
+  - label: frontend
+    files:
+      - frontend/.*
+  - label: backend
+    files:
+      - backend/packages/Upgrade/.*
+      - backend/Docker.*
+      - backend/package.json
+      - backend/package-lock.json
+      - backend/ts.*
+  - label: lambda
+    files:
+      - backend/packages/Scheduler/.*
+  - label: types
+    files:
+      - types/.*
+  - label: clientlibs-java
+    files:
+      - clientlibs/java/.*
+  - label: clientlibs-js
+    files:
+      - clientlibs/js/.*
+  - label: cicd
+    files:
+      - .github/.*
+  - label: small-pr
+    size-below: 30
+  - label: feature
+    branch: ^feature/.*
+  - label: bugfix
+    branch: ^bugfix/.*

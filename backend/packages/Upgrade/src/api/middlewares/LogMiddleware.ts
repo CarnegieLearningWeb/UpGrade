@@ -32,8 +32,7 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     logger.child({
       http_request_id: uuid(),
       endpoint: req.url,
-      api_request_type: null,
-      testingLocal: true,
+      request_method_type: req.method,
     });
     req.logger = logger;
 

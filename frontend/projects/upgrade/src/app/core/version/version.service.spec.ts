@@ -1,16 +1,35 @@
-import { TestBed } from '@angular/core/testing';
-import { TestingModule } from '../../../testing/testing.module';
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { of } from "rxjs/internal/observable/of";
+import { environment } from "../../../environments/environment";
+import { VersionService } from "./version.service";
 
 
-import { VersionService } from './version.service';
+class MockHTTPClient {
+  get = jest.fn().mockReturnValue(of());
+  post = jest.fn().mockReturnValue(of());
+  delete = jest.fn().mockReturnValue(of());
+  put = jest.fn().mockReturnValue(of());
+}
 
 describe('VersionService', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    imports: [TestingModule]
-  }));
+    let service: VersionService;
+    let mockHttpClient: any;
 
-  it('should be created', () => {
-    const service: VersionService = TestBed.get(VersionService);
-    expect(service).toBeTruthy();
-  });
-});
+    beforeEach(() => {
+        mockHttpClient = new MockHTTPClient();
+        service = new VersionService(mockHttpClient as HttpClient);
+    }) 
+
+    describe('getVersion', () => {
+        it('should call get with expected url on httpClient and return an observalbe', () => {
+            const expectedUrl = environment.api.getVersion;
+            const toPromiseSpy = jest.spyOn(Observable.prototype, 'toPromise');
+
+            service.getVersion();
+
+            expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl)
+            expect(toPromiseSpy).toHaveBeenCalled();
+        })
+    })
+})
