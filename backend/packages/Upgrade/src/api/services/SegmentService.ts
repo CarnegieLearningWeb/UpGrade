@@ -11,6 +11,7 @@ import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
+import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 
 @Service()
 export class SegmentService {
@@ -20,7 +21,7 @@ export class SegmentService {
     private individualForSegmentRepository: IndividualForSegmentRepository,
     private groupForSegmentRepository: GroupForSegmentRepository
   ) {}
-  
+
   public getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
     logger.info({ message: `Find all segments`});
     let queryBuilder = this.segmentRepository
@@ -41,14 +42,14 @@ export class SegmentService {
     .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
     .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
     .leftJoinAndSelect('segment.subSegments', 'subSegment')
-    .where('segment.type = :public', { public: SEGMENT_TYPE.PUBLIC })
+    .where('segment.type = :public', {public: SEGMENT_TYPE.PUBLIC})
     .andWhere({ id })
     .getOne()
 
     return segmentDoc;
   }
 
-  public upsertSegment(segment: Segment, logger: UpgradeLogger): Promise<Segment> {
+  public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}`});
     return this.addSegmentDataInDB(segment,logger);
   }
@@ -58,15 +59,15 @@ export class SegmentService {
     return this.segmentRepository.deleteSegment(id, logger);
   }
 
-  private async addSegmentDataInDB(segment: Segment, logger: UpgradeLogger) {
+  private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
 
-      if(segment.id) {
+      if (segment.id) {
         try {
           await transactionalEntityManager.getRepository(Segment).delete(segment.id);
         } catch (err) {
           const error = err as ErrorWithType;
-          error.details = 'Error in deleting segment in DB';
+          error.details = 'Error in deleting segment from DB';
           error.type = SERVER_ERROR.QUERY_FAILED;
           logger.error(error);
           throw error;
@@ -76,10 +77,11 @@ export class SegmentService {
       segment.id = segment.id || uuid();
       let segmentDoc: Segment;
 
-      const { individualForSegment, groupForSegment, ...segmentData } = segment;
+      const { userIds, groups, subSegmentIds, ...segmentData } = segment;
+      let subSegmentData = segment.subSegmentIds.map((subSegmentId) => ({id: subSegmentId}));
 
       try {
-        segmentDoc = await transactionalEntityManager.getRepository(Segment).save(segmentData);
+        segmentDoc = await transactionalEntityManager.getRepository(Segment).save({...segmentData, subSegments: subSegmentData});
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in saving segment in DB';
@@ -87,21 +89,16 @@ export class SegmentService {
         logger.error(error);
         throw error;
       }
-      
+
       const individualForSegmentDocsToSave = 
-        individualForSegment &&
-        individualForSegment.length > 0 &&
-        individualForSegment.map((user) => {
-          user.segment = segmentDoc
-          return user;
-        })
-      
+        segment.userIds.map((userId) => ({
+          userId: userId,
+          segment: segmentDoc
+        }))
+
       const groupForSegmentDocsToSave = 
-        groupForSegment &&
-        groupForSegment.length > 0 &&
-        groupForSegment.map((group: GroupForSegment) => {
-          group.segment = segmentDoc;
-          return group;
+        segment.groups.map((group) => {
+          return {...group, segment: segmentDoc};
         })
 
       let individualDocs: IndividualForSegment[];
@@ -118,33 +115,26 @@ export class SegmentService {
         throw error;
       }
 
-      // todo remove this
-      console.log('Individual docs', individualDocs);
-      console.log('Group docs', groupDocs);
-      
-      const individualDocToReturn = individualDocs.map((individualDoc) => {
-        const { segment, ...restDoc } = individualDoc as any
+      const individualDocToReturn = individualDocs ? individualDocs.map((individualDoc) => {
+        const { segment, ...restDoc } = individualDoc;
         return restDoc;
-      });
+      }) : [];
 
-      const groupDocToReturn = groupDocs.map((groupDoc) => {
-        const { segment, ...restDoc } = groupDoc as any
+      const groupDocToReturn = groupDocs ? groupDocs.map((groupDoc) => {
+        const { segment, ...restDoc } = groupDoc;
         return restDoc;
-      });
-  
-      var results: any[];
-      if(segmentDoc.subSegments) {
-        results = await Promise.all(segmentDoc.subSegments.map(async (item): Promise<Partial<Segment>> => {
-          const { individualForSegment, groupForSegment, subSegments, ...restDoc } = await this.getSegmentById(item.id,logger);
-          return restDoc;
-        }));
-      }
+      }) : [];
+
+      const results = await Promise.all(segmentDoc.subSegments.map(async (item): Promise<Partial<Segment>> => {
+        const { individualForSegment, groupForSegment, subSegments, ...restDoc } = await this.getSegmentById(item.id,logger);
+        return restDoc;
+      }));
 
       const newSegment = {
         ...segmentDoc,
-        indivialForSegment: individualDocToReturn as any,
-        groupForSegment: groupDocToReturn as any,
-        subSegments: results as any,
+        indivialForSegment: individualDocToReturn as IndividualForSegment[],
+        groupForSegment: groupDocToReturn as GroupForSegment[],
+        subSegments: results as Segment[],
       }
 
       return newSegment;

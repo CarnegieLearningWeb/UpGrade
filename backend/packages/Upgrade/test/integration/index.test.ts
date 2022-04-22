@@ -67,6 +67,7 @@ import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssig
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
 import { ExperimentExcludeUser, ExperimentExcludeGroup, ExperimentIncludeUser, ExperimentIncludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
+import { SegmentCreate, SegmentDelete, SegmentUpdate } from './Segment/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -458,6 +459,20 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Segments CRUD operations', async (done) => {
+    await SegmentCreate();
+    done();
+  });
+
+  test('Segments CRUD operations', async (done) => {
+    await SegmentUpdate();
+    done();
+  });
+
+  test('Segments CRUD operations', async (done) => {
+    await SegmentDelete();
+    done();
+  });
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

@@ -4,80 +4,173 @@ import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
 import { AppRequest } from '../../types';
+import { SegmentInputValidator } from './validators/SegmentInputValidator';
 const validator  = new Validator();
-
 
 /**
  * @swagger
  * definitions:
+ *   Segment:
+ *     required:
+ *       - name
+ *       - description
+ *       - context
+ *       - type
+ *       - userIds
+ *       - groups
+ *       - subSegmentIds
+ *     properties:
+ *       name:
+ *         type: string
+ *       description:
+ *         type: string
+ *       context:
+ *         type: string
+ *       type:
+ *         type: string
+ *         enum: [public, private]
+ *       userIds:
+ *         type: array
+ *         items:
+ *           type: string
+ *       groups:
+ *         type: array
+ *         items:
+ *           type: object
+ *           properties:
+ *             groupId:
+ *               type: string
+ *             type:
+ *               type: string
+ *       subSegmentIds:
+ *         type: array
+ *         items:
+ *           type: string
  *   segmentResponse:
- *     type: array
  *     description: ''
- *     minItems: 1
- *     uniqueItems: true
- *     items:
- *       type: object
- *       required:
- *         - createdAt
- *         - updatedAt
- *         - versionNumber
- *         - id
- *         - name
- *         - description
- *         - context
- *       properties:
- *         createdAt:
- *           type: string
- *           minLength: 1
- *         updatedAt:
- *           type: string
- *           minLength: 1
- *         versionNumber:
- *           type: number
- *         id:
- *           type: string
- *           minLength: 1
- *         name:
- *           type: string
- *           minLength: 1
- *         description:
- *           type: string
- *           minLength: 1
- *         context:
- *           type: string
- *           minLength: 1
- *   groupExplicitExperimentExcludeResponse:
- *     type: array
- *     description: ''
- *     minItems: 1
- *     uniqueItems: true
- *     items:
- *       type: object
- *       required:
- *         - createdAt
- *         - updatedAt
- *         - versionNumber
- *         - type
- *         - id
- *         - experimentId
- *       properties:
- *         createdAt:
- *           type: string
- *           minLength: 1
- *         updatedAt:
- *           type: string
- *           minLength: 1
- *         versionNumber:
- *           type: number
- *         type:
- *           type: string
- *           minLength: 1
- *         id:
- *           type: string
- *           minLength: 1
- *         experimentId:
- *           type: string
- *           minLength: 1
+ *     type: object
+ *     required:
+ *       - createdAt
+ *       - updatedAt
+ *        - versionNumber
+ *       - id
+ *       - name
+ *       - description
+ *       - context
+ *       - type
+ *       - individualForSegment
+ *       - groupForSegment
+ *       - subSegments
+ *     properties:
+ *       createdAt:
+ *         type: string
+ *         minLength: 1
+ *       updatedAt:
+ *         type: string
+ *         minLength: 1
+ *       versionNumber:
+ *         type: number
+ *       id:
+ *         type: string
+ *         minLength: 1
+ *       name:
+ *         type: string
+ *         minLength: 1
+ *       description:
+ *         type: string
+ *         minLength: 1
+ *       context:
+ *         type: string
+ *         minLength: 1
+ *       type:
+ *         type: string
+ *         minLength: 1
+ *       individualForSegment:
+ *         type: array
+ *         uniqueItems: true
+ *         items:
+ *           type: object
+ *           required:
+ *             - createdAt
+ *             - updatedAt
+ *             - versionNumber
+ *             - userId
+ *           properties:
+ *             createdAt:
+ *               type: string
+ *               minLength: 1
+ *             updatedAt:
+ *               type: string
+ *               minLength: 1
+ *             versionNumber:
+ *               type: number
+ *             userId:
+ *               type: string
+ *               minLength: 1
+ *       groupForSegment:
+ *         type: array
+ *         uniqueItems: true
+ *         items:
+ *           type: object
+ *           required:
+ *             - createdAt
+ *             - updatedAt
+ *             - versionNumber
+ *             - groupId
+ *             - type
+ *           properties:
+ *             createdAt:
+ *               type: string
+ *               minLength: 1
+ *             updatedAt:
+ *               type: string
+ *               minLength: 1
+ *             versionNumber:
+ *               type: number
+ *             groupId:
+ *               type: string
+ *               minLength: 1
+ *             type:
+ *               type: string
+ *               minLength: 1
+ *       subSegments:
+ *         type: array
+ *         uniqueItems: true
+ *         items:
+ *           type: object
+ *           required:
+ *             - createdAt
+ *             - updatedAt
+ *             - versionNumber
+ *             - id
+ *             - name
+ *             - description
+ *             - context
+ *             - type
+ *           properties:
+ *             createdAt:
+ *               type: string
+ *               minLength: 1
+ *             updatedAt:
+ *               type: string
+ *               minLength: 1
+ *             versionNumber:
+ *               type: number
+ *             id:
+ *               type: string
+ *               minLength: 1
+ *             name:
+ *               type: string
+ *               minLength: 1
+ *             description:
+ *               type: string
+ *               minLength: 1
+ *             context:
+ *               type: string
+ *               minLength: 1
+ *             type:
+ *               type: string
+ *               minLength: 1
  */
 
 /**
@@ -104,7 +197,9 @@ export class SegmentController {
    *          '200':
    *            description: Get all segments
    *            schema:
-   *              $ref: '#/definitions/segmentResponse'
+   *              type: array
+   *              items:
+   *                $ref: '#/definitions/segmentResponse'
    *          '401':
    *            description: Authorization Required Error
    */
@@ -158,7 +253,7 @@ export class SegmentController {
 
   /**
    * @swagger
-   * /segments:
+   * /segments/upsert:
    *    post:
    *      description: Create a new segment
    *      tags:
@@ -172,21 +267,7 @@ export class SegmentController {
    *          required: true
    *          schema:
    *            type: object
-   *            required:
-   *              - id
-   *              - name
-   *              - description
-   *              - context
-   *            properties:
-   *              id:
-   *                type: string
-   *              name:
-   *                type: string
-   *              description:
-   *                type: string
-   *              context:
-   *                type: string
-   *            description: Segment object
+   *            $ref: '#/definitions/Segment'
    *      responses:
    *        '200':
    *          description: Create a new segment
@@ -197,60 +278,12 @@ export class SegmentController {
    *        '500':
    *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
 */
-  @Post()
-  public insertSegment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) segment: Segment,
+  @Post('/upsert')
+  public upsertSegment(
+    @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
     @Req() request: AppRequest ): Promise<Segment> {
     return this.segment.upsertSegment(segment, request.logger);
   }
-
-  /**
-   * @swagger
-   * /segments/update:
-   *    post:
-   *      description: Create a new segment
-   *      tags:
-   *        - Segment
-   *      produces:
-   *        - application/json
-   *      parameters:
-   *        - in: body
-   *          name: segment
-   *          description: Segment object
-   *          required: true
-   *          schema:
-   *            type: object
-   *            required:
-   *              - id
-   *              - name
-   *              - description
-   *              - context
-   *            properties:
-   *              id:
-   *                type: string
-   *              name:
-   *                type: string
-   *              description:
-   *                type: string
-   *              context:
-   *                type: string
-   *            description: Segment object
-   *      responses:
-   *        '200':
-   *          description: Create a new segment
-   *          schema:
-   *            $ref: '#/definitions/segmentResponse'
-   *        '401':
-   *          description: Authorization Required Error
-   *        '500':
-   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
-*/
-@Post('/update')
-public updateSegment(
-  @Body({ validate: { validationError: { target: false, value: false } } }) segment: Segment,
-  @Req() request: AppRequest ): Promise<Segment> {
-  return this.segment.upsertSegment(segment, request.logger);
-}
 
   /**
    * @swagger
