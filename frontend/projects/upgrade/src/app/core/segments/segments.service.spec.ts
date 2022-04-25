@@ -3,7 +3,7 @@ import { SegmentsService } from './segments.service';
 import * as SegmentSelectors from './store/segments.selectors';
 import * as SegmentsActions from './store/segments.actions';
 // import { FeatureFlag, FLAG_SEARCH_SORT_KEY, SORT_AS, UpsertFeatureFlagType } from "./store/segments.model";
-import { Segment, SEGMENTS_SEARCH_SORT_KEY, SORT_AS, UpsertSegmentType } from "./store/segments.model";
+import { Segment, UpsertSegmentType } from "./store/segments.model";
 import { fakeAsync, tick } from "@angular/core/testing";
 import { isEmpty } from "rxjs/operators";
 

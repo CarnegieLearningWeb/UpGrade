@@ -2,42 +2,6 @@ import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { SEGMENT_TYPE } from 'upgrade_types';
 
-// TODO: Move to upgrade types
-export enum SEGMENTS_SEARCH_SORT_KEY {
-  ALL = 'all',
-  NAME = 'name',
-  STATUS = 'status',
-  CONTEXT = 'context',
-}
-
-export enum SORT_AS {
-  ASCENDING = 'ASC',
-  DESCENDING = 'DESC'
-}
-
-export enum MemberTypes {
-  INDIVIDUAL = 'Individual',
-  SEGMENT = 'Segment'
-}
-interface ISegmentsSearchParams {
-  key: SEGMENTS_SEARCH_SORT_KEY;
-  string: string
-}
-
-interface ISegmentsSortParams {
-  key: SEGMENTS_SEARCH_SORT_KEY;
-  sortAs: SORT_AS;
-}
-
-export interface SegmentsPaginationParams {
-  skip: number;
-  take: number;
-  searchParams?: ISegmentsSearchParams;
-  sortParams?: ISegmentsSortParams;
-}
-
-export const NUMBER_OF_SEGMENTS = 20;
-
 export enum NewSegmentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
@@ -49,16 +13,10 @@ export enum NewSegmentPaths {
   SEGMENT_MEMBERS = 'Segment Members',
 }
 
-// export enum VariationTypes {
-//   CUSTOM = 'custom',
-//   BOOLEAN = 'boolean'
-// }
-
 export enum UpsertSegmentType {
   CREATE_NEW_SEGMENT = 'Create new segment',
   UPDATE_SEGMENT = 'Update segment'
 }
-
 
 export interface NewSegmentDialogData {
   type: NewSegmentDialogEvents;
@@ -66,13 +24,20 @@ export interface NewSegmentDialogData {
   path?: NewSegmentPaths;
 }
 
-export interface Group {
-  groupId: string;
-  type: string;
+export enum MemberTypes {
+  INDIVIDUAL = 'Individual',
+  SEGMENT = 'Segment'
 }
 
-export interface i {
+export interface GroupForSegment {
+  groupId: string;
+  type: string;
+  segmentId: string;
+}
+
+export interface individualForSegment {
   userId: string;
+  segmentId: string;
 }
 
 export interface Segment {
@@ -83,20 +48,19 @@ export interface Segment {
   name: string;
   context: string;
   description: string;
-  individualForSegment: i[];
-  groupForSegment: Group[];
-  subSegments: string[];
+  individualForSegment: individualForSegment[];
+  groupForSegment: GroupForSegment[];
+  subSegments: Segment[];
   type: SEGMENT_TYPE;
 }
 
+export interface SegmentVM extends Segment {
+  userIds: string[];
+  groups: { groupId: string, type: string }[];
+  subSegmentIds: string[];
+}
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
-  skipSegments: number;
-  totalSegments: number;
-  searchKey: SEGMENTS_SEARCH_SORT_KEY;
-  searchString: SEGMENTS_SEARCH_SORT_KEY;
-  sortKey: SEGMENTS_SEARCH_SORT_KEY;
-  sortAs: SORT_AS;
 }
 
 export interface State extends AppState {

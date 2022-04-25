@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { FeatureFlagsRoutingModule } from './segments-routing.module';
+import { SegmentsRoutingModule } from './segments-routing.module';
 import { SegmentsRootComponent } from './segments-root/segments-root.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { SegmentsListComponent } from './components/segments-list/segments-list.component';
@@ -10,9 +9,6 @@ import { SegmentOverviewComponent } from './components/segment-overview/segment-
 import { SegmentMembersComponent } from './components/segment-members/segment-members.component';
 import { ViewSegmentComponent } from './pages/view-segment/view-segment.component';
 import { DeleteSegmentComponent } from './components/modal/delete-segment/delete-segment.component';
-// import { NewFlagComponent } from './components/modal/new-flag/new-flag.component';
-// import { NewFlagComponent } from './components/modal/new-flag/new-flag.component';
-// import ( NewFlagComponent)
 
 @NgModule({
   declarations: [
@@ -26,7 +22,7 @@ import { DeleteSegmentComponent } from './components/modal/delete-segment/delete
   ],
   imports: [
     CommonModule,
-    FeatureFlagsRoutingModule,
+    SegmentsRoutingModule,
     SharedModule
   ],
   entryComponents: [NewSegmentComponent, DeleteSegmentComponent]

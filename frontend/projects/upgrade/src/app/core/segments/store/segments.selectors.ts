@@ -15,7 +15,7 @@ export const selectAllSegments = createSelector(
 
 export const selectIsLoadingSegments = createSelector(
   selectSegmentsState,
-  (state) => state
+  (state) => state.isLoadingSegments
 );
 
 export const selectSelectedSegment = createSelector(
@@ -26,34 +26,4 @@ export const selectSelectedSegment = createSelector(
       ? segmentState.entities[params.segmentId]
       : undefined;
   }
-);
-
-export const selectSkipSegments = createSelector(
-  selectSegmentsState,
-  (state) => state.skipSegments
-);
-
-export const selectTotalSegments = createSelector(
-  selectSegmentsState,
-  (state) => state.totalSegments
-);
-
-export const selectSearchKey = createSelector(
-  selectSegmentsState,
-  (state) => state.searchKey
-);
-
-export const selectSearchString = createSelector(
-  selectSegmentsState,
-  (state) => state.searchString
-);
-
-export const selectSortKey = createSelector(
-  selectSegmentsState,
-  (state) => state.sortKey
-);
-
-export const selectSortAs = createSelector(
-  selectSegmentsState,
-  (state) => state.sortAs
 );

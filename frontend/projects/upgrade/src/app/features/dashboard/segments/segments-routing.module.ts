@@ -7,12 +7,12 @@ const routes: Routes = [
   {
     path: '',
     component: SegmentsRootComponent,
-    data: { title: 'app-header.title.feature-flag' }
+    data: { title: 'app-header.title.segments' }
   },
   {
-    path: 'detail/:flagId',
+    path: 'detail/:segmentId',
     component: ViewSegmentComponent,
-    data: { title: 'app-header.title.view-feature-flag' }
+    data: { title: 'app-header.title.view-segment' }
   }
 ];
 
@@ -20,5 +20,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-// TODO rename this
-export class FeatureFlagsRoutingModule { }
+export class SegmentsRoutingModule { }

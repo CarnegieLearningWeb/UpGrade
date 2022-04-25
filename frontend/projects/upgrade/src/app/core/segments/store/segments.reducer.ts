@@ -1,6 +1,6 @@
 import { createReducer, Action, on } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
-import { SegmentState, Segment, SEGMENTS_SEARCH_SORT_KEY } from './segments.model';
+import { SegmentState, Segment } from './segments.model';
 import * as SegmentsActions from './segments.actions';
 
 export const adapter: EntityAdapter<Segment> = createEntityAdapter<
@@ -15,37 +15,26 @@ export const {
 } = adapter.getSelectors();
 
 export const initialState: SegmentState = adapter.getInitialState({
-  isLoadingSegments: false,
-  skipSegments: 0,
-  totalSegments: 0,
-  searchKey: SEGMENTS_SEARCH_SORT_KEY.ALL,
-  searchString: null,
-  sortKey: null,
-  sortAs: null
+  isLoadingSegments: false
 });
 
 const reducer = createReducer(
   initialState,
   on(
-    SegmentsActions.actionUpdateSegmentStatus,
     SegmentsActions.actionUpsertSegment,
+    SegmentsActions.actionGetSegmentById,
     (state) => ({ ...state, isLoadingSegments: true })
   ),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
-    (state, { segments, totalSegments }) => {
-      const newState = {
-        ...state,
-        totalSegments,
-        skipSegments: state.skipSegments + segments.length
-      };
-      return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
+    (state, { segments }) => {
+      return adapter.upsertMany(segments, { ...state, isLoadingSegments: false });
     }
   ),
   on(
     SegmentsActions.actionFetchSegmentsFailure,
-    SegmentsActions.actionUpdateSegmentStatusFailure,
     SegmentsActions.actionUpsertSegmentFailure,
+    SegmentsActions.actionGetSegmentByIdFailure,
     (state) => ({ ...state, isLoadingSegments: false })
   ),
   on(
@@ -55,9 +44,9 @@ const reducer = createReducer(
     }
   ),
   on(
-    SegmentsActions.actionUpdateSegmentStatusSuccess,
+    SegmentsActions.actionGetSegmentByIdSuccess,
     (state, { segment }) => {
-      return adapter.updateOne({ id: segment.id, changes: segment }, { ...state, isLoadingSegments: false });
+      return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
     }
   ),
   on(
@@ -69,27 +58,7 @@ const reducer = createReducer(
   on(
     SegmentsActions.actionSetIsLoadingSegments,
     (state, { isLoadingSegments }) => ({ ...state, isLoadingSegments })
-  ),
-  on(
-    SegmentsActions.actionSetSkipSegments,
-    (state, { skipSegments }) => ({ ...state, skipSegments })
-  ),
-  on(
-    SegmentsActions.actionSetSearchKey,
-    (state, { searchKey }) => ({ ...state, searchKey })
-  ),
-  on(
-    SegmentsActions.actionSetSearchString,
-    (state, { searchString }) => ({ ...state, searchString })
-  ),
-  on(
-    SegmentsActions.actionSetSortKey,
-    (state, { sortKey }) => ({ ...state, sortKey })
-  ),
-  on(
-    SegmentsActions.actionSetSortingType,
-    (state, { sortingType }) => ({ ...state, sortAs: sortingType })
-  ),
+  )
 );
 
 export function segmentsReducer(

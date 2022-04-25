@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Segment, UpsertSegmentType, SEGMENTS_SEARCH_SORT_KEY, SORT_AS } from './segments.model';
+import { Segment, SegmentVM, UpsertSegmentType } from './segments.model';
 
 export const actionFetchSegments = createAction(
   '[Segments] Segment',
@@ -8,7 +8,7 @@ export const actionFetchSegments = createAction(
 
 export const actionFetchSegmentsSuccess = createAction(
   '[Segments] Fetch Segments Success',
-  props<{ segments: Segment[], totalSegments: number }>()
+  props<{ segments: Segment[] }>()
 );
 
 export const actionFetchSegmentsFailure = createAction(
@@ -17,7 +17,7 @@ export const actionFetchSegmentsFailure = createAction(
 
 export const actionUpsertSegment = createAction(
   '[Segments] Upsert Segment',
-  props<{ segment: Segment, actionType: UpsertSegmentType }>()
+  props<{ segment: SegmentVM, actionType: UpsertSegmentType }>()
 );
 
 export const actionUpsertSegmentSuccess = createAction(
@@ -29,18 +29,18 @@ export const actionUpsertSegmentFailure = createAction(
   '[Segments] Upsert Segment Failure',
 );
 
-export const actionUpdateSegmentStatus = createAction(
-  '[Segments] Update Segment Status',
-  props<{ segmentId: string, status: boolean }>()
+export const actionGetSegmentById = createAction(
+  '[Experiment] Get Segment By Id',
+  props<{ segmentId: string }>()
 );
 
-export const actionUpdateSegmentStatusSuccess = createAction(
-  '[Segments] Update Segment Status Success',
+export const actionGetSegmentByIdSuccess = createAction(
+  '[Experiment] Get Segment By Id Success',
   props<{ segment: Segment }>()
 );
 
-export const actionUpdateSegmentStatusFailure = createAction(
-  '[Segments] Update Segment Status Failure',
+export const actionGetSegmentByIdFailure = createAction(
+  '[Experiment] Get Segment By Id Failure'
 );
 
 export const actionDeleteSegment = createAction(
@@ -60,29 +60,4 @@ export const actionDeleteSegmentFailure = createAction(
 export const actionSetIsLoadingSegments = createAction(
   '[Segments] Set Is Loading Segments',
   props<{ isLoadingSegments: boolean }>()
-);
-
-export const actionSetSkipSegments = createAction(
-  '[Segments] Set Skip Segment',
-  props<{ skipSegments: number }>()
-);
-
-export const actionSetSearchKey = createAction(
-  '[Segments] Set Search key value',
-  props<{ searchKey: SEGMENTS_SEARCH_SORT_KEY }>()
-);
-
-export const actionSetSearchString = createAction(
-  '[Segments] Set Search String',
-  props<{ searchString: string }>()
-);
-
-export const actionSetSortKey = createAction(
-  '[Segments] Set Sort key value',
-  props<{ sortKey: SEGMENTS_SEARCH_SORT_KEY }>()
-);
-
-export const actionSetSortingType = createAction(
-  '[Segments] Set Sorting type',
-  props<{ sortingType: SORT_AS }>()
 );
