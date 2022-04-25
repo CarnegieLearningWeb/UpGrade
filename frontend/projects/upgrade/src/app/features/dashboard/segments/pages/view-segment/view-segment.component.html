@@ -1,7 +1,7 @@
 <mat-card class="flag-container" *ngIf="flag">
   <span class="ft-16-400">
-    <a [routerLink]="['/featureFlags']" class="ft-16-400 flag-link">{{ 'feature-flags.title.text' | translate }} </a>
-    > <b> {{ flag?.name }} </b>
+    <a [routerLink]="['/segments']" class="ft-16-400 flag-link">{{ 'feature-flags.title.text' | translate }} </a>
+    > <b> {{ s?.name }} </b>
   </span>
   <mat-card class="flag">
     <div class="flag-info">

@@ -44,6 +44,7 @@
   "app-header.title.feature-flag": "Feature Flags",
   "app-header.title.segments": "Segments",
   "app-header.title.view-feature-flag": "View Feature Flag",
+  "app-header.title.view-segment": "View Segment",
   "login.sign-in-btn.text": "Login with Google",
   "login.description-1.text": "By creating this account, you agree to",
   "login.description-2.text": "Terms & Conditions",

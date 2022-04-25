@@ -1,3 +1,7 @@
+::ng-deep .mat-optgroup.hideLabel .mat-optgroup-label {
+  display: none;
+}
+
 .segment-members {
   .members-table {
     max-height: 200px;
@@ -27,6 +31,7 @@
       margin-right: 0;
       padding-right: 0;
     }
+
 
     .cdk-column-memberNumber,
     .cdk-column-removeMember {

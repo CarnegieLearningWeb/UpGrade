@@ -62,7 +62,7 @@ export class NewSegmentComponent implements OnInit {
         console.log(' the parent has received the data from child1 ', this.newSegmentData);
         this.stepper.next();
         if (path === NewSegmentPaths.SEGMENT_MEMBERS) {
-          this.newSegmentData = { ...this.newSegmentData, status: false };
+          this.newSegmentData = { ...this.newSegmentData };
           console.log(' the parent has received the data from child2 ', this.newSegmentData);
           this.segmentService.createNewSegment(this.newSegmentData);
           this.onNoClick();

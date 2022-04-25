@@ -1,33 +1,6 @@
 <mat-card class="segments-list-container">
   <div class="header">
     <div>
-      <mat-form-field class="filter-options">
-        <mat-select
-          class="ft-16-600"
-          [(ngModel)]="selectedSegmentsFilterOption"
-          (selectionChange)="applyFilter(searchValue); setSearchKey()"
-        >
-          <mat-option
-            *ngFor="let filterOption of flagsFilterOptions"
-            [value]="filterOption.value"
-          >
-            {{ filterOption.viewValue | titlecase }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <!-- <mat-form-field>
-        <input
-          class="search-input ft-16-400"
-          matInput
-          #searchInput
-          [(ngModel)]="searchValue"
-          (keyup)="applyFilter($event.target.value)"
-          [placeholder]="'global.search.text' | translate"
-        />
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field> -->
-    </div>
-    <div>
       <button
         mat-flat-button
         color="primary"
@@ -62,49 +35,46 @@
   </div>
 
   <div
-    scroll
-    (scrolled)="fetchFlagsOnScroll()"
     class="segments-list-table-container"
     #tableContainer
   >
-    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingFeatureFlags$ | async"></mat-progress-bar>
+    <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingSegments$ | async"></mat-progress-bar>
     <table
       class="segments-list"
       mat-table
-      [dataSource]="allFeatureFlags"
+      [dataSource]="allSegments"
       matSort
-      (matSortChange)="changeSorting($event)"
     >
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="'feature-flags.global-name.text' | translate" matTooltipPosition="above">
+          <span [matTooltip]="'segments.global-name.text' | translate" matTooltipPosition="above">
             {{ 'feature-flags.global-name.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <a [routerLink]="['/featureFlags', 'detail', flag.id]" *ngIf="flag.name?.length < 30; else segmentNameEllipsis" class="flag-name">
-            {{ flag.name }}
+        <td class="ft-12-600" mat-cell *matCellDef="let segment">
+          <a [routerLink]="['/segments', 'detail', segment.id]" *ngIf="segment.name?.length < 30; else segmentNameEllipsis" class="segment-name">
+            {{ segment.name }}
           </a>
           <ng-template #segmentNameEllipsis>
-            <a [routerLink]="['/flag', 'detail', flag.id]" [matTooltip]="flag.name" class="flag-name" matTooltipPosition="above">
-              {{ flag.name | truncate: 30 }}
+            <a [routerLink]="['/segments', 'detail', segment.id]" [matTooltip]="segment.name" class="segment-name" matTooltipPosition="above">
+              {{ segment.name | truncate: 30 }}
             </a>
           </ng-template>
-          <br />
-          <span
-            class="flag-description ft-10-400"
-            *ngIf="flag.description?.length < 30; else SegmentDescription">
-            {{ flag.description }}
+          <br/>
+          <!-- <span
+            class="segment-description ft-10-400"
+            *ngIf="segment.description?.length < 30; else SegmentDescription">
+            {{ segment.description }}
           </span>
           <ng-template #segmentDescription>
             <span
-              class="flag-description ft-10-400"
-              [matTooltip]="flag.description"
+              class="segment-description ft-10-400"
+              [matTooltip]="segment.description"
               matTooltipPosition="above"
             >
-              {{ flag.description | truncate: 35 }}
+              {{ segment.description | truncate: 35 }}
             </span>
-          </ng-template>
+          </ng-template> -->
         </td>
       </ng-container>
 
@@ -114,8 +84,9 @@
             {{ 'segments.global-status.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <!-- <mat-slide-toggle
+        <td class="ft-12-600" mat-cell *matCellDef="let segment">
+          <!-- TODO THIS 
+            <mat-slide-toggle
             color="primary"
             [checked]="flag.status"
             [disabled]="!(permissions$ | async).featureFlags.update"
@@ -131,14 +102,8 @@
             {{ 'segments.global-last-update.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <!-- <mat-slide-toggle
-            color="primary"
-            [checked]="flag.status"
-            [disabled]="!(permissions$ | async).featureFlags.update"
-            (change)="changeFlagStatus(flag.id, $event)"
-          >
-            </mat-slide-toggle> -->
+        <td class="ft-12-600" mat-cell *matCellDef="let segment">
+          <span> {{ segment.updatedAt }} </span>
         </td>
       </ng-container>
 
@@ -148,14 +113,8 @@
             {{ 'segments.global-context.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <!-- <mat-slide-toggle
-            color="primary"
-            [checked]="flag.status"
-            [disabled]="!(permissions$ | async).featureFlags.update"
-            (change)="changeFlagStatus(flag.id, $event)"
-          >
-          </mat-slide-toggle> -->
+        <td class="ft-12-600" mat-cell *matCellDef="let segment">
+          <span> {{ segment.context }} </span>
         </td>
       </ng-container>
 
@@ -165,72 +124,21 @@
             {{ 'segments.global-description.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <!-- <mat-slide-toggle
-            color="primary"
-            [checked]="flag.status"
-            [disabled]="!(permissions$ | async).featureFlags.update"
-            (change)="changeFlagStatus(flag.id, $event)"
-          >
-          </mat-slide-toggle> -->
+        <td class="ft-12-600" mat-cell *matCellDef="let segment">
+          <span class="segment-description"> {{ segment.description }} </span>
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="members">
+      <ng-container matColumnDef="membersCount">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'segments.global-members.text' | translate" matTooltipPosition="above">
             {{ 'segments.global-members.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <!-- <mat-slide-toggle
-            color="primary"
-            [checked]="flag.status"
-            [disabled]="!(permissions$ | async).featureFlags.update"
-            (change)="changeFlagStatus(flag.id, $event)"
-          >
-          </mat-slide-toggle> -->
+        <td class="ft-12-600" mat-cell *matCellDef="let segment">
+          <span class="segment-description"> {{ segment.groupForSegment.length + segment.individualForSegment.length + segment.subSegments.length }} </span>
         </td>
       </ng-container>
-
-      <!-- <ng-container matColumnDef="key">
-        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="'feature-flags.global-key.text' | translate" matTooltipPosition="above">
-            {{ 'feature-flags.global-key.text' | translate | uppercase }}
-          </span>
-        </th>
-        <td
-          class="ft-12-600"
-          mat-cell
-          *matCellDef="let flag"
-        >
-          <span>{{ flag.key }}</span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="variationType">
-        <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="'feature-flags.table-variation-type.text' | translate" matTooltipPosition="above">
-            {{ 'feature-flags.table-variation-type.text' | translate | uppercase }}
-          </span>
-        </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <span>{{ flag.variationType | titlecase }}</span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="activeVariant">
-        <th class="ft-12-700" mat-header-cell *matHeaderCellDef>
-          <span [matTooltip]="'feature-flags.global-active-variation.text' | translate" matTooltipPosition="above">
-            {{ 'feature-flags.global-active-variation.text' | translate | uppercase }}
-          </span>
-        </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <span>{{ getActiveVariation(flag) }}</span>
-        </td>
-      </ng-container> -->
-
-
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

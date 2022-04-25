@@ -6,7 +6,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { FeatureFlag, FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
-import { Segment, SEGMENTS_SEARCH_SORT_KEY } from '../../../../../core/segments/store/segments.model';
+import { Segment } from '../../../../../core/segments/store/segments.model';
 import { NewSegmentComponent } from '../modal/new-flag/new-segment.component';
 import { debounceTime } from 'rxjs/operators';
 
@@ -24,7 +24,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     'lastUpdate',
     'context',
     'description',
-    'members',
+    'membersCount',
   ];
   allFeatureFlags: MatTableDataSource<FeatureFlag>;
   allFeatureFlagsSub: Subscription;
@@ -33,18 +33,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   //----
   allSegments: MatTableDataSource<Segment>;
   allSegmentsSub: Subscription;
-  // isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
+  isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
+  membersCount: number;
   //---
 
-
-  // TODO pachi
-  segmentsFilterOptions = [
-    { value: FLAG_SEARCH_SORT_KEY.ALL, viewValue: FLAG_SEARCH_SORT_KEY.ALL },
-    { value: FLAG_SEARCH_SORT_KEY.NAME, viewValue: FLAG_SEARCH_SORT_KEY.NAME },
-    { value: FLAG_SEARCH_SORT_KEY.KEY, viewValue: FLAG_SEARCH_SORT_KEY.KEY },
-    { value: FLAG_SEARCH_SORT_KEY.STATUS, viewValue: FLAG_SEARCH_SORT_KEY.STATUS },
-    { value: FLAG_SEARCH_SORT_KEY.VARIATION_TYPE, viewValue: 'Type'}
-  ];
   selectedSegmentsFilterOption = FLAG_SEARCH_SORT_KEY.ALL;
   searchValue: string;
   isAllFlagsFetched = false;
@@ -63,37 +55,53 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private authService: AuthService,
     private featureFlagsService: FeatureFlagsService,
-    // private segmentsService: SegmentsService,
+    private segmentsService: SegmentsService,
     private dialog: MatDialog,
   ) { }
 
   ngOnInit() {
+    this.membersCount = 0;
     this.permissions$ = this.authService.userPermissions$;
     this.allFeatureFlagsSub = this.featureFlagsService.allFeatureFlags$.subscribe(
       allFeatureFlags => {
         this.allFeatureFlags = new MatTableDataSource();
         this.allFeatureFlags.data = [...allFeatureFlags];
         this.allFeatureFlags.sort = this.sort;
-        this.applyFilter(this.searchValue);
       }
     );
-  
-    // this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(
-    //   allSegments => {
-    //     this.allSegments = new MatTableDataSource();
-    //     this.allSegments.data = [...allSegments];
-    //     this.allSegments.sort = this.sort;
-    //     this.applyFilter(this.searchValue);
-    //   }
-    // );
+
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(
+      allSegments => {
+        this.allSegments = new MatTableDataSource();
+        this.allSegments.data = [...allSegments];
+        this.allSegments.sort = this.sort;
+        console.log(' Fetching all the segments ', this.allSegments.data);
+      }
+    );
 
     this.isAllFlagsFetchedSub = this.featureFlagsService.isAllFlagsFetched().subscribe(
       value => this.isAllFlagsFetched = value
     );
 
+    // if(this.allSegments.data) {
+    //   this.allSegments.data.forEach((e) => {
+    //     let x = e.groupForSegment.length + e.individualForSegment.length + e.subSegments.length;
+    //     e = {...e, x};
+    //   });
+    //   this.membersCount = this.allSegments.data.group
+    // }
     // this.isAllSegmentsFetchedSub = this.segmentsService.isAllSegmentsFetched().subscribe(
     //   value => this.isAllFlagsFetched = value
     // );
+
+    if(this.allSegments.data[0]) {
+      const membersCount = this.allSegments.data[0].groupForSegment.length + 
+      this.allSegments.data[0].individualForSegment.length + 
+      this.allSegments.data[0].subSegments.length;
+      console.log(' the memberName  ', this.allSegments.data[0]);
+      console.log(' -------------------- membersCount-------------------', membersCount);
+    }
+
   }
 
   openNewSegmentDialog() {
@@ -106,53 +114,29 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  applyFilter(filterValue: string) {
-    // todo later
-    this.filterFlagsPredicate(this.selectedSegmentsFilterOption);
-    if (filterValue !== undefined) {
-      this.allFeatureFlags.filter = filterValue.trim().toLowerCase();
-    }
-  }
-
-  changeFlagStatus(flagId: string, event: any) {
-    this.featureFlagsService.updateFeatureFlagStatus(flagId, event.checked);
-  }
-
-  getActiveVariation(flag: FeatureFlag) {
-    return this.featureFlagsService.getActiveVariation(flag);
-  }
-
-  setSearchKey() {
-    this.featureFlagsService.setSearchKey(this.selectedSegmentsFilterOption);
-  }
-
-  setSearchString(searchString: string) {
-    this.featureFlagsService.setSearchString(searchString);
-  }
-
   // Modify angular material's table's default search behavior
-  filterFlagsPredicate(type: FLAG_SEARCH_SORT_KEY) {
-    this.allFeatureFlags.filterPredicate = (data, filter: string): boolean => {
-      switch (type) {
-        case FLAG_SEARCH_SORT_KEY.ALL:
-          return (
-            data.name.toLocaleLowerCase().includes(filter) ||
-            (data.status + '').toLocaleLowerCase().includes(filter) ||
-            data.key.toLocaleLowerCase().includes(filter) ||
-            data.variationType.toLocaleLowerCase().includes(filter) ||
-            this.isVariationFound(data, filter)
-          );
-        case FLAG_SEARCH_SORT_KEY.NAME:
-          return data.name.toLowerCase().includes(filter) || this.isVariationFound(data, filter);
-        case FLAG_SEARCH_SORT_KEY.STATUS:
-          return (data.status + '').toLowerCase().includes(filter);
-        case FLAG_SEARCH_SORT_KEY.KEY:
-          return data.key.toLowerCase().includes(filter);
-        case FLAG_SEARCH_SORT_KEY.VARIATION_TYPE:
-          return data.variationType.toLowerCase().includes(filter);
-      }
-    };
-  }
+  // filterFlagsPredicate(type: FLAG_SEARCH_SORT_KEY) {
+  //   this.allFeatureFlags.filterPredicate = (data, filter: string): boolean => {
+  //     switch (type) {
+  //       case FLAG_SEARCH_SORT_KEY.ALL:
+  //         return (
+  //           data.name.toLocaleLowerCase().includes(filter) ||
+  //           (data.status + '').toLocaleLowerCase().includes(filter) ||
+  //           data.key.toLocaleLowerCase().includes(filter) ||
+  //           data.variationType.toLocaleLowerCase().includes(filter) ||
+  //           this.isVariationFound(data, filter)
+  //         );
+  //       case FLAG_SEARCH_SORT_KEY.NAME:
+  //         return data.name.toLowerCase().includes(filter) || this.isVariationFound(data, filter);
+  //       case FLAG_SEARCH_SORT_KEY.STATUS:
+  //         return (data.status + '').toLowerCase().includes(filter);
+  //       case FLAG_SEARCH_SORT_KEY.KEY:
+  //         return data.key.toLowerCase().includes(filter);
+  //       case FLAG_SEARCH_SORT_KEY.VARIATION_TYPE:
+  //         return data.variationType.toLowerCase().includes(filter);
+  //     }
+  //   };
+  // }
 
   // Used to search based on variation value
   isVariationFound(data: FeatureFlag, filterValue: string): boolean {
@@ -190,13 +174,8 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.featureFlagsService.setSortKey(null);
     this.featureFlagsService.setSortingType(null);
 
-    // this.allSegmentsSub.unsubscribe();
+    this.allSegmentsSub.unsubscribe();
     // this.isAllSegmentsFetchedSub.unsubscribe();
-
-    // this.segmentsService.setSearchString(null);
-    // this.segmentsService.setSearchKey(FLAG_SEARCH_SORT_KEY.ALL);
-    // this.segmentsService.setSortKey(null);
-    // this.segmentsService.setSortingType(null);
   }
 
   ngAfterViewInit() {

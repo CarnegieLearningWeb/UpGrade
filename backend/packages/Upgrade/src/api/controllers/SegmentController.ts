@@ -253,7 +253,7 @@ export class SegmentController {
 
   /**
    * @swagger
-   * /segments/upsert:
+   * /segments:
    *    post:
    *      description: Create a new segment
    *      tags:
@@ -278,7 +278,7 @@ export class SegmentController {
    *        '500':
    *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
 */
-  @Post('/upsert')
+  @Post()
   public upsertSegment(
     @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
     @Req() request: AppRequest ): Promise<Segment> {

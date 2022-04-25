@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { NewSegmentDialogData, SegmentVM, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
@@ -14,7 +14,7 @@ import { SEGMENT_TYPE } from 'upgrade_types';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SegmentMembersComponent implements OnInit, OnChanges {
-  @Input() segmentInfo: Segment;
+  @Input() segmentInfo: SegmentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
@@ -25,9 +25,9 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   memberTypes = [];
-  memberTypesDum = [];
+  memberTypesDum : any[];
   subSegmentIds = ['subsegment1', 'subsegment2', 'subsegment3'];
-  individualIdsToSend = [];
+  userIdsToSend = [];
   groupsToSend = [];
   subSegmentIdsToSend = [];
 
@@ -63,14 +63,14 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     });
 
     if (this.segmentInfo) {
-       this.segmentInfo.individualForSegment.forEach((individualId) => {
-         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, individualId));
+       this.segmentInfo.userIds.forEach((userId) => {
+         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, userId));
        });
-       this.segmentInfo.groupForSegment.forEach((group) => {
+       this.segmentInfo.groups.forEach((group) => {
         this.members.push(this.addMembers(group.type, group.groupId));
       });
-      this.segmentInfo.subSegments.forEach((segmentId) => {
-        this.members.push(this.addMembers(MemberTypes.SEGMENT, segmentId));
+      this.segmentInfo.subSegmentIds.forEach((subSegmentId) => {
+        this.members.push(this.addMembers(MemberTypes.SEGMENT, subSegmentId));
       });
     }
   }
@@ -106,8 +106,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     this.memberTypes = [];
     this.memberTypesDum = [];
     this.memberTypes.push({ value: MemberTypes.INDIVIDUAL});
-    this.memberTypesDum.push({ heading: 'indvidual', value: [MemberTypes.INDIVIDUAL]});
-    this.memberTypesDum.push({ heading: 'segment', value: [MemberTypes.SEGMENT]});
+    this.memberTypesDum.push({ heading: '', value: [MemberTypes.INDIVIDUAL]});
+    this.memberTypesDum.push({ heading: '', value: [MemberTypes.SEGMENT]});
     const arr = [];
     this.memberTypes.push({ value: MemberTypes.SEGMENT});
     if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
@@ -117,23 +117,24 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       });
     }
     this.memberTypesDum.push({ heading: 'group', value: arr});
-    // console.log(' the memberType data is --------------', this.memberTypesDum);
+    console.log(' the memberType data is --------------', this.memberTypesDum);
   }
 
   foo(members: any) {
     // rename this function
     members.forEach(member => {
       if(member.type === MemberTypes.INDIVIDUAL) {
-        this.individualIdsToSend.push({ userId: member.id});
+        this.userIdsToSend.push(member.id);
       }
       else if(member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(member.id);
       }
       else {
-        this.groupsToSend.push({ type: member.type, groupId: member.id});
+        this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
     });
   }
+
   emitEvent(eventType: NewSegmentDialogEvents) {
     // console.log(' inside the emitEvent type, ' );
     switch (eventType) {
@@ -146,9 +147,9 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
           console.log(' the data that being sent from segmentMembersForm is ---', this.segmentMembersForm.getRawValue())
           this.foo(members)
           const segmentMembersFormData = {
-            individualForSegment: this.individualIdsToSend,
-            groupForSegment: this.groupsToSend,
-            subSegments: this.subSegmentIdsToSend,
+            userIds: this.userIdsToSend,
+            groups: this.groupsToSend,
+            subSegmentIds: this.subSegmentIdsToSend,
             type: SEGMENT_TYPE.PUBLIC
           }
           this.emitSegmentDialogEvent.emit({

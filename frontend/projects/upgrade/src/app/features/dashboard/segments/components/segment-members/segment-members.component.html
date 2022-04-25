@@ -25,13 +25,21 @@
         *matCellDef="let element; let groupIndex = index"
         [formGroupName]="groupIndex"
       >
-        <mat-form-field floatLabel="never" class="form-control">
+        <mat-form-field appearance="fill" floatLabel="never" class="form-control">
           <mat-select formControlName="type">
-            <mat-optgroup *ngFor="let type of memberTypesDum" [label]="type.heading" [disabled]="type.disabled">
-              <mat-option *ngFor="let val of type.value" [value]="val">
-              {{val}}
-            </mat-option>
-          </mat-optgroup>
+            <mat-optgroup
+              *ngFor="let group of memberTypesDum"
+              [class.hideLabel]="group.heading == ''"
+              [disabled]="group.disabled"
+              [label]="group.heading"
+            >
+            <pre>
+              {{ group.heading }}
+            </pre>
+              <mat-option *ngFor="let val of group.value" [value]="val">
+                {{val}}
+              </mat-option>
+            </mat-optgroup>
             <!-- <mat-option
               *ngFor="let type of memberTypesDum" *ngIf="type!=MemberTypes.SEGMENT"
               [value]="type.heading"
