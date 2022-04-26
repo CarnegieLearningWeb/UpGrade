@@ -1,15 +1,15 @@
 $dark-grey-text-color: #646e7b;
 $font-size-small: 15px;
 
-.flag-container {
+.segment-container {
   box-shadow: unset !important;
   padding: 0 2.75rem 2.75rem;
 
-  .flag-link {
+  .segment-link {
     text-decoration: none;
   }
 
-  .flag {
+  .segment {
     margin-top: 25px;
     border-radius: 10px;
     padding: 0;
@@ -17,7 +17,7 @@ $font-size-small: 15px;
     &-info {
       padding: 34px 34px 0;
 
-      .flag-overview {
+      .segment-overview {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -25,6 +25,10 @@ $font-size-small: 15px;
         &-title {
           display: flex;
           flex-direction: column;
+        }
+
+        &-partitions {
+          color: var(--grey-3);
         }
 
         .action-buttons {
@@ -44,6 +48,23 @@ $font-size-small: 15px;
               vertical-align: unset;
             }
           }
+
+          .button-long {
+            margin-left: 24px !important;
+            border: 1px solid var(--blue);
+            width: 120px;
+            height: 40px;
+            color: var(--blue);
+
+            &--query {
+              width: auto;
+            }
+
+            .icon {
+              margin-right: 3px;
+              vertical-align: unset;
+            }
+          }
         }
       }
     }
@@ -57,6 +78,7 @@ $font-size-small: 15px;
     &-create-date {
       display: block;
       padding-bottom: 23px;
+      padding-top: 23px;
       color: var(--grey-5);
     }
 

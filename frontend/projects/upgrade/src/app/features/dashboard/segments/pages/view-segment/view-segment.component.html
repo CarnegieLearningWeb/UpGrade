@@ -1,81 +1,96 @@
-<mat-card class="flag-container" *ngIf="flag">
+<mat-card class="segment-container" *ngIf="segment">
   <span class="ft-16-400">
-    <a [routerLink]="['/segments']" class="ft-16-400 flag-link">{{ 'feature-flags.title.text' | translate }} </a>
-    > <b> {{ s?.name }} </b>
+    <a [routerLink]="['/segments']" class="ft-16-400 segment-link">{{ 'segments.title.text' | translate }} </a>
+    > <b> {{ segment?.name }} </b>
   </span>
-  <mat-card class="flag">
-    <div class="flag-info">
-      <div class="flag-overview">
-        <span class="ft-32-700 flag-overview-title">
-          {{ flag?.name }}
+  <mat-card class="segment">
+    <div class="segment-info">
+      <div class="segment-overview">
+        <span class="ft-32-700 segment-overview-title">
+          {{ segment?.name }}
+          <span class="ft-16-400 segment-overview-partitions">
+            ( {{ members.length + ' ' + ('segments.view-segment.members-subtitle.text' | translate) }} )
+          </span>
         </span>
 
         <div class="action-buttons">
+          <!-- Edit Button -->
           <button
             mat-flat-button
             class="ft-14-600 button"
-            (click)="openEditFlagDialog()"
-            *ngIf="permissions?.featureFlags.update"
+            (click)="openEditSegmentDialog()"
+            *ngIf="permissions?.segments.update"
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}
           </button>
+
+          <!-- Delete Button -->
           <button
             mat-flat-button
             class="ft-14-600 button"
-            (click)="deleteFlag()"
-            *ngIf="permissions?.featureFlags.delete"
+            (click)="deleteSegment()"
+            *ngIf="permissions?.segments.delete"
           >
             {{ 'global.delete.text' | translate }}
+          </button>
+
+          <!-- Duplicate Button -->
+          <button
+            mat-flat-button
+            class="ft-14-600 button-long"
+            (click)="duplicateSegmentDialog()"
+          >
+            {{ 'global.duplicate.text' | translate }}
+          </button>
+
+          <!-- Export Button -->
+          <button
+            mat-flat-button
+            class="ft-14-600 button"
+            (click)="exportSegment(segment.id)"
+          >
+            {{ 'global.export.text' | translate }}
           </button>
         </div>
       </div>
 
-      <span class="ft-16-400 flag-description">
-        {{ flag.description }}
-      </span>
-
-      <span class="ft-14-700 flag-create-date">
+      <span class="ft-14-700 segment-create-date">
         {{
-          ('home.view-experiment.created-on.text' | translate) + (flag.createdAt | formatDate: 'medium date')
+          ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate: 'medium date')
         }}
       </span>
-    </div>
+    </div> 
 
-    <div class="flag-secondary-info">
+    <div class="segment-secondary-info">
+      <!-- Status -->
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-status.text' | translate | uppercase }}</span>
-        <mat-slide-toggle
-            color="primary"
-            [checked]="flag.status"
-            [disabled]="!permissions.featureFlags.update"
-            (change)="changeFlagStatus(flag.id, $event)"
-          >
-          </mat-slide-toggle>
-      </div>
-      <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-key.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{ 'segments.global-status.text' | translate | uppercase }}</span>
         <span class="ft-18-700 section-data-value">
-          {{ flag.key }}
+          {{ segment.name }}
         </span>
       </div>
+
+      <!-- Description -->
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.view-flag.variation-type.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{ 'segments.global-description.text' | translate | uppercase }}</span>
         <span class="ft-18-700 section-data-value">
-          {{ flag.variationType | titlecase }}
+          {{ segment.description }}
         </span>
       </div>
+
+      <!-- Context -->
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-active-variation.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
         <span class="ft-18-700 section-data-value">
-          {{ getActiveVariation(flag) }}
+          {{ segment.context }}
         </span>
       </div>
     </div>
 
-    <!-- Flag Variations Table -->
+    <!-- Segment members Table  -->
     <div class="table-container">
-      <span class="ft-24-700">{{ 'feature-flags.view-flag.table-flag-variations.text' | translate }}</span>
-      <mat-table [dataSource]="flag.variations" class="table">
+      <span class="ft-24-700">{{ 'segments.new-segment-members-stepper.text' | translate }}</span>
+      <mat-table [dataSource]="members" class="table">
         <!-- Number Column -->
         <ng-container matColumnDef="variationNumber">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -86,49 +101,30 @@
           <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
         </ng-container>
 
-        <!-- 'value' Column -->
+        <!-- 'Type' Column -->
         <ng-container matColumnDef="value">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            <span [matTooltip]="'feature-flags.global-variation-value.text' | translate" matTooltipPosition="above">
-              {{ 'feature-flags.global-variation-value.text' | translate | uppercase }}
+            <span [matTooltip]="'segments.global-members-type.text' | translate" matTooltipPosition="above">
+              {{ 'segments.global-members-type.text' | translate | uppercase }}
             </span>
           </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.value }} </mat-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.type }} </mat-cell>
         </ng-container>
 
-        <!-- name Column -->
+        <!-- Id/Name Column -->
         <ng-container matColumnDef="name">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            <span [matTooltip]="'feature-flags.global-name.text' | translate" matTooltipPosition="above">
-              {{ 'feature-flags.global-name.text' | translate | uppercase }}
+            <span [matTooltip]="'segments.global-members-id/name.text' | translate" matTooltipPosition="above">
+              {{ 'segments.global-members-id/name.text' | translate | uppercase }}
             </span>
           </mat-header-cell>
           <mat-cell class="ft-12-600" *matCellDef="let data">
             <span *ngIf="data.name?.length < 50; else conditionCode">
-              {{ data.name }}
+              {{ data.id }}
             </span>
             <ng-template #conditionCode>
               <span [matTooltip]="data.name" matTooltipPosition="above">
-                {{ data.name | truncate: 50 }}
-              </span>
-            </ng-template>
-          </mat-cell>
-        </ng-container>
-
-        <!-- Description Column -->
-        <ng-container matColumnDef="description">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            <span [matTooltip]="'global.description.text' | translate" matTooltipPosition="above">
-              {{ 'global.description.text' | translate | uppercase }}
-            </span>
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data">
-            <span *ngIf="data.description?.length < 50; else conditionDescription">
-              {{ data.description }}
-            </span>
-            <ng-template #conditionDescription>
-              <span [matTooltip]="data.description" matTooltipPosition="above">
-                {{ data.description | truncate: 50 }}
+                {{ data.id | truncate: 50 }}
               </span>
             </ng-template>
           </mat-cell>
@@ -139,4 +135,4 @@
       </mat-table>
     </div>
   </mat-card>
-</mat-card>
+</mat-card> 
