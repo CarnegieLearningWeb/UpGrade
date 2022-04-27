@@ -132,7 +132,7 @@ export class SegmentService {
 
       const newSegment = {
         ...segmentDoc,
-        indivialForSegment: individualDocToReturn as IndividualForSegment[],
+        individualForSegment: individualDocToReturn as IndividualForSegment[],
         groupForSegment: groupDocToReturn as GroupForSegment[],
         subSegments: results as Segment[],
       }

@@ -4,8 +4,9 @@
 
 .segment-members {
   .members-table {
-    max-height: 200px;
-    overflow: scroll;
+    min-height: 200px;
+    max-height: 250px;
+    overflow: auto;
 
     mat-header-row {
       min-height: 35px;

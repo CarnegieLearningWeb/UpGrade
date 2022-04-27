@@ -28,31 +28,21 @@
         <mat-form-field appearance="fill" floatLabel="never" class="form-control">
           <mat-select formControlName="type">
             <mat-optgroup
-              *ngFor="let group of memberTypesDum"
-              [class.hideLabel]="group.heading == ''"
-              [disabled]="group.disabled"
-              [label]="group.heading"
+              *ngFor="let type of memberTypesDum"
+              [class.hideLabel]="type.heading == ''"
+              [disabled]="type.disabled"
+              [label]="type.heading"
             >
-            <pre>
-              {{ group.heading }}
-            </pre>
-              <mat-option *ngFor="let val of group.value" [value]="val">
-                {{val}}
+              <mat-option *ngFor="let val of type.value" [value]="val">
+                {{ val }}
               </mat-option>
             </mat-optgroup>
-            <!-- <mat-option
-              *ngFor="let type of memberTypesDum" *ngIf="type!=MemberTypes.SEGMENT"
-              [value]="type.heading"
-            >
-              {{ type.heading }}
-            </mat-option> -->
           </mat-select>
         </mat-form-field>
       </mat-cell>
     </ng-container>
 
     <!-- Members Id Column -->
-   
     <ng-container matColumnDef="id">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'segments.global-members-id/name.text' | translate }}
@@ -61,7 +51,7 @@
         *matCellDef="let element; let groupIndex = index"
         [formGroupName]="groupIndex"
       >
-      <ng-container *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else temp">
+      <ng-container *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect">
         <mat-form-field floatLabel="never" class="form-control">
           <mat-select formControlName="id">
             <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
@@ -70,16 +60,15 @@
         </mat-select>
         </mat-form-field>
       </ng-container>
-      <ng-template #temp>
+      <ng-template #noSelect>
         <mat-form-field floatLabel="never" class="form-control">
           <input
             matInput
-            [placeholder]="'segments.global-members-id/name.text' | translate"
+            [placeholder]="'segments.global-members-id.text' | translate"
             formControlName="id"
           />
         </mat-form-field>
       </ng-template>
-
       </mat-cell>
     </ng-container>
 
@@ -101,6 +90,11 @@
     <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
     <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
   </mat-table>
+  <span
+    class="ft-14-600 validation-message"
+    *ngIf="membersCountError"
+    [innerHTML]="membersCountError"
+  ></span>
   <button
     type="button"
     class="ft-12-700 add-member"

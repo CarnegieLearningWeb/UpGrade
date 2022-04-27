@@ -6,6 +6,9 @@ import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-f
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
+import { SegmentsService } from '../../../../../core/segments/segments.service';
+import { Segment } from '../../../../../core/segments/store/segments.model';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'segment-members',
@@ -24,42 +27,56 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersDataSource = new BehaviorSubject<AbstractControl[]>([]);
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
-  memberTypes = [];
+  allSegments: Segment[];
+  allSegmentsSub: Subscription;
+  
   memberTypesDum : any[];
-  subSegmentIds = ['subsegment1', 'subsegment2', 'subsegment3'];
+  subSegmentIds = [];
   userIdsToSend = [];
   groupsToSend = [];
   subSegmentIdsToSend = [];
+  segmentNameId = new Map();
+  membersCountError: string = null;
 
   membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember'];
   constructor(
     private _formBuilder: FormBuilder,
     private featureFlagService: FeatureFlagsService,
-    private experimentService: ExperimentService
+    private segmentsService: SegmentsService,
+    private experimentService: ExperimentService,
+    private translate: TranslateService
   ) {}
-  
-  ngOnChanges(changes: SimpleChanges) {
-    // console.log(' the data of context from child1 is,  ngonchanges', this.currentContext);
+
+  ngOnChanges() {
     if(this.currentContext) {
       this.setMemberTypes();
     }
-    // console.log(' this data present in child2 is ,', this.segmentInfo);
+
     if(this.isContextChanged) {
       this.isContextChanged = false;
       this.members.clear();
       this.membersDataSource.next(this.members.controls);
     }
   }
+
   ngOnInit() {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData;
     });
-    // console.log(' the data of context from child1 is,  ngoninit', this.currentContext);
+
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(allSegments => {
+      this.allSegments =  allSegments;
+    });
+
+    if(this.allSegments) {
+      this.allSegments.forEach(( segment) => {
+        this.subSegmentIds.push(segment.name);
+        this.segmentNameId.set(segment.name, segment.id);
+      });
+    }
 
     this.segmentMembersForm = this._formBuilder.group({
       members: this._formBuilder.array([]),
-      // type: [null, Validators.required],
-      // id: [null, Validators.required]
     });
 
     if (this.segmentInfo) {
@@ -102,50 +119,52 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     }
   }
 
+  validateMembersCount(members: any) {
+    const membersCountErrorMsg = this.translate.instant("segments.global-members.segments-count-members-error.text");
+    this.membersCountError = null;
+    if( members.length === 0) {
+      this.membersCountError = membersCountErrorMsg;
+    }
+  }
+
   setMemberTypes() {
-    this.memberTypes = [];
     this.memberTypesDum = [];
-    this.memberTypes.push({ value: MemberTypes.INDIVIDUAL});
-    this.memberTypesDum.push({ heading: '', value: [MemberTypes.INDIVIDUAL]});
-    this.memberTypesDum.push({ heading: '', value: [MemberTypes.SEGMENT]});
-    const arr = [];
-    this.memberTypes.push({ value: MemberTypes.SEGMENT});
+    this.memberTypesDum.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
+    this.memberTypesDum.push({ heading: '', value: [MemberTypes.SEGMENT] });
+    const groups = [];
     if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
-        this.memberTypes.push({ value: type });
-        arr.push(type);
+        groups.push(type);
       });
     }
-    this.memberTypesDum.push({ heading: 'group', value: arr});
+    this.memberTypesDum.push({ heading: 'group', value: groups });
     console.log(' the memberType data is --------------', this.memberTypesDum);
   }
 
-  foo(members: any) {
-    // rename this function
+  gettingMembersValueToSend(members: any) {
     members.forEach(member => {
       if(member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
-      }
-      else if(member.type === MemberTypes.SEGMENT) {
-        this.subSegmentIdsToSend.push(member.id);
-      }
-      else {
+      } else if(member.type === MemberTypes.SEGMENT) {
+        this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
+        console.log(' the segment association with name id ', this.subSegmentIdsToSend);
+      } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
     });
   }
 
   emitEvent(eventType: NewSegmentDialogEvents) {
-    // console.log(' inside the emitEvent type, ' );
     switch (eventType) {
       case NewSegmentDialogEvents.CLOSE_DIALOG:
         this.emitSegmentDialogEvent.emit({ type: eventType });
         break;
       case NewSegmentDialogEvents.SEND_FORM_DATA:
-        if (this.segmentMembersForm.valid) {
-          const { members } = this.segmentMembersForm.value;
+        const { members } = this.segmentMembersForm.value;
+        this.validateMembersCount(members);
+        if (this.segmentMembersForm.valid && !this.membersCountError) {
           console.log(' the data that being sent from segmentMembersForm is ---', this.segmentMembersForm.getRawValue())
-          this.foo(members)
+          this.gettingMembersValueToSend(members);
           const segmentMembersFormData = {
             userIds: this.userIdsToSend,
             groups: this.groupsToSend,
@@ -171,7 +190,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   get getMemberTypes() {
-    return this.memberTypes;
+    return this.memberTypesDum;
   }
 
   ngOnDestroy() {

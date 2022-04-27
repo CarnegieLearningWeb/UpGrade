@@ -3,7 +3,6 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {  Segment,  NewSegmentDialogEvents ,NewSegmentDialogData, NewSegmentPaths } from '../../../../../core/segments/store/segments.model';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
-import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 
 @Component({
@@ -26,7 +25,6 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
 
   constructor(
     private _formBuilder: FormBuilder,
-    // private segmentsService: SegmentsService,
     private experimentService: ExperimentService
     ) {}
 
@@ -72,7 +70,6 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
             description: description || '',
             context
           };
-          // console.log(' the 1st child data ', overviewFormData);
           this.emitSegmentDialogEvent.emit({
             type: eventType,
             formData: overviewFormData,

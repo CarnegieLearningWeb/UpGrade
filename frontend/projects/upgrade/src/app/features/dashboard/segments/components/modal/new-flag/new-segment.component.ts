@@ -26,7 +26,6 @@ export class NewSegmentComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     if (this.data) {
-      // console.log(' the this.data ', this.data);
       this.segmentInfo = this.data.segmentInfo;
     }
   }
@@ -50,16 +49,13 @@ export class NewSegmentComponent implements OnInit {
           ...this.newSegmentData,
           ...formData
         };
-        // console.log(' newSegmentData', this.newSegmentData);
-        // console.log(' parent :- getSegmentData ', this.currentContext, this.segmentInfo);
         if (!this.currentContext && this.segmentInfo) {
           this.currentContext = this.segmentInfo.context;
         }
 
         this.isContextChanged = this.currentContext ? (this.currentContext !== this.newSegmentData.context) : false;
-
         this.currentContext  = this.newSegmentData.context;
-        console.log(' the parent has received the data from child1 ', this.newSegmentData);
+
         this.stepper.next();
         if (path === NewSegmentPaths.SEGMENT_MEMBERS) {
           this.newSegmentData = { ...this.newSegmentData };
@@ -74,8 +70,7 @@ export class NewSegmentComponent implements OnInit {
           ...this.newSegmentData,
           ...formData
         };
-        console.log(' the data received by parent is ', this.newSegmentData);
-        // this.featureFlagService.updateFeatureFlag(this.newSegmentData);
+        this.featureFlagService.updateFeatureFlag(this.newSegmentData);
         this.onNoClick();
         break;
     }

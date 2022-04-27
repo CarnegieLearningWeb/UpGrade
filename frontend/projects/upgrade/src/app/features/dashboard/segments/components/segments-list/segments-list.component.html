@@ -48,7 +48,7 @@
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'segments.global-name.text' | translate" matTooltipPosition="above">
-            {{ 'feature-flags.global-name.text' | translate | uppercase }}
+            {{ 'segments.global-name.text' | translate | uppercase }}
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
@@ -61,20 +61,6 @@
             </a>
           </ng-template>
           <br/>
-          <!-- <span
-            class="segment-description ft-10-400"
-            *ngIf="segment.description?.length < 30; else SegmentDescription">
-            {{ segment.description }}
-          </span>
-          <ng-template #segmentDescription>
-            <span
-              class="segment-description ft-10-400"
-              [matTooltip]="segment.description"
-              matTooltipPosition="above"
-            >
-              {{ segment.description | truncate: 35 }}
-            </span>
-          </ng-template> -->
         </td>
       </ng-container>
 
@@ -136,7 +122,7 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span class="segment-description"> {{ segment.groupForSegment.length + segment.individualForSegment.length + segment.subSegments.length }} </span>
+          <span class="segment-description"> {{ segment.groupForSegment?.length + segment.individualForSegment?.length + segment.subSegments?.length }} </span>
         </td>
       </ng-container>
 
