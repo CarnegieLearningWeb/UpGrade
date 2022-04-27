@@ -84,4 +84,31 @@ export class SegmentsEffects {
       )
     )
   );
+
+  exportSegment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SegmentsActions.actionExportSegment),
+      map(action => ({ segmentId: action.segmentId })),
+      filter(( {segmentId} ) => !!segmentId),
+      switchMap(({ segmentId }) =>
+        this.segmentsDataService.exportSegment(segmentId).pipe(
+          map((data: any) => {
+            this.download(data.name+'.json', data);
+            return SegmentsActions.actionExportSegmentSuccess();
+          }),
+          catchError(() => [SegmentsActions.actionExportSegmentFailure()])
+        )
+      )
+    )
+  );
+
+  private download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
 }

@@ -59,6 +59,18 @@ export class SegmentService {
     return this.segmentRepository.deleteSegment(id, logger);
   }
 
+  public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
+    logger.info({ message: `Export segment by id. segmentId: ${segmentId}`});
+    let segmentDoc = await this.segmentRepository.findOne({
+      where: { id: segmentId },
+      relations: ['individualForSegment', 'groupForSegment', 'subSegments']
+    });
+    if (!segmentDoc) {
+      throw new Error(SERVER_ERROR.QUERY_FAILED);
+    }
+    return segmentDoc;
+  }
+
   private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
 

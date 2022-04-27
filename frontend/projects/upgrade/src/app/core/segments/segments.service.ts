@@ -61,4 +61,8 @@ export class SegmentsService {
   updateSegment(segment: SegmentVM) {
     this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.UPDATE_SEGMENT }));
   }
+
+  exportSegment(segmentId: string) {
+    this.store$.dispatch(SegmentsActions.actionExportSegment({ segmentId }));
+  }
 }

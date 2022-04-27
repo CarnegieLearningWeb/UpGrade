@@ -79,8 +79,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   exportSegment(segmentId: string) {
-    // this.experimentService.exportExperimentDesign(experimentId);
-    // this.openSnackBar(false);
+    this.segmentsService.exportSegment(segmentId);
   }
 
   ngOnDestroy() {

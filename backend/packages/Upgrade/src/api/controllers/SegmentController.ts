@@ -325,4 +325,19 @@ export class SegmentController {
     }
     return this.segment.deleteSegment(segmentId, request.logger);
   }
+
+  @Get('/export/:id')
+  public exportSegment( @Param('id') id: string, @Req() request: AppRequest ): Promise<Segment> {
+    if (!id) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
+    }
+    if (!validator.isUUID(id)) {
+      return Promise.reject(
+        new Error(
+          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
+        )
+      );
+    }
+    return this.segment.exportSegment(id, request.logger);
+  }
 }

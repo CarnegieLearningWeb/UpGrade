@@ -26,4 +26,9 @@ export class SegmentsDataService {
     const url = `${environment.api.segments}/${segment.id}`;
     return this.http.put(url, segment);
   }
+
+  exportSegment(segmentId: string) {
+    const url = `${environment.api.exportSegment}/${segmentId}`;
+    return this.http.get(url);
+  }
 }
