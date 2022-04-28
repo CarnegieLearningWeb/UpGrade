@@ -76,7 +76,7 @@ export class SegmentsEffects {
       switchMap((id) =>
         this.segmentsDataService.deleteSegment(id).pipe(
           map((data: any) => {
-            this.router.navigate(['/Segments']);
+            this.router.navigate(['/segments']);
             return SegmentsActions.actionDeleteSegmentSuccess({ segment: data[0] })
           }),
           catchError(() => [SegmentsActions.actionDeleteSegmentFailure()])

@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
+import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
 @Component({
   selector: 'app-delete-segment',
@@ -13,6 +14,7 @@ export class DeleteSegmentComponent {
   constructor(
     public dialogRef: MatDialogRef<DeleteSegmentComponent>,
     private featureFlagService: FeatureFlagsService,
+    private segmentsService: SegmentsService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) { }
 
@@ -21,7 +23,8 @@ export class DeleteSegmentComponent {
   }
 
   deleteSegment() {
-    this.featureFlagService.deleteFeatureFlag(this.data.flagId);
+//    this.featureFlagService.deleteFeatureFlag(this.data.flagId);
+    this.segmentsService.deleteSegment(this.data.segmentId);
     this.onCancelClick();
   }
 }

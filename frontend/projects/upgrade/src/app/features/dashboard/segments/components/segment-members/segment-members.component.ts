@@ -1,13 +1,12 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NewSegmentDialogData, SegmentVM, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
-import { Segment } from '../../../../../core/segments/store/segments.model';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -17,7 +16,7 @@ import { TranslateService } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SegmentMembersComponent implements OnInit, OnChanges {
-  @Input() segmentInfo: SegmentVM;
+  @Input() segmentInfo: Segment;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
@@ -29,7 +28,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
   allSegmentsSub: Subscription;
-  
+
   memberTypesDum : any[];
   subSegmentIds = [];
   userIdsToSend = [];
@@ -48,13 +47,19 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnChanges() {
-    if(this.currentContext) {
+    if (this.currentContext) {
       this.setMemberTypes();
     }
 
-    if(this.isContextChanged) {
+    if (this.isContextChanged) {
       this.isContextChanged = false;
       this.members.clear();
+      this.segmentInfo.individualForSegment.forEach((id) => {
+        this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
+      });
+      this.segmentInfo.subSegments.forEach((id) => {
+        this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
+      });
       this.membersDataSource.next(this.members.controls);
     }
   }
@@ -73,6 +78,10 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.subSegmentIds.push(segment.name);
         this.segmentNameId.set(segment.name, segment.id);
       });
+
+      if (this.segmentInfo) {
+        this.subSegmentIds = this.subSegmentIds.filter(ele => ele !== this.segmentInfo.name);
+      }
     }
 
     this.segmentMembersForm = this._formBuilder.group({
@@ -80,21 +89,23 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     });
 
     if (this.segmentInfo) {
-       this.segmentInfo.userIds.forEach((userId) => {
-         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, userId));
-       });
-       this.segmentInfo.groups.forEach((group) => {
+      this.segmentInfo.individualForSegment.forEach((id) => {
+        this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
+      });
+      this.segmentInfo.groupForSegment.forEach((group) => {
         this.members.push(this.addMembers(group.type, group.groupId));
       });
-      this.segmentInfo.subSegmentIds.forEach((subSegmentId) => {
-        this.members.push(this.addMembers(MemberTypes.SEGMENT, subSegmentId));
+      this.segmentInfo.subSegments.forEach((id) => {
+        this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
       });
     }
+  
+    this.updateView();
   }
 
   addMembers(type = null, id = null) {
     return this._formBuilder.group({
-      type: [ type , Validators.required],
+      type: [type , Validators.required],
       id: [id, Validators.required],
     });
   }
@@ -122,7 +133,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   validateMembersCount(members: any) {
     const membersCountErrorMsg = this.translate.instant("segments.global-members.segments-count-members-error.text");
     this.membersCountError = null;
-    if( members.length === 0) {
+    if (members.length === 0) {
       this.membersCountError = membersCountErrorMsg;
     }
   }
@@ -143,7 +154,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   gettingMembersValueToSend(members: any) {
     members.forEach(member => {
-      if(member.type === MemberTypes.INDIVIDUAL) {
+      if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
       } else if(member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
@@ -195,5 +206,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   ngOnDestroy() {
     this.contextMetaDataSub.unsubscribe();
+    this.allSegmentsSub.unsubscribe();
   }
 }
