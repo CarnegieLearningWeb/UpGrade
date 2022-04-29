@@ -24,13 +24,6 @@
       margin-right: 15px;
     }
 
-    .cdk-column-removeCondition {
-      margin-right: 0;
-      padding-right: 0;
-    }
-
-    .cdk-column-conditionNumber,
-    .cdk-column-partitionNumber,
     .cdk-column-removeCondition,
     .cdk-column-removePartition {
       flex: 0 0 10%;
@@ -75,6 +68,9 @@
   }
 
   mat-checkbox {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
     &.mat-checkbox-checked {
       color: var(--blue);
     }
@@ -102,4 +98,10 @@
   ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
     display: none;
   }
+}
+
+.header-group {
+  display: grid;
+  margin-left: -80px;
+  justify-content: center;
 }
