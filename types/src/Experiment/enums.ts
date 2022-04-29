@@ -122,3 +122,8 @@ export enum FILTER_MODE {
   INCLUDE_ALL = 'includeAll',
   EXCLUDE_ALL = 'excludeAll',
 }
+
+export enum EXPORT_METHOD {
+  DATA = 'Email Experiment Data (CSV)',
+  DESIGN = 'Download Experiment Design (JSON)',
+}

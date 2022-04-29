@@ -1,0 +1,46 @@
+.export-experiment-container {
+  .title {
+    display: block;
+    padding: 30px 40px 0;
+    height: 88px;
+  }
+
+  &-form {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 0 40px;
+
+    mat-form-field {
+      margin-right: 10px;
+      width: 75%;
+    }
+  }
+
+  .export-experiment-body {
+    margin: 20px 0;
+    padding: 0 40px;
+    color: var(--blue);
+
+    .file-input {
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .error-msg {
+      display: block;
+      padding-top: 10px;
+    }
+
+    .error-msg {
+      color: var(--red);
+    }
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+  }
+}

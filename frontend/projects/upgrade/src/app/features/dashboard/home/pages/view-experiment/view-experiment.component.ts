@@ -20,6 +20,7 @@ import { DeleteComponent } from '../../../../../shared/components/delete/delete.
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
+import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -76,20 +77,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       });
   }
 
-  openSnackBar(exportType: boolean) {
-    this.authService.currentUser$.pipe(
-      first()
-    ).subscribe(userInfo => {
-      if (userInfo.email && exportType) {
-        this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 });
-      } else if (!userInfo.email && !exportType) {
-        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 });
-      } else {
-        this._snackBar.open(`Experiment Design JSON downloaded!`, null, { duration: 2000 });
-      }
-    });
-  }
-
   openDialog(dialogType: DialogType) {
     const dialogComponent =
       dialogType === DialogType.CHANGE_STATUS
@@ -138,6 +125,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     });
   }
 
+  openExportModal() {
+    const dialogRef = this.dialog.open(ExportModalComponent, {
+      panelClass: 'export-modal',
+      data: { experiment: clonedeep(this.experiment) }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after opening query modal
+    });
+  }
+
   updateEndingCriteria() {
     const dialogRef = this.dialog.open(ExperimentEndCriteriaComponent, {
       panelClass: 'experiment-ending-criteria',
@@ -147,15 +145,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       // Add code of further actions after opening query modal
     });
-  }
-
-  exportExperimentInfo(experimentId: string, experimentName: string) {
-    this.experimentService.exportExperimentInfo(experimentId, experimentName);
-    this.openSnackBar(true);
-  }
-  exportExperimentDesign(experimentId: string) {
-    this.experimentService.exportExperimentDesign(experimentId);
-    this.openSnackBar(false);
   }
 
   getConditionCode(conditionId: string) {

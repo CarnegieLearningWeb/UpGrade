@@ -109,6 +109,7 @@
 .new-flag-modal,
 .new-user-modal,
 .queries-modal,
+.export-modal,
 .query-result,
 .add-metric-modal,
 .experiment-ending-criteria {
@@ -167,6 +168,10 @@
 
 .queries-modal {
   width: 1000px;
+}
+
+.export-modal {
+  width: 600px;
 }
 
 .new-flag-modal {
