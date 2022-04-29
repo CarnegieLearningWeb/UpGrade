@@ -7,7 +7,7 @@ import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-f
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { FeatureFlag } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../core/segments/store/segments.model';
-import { NewSegmentComponent } from '../modal/new-flag/new-segment.component';
+import { NewSegmentComponent } from '../modal/new-segment/new-segment.component';
 
 @Component({
   selector: 'segments-list',

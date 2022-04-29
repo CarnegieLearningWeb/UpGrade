@@ -23,8 +23,8 @@ export class SegmentsDataService {
   }
 
   updateSegment(segment: SegmentVM) {
-    const url = `${environment.api.segments}/${segment.id}`;
-    return this.http.put(url, segment);
+    const url = environment.api.segments;
+    return this.http.post(url , segment);
   }
 
   exportSegment(segmentId: string) {

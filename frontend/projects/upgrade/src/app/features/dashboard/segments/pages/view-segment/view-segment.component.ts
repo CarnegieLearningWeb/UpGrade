@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { filter } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
-import { NewSegmentComponent } from '../../components/modal/new-flag/new-segment.component';
+import { NewSegmentComponent } from '../../components/modal/new-segment/new-segment.component';
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteSegmentComponent } from '../../components/modal/delete-segment/delete-segment.component';
 import { Segment } from '../../../../../core/segments/store/segments.model';
@@ -38,21 +38,17 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       .pipe(filter(segment => !!segment))
       .subscribe(segment => {
         this.segment = segment;
+        this.members = [];
+        this.segment.individualForSegment.forEach(user => {
+          this.members.push({type: 'Individual', id: user.userId});
+        });
+        this.segment.groupForSegment.forEach(group => {
+          this.members.push({type: group.type, id: group.groupId});
+        });
+        this.segment.subSegments.forEach(subSegment => {
+          this.members.push({type: 'Segment', id: subSegment.name});
+        });
     });
-
-    if (this.segment) {
-      this.segment.individualForSegment.forEach(user => {
-        this.members.push({type: 'Individual', id: user.userId})
-      });
-
-      this.segment.groupForSegment.forEach(group => {
-        this.members.push({type: group.type, id: group.groupId})
-      });
-
-      this.segment.subSegments.forEach(subSegment => {
-        this.members.push({type: 'Segment', id: subSegment.name})
-      });
-    }
   }
 
   openEditSegmentDialog() {
@@ -79,7 +75,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   exportSegment(segmentId: string) {
-    this.segmentsService.exportSegment(segmentId);
+    // this.segmentsService.exportSegment(segmentId);
   }
 
   ngOnDestroy() {

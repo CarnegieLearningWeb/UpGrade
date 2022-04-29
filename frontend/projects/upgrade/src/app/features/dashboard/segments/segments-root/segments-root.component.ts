@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FeatureFlagsService } from '../../../../core/feature-flags/feature-flags.service';
 import { SegmentsService } from '../../../../core/segments/segments.service';
 import { MatDialog } from '@angular/material';
-import { NewSegmentComponent } from '../components/modal/new-flag/new-segment.component';
+import { NewSegmentComponent } from '../components/modal/new-segment/new-segment.component';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';

@@ -70,7 +70,7 @@ export class NewSegmentComponent implements OnInit {
           ...this.newSegmentData,
           ...formData
         };
-        this.featureFlagService.updateFeatureFlag(this.newSegmentData);
+        this.segmentService.updateSegment(this.newSegmentData);
         this.onNoClick();
         break;
     }
