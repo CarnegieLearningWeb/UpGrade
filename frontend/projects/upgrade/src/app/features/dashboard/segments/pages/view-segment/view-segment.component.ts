@@ -9,6 +9,7 @@ import { NewSegmentComponent } from '../../components/modal/new-segment/new-segm
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteSegmentComponent } from '../../components/modal/delete-segment/delete-segment.component';
 import { Segment } from '../../../../../core/segments/store/segments.model';
+import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segment/duplicate-segment.component';
 
 @Component({
   selector: 'segment-view-flag',
@@ -72,6 +73,13 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   duplicateSegmentDialog() {
+    const dialogRef = this.dialog.open(DuplicateSegmentComponent, {
+      panelClass: 'duplicate-segment-modal',
+      data: { segment: this.segment }
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      // Add code of further actions after deleting feature segment
+    });
   }
 
   exportSegment(segmentId: string) {

@@ -1,0 +1,40 @@
+<div mat-dialog-content class="duplicate-segment-dialog">
+    <p class="ft-16-600">
+      {{ 'segments.duplicate-segment.heading.text' | translate: { segmentName: data.segment.name } }}
+    </p>
+    <mat-form-field class="ft-14-600 name">
+      <input
+			 matInput
+        class="ft-14-400 name-input"
+				[(ngModel)]="segmentName"
+				[placeholder]="'segments.duplicate-segment.segmentName-input-placeholder.text' | translate"
+      />
+    </mat-form-field>
+		<br>
+    <mat-form-field class="ft-14-600 name">
+    	<input
+      	matInput
+        class="ft-14-400 name-input"
+				[(ngModel)]="segmentDescription"
+        [placeholder]="'segments.duplicate-segment.segmentDescription-input-placeholder.text' | translate"
+			/>
+    </mat-form-field>
+</div>
+
+<div mat-dialog-actions class="duplicate-segment-dialog-actions">
+    <button
+      class="modal-btn"
+      mat-flat-button
+      (click)="onCancelClick()"
+    >
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      class="modal-btn default-button duplicate-btn"
+      mat-flat-button
+      (click)="onDuplicateClick(segmentName, segmentDescription)"
+    >
+      {{ 'segments.duplicate-segment-duplicate.text' | translate }}
+    </button>
+
+</div>

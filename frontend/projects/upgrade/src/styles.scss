@@ -33,7 +33,7 @@
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
 @import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
 @import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
-@import './app/features/dashboard/segments/components/modal/new-flag/new-segment.theme.scss';
+@import './app/features/dashboard/segments/components/modal/new-segment/new-segment.theme.scss';
 @import './app/features/dashboard/segments/components/segment-members/segment-members.theme.scss';
 @import './app/features/dashboard/segments/pages/view-segment/view-segment.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
@@ -122,6 +122,7 @@
 .queries-modal,
 .query-result,
 .add-metric-modal,
+.duplicate-segment-modal,
 .experiment-ending-criteria {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
@@ -130,6 +131,7 @@
     padding: 0px;
   }
 }
+
 
 .state-time-logs-modal {
   border-radius: 7px;
@@ -141,6 +143,15 @@
 
 .delete-modal {
   width: 400px;
+  min-height: 192px;
+
+  .mat-dialog-container {
+    padding: 40px;
+  }
+}
+
+.duplicate-segment-modal {
+  width: 700px;
   min-height: 192px;
 
   .mat-dialog-container {
