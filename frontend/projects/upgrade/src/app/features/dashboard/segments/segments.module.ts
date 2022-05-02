@@ -10,7 +10,7 @@ import { SegmentMembersComponent } from './components/segment-members/segment-me
 import { ViewSegmentComponent } from './pages/view-segment/view-segment.component';
 import { DeleteSegmentComponent } from './components/modal/delete-segment/delete-segment.component';
 import { DuplicateSegmentComponent } from './components/modal/duplicate-segment/duplicate-segment.component';
-
+import { ImportSegmentComponent } from './components/modal/import-segment/import-segment.component';
 @NgModule({
   declarations: [
     SegmentsRootComponent,
@@ -21,12 +21,13 @@ import { DuplicateSegmentComponent } from './components/modal/duplicate-segment/
     ViewSegmentComponent,
     DeleteSegmentComponent,
     DuplicateSegmentComponent,
+    ImportSegmentComponent
   ],
   imports: [
     CommonModule,
     SegmentsRoutingModule,
     SharedModule
   ],
-  entryComponents: [NewSegmentComponent, DeleteSegmentComponent, DuplicateSegmentComponent]
+  entryComponents: [NewSegmentComponent, DeleteSegmentComponent, ImportSegmentComponent, DuplicateSegmentComponent]
 })
 export class SegmentsModule { }

@@ -15,7 +15,8 @@ export enum NewSegmentPaths {
 
 export enum UpsertSegmentType {
   CREATE_NEW_SEGMENT = 'Create new segment',
-  UPDATE_SEGMENT = 'Update segment'
+  UPDATE_SEGMENT = 'Update segment',
+  IMPORT_SEGMENT = 'Import segment'
 }
 
 export interface NewSegmentDialogData {

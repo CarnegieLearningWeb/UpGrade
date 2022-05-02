@@ -44,6 +44,7 @@
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
+@import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -80,6 +81,7 @@
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
+  @include import-segment-component-theme($theme);
 }
 
 .light-theme {
@@ -114,6 +116,7 @@
 
 .delete-modal,
 .import-experiment-modal,
+.import-segment-modal,
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
@@ -159,6 +162,7 @@
   }
 }
 
+.import-segment-modal,
 .import-experiment-modal {
   width: 500px;
 }

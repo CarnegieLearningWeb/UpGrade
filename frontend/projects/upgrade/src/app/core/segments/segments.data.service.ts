@@ -31,4 +31,9 @@ export class SegmentsDataService {
     const url = `${environment.api.exportSegment}/${segmentId}`;
     return this.http.get(url);
   }
+
+  importSegment(segment: SegmentVM) {
+    const url = environment.api.importSegment;
+    return this.http.post(url, {...segment});
+  }
 }

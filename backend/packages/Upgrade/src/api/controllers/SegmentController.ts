@@ -326,6 +326,40 @@ export class SegmentController {
     return this.segment.deleteSegment(segmentId, request.logger);
   }
 
+  /**
+   * @swagger
+   * /segments/import:
+   *    post:
+   *      description: Import a new segment
+   *      tags:
+   *        - Segment
+   *      produces:
+   *        - application/json
+   *      parameters:
+   *        - in: body
+   *          name: segment
+   *          description: Segment object
+   *          required: true
+   *          schema:
+   *            type: object
+   *            $ref: '#/definitions/Segment'
+   *      responses:
+   *        '200':
+   *          description: Import a new segment
+   *          schema:
+   *            $ref: '#/definitions/segmentResponse'
+   *        '401':
+   *          description: Authorization Required Error
+   *        '500':
+   *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
+*/
+@Post('/import')
+public importSegment(
+  @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
+  @Req() request: AppRequest ): Promise<Segment> {
+  return this.segment.importSegment(segment, request.logger);
+}
+
   @Get('/export/:id')
   public exportSegment( @Param('id') id: string, @Req() request: AppRequest ): Promise<Segment> {
     if (!id) {

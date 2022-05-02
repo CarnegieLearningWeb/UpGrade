@@ -8,8 +8,8 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { NewSegmentComponent } from '../../components/modal/new-segment/new-segment.component';
 import * as clonedeep from 'lodash.clonedeep';
 import { DeleteSegmentComponent } from '../../components/modal/delete-segment/delete-segment.component';
-import { Segment } from '../../../../../core/segments/store/segments.model';
 import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segment/duplicate-segment.component';
+import { MemberTypes, Segment } from '../../../../../core/segments/store/segments.model';
 
 @Component({
   selector: 'segment-view-flag',
@@ -41,13 +41,13 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
         this.segment = segment;
         this.members = [];
         this.segment.individualForSegment.forEach(user => {
-          this.members.push({type: 'Individual', id: user.userId});
+          this.members.push({type: MemberTypes.INDIVIDUAL, id: user.userId});
         });
         this.segment.groupForSegment.forEach(group => {
           this.members.push({type: group.type, id: group.groupId});
         });
         this.segment.subSegments.forEach(subSegment => {
-          this.members.push({type: 'Segment', id: subSegment.name});
+          this.members.push({type: MemberTypes.SEGMENT, id: subSegment.name});
         });
     });
   }

@@ -8,6 +8,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { FeatureFlag } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../core/segments/store/segments.model';
 import { NewSegmentComponent } from '../modal/new-segment/new-segment.component';
+import { ImportSegmentComponent } from '../modal/import-segment/import-segment.component';
 
 @Component({
   selector: 'segments-list',
@@ -83,6 +84,16 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   openNewSegmentDialog() {
     const dialogRef = this.dialog.open(NewSegmentComponent, {
       panelClass: 'new-segment-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Code will be executed after closing dialog
+    });
+  }
+
+  openImportSegmentsDialog() {
+    const dialogRef = this.dialog.open(ImportSegmentComponent, {
+      panelClass: 'import-segment-modal'
     });
 
     dialogRef.afterClosed().subscribe(result => {

@@ -65,4 +65,8 @@ export class SegmentsService {
   exportSegment(segmentId: string) {
     this.store$.dispatch(SegmentsActions.actionExportSegment({ segmentId }));
   }
+
+  importSegment(segment: SegmentVM) {
+    this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.IMPORT_SEGMENT }));
+  }
 }

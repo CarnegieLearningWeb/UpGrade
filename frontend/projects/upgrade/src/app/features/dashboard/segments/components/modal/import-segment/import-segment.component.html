@@ -1,0 +1,33 @@
+<div class="import-segment-container">
+  <span class="ft-24-700 title">{{ 'segments.import-segment.text' | translate | titlecase }}</span>
+
+  <div class="import-segment-body">
+    <p class="ft-16-400">
+      {{ 'segments.import-segmemt.message.text' | translate }}
+    </p>
+    <input
+        accept=".json"
+        type="file"
+        class="ft-14-400 file-input"
+        (change)="uploadFile($event)"
+      />
+      <span class="error-msg" *ngIf="!isSegmentJSONValid">
+        {{ 'segments.import-segment.error.message.text' | translate }}
+      </span>
+  </div>
+
+  <div class="button-container">
+    <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      [ngClass]="{ 'default-button--disabled': !segmentInfo }"
+      [disabled]="!segmentInfo"
+      (click)="importSegment()"
+    >
+      {{ 'global.import.text' | translate }}
+    </button>
+  </div>
+</div>

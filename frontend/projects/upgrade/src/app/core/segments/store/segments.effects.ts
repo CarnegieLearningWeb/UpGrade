@@ -43,6 +43,8 @@ export class SegmentsEffects {
       switchMap(({ Segment, actionType }) => {
         const action = actionType === UpsertSegmentType.CREATE_NEW_SEGMENT
           ? this.segmentsDataService.createNewSegment(Segment)
+          : actionType === UpsertSegmentType.IMPORT_SEGMENT
+          ? this.segmentsDataService.importSegment(Segment)
           : this.segmentsDataService.updateSegment(Segment);
         return action.pipe(
           map((data: Segment) => SegmentsActions.actionUpsertSegmentSuccess({ segment: data })),

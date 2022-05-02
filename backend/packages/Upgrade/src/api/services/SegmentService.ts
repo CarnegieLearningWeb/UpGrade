@@ -59,6 +59,30 @@ export class SegmentService {
     return this.segmentRepository.deleteSegment(id, logger);
   }
 
+  public async importSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
+    const duplicateSegment = await this.segmentRepository.findOne(segment.id);
+    if (duplicateSegment && segment.id !== undefined) {
+      const error = new Error('Duplicate segment');
+      (error as any).type = SERVER_ERROR.QUERY_FAILED;
+      logger.error(error);
+      throw error;
+    }
+
+    // check for each subSegment to exists
+    segment.subSegmentIds.forEach(subSegmentId => {
+      const subSegment = this.segmentRepository.findOne(subSegmentId);
+      if (!subSegment) {
+        const error = new Error('SubSegment not found');
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+    });
+    
+    logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}`});
+    return this.addSegmentDataInDB(segment, logger);
+  }
+
   public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Export segment by id. segmentId: ${segmentId}`});
     let segmentDoc = await this.segmentRepository.findOne({

@@ -52,6 +52,7 @@ export const environment = {
     getVersion: `${endpointApi}/version`,
     contextMetaData: `${endpointApi}/experiments/contextMetaData`,
     segments: `${endpointApi}/segments`,
+    importSegment: `${endpointApi}/segments/import`,
     exportSegment: `${endpointApi}/segments/export`,
   }
 };
