@@ -15,6 +15,7 @@ import { ExperimentService } from '../../../../../../core/experiments/experiment
 })
 export class ExportModalComponent implements OnInit {
   exportMethod = [];
+  emailId: string;
   exportForm: FormGroup;
   experiment: ExperimentVM;
   constructor(
@@ -38,13 +39,21 @@ export class ExportModalComponent implements OnInit {
         exportMethod: [
           { value: ''},
           Validators.required
-        ]
+        ],
+        emailId: ''
       }
     );
     this.exportMethod = [
       { value: EXPORT_METHOD.DATA },
       { value: EXPORT_METHOD.DESIGN }
     ];
+    this.authService.currentUser$.pipe(
+      first()
+    ).subscribe(userInfo => {
+      if (userInfo.email) {
+        this.emailId = userInfo.email;
+      }
+    });
   }
 
   openSnackBar(exportType: boolean) {

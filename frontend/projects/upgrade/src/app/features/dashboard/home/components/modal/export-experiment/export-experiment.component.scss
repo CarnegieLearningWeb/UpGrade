@@ -17,25 +17,15 @@
     }
   }
 
-  .export-experiment-body {
-    margin: 20px 0;
-    padding: 0 40px;
+  .info-msg {
+    display: block;
+    padding-bottom: 10px;
+    padding-left: 35px;
+    padding-right: 35px;
+  }
+
+  .info-msg {
     color: var(--blue);
-
-    .file-input {
-      &:hover {
-        cursor: pointer;
-      }
-    }
-
-    .error-msg {
-      display: block;
-      padding-top: 10px;
-    }
-
-    .error-msg {
-      color: var(--red);
-    }
   }
 
   .button-container {

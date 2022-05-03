@@ -11,7 +11,11 @@
       </mat-select>
     </mat-form-field>
   </form>
-
+  <span
+    class="info-msg"
+    *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)'"
+    [innerHTML]="'home.view-experiment.export-warning.text' | translate: { email: emailId }"
+  ></span>
   <div class="button-container">
     <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
       {{ 'global.cancel.text' | translate }}

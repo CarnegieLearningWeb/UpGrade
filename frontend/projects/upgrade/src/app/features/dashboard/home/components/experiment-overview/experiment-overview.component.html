@@ -119,20 +119,20 @@
     </button>
     <button
       type="button"
-      *ngIf="experimentInfo && enableSave"
-      mat-raised-button
-      class="modal-btn default-button"
-      (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-    >
-      {{ 'global.save.text' | translate }}
-    </button>
-    <button
-      type="button"
       mat-raised-button
       class="modal-btn default-button"
       (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
     >
       {{ 'global.next.text' | translate }}
+    </button>
+    <button
+      type="button"
+      *ngIf="experimentInfo && enableSave"
+      mat-raised-button
+      class="modal-btn default-button"
+      (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+    >
+      {{ 'global.update.text' | translate }}
     </button>
   </div>
 </form>
