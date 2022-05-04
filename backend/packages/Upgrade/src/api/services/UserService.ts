@@ -84,9 +84,12 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public updateUserRole(email: string, role: UserRole): Promise<User> {
-    this.sendRoleChangedEmail(email, role);
-    return this.userRepository.updateUserRole(email, role);
+  public async updateUserRole(email: string, role: UserRole): Promise<User> {
+    const response = await this.userRepository.updateUserRole(email, role);
+    if (response) {
+      this.sendRoleChangedEmail(email, role);
+    }
+    return response;
   }
 
   public deleteUser(email: string): Promise<User> {
@@ -129,8 +132,6 @@ export class UserService {
     <br>
     A new user account was created for you in UpGrade. You can sign into UpGrade using your Google credentials.
     <br>
-    Click here to log in: <a href="http://www.localhost:4200">UPGRADE</a>
-    <br>
     To know more about how UpGrade works, please visit 
     <a href="https://www.upgradeplatform.org/"> www.upgradeplatform.org</a>
     . To read the documentation, visit 
@@ -145,8 +146,6 @@ export class UserService {
     const emailBody = `Greetings!, 
     <br>
     Your Role in Upgrade is changed to ${role}!
-    <br>
-    Click here to log in: <a href="http://www.localhost:4200">UPGRADE</a>
     <br>
     To know more about how UpGrade works, please visit 
     <a href="https://www.upgradeplatform.org/"> www.upgradeplatform.org</a>
