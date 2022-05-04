@@ -124,6 +124,6 @@ export enum FILTER_MODE {
 }
 
 export enum EXPORT_METHOD {
-  DATA = 'Email Experiment Data (CSV)',
   DESIGN = 'Download Experiment Design (JSON)',
+  DATA = 'Email Experiment Data (CSV)',
 }

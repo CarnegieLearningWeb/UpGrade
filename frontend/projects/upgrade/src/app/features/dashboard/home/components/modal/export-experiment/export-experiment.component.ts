@@ -44,8 +44,8 @@ export class ExportModalComponent implements OnInit {
       }
     );
     this.exportMethod = [
-      { value: EXPORT_METHOD.DATA },
-      { value: EXPORT_METHOD.DESIGN }
+      { value: EXPORT_METHOD.DESIGN },
+      { value: EXPORT_METHOD.DATA }
     ];
     this.authService.currentUser$.pipe(
       first()
