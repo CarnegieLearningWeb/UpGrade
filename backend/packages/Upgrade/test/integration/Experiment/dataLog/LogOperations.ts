@@ -77,33 +77,57 @@ export default async function LogOperations(): Promise<void> {
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  
+
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  
+
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  
+
   // mark experiment point for user 3
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[2].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
-  
+
   // mark experiment point for user 4
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[3].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 5
@@ -111,9 +135,15 @@ export default async function LogOperations(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 5
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[4].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName, experimentPoint);
-  
+
   // Save queries for various operations
   const querySum = makeQuery('totalProblemsCompleted', OPERATION_TYPES.SUM, experiments[0].id);
 
@@ -229,129 +259,154 @@ export default async function LogOperations(): Promise<void> {
   // getOriginalUserDoc
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // log data here
-  await experimentAssignmentService.dataLog(experimentUsers[0].id, [
-    {
-      timestamp: new Date().toISOString(),
-      metrics: {
-        attributes: {
-          totalProblemsCompleted: 20,
-        },
-        groupedMetrics: [
-          {
-            groupClass: 'masteryWorkspace',
-            groupKey: 'calculating_area_figures',
-            groupUniquifier: '1',
-            attributes: {
-              timeSeconds: 100,
-              completion: 'GRADUATED',
-            },
+  await experimentAssignmentService.dataLog(
+    experimentUsers[0].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          attributes: {
+            totalProblemsCompleted: 20,
           },
-        ],
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_figures',
+              groupUniquifier: '1',
+              attributes: {
+                timeSeconds: 100,
+                completion: 'GRADUATED',
+              },
+            },
+          ],
+        },
       },
-    },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[1].id, new UpgradeLogger());
-  await experimentAssignmentService.dataLog(experimentUsers[1].id, [
-    {
-      timestamp: new Date().toISOString(),
-      metrics: {
-        attributes: {
-          totalProblemsCompleted: 200,
-        },
-        groupedMetrics: [
-          {
-            groupClass: 'masteryWorkspace',
-            groupKey: 'calculating_area_figures',
-            groupUniquifier: '1',
-            attributes: { timeSeconds: 200, completion: 'GRADUATED' },
+  await experimentAssignmentService.dataLog(
+    experimentUsers[1].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          attributes: {
+            totalProblemsCompleted: 200,
           },
-        ],
-      },
-    },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
-// getOriginalUserDoc
-experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
-  await experimentAssignmentService.dataLog(experimentUsers[2].id, [
-    {
-      timestamp: new Date().toISOString(),
-      metrics: {
-        attributes: {
-          totalProblemsCompleted: 100,
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_figures',
+              groupUniquifier: '1',
+              attributes: { timeSeconds: 200, completion: 'GRADUATED' },
+            },
+          ],
         },
-        groupedMetrics: [
-          {
-            groupClass: 'masteryWorkspace',
-            groupKey: 'calculating_area_figures',
-            groupUniquifier: '1',
-            attributes: { timeSeconds: 300, completion: 'PROMOTED' },
-          },
-        ],
       },
-    },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
+  // getOriginalUserDoc
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[2].id, new UpgradeLogger());
+  await experimentAssignmentService.dataLog(
+    experimentUsers[2].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          attributes: {
+            totalProblemsCompleted: 100,
+          },
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_figures',
+              groupUniquifier: '1',
+              attributes: { timeSeconds: 300, completion: 'PROMOTED' },
+            },
+          ],
+        },
+      },
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
   // getOriginalUserDoc
   experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[3].id, new UpgradeLogger());
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, [
-    {
-      timestamp: new Date().toISOString(),
-      metrics: {
-        attributes: {
-          totalProblemsCompleted: 50,
-        },
-        groupedMetrics: [
-          {
-            groupClass: 'masteryWorkspace',
-            groupKey: 'calculating_area_figures',
-            groupUniquifier: '1',
-            attributes: { timeSeconds: 400, completion: 'GRADUATED' },
+  await experimentAssignmentService.dataLog(
+    experimentUsers[3].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          attributes: {
+            totalProblemsCompleted: 50,
           },
-        ],
-      },
-    },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
-
-  await experimentAssignmentService.dataLog(experimentUsers[3].id, [
-    {
-      timestamp: new Date().toISOString(),
-      metrics: {
-        attributes: {
-          totalProblemsCompleted: 50,
-        },
-        groupedMetrics: [
-          {
-            groupClass: 'masteryWorkspace',
-            groupKey: 'calculating_area_figures',
-            groupUniquifier: '1',
-            attributes: { timeSeconds: 500, completion: 'PROMOTED' },
-          },
-        ],
-      },
-    },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
-
-  // log data for 5th user with null values:
-  await experimentAssignmentService.dataLog(experimentUsers[4].id, [
-    {
-      timestamp: new Date().toISOString(),
-      metrics: {
-        attributes: {
-          totalProblemsCompleted: null,
-        },
-        groupedMetrics: [
-          {
-            groupClass: 'masteryWorkspace',
-            groupKey: 'calculating_area_figures',
-            groupUniquifier: '1',
-            attributes: {
-              timeSeconds: null,
-              completion: null,
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_figures',
+              groupUniquifier: '1',
+              attributes: { timeSeconds: 400, completion: 'GRADUATED' },
             },
-          },
-        ],
+          ],
+        },
       },
-    },
-  ], { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
+
+  await experimentAssignmentService.dataLog(
+    experimentUsers[3].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          attributes: {
+            totalProblemsCompleted: 50,
+          },
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_figures',
+              groupUniquifier: '1',
+              attributes: { timeSeconds: 500, completion: 'PROMOTED' },
+            },
+          ],
+        },
+      },
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
+
+  experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[4].id, new UpgradeLogger());
+  // log data for 5th user with null values:
+  await experimentAssignmentService.dataLog(
+    experimentUsers[4].id,
+    [
+      {
+        timestamp: new Date().toISOString(),
+        metrics: {
+          attributes: {
+            totalProblemsCompleted: null,
+          },
+          groupedMetrics: [
+            {
+              groupClass: 'masteryWorkspace',
+              groupKey: 'calculating_area_figures',
+              groupUniquifier: '1',
+              attributes: {
+                timeSeconds: null,
+                completion: null,
+              },
+            },
+          ],
+        },
+      },
+    ],
+    { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
+  );
 
   const allQuery = await queryService.find(new UpgradeLogger());
   expect(allQuery).toEqual(
@@ -519,7 +574,7 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < allQuery.length; i++) {
     const query = allQuery[i];
-    const queryResult = await queryService.analyse([query.id], new UpgradeLogger());
+    const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
     const res = reduceResult(queryResult[0].result);
     let expectedValue;
     // Used for console output
@@ -530,13 +585,12 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
 
     switch (query.query.operationType) {
       case OPERATION_TYPES.SUM:
-        console.log(consoleString, queryResult);
         const sum = res.reduce((accu, data) => {
           return accu + data;
         }, 0);
-        expectedValue = 320;
+        expectedValue = 370;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 600; // For completion metric
+          expectedValue = 1100; // For completion metric
         }
         expect(sum).toEqual(expectedValue);
         break;
@@ -552,7 +606,7 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
         const maxValue = Math.max(...res);
         expectedValue = 200;
         if (query.metric.key !== 'totalProblemsCompleted') {
-          expectedValue = 300; // For completion metric
+          expectedValue = 500; // For completion metric
         }
         expect(maxValue).toEqual(expectedValue);
         break;
@@ -563,7 +617,7 @@ experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUse
           return accu + data;
         }, 0);
         if (res.length) {
-         expect(count).toEqual(3);
+         expect(count).toEqual(4);
         }
         break;
       case OPERATION_TYPES.AVERAGE:

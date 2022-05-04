@@ -1,9 +1,9 @@
+import { IndividualEnrollmentRepository } from './../../../src/api/repositories/IndividualEnrollmentRepository';
+import { GroupEnrollmentRepository } from './../../../src/api/repositories/GroupEnrollmentRepository';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { GroupAssignmentRepository } from '../../../src/api/repositories/GroupAssignmentRepository';
-import { IndividualAssignmentRepository } from '../../../src/api/repositories/IndividualAssignmentRepository';
 import { GroupExclusionRepository } from '../../../src/api/repositories/GroupExclusionRepository';
 import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 import { MonitoredExperimentPointRepository } from '../../../src/api/repositories/MonitoredExperimentPointRepository';
@@ -15,8 +15,8 @@ let checkArr = [1, 2, 3];
 describe('Check Service Testing', () => {
 
     let service: CheckService;
-    let groupAssignmentRepository: Repository<GroupAssignmentRepository>;
-    let individualAssignmentRepository: Repository<IndividualAssignmentRepository>;
+    let groupEnrollmentRepository: Repository<GroupEnrollmentRepository>;
+    let individualEnrollmentRepository: Repository<IndividualEnrollmentRepository>;
     let groupExclusionRepository: Repository<GroupExclusionRepository>;
     let individualExclusionRepository: Repository<IndividualExclusionRepository>;
     let monitoredExperimentPointRepository: Repository<MonitoredExperimentPointRepository>;
@@ -26,19 +26,19 @@ describe('Check Service Testing', () => {
         module = await Test.createTestingModule({
             providers: [
                 CheckService,
-                GroupAssignmentRepository,
-                IndividualAssignmentRepository,
+                GroupEnrollmentRepository,
+                IndividualEnrollmentRepository,
                 GroupExclusionRepository,
                 IndividualExclusionRepository,
                 MonitoredExperimentPointRepository,
                 {
-                    provide: getRepositoryToken(GroupAssignmentRepository),
+                    provide: getRepositoryToken(GroupEnrollmentRepository),
                     useValue: {
                         find: jest.fn().mockResolvedValue(checkArr)
                     }
                 },
                 {
-                    provide: getRepositoryToken(IndividualAssignmentRepository),
+                    provide: getRepositoryToken(IndividualEnrollmentRepository),
                     useValue: {
                         find: jest.fn().mockResolvedValue(checkArr)
                     }
@@ -65,8 +65,8 @@ describe('Check Service Testing', () => {
         }).compile()
 
         service = module.get<CheckService>(CheckService);
-        groupAssignmentRepository = module.get<Repository<GroupAssignmentRepository>>(getRepositoryToken(GroupAssignmentRepository));
-        individualAssignmentRepository = module.get<Repository<IndividualAssignmentRepository>>(getRepositoryToken(IndividualAssignmentRepository));
+        groupEnrollmentRepository = module.get<Repository<GroupEnrollmentRepository>>(getRepositoryToken(GroupEnrollmentRepository));
+        individualEnrollmentRepository = module.get<Repository<IndividualEnrollmentRepository>>(getRepositoryToken(IndividualEnrollmentRepository));
         groupExclusionRepository = module.get<Repository<GroupExclusionRepository>>(getRepositoryToken(GroupExclusionRepository));
         individualExclusionRepository = module.get<Repository<IndividualExclusionRepository>>(getRepositoryToken(IndividualExclusionRepository));
         monitoredExperimentPointRepository = module.get<Repository<MonitoredExperimentPointRepository>>(getRepositoryToken(MonitoredExperimentPointRepository));
@@ -78,11 +78,11 @@ describe('Check Service Testing', () => {
     })
 
     it('should have the group assignment repository mocked', async() => {
-        expect(await groupAssignmentRepository.find()).toEqual(checkArr)
+        expect(await groupEnrollmentRepository.find()).toEqual(checkArr)
     })
 
     it('should have the individual assignment repository mocked', async() => {
-        expect(await individualAssignmentRepository.find()).toEqual(checkArr)
+        expect(await individualEnrollmentRepository.find()).toEqual(checkArr)
     })
 
     it('should have the group exclusion repository mocked', async() => {

@@ -1,10 +1,7 @@
-import { EntityRepository, EntityManager, Repository, getConnection } from 'typeorm';
+import { EntityRepository, EntityManager, Repository } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import repositoryError from './utils/repositoryError';
 import { ENROLLMENT_CODE } from 'upgrade_types';
-import { ExperimentPartition } from '../models/ExperimentPartition';
-import { IndividualAssignment } from '../models/IndividualAssignment';
-import { ExperimentUser } from '../models/ExperimentUser';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
@@ -77,67 +74,67 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     return result.raw;
   }
 
-  public async getMonitorExperimentPointForExport(
-    offset: number,
-    limit: number,
-    monitorPointIds: string[],
-    experimentId: string,
-    connectionName: string,
-  ): Promise<any> {
-    return getConnection(connectionName)
-      .createQueryBuilder()
-      .select([
-        'user.id',
-        '"monitoredExperiment"."enrollmentCode"',
-        '"monitoredExperiment"."experimentId"',
-        'conditions.conditionCode',
-        'experiment.id',
-        'logs.data',
-        'logs.uniquifier',
-        'experiment.group',
-        'partition.expId',
-        'partition.expPoint',
-        'metric.key',
-      ])
-      .from((subQuery) => {
-        return subQuery
-          .select('*')
-          .from(MonitoredExperimentPoint, 'monitoredExperiment')
-          .where('"monitoredExperiment"."experimentId" IN (:...ids)', { ids: monitorPointIds })
-          .skip(offset)
-          .take(limit);
-      }, 'monitoredExperiment')
-      .leftJoin(ExperimentUser, 'user', 'user.id = "monitoredExperiment"."userId"')
-      .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
-      .leftJoin(ExperimentPartition, 'partition', '"monitoredExperiment"."experimentId" = "partition"."id"')
-      .leftJoin('individualAssignment.experiment', 'experiment')
-      .leftJoin('individualAssignment.condition', 'conditions')
-      .leftJoin('experiment.queries', 'queries')
-      .leftJoin('queries.metric', 'metric')
-      .leftJoin('metric.logs', 'logs', 'logs."userId" = user.id')
-      .where('experiment.id = :id', { id: experimentId })
-      .groupBy('user.id')
-      .addGroupBy('"monitoredExperiment"."experimentId"')
-      .addGroupBy('"monitoredExperiment"."enrollmentCode"')
-      .addGroupBy('conditions.conditionCode')
-      .addGroupBy('partition.expId')
-      .addGroupBy('partition.expPoint')
-      .addGroupBy('experiment.id')
-      .addGroupBy('experiment.group')
-      .addGroupBy('logs.data')
-      .addGroupBy('logs.uniquifier')
-      .addGroupBy('metric.key')
-      .execute()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          this.constructor.name,
-          'getMonitorExperimentPointForExport',
-          { offset, limit, monitorPointIds, experimentId },
-          errorMsg
-        );
-        throw errorMsgString;
-      });
-  }
+  // public async getMonitorExperimentPointForExport(
+  //   offset: number,
+  //   limit: number,
+  //   monitorPointIds: string[],
+  //   experimentId: string,
+  //   connectionName: string,
+  // ): Promise<any> {
+  //   return getConnection(connectionName)
+  //     .createQueryBuilder()
+  //     .select([
+  //       'user.id',
+  //       '"monitoredExperiment"."enrollmentCode"',
+  //       '"monitoredExperiment"."experimentId"',
+  //       'conditions.conditionCode',
+  //       'experiment.id',
+  //       'logs.data',
+  //       'logs.uniquifier',
+  //       'experiment.group',
+  //       'partition.expId',
+  //       'partition.expPoint',
+  //       'metric.key',
+  //     ])
+  //     .from((subQuery) => {
+  //       return subQuery
+  //         .select('*')
+  //         .from(MonitoredExperimentPoint, 'monitoredExperiment')
+  //         .where('"monitoredExperiment"."experimentId" IN (:...ids)', { ids: monitorPointIds })
+  //         .skip(offset)
+  //         .take(limit);
+  //     }, 'monitoredExperiment')
+  //     .leftJoin(ExperimentUser, 'user', 'user.id = "monitoredExperiment"."userId"')
+  //     .leftJoin(IndividualAssignment, 'individualAssignment', 'user.id = "individualAssignment"."userId"')
+  //     .leftJoin(ExperimentPartition, 'partition', '"monitoredExperiment"."experimentId" = "partition"."id"')
+  //     .leftJoin('individualAssignment.experiment', 'experiment')
+  //     .leftJoin('individualAssignment.condition', 'conditions')
+  //     .leftJoin('experiment.queries', 'queries')
+  //     .leftJoin('queries.metric', 'metric')
+  //     .leftJoin('metric.logs', 'logs', 'logs."userId" = user.id')
+  //     .where('experiment.id = :id', { id: experimentId })
+  //     .groupBy('user.id')
+  //     .addGroupBy('"monitoredExperiment"."experimentId"')
+  //     .addGroupBy('"monitoredExperiment"."enrollmentCode"')
+  //     .addGroupBy('conditions.conditionCode')
+  //     .addGroupBy('partition.expId')
+  //     .addGroupBy('partition.expPoint')
+  //     .addGroupBy('experiment.id')
+  //     .addGroupBy('experiment.group')
+  //     .addGroupBy('logs.data')
+  //     .addGroupBy('logs.uniquifier')
+  //     .addGroupBy('metric.key')
+  //     .execute()
+  //     .catch((errorMsg: any) => {
+  //       const errorMsgString = repositoryError(
+  //         this.constructor.name,
+  //         'getMonitorExperimentPointForExport',
+  //         { offset, limit, monitorPointIds, experimentId },
+  //         errorMsg
+  //       );
+  //       throw errorMsgString;
+  //     });
+  // }
 
   public async getMonitoredExperimentPointCount(monitorPointIds: string[]): Promise<number> {
     return this.createQueryBuilder('monitoredExperiment')

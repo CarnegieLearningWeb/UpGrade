@@ -1,13 +1,12 @@
+import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { EntityRepository, Repository, EntityManager, getRepository, SelectQueryBuilder } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
-import { IndividualAssignment } from '../models/IndividualAssignment';
 import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE } from 'upgrade_types';
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 import { Metric } from '../models/Metric';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -154,6 +153,8 @@ export class LogRepository extends Repository<Log> {
 
     let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue);
 
+    // const result = await executeQuery.execute();
+
     let valueToUse = 'extracted.value';
     switch (repeatedMeasure) {
       case REPEATED_MEASURE.mostRecent:
@@ -181,20 +182,20 @@ export class LogRepository extends Repository<Log> {
           .andWhere(`${castFn} In (:...allowedData)`, {
             allowedData: query.metric.allowedData,
           })
-          .addGroupBy('"individualAssignment"."conditionId"');
+          .addGroupBy('"individualEnrollment"."conditionId"');
       }
       executeQuery = executeQuery.andWhere(`${castFn} ${compareFn} :compareValue`, {
         compareValue,
       });
     }
-    executeQuery = executeQuery.groupBy('"individualAssignment"."conditionId"');
+    executeQuery = executeQuery.groupBy('"individualEnrollment"."conditionId"');
     if (operationType === OPERATION_TYPES.PERCENTAGE) {
       executeQuery = executeQuery.select([
-        '"individualAssignment"."conditionId"',
+        '"individualEnrollment"."conditionId"',
         `count(cast(${valueToUse} as text)) as result`,
       ]);
       percentQuery = percentQuery.select([
-        '"individualAssignment"."conditionId"',
+        '"individualEnrollment"."conditionId"',
         `count(cast(${valueToUse} as text)) as result`,
       ]);
       const [executeQueryResult, percentQueryResult] = await Promise.all([
@@ -214,17 +215,17 @@ export class LogRepository extends Repository<Log> {
       if (operationType === OPERATION_TYPES.MEDIAN || operationType === OPERATION_TYPES.MODE) {
         const queryFunction = operationType === OPERATION_TYPES.MEDIAN ? 'percentile_cont(0.5)' : 'mode()';
         executeQuery = executeQuery.select([
-          '"individualAssignment"."conditionId"',
+          '"individualEnrollment"."conditionId"',
           `${queryFunction} within group (order by (cast(${valueToUse} as decimal))) as result`,
         ]);
       } else if (operationType === OPERATION_TYPES.COUNT) {
         executeQuery = executeQuery.select([
-          '"individualAssignment"."conditionId"',
+          '"individualEnrollment"."conditionId"',
           `${operationType}(cast(${valueToUse} as text)) as result`,
         ]);
       } else {
         executeQuery = executeQuery.select([
-          '"individualAssignment"."conditionId"',
+          '"individualEnrollment"."conditionId"',
           `${operationType}(cast(${valueToUse} as decimal)) as result`,
         ]);
       }
@@ -292,35 +293,41 @@ export class LogRepository extends Repository<Log> {
   ): SelectQueryBuilder<Experiment> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
-    return experimentRepo
-      .createQueryBuilder('experiment')
-      .innerJoin('experiment.partitions', 'partitions')
-      .innerJoin('experiment.queries', 'queries')
-      .innerJoin('queries.metric', 'metric')
-      .innerJoin('metric.logs', 'logs')
-      .innerJoin(
-        IndividualAssignment,
-        'individualAssignment',
-        'experiment.id = "individualAssignment"."experimentId" AND logs."userId" = "individualAssignment"."userId"'
-      )
-      .innerJoin(
-        MonitoredExperimentPoint,
-        'monitoredExperimentPoint',
-        'logs."userId" = "monitoredExperimentPoint"."userId" AND partitions.id = "monitoredExperimentPoint"."experimentId"'
-      )
-      .innerJoin(
-        (qb) => {
-          return qb
-            .subQuery()
-            .select([`${metricString} as value`, 'logs.id as id'])
-            .from(Log, 'logs');
-        },
-        'extracted',
-        'extracted.id = logs.id'
-      )
-      .where('metric.key = :metric', { metric })
-      .andWhere('experiment.id = :experimentId', { experimentId })
-      .andWhere('queries.id = :queryId', { queryId })
-      .andWhere(`jsonb_typeof(${metricString}) = 'number'`);
-  } 
+    return (
+      experimentRepo
+        .createQueryBuilder('experiment')
+        .innerJoin('experiment.queries', 'queries')
+        .innerJoin('queries.metric', 'metric')
+        .innerJoinAndSelect('metric.logs', 'logs')
+        .innerJoinAndSelect(
+          (qb) => {
+            return qb
+              .subQuery()
+              .select([
+                `"individualEnrollment"."userId" as "userId"`,
+                `"individualEnrollment"."experimentId" as "experimentId"`,
+                `"individualEnrollment"."conditionId" as "conditionId"`,
+              ])
+              .distinct()
+              .from(IndividualEnrollment, 'individualEnrollment');
+          },
+          'individualEnrollment',
+          'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
+        )
+        .innerJoinAndSelect(
+          (qb) => {
+            return qb
+              .subQuery()
+              .select([`${metricString} as value`, 'logs.id as id'])
+              .from(Log, 'logs');
+          },
+          'extracted',
+          'extracted.id = logs.id'
+        )
+        .where('metric.key = :metric', { metric })
+        .andWhere('experiment.id = :experimentId', { experimentId })
+        .andWhere('queries.id = :queryId', { queryId })
+        .andWhere(`jsonb_typeof(${metricString}) = 'number'`)
+    );
+  }
 }

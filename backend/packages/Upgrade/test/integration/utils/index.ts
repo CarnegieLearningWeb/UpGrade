@@ -1,3 +1,4 @@
+
 import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExperimentPoint';
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
@@ -6,10 +7,10 @@ import { IExperimentAssignment, ENROLLMENT_CODE } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
-import { IndividualAssignment } from '../../../src/api/models/IndividualAssignment';
+import { IndividualEnrollment } from '../../../src/api/models/IndividualEnrollment';
 import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
-import { GroupAssignment } from '../../../src/api/models/GroupAssignment';
-import { SupportService } from '../../../src/api/services/SupportService';
+import { GroupEnrollment } from '../../../src/api/models/GroupEnrollment';
+import { GroupExclusion } from './../../../src/api/models/GroupExclusion';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 
@@ -22,7 +23,7 @@ export function checkExperimentAssignedIsNull(
     expect.arrayContaining([
       expect.objectContaining({
         expId: experimentName,
-        expPoint: experimentPoint
+        expPoint: experimentPoint,
       }),
     ])
   );
@@ -96,12 +97,10 @@ export async function getAllExperimentCondition(
   // getOriginalUserDoc
   const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // getAllExperimentConditions
-  return experimentAssignmentService.getAllExperimentConditions(userId, context, { logger: logger, userDoc: experimentUserDoc});
-}
-
-export async function getUserAssignments(userId: string, context: string = 'home'): Promise<IExperimentAssignment[]> {
-  const supportService = Container.get<SupportService>(SupportService);
-  return supportService.getAssignments(userId, context, new UpgradeLogger);
+  return experimentAssignmentService.getAllExperimentConditions(userId, context, {
+    logger: logger,
+    userDoc: experimentUserDoc,
+  });
 }
 
 export async function markExperimentPoint(
@@ -117,18 +116,24 @@ export async function markExperimentPoint(
   // getOriginalUserDoc
   const experimentUserDoc = await experimentUserService.getOriginalUserDoc(userId, logger);
   // mark experiment point
-  await experimentAssignmentService.markExperimentPoint(userId, experimentPoint, condition, { logger: logger, userDoc: experimentUserDoc}, experimentName);
+  await experimentAssignmentService.markExperimentPoint(
+    userId,
+    experimentPoint,
+    condition,
+    { logger, userDoc: experimentUserDoc },
+    experimentName
+  );
   return checkService.getAllMarkedExperimentPoints();
 }
 
 export async function checkDeletedExperiment(experimentId: string, user: User): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // delete experiment and check assignments operations
-  await experimentService.delete(experimentId, user, new UpgradeLogger);
+  await experimentService.delete(experimentId, user, new UpgradeLogger());
 
   // no individual assignments
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
-  const individualAssignments = await individualAssignmentRepository.find();
+  const individualEnrollmentRepository = getRepository(IndividualEnrollment);
+  const individualAssignments = await individualEnrollmentRepository.find();
   expect(individualAssignments.length).toEqual(0);
 
   // no individual exclusion
@@ -137,12 +142,12 @@ export async function checkDeletedExperiment(experimentId: string, user: User): 
   expect(individualExclusions.length).toEqual(0);
 
   // no group assignment
-  const groupAssignmentRepository = getRepository(GroupAssignment);
-  const groupAssignments = await groupAssignmentRepository.find();
+  const groupEnrollmentRepository = getRepository(GroupEnrollment);
+  const groupAssignments = await groupEnrollmentRepository.find();
   expect(groupAssignments.length).toEqual(0);
 
   // no group exclusion
-  const groupExclusionRepository = getRepository(GroupAssignment);
+  const groupExclusionRepository = getRepository(GroupExclusion);
   const groupExclusions = await groupExclusionRepository.find();
   expect(groupExclusions.length).toEqual(0);
 }
