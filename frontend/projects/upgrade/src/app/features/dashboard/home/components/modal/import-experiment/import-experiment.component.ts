@@ -19,10 +19,7 @@ export class ImportExperimentComponent {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
   isExperimentJSONVersionValid = true;
-  missingProperties: string;
   missingAllProperties: string;
-  missingConditionProperties: string;
-  missingPartitionProperties: string;
 
   constructor(
     private experimentService: ExperimentService,
@@ -54,10 +51,10 @@ export class ImportExperimentComponent {
 
   async uploadFile(event) {
     const reader = new FileReader();
-    await reader.addEventListener(
+    reader.addEventListener(
       'load',
       async function() {
-        const result = await JSON.parse(reader.result as any);
+        const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
         this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
       }.bind(this)
@@ -110,24 +107,26 @@ export class ImportExperimentComponent {
       order: 'number',
     }
 
-    this.missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
+    let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
-    this.missingAllProperties = this.translate.instant('home.import-experiment.missing-properties.message.text') + this.missingProperties;
-    missingPropertiesFlag = missingPropertiesFlag && this.missingProperties.length === 0;
+    this.missingAllProperties = this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
+    let missingConditionProperties;
+    let missingPartitionProperties;
+    missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
     experiment.conditions.map(condition => {
-      this.missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
+      missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
     });
-    if (this.missingConditionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.condition.text') + ": " + this.missingConditionProperties;
+    if (missingConditionProperties.length > 0) {
+      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.condition.text') + ": " + missingConditionProperties;
     }
-    missingPropertiesFlag = missingPropertiesFlag && this.missingConditionProperties.length === 0;
+    missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map(partition => {
-      this.missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
+      missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
     });
-    if (this.missingPartitionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.partition.text') + ": " + this.missingPartitionProperties;
+    if (missingPartitionProperties.length > 0) {
+      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.partition.text') + ": " + missingPartitionProperties;
     }
-    missingPropertiesFlag = missingPropertiesFlag && this.missingPartitionProperties.length === 0;
+    missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
     return missingPropertiesFlag;
   }
 
