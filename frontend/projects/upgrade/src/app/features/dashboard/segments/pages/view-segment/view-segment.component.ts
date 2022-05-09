@@ -10,6 +10,7 @@ import * as clonedeep from 'lodash.clonedeep';
 import { DeleteSegmentComponent } from '../../components/modal/delete-segment/delete-segment.component';
 import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segment/duplicate-segment.component';
 import { MemberTypes, Segment } from '../../../../../core/segments/store/segments.model';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
 @Component({
   selector: 'segment-view-flag',
@@ -39,6 +40,9 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       .pipe(filter(segment => !!segment))
       .subscribe(segment => {
         this.segment = segment;
+
+        if(this.segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE)
+          this.permissions = null;
         this.members = [];
         this.segment.individualForSegment.forEach(user => {
           this.members.push({type: MemberTypes.INDIVIDUAL, id: user.userId});

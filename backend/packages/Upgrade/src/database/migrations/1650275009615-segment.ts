@@ -5,7 +5,7 @@ export class segment1650275009615 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "individual_for_segment" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "segmentId" uuid NOT NULL, CONSTRAINT "PK_0a965e751d45b5921549274a65c" PRIMARY KEY ("userId", "segmentId"))`);
-        await queryRunner.query(`CREATE TYPE "segment_type_enum" AS ENUM('public', 'private')`);
+        await queryRunner.query(`CREATE TYPE "segment_type_enum" AS ENUM('public', 'private', 'global_exclude')`);
         await queryRunner.query(`CREATE TABLE "segment" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" uuid NOT NULL, "name" character varying NOT NULL, "description" character varying , "context" character varying NOT NULL, "type" "segment_type_enum" NOT NULL DEFAULT 'public', CONSTRAINT "PK_d648ac58d8e0532689dfb8ad7ef" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "group_for_segment" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "segmentId" uuid NOT NULL, CONSTRAINT "PK_831eaa3563190f840db9ebe4f95" PRIMARY KEY ("groupId", "type", "segmentId"))`);
         await queryRunner.query(`CREATE TABLE "segment_for_segment" ("childSegmentId" uuid NOT NULL, "parentSegmentId" uuid NOT NULL, CONSTRAINT "PK_a74451152fc94f6f13fffe905a9" PRIMARY KEY ("childSegmentId", "parentSegmentId"))`);

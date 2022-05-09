@@ -29,7 +29,7 @@ export class SegmentService {
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
-      .where('segment.type = :public', {public: SEGMENT_TYPE.PUBLIC})
+      .where('segment.type != :private', {private: SEGMENT_TYPE.PRIVATE})
       .getMany();
 
     return queryBuilder;
@@ -42,7 +42,7 @@ export class SegmentService {
     .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
     .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
     .leftJoinAndSelect('segment.subSegments', 'subSegment')
-    .where('segment.type = :public', {public: SEGMENT_TYPE.PUBLIC})
+    .where('segment.type != :private', {private: SEGMENT_TYPE.PRIVATE})
     .andWhere({ id })
     .getOne()
 

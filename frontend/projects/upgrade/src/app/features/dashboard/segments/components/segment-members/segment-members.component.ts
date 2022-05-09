@@ -75,13 +75,11 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
     if(this.allSegments) {
       this.allSegments.forEach(( segment) => {
-        this.subSegmentIds.push(segment.name);
-        this.segmentNameId.set(segment.name, segment.id);
+        if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.segmentInfo.id) {
+          this.subSegmentIds.push(segment.name);
+          this.segmentNameId.set(segment.name, segment.id);
+        }
       });
-
-      if (this.segmentInfo) {
-        this.subSegmentIds = this.subSegmentIds.filter(ele => ele !== this.segmentInfo.name);
-      }
     }
 
     this.segmentMembersForm = this._formBuilder.group({

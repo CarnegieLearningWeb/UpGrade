@@ -89,7 +89,7 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span> {{ segment.updatedAt }} </span>
+          <span> {{ segment.updatedAt | date: 'MMM d, y h:mm a' }} </span>
         </td>
       </ng-container>
 

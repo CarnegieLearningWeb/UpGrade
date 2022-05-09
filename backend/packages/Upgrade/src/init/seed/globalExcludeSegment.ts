@@ -9,7 +9,7 @@ export const globalExcludeSegment: SegmentInputValidator = {
   id: "77777777-7777-7777-7777-777777777777",
   description: "Globally excluded Users, Groups and Segments",
   context: "any",
-  type: SEGMENT_TYPE.PUBLIC,
+  type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
   userIds: [],
   groups: [],
   subSegmentIds: []
