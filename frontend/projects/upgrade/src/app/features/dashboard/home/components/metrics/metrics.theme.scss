@@ -1,0 +1,14 @@
+@import '~@angular/material/theming';
+
+@mixin experiment-design-component-theme($theme) {
+  $foreground: map-get($theme, foreground);
+
+  .experiment-design {
+    .condition-table,
+    .partition-table {
+      .remove-icon {
+        color: mat-color($foreground, icon);
+      }
+    }
+  }
+}
