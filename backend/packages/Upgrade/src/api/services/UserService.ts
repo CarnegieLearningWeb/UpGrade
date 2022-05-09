@@ -24,10 +24,11 @@ export class UserService {
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
 
     const isUserExists = await this.userRepository.find({ where: {email: user.email }});
-    if (!isUserExists) {
+    const response = await this.userRepository.upsertUser(user);
+    if (!isUserExists && response) {
       this.sendWelcomeEmail(user.email)
     }
-    return this.userRepository.upsertUser(user);
+    return response
   }
 
   public async upsertAdminUser(user: User, logger: UpgradeLogger): Promise<User> {
@@ -128,31 +129,13 @@ export class UserService {
   
   public sendWelcomeEmail(email: string): void {
     const emailSubject = `Welcome to UpGrade!`;
-    const emailBody = `Greetings!, 
-    <br>
-    A new user account was created for you in UpGrade. You can sign into UpGrade using your Google credentials.
-    <br>
-    To know more about how UpGrade works, please visit 
-    <a href="https://www.upgradeplatform.org/"> www.upgradeplatform.org</a>
-    . To read the documentation, visit 
-    <a href="https://upgrade-platform.gitbook.io/upgrade-documentation/"> UpGrade-docs</a>
-    <br>`;
-
+    const emailBody = this.emails.welcomeEmailBody();
     this.sendEmail(email, emailSubject, emailBody);
   }
 
   public sendRoleChangedEmail(email: string, role: UserRole): void {
     const emailSubject = `UpGrade Role Changed`;
-    const emailBody = `Greetings!, 
-    <br>
-    Your Role in Upgrade is changed to ${role}!
-    <br>
-    To know more about how UpGrade works, please visit 
-    <a href="https://www.upgradeplatform.org/"> www.upgradeplatform.org</a>
-    . To read the documentation, visit 
-    <a href="https://upgrade-platform.gitbook.io/upgrade-documentation/"> UpGrade-docs</a>
-    <br>`;
-
+    const emailBody = this.emails.roleChangeEmailBody(role);
     this.sendEmail(email, emailSubject, emailBody);
   }
 
