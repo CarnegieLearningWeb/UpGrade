@@ -11,6 +11,7 @@ import { DeleteSegmentComponent } from '../../components/modal/delete-segment/de
 import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segment/duplicate-segment.component';
 import { MemberTypes, Segment } from '../../../../../core/segments/store/segments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
+import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 
 @Component({
   selector: 'segment-view-flag',
@@ -23,7 +24,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   segment: any;
   segmentSub: Subscription;
   members: {type: string, id: string}[] = [];
-  
+
   displayedVariationColumns: string[] = ['variationNumber', 'value', 'name'];
 
   constructor(
@@ -66,13 +67,15 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   deleteSegment() {
-    const dialogRef = this.dialog.open(DeleteSegmentComponent, {
-      panelClass: 'delete-modal',
-      data: { segmentName: this.segment.name, segmentId: this.segment.id }
+    const dialogRef = this.dialog.open(DeleteComponent, {
+      panelClass: 'delete-modal'
     });
 
-    dialogRef.afterClosed().subscribe(() => {
-      // Add code of further actions after deleting feature segment
+    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+      if (isDeleteButtonClicked) {
+        this.segmentsService.deleteSegment(this.segment.id);
+        // Add code of further actions after deleting experiment
+      }
     });
   }
 
@@ -87,7 +90,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   exportSegment(segmentId: string) {
-    // this.segmentsService.exportSegment(segmentId);
+    this.segmentsService.exportSegment(segmentId);
   }
 
   ngOnDestroy() {

@@ -2,7 +2,6 @@ import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewCh
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
-import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
@@ -40,7 +39,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember'];
   constructor(
     private _formBuilder: FormBuilder,
-    private featureFlagService: FeatureFlagsService,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private translate: TranslateService
@@ -54,12 +52,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.members.clear();
-      // this.segmentInfo.individualForSegment.forEach((id) => {
-      //   this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
-      // });
-      // this.segmentInfo.subSegments.forEach((id) => {
-      //   this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
-      // });
       this.membersDataSource.next(this.members.controls);
     }
   }
@@ -73,20 +65,29 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       this.allSegments =  allSegments;
     });
 
-    if(this.allSegments) {
-      this.allSegments.forEach(( segment) => {
-        if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.segmentInfo.id) {
-          this.subSegmentIds.push(segment.name);
-          this.segmentNameId.set(segment.name, segment.id);
-        }
+    if (this.allSegments) {
+      this.allSegments.forEach((segment) => {
+        // TODO improve the logic
+        if (this.segmentInfo) {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.segmentInfo.id) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        } else {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        }  
       });
     }
 
     this.segmentMembersForm = this._formBuilder.group({
-      members: this._formBuilder.array([]),
+      members: this._formBuilder.array([this.addMembers()]),
     });
 
     if (this.segmentInfo) {
+      this.members.removeAt(0);
       this.segmentInfo.individualForSegment.forEach((id) => {
         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
       });

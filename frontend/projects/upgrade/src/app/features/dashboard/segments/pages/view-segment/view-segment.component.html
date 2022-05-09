@@ -29,7 +29,7 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="deleteSegment()"
-            *ngIf="permissions?.segments.delete"
+            *ngIf="permissions?.segments.delete && segment?.context !== 'any'"
           >
             {{ 'global.delete.text' | translate }}
           </button>
@@ -39,6 +39,7 @@
             mat-flat-button
             class="ft-14-600 button-long"
             (click)="duplicateSegmentDialog()"
+            *ngIf="segment?.context !== 'any'"
           >
             {{ 'global.duplicate.text' | translate }}
           </button>
@@ -66,7 +67,7 @@
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'segments.global-status.text' | translate | uppercase }}</span>
         <span class="ft-18-700 section-data-value">
-          {{ segment.name }}
+          ----------
         </span>
       </div>
 

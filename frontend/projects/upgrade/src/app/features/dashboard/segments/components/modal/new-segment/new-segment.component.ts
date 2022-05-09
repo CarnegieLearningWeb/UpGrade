@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Inject, OnInit } from '@angular/core';
 import { NewSegmentDialogData, NewSegmentDialogEvents, NewSegmentPaths, Segment } from '../../../../../../core/segments/store/segments.model';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 
@@ -20,7 +19,6 @@ export class NewSegmentComponent implements OnInit {
 
   constructor(
     private dialogRef: MatDialogRef<NewSegmentComponent>,
-    private featureFlagService: FeatureFlagsService,
     private segmentService: SegmentsService,
     private experimentService: ExperimentService,
     @Inject(MAT_DIALOG_DATA) public data: any

@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
-import { SegmentInput } from '../../../../../../core/segments/store/segments.model';
+import { SegmentInput, Segment } from '../../../../../../core/segments/store/segments.model';
 
 interface ImportSegmentJSON {
   schema: Record<keyof SegmentInput, string>,
@@ -15,9 +15,9 @@ interface ImportSegmentJSON {
 })
 export class ImportSegmentComponent {
   file: any;
-  segmentInfo: SegmentInput;
+  segmentInfo: Segment;
   isSegmentJSONValid = true;
-
+  segmentTemp: any;
   constructor(
     private segmentsService: SegmentsService,
     public dialogRef: MatDialogRef<ImportSegmentComponent>,
@@ -29,9 +29,20 @@ export class ImportSegmentComponent {
   }
 
   importSegment() {
-    this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentInfo);
+    /// improve the logic here 
+    this.segmentTemp = this.segmentInfo;
+    this.segmentTemp.userIds = this.segmentInfo.individualForSegment.map((i) => {
+      return i.userId;
+    });
+    this.segmentTemp.subSegmentIds = this.segmentInfo.subSegments.map((i) => {
+      return i.id;
+    });
+    this.segmentTemp.groups = this.segmentInfo.groupForSegment.map((i) => {
+      return { type: i.type, groupId: i.groupId } ;
+    });
+    this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
     if (this.isSegmentJSONValid) {
-      this.segmentsService.importSegment({ ...this.segmentInfo });
+      this.segmentsService.importSegment({ ...this.segmentTemp });
       this.onCancelClick();
     }
   }

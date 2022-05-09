@@ -1,20 +1,20 @@
 .duplicate-segment-dialog {
-    .name {
-      width: 100%;
+  .name {
+    width: 100%;
+    line-height: 18px;
+
+    &-input {
       line-height: 18px;
-  
-      &-input {
-        line-height: 18px;
       }
-    }
-  
-    &-actions {
-      justify-content: flex-end;
-      margin: 0;
-  
-      .duplicate-btn {
-        background-color: var(--blue) !important;
-      }
+  }
+
+  &-actions {
+    justify-content: flex-end;
+    margin: 0;
+
+    .duplicate-btn {
+      background-color: var(--blue) !important;
+      width: 120px;
     }
   }
-  
+}

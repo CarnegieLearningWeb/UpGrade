@@ -3,12 +3,11 @@ import { Observable, Subscription } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { MatTableDataSource, MatSort, MatDialog } from '@angular/material';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { FeatureFlagsService } from '../../../../../core/feature-flags/feature-flags.service';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
-import { FeatureFlag } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { Segment } from '../../../../../core/segments/store/segments.model';
 import { NewSegmentComponent } from '../modal/new-segment/new-segment.component';
 import { ImportSegmentComponent } from '../modal/import-segment/import-segment.component';
+import { E } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'segments-list',
@@ -26,24 +25,12 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     'description',
     'membersCount',
   ];
-  allFeatureFlags: MatTableDataSource<FeatureFlag>;
-  allFeatureFlagsSub: Subscription;
-  isLoadingFeatureFlags$ = this.featureFlagsService.isLoadingFeatureFlags$;
 
-  //----
   allSegments: MatTableDataSource<Segment>;
   allSegmentsSub: Subscription;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
-  //---
 
-  searchValue: string;
-  isAllFlagsFetched = false;
-  isAllFlagsFetchedSub: Subscription;
-
-  //---
-  isAllSegmentsFetched = false;
   isAllSegmentsFetchedSub: Subscription;
-  //--
 
   @ViewChild('tableContainer', { static: false }) segmentsTableContainer: ElementRef;
   @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
@@ -52,21 +39,12 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private authService: AuthService,
-    private featureFlagsService: FeatureFlagsService,
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
   ) { }
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.allFeatureFlagsSub = this.featureFlagsService.allFeatureFlags$.subscribe(
-      allFeatureFlags => {
-        this.allFeatureFlags = new MatTableDataSource();
-        this.allFeatureFlags.data = [...allFeatureFlags];
-        this.allFeatureFlags.sort = this.sort;
-      }
-    );
-
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(
       allSegments => {
         this.allSegments = new MatTableDataSource();
@@ -75,9 +53,6 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     );
 
-    this.isAllFlagsFetchedSub = this.featureFlagsService.isAllFlagsFetched().subscribe(
-      value => this.isAllFlagsFetched = value
-    );
   }
 
   openNewSegmentDialog() {
@@ -101,10 +76,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy() {
-    this.allFeatureFlagsSub.unsubscribe();
-    this.isAllFlagsFetchedSub.unsubscribe();
     this.allSegmentsSub.unsubscribe();
-    // this.isAllSegmentsFetchedSub.unsubscribe();
   }
 
   ngAfterViewInit() {

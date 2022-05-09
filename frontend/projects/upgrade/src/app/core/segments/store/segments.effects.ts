@@ -47,11 +47,15 @@ export class SegmentsEffects {
           ? this.segmentsDataService.importSegment(Segment)
           : this.segmentsDataService.updateSegment(Segment);
         return action.pipe(
-          map((data: Segment) => SegmentsActions.actionUpsertSegmentSuccess({ segment: data })),
+          map((data: Segment) => {
+            if (actionType === UpsertSegmentType.CREATE_NEW_SEGMENT) {
+              this.router.navigate(['/segments']);
+            }
+            return  SegmentsActions.actionUpsertSegmentSuccess({ segment: data })
+          }),
           catchError(() => [SegmentsActions.actionUpsertSegmentFailure()])
         )
-      }
-      )
+      })
     )
   );
 
