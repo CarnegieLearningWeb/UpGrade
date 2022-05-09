@@ -1,3 +1,5 @@
+import { IsNotEmpty } from 'class-validator';
+import { ENROLLMENT_CODE } from 'upgrade_types';
 import { ExperimentPartition } from './ExperimentPartition';
 import { Entity, ManyToOne, PrimaryColumn, Column, Index } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
@@ -24,6 +26,10 @@ export class IndividualEnrollment extends BaseModel {
 
   @Column({ nullable: true })
   public groupId?: string;
+
+  @IsNotEmpty()
+  @Column({ type: 'enum', enum: ENROLLMENT_CODE, nullable: true })
+  public enrollmentCode: ENROLLMENT_CODE;
 
   @ManyToOne((type) => ExperimentCondition, { onDelete: 'CASCADE' })
   public condition: ExperimentCondition;

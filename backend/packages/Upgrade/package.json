@@ -17,10 +17,10 @@
         "drop": "npm start db.drop",
         "help": "npm start help",
         "generate-data": "npm run build && node dist/src/dataGenerator/index.js",
-        "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate -n",
-        "migration:create": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:create -n",
-        "migration:run": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:run",
-        "migration:revert": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:revert"
+        "migration:generate": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:generate -n",
+        "migration:create": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:create -n",
+        "migration:run": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:run",
+        "migration:revert": "./node_modules/.bin/ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm migration:revert"
     },
     "keywords": [],
     "author": "",

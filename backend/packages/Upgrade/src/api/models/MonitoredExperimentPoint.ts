@@ -2,7 +2,6 @@ import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, Index } from 'type
 import { BaseModel } from './base/BaseModel';
 import { ExperimentUser } from './ExperimentUser';
 import { MonitoredExperimentPointLog } from './MonitorExperimentPointLog';
-import { ENROLLMENT_CODE } from 'upgrade_types';
 
 @Entity()
 export class MonitoredExperimentPoint extends BaseModel {
@@ -12,13 +11,6 @@ export class MonitoredExperimentPoint extends BaseModel {
   @Index()
   @Column()
   public experimentId: string;
-
-  @Column({
-    type: 'enum',
-    enum: ENROLLMENT_CODE,
-    nullable: true,
-  })
-  public enrollmentCode: ENROLLMENT_CODE | null;
 
   @Column({
     nullable: true,

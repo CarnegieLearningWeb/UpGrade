@@ -1,7 +1,6 @@
 import { EntityRepository, EntityManager, Repository } from 'typeorm';
 import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 import repositoryError from './utils/repositoryError';
-import { ENROLLMENT_CODE } from 'upgrade_types';
 
 @EntityRepository(MonitoredExperimentPoint)
 export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
@@ -59,19 +58,6 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
         const errorMsgString = repositoryError(this.constructor.name, 'getByDateRange', { ids, from, to }, errorMsg);
         throw errorMsgString;
       });
-  }
-
-  public async updateEnrollmentCode(
-    enrollmentCode: ENROLLMENT_CODE,
-    ids: string[]
-  ): Promise<MonitoredExperimentPoint[]> {
-    const result = await this.createQueryBuilder('monitoredExperiment')
-      .update()
-      .set({ enrollmentCode })
-      .where('id IN (:...values) AND enrollmentCode is null', { values: ids })
-      .execute();
-
-    return result.raw;
   }
 
   // public async getMonitorExperimentPointForExport(

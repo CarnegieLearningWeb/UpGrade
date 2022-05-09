@@ -80,10 +80,6 @@ export function checkMarkExperimentPointForUser(
     });
 
     expect(monitorDocument.monitoredPointLogs.length).toEqual(markExperimentPointLogLength);
-
-    if (enrollmentCode) {
-      expect(monitorDocument.enrollmentCode).toEqual(enrollmentCode);
-    }
   }
 }
 
