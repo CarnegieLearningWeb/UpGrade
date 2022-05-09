@@ -85,8 +85,8 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public async updateUserRole(email: string, role: UserRole): Promise<User> {
-    const response = await this.userRepository.updateUserRole(email, role);
+  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
+    const response = await this.userRepository.updateUserDetails(firstName, lastName, email, role);
     if (response) {
       this.sendRoleChangedEmail(email, role);
     }
