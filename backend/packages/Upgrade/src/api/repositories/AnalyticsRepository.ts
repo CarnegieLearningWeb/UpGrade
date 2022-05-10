@@ -45,55 +45,56 @@ export class AnalyticsRepository {
     if (!experimentIds.length) {
       return [];
     }
-    const experimentRepository: ExperimentRepository = this.manager.getCustomRepository(ExperimentRepository);
+    // TODO: removing group count query and updating with simple enrollment count query:
+    // const experimentRepository: ExperimentRepository = this.manager.getCustomRepository(ExperimentRepository);
 
     // for calculating individual enrollments
-    const individualMonitoredExperiment = experimentRepository
-      .createQueryBuilder('experiment')
-      .select(['"monitoredExperimentPoint"."userId"', 'experiment.id'])
-      .innerJoin('experiment.partitions', 'partitions')
-      .innerJoin(
-        MonitoredExperimentPoint,
-        'monitoredExperimentPoint',
-        '"monitoredExperimentPoint"."experimentId" = partitions.id'
-      )
-      .where('experiment.id IN (:...ids)', { ids: experimentIds })
-      .andWhere((qb) => {
-        const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
-        return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
-      })
-      .getSql();
+    // const individualMonitoredExperiment = experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select(['"monitoredExperimentPoint"."userId"', 'experiment.id'])
+    //   .innerJoin('experiment.partitions', 'partitions')
+    //   .innerJoin(
+    //     MonitoredExperimentPoint,
+    //     'monitoredExperimentPoint',
+    //     '"monitoredExperimentPoint"."experimentId" = partitions.id'
+    //   )
+    //   .where('experiment.id IN (:...ids)', { ids: experimentIds })
+    //   .andWhere((qb) => {
+    //     const subQuery = qb.subQuery().select('user.id').from(PreviewUser, 'user').getQuery();
+    //     return '"monitoredExperimentPoint"."userId" NOT IN ' + subQuery;
+    //   })
+    //   .getSql();
 
-    const assignment = await experimentRepository
-      .createQueryBuilder('experiment')
-      .select(['"individualAssignment"."userId"', 'experiment.id'])
-      .innerJoin(IndividualAssignment, 'individualAssignment', '"individualAssignment"."experimentId" = experiment.id')
-      .where('experiment.id IN (:...ids)', { ids: experimentIds })
-      .getSql();
+    // const assignment = await experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select(['"individualAssignment"."userId"', 'experiment.id'])
+    //   .innerJoin(IndividualAssignment, 'individualAssignment', '"individualAssignment"."experimentId" = experiment.id')
+    //   .where('experiment.id IN (:...ids)', { ids: experimentIds })
+    //   .getSql();
 
-    const groupMonitoredExperiment = experimentRepository
-      .createQueryBuilder('experiment')
-      .select([`"experimentUser"."workingGroup" -> experiment.group #>> '{}' as "groupId"`, 'experiment.id'])
-      .innerJoin('experiment.partitions', 'partitions')
-      .innerJoin(
-        MonitoredExperimentPoint,
-        'monitoredExperimentPoint',
-        '"monitoredExperimentPoint"."experimentId" = partitions.id'
-      )
-      .innerJoin(ExperimentUser, 'experimentUser', '"monitoredExperimentPoint"."userId" = experimentUser.id')
-      .where('experiment.id IN (:...ids)', { ids: experimentIds })
-      .getSql();
+    // const groupMonitoredExperiment = experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select([`"experimentUser"."workingGroup" -> experiment.group #>> '{}' as "groupId"`, 'experiment.id'])
+    //   .innerJoin('experiment.partitions', 'partitions')
+    //   .innerJoin(
+    //     MonitoredExperimentPoint,
+    //     'monitoredExperimentPoint',
+    //     '"monitoredExperimentPoint"."experimentId" = partitions.id'
+    //   )
+    //   .innerJoin(ExperimentUser, 'experimentUser', '"monitoredExperimentPoint"."userId" = experimentUser.id')
+    //   .where('experiment.id IN (:...ids)', { ids: experimentIds })
+    //   .getSql();
 
     // for calculating group assignment
-    const groupAssignment = await experimentRepository
-      .createQueryBuilder('experiment')
-      .select(['"groupAssignment"."groupId" as "groupId"', 'experiment.id'])
-      .innerJoin(GroupAssignment, 'groupAssignment', '"groupAssignment"."experimentId" = experiment.id')
-      .where('experiment.id IN (:...ids)', { ids: experimentIds })
-      .getSql();
+    // const groupAssignment = await experimentRepository
+    //   .createQueryBuilder('experiment')
+    //   .select(['"groupAssignment"."groupId" as "groupId"', 'experiment.id'])
+    //   .innerJoin(GroupAssignment, 'groupAssignment', '"groupAssignment"."experimentId" = experiment.id')
+    //   .where('experiment.id IN (:...ids)', { ids: experimentIds })
+    //   .getSql();
 
-    const individualSQL = `SELECT i."userId", i."experiment_id" AS "experimentId"  FROM ( ${individualMonitoredExperiment} INTERSECT ${assignment}) i`;
-    const groupSQL = `SELECT i."groupId", i."experiment_id" AS "experimentId"  FROM ( ${groupMonitoredExperiment} INTERSECT ${groupAssignment}) i`;
+    // const individualSQL = `SELECT i."userId", i."experiment_id" AS "experimentId"  FROM ( ${individualMonitoredExperiment} INTERSECT ${assignment}) i`;
+    // const groupSQL = `SELECT i."groupId", i."experiment_id" AS "experimentId"  FROM ( ${groupMonitoredExperiment} INTERSECT ${groupAssignment}) i`;
 
     // const groupMonitoredPoint = await this.manager.query(groupMonitoredExperiment, experimentIds);
     // console.log('groupMonitoredPoint', groupMonitoredPoint);
@@ -105,15 +106,14 @@ export class AnalyticsRepository {
     // console.log('groupResult', groupResult);
 
     let result = await this.manager.query(
-      `SELECT cast(COUNT(DISTINCT(i."userId")) as int) as users, cast(COUNT( DISTINCT(g."groupId")) as int) as groups, i."experimentId" FROM (${individualSQL}) i LEFT JOIN (${groupSQL}) as g ON i."experimentId" = g."experimentId" GROUP BY i."experimentId"`,
-      experimentIds
+      `SELECT "t2"."experimentId", COUNT(DISTINCT("t2"."userId")) AS users FROM (SELECT "e"."name" AS "ExperimentName", t1.*, "ia"."conditionId" FROM (SELECT "ep"."experimentId" AS "experimentId", "ep"."expId", "ep"."expPoint", "userId", "condition" AS markedCond FROM monitored_experiment_point AS mep
+       INNER JOIN experiment_partition AS ep ON "mep"."experimentId" = "ep"."id") AS t1 INNER JOIN individual_assignment AS ia ON "t1"."userId" = "ia"."userId" AND "t1"."experimentId" = "ia"."experimentId" INNER JOIN experiment AS e ON "t1"."experimentId" = "e"."id") AS t2 GROUP BY "experimentId"`
     );
     result = experimentIds.map((id) => {
       const expDataFound = result.find((exp) => exp.experimentId === id);
       if (!expDataFound) {
         return {
           users: 0,
-          groups: 0,
           id,
         };
       } else {
