@@ -3,6 +3,11 @@ module.exports = {
     "rootDir": "./projects/upgrade",
     "roots": ["<rootDir>", "../../../types"],
     "coverageDirectory": "../../coverage",
+    "coverageReporters": [
+        "json-summary", 
+        "text",
+        "lcov"
+    ],
     "setupFilesAfterEnv": [
         "<rootDir>/setup-jest.ts"
     ],

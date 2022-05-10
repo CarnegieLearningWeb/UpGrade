@@ -7,6 +7,7 @@ import { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE } from 'upgrade_type
 import { METRICS_JOIN_TEXT } from '../services/MetricService';
 import { Query } from '../models/Query';
 import { Metric } from '../models/Metric';
+import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
 
 @EntityRepository(Log)
 export class LogRepository extends Repository<Log> {
@@ -293,6 +294,7 @@ export class LogRepository extends Repository<Log> {
     const experimentRepo = getRepository(Experiment);
     return experimentRepo
       .createQueryBuilder('experiment')
+      .innerJoin('experiment.partitions', 'partitions')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')
       .innerJoin('metric.logs', 'logs')
@@ -300,6 +302,11 @@ export class LogRepository extends Repository<Log> {
         IndividualAssignment,
         'individualAssignment',
         'experiment.id = "individualAssignment"."experimentId" AND logs."userId" = "individualAssignment"."userId"'
+      )
+      .innerJoin(
+        MonitoredExperimentPoint,
+        'monitoredExperimentPoint',
+        'logs."userId" = "monitoredExperimentPoint"."userId" AND partitions.id = "monitoredExperimentPoint"."experimentId"'
       )
       .innerJoin(
         (qb) => {

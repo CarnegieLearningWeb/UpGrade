@@ -19,6 +19,8 @@ export enum SORT_AS {
 }
 
 export interface UpdateUser {
+  firstName: string,
+  lastName: string,
   email: string;
   role: UserRole;
 }

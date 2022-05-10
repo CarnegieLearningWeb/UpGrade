@@ -14,7 +14,7 @@ const APP_PREFIX = 'UPGRADE-';
 export class LocalStorageService {
   constructor() {}
 
-  static loadInitialState() {
+  loadInitialState() {
     const experimentSortKey = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_KEY);
     const experimentSortType = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE);
     const experimentSearchKey = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY);
@@ -54,19 +54,7 @@ export class LocalStorageService {
     return JSON.parse(localStorage.getItem(`${APP_PREFIX}${key}`));
   }
 
-  static getItem(key: string) {
-    return JSON.parse(localStorage.getItem(`${APP_PREFIX}${key}`));
-  }
-
-  static removeItem(key: string) {
+  removeItem(key: string) {
     localStorage.removeItem(`${APP_PREFIX}${key}`);
-  }
-
-  clear() {
-    Object.keys(sessionStorage).forEach(key => {
-      if (key.includes(APP_PREFIX)) {
-        sessionStorage.removeItem(key);
-      }
-    });
   }
 }

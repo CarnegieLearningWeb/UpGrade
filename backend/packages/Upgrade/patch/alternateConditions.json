@@ -1,0 +1,1132 @@
+[
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_direct_variation",
+        "workspace": "wga1dv_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_lin_mod_mult_rep",
+        "workspace": "wga1lmmr_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_frac",
+        "workspace": "wga1lmdf_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_linear_models_distrib_int",
+        "workspace": "wga1lmdi_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_1step_eqn_ops",
+        "workspace": "wga1p1seo_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_patterns_2step_expr",
+        "workspace": "wga1p2se_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_decimal",
+        "workspace": "wga1sid_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_slope_intercept_integer",
+        "workspace": "wga1sii_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_dec",
+        "workspace": "wga1s1sd_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "Control",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_control",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz",
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw",
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_xprize_indianriver",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_xprize_indianriver_prompt",
+        "schoolId": [
+            "89923g2jmr6",
+            "11658xv1ihl",
+            "11659pn4dxh",
+            "17839rrzcz"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_xprize_lascruces",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_xprize_lascruces_prompt",
+        "schoolId": [
+            "1038572sku8e1",
+            "1038573j2kkox",
+            "78440g35awb",
+            "69878d79r8",
+            "75100ly4b2q",
+            "75103xrwhw4",
+            "58627jewxzg",
+            "58630s0c7eq",
+            "58634yvhp8t"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NonNotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_xprize_wayne",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    },
+    {
+        "experimentPoint": "SelectSection",
+        "condition": "NotificationVariant",
+        "id": "worksheet_grapher_a1_solving_1step_int",
+        "workspace": "wga1s1si_xprize_wayne_prompt",
+        "schoolId": [
+            "582503gvv21",
+            "5825140g59k",
+            "58253gxoh7s",
+            "58255yqwdex",
+            "582614icx3o",
+            "58263u27xaw"
+        ]
+    }
+]

@@ -5,7 +5,7 @@ module.exports = {
     default: 'nps',
     help: 'npm start help',
     test: {
-      default: 'nps test.integration',
+      default: 'nps test.coverage',
       integration: {
         default: {
           script: series('nps banner.testIntegration', 'nps test.integration.pretest', 'nps test.integration.run'),
@@ -44,6 +44,10 @@ module.exports = {
           },
           watch: {
             script: 'cross-env NODE_ENV=test jest --runInBand --watch --testPathPattern=unit -i',
+            hiddenFromHelp: true,
+          },
+          coverage: {
+            script: 'cross-env NODE_ENV=test jest --runInBand --testPathPattern=unit -i --coverage',
             hiddenFromHelp: true,
           },
         },

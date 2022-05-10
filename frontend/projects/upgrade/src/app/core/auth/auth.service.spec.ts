@@ -1,21 +1,53 @@
-import { of } from "rxjs/internal/observable/of";
+import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
 import { UserRole } from "../../../../../../../types/src/Experiment/enums";
 import { AuthService } from "./auth.service";
 import { actionBindAttachHandlerWithButton, actionInitializeGapi, actionLoginStart, actionLogoutStart, actionSetRedirectUrl } from "./store/auth.actions";
 
-export class MockStateStore {
-    dispatch = jest.fn();
-    pipe = jest.fn().mockReturnValue(of());
-}
+const MockStateStore$ = new BehaviorSubject({});
+(MockStateStore$ as any).dispatch = jest.fn();
 
-describe('AnalysisService', () => {
-    let mockStore: MockStateStore;
+jest.mock('./store/auth.selectors', () => {
+    return {
+        selectIsLoggedIn: jest.fn(),
+        selectIsAuthenticating: jest.fn(),
+        selectCurrentUser: jest.fn().mockReturnValueOnce({
+            id: 'testUser',
+            token: 'abc123'
+        }).mockReturnValueOnce(null)
+    }
+});
+
+describe('AuthService', () => {
+    let mockStore: any = MockStateStore$;
     let service: AuthService;
     
     beforeEach(() => {
-        mockStore = new MockStateStore();
-        service = new AuthService(mockStore as any);
+        service = new AuthService(mockStore);
     });
+
+    // the mocked selectCurrentUser store selector will emit a 'mock user' the first time.
+    // it will emit null the second time.
+    // specs within a describe block should be synchronous.
+    // this gives a way to test the condition in 'getIdToken$' mapper.
+    describe('#getIdToken$', () => {
+        it('should return token when currentUser exists on first emit', (done) => {
+            mockStore.next('thisValueIsMeaningless');
+
+            service.getIdToken$.subscribe(val => {
+                expect(val).toEqual('abc123')
+                done();
+            })
+        })
+
+        it('should return null when current user is falsey ', (done) => {
+            mockStore.next('thisValueIsMeaningless');
+
+            service.getIdToken$.subscribe(val => {
+                expect(val).toEqual(null)
+                done();
+            })
+        })
+    })
 
     describe('#authLoginStart', () => {
         it('should dispatch actionLoginStart', () => {
