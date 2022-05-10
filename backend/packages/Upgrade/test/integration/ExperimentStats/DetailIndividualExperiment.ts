@@ -67,51 +67,60 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       id: experimentId,
       users: 0,
-      groups: 0,
+      // TODO: uncomment when we have the groups count
+      // groups: 0,
       usersExcluded: 0,
       groupsExcluded: 0,
       conditions: expect.arrayContaining([
         expect.objectContaining({
           id: experiments[0].conditions[0].id,
           users: 0,
-          groups: 0,
+          // TODO: uncomment when we have the groups count
+          // groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
           ]),
         }),
         expect.objectContaining({
           id: experiments[0].conditions[1].id,
           users: 0,
-          groups: 0,
+          // TODO: uncomment when we have the groups count
+          // groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
           ]),
         }),
@@ -127,51 +136,60 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       id: experimentId,
       users: 0,
-      groups: 0,
+      // TODO: uncomment when we have the groups count
+      // groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
       conditions: expect.arrayContaining([
         expect.objectContaining({
           id: experiments[0].conditions[0].id,
           users: 0,
-          groups: 0,
+          // TODO: uncomment when we have the groups count
+          // groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
           ]),
         }),
         expect.objectContaining({
           id: experiments[0].conditions[1].id,
           users: 0,
-          groups: 0,
+          // TODO: uncomment when we have the groups count
+          // groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              groups: 0,
+              // TODO: uncomment when we have the groups count
+              // groups: 0,
             }),
           ]),
         }),
@@ -193,7 +211,8 @@ export default async function testCase(): Promise<void> {
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
-      groups: 0,
+      // TODO: uncomment when we have the groups count
+      // groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
     })
@@ -208,7 +227,8 @@ export default async function testCase(): Promise<void> {
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
-      groups: 0,
+      // TODO: uncomment when we have the groups count
+      // groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
     })
@@ -229,7 +249,8 @@ export default async function testCase(): Promise<void> {
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 2,
-      groups: 0,
+      // TODO: uncomment when we have the groups count
+      // groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
     })
@@ -246,7 +267,8 @@ export default async function testCase(): Promise<void> {
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 2,
-      groups: 0,
+      // TODO: uncomment when we have the groups count
+      // groups: 0,
       usersExcluded: 2,
       groupsExcluded: 0,
     })

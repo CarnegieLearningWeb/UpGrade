@@ -1,7 +1,7 @@
 import { JsonController, Post, Body, Get, Param, Authorized, Delete, Req } from 'routing-controllers';
 import { User } from '../models/User';
 import { UserService } from '../services/UserService';
-import { UserRoleValidator } from './validators/UserRoleValidator';
+import { UserDetailsValidator } from './validators/UserDetailsValidator';
 import { UserPaginatedParamsValidator } from './validators/UserPaginatedParamsValidator';
 import { SERVER_ERROR } from 'upgrade_types';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -174,9 +174,9 @@ export class UserController {
 
   /**
    * @swagger
-   * /users/role:
+   * /users/details:
    *   post:
-   *     description: Update User role
+   *     description: Update User Details
    *     consumes:
    *       - application/json
    *     parameters:
@@ -186,9 +186,15 @@ export class UserController {
    *           schema:
    *             type: object
    *             required:
+   *               - firstName
+   *               - lastName
    *               - email
    *               - role
    *             properties:
+   *               firstName:
+   *                 type: string
+   *               lastName:
+   *                 type: string
    *               email:
    *                 type: string
    *               role:
@@ -200,14 +206,14 @@ export class UserController {
    *        - application/json
    *     responses:
    *         '200':
-   *           description: User role is updated
+   *           description: User Details is updated
    */
-  @Post('/role')
-  public updateRole(
+  @Post('/details')
+  public updateUserDetails(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    user: UserRoleValidator
+    user: UserDetailsValidator
   ): Promise<User> {
-    return this.userService.updateUserRole(user.email, user.role);
+    return this.userService.updateUserDetails(user.firstName, user.lastName, user.email, user.role);
   }
 
   /**
