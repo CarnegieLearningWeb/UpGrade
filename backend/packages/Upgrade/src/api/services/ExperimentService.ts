@@ -232,14 +232,18 @@ export class ExperimentService {
     scheduleDate?: Date,
     entityManager?: EntityManager
   ): Promise<Experiment> {
-    if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
-      await this.populateExclusionTable(experimentId, state, logger);
-    }
-
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
       { relations: ['stateTimeLogs'] }
     );
+
+    if (
+      (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
+      oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE
+    ) {
+      await this.populateExclusionTable(experimentId, state, logger);
+    }
+
     let data: AuditLogData = {
       experimentId,
       experimentName: oldExperiment.name,

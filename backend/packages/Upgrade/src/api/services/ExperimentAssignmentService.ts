@@ -951,10 +951,11 @@ export class ExperimentAssignmentService {
       }
     }
 
-    if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) {
+    // Populating enrollment and exclusion document
+    if (state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE && consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
       const promiseArray = [];
-      if (assignmentUnit === ASSIGNMENT_UNIT.GROUP && user?.workingGroup[experiment.group] && !invalidGroup) {
-        if (!groupEnrollment && !groupExcluded && consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
+      if (assignmentUnit === ASSIGNMENT_UNIT.GROUP && user?.workingGroup?.[experiment.group] && !invalidGroup) {
+        if (!groupEnrollment && !groupExclusion) {
           // exclude group here
           const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
             groupId: user?.workingGroup[experiment.group],
@@ -965,27 +966,38 @@ export class ExperimentAssignmentService {
         }
       }
 
-      if (!individualEnrollment && !individualExclusion && consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
-        // excluded user
-        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
-          user,
-          experiment,
-          exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
-        };
-        promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
+      if (!individualEnrollment && !individualExclusion) {
+        if (assignmentUnit === ASSIGNMENT_UNIT.GROUP && !groupEnrollment) {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+            user,
+            experiment,
+            exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
+          };
+          promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
+        } else if (assignmentUnit !== ASSIGNMENT_UNIT.GROUP) {
+          const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+            user,
+            experiment,
+            exclusionCode: EXCLUSION_CODE.REACHED_AFTER,
+          };
+          promiseArray.push(this.individualExclusionRepository.saveRawJson([excludeUserDoc]));
+        }
       }
       await Promise.all(promiseArray);
     } else {
       if (assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
         const promiseArray = [];
-        const conditionAssigned = this.assignExperiment(
-          user,
-          experiment,
-          individualEnrollment,
-          groupEnrollment,
-          individualExclusion,
-          groupExclusion
-        );
+        let conditionAssigned;
+        if (!noGroupSpecified && !invalidGroup) {
+          conditionAssigned = this.assignExperiment(
+            user,
+            experiment,
+            individualEnrollment,
+            groupEnrollment,
+            individualExclusion,
+            groupExclusion
+          );
+        }
 
         // get condition which should be assigned
         if (!groupEnrollment && !groupExclusion && conditionAssigned && !invalidGroup && !noGroupSpecified) {
@@ -999,6 +1011,7 @@ export class ExperimentAssignmentService {
           promiseArray.push(this.groupEnrollmentRepository.save(groupEnrollmentDocument));
         }
 
+        // TODO check this where is this required
         if (groupExclusion && !individualExclusion && consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
           const individualExclusionDocument: Omit<
             IndividualExclusion,

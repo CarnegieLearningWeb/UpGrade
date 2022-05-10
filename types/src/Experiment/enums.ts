@@ -52,11 +52,11 @@ export enum ENROLLMENT_CODE {
 export enum EXCLUSION_CODE {
   ERROR = 'participant excluded due to unspecified error',
   REACHED_PRIOR = 'participant reached experiment prior to experiment enrolling',
-  REACHED_AFTER = 'participant reached experiment during enrollment completed',
+  REACHED_AFTER = 'participant reached experiment during enrollment complete',
   PARTICIPANT_ON_EXCLUSION_LIST = 'participant was on the exclusion list',
   GROUP_ON_EXCLUSION_LIST = 'participant’s group was on the exclusion list',
   EXCLUDED_DUE_TO_GROUP_LOGIC = 'participant excluded due to group assignment logic',
-  NO_GROUP_SPECIFIED = 'participant excluded from the group-assignment experiment',
+  NO_GROUP_SPECIFIED = 'participant excluded due to incomplete group information',
   INVALID_GROUP_OR_WORKING_GROUP = "participant's group or working group is incorrect",
 }
 
