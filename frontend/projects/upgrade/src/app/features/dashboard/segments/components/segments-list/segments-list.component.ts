@@ -8,6 +8,7 @@ import { Segment } from '../../../../../core/segments/store/segments.model';
 import { NewSegmentComponent } from '../modal/new-segment/new-segment.component';
 import { ImportSegmentComponent } from '../modal/import-segment/import-segment.component';
 import { E } from '@angular/cdk/keycodes';
+import { CustomMatTableSource } from './CustomMatTableSource';
 
 @Component({
   selector: 'segments-list',
@@ -47,7 +48,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.permissions$ = this.authService.userPermissions$;
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(
       allSegments => {
-        this.allSegments = new MatTableDataSource();
+        this.allSegments = new CustomMatTableSource();
         this.allSegments.data = [...allSegments];
         this.allSegments.sort = this.sort;
       }
