@@ -81,18 +81,9 @@
       padding-left: 5px;
     }
 
-    .cdk-column-name {
-      width: 15%;
-    }
-
-    .cdk-column-status {
-      width: 15%;
-    }
-
-    .cdk-column-lastUpdate {
-      width: 15%;
-    }
-
+    .cdk-column-name,
+    .cdk-column-status,
+    .cdk-column-lastUpdate,
     .cdk-column-context {
       width: 15%;
     }

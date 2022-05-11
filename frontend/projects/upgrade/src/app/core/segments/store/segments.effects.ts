@@ -55,21 +55,6 @@ export class SegmentsEffects {
     )
   );
 
-  
-  // updateSegment$ = createEffect(
-  //   () => this.actions$.pipe(
-  //     ofType(SegmentsActions.actionUpdateSegmentStatus),
-  //     map(action => ({ SegmentId: action.segmentId, status: action.status })),
-  //     filter(({ SegmentId, status }) => !!SegmentId),
-  //     switchMap(({ SegmentId, status }) =>
-  //       this.segmentsDataService.updateSegmentStatus(SegmentId, status).pipe(
-  //         map((data: any) => SegmentsActions.actionUpdateSegmentStatusSuccess({ segment: data[0] })),
-  //         catchError(() => [SegmentsActions.actionUpdateSegmentStatusFailure()])
-  //       )
-  //     )
-  //   )
-  // );
-
   deleteSegment$ = createEffect(
     () => this.actions$.pipe(
       ofType(SegmentsActions.actionDeleteSegment),

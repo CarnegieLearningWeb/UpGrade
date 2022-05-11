@@ -55,6 +55,11 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
         context: this.segmentInfo.context
       });
     }
+
+    if (this.segmentInfo.context === 'any')
+    {
+      this.overviewForm.get('context').disable();
+    }
   }
 
   emitEvent(eventType: NewSegmentDialogEvents) {
@@ -63,6 +68,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
         this.emitSegmentDialogEvent.emit({ type: eventType });
         break;
       case NewSegmentDialogEvents.SEND_FORM_DATA:
+        this.overviewForm.get('context').enable();
         if (this.overviewForm.valid) {
           const { name, description, context } = this.overviewForm.value;
           const overviewFormData = {

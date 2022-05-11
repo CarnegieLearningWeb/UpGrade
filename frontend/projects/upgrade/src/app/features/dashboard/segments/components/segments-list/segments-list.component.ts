@@ -72,7 +72,6 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
         this.allSegments = new MatTableDataSource();
         this.allSegments.data = [...allSegments];
         this.allSegments.sort = this.sort;
-        console.log(' Fetching all the segments ', this.allSegments.data);
       }
     );
 

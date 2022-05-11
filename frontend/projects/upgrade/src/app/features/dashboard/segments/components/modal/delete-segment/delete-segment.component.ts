@@ -23,7 +23,6 @@ export class DeleteSegmentComponent {
   }
 
   deleteSegment() {
-//    this.featureFlagService.deleteFeatureFlag(this.data.flagId);
     this.segmentsService.deleteSegment(this.data.segmentId);
     this.onCancelClick();
   }

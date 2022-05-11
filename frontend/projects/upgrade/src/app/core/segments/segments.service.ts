@@ -3,7 +3,7 @@ import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import * as SegmentsActions from './store/segments.actions';
 import { selectIsLoadingSegments, selectAllSegments, selectSelectedSegment } from './store/segments.selectors';
-import { SegmentVM, UpsertSegmentType } from './store/segments.model';
+import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { filter, map } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 
@@ -37,20 +37,11 @@ export class SegmentsService {
     );
   }
 
-  // isAllSegmentsFetched() {
-  //   return combineLatest(
-  //     this.store$.pipe(select(selectSkipSegments)),
-  //     this.store$.pipe(select(selectTotalSegments))
-  //   ).pipe(
-  //     map(([skipSegments, totalSegments]) => skipSegments === totalSegments)
-  //   );
-  // }
-
   fetchSegments(fromStarting?: boolean) {
     this.store$.dispatch(SegmentsActions.actionFetchSegments({ fromStarting }));
   }
 
-  createNewSegment(segment: SegmentVM) {
+  createNewSegment(segment: SegmentInput) {
     this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.CREATE_NEW_SEGMENT }));
   }
 
@@ -58,7 +49,7 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionDeleteSegment({ segmentId }));
   }
 
-  updateSegment(segment: SegmentVM) {
+  updateSegment(segment: SegmentInput) {
     this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.UPDATE_SEGMENT }));
   }
 
@@ -66,7 +57,7 @@ export class SegmentsService {
     this.store$.dispatch(SegmentsActions.actionExportSegment({ segmentId }));
   }
 
-  importSegment(segment: SegmentVM) {
+  importSegment(segment: SegmentInput) {
     this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.IMPORT_SEGMENT }));
   }
 }

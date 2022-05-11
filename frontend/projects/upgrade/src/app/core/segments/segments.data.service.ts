@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { SegmentVM } from './store/segments.model';
+import { SegmentInput } from './store/segments.model';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class SegmentsDataService {
     return this.http.get(url);
   }
 
-  createNewSegment(segment: SegmentVM) {
+  createNewSegment(segment: SegmentInput) {
     const url = environment.api.segments;
     return this.http.post(url , segment);
   }
@@ -22,7 +22,7 @@ export class SegmentsDataService {
     return this.http.delete(url);
   }
 
-  updateSegment(segment: SegmentVM) {
+  updateSegment(segment: SegmentInput) {
     const url = environment.api.segments;
     return this.http.post(url , segment);
   }
@@ -32,7 +32,7 @@ export class SegmentsDataService {
     return this.http.get(url);
   }
 
-  importSegment(segment: SegmentVM) {
+  importSegment(segment: SegmentInput) {
     const url = environment.api.importSegment;
     return this.http.post(url, {...segment});
   }

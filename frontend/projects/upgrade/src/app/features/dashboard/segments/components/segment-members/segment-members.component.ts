@@ -54,12 +54,12 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.members.clear();
-      this.segmentInfo.individualForSegment.forEach((id) => {
-        this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
-      });
-      this.segmentInfo.subSegments.forEach((id) => {
-        this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
-      });
+      // this.segmentInfo.individualForSegment.forEach((id) => {
+      //   this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
+      // });
+      // this.segmentInfo.subSegments.forEach((id) => {
+      //   this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
+      // });
       this.membersDataSource.next(this.members.controls);
     }
   }
@@ -143,13 +143,20 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     this.memberTypesDum.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
     this.memberTypesDum.push({ heading: '', value: [MemberTypes.SEGMENT] });
     const groups = [];
-    if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
+    if (this.currentContext === 'any') {
+      const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
+      contexts.forEach(context => {
+        this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
+          groups.push(group);
+        });
+      });
+    }
+    else if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
         groups.push(type);
       });
     }
     this.memberTypesDum.push({ heading: 'group', value: groups });
-    console.log(' the memberType data is --------------', this.memberTypesDum);
   }
 
   gettingMembersValueToSend(members: any) {
@@ -158,7 +165,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.userIdsToSend.push(member.id);
       } else if(member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
-        console.log(' the segment association with name id ', this.subSegmentIdsToSend);
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
@@ -174,7 +180,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         const { members } = this.segmentMembersForm.value;
         this.validateMembersCount(members);
         if (this.segmentMembersForm.valid && !this.membersCountError) {
-          console.log(' the data that being sent from segmentMembersForm is ---', this.segmentMembersForm.getRawValue())
           this.gettingMembersValueToSend(members);
           const segmentMembersFormData = {
             userIds: this.userIdsToSend,

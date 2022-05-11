@@ -1,11 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
-import { SegmentVM } from '../../../../../../core/segments/store/segments.model';
+import { SegmentInput } from '../../../../../../core/segments/store/segments.model';
 
 interface ImportSegmentJSON {
-  schema: Record<keyof SegmentVM, string>,
-  data: SegmentVM
+  schema: Record<keyof SegmentInput, string>,
+  data: SegmentInput
 }
 
 @Component({
@@ -15,7 +15,7 @@ interface ImportSegmentJSON {
 })
 export class ImportSegmentComponent {
   file: any;
-  segmentInfo: SegmentVM;
+  segmentInfo: SegmentInput;
   isSegmentJSONValid = true;
 
   constructor(
@@ -48,7 +48,7 @@ export class ImportSegmentComponent {
     reader.readAsText(event.target.files[0]);
   }
 
-  private validateSegmentJSON(segment: SegmentVM) {
+  private validateSegmentJSON(segment: SegmentInput) {
     const segmentSchema: Record<keyof any, string> = {
       id: 'string',
       name: 'string',
@@ -80,7 +80,7 @@ export class ImportSegmentComponent {
     const { schema, data } = segmentJson;
     const missingProperties = Object.keys(schema)
       .filter(key => data[key] === undefined)
-      .map(key => key as keyof (SegmentVM))
+      .map(key => key as keyof (SegmentInput))
       .map(key => new Error(`Document is missing ${key} ${schema[key]}`));
       return missingProperties;
   }

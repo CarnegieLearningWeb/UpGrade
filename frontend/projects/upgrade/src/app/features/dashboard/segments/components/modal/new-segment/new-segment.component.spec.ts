@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { NewSegmentComponent } from './new-segment.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';

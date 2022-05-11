@@ -55,10 +55,18 @@ export interface Segment {
   type: SEGMENT_TYPE;
 }
 
-export interface SegmentVM extends Segment {
+export interface SegmentInput {
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
+  id: string;
+  name: string;
+  context: string;
+  description: string;
   userIds: string[];
   groups: { groupId: string, type: string }[];
   subSegmentIds: string[];
+  type: SEGMENT_TYPE;
 }
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;

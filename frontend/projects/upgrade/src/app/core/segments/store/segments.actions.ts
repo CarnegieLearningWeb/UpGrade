@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Segment, SegmentVM, UpsertSegmentType } from './segments.model';
+import { Segment, SegmentInput, UpsertSegmentType } from './segments.model';
 
 export const actionFetchSegments = createAction(
   '[Segments] Segment',
@@ -17,7 +17,7 @@ export const actionFetchSegmentsFailure = createAction(
 
 export const actionUpsertSegment = createAction(
   '[Segments] Upsert Segment',
-  props<{ segment: SegmentVM, actionType: UpsertSegmentType }>()
+  props<{ segment: SegmentInput, actionType: UpsertSegmentType }>()
 );
 
 export const actionUpsertSegmentSuccess = createAction(

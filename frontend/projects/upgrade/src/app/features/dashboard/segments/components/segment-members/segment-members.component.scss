@@ -4,8 +4,7 @@
 
 .segment-members {
   .members-table {
-    min-height: 200px;
-    max-height: 250px;
+    height: 200px;
     overflow: auto;
 
     mat-header-row {
@@ -69,7 +68,7 @@
   .button-container {
     display: flex;
     justify-content: space-between;
-    margin-top: 15px;
+    margin-bottom: 10px;
 
     .btn-back {
       margin-left: 0 !important;

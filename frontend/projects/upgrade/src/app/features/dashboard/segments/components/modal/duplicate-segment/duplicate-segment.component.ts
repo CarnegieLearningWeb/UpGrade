@@ -25,7 +25,6 @@ export class DuplicateSegmentComponent implements OnInit{
   }
   
   onDuplicateClick(segmentName: string, segmentDescription: string) {
-    console.log(' the segment info for duplicate dialogue ', segmentName, segmentDescription);
     // this.segmentsService.createNewSegment(this.data);
   }
 }
