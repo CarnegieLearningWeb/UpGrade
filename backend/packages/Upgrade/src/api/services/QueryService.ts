@@ -29,8 +29,12 @@ export class QueryService {
 
   public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
-
-    const promiseResult = await this.queryRepository.findByIds(queryIds, { relations: ['metric', 'experiment'] });
+    const promiseArray = queryIds.map((queryId) =>
+      this.queryRepository.findOne(queryId, {
+        relations: ['metric', 'experiment'],
+      })
+    );
+    const promiseResult = await Promise.all(promiseArray);
     const analyzePromise = promiseResult.map((query) => this.logRepository.analysis(query));
     const response = await Promise.allSettled(analyzePromise);
 
