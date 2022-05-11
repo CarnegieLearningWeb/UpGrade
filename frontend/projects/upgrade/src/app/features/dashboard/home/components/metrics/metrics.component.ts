@@ -58,7 +58,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
 
-  // Used for condition code, experiment point and ids auto complete dropdown
+  // Used for metrics auto complete dropdown
   filteredMetrics$: Observable<string[]>[] = [];
   filteredStatistics$: Observable<string[]>[] = [];
   // filteredRequiredIds$: Observable<string[]>[] = [];
@@ -362,8 +362,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        const monitotedMetricsFormData = this.queryForm.value;
-        monitotedMetricsFormData.partitions = monitotedMetricsFormData.queries.map(
+        const monitoredMetricsFormData = this.queryForm.value;
+        monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map(
           (query, index) => {
             return this.experimentInfo
               ? ({ ...this.experimentInfo.queries[index], ...query })
@@ -375,7 +375,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         );
         this.emitExperimentDialogEvent.emit({
           type: eventType,
-          formData: monitotedMetricsFormData,
+          formData: monitoredMetricsFormData,
           path: NewExperimentPaths.MONITORED_METRIC
         });
         break;
