@@ -63,7 +63,7 @@ export default async function GroupExclude(): Promise<void> {
   expect(experimentCondition.length).not.toEqual(0);
 
   // add user in group exclude
-  const excludedGroup = await excludeService.excludeGroup([{ groupId: groupId, type: groupType }]);
+  const excludedGroup = await excludeService.excludeGroups([{ groupId: groupId, type: groupType }]);
   expect(excludedGroup).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

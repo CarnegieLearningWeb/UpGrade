@@ -14,11 +14,11 @@ export class ExcludeService {
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository
   ) {}
 
-  public getAllUser(): Promise<ExplicitIndividualExclusion[]> {
+  public getAllUsers(): Promise<ExplicitIndividualExclusion[]> {
     return this.explicitIndividualExclusionRepository.find();
   }
 
-  public excludeUser(userIds: Array<string>): Promise<ExplicitIndividualExclusion[]> {
+  public excludeUsers(userIds: Array<string>): Promise<ExplicitIndividualExclusion[]> {
     let explicitIndividualExclusionDoc = new ExplicitIndividualExclusion();
 
     const ExplicitIndividualExclusionDocToSave: Array<Partial<ExplicitIndividualExclusion>> =
@@ -40,7 +40,7 @@ export class ExcludeService {
     return this.explicitGroupExclusionRepository.find();
   }
 
-  public excludeGroup(groups: Array<{ groupId: string, type: string }>): Promise<ExplicitGroupExclusion[]> {
+  public excludeGroups(groups: Array<{ groupId: string, type: string }>): Promise<ExplicitGroupExclusion[]> {
     let explicitGroupExclusionDoc = new ExplicitGroupExclusion();
     
     const ExplicitGroupExclusionDocToSave: Array<Partial<ExplicitGroupExclusion>> =

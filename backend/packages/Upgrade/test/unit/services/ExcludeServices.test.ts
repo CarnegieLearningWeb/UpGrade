@@ -64,12 +64,12 @@ describe('Exclude Service Testing', () => {
     })
 
     it('should return an array of all users', async() => {
-        const flags = await service.getAllUser();
+        const flags = await service.getAllUsers();
         expect(flags).toEqual(exludeArr)
     })
 
     it('should return a user', async() => {
-        const flags = await service.excludeUser(['userId']);
+        const flags = await service.excludeUsers(['userId']);
         expect(flags).toEqual(explicitIndividualExclusion)
     })
 
@@ -84,7 +84,7 @@ describe('Exclude Service Testing', () => {
     })
 
     it('should return a group', async() => {
-        const flags = await service.excludeGroup([{groupId: 'groupId', type: 'type'}]);
+        const flags = await service.excludeGroups([{groupId: 'groupId', type: 'type'}]);
         expect(flags).toEqual(explicitGroupExclusion)
     })
 

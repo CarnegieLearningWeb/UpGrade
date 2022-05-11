@@ -62,7 +62,7 @@ export default async function IndividualExclude(): Promise<void> {
   expect(experimentCondition.length).not.toEqual(0);
 
   // add user in individual exclude
-  const excludedUser = await excludeService.excludeUser([user.id]);
+  const excludedUser = await excludeService.excludeUsers([user.id]);
   expect(excludedUser).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

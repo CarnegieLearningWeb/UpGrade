@@ -90,15 +90,15 @@ export class ExcludeController {
    *            description: Authorization Required Error
    */
   @Get('/user')
-  public getExcludedUser(): Promise<ExplicitIndividualExclusion[]> {
-    return this.exclude.getAllUser();
+  public getExcludedUsers(): Promise<ExplicitIndividualExclusion[]> {
+    return this.exclude.getAllUsers();
   }
 
   /**
    * @swagger
    * /explicitExclude/global/user:
    *    post:
-   *       description: Exclude an User globally
+   *       description: Exclude Users globally
    *       consumes:
    *         - application/json
    *       parameters:
@@ -121,7 +121,7 @@ export class ExcludeController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Exclude user globally
+   *            description: Exclude users globally
    *            schema:
    *              $ref: '#/definitions/userExcludeResponse'
    *          '401':
@@ -130,8 +130,8 @@ export class ExcludeController {
    *            description: Internal Server Error, Insert Error in database, JSON format is not valid
    */
   @Post('/user')
-  public excludeUser(@BodyParam('userIds') userIds: Array<string>): Promise<ExplicitIndividualExclusion[]> {
-    return this.exclude.excludeUser(userIds);
+  public excludeUsers(@BodyParam('userIds') userIds: Array<string>): Promise<ExplicitIndividualExclusion[]> {
+    return this.exclude.excludeUsers(userIds);
   }
 
   /**
@@ -194,7 +194,7 @@ export class ExcludeController {
    * @swagger
    * /explicitExclude/global/group:
    *    post:
-   *       description: Exclude a Group globally
+   *       description: Exclude Groups globally
    *       consumes:
    *         - application/json
    *       parameters:
@@ -221,7 +221,7 @@ export class ExcludeController {
    *         - application/json
    *       responses:
    *          '200':
-   *            description: Exclude group globally
+   *            description: Exclude groups globally
    *            schema:
    *              $ref: '#/definitions/groupExcludeResponse'
    *          '401':
@@ -230,8 +230,8 @@ export class ExcludeController {
    *            description: Internal Server Error, Insert Error in database, JSON format is not valid
    */
   @Post('/group')
-  public excludeGroup(@BodyParam('groups') groups: Array<{ groupId: string, type: string }>): Promise<ExplicitGroupExclusion[]> {
-    return this.exclude.excludeGroup(groups);
+  public excludeGroups(@BodyParam('groups') groups: Array<{ groupId: string, type: string }>): Promise<ExplicitGroupExclusion[]> {
+    return this.exclude.excludeGroups(groups);
   }
 
   /**
