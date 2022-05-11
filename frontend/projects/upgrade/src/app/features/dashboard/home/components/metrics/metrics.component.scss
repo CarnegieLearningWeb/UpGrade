@@ -8,8 +8,8 @@
     }
 
     mat-row {
-      min-height: 46px;
-      max-height: 46px;
+      min-height: 66px;
+      max-height: 66px;
     }
 
     mat-header-cell {
@@ -21,6 +21,21 @@
     mat-cell {
       justify-content: center;
       margin-right: 15px;
+    }
+
+    .secondary-form {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-top: 0px;
+  
+      .form-control {
+        flex: 0 0 25%;
+        line-height: 20px;
+        min-height: 16px;
+        max-height: 20px;
+      }
     }
 
     .cdk-column-removeMetric {
@@ -69,7 +84,7 @@
     }
   }
 
-  .partition-table {
+  .metrics-table {
     margin-top: 30px;
   }
 

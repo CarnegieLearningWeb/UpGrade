@@ -57,6 +57,7 @@
             *matCellDef="let element; let groupIndex = index"
             [formGroupName]="groupIndex"
           >
+          <div class="secondary-form" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
             <mat-form-field class="ft-14-600 form-control">
               <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
               <mat-select class="ft-14-400" formControlName="operationType">
@@ -92,6 +93,7 @@
                 </mat-option>
               </mat-select>
             </mat-form-field>
+          </div>
           </mat-cell>
         </ng-container>
 
