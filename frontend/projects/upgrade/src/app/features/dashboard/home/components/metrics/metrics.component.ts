@@ -78,7 +78,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       // Remove previously added group of queries
       this.queries.removeAt(0);
       this.experimentInfo.queries.forEach(query => {
-        this.queries.push(this.addMetrics(query.keys, query.queryName, query.operationType, query.compareFn, query.compareValue, query.repeatedMeasure));
+        this.queries.push(this.addMetrics(query.queryName, query.operationType, query.compareFn, query.compareValue, query.repeatedMeasure));
       });
     }
     this.updateView();
@@ -95,41 +95,42 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
     });
 
-    
-
     this.ManageKeysControl(0);
 
     // TODO: Move to separate validator file
-    this.queryForm.get('operationType').valueChanges.subscribe(operation => {
-      if (operation === OPERATION_TYPES.PERCENTAGE) {
-        this.queryForm.get('compareFn').setValidators([Validators.required]);
-        this.queryForm.get('compareValue').setValidators([Validators.required]);
-      } else {
-        this.queryForm.get('compareFn').clearValidators();
-        this.queryForm.get('compareValue').clearValidators();
-      }
-      this.queryForm.get('compareFn').updateValueAndValidity()
-      this.queryForm.get('compareValue').updateValueAndValidity()
-    });
-
-    this.queryForm.get('compareFn').valueChanges.subscribe(compareFn => {
-      if (compareFn) {
-        this.queryForm.get('compareValue').setValidators([Validators.required]);
-      } else {
-        this.queryForm.get('compareValue').clearValidators();
-        this.queryForm.get('compareValue').setValue(null);
-      }
-      this.queryForm.get('compareValue').updateValueAndValidity()
-    });
+    if (this.queryForm.get('queries').get('operationType')) {
+      this.queryForm.get('queries').get('operationType').valueChanges.subscribe(operation => {
+        if (operation === OPERATION_TYPES.PERCENTAGE) {
+          this.queryForm.get('queries').get('compareFn').setValidators([Validators.required]);
+          this.queryForm.get('queries').get('compareValue').setValidators([Validators.required]);
+        } else {
+          this.queryForm.get('queries').get('compareFn').clearValidators();
+          this.queryForm.get('queries').get('compareValue').clearValidators();
+        }
+        this.queryForm.get('queries').get('compareFn').updateValueAndValidity()
+        this.queryForm.get('queries').get('compareValue').updateValueAndValidity()
+      });
+    }
+    if (this.queryForm.get('queries').get('compareFn')) {
+      this.queryForm.get('queries').get('compareFn').valueChanges.subscribe(compareFn => {
+        if (compareFn) {
+          this.queryForm.get('queries').get('compareValue').setValidators([Validators.required]);
+        } else {
+          this.queryForm.get('queries').get('compareValue').clearValidators();
+          this.queryForm.get('queries').get('compareValue').setValue(null);
+        }
+        this.queryForm.get('queries').get('compareValue').updateValueAndValidity()
+      });
+    }
   }
 
   get keys() {
-    return this.queryForm.get('keys') as FormArray;
+    return this.queryForm.get('queries').get('keys') as FormArray;
   }
 
-  addKey(key = null) {
+  addKey() {
     return this._formBuilder.group({
-      metricKey: [key, Validators.required]
+      metricKey: [null, Validators.required]
     });
   }
 
@@ -138,16 +139,18 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ManageKeysControl(index: number) {
-    const arrayControl = this.queryForm.get('keys') as FormArray;
-    this.filteredOptions[index] = arrayControl.at(index).get('metricKey').valueChanges
+    const queriesArray = this.queryForm.get('queries') as FormArray;
+    const formControl = queriesArray.at(index) as FormGroup;
+    const keysArray = formControl.get('keys') as FormArray;
+    this.filteredOptions[index] = keysArray.at(index).get('metricKey').valueChanges
       .pipe(
       startWith<string>(''),
       map(key => {
         for (let i = index - 1; i >= 0; i--) {
-          arrayControl.at(i).disable();
+          queriesArray.at(i).disable();
         }
         if (index - 1 >= 0) {
-          const { metricKey } = arrayControl.at(index - 1).value;
+          const { metricKey } = queriesArray.at(index - 1).value;
           this.options[index] = metricKey.children;
         }
         return key ? this._filter(key, index) : this.options[index] ? this.options[index].slice() : [];
@@ -162,7 +165,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
     } else {
       // Show only grouped metrics
-      this.queryForm.get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
+      this.queryForm.get('queries').get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
       this.options[0] = this.allMetrics.filter(metric => metric.children.length !== 0);
     }
   }
@@ -170,7 +173,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   resetForm() {
     this.keys.clear();
     this.queryForm.reset();
-    this.queryForm.get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
+    this.queryForm.get('queries').get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
     this.options = [this.options[0]];
     this.filteredOptions = [];
     this.keys.push(this.addKey());
@@ -302,7 +305,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   //   return [];
   // }
 
-  addMetrics(keys = null, queryName = null, operationType = null, compareFn = null, compareValue = null, repeatedMeasure = null) {
+  addMetrics(queryName = null, operationType = null, compareFn = null, compareValue = null, repeatedMeasure = null) {
     return  this._formBuilder.group({
       keys: this._formBuilder.array([this.addKey()]),
       queryName: [queryName, Validators.required],
