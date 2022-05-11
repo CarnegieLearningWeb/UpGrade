@@ -51,7 +51,7 @@ describe('User Service Testing', () => {
                         upsertUser: jest.fn().mockResolvedValue(mockUser1),
                         count: jest.fn().mockResolvedValue(userArr.length),
                         findByIds: jest.fn().mockResolvedValue(userArr.slice(1,2)),
-                        updateUserRole: jest.fn().mockResolvedValue(mockUser1),
+                        updateUserDetails: jest.fn().mockResolvedValue(mockUser1),
                         deleteUserByEmail: jest.fn().mockResolvedValue(mockUser1),
                         createQueryBuilder: jest.fn(() => ({
                             addSelect: addSelectSpy,
@@ -142,8 +142,8 @@ describe('User Service Testing', () => {
         expect(users).toEqual(userArr)
     })
 
-    it('should update the user role', async() => {
-        const user = await service.updateUserRole('bb@email.com', UserRole.CREATOR)
+    it('should update the User Details', async() => {
+        const user = await service.updateUserDetails('fn', 'ln', 'bb@email.com', UserRole.CREATOR)
         expect(user).toEqual(mockUser1)
     })
 

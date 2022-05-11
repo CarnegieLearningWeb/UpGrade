@@ -22,7 +22,7 @@ export const initialState: UserState = adapter.getInitialState({
 const reducer = createReducer(
   initialState,
   on(
-    UsersActions.actionUpdateUserRole,
+    UsersActions.actionUpdateUserDetails,
     UsersActions.actionCreateNewUser,
     UsersActions.actionDeleteUser,
     state => ({
@@ -41,13 +41,13 @@ const reducer = createReducer(
   }),
   on(
     UsersActions.actionFetchUsersFailure,
-    UsersActions.actionUpdateUserRoleFailure,
+    UsersActions.actionUpdateUserDetailsFailure,
     UsersActions.actionCreateNewUserFailure,
     UsersActions.actionDeleteUserFailure,
     state => ({ ...state, isUsersLoading: false })
   ),
   on(
-    UsersActions.actionUpdateUserRoleSuccess,
+    UsersActions.actionUpdateUserDetailsSuccess,
     (state, { user }) => {
     return adapter.updateOne({ id: user.email, changes: { ...user } }, { ...state, isUsersLoading: false });
   }),
