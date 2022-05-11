@@ -14,7 +14,7 @@ export default class UserServiceMock {
         return Promise.resolve([]);
     }
 
-    public updateUserRole(email: string, role: UserRole): Promise<[]> {
+    public updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<[]> {
         return Promise.resolve([]);
     }
 

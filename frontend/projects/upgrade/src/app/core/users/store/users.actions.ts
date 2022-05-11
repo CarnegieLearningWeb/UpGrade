@@ -15,18 +15,18 @@ export const actionFetchUsersFailure = createAction(
   '[Users] Fetch Users Failure'
 );
 
-export const actionUpdateUserRole = createAction(
-  '[Users] Update User Role',
-  props<{ userRoleData: UpdateUser }>()
+export const actionUpdateUserDetails = createAction(
+  '[Users] Update User Details',
+  props<{ userDetailsData: UpdateUser }>()
 );
 
-export const actionUpdateUserRoleSuccess = createAction(
-  '[Users] Update User Role Success',
+export const actionUpdateUserDetailsSuccess = createAction(
+  '[Users] Update User Details Success',
   props<{ user: User }>()
 );
 
-export const actionUpdateUserRoleFailure = createAction(
-  '[Users] Update User Role Failure'
+export const actionUpdateUserDetailsFailure = createAction(
+  '[Users] Update User Details Failure'
 );
 
 export const actionCreateNewUser = createAction(

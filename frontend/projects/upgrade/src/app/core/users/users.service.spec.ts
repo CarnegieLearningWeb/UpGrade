@@ -91,25 +91,29 @@ describe('UsersService', () => {
         })
     })
 
-    describe('#updateUserRole', () => {
-        it('should dispatch actionUpdateUserRole with the given input', () => {
+    describe('#updateUserDetails', () => {
+        it('should dispatch actionUpdateUserDetails with the given input', () => {
+            const firstName = mockUsersList[1].firstName;
+            const lastName = mockUsersList[1].lastName;
             const email = mockEmail;
             const role = mockRole;
 
-            service.updateUserRole(email, role);
+            service.updateUserDetails(firstName, lastName, email, role);
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(UsersActions.actionUpdateUserRole({ userRoleData: { email, role } }));
+            expect(mockStore.dispatch).toHaveBeenCalledWith(UsersActions.actionUpdateUserDetails({ userDetailsData: { firstName, lastName, email, role } }));
         })
     })
 
     describe('#createNewUser', () => {
         it('should dispatch actionCreateNewUser with the given input', () => {
+            const firstName = mockUsersList[0].firstName;
+            const lastName = mockUsersList[0].lastName;
             const email = mockEmail;
             const role = mockRole;
 
-            service.createNewUser(email, role);
+            service.createNewUser(firstName, lastName, email, role);
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(UsersActions.actionCreateNewUser({ user: { email, role } }));
+            expect(mockStore.dispatch).toHaveBeenCalledWith(UsersActions.actionCreateNewUser({ user: { firstName, lastName, email, role } }));
         })
     })
 
