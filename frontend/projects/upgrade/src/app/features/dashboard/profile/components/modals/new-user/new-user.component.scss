@@ -13,8 +13,9 @@
       padding: 15px 40px 0;
 
       mat-form-field {
-        width: 45%;
+        width: 40%;
         color: var(--black-2);
+        margin-right: 10px;
       }
 
       .input {
@@ -35,5 +36,9 @@
     display: flex;
     justify-content: flex-end;
     padding: 14px 40px 34px;
+  }
+
+  .validation-message {
+    margin-left: 40px;
   }
 }

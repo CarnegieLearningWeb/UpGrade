@@ -5,7 +5,7 @@ import * as SettingsActions from './store/settings.actions';
 import {
   selectToCheckAuth, selectTheme, selectToFilterMetric
 } from './store/settings.selectors';
-import { SETTINGS_KEY } from './store/settings.model';
+import { SETTINGS_KEY, ThemeOptions } from './store/settings.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class SettingsService {
   toCheckAuth$ = this.store$.pipe(select(selectToCheckAuth));
   toFilterMetric$ = this.store$.pipe(select(selectToFilterMetric));
 
-  changeTheme(theme) {
+  changeTheme(theme: ThemeOptions) {
     this.store$.dispatch(SettingsActions.actionChangeTheme({ theme }));
   }
 

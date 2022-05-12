@@ -33,6 +33,7 @@ export const assignAlternateCondition = (user: any): ((data: IExperimentAssignme
           data.assignedCondition.conditionCode = expCondPair.workspace;
         }
       })
+
     }
     return data;
   };

@@ -245,7 +245,8 @@
               *ngIf="experiment.stat?.users"
               [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
             ></span>
-            <span
+            <!-- TODO: Removing the below group counts from the homepage until we have a better way to display the group counts -->
+            <!-- <span
               class="enrollment-info"
               *ngIf="experiment.stat?.groups"
             >
@@ -258,7 +259,7 @@
               <ng-template #groupTypePlural>
                 <span>{{ 'global.group-type-plural.text' | translate: { groupType: experiment.group } }}</span>
               </ng-template>
-            </span>
+            </span> -->
             <span
               class="enrollment-info"
               *ngIf="!experiment.stat?.groups && !experiment.stat?.users"

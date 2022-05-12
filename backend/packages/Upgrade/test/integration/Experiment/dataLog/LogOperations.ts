@@ -8,7 +8,7 @@ import { systemUser } from '../../mockData/user/index';
 import { ExperimentAssignmentService } from '../../../../src/api/services/ExperimentAssignmentService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE, OPERATION_TYPES, REPEATED_MEASURE } from 'upgrade_types';
-import { getAllExperimentCondition } from '../../utils';
+import { checkMarkExperimentPointForUser, getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { MetricService, METRICS_JOIN_TEXT } from '../../../../src/api/services/MetricService';
 import { SettingService } from '../../../../src/api/services/SettingService';
@@ -72,27 +72,48 @@ export default async function LogOperations(): Promise<void> {
       }),
     ])
   );
+  const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  
+  // mark experiment point for user 1
+  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  
+  // mark experiment point for user 2
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  
+  // mark experiment point for user 3
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 4
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[3].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
+  
+  // mark experiment point for user 4
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 5
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[4].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
+  // mark experiment point for user 5
+  markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName, experimentPoint);
+  
   // Save queries for various operations
   const querySum = makeQuery('totalProblemsCompleted', OPERATION_TYPES.SUM, experiments[0].id);
 

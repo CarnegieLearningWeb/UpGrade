@@ -1,50 +1,26 @@
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { TestBed, async } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { TranslateModule } from '@ngx-translate/core';
-import { provideMockStore } from '@ngrx/store/testing';
-
-import { SharedModule } from './shared/shared.module';
-
 import { AppComponent } from './app.component';
-import { TestingModule } from '../testing/testing.module';
 import { AuthService } from './core/auth/auth.service';
-import { SimpleNotificationsModule } from 'angular2-notifications';
+import { AppState } from './core/core.state';
+import { Store } from '@ngrx/store';
 
-xdescribe('AppComponent', () => {
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        SharedModule,
-        RouterTestingModule,
-        NoopAnimationsModule,
-        TranslateModule.forRoot(),
-        TestingModule,
-        // global configuration for notification
-        SimpleNotificationsModule.forRoot({
-          position: ["bottom", "center"],
-          timeOut: 4000,
-          showProgressBar: false,
-          pauseOnHover: true,
-          clickToClose: false
-      }),
-      ],
-      providers: [
-        provideMockStore({
-          initialState: {
-            settings: {},
-            auth: {}
-          }
-        }),
-        AuthService
-      ],
-      declarations: [AppComponent]
-    }).compileComponents();
-  }));
+jest.mock('./core/auth/auth.service');
+jest.mock('@ngx-translate/core');
 
-  it('should create the app', async(() => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance;
-    expect(app).toBeTruthy();
-  }));
+describe('AppComponent', () => {
+  const mockAuthService = new AuthService({} as Store<AppState>);
+  const mockTranslateService: any = {
+    setDefaultLang : jest.fn()
+  };
+  const component = new AppComponent(mockAuthService, mockTranslateService)
+
+  describe('#ngOnInit', () => {
+    it('should call to set translation service default to "en" and init google auth', () => {
+      const expectedLangConstant = 'en';
+
+      component.ngOnInit();
+
+      expect(mockAuthService.initializeGapi).toHaveBeenCalled();
+      expect(mockTranslateService.setDefaultLang).toHaveBeenCalledWith(expectedLangConstant);
+    })
+  })
 });

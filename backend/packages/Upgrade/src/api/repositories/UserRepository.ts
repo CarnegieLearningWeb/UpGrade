@@ -23,15 +23,15 @@ export class UserRepository extends Repository<User> {
     return result.raw[0];
   }
 
-  public async updateUserRole(email: string, role: UserRole): Promise<User> {
+  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
     const result = await this.createQueryBuilder('user')
       .update()
-      .set({ role })
+      .set({ firstName, lastName, role })
       .where({ email })
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('UserRepository', 'updateUserRole', { email, role }, errorMsg);
+        const errorMsgString = repositoryError('UserRepository', 'updateUserDetails', { firstName, lastName, email, role }, errorMsg);
         throw errorMsgString;
       });
 
