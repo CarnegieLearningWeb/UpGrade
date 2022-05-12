@@ -1,7 +1,6 @@
-import { synchronizeDatabase } from './../utils/database';
 import { Connection } from 'typeorm';
 import { configureLogger } from '../utils/logger';
-import { createDatabaseConnection, closeDatabase } from '../utils/database';
+import { createDatabaseConnection, closeDatabase, migrateDatabase } from '../utils/database';
 import {
   Scenario1,
   Scenario2,
@@ -86,10 +85,7 @@ describe('Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    // await migrateDatabase(connection);
-    jest.setTimeout(999999);
-
-    await synchronizeDatabase(connection);
+    await migrateDatabase(connection);
 
     // create System Users
     await CreateSystemUser();
