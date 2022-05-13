@@ -30,14 +30,14 @@ export class DuplicateSegmentComponent {
   onDuplicateClick(segmentName: string, segmentDescription: string) {
     const newSegment: any =  { ...this.data.segment, name: segmentName, description: segmentDescription, id: null };
     
-    newSegment.userIds = newSegment.individualForSegment.map((i) => {
-      return i.userId;
+    newSegment.userIds = newSegment.individualForSegment.map((individual) => {
+      return individual.userId;
     });
-    newSegment.subSegmentIds = newSegment.subSegments.map((i) => {
-      return i.id;
+    newSegment.subSegmentIds = newSegment.subSegments.map((subSegment) => {
+      return subSegment.id;
     });
-    newSegment.groups = newSegment.groupForSegment.map((i) => {
-      return { type: i.type, groupId: i.groupId } ;
+    newSegment.groups = newSegment.groupForSegment.map((group) => {
+      return { type: group.type, groupId: group.groupId } ;
     });
 
     this.segmentsService.createNewSegment(newSegment);

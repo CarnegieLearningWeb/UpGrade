@@ -1,7 +1,9 @@
 import { Type } from 'class-transformer';
-import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import { SEGMENT_TYPE } from '../../../../../../types/src/Experiment/enums';
 import { BaseModel } from './base/BaseModel';
+import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
+import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { GroupForSegment } from './GroupForSegment';
 import { IndividualForSegment } from './IndividualForSegment';
 
@@ -55,4 +57,12 @@ export class Segment extends BaseModel {
     onDelete: "CASCADE"
   })
   public subSegments: Segment[];
+
+  @OneToOne((type) => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.segment)
+  @Type(() => ExperimentSegmentInclusion)
+  public experimentSegmentInclusion: ExperimentSegmentInclusion;
+
+  @OneToOne((type) => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.segment)
+  @Type(() => ExperimentSegmentExclusion)
+  public experimentSegmentExclusion: ExperimentSegmentExclusion;
 }

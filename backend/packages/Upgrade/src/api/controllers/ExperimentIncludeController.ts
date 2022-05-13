@@ -6,6 +6,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { AppRequest } from '../../types';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 const validator = new Validator();
 
 /**
@@ -66,6 +67,34 @@ const validator = new Validator();
  *           type: string
  *           minLength: 1
  *         id:
+ *           type: string
+ *           minLength: 1
+ *         experimentId:
+ *           type: string
+ *           minLength: 1
+ *   segmentExplicitExperimentIncludeResponse:
+ *     type: array
+ *     description: ''
+ *     minItems: 1
+ *     uniqueItems: true
+ *     items:
+ *       type: object
+ *       required:
+ *         - createdAt
+ *         - updatedAt
+ *         - versionNumber
+ *         - SegmentId
+ *         - experimentId
+ *       properties:
+ *         createdAt:
+ *           type: string
+ *           minLength: 1
+ *         updatedAt:
+ *           type: string
+ *           minLength: 1
+ *         versionNumber:
+ *           type: number
+ *         segmentId:
  *           type: string
  *           minLength: 1
  *         experimentId:
@@ -467,4 +496,130 @@ export class ExperimentIncludeController {
     }
     return this.experimentInclude.deleteExperimentGroup(id, type, experimentId, request.logger);
   }
+
+/**
+   * @swagger
+   * /explicitInclude/experiment/segment:
+   *    post:
+   *       description: Include segment from an experiment
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: body
+   *           name: body
+   *           required: true
+   *           schema:
+   *             type: object
+   *             required:
+   *               - experimentId
+   *               - segmentId
+   *             properties:
+   *              experimentId:
+   *                type: string
+   *              segmentId:
+   *                type: string
+   *           description: SegmentId and experimetId
+   *       tags:
+   *         - ExplicitExperimentInclude
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Include segment from an experiment
+   *            schema:
+   *              $ref: '#/definitions/segmentExplicitExperimentIncludeResponse'
+   *          '401':
+   *            description: Authorization Required Error
+   *          '500':
+   *            description: Internal Server Error, Insert Error in database, ExperimentId is not valid, JSON Format is not valid
+   */
+ @Post('/segment')
+ public experimentIncludeSegment(
+   @Req() request: AppRequest,
+   @BodyParam('experimentId') experimentId: string,
+   @BodyParam('segmentId') segmentId: string
+ ): Promise<ExperimentSegmentInclusion> {
+   if (!experimentId) {
+     return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null'));
+   }
+   if (!validator.isUUID(experimentId)) {
+     return Promise.reject(
+       new Error(
+         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+       )
+     );
+   }
+   if (!segmentId) {
+     return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null'));
+   }
+   if (!validator.isUUID(segmentId)) {
+     return Promise.reject(
+       new Error(
+         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+       )
+     );
+   }
+   return this.experimentInclude.experimentIncludeSegment(experimentId, segmentId, request.logger);
+ }
+
+ /**
+  * @swagger
+  * /explicitInclude/experiment/segment/{experimentId}/{segmentId}:
+  *    delete:
+  *       description: Delete included segment from an experiment
+  *       parameters:
+  *         - in: path
+  *           name: experimentId
+  *           required: true
+  *           schema:
+  *             type: string
+  *           description: Experiment Id
+  *         - in: path
+  *           name: segmentId
+  *           required: true
+  *           schema:
+  *             type: string
+  *           description: Segment Id
+  *       tags:
+  *         - ExplicitExperimentInclude
+  *       produces:
+  *         - application/json
+  *       responses:
+  *          '200':
+  *            description: Delete included segment from an experiment
+  *            schema:
+  *              $ref: '#/definitions/segmentExplicitExperimentIncludeResponse'
+  *          '401':
+  *            description: Authorization Required Error
+  *          '500':
+  *            description: Internal Server Error, ExperimentId is not valid
+  */
+ @Delete('/segment/:experimentId/:segmentId')
+ public deleteExperimentIncludeSegment(
+   @Req() request: AppRequest,
+   @Param('experimentId') experimentId: string,
+   @Param('segmentId') segmentId: string
+ ): Promise<ExperimentSegmentInclusion | undefined> {  
+   if (!experimentId) {
+     return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null'));
+   }
+   if (!validator.isUUID(experimentId)) {
+     return Promise.reject(
+       new Error(
+         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+       )
+     );
+   }
+   if (!segmentId) {
+     return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null'));
+   }
+   if (!validator.isUUID(segmentId)) {
+     return Promise.reject(
+       new Error(
+         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
+       )
+     );
+   }
+   return this.experimentInclude.deleteExperimentSegment(experimentId, segmentId, request.logger);
+ }
 }

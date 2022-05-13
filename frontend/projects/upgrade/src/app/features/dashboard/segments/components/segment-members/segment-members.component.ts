@@ -67,7 +67,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
     if (this.allSegments) {
       this.allSegments.forEach((segment) => {
-        // TODO improve the logic
         if (this.segmentInfo) {
           if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.segmentInfo.id) {
             this.subSegmentIds.push(segment.name);

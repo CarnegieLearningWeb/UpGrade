@@ -17,7 +17,7 @@ export class ImportSegmentComponent {
   file: any;
   segmentInfo: Segment;
   isSegmentJSONValid = true;
-  segmentTemp: any;
+  segmentTemp: SegmentInput;
   constructor(
     private segmentsService: SegmentsService,
     public dialogRef: MatDialogRef<ImportSegmentComponent>,
@@ -30,16 +30,19 @@ export class ImportSegmentComponent {
 
   importSegment() {
     /// improve the logic here 
-    this.segmentTemp = this.segmentInfo;
-    this.segmentTemp.userIds = this.segmentInfo.individualForSegment.map((i) => {
-      return i.userId;
+    let { individualForSegment, groupForSegment, subSegments, ...rest } = this.segmentInfo;
+  
+    const userIds = this.segmentInfo.individualForSegment.map((individual) => {
+      return individual.userId;
     });
-    this.segmentTemp.subSegmentIds = this.segmentInfo.subSegments.map((i) => {
-      return i.id;
+    const subSegmentIds = this.segmentInfo.subSegments.map((subSegment) => {
+      return subSegment.id;
     });
-    this.segmentTemp.groups = this.segmentInfo.groupForSegment.map((i) => {
-      return { type: i.type, groupId: i.groupId } ;
+    const groups = this.segmentInfo.groupForSegment.map((group) => {
+      return { type: group.type, groupId: group.groupId } ;
     });
+
+    this.segmentTemp = {...rest, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups};
     this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
     if (this.isSegmentJSONValid) {
       this.segmentsService.importSegment({ ...this.segmentTemp });

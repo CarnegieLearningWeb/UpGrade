@@ -8,7 +8,7 @@ export const globalExcludeSegment: SegmentInputValidator = {
   name: 'Global Exclude',
   id: "77777777-7777-7777-7777-777777777777",
   description: "Globally excluded Users, Groups and Segments",
-  context: "any",
+  context: "ALL",
   type: SEGMENT_TYPE.GLOBAL_EXCLUDE,
   userIds: [],
   groups: [],
@@ -21,7 +21,7 @@ export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise
     try {
       return segmentService.upsertSegment(globalExcludeSegment, logger);
     } catch (error) {
-      error = new Error('Error while initializing metrics');
+      error = new Error('Error while creating Global Exclude Segment');
       logger.error(error);
       throw error;
     }

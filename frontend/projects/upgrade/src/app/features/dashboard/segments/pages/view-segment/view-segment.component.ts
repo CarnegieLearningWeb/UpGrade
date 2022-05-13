@@ -21,7 +21,7 @@ import { DeleteComponent } from '../../../../../shared/components/delete/delete.
 export class ViewSegmentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
   permissionsSub: Subscription;
-  segment: any;
+  segment: Segment;
   segmentSub: Subscription;
   members: {type: string, id: string}[] = [];
 
@@ -43,7 +43,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
         this.segment = segment;
 
         if(this.segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE)
-          this.permissions = null;
+          this.permissions.segments.delete = false;
         this.members = [];
         this.segment.individualForSegment.forEach(user => {
           this.members.push({type: MemberTypes.INDIVIDUAL, id: user.userId});

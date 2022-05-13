@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, OneToOne } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { ExperimentPartition } from './ExperimentPartition';
@@ -23,6 +23,8 @@ import { ExplicitExperimentGroupExclusion } from './ExplicitExperimentGroupExclu
 import { ExplicitExperimentGroupInclusion } from './ExplicitExperimentGroupInclusion';
 import { ExplicitExperimentIndividualExclusion } from './ExplicitExperimentIndividualExclusion';
 import { ExplicitExperimentIndividualInclusion } from './ExplicitExperimentIndividualInclusion';
+import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
+import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -142,4 +144,12 @@ export class Experiment extends BaseModel {
   @OneToMany((type) => ExplicitExperimentIndividualInclusion, (explicitExperimentIndividualInclusion) => explicitExperimentIndividualInclusion.experiment)
   @Type(() => ExplicitExperimentIndividualInclusion)
   public explicitExperimentIndividualInclusion: ExplicitExperimentIndividualInclusion[];
+
+  @OneToOne((type) => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
+  @Type(() => ExperimentSegmentInclusion)
+  public experimentSegmentInclusion: ExperimentSegmentInclusion;
+
+  @OneToOne((type) => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
+  @Type(() => ExperimentSegmentExclusion)
+  public experimentSegmentExclusion: ExperimentSegmentExclusion;
 }

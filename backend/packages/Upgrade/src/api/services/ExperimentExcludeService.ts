@@ -7,6 +7,9 @@ import { ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGr
 import { ExperimentService } from './ExperimentService';
 import { Experiment } from '../models/Experiment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
+import { SegmentService } from './SegmentService';
 
 @Service()
 export class ExperimentExcludeService {
@@ -15,7 +18,10 @@ export class ExperimentExcludeService {
     private explicitExperimentGroupExclusionRepository: ExplicitExperimentGroupExclusionRepository,
     @OrmRepository()
     private explicitExperimentIndividualExclusionRepository: ExplicitExperimentIndividualExclusionRepository,
-    public experimentService: ExperimentService
+    @OrmRepository()
+    private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    public experimentService: ExperimentService,
+    public segmentService: SegmentService
   ) {}
 
   public getAllExperimentUser(logger: UpgradeLogger): Promise<ExplicitExperimentIndividualExclusion[]> {
@@ -94,5 +100,21 @@ export class ExperimentExcludeService {
   public deleteExperimentGroup(groupId: string, type: string, experimentId: string, logger: UpgradeLogger): Promise<ExplicitExperimentGroupExclusion | undefined> {
     logger.info({ message: `Delete explicitly excluded group from the experiment. experimentId: ${experimentId}, type => ${type}, groupId: ${groupId}`});
     return this.explicitExperimentGroupExclusionRepository.deleteGroup(groupId, type, experimentId, logger);
+  }
+
+  public async experimentExcludeSegment(experimentId: string, segmentId: string, logger: UpgradeLogger): Promise<ExperimentSegmentExclusion> {
+    logger.info({ message: `Explicitly exclude segment from the experiment. experimentId: ${experimentId}, segmentId: ${segmentId}`});
+
+    let tempDoc = new ExperimentSegmentExclusion();
+    tempDoc.experiment = await this.experimentService.findOne(experimentId, logger);
+    tempDoc.segment = await this.segmentService.getSegmentById(segmentId, logger);
+    
+    const { createdAt, updatedAt, versionNumber, ...docToSend } = tempDoc;
+    return this.experimentSegmentExclusionRepository.insertData(docToSend, logger);
+  }
+
+  public deleteExperimentSegment(experimentId: string, segmentId: string, logger: UpgradeLogger): Promise<ExperimentSegmentExclusion | undefined> {
+    logger.info({ message: `Delete explicitly excluded segment from the experiment. experimentId: ${experimentId}, segmentId: ${segmentId}`});
+    return this.experimentSegmentExclusionRepository.deleteData(segmentId, experimentId, logger);
   }
 }
