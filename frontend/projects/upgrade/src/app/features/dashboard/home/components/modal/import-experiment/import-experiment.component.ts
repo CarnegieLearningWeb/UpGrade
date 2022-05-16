@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Experiment, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import uuid from 'uuid';
 
 interface ImportExperimentJSON {
   schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
@@ -31,6 +32,10 @@ export class ImportExperimentComponent {
   importExperiment() {
     this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
     if (this.isExperimentJSONValid) {
+      this.experimentInfo.id = uuid();
+      this.experimentInfo.conditions.map(condition => {
+        condition.id = uuid();
+      });
       this.experimentService.importExperiment({ ...this.experimentInfo });
       this.onCancelClick();
     }
