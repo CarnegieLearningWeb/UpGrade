@@ -1,9 +1,11 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Experiment, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
 import { TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 interface ImportExperimentJSON {
   schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
@@ -15,11 +17,14 @@ interface ImportExperimentJSON {
   templateUrl: './import-experiment.component.html',
   styleUrls: ['./import-experiment.component.scss']
 })
-export class ImportExperimentComponent {
+export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
   isExperimentJSONVersionValid = true;
+  isDuplicateExperiment = false;
   missingAllProperties: string;
+  allPartitions = [];
+  allPartitionsSub: Subscription;
 
   constructor(
     private experimentService: ExperimentService,
@@ -28,6 +33,17 @@ export class ImportExperimentComponent {
     private translate: TranslateService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
+
+
+  ngOnInit() {
+    this.allPartitionsSub = this.experimentService.allPartitions$.pipe(
+      filter(partitions => !!partitions))
+      .subscribe((partitions: any) => {
+      this.allPartitions = partitions.map(partition =>
+        partition.expId ? partition.expPoint + partition.expId : partition.expPoint
+      );
+    });
+  }
 
   onCancelClick(): void {
     this.dialogRef.close();
@@ -48,7 +64,22 @@ export class ImportExperimentComponent {
       return true;
     }
   }
+  async validateDuplicateExperiment(partitions: any): Promise<any> {
+    const alreadyExistedPartitions = [];
+    partitions.forEach((partition) => {
+      const partitionInfo = partition.expId ? partition.expPoint + partition.expId : partition.expPoint;
+      if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
+        alreadyExistedPartitions.indexOf(partition.expId ? partition.expPoint + ' and ' + partition.expId : partition.expPoint) === -1) {
+        // if we want to  show the duplicate partition details:
+        alreadyExistedPartitions.push(partition.expId ? partition.expPoint + ' and ' + partition.expId : partition.expPoint);
+      }
+    });
 
+    if (alreadyExistedPartitions.length > 0) {
+      return true;
+    }
+  }
+  
   async uploadFile(event) {
     const reader = new FileReader();
     reader.addEventListener(
@@ -57,6 +88,7 @@ export class ImportExperimentComponent {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
         this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
+        this.isDuplicateExperiment = await this.validateDuplicateExperiment(this.experimentInfo.partitions);
       }.bind(this)
     );
     reader.readAsText(event.target.files[0]);

@@ -14,6 +14,9 @@
       <span class="error-msg" *ngIf="!isExperimentJSONValid">
         {{ 'home.import-experiment.error.message.text' | translate }}
       </span>
+      <span class="error-msg" *ngIf="isDuplicateExperiment">
+        {{ 'home.import-experiment.duplicate-error.message.text' | translate }}
+      </span>
       <div class="error-msg" *ngIf="!isExperimentJSONValid">
         {{ missingAllProperties }}
       </div>
@@ -31,7 +34,7 @@
       mat-raised-button
       class="modal-btn default-button"
       [ngClass]="{ 'default-button--disabled': !experimentInfo }"
-      [disabled]="!experimentInfo"
+      [disabled]="!experimentInfo || isDuplicateExperiment"
       (click)="importExperiment()"
     >
       {{ 'global.import.text' | translate }}
