@@ -27,6 +27,7 @@ import { UsersModule } from './users/users.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 import { AnalysisModule } from './analysis/analysis.module';
+import { HttpCancelInterceptor } from './http-interceptors/http-cancel.interceptor';
 
 export {
   TitleService,
@@ -80,6 +81,7 @@ export function HttpLoaderFactory(http: HttpClient) {
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
     { provide: RouterStateSerializer, useClass: CustomSerializer }
   ],
