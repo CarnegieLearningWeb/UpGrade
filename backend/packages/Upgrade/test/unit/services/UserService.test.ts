@@ -7,7 +7,8 @@ import { User } from '../../../src/api/models/User';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { USER_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/UserPaginatedParamsValidator';
 import { EXPERIMENT_SORT_AS, UserRole } from '../../../../../../types/src';
-
+import { AWSService } from '../../../src/api/services/AWSService';
+import { Emails } from '../../../src/templates/email';
 
 describe('User Service Testing', () => {
 
@@ -42,6 +43,8 @@ describe('User Service Testing', () => {
     beforeEach(async () => {
         module = await Test.createTestingModule({
             providers: [
+                AWSService,
+                Emails,
                 UserService,
                 UserRepository,
                 {
