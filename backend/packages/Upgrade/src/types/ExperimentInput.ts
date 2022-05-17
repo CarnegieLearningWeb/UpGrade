@@ -64,4 +64,5 @@ export class ExperimentInput {
   public createdAt: Date;
   public updatedAt: Date;
   public versionNumber: number;
+  public backendVersion: string;
 }

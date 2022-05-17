@@ -142,4 +142,7 @@ export class Experiment extends BaseModel {
   @OneToMany((type) => ExplicitExperimentIndividualInclusion, (explicitExperimentIndividualInclusion) => explicitExperimentIndividualInclusion.experiment)
   @Type(() => ExplicitExperimentIndividualInclusion)
   public explicitExperimentIndividualInclusion: ExplicitExperimentIndividualInclusion[];
+  
+  @Column({ default: '1.0.0'})
+  public backendVersion: string;
 }

@@ -151,6 +151,7 @@ export interface Experiment {
   partitions: ExperimentPartition[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
+  backendVersion: string;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
