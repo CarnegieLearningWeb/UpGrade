@@ -12,13 +12,14 @@ export function clearState(reducer) {
         toCheckAuth: null,
         toFilterMetric: null
       };
+      const localStorageService = new LocalStorageService()
 
       state = {
         settings: settingState, // Used to persist theme,
       };
 
       Object.values(ExperimentLocalStorageKeys).forEach(key => {
-        LocalStorageService.removeItem(key);
+        localStorageService.removeItem(key);
       })
     }
     return reducer(state, action);
