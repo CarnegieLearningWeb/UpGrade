@@ -68,7 +68,7 @@ export class AWSService {
   ): Promise<PromiseResult<AWS.SES.SendEmailResponse, AWS.AWSError>> {
     const param = {
       Destination: {
-        ToAddresses: [toAddress],
+        ToAddresses: [toAddress,],
       },
       Message: {
         Body: {
