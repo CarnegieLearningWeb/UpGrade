@@ -1,0 +1,86 @@
+.experiment-participants {
+  display: flex;
+  flex-direction: column;
+
+  mat-form-field {
+    line-height: 20px;
+  }
+
+  .property-container {
+    .inclusion-criteria {
+      width: 30%;
+    }
+
+    .except {
+      margin-left: 10%;
+      width: 25%;
+    }
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+  }
+
+  ::ng-deep .mat-form-field-label {
+    color: var(--grey-6);
+  }
+}
+
+
+// members adding table [ref file:- segment-members.component.scss
+
+// .members-table {
+//   height: 200px;
+//   overflow: auto;
+
+//   mat-header-row {
+//     min-height: 35px;
+//   }
+
+//   mat-row {
+//     min-height: 46px;
+//     max-height: 46px;
+//   }
+
+//   mat-header-cell {
+//     justify-content: center;
+//     margin-right: 15px;
+//     color: var(--grey-6);
+//   }
+
+//   mat-cell {
+//     justify-content: center;
+//     margin-right: 15px;
+//   }
+
+//   .cdk-column-removeMember {
+//     margin-right: 0;
+//     padding-right: 0;
+//   }
+
+
+//   .cdk-column-memberNumber,
+//   .cdk-column-removeMember {
+//     flex: 0 0 10%;
+//     width: 10%;
+//   }
+
+//   .remove-icon {
+//     position: relative;
+//     top: -3px;
+//     width: 18px;
+//     height: 18px;
+//     font-size: var(--text-size-x-large);
+
+//     &:hover {
+//       cursor: pointer;
+//     }
+//   }
+
+//   mat-form-field {
+//     width: 100%;
+//     text-align: center;
+//   }
+// }
