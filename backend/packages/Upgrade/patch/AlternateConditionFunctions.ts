@@ -16,21 +16,24 @@ export const assignAlternateCondition = (user: any): ((data: IExperimentAssignme
   // tslint:disable-next-line: no-string-literal
   const userSchoolIds: string[] = user?.group?.['schoolId'];
   return (data: IExperimentAssignment): IExperimentAssignment => {
-    const findData = importedJsonArray.find(
+    const matchedConditions = importedJsonArray.filter(
       (importedJson) =>
         importedJson.experimentPoint === data.expPoint &&
         importedJson.id === data.expId &&
         importedJson.condition === data.assignedCondition.conditionCode
     );
-    if (findData) {
+    if (matchedConditions) {
       // search for schoolId
-      const schoolExist = userSchoolIds.some((userSchoolId) => {
-        return findData.schoolId.includes(userSchoolId);
-      });
-      // replace assigned condition
-      if (schoolExist) {
-        data.assignedCondition.conditionCode = findData.workspace;
-      }
+      matchedConditions.forEach((expCondPair) =>{
+        const schoolExist = userSchoolIds.some((userSchoolId) => {
+          return expCondPair.schoolId.includes(userSchoolId);
+        });
+        // replace assigned condition
+        if (schoolExist) {
+          data.assignedCondition.conditionCode = expCondPair.workspace;
+        }
+      })
+
     }
     return data;
   };
