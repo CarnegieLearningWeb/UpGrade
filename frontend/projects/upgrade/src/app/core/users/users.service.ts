@@ -28,12 +28,12 @@ export class UsersService {
     this.store$.dispatch(UsersActions.actionFetchUsers({ fromStarting }));
   }
 
-  updateUserRole(email: string, role: UserRole) {
-    this.store$.dispatch(UsersActions.actionUpdateUserRole({ userRoleData: { email, role } }));
+  updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole) {
+    this.store$.dispatch(UsersActions.actionUpdateUserDetails({ userDetailsData: { firstName, lastName, email, role } }));
   }
 
-  createNewUser(email: string, role: UserRole) {
-    this.store$.dispatch(UsersActions.actionCreateNewUser({ user: { email, role } }));
+  createNewUser(firstName: string, lastName: string, email: string, role: UserRole) {
+    this.store$.dispatch(UsersActions.actionCreateNewUser({ user: { firstName, lastName, email, role } }));
   }
 
   deleteUser(email: string) {

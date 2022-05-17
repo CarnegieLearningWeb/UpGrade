@@ -73,10 +73,12 @@ describe('User Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/users/role', async done => {
+  test('Post request for /api/users/details', async done => {
     await request(app)
-      .post('/api/users/role')
+      .post('/api/users/details')
       .send({
+          firstNamr: "firstname",
+          lastName: "lastname",
           email: "email@email.com",
           role: "admin"
         })

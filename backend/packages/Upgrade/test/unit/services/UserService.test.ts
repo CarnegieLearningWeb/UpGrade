@@ -7,7 +7,8 @@ import { User } from '../../../src/api/models/User';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { USER_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/UserPaginatedParamsValidator';
 import { EXPERIMENT_SORT_AS, UserRole } from '../../../../../../types/src';
-
+import { AWSService } from '../../../src/api/services/AWSService';
+import { Emails } from '../../../src/templates/email';
 
 describe('User Service Testing', () => {
 
@@ -42,6 +43,8 @@ describe('User Service Testing', () => {
     beforeEach(async () => {
         module = await Test.createTestingModule({
             providers: [
+                AWSService,
+                Emails,
                 UserService,
                 UserRepository,
                 {
@@ -51,7 +54,7 @@ describe('User Service Testing', () => {
                         upsertUser: jest.fn().mockResolvedValue(mockUser1),
                         count: jest.fn().mockResolvedValue(userArr.length),
                         findByIds: jest.fn().mockResolvedValue(userArr.slice(1,2)),
-                        updateUserRole: jest.fn().mockResolvedValue(mockUser1),
+                        updateUserDetails: jest.fn().mockResolvedValue(mockUser1),
                         deleteUserByEmail: jest.fn().mockResolvedValue(mockUser1),
                         createQueryBuilder: jest.fn(() => ({
                             addSelect: addSelectSpy,
@@ -142,8 +145,8 @@ describe('User Service Testing', () => {
         expect(users).toEqual(userArr)
     })
 
-    it('should update the user role', async() => {
-        const user = await service.updateUserRole('bb@email.com', UserRole.CREATOR)
+    it('should update the User Details', async() => {
+        const user = await service.updateUserDetails('fn', 'ln', 'bb@email.com', UserRole.CREATOR)
         expect(user).toEqual(mockUser1)
     })
 

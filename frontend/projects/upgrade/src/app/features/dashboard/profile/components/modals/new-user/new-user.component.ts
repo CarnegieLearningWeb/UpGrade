@@ -23,6 +23,8 @@ export class NewUserComponent implements OnInit {
 
   ngOnInit() {
     this.newUserForm = this._formBuilder.group({
+      firstName: [null, Validators.required],
+      lastName: [null, Validators.required],
       email: [null, [Validators.required, Validators.email]],
       role: [null, Validators.required]
     });
@@ -33,10 +35,10 @@ export class NewUserComponent implements OnInit {
   }
 
   addNewUser() {
-    const { email, role } = this.newUserForm.value;
+    const { firstName, lastName, email, role } = this.newUserForm.value;
     this.isUserExist = !!this.data.users.find(user => user.email === email);
     if (!this.isUserExist) {
-      this.usersService.createNewUser(email, role);
+      this.usersService.createNewUser(firstName, lastName, email, role);
       this.onNoClick();
     }
   }
