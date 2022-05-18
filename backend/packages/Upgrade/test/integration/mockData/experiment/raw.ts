@@ -51,6 +51,7 @@ export const experiment = {
       twoCharacterId: 'NP',
     },
   ],
+  backendVersion: "1.0.0",
 };
 
 export const experimentSecond = {
@@ -99,6 +100,7 @@ export const experimentSecond = {
       twoCharacterId: 'X2',
     },
   ],
+  backendVersion: "1.0.0",
 };
 
 export const experimentThird = {
@@ -147,6 +149,7 @@ export const experimentThird = {
       twoCharacterId: 'Y2',
     },
   ],
+  backendVersion: "1.0.0",
 };
 
 export const experimentFourth = {
@@ -194,4 +197,5 @@ export const experimentFourth = {
       twoCharacterId: 'Y2',
     },
   ],
+  backendVersion: "1.0.0",
 };

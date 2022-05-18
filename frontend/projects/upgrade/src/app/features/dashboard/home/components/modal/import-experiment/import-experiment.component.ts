@@ -1,7 +1,12 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Experiment, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
+import { VersionService } from '../../../../../../core/version/version.service';
+import { TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import uuid from 'uuid';
 
 interface ImportExperimentJSON {
   schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
@@ -13,16 +18,33 @@ interface ImportExperimentJSON {
   templateUrl: './import-experiment.component.html',
   styleUrls: ['./import-experiment.component.scss']
 })
-export class ImportExperimentComponent {
-  file: any;
+export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
+  isExperimentJSONVersionValid = true;
+  isDuplicateExperiment = false;
+  missingAllProperties: string;
+  allPartitions = [];
+  allPartitionsSub: Subscription;
 
   constructor(
     private experimentService: ExperimentService,
     public dialogRef: MatDialogRef<ImportExperimentComponent>,
+    private versionService: VersionService,
+    private translate: TranslateService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
+
+
+  ngOnInit() {
+    this.allPartitionsSub = this.experimentService.allPartitions$.pipe(
+      filter(partitions => !!partitions))
+      .subscribe((partitions: any) => {
+      this.allPartitions = partitions.map(partition =>
+        partition.expId ? partition.expPoint + partition.expId : partition.expPoint
+      );
+    });
+  }
 
   onCancelClick(): void {
     this.dialogRef.close();
@@ -31,18 +53,47 @@ export class ImportExperimentComponent {
   importExperiment() {
     this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
     if (this.isExperimentJSONValid) {
+      this.experimentInfo.id = uuid();
+      this.experimentInfo.conditions.map(condition => {
+        condition.id = uuid();
+      });
       this.experimentService.importExperiment({ ...this.experimentInfo });
       this.onCancelClick();
     }
   }
+  async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
+    const version = await this.versionService.getVersion();
+    if (experimentInfo.backendVersion !== version) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  async validateDuplicateExperiment(partitions: any): Promise<any> {
+    const alreadyExistedPartitions = [];
+    partitions.forEach((partition) => {
+      const partitionInfo = partition.expId ? partition.expPoint + partition.expId : partition.expPoint;
+      if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
+        alreadyExistedPartitions.indexOf(partition.expId ? partition.expPoint + ' and ' + partition.expId : partition.expPoint) === -1) {
+        // if we want to  show the duplicate partition details:
+        alreadyExistedPartitions.push(partition.expId ? partition.expPoint + ' and ' + partition.expId : partition.expPoint);
+      }
+    });
 
-  uploadFile(event) {
+    if (alreadyExistedPartitions.length > 0) {
+      return true;
+    }
+  }
+  
+  async uploadFile(event) {
     const reader = new FileReader();
     reader.addEventListener(
       'load',
-      function() {
+      async function() {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
+        this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
+        this.isDuplicateExperiment = await this.validateDuplicateExperiment(this.experimentInfo.partitions);
       }.bind(this)
     );
     reader.readAsText(event.target.files[0]);
@@ -71,6 +122,7 @@ export class ImportExperimentComponent {
       partitions: 'interface',
       queries: 'array',
       stateTimeLogs: 'interface',
+      backendVersion: 'string'
     };
 
     const conditionSchema: Record<keyof ExperimentCondition, string> = {
@@ -93,30 +145,34 @@ export class ImportExperimentComponent {
     }
 
     let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
-    if (missingProperties.length > 0) {
-      return false;
-    } else {
-      experiment.conditions.map(condition => {
-        missingProperties = [ ...missingProperties, ...this.checkForMissingProperties({ schema: conditionSchema, data: condition })];
-      });
-
-      if (missingProperties.length > 0) {
-        return false;
-      } else {
-        experiment.partitions.map(partition => {
-          missingProperties = [ ...missingProperties, ...this.checkForMissingProperties({ schema: partitionSchema, data: partition })];
-        });
-        return missingProperties.length === 0;
-      }
+    let missingPropertiesFlag = true;
+    this.missingAllProperties = this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
+    let missingConditionProperties;
+    let missingPartitionProperties;
+    missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
+    experiment.conditions.map(condition => {
+      missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
+    });
+    if (missingConditionProperties.length > 0) {
+      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.condition.text') + ": " + missingConditionProperties;
     }
+    missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
+    experiment.partitions.map(partition => {
+      missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
+    });
+    if (missingPartitionProperties.length > 0) {
+      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.partition.text') + ": " + missingPartitionProperties;
+    }
+    missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
+    return missingPropertiesFlag;
   }
 
   private checkForMissingProperties(experimentJson: ImportExperimentJSON) {
     const { schema, data } = experimentJson;
-    const missingProperties = Object.keys(schema)
+    const missingProperty = Object.keys(schema)
       .filter(key => data[key] === undefined)
       .map(key => key as keyof (Experiment | ExperimentPartition | ExperimentCondition))
-      .map(key => new Error(`Document is missing ${key} ${schema[key]}`));
-      return missingProperties;
+      .map(key => `${key}`);
+      return missingProperty.join(', ');
   }
 }
