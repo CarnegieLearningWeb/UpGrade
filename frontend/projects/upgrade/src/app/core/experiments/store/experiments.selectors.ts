@@ -32,7 +32,7 @@ export const selectSelectedExperiment = createSelector(
   ({ state: { params } }, experimentState) => {
     return experimentState.stats[params.experimentId]
       ? ({ ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] })
-      : ({ id: params.experimentId , ...experimentState.entities[params.experimentId], stat: null });
+      : ({ ...experimentState.entities[params.experimentId], stat: null });
   }
 );
 

@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY
 } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
-import { filter, first } from 'rxjs/operators';
+import { distinctUntilKeyChanged, first } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -43,7 +43,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
-  expId;
+  expId: string;
 
   constructor(
     private experimentService: ExperimentService,
@@ -58,22 +58,22 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
       this.permissions = permission;
     });
+
     this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => { 
-      console.log(params);
       this.expId = params.get('experimentId');
+      this.experimentService.fetchExperimentById(this.expId);
     });
-    this.experimentService.fetchExperimentById(this.expId);
+
     this.experimentSub = this.experimentService.selectedExperiment$
-      .pipe(filter(experiment => !!experiment))
-      .subscribe(experiment => {
-        if (!this.experiment) {
-          this.experimentService.fetchExperimentDetailStat(experiment.id);
-        }
-        // By refreshing page if we would have experimentId then only assign it's value
-        if (experiment.id && experiment.name) {
-          this.experiment = experiment;
-        }
-      });
+      .pipe(
+        distinctUntilKeyChanged('stat')
+      ).subscribe(experiment => {
+      if (experiment.stat && experiment.stat.id) {
+        this.experiment = experiment;
+      } else {
+        this.experimentService.fetchExperimentDetailStat(experiment.id);
+      }
+    })
   }
 
   openSnackBar(exportType: boolean) {
