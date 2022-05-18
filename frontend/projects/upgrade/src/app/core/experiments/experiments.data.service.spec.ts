@@ -57,7 +57,8 @@ describe('ExperimentDataService', () => {
             conditions: [],
             partitions: [],
             queries: [],
-            stateTimeLogs: []
+            stateTimeLogs: [],
+            backendVersion: '1.0.0'
         }
     });
 

@@ -563,12 +563,15 @@ export class ExperimentClientController {
       });
     }).catch((error) => {
       request.logger.error(error);     
-      throw new Error(
+      error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: error.message,
         })
       );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     });
   }
 

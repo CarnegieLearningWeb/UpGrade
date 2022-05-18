@@ -23,6 +23,15 @@
     .error-msg {
       color: var(--red);
     }
+
+    .warn-msg {
+      display: block;
+      padding-top: 10px;
+    }
+
+    .warn-msg {
+      color: var(--blue);
+    }
   }
 
   .button-container {
