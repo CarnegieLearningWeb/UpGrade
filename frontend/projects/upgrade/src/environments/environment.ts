@@ -16,6 +16,7 @@ export const environment = {
   appVersion: require('../../../../package.json').version,
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
   domainName: '',
+  pollingInterval: 5000,
   api: {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
