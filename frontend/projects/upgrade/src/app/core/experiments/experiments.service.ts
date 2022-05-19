@@ -15,6 +15,7 @@ import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
   selectIsLoadingExperiment,
+  selectIsLoadingExperimentDetailStats,
   selectSelectedExperiment,
   selectAllPartitions,
   selectAllExperimentNames,
@@ -53,6 +54,7 @@ export class ExperimentService {
     )
   );
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
+  isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   allPartitions$ = this.store$.pipe(select(selectAllPartitions));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));

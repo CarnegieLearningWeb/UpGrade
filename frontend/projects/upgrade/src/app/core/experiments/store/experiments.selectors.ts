@@ -26,6 +26,11 @@ export const selectIsLoadingExperiment = createSelector(
   state => state.isLoadingExperiment
 );
 
+export const selectIsLoadingExperimentDetailStats = createSelector(
+  selectExperimentState,
+  state => state.isLoadingExperimentDetailStats
+);
+
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,

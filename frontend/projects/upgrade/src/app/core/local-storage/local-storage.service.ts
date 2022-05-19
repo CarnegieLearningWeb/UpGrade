@@ -25,6 +25,7 @@ export class LocalStorageService {
       ids: [],
       entities: {},
       isLoadingExperiment: false,
+      isLoadingExperimentDetailStats: false,
       skipExperiment: 0,
       totalExperiments: null,
       searchKey: (experimentSearchKey as EXPERIMENT_SEARCH_KEY),

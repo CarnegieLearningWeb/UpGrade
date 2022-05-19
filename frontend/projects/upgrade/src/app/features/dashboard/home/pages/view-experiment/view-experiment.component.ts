@@ -9,8 +9,8 @@ import {
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY
 } from '../../../../../core/experiments/store/experiments.model';
-import { Subscription } from 'rxjs';
-import { distinctUntilKeyChanged, first } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { filter, first, withLatestFrom } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,6 +40,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   experiment: ExperimentVM;
   experimentSub: Subscription;
   experimentIdSub: Subscription;
+  experimentDetailsLoading$: Observable<boolean>;
 
   displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
@@ -64,16 +65,20 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experimentService.fetchExperimentById(this.expId);
     });
 
+    this.experimentDetailsLoading$ = this.experimentService.isLoadingExperimentDetailStats$
+
     this.experimentSub = this.experimentService.selectedExperiment$
       .pipe(
-        distinctUntilKeyChanged('stat')
-      ).subscribe(experiment => {
-      if (experiment.stat && experiment.stat.id) {
-        this.experiment = experiment;
-      } else {
-        this.experimentService.fetchExperimentDetailStat(experiment.id);
-      }
-    })
+        withLatestFrom(this.experimentDetailsLoading$),
+        filter(([ _, isLoadingData ]) => !isLoadingData)
+      ).subscribe(([ experiment ]) => {
+        
+        if (experiment.stat && experiment.stat.conditions) {
+          this.experiment = experiment;
+        } else {
+          this.experimentService.fetchExperimentDetailStat(experiment.id);
+        }
+      })
   }
 
   openSnackBar(exportType: boolean) {
