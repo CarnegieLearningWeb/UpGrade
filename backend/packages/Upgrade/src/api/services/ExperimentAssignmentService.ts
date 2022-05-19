@@ -121,6 +121,7 @@ export class ExperimentAssignmentService {
     if (!userDoc) {
       const error = new Error(`User not defined in markExperimentPoint: ${userId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
       logger.error(error);
       throw error;
     }
@@ -258,12 +259,15 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!experimentUser) {
       logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
-      throw new Error(
+      let error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined in getAllExperimentConditions: ${userId}`,
         })
       );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     }
 
     // query all experiment and sub experiment
@@ -715,12 +719,15 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!userDoc) {
       logger.error({ message: `User not found in dataLog, userId => ${userId}`, details: jsonLog });
-      throw new Error(
+      let error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined dataLog: ${userId}`,
         })
       );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     }
 
     // extract the array value
@@ -746,12 +753,15 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!userDoc) {
       logger.error({ message: `User not found in clientFailedExperimentPoint, userId => ${userId}` });
-      throw new Error(
+      let error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined clientFailedExperimentPoint: ${userId}`,
         })
       );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     }
 
     error.type = SERVER_ERROR.REPORTED_ERROR;
