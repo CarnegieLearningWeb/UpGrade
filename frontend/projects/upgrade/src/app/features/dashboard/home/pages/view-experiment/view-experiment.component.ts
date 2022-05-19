@@ -10,7 +10,7 @@ import {
   EXPERIMENT_SEARCH_KEY
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
-import { filter, first, withLatestFrom } from 'rxjs/operators';
+import { filter, first, map, withLatestFrom } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -70,15 +70,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.experimentSub = this.experimentService.selectedExperiment$
       .pipe(
         withLatestFrom(this.experimentDetailsLoading$),
-        filter(([ _, isLoadingData ]) => !isLoadingData)
-      ).subscribe(([ experiment ]) => {
-        
-        if (experiment.stat && experiment.stat.conditions) {
-          this.experiment = experiment;
-        } else {
-          this.experimentService.fetchExperimentDetailStat(experiment.id);
-        }
-      })
+        filter(([ _, isLoadingData ]) => !isLoadingData),
+        map(([experiment]) => experiment)
+      ).subscribe((experiment) => this.onExperimentChange(experiment))
+  }
+
+  onExperimentChange(experiment: ExperimentVM) {    
+    if (experiment.stat && experiment.stat.conditions) {
+      this.experiment = experiment;
+    } else {
+      this.experimentService.fetchExperimentDetailStat(experiment.id);
+    }
   }
 
   openSnackBar(exportType: boolean) {
