@@ -17,6 +17,7 @@ export const {
 export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperiment: false,
   isLoadingExperimentDetailStats: false,
+  isPollingExperimentDetailStats: false,
   skipExperiment: 0,
   totalExperiments: null,
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
@@ -193,7 +194,25 @@ const reducer = createReducer(
         isLoadingExperimentDetailStats: false
       };
     }
-  )
+  ),
+  on(
+    experimentsAction.actionBeginExperimentDetailStatsPolling,
+    (state) => {
+      return {
+        ...state,
+        isPollingExperimentDetailStats: true
+      }
+    }
+  ),
+  on(
+    experimentsAction.actionEndExperimentDetailStatsPolling,
+    (state) => {
+      return {
+        ...state,
+        isPollingExperimentDetailStats: false
+      }
+    }
+  ),
 );
 
 export function experimentsReducer(

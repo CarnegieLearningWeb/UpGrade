@@ -123,3 +123,8 @@ export const selectContextMetaData = createSelector(
   selectExperimentState,
   (state) => state.contextMetaData
 );
+
+export const selectIsPollingExperimentDetailStats = createSelector(
+  selectExperimentState,
+  (state) => state.isPollingExperimentDetailStats
+)

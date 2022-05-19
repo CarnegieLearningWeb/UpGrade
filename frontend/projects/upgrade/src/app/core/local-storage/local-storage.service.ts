@@ -26,6 +26,7 @@ export class LocalStorageService {
       entities: {},
       isLoadingExperiment: false,
       isLoadingExperimentDetailStats: false,
+      isPollingExperimentDetailStats: false,
       skipExperiment: 0,
       totalExperiments: null,
       searchKey: (experimentSearchKey as EXPERIMENT_SEARCH_KEY),
@@ -38,7 +39,7 @@ export class LocalStorageService {
       isGraphInfoLoading: false,
       allPartitions: null,
       allExperimentNames: null,
-      contextMetaData: {}
+      contextMetaData: {},
     };
 
     const state = {
