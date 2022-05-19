@@ -67,12 +67,15 @@ export class ExperimentUserService {
     // throw error if user not defined
     if (!userExist) {
       logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
-      throw new Error(
+      
+      let error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined setAliasesForUser: ${userId}`,
-        })
-      );
+        }));
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     }
     const promiseArray = [];
     aliases.map((aliasId) => {
@@ -166,12 +169,14 @@ export class ExperimentUserService {
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
       logger.error({ message: 'User not defined updateWorkingGroup', details: userId });
-      throw new Error(
+      let error =  new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined updateWorkingGroup: ${userId}`,
-        })
-      );
+        }));
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     }
     // TODO check if workingGroup is the subset of group membership
     const newDocument = { ...userExist, workingGroup };
@@ -191,12 +196,14 @@ export class ExperimentUserService {
     logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
     if (!userExist) {
       logger.error({ message: 'User not defined updateGroupMembership', details: userId });
-      throw new Error(
+      let error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined updateGroupMembership: ${userId}`,
-        })
-      );
+        }));
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     }
 
     // update assignments
