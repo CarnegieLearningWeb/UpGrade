@@ -37,6 +37,7 @@ import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map, first, filter } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class ExperimentService {
@@ -69,7 +70,7 @@ export class ExperimentService {
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
-  pollingEnabled: boolean = true;
+  pollingEnabled: boolean = environment.pollingEnabled;
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
@@ -187,7 +188,7 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionFetchExperimentDetailStat({ experimentId }));
   }
 
-  toggleDetailsPolling(experiment: ExperimentVM, isPolling: boolean) {
+  toggleDetailsPolling(experiment: Experiment, isPolling: boolean) {
     if (!isPolling && experiment.state === EXPERIMENT_STATE.ENROLLING) {
       this.beginDetailStatsPolling(experiment.id);
     }

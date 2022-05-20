@@ -75,6 +75,12 @@ const reducer = createReducer(
     (state, { isGraphInfoLoading }) => ({ ...state, isGraphInfoLoading })
   ),
   on(
+    experimentsAction.actionFetchExperimentGraphInfo,
+    (state) => {
+      return { ...state, graphInfo: null };
+    }
+  ),
+  on(
     experimentsAction.actionFetchExperimentGraphInfoSuccess,
     (state, { graphInfo, range }) => {
       return { ...state, graphInfo: { ...state.graphInfo, [range]: graphInfo }, isGraphInfoLoading: false };
