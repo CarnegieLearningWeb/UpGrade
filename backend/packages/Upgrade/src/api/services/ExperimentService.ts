@@ -149,6 +149,7 @@ export class ExperimentService {
       const newPartition = { ...partition, order: index + 1 };
       experiment.partitions[index] = newPartition;
     });
+    experiment.backendVersion = env.app.version;
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
@@ -353,6 +354,7 @@ export class ExperimentService {
       where: { id: experimentId },
       relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
     });
+    experimentDetails.backendVersion = env.app.version;
     this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
       { experimentName: experimentDetails.name },

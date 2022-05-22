@@ -77,7 +77,7 @@ describe('ErrorHandler Middleware tests', () => {
         let error = {
             type:SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
             message:"Experiment user not defined",
-            httpCode: 500
+            httpCode: 404
         };
 
         await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
@@ -89,7 +89,7 @@ describe('ErrorHandler Middleware tests', () => {
         let error = {
             type:SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
             message:"Experiment user group not defined",
-            httpCode: 500
+            httpCode: 404
         };
 
         await errorhandler.error(error, mockRequest, mockResponse as Response, nextFunction);
