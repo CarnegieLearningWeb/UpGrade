@@ -1,5 +1,5 @@
 <form class="experiment-participants" [formGroup]="participantsForm">
-
+  <!-- Table -->
   <div class="property-container">
     <mat-form-field class="ft-14-600 inclusion-criteria">
       <mat-label>{{ 'home-global.inclusion-criteria.text' | translate }}</mat-label>
@@ -14,19 +14,11 @@
     </mat-form-field>
 
     <mat-table
+    class="member-table"
     [dataSource]="members1DataSource"
     formArrayName="members1"
     #membersTable
     >
-      <!-- Members NUMBER Column -->
-      <ng-container matColumnDef="memberNumber">
-        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-          {{ 'global.number.text' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element; let groupIndex = index">
-          <span>{{ groupIndex + 1 }}</span>
-        </mat-cell>
-      </ng-container>
       <!-- Members Type Column -->
       <ng-container matColumnDef="type">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -36,7 +28,11 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-        <span>{{ groupIndex + 1 }}</span>
+        <mat-select formControlName="type">
+          <mat-option *ngFor="let subSegmentType of subSegmentTypes" [value]="subSegmentType">
+            {{ subSegmentType }}
+          </mat-option>
+        </mat-select>
         </mat-cell>
       </ng-container>
       <!-- Members Id Column -->
@@ -54,7 +50,7 @@
               <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
                 {{ subSegmentId }}
               </mat-option>
-          </mat-select>
+            </mat-select>
           </mat-form-field>
         </ng-container>
         <ng-template #noSelect>
@@ -77,7 +73,7 @@
         >
           <mat-icon
             class="remove-icon"
-            (click)="removeMember(groupIndex)"
+            (click)="removeMember1(groupIndex)"
           >
             delete_outline
           </mat-icon>
@@ -98,43 +94,136 @@
     >
       + {{ 'segments.members-add-members.text' | translate }}
     </button>
-
-
     <br>
-
-    <mat-form-field class="ft-14-600 except" *ngIf="inclusionCriterisAsIncludeSpecific">
+  </div>
+</form>
+<form class="experiment-participants" [formGroup]="participantsForm2">
+  <div class="property-container">
+    <!-- <mat-form-field class="ft-14-600 except" *ngIf="inclusionCriterisAsIncludeSpecific">
       <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
       <mat-select class="ft-14-400" formControlName="except">
         <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
       </mat-select>
-    </mat-form-field>
-  </div>
-
-  <div class="button-container">
+    </mat-form-field> -->
+    <ng-container *ngIf="inclusionCriterisAsIncludeSpecific">
+    <mat-table
+    class="member-table"
+    [dataSource]="members2DataSource"
+    formArrayName="members2"
+    #membersExceptTable
+    >
+      <!-- Members Type Column -->
+      <ng-container matColumnDef="type">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          {{ 'segments.global-members-type.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+        <mat-select formControlName="type">
+          <mat-option *ngFor="let subSegmentType of subSegmentTypes" [value]="subSegmentType">
+            {{ subSegmentType }}
+          </mat-option>
+        </mat-select>
+        </mat-cell>
+      </ng-container>
+      <!-- Members Id Column -->
+      <ng-container matColumnDef="id">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          {{ 'segments.global-members-id/name.text' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+        <ng-container *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect">
+          <mat-form-field floatLabel="never" class="form-control">
+            <mat-select formControlName="id">
+              <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                {{ subSegmentId }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </ng-container>
+        <ng-template #noSelect>
+          <mat-form-field floatLabel="never" class="form-control">
+            <input
+              matInput
+              [placeholder]="'segments.global-members-id/name.text' | translate"
+              formControlName="id"
+            />
+          </mat-form-field>
+        </ng-template>
+        </mat-cell>
+      </ng-container>
+      <!-- Members Remove Column -->
+      <ng-container matColumnDef="removeMember">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+        <mat-cell
+          *matCellDef="let element; let groupIndex = index"
+          [formGroupName]="groupIndex"
+        >
+          <mat-icon
+            class="remove-icon"
+            (click)="removeMember2(groupIndex)"
+          >
+            delete_outline
+          </mat-icon>
+        </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
+    </mat-table>
+    <span
+      class="ft-14-600 validation-message"
+      *ngIf="membersCountError"
+      [innerHTML]="membersCountError"
+    ></span>
     <button
       type="button"
-      mat-raised-button
-      class="modal-btn"
-      (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+      class="ft-12-700 add-member"
+      (click)="addMember2()"
     >
-      {{ 'global.cancel.text' | translate }}
+      + {{ 'segments.members-add-members.text' | translate }}
     </button>
-    <button
-      type="button"
-      *ngIf="experimentInfo && enableSave"
-      mat-raised-button
-      class="modal-btn default-button"
-      (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-    >
-      {{ 'global.save.text' | translate }}
-    </button>
-    <button
-      type="button"
-      mat-raised-button
-      class="modal-btn default-button"
-      (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-    >
-      {{ 'global.next.text' | translate }}
-    </button>
+    </ng-container>
+    <br>
+    <div class="button-container">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="modal-btn btn-back default-button"
+      >
+        {{ 'global.back.text' | translate }}
+      </button>
+      <div>
+        <button
+          type="button"
+          mat-raised-button
+          class="modal-btn"
+          (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+        >
+          {{ 'global.cancel.text' | translate }}
+        </button>
+        <button
+          type="button"
+          *ngIf="experimentInfo && enableSave"
+          mat-raised-button
+          class="modal-btn default-button"
+          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+        >
+          {{ 'global.save.text' | translate }}
+        </button>
+        <button
+          type="button"
+          mat-raised-button
+          class="modal-btn default-button"
+          (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+        >
+          {{ 'global.next.text' | translate }}
+        </button>
+      </div>
+    </div>
   </div>
 </form>

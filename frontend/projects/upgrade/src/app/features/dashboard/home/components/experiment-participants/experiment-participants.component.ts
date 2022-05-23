@@ -15,7 +15,9 @@ import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray, FormCon
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-
+import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { SegmentsService } from '../../../../../core/segments/segments.service';
+import { SEGMENT_TYPE } from 'upgrade_types';
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -23,33 +25,120 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentParticipantsComponent implements OnInit {
+  @Input() segmentInfo: Segment;
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
+  @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
 
   participantsForm: FormGroup;
+  participantsForm2: FormGroup;
   members1DataSource = new BehaviorSubject<AbstractControl[]>([]);
+  members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
   
-  inclusionCriteria = [{ value: 'includeAll'}, { value: 'excludeAll'}];
-  membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember'];
+  inclusionCriteria = [{ value: 'Include Specific'}, { value: 'Include All Except...'}];
+  membersDisplayedColumns = ['type', 'id', 'removeMember'];
   
+  contextMetaData: IContextMetaData | {} = {};
+  contextMetaDataSub: Subscription;
+  allSegments: Segment[];
+  allSegmentsSub: Subscription;
+  subSegmentIds = [];
+  segmentNameId = new Map();
+  subSegmentTypes : any[];
+
   constructor(
     private _formBuilder: FormBuilder,
+    private _formBuilder2: FormBuilder,
+    private segmentsService: SegmentsService,
     private experimentService: ExperimentService
   ) { }
+  
+  ngOnChanges() {
+    if (this.currentContext) {
+      this.setMemberTypes();
+    }
+
+    if (this.isContextChanged) {
+      this.isContextChanged = false;
+      this.members1.clear();
+      this.members2.clear();
+      this.members1DataSource.next(this.members1.controls);
+      this.members2DataSource.next(this.members2.controls);
+    }
+  }
 
   ngOnInit() {
+
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(allSegments => {
+      this.allSegments =  allSegments;
+    });
+
+    if (this.allSegments) {
+      this.allSegments.forEach((segment) => {
+        if (this.segmentInfo) {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.segmentInfo.id) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        } else {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        }  
+      });
+    }
+
     this.participantsForm = this._formBuilder.group({
       inclusionCriteria: [null],
       except: [null],
       members1: this._formBuilder.array([this.addMembers1()]),
     });
+
+    this.participantsForm2 = this._formBuilder2.group({
+      inclusionCriteria: [null],
+      except: [null],
+      members2: this._formBuilder.array([this.addMembers2()]),
+    });
+
+    if (this.segmentInfo) {
+      this.members1.removeAt(0);
+      this.members2.removeAt(0);
+      this.segmentInfo.individualForSegment.forEach((id) => {
+        this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
+      });
+      this.segmentInfo.groupForSegment.forEach((group) => {
+        this.members1.push(this.addMembers1(group.type, group.groupId));
+      });
+      this.segmentInfo.subSegments.forEach((id) => {
+        this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
+      });
+      this.segmentInfo.individualForSegment.forEach((id) => {
+        this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
+      });
+      this.segmentInfo.groupForSegment.forEach((group) => {
+        this.members2.push(this.addMembers2(group.type, group.groupId));
+      });
+      this.segmentInfo.subSegments.forEach((id) => {
+        this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
+      });
+    }
+
+    this.updateView1();
+    this.updateView2();
   }
 
   addMembers1(type = null, id = null) {
+    return this._formBuilder.group({
+      type: [type , Validators.required],
+      id: [id, Validators.required],
+    });
+  }
+  addMembers2(type = null, id = null) {
     return this._formBuilder.group({
       type: [type , Validators.required],
       id: [id, Validators.required],
@@ -59,6 +148,21 @@ export class ExperimentParticipantsComponent implements OnInit {
   addMember1() {
     this.members1.push(this.addMembers1());
     this.updateView1();
+  }
+
+  addMember2() {
+    this.members2.push(this.addMembers2());
+    this.updateView2();
+  }
+
+  removeMember1(groupIndex: number) {
+    this.members1.removeAt(groupIndex);
+    this.updateView1();
+  }
+
+  removeMember2(groupIndex: number) {
+    this.members2.removeAt(groupIndex);
+    this.updateView2();
   }
 
   updateView1() {
@@ -71,11 +175,46 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
+  updateView2() {
+    this.members2DataSource.next(this.members2.controls);
+    if (this.members2Table) {
+      this.members2Table.nativeElement.scroll({
+        top: this.members2Table.nativeElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  setMemberTypes() {
+    this.subSegmentTypes = [];
+    this.subSegmentTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
+    this.subSegmentTypes.push({ heading: '', value: [MemberTypes.SEGMENT] });
+    const groups = [];
+    if (this.currentContext === 'any') {
+      const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
+      contexts.forEach(context => {
+        this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
+          groups.push(group);
+        });
+      });
+    }
+    else if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
+      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
+        groups.push(type);
+      });
+    }
+    this.subSegmentTypes.push({ heading: 'group', value: groups });
+  }
+
   get members1(): FormArray {
     return this.participantsForm.get('members1') as FormArray;
   }
+  get members2(): FormArray {
+    return this.participantsForm2.get('members2') as FormArray;
+  }
+
 
   get inclusionCriterisAsIncludeSpecific() {
-    return this.participantsForm.get('inclusionCriteria').value === 'includeAll';
+    return this.participantsForm.get('inclusionCriteria').value === 'Include Specific';
   }
 }
