@@ -2,6 +2,11 @@
   display: flex;
   flex-direction: column;
 
+  .title {
+    font-size: var(--text-size-medium);
+    font: bolder;
+  }
+
   .member-table {
     max-height: 180px;
     overflow: auto;

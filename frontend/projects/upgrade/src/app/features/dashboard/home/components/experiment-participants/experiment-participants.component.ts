@@ -267,6 +267,9 @@ export class ExperimentParticipantsComponent implements OnInit {
     return this.participantsForm2.get('members2') as FormArray;
   }
 
+  get getMemberTypes() {
+    return this.subSegmentTypes;
+  }
 
   get inclusionCriterisAsIncludeSpecific() {
     return this.participantsForm.get('inclusionCriteria').value === 'Include Specific';

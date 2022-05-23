@@ -28,11 +28,20 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-        <mat-select formControlName="type">
-          <mat-option *ngFor="let subSegmentType of subSegmentTypes" [value]="subSegmentType">
-            {{ subSegmentType }}
-          </mat-option>
-        </mat-select>
+        <mat-form-field floatLabel="never" class="form-control">
+          <mat-select formControlName="type">
+            <mat-optgroup
+              *ngFor="let type of subSegmentTypes"
+              [class.hideLabel]="type.heading == ''"
+              [disabled]="type.disabled"
+              [label]="type.heading"
+            >
+              <mat-option *ngFor="let val of type.value" [value]="val">
+                {{ val }}
+              </mat-option>
+            </mat-optgroup>
+          </mat-select>
+        </mat-form-field>
         </mat-cell>
       </ng-container>
       <!-- Members Id Column -->
@@ -97,6 +106,7 @@
     <br>
   </div>
 </form>
+<br>
 <form class="experiment-participants" [formGroup]="participantsForm2">
   <div class="property-container">
     <!-- <mat-form-field class="ft-14-600 except" *ngIf="inclusionCriterisAsIncludeSpecific">
@@ -106,6 +116,7 @@
       </mat-select>
     </mat-form-field> -->
     <ng-container *ngIf="inclusionCriterisAsIncludeSpecific">
+    <span class="title"> {{ 'segments.except.text' | translate }} </span>
     <mat-table
     class="member-table"
     [dataSource]="members2DataSource"
@@ -121,11 +132,20 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-        <mat-select formControlName="type">
-          <mat-option *ngFor="let subSegmentType of subSegmentTypes" [value]="subSegmentType">
-            {{ subSegmentType }}
-          </mat-option>
-        </mat-select>
+        <mat-form-field floatLabel="never" class="form-control">
+          <mat-select formControlName="type">
+            <mat-optgroup
+              *ngFor="let type of subSegmentTypes"
+              [class.hideLabel]="type.heading == ''"
+              [disabled]="type.disabled"
+              [label]="type.heading"
+            >
+              <mat-option *ngFor="let val of type.value" [value]="val">
+                {{ val }}
+              </mat-option>
+            </mat-optgroup>
+          </mat-select>
+        </mat-form-field>
         </mat-cell>
       </ng-container>
       <!-- Members Id Column -->
