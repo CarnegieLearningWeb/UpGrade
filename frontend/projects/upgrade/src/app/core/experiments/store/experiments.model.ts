@@ -185,6 +185,8 @@ export interface ExperimentVM extends Experiment {
 
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
+  isLoadingExperimentDetailStats: boolean;
+  isPollingExperimentDetailStats: boolean;
   skipExperiment: number;
   totalExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;
