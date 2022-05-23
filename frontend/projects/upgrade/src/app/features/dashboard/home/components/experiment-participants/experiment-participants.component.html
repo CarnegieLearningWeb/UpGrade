@@ -202,7 +202,7 @@
           type="button"
           mat-raised-button
           class="modal-btn"
-          (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+          (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
         >
           {{ 'global.cancel.text' | translate }}
         </button>
@@ -211,7 +211,7 @@
           *ngIf="experimentInfo && enableSave"
           mat-raised-button
           class="modal-btn default-button"
-          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+          (click)="emitEvent(NewSegmentDialogEvents.SAVE_DATA)"
         >
           {{ 'global.save.text' | translate }}
         </button>
@@ -219,7 +219,7 @@
           type="button"
           mat-raised-button
           class="modal-btn default-button"
-          (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+          (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
         >
           {{ 'global.next.text' | translate }}
         </button>

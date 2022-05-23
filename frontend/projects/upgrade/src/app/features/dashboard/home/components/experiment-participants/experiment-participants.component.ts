@@ -18,6 +18,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE } from 'upgrade_types';
+import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -31,6 +32,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
+  @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
 
@@ -49,11 +51,16 @@ export class ExperimentParticipantsComponent implements OnInit {
   subSegmentIds = [];
   segmentNameId = new Map();
   subSegmentTypes : any[];
+  subSegmentIdsToSend = [];
+  membersCountError: string = null;
+  userIdsToSend = [];
+  groupsToSend = [];
 
   constructor(
     private _formBuilder: FormBuilder,
     private _formBuilder2: FormBuilder,
     private segmentsService: SegmentsService,
+    private translate: TranslateService,
     private experimentService: ExperimentService
   ) { }
   
@@ -204,6 +211,53 @@ export class ExperimentParticipantsComponent implements OnInit {
       });
     }
     this.subSegmentTypes.push({ heading: 'group', value: groups });
+  }
+  gettingMembersValueToSend(members: any) {
+    members.forEach(member => {
+      if (member.type === MemberTypes.INDIVIDUAL) {
+        this.userIdsToSend.push(member.id);
+      } else if(member.type === MemberTypes.SEGMENT) {
+        this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
+      } else {
+        this.groupsToSend.push({ type: member.type, groupId: member.id });
+      }
+    });
+  }
+
+  validateMembersCount(members: any) {
+    const membersCountErrorMsg = this.translate.instant("segments.global-members.segments-count-members-error.text");
+    this.membersCountError = null;
+    if (members.length === 0) {
+      this.membersCountError = membersCountErrorMsg;
+    }
+  }
+  emitEvent(eventType: NewSegmentDialogEvents) {
+    switch (eventType) {
+      case NewSegmentDialogEvents.CLOSE_DIALOG:
+        this.emitSegmentDialogEvent.emit({ type: eventType });
+        break;
+      case NewSegmentDialogEvents.SEND_FORM_DATA:
+        const { members1 } = this.participantsForm.value;
+        const { members2 } = this.participantsForm2.value;
+        this.validateMembersCount(members1);
+        this.validateMembersCount(members2);
+        // TODO: Handle member2:
+        if (this.participantsForm.valid && !this.membersCountError) {
+          this.gettingMembersValueToSend(members1);
+          const segmentMembersFormData = {
+            userIds: this.userIdsToSend,
+            groups: this.groupsToSend,
+            subSegmentIds: this.subSegmentIdsToSend,
+            type: SEGMENT_TYPE.PUBLIC
+          }
+          this.emitSegmentDialogEvent.emit({
+            type: this.segmentInfo ? NewSegmentDialogEvents.UPDATE_SEGMENT : eventType,
+            formData: segmentMembersFormData,
+            path: NewSegmentPaths.SEGMENT_MEMBERS
+          });
+        }
+      break;
+    }
   }
 
   get members1(): FormArray {
