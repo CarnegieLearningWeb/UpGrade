@@ -1,6 +1,6 @@
 .metric-design {
   .metric-table {
-    max-height: 180px;
+    max-height: 380px;
     overflow: auto;
 
     mat-header-row {
@@ -8,8 +8,8 @@
     }
 
     mat-row {
-      min-height: 66px;
-      max-height: 66px;
+      min-height: 156px;
+      max-height: 156px;
     }
 
     mat-header-cell {
@@ -21,6 +21,13 @@
     mat-cell {
       justify-content: center;
       margin-right: 15px;
+    }
+
+    .metric-keys {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-between;
     }
 
     .secondary-form {
@@ -43,8 +50,9 @@
       width: 10%;
     }
 
-    .cdk-column-expId,
-    .cdk-column-expPoint {
+    .cdk-column-keys,
+    .cdk-column-operationType,
+    .cdk-column-queryName {
       flex: 0 0 30%;
       width: 30%;
     }
@@ -73,15 +81,6 @@
     border: 0;
     background-color: transparent;
     color: var(--blue);
-  }
-
-  mat-checkbox {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    &.mat-checkbox-checked {
-      color: var(--blue);
-    }
   }
 
   .metrics-table {

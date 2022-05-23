@@ -1,4 +1,4 @@
-<ng-container *ngIf="options[0]?.length" >
+<ng-container *ngIf="options?.length" >
   <form class="metric-design" [formGroup]="queryForm">
     <!-- Metric Table -->
     <ng-container>
@@ -17,37 +17,35 @@
             *matCellDef="let element; let groupIndex = index"
             [formGroupName]="groupIndex"
           >
-          <div class="auto-complete-container">
-            <ng-container formArrayName="keys">
-              <div *ngFor="let key of keys.controls; let formIndex = index">
-                <ng-container [formGroupName]="formIndex">
-                  <span>
-                    <mat-form-field class="auto-complete">
-                      <input
-                        type="text"
-                        matInput
-                        formControlName="metricKey"
-                        [matAutocomplete]="auto"
-                        >
-                      <mat-autocomplete 
-                        (optionSelected)="selectedOption($event)"
-                        #auto="matAutocomplete"
-                        [displayWith]="displayFn"
-                        panelWidth="fit-content"
-                        >
-                        <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
-                          {{option.key}}
-                        </mat-option>
-                      </mat-autocomplete>
-                    </mat-form-field>
-                  </span>
-                </ng-container>
-              </div>
-            </ng-container>
+          <ng-container formArrayName="keys">
+            <div class="metric-keys">
+            <mat-form-field  *ngFor="let key of keys.controls; let formIndex = index" class="ft-14-600 form-control auto-complete" floatLabel="never">
+              <ng-container [formGroupName]="formIndex">
+                <input
+                  class = "ft-14-400"
+                  type="text"
+                  matInput
+                  [placeholder]="'Metric'"
+                  formControlName="metricKey"
+                  [matAutocomplete]="auto"
+                  >
+                <mat-autocomplete
+                  (optionSelected)="selectedOption($event)"
+                  #auto="matAutocomplete"
+                  [displayWith]="displayFn"
+                  panelWidth="fit-content"
+                  >
+                  <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
+                    {{option.key}}
+                  </mat-option>
+                </mat-autocomplete>
+              </ng-container>
+            </mat-form-field>
           </div>
+          </ng-container>
           </mat-cell>
         </ng-container>
-
+        <!-- <code>{{ !metricType(selectedNode) }}</code> -->
         <!-- Statistic Column -->
         <ng-container matColumnDef="operationType">
           <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -57,7 +55,8 @@
             *matCellDef="let element; let groupIndex = index"
             [formGroupName]="groupIndex"
           >
-          <div class="secondary-form" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+          <div class="secondary-form">
+            <!-- statistic -->
             <mat-form-field class="ft-14-600 form-control">
               <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
               <mat-select class="ft-14-400" formControlName="operationType">
@@ -69,7 +68,52 @@
                 </mat-option>
               </mat-select>
             </mat-form-field>
-            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+            <!-- repeated measure -->
+            
+            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode && !metricType(selectedNode)">
+              <mat-label>{{ 'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase }}</mat-label>
+              <mat-select class="ft-14-400" formControlName="repeatedMeasure">
+                <code>{{ RepeatedMeasure }}</code>
+                <mat-option
+                  *ngFor="let measure of RepeatedMeasure"
+                  [value]="measure.value"
+                >
+                  {{ measure.viewValue | titlecase }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <!-- <div *ngIf="selectedNode && metricType($event)">
+              <label>{{ 'monitor.metric-repeated-measure.text' | translate }}</label>
+              <br>
+              <mat-radio-group class="radio-group" formControlName="repeatedMeasure">
+                <mat-radio-button
+                  class="ft-14-600 repeated-measure"
+                  [value]="RepeatedMeasure.mean"
+                  color="primary"
+                >
+                  {{ 'monitor.metric-mean.text' | translate }}
+                </mat-radio-button>
+                <br>
+                <mat-radio-button
+                  class="ft-14-600 repeated-measure"
+                  [value]="RepeatedMeasure.earliest"
+                  color="primary"
+                >
+                  {{ 'monitor.metric-earliest.text' | translate }}
+                </mat-radio-button>
+                <br>
+                <mat-radio-button
+                  class="ft-14-600 repeated-measure"
+                  [value]="RepeatedMeasure.mostRecent"
+                  color="primary"
+                >
+                  {{ 'monitor.metric-most-recent.text' | translate }}
+                </mat-radio-button>
+              </mat-radio-group>
+            </div> -->
+            <!-- comparison function -->
+            <!-- <code>{{ selectedNode?.metadata?.type }}</code> -->
+            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode && selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
               <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
               <mat-select class="ft-14-400" formControlName="compareFn">
                 <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
@@ -81,8 +125,8 @@
                 </mat-option>
               </mat-select>
             </mat-form-field>
-
-            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+            <!-- compare value -->
+            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode && selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
               <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
               <mat-select class="ft-14-400" formControlName="compareValue">
                 <mat-option
@@ -110,10 +154,7 @@
               <span>
                 <input
                   matInput
-                  [placeholder]="
-                    'home.new-experiment.metrics.description.placeholder.text'
-                      | translate
-                  "
+                  [placeholder]="'home.new-experiment.metrics.description.placeholder.text'| translate"
                   formControlName="queryName"
                 />
               </span>
@@ -145,7 +186,7 @@
       <button
         type="button"
         class="ft-12-700 add-metric"
-        (click)="addKey()"
+        (click)="addMetrics()"
       >
         +
         {{ 'home.new-experiment.design.add-metric.text' | translate }}
@@ -171,7 +212,7 @@
         >
           {{ 'global.cancel.text' | translate }}
         </button>
-        <button
+        <!-- <button
           type="button"
           mat-raised-button
           class="modal-btn default-button"
@@ -180,7 +221,7 @@
           (click)="saveQuery()"
         >
           <span>{{ 'global.save.text' | translate }}</span>
-        </button>
+        </button> -->
         <button
           type="button"
           mat-raised-button
