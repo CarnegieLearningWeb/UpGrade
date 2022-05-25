@@ -106,6 +106,7 @@ export class ImportExperimentComponent implements OnInit {
       description: 'string',
       createdAt: 'string',
       updatedAt: 'string',
+      versionNumber: 'number',
       state: 'enum',
       context: 'array',
       startOn: 'string',
@@ -122,7 +123,8 @@ export class ImportExperimentComponent implements OnInit {
       partitions: 'interface',
       queries: 'array',
       stateTimeLogs: 'interface',
-      backendVersion: 'string'
+      backendVersion: 'string',
+      filterMode: 'string'
     };
 
     const conditionSchema: Record<keyof ExperimentCondition, string> = {
@@ -133,6 +135,9 @@ export class ImportExperimentComponent implements OnInit {
       assignmentWeight: 'number',
       twoCharacterId: 'string',
       order: 'number',
+      createdAt: 'string',
+      updatedAt: 'string',
+      versionNumber: 'number'
     }
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
@@ -142,6 +147,9 @@ export class ImportExperimentComponent implements OnInit {
       description: 'string',
       twoCharacterId: 'string',
       order: 'number',
+      createdAt: 'string',
+      updatedAt: 'string',
+      versionNumber: 'number'
     }
 
     let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
