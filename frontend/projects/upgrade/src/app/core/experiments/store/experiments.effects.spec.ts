@@ -509,7 +509,7 @@ describe('ExperimentEffects', () => {
             const graphInfo = {
                 experimentId,
                 range: DATE_RANGE.LAST_SEVEN_DAYS,
-                clientOffset: -240
+                clientOffset: -new Date().getTimezoneOffset()
             }
             
             Selectors.selectIsPollingExperimentDetailStats.setResult(true);
