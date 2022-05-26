@@ -8,24 +8,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-table-row',
   templateUrl: './table-row.component.html',
   styleUrls: ['./table-row.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('expandableRow', [
-      state('collapsed, void', style({
-        height: '0px',
-        visibility: 'hidden'
-      })),
-      state('expanded', style({
-        'min-height': '48px',
-        height: '*',
-        visibility: 'visible'
-      })),
-      transition(
-        'expanded <=> collapsed, void <=> *',
-        animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')
-      ),
-    ])
-  ]
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableRowComponent implements OnDestroy {
   @Input() dataSource: any;

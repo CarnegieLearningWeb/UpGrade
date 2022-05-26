@@ -1,5 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { of } from "rxjs/internal/observable/of";
+import { FILTER_MODE } from 'upgrade_types';
 import { environment } from "../../../environments/environment";
 import { ExperimentDataService } from "./experiments.data.service";
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, Experiment, ExperimentPaginationParams, ExperimentStateInfo, EXPERIMENT_STATE, POST_EXPERIMENT_RULE } from "./store/experiments.model";
@@ -39,6 +40,7 @@ describe('ExperimentDataService', () => {
             description: 'abc123',
             createdAt: 'time',
             updatedAt: 'time',
+            versionNumber: 0,
             state: EXPERIMENT_STATE.INACTIVE,
             context: [],
             startOn: 'test',
@@ -58,7 +60,8 @@ describe('ExperimentDataService', () => {
             partitions: [],
             queries: [],
             stateTimeLogs: [],
-            backendVersion: '1.0.0'
+            backendVersion: '1.0.0',
+            filterMode: FILTER_MODE.INCLUDE_ALL
         }
     });
 

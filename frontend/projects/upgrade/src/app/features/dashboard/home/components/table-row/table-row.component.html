@@ -23,7 +23,6 @@
       <mat-cell
         class="ft-12-600"
         *matCellDef="let element"
-        [@expandableRow]="element.data[referenceId] === expandedId ? 'expanded' : 'collapsed'"
       >
         <div *ngIf="element.data[referenceId] === expandedId" class="inner-table-container">
           <home-enrollment-point-partition-table
