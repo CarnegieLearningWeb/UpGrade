@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisAction from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil, mapTo, distinctUntilChanged, takeWhile, take, flatMap } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -24,11 +24,14 @@ import {
   selectTotalExperiment,
   selectSearchString,
   selectExperimentGraphInfo,
-  selectContextMetaData
+  selectContextMetaData,
+  selectIsPollingExperimentDetailStats,
+  selectExperimentGraphRange
 } from './experiments.selectors';
-import { combineLatest } from 'rxjs';
+import { combineLatest, interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { environment } from '../../../../environments/environment';
 
 @Injectable()
 export class ExperimentEffects {
@@ -227,6 +230,32 @@ export class ExperimentEffects {
       })
     )
   );
+
+  beginExperimentDetailStatsPolling$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionBeginExperimentDetailStatsPolling),
+      map(action => action.experimentId),
+      filter(experimentId => !!experimentId),
+      switchMap(experimentId => {
+        return interval(environment.pollingInterval).pipe(
+          switchMap(() => this.store$.pipe(select(selectIsPollingExperimentDetailStats))),
+          takeWhile((isPolling) => isPolling),
+          take(environment.pollingLimit),
+          switchMap(() => this.store$.pipe(select(selectExperimentGraphRange))),
+          switchMap((graphRange) => {
+            return [
+              experimentAction.actionFetchExperimentDetailStat({ experimentId }),
+              experimentAction.actionFetchExperimentGraphInfo({
+                experimentId,
+                range: graphRange,
+                clientOffset: -new Date().getTimezoneOffset()
+              })
+            ]
+          })
+        )
+      })
+    )
+  )
 
   fetchAllPartitions = createEffect(() =>
     this.actions$.pipe(

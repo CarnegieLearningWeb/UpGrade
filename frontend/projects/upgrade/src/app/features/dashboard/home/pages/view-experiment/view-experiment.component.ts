@@ -10,8 +10,8 @@ import {
   ExperimentVM,
   EXPERIMENT_SEARCH_KEY
 } from '../../../../../core/experiments/store/experiments.model';
-import { Subscription } from 'rxjs';
-import { filter, first } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { filter, first, withLatestFrom } from 'rxjs/operators';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -42,10 +42,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   experiment: ExperimentVM;
   experimentSub: Subscription;
   experimentIdSub: Subscription;
+  isLoadingExperimentDetailStats$: Observable<boolean>;
+  isPollingExperimentDetailStats$: Observable<boolean>;
 
   displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
-  expId;
 
   constructor(
     private experimentService: ExperimentService,
@@ -57,25 +58,40 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
+    this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;
+
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
       this.permissions = permission;
     });
+
     this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => { 
-      console.log(params);
-      this.expId = params.get('experimentId');
+      const experimentIdFromParams = params.get('experimentId');
+      this.experimentService.fetchExperimentById(experimentIdFromParams);
     });
-    this.experimentService.fetchExperimentById(this.expId);
+
     this.experimentSub = this.experimentService.selectedExperiment$
-      .pipe(filter(experiment => !!experiment))
-      .subscribe(experiment => {
-        if (!this.experiment) {
-          this.experimentService.fetchExperimentDetailStat(experiment.id);
-        }
-        // By refreshing page if we would have experimentId then only assign it's value
-        if (experiment.id && experiment.name) {
-          this.experiment = experiment;
-        }
-      });
+      .pipe(
+        withLatestFrom(
+          this.isLoadingExperimentDetailStats$,
+          this.isPollingExperimentDetailStats$,
+          (experiment, isLoadingDetails, isPolling) => {
+            return { experiment, isLoadingDetails, isPolling }
+          }
+        ),
+        filter(({ isLoadingDetails }) => !isLoadingDetails),
+      ).subscribe(({ experiment, isPolling }) => {
+        this.onExperimentChange(experiment, isPolling);
+      })
+  }
+
+  onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
+    if (experiment.stat && experiment.stat.conditions) {
+      this.experiment = experiment;
+      this.experimentService.toggleDetailsPolling(experiment, isPolling);
+    } else {
+      this.experimentService.fetchExperimentDetailStat(experiment.id);
+    }
   }
 
   openSnackBar(exportType: boolean) {
@@ -175,6 +191,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+    this.experimentService.endDetailStatsPolling();
   }
 
   get ExperimentState() {

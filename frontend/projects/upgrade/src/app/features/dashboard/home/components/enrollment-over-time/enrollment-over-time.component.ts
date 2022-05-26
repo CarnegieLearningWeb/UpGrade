@@ -38,6 +38,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   selectedDateFilter: DATE_RANGE = DATE_RANGE.LAST_SEVEN_DAYS;
   graphData = [];
   copyGraphData: IEnrollmentStatByDate[] = [];
+  isInitialLoad = true;
 
   colors = ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'];
   colorScheme = {
@@ -52,7 +53,8 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   constructor(private experimentService: ExperimentService) { this.formateXAxisLabel = this.formateXAxisLabel.bind(this); }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.experiment) {
+    if (changes.experiment && this.isInitialLoad) {
+      this.isInitialLoad = false;
       this.conditionsFilterOptions = [];
       this.selectedCondition = [];
       this.experiment.conditions.forEach(condition => {
