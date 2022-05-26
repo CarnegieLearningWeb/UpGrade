@@ -1,4 +1,3 @@
-import { not } from '@angular/compiler/src/output/output_ast';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -528,9 +527,11 @@ describe('ExperimentEffects', () => {
 
             actions$.next(actionBeginExperimentDetailStatsPolling({ experimentId }))
 
-            tick(4);
+            tick(10);
 
             Selectors.selectIsPollingExperimentDetailStats.setResult(false);
+
+            tick(10);
 
             environment.pollingInterval = originalInterval;
         }))
