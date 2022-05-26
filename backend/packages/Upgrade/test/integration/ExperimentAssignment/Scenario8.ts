@@ -21,8 +21,8 @@ export default async function testCase(): Promise<void> {
   // experiment object
   const experimentObject = groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment;
   let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
   // ===================     set user groups for user 1

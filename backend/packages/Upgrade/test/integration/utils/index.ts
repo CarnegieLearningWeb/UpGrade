@@ -1,5 +1,5 @@
 
-import { MonitoredExperimentPoint } from '../../../src/api/models/MonitoredExperimentPoint';
+import { MonitoredDecisionPoint } from '../../../src/api/models/MonitoredDecisionPoint';
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
@@ -36,13 +36,13 @@ export function checkExperimentAssignedIsNotDefault(
 ): void {
   // get object with name and point
   const experimentObject = experimentConditionAssignments.find((experiment) => {
-    return experiment.expId === experimentName && experiment.expPoint === experimentPoint;
+    return experiment.target === experimentName && experiment.site === experimentPoint;
   });
   expect(experimentObject.assignedCondition.conditionCode).not.toEqual('default');
 }
 
 export function checkMarkExperimentPointForUser(
-  markedExperimentPoint: MonitoredExperimentPoint[],
+  markedDecisionPoint: MonitoredDecisionPoint[],
   userId: string,
   experimentName: string,
   experimentPoint: string,
@@ -51,11 +51,11 @@ export function checkMarkExperimentPointForUser(
 ): void {
   const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
   if (!markExperimentPointLogLength) {
-    expect(markedExperimentPoint).toEqual(
+    expect(markedDecisionPoint).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: `${experimentId}_${userId}`,
-          experimentId,
+          decisionPoint: experimentId,
           user: expect.objectContaining({
             id: userId,
           }),
@@ -63,7 +63,7 @@ export function checkMarkExperimentPointForUser(
       ])
     );
   } else {
-    expect(markedExperimentPoint).toEqual(
+    expect(markedDecisionPoint).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           id: `${experimentId}_${userId}`,
@@ -75,7 +75,7 @@ export function checkMarkExperimentPointForUser(
       ])
     );
 
-    const monitorDocument = markedExperimentPoint.find((markedPoint) => {
+    const monitorDocument = markedDecisionPoint.find((markedPoint) => {
       return markedPoint.id === `${experimentId}_${userId}` && experimentId === experimentId;
     });
 
@@ -105,7 +105,7 @@ export async function markExperimentPoint(
   experimentPoint: string,
   condition: string | null,
   logger: UpgradeLogger
-): Promise<MonitoredExperimentPoint[]> {
+): Promise<MonitoredDecisionPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const checkService = Container.get<CheckService>(CheckService);

@@ -22,8 +22,8 @@ export default async function NoExperiment(): Promise<void> {
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
   const markedExperimentPoint = await markExperimentPoint(

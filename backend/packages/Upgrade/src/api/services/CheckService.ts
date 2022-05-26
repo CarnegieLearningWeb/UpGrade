@@ -5,8 +5,8 @@ import { GroupExclusionRepository } from '../repositories/GroupExclusionReposito
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { IndividualExclusion } from '../models/IndividualExclusion';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
+import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
 import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
 import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
 import { IndividualEnrollment } from '../models/IndividualEnrollment';
@@ -22,7 +22,7 @@ export class CheckService {
     @OrmRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository()
-    private monitoredExperimentPointRepository: MonitoredExperimentPointRepository
+    private monitoredExperimentPointRepository: MonitoredDecisionPointRepository
   ) {}
 
   public getAllGroupAssignments(): Promise<GroupEnrollment[]> {
@@ -43,7 +43,7 @@ export class CheckService {
     return this.individualExclusionRepository.find();
   }
 
-  public getAllMarkedExperimentPoints(): Promise<MonitoredExperimentPoint[]> {
+  public getAllMarkedExperimentPoints(): Promise<MonitoredDecisionPoint[]> {
     return this.monitoredExperimentPointRepository.find({ relations: ['user', 'monitoredPointLogs'] });
   }
 }

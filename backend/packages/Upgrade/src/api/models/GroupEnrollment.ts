@@ -2,7 +2,7 @@ import { PrimaryColumn, ManyToOne, Entity, Column, Index } from 'typeorm';
 import { ExperimentCondition } from './ExperimentCondition';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
-import { ExperimentPartition } from './ExperimentPartition';
+import { DecisionPoint } from './DecisionPoint';
 
 @Entity()
 export class GroupEnrollment extends BaseModel {
@@ -14,8 +14,8 @@ export class GroupEnrollment extends BaseModel {
   public experiment: Experiment;
 
   @Index()
-  @ManyToOne((type) => ExperimentPartition, { onDelete: 'CASCADE' })
-  public partition: ExperimentPartition;
+  @ManyToOne((type) => DecisionPoint, { onDelete: 'CASCADE' })
+  public partition: DecisionPoint;
 
   @Column()
   public groupId: string;

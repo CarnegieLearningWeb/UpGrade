@@ -3,8 +3,8 @@ import { IndividualEnrollmentRepository } from './../repositories/IndividualEnro
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { ExperimentPartition } from './../models/ExperimentPartition';
-import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
+import { DecisionPoint } from '../models/DecisionPoint';
+import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import {
   EXPERIMENT_STATE,
   CONSISTENCY_RULE,
@@ -15,11 +15,11 @@ import {
   FILTER_MODE,
   EXCLUSION_CODE,
 } from 'upgrade_types';
-import { getExperimentPartitionID } from '../models/ExperimentPartition';
+import { getExperimentPartitionID } from '../models/DecisionPoint';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
-import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { IndividualExclusion } from '../models/IndividualExclusion';
 import { GroupExclusion } from '../models/GroupExclusion';
@@ -38,7 +38,7 @@ import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
-import { MonitoredExperimentPoint, getMonitoredExperimentPointID } from '../models/MonitoredExperimentPoint';
+import { MonitoredDecisionPoint, getMonitoredDecisionPointId } from '../models/MonitoredDecisionPoint';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from './ErrorService';
@@ -51,7 +51,7 @@ import { SettingService } from './SettingService';
 import isequal from 'lodash.isequal';
 import flatten from 'lodash.flatten';
 import { ILogInput, ENROLLMENT_CODE } from 'upgrade_types';
-import { MonitoredExperimentPointLogRepository } from '../repositories/MonitorExperimentPointLogRepository';
+import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { StateTimeLog } from '../models/StateTimeLogs';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
@@ -70,7 +70,7 @@ export class ExperimentAssignmentService {
   constructor(
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository()
-    private experimentPartitionRepository: ExperimentPartitionRepository,
+    private decisionPointRepository: DecisionPointRepository,
     @OrmRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
@@ -83,9 +83,9 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @OrmRepository()
-    private monitoredExperimentPointLogRepository: MonitoredExperimentPointLogRepository,
+    private monitoredDecisionPointLogRepository: MonitoredDecisionPointLogRepository,
     @OrmRepository()
-    private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
+    private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
     @OrmRepository()
     private explicitIndividualExclusionRepository: ExplicitIndividualExclusionRepository,
     @OrmRepository()
@@ -121,7 +121,7 @@ export class ExperimentAssignmentService {
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     experimentId?: string
-  ): Promise<MonitoredExperimentPoint> {
+  ): Promise<MonitoredDecisionPoint> {
     // find working group for user
     const { logger, userDoc } = requestContext;
 
@@ -129,7 +129,7 @@ export class ExperimentAssignmentService {
     if (!userDoc) {
       const error = new Error(`User not defined in markExperimentPoint: ${userId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       logger.error(error);
       throw error;
     }
@@ -141,10 +141,10 @@ export class ExperimentAssignmentService {
 
     const { workingGroup } = userDoc;
 
-    const experimentPointId = getExperimentPartitionID(experimentPoint, experimentId);
-    const experimentPartition = await this.experimentPartitionRepository.findOne({
+    const decisionPoint = getExperimentPartitionID(experimentPoint, experimentId);
+    const experimentPartition = await this.decisionPointRepository.findOne({
       where: {
-        id: experimentPointId,
+        id: decisionPoint,
       },
       relations: ['experiment', 'experiment.partitions', 'experiment.conditions'],
     });
@@ -153,8 +153,8 @@ export class ExperimentAssignmentService {
       message: `markExperimentPoint: Experiment Name: ${experimentId}, Experiment Point: ${experimentPoint} for User: ${userId}`,
     });
 
-    let monitoredDocument: MonitoredExperimentPoint = await this.monitoredExperimentPointRepository.findOne({
-      id: getMonitoredExperimentPointID(experimentPointId, userDoc.id),
+    let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
+      id: getMonitoredDecisionPointId(decisionPoint, userDoc.id),
     });
     if (experimentPartition) {
       const { experiment } = experimentPartition;
@@ -179,7 +179,7 @@ export class ExperimentAssignmentService {
             where: {
               user: { id: userDoc.id },
               experiment: { id: experiment.id },
-              partition: { id: experimentPointId },
+              partition: { id: decisionPoint },
             },
           }),
           // query individual exclusion for user
@@ -234,15 +234,15 @@ export class ExperimentAssignmentService {
 
     // adding in monitored experiment point table
     if (!monitoredDocument) {
-      monitoredDocument = await this.monitoredExperimentPointRepository.saveRawJson({
+      monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         user: userDoc,
         condition,
-        experimentId: experimentPointId,
+        decisionPoint,
       });
     }
 
     // save monitored log document
-    await this.monitoredExperimentPointLogRepository.save({ monitoredExperimentPoint: monitoredDocument });
+    await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
     return monitoredDocument;
   }
 
@@ -266,7 +266,7 @@ export class ExperimentAssignmentService {
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     }
 
@@ -438,7 +438,7 @@ export class ExperimentAssignmentService {
           const assignment = experimentAssignment[index];
           const { state, logging, name } = experiment;
           const partitions = experiment.partitions.map((partition) => {
-            const { expId, expPoint, twoCharacterId } = partition;
+            const { target, site, twoCharacterId } = partition;
             const conditionAssigned = assignment;
             // adding info based on experiment state or logging flag
             if (logging || state === EXPERIMENT_STATE.PREVIEW) {
@@ -450,8 +450,8 @@ export class ExperimentAssignmentService {
               });
             }
             return {
-              expId,
-              expPoint,
+              target,
+              site,
               twoCharacterId,
               assignedCondition: conditionAssigned || {
                 conditionCode: null,
@@ -510,7 +510,7 @@ export class ExperimentAssignmentService {
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     }
 
@@ -544,7 +544,7 @@ export class ExperimentAssignmentService {
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     }
 
@@ -904,7 +904,7 @@ export class ExperimentAssignmentService {
   private async updateEnrollmentExclusion(
     user: ExperimentUser,
     experiment: Experiment,
-    partition: ExperimentPartition,
+    partition: DecisionPoint,
     {
       individualEnrollment,
       individualExclusion,
@@ -1014,7 +1014,7 @@ export class ExperimentAssignmentService {
           const groupEnrollmentDocument: Omit<GroupEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
             id: uuid(),
             experiment,
-            partition: partition as ExperimentPartition,
+            partition: partition as DecisionPoint,
             groupId: user.workingGroup[experiment.group],
             condition: conditionAssigned,
           };
@@ -1040,7 +1040,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: partition as ExperimentPartition,
+              partition: partition as DecisionPoint,
               user,
               condition: conditionAssigned,
               groupId: user?.workingGroup[experiment.group],
@@ -1082,7 +1082,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: partition as ExperimentPartition,
+              partition: partition as DecisionPoint,
               user,
               condition: conditionAssigned,
               enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
@@ -1174,7 +1174,10 @@ export class ExperimentAssignmentService {
         ? `${experiment.id}_${user.id}`
         : `${experiment.id}_${user.workingGroup[experiment.group]}`;
 
-    const spec = experiment.conditions.map((condition) => condition.assignmentWeight);
+    const sortedExperimentCondition = experiment.conditions.sort(
+      (condition1, condition2) => condition1.order - condition2.order
+    );
+    const spec = sortedExperimentCondition.map((condition) => condition.assignmentWeight);
     const r = seedrandom(randomSeed)() * 100;
     let sum = 0;
     let randomConditions = 0;
@@ -1185,7 +1188,7 @@ export class ExperimentAssignmentService {
         break;
       }
     }
-    const experimentalCondition = experiment.conditions[randomConditions];
+    const experimentalCondition = sortedExperimentCondition[randomConditions];
     return experimentalCondition;
   }
 

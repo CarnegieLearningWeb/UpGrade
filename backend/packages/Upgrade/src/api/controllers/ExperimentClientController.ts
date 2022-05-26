@@ -6,7 +6,7 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
@@ -330,7 +330,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: MarkExperimentValidator
-  ): Promise<MonitoredExperimentPoint> {
+  ): Promise<MonitoredDecisionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);

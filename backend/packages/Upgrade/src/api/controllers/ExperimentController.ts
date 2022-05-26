@@ -19,7 +19,7 @@ import { Validator, validate } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
 import { User } from '../models/User';
-import { ExperimentPartition } from '../models/ExperimentPartition';
+import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
@@ -535,7 +535,7 @@ export class ExperimentController {
    *            description: Experiment Partitions not found
    */
   @Get('/partitions')
-  public getAllExperimentPoints( @Req() request: AppRequest ): Promise<Array<Pick<ExperimentPartition, 'expPoint' | 'expId'>>> {
+  public getAllExperimentPoints( @Req() request: AppRequest ): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
     return this.experimentService.getAllExperimentPartitions(request.logger);
   }
 

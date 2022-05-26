@@ -18,8 +18,8 @@ export const assignAlternateCondition = (user: any): ((data: IExperimentAssignme
   return (data: IExperimentAssignment): IExperimentAssignment => {
     const matchedConditions = importedJsonArray.filter(
       (importedJson) =>
-        importedJson.experimentPoint === data.expPoint &&
-        importedJson.id === data.expId &&
+        importedJson.experimentPoint === data.site &&
+        importedJson.id === data.target &&
         importedJson.condition === data.assignedCondition.conditionCode
     );
     if (matchedConditions) {

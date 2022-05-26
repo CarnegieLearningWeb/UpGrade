@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { ENROLLMENT_CODE } from 'upgrade_types';
-import { ExperimentPartition } from './ExperimentPartition';
+import { DecisionPoint } from './DecisionPoint';
 import { Entity, ManyToOne, PrimaryColumn, Column, Index } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentCondition } from './ExperimentCondition';
@@ -17,8 +17,8 @@ export class IndividualEnrollment extends BaseModel {
   public experiment: Experiment;
 
   @Index()
-  @ManyToOne((type) => ExperimentPartition, { onDelete: 'CASCADE' })
-  public partition: ExperimentPartition;
+  @ManyToOne((type) => DecisionPoint, { onDelete: 'CASCADE' })
+  public partition: DecisionPoint;
 
   @Index()
   @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })

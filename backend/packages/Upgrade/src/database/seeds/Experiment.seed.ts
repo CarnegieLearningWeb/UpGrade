@@ -2,13 +2,13 @@ import { Factory, Seeder, times } from 'typeorm-seeding';
 import { Connection } from 'typeorm/connection/Connection';
 import { Experiment } from '../../api/models/Experiment';
 import { ExperimentCondition } from '../../api/models/ExperimentCondition';
-import { ExperimentPartition } from '../../api/models/ExperimentPartition';
+import { DecisionPoint } from '../../api/models/DecisionPoint';
 import { POST_EXPERIMENT_RULE } from 'upgrade_types';
 
 export class CreateExperiments implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
     const em = connection.createEntityManager();
-    await times(10, async n => {
+    await times(10, async (n) => {
       // create and save experiment here
       const experiment = await factory(Experiment)().make();
       await em.save(experiment);
@@ -30,7 +30,7 @@ export class CreateExperiments implements Seeder {
       }
 
       const numberOfPartitions = Math.floor(2 * Math.random()) + 2;
-      await factory(ExperimentPartition)({
+      await factory(DecisionPoint)({
         experimentId: experiment.id,
       }).seedMany(numberOfPartitions);
 

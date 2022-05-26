@@ -30,14 +30,14 @@ export default async function testCase(): Promise<void> {
 
   // create individual and group experiment
   const experimentObject1 = individualAssignmentExperiment;
-  const experimentName1 = experimentObject1.partitions[0].expId;
-  const experimentPoint1 = experimentObject1.partitions[0].expPoint;
+  const experimentName1 = experimentObject1.partitions[0].target;
+  const experimentPoint1 = experimentObject1.partitions[0].site;
   // const condition1 = experimentObject1.conditions[0].conditionCode;
   await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
 
   const experimentObject2 = groupAssignmentWithIndividualConsistencyExperimentSecond;
-  const experimentName2 = experimentObject2.partitions[0].expId;
-  const experimentPoint2 = experimentObject2.partitions[0].expPoint;
+  const experimentName2 = experimentObject2.partitions[0].target;
+  const experimentPoint2 = experimentObject2.partitions[0].site;
   const condition = experimentObject2.conditions[0].conditionCode;
   await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
 
@@ -106,8 +106,8 @@ export default async function testCase(): Promise<void> {
 
   // create new group experiment
   const experimentObject3 = groupAssignmentWithIndividualConsistencyExperimentThird;
-  const experimentName3 = experimentObject3.partitions[0].expId;
-  const experimentPoint3 = experimentObject3.partitions[0].expPoint;
+  const experimentName3 = experimentObject3.partitions[0].target;
+  const experimentPoint3 = experimentObject3.partitions[0].site;
   await experimentService.create(experimentObject3 as any, user, new UpgradeLogger());
 
   experiments = await experimentService.find(new UpgradeLogger());

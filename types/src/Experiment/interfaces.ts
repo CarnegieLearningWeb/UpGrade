@@ -39,8 +39,8 @@ export interface IExperimentEnrollmentDetailStats {
 }
 
 export interface IExperimentAssignment {
-  expId: string;
-  expPoint: string;
+  target: string;
+  site: string;
   twoCharacterId: string;
   description: string;
   assignedCondition: {

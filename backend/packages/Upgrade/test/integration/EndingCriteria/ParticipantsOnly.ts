@@ -36,11 +36,11 @@ export default async function ParticipantsOnly() {
     ])
   );
 
-  const experimentName1 = experimentObject.partitions[0].expId;
-  const experimentPoint1 = experimentObject.partitions[0].expPoint;
+  const experimentName1 = experimentObject.partitions[0].target;
+  const experimentPoint1 = experimentObject.partitions[0].site;
 
-  const experimentName2 = experimentObject.partitions[1].expId;
-  const experimentPoint2 = experimentObject.partitions[1].expPoint;
+  const experimentName2 = experimentObject.partitions[1].target;
+  const experimentPoint2 = experimentObject.partitions[1].site;
 
   const condition = experimentObject.conditions[0].conditionCode;
 
