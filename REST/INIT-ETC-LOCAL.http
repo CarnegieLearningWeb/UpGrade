@@ -1,0 +1,108 @@
+@userId = 21
+
+@context = testexcludeinclude
+
+POST http://localhost:3030/api/init HTTP/1.1
+content-type: application/json
+
+{
+  "id": "{{userId}}",
+  "group": {
+    "schoolId" : [
+      "{{userId}}"
+    ],
+    "classId" : [
+      "{{userId}}"
+    ],
+    "instructorId": [
+      "{{userId}}"
+    ]
+  },
+  "workingGroup": {
+    "schoolId":"{{userId}}",
+    "classId": "{{userId}}",
+    "instructorId": "{{userId}}"
+  }
+}
+
+###
+
+POST http://localhost:3030/api/assign HTTP/1.1
+content-type: application/json
+
+{
+  "userId": "{{ userId }}",
+  "context": "{{ context }}"
+}
+
+###
+
+POST http://localhost:3030/api/mark HTTP/1.1
+content-type: application/json
+
+{
+  "userId": "{{ userId }}",
+  "experimentPoint": "SelectSection",
+  "partitionId": "is-it-cake",
+  "condition": "control"
+}
+
+###
+
+POST http://localhost:3030/api/explicitInclude/experiment/group HTTP/1.1
+content-type: application/json
+
+{
+  "groups": [
+    {
+      "type": "schoolId",
+      "groupId": "xprize"
+    }
+  ],
+  "experimentId": "8d1ecf44-e345-46aa-b06f-f529ec729584"
+}
+
+###
+POST http://localhost:3030/api/explicitExclude/experiment/user HTTP/1.1
+content-type: application/json
+
+{
+  "userIds": [
+    "jenn"
+  ],
+  "experimentId": "8d1ecf44-e345-46aa-b06f-f529ec729584"
+}
+
+###
+POST http://localhost:3030/api/groupmembership HTTP/1.1
+content-type: application/json
+
+{
+  "id": "bon",
+  "group": {
+    "add-group1" : [
+      "cl_137e9162-5c28-40c8-ba8a-1179ee608e7a"
+    ]
+  }
+}
+
+###
+POST http://localhost:3030/api/useraliases HTTP/1.1
+content-type: application/json
+
+{
+  "userId": "dan1",
+  "aliases": [
+    "dan1alias"
+  ]
+}
+
+###
+PUT http://localhost:3030/api/experiments/8d1ecf44-e345-46aa-b06f-f529ec729584 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImNlYzEzZGViZjRiOTY0Nzk2ODM3MzYyMDUwODI0NjZjMTQ3OTdiZDAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiMTM1NzY1MzY3MTUyLXBxNGpoZDNncmExMGpkYTlsNmJwbm11OWdxdDQ4dHVwLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiMTM1NzY1MzY3MTUyLXBxNGpoZDNncmExMGpkYTlsNmJwbm11OWdxdDQ4dHVwLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTEwMTM1NjMxNzI3MDkyMjkzODY0IiwiaGQiOiJjYXJuZWdpZWxlYXJuaW5nLmNvbSIsImVtYWlsIjoiZG9zd2FsdEBjYXJuZWdpZWxlYXJuaW5nLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoidnE5eE5yUno2MzVRaGRucXJydWQxQSIsIm5hbWUiOiJEYW4gT3N3YWx0IiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FBVFhBSnlBc2dzUjZWbnpHTTdyeERtbEFkUzBReTFUYzhOSEQ5Q3FBZU9NPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkRhbiIsImZhbWlseV9uYW1lIjoiT3N3YWx0IiwibG9jYWxlIjoiZW4iLCJpYXQiOjE2NDkxOTM5OTQsImV4cCI6MTY0OTE5NzU5NCwianRpIjoiMDY2ZWU4YTJlYTRiOWY4OGI2NDNhN2QzNWRjMjI1MzA3YWNhYmQ3YiJ9.Qv3yi36WSSvzBZYF0gTEYwKerUuIW-2EgFiyxyjAhVA6LyhZSdLlcLf7Uho9Vu977m8cKwo7vHcU_BoAGM4w4i9BkmOJfCPj2ojhbN1JkuVCoc5TrbXBz78tecu6IwtW8H8YU7DUqTr5WmNL23WFcCHitlyzxk2MUI9lALp9PRgetjVs8a8RX2Ycz8OpJCpTWWok_mFPFuLQvXqn08yhoN2e20jz26yumRseVlHtjItdtX7zFmTcPYwno0HRNTlRe1dalmmbQeyVQ6IXjpFF-tx-H306NkWilR9Yj1Of4qvASscAoTCzVZsFSLVyVyHof2WQWZK9CvG9GZXfsWbe_A
+content-type: application/json
+
+{"createdAt":"2022-04-05T21:22:16.770Z","updatedAt":"2022-04-05T21:22:16.770Z","versionNumber":1,"id":"8d1ecf44-e345-46aa-b06f-f529ec729584","name":"is it cake?","description":"","context":["testExcludeInclude"],"state":"inactive","startOn":null,"consistencyRule":"group","assignmentUnit":"group","postExperimentRule":"continue","enrollmentCompleteCondition":null,"endOn":null,"revertTo":null,"tags":[],"group":"schoolId","logging":false,"filterMode":"excludeAll","conditions":[{"createdAt":"2022-04-05T21:22:16.770Z","updatedAt":"2022-04-05T21:22:16.770Z","versionNumber":1,"id":"b39ca287-5fec-4104-9fbd-ac813752f830","twoCharacterId":"98","name":"","description":null,"conditionCode":"control","assignmentWeight":50,"order":1},{"createdAt":"2022-04-05T21:22:16.770Z","updatedAt":"2022-04-05T21:22:16.770Z","versionNumber":1,"id":"45fe6b1f-e902-4e6b-9a19-f94c4584691c","twoCharacterId":"9A","name":"","description":null,"conditionCode":"variant","assignmentWeight":50,"order":2}],"partitions":[{"createdAt":"2022-04-05T21:22:16.770Z","updatedAt":"2022-04-05T21:22:16.770Z","versionNumber":1,"id":"is-it-cake_SelectSection","twoCharacterId":"17","expPoint":"SelectSection","expId":"is-it-cake","description":"","order":1}],"queries":[],"stateTimeLogs":[]}
+
+###
+DELETE http://localhost:3030/api/clearDB HTTP/1.1

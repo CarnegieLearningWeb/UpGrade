@@ -1,0 +1,188 @@
+@auth = Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6ImNlYzEzZGViZjRiOTY0Nzk2ODM3MzYyMDUwODI0NjZjMTQ3OTdiZDAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNjU2OTM2MjYwNjg0LWhkc2loY2djZHJjYmVvbTcybjU2bzhuNXJiMm10YzU4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNjU2OTM2MjYwNjg0LWhkc2loY2djZHJjYmVvbTcybjU2bzhuNXJiMm10YzU4LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTEwMTM1NjMxNzI3MDkyMjkzODY0IiwiaGQiOiJjYXJuZWdpZWxlYXJuaW5nLmNvbSIsImVtYWlsIjoiZG9zd2FsdEBjYXJuZWdpZWxlYXJuaW5nLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhdF9oYXNoIjoidm8tbHhpRE96bFJXREZoQjREM3RWUSIsIm5hbWUiOiJEYW4gT3N3YWx0IiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FBVFhBSnlBc2dzUjZWbnpHTTdyeERtbEFkUzBReTFUYzhOSEQ5Q3FBZU9NPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkRhbiIsImZhbWlseV9uYW1lIjoiT3N3YWx0IiwibG9jYWxlIjoiZW4iLCJpYXQiOjE2NDkyNTc1MDYsImV4cCI6MTY0OTI2MTEwNiwianRpIjoiZTlhNDRlNzUzZTZlM2Q5NTA5NTFhNGU1MzI3NmEwZGNjZGQyZTE3NiJ9.dSCWF0hUsMwX5ALnt7g3CR8RLManKvqLGS7S8TNwkabZ7DWvgl3iDeQTKamzGY-j86Tcl2xuCNtCn1UTdEH8h2mYOopIZF47Kt2L2YjtplbFYodG1WiiBvuVi-Dt4V-dDiXJe1lu0kTDtXj7FvLbJ-OSczGfrQgdx_QK-wR7A6fOUzJ9aiRwNxEYCHhSaC7Ws_oOK18qEtcRdDD2nKFlfkKnPapsBasVYm0hLIDQYCye90Szypv_vMduW8fNd11EVN7tnx87GW3i9rBf-qQMGne1_Mi1NrlCireRugSWuQv-HnbEmtS19CCXgKbiSjtxhCxKyJJ57rbXQPT761qYhA
+# @base = https://upgradeapi.carnegielearning.com/api
+# @base = https://upgradeapi.qa-cli.com/api
+@base = http://localhost.com:3030/api
+
+@experimentId = bf8dfa44-07bb-43f6-b06f-f3c7ee23b0d2
+@groupType = schoolId
+@groupId = researchk1tdbtqz
+@userId = evildan
+
+GET {{base}}/experiments/names HTTP/1.1
+Authorization: {{auth}} 
+
+###
+GET {{base}}/experiments/single/{{experimentId}} HTTP/1.1
+Authorization: {{auth}}
+
+###
+PUT {{base}}/experiments/{{experimentId}} HTTP/1.1
+Authorization: {{auth}}
+Content-Type: application/json
+
+{
+  "createdAt": "2022-04-06T14:41:02.900Z",
+  "updatedAt": "2022-04-05T17:15:32.173Z",
+  "versionNumber": 6,
+  "id": "bf8dfa44-07bb-43f6-b06f-f3c7ee23b0d2",
+  "name": "XPRIZE Experiment 1: Las Cruces",
+  "description": "XPRIZE Experiment 1: Las Cruces Schools Picture Algebra",
+  "context": [
+    "assign-prog"
+  ],
+  "state": "inactive",
+  "startOn": null,
+  "consistencyRule": "individual",
+  "assignmentUnit": "individual",
+  "postExperimentRule": "assign",
+  "enrollmentCompleteCondition": null,
+  "endOn": null,
+  "revertTo": null,
+  "tags": [
+    "xprize"
+  ],
+  "group": null,
+  "logging": true,
+  "filterMode": "excludeAll",
+  "conditions": [
+    {
+      "createdAt": "2022-03-31T17:40:13.027Z",
+      "updatedAt": "2022-03-31T17:40:13.027Z",
+      "versionNumber": 1,
+      "id": "93b19875-aa1a-42ba-a496-f9d2d982d8ad",
+      "twoCharacterId": "WJ",
+      "name": "",
+      "description": "Notification variant",
+      "conditionCode": "picture_algebra_mix_prompt_xprize_lascruces",
+      "assignmentWeight": 33.33,
+      "order": 1
+    },
+    {
+      "createdAt": "2022-03-31T17:40:13.027Z",
+      "updatedAt": "2022-03-31T17:40:13.027Z",
+      "versionNumber": 1,
+      "id": "64156698-d6ef-42d4-a973-3f732422ebdb",
+      "twoCharacterId": "G6",
+      "name": "",
+      "description": "Non-notification variant",
+      "conditionCode": "picture_algebra_mix_xprize_lascruces",
+      "assignmentWeight": 33.33,
+      "order": 2
+    },
+    {
+      "createdAt": "2022-03-31T17:40:13.027Z",
+      "updatedAt": "2022-03-31T17:40:13.027Z",
+      "versionNumber": 1,
+      "id": "a1e087bd-37a2-484e-bded-557302e7c6e2",
+      "twoCharacterId": "MR",
+      "name": "",
+      "description": "Control",
+      "conditionCode": "control",
+      "assignmentWeight": 33.33,
+      "order": 3
+    }
+  ],
+  "partitions": [
+    {
+      "createdAt": "2022-03-31T17:40:13.027Z",
+      "updatedAt": "2022-03-31T17:40:13.027Z",
+      "versionNumber": 1,
+      "id": "picture_algebra_mix_SelectSection",
+      "twoCharacterId": "LE",
+      "expPoint": "SelectSection",
+      "expId": "picture_algebra_mix",
+      "description": "",
+      "order": 1
+    }
+  ],
+  "queries": [],
+  "stateTimeLogs": []
+}
+
+###
+POST {{base}}/explicitInclude/experiment/group HTTP/1.1
+Authorization: {{auth}}
+Content-Type: application/json
+
+{
+  "groups": [
+    {
+      "type": "{{groupType}}",
+      "groupId": "{{groupId}}"
+    }
+  ],
+  "experimentId": "{{experimentId}}"
+}
+
+###
+POST {{base}}/explicitExclude/experiment/user HTTP/1.1
+Content-type: application/json
+
+{
+  "userIds": [
+    "{{userId}}"
+  ],
+  "experimentId": "{{experimentId}}"
+}
+
+###
+DELETE {{base}}/explicitExclude/experiment/group/{{groupType}}/{{groupId}}/{{experimentId}} HTTP/1.1
+Authorization: {{auth}}
+
+
+###
+POST {{base}}/explicitExclude/experiment/user HTTP/1.1
+Authorization: {{auth}}
+Content-Type: application/json
+
+{
+  "userIds": [
+    "{{userId}}"
+  ],
+  "experimentId": "{{experimentId}}"
+}
+
+####################################
+@newUserId = gooddan
+@newUserSchoolId = researchk1tdbtqz
+
+#####################################
+POST {{base}}/init HTTP/1.1
+Authorization: {{auth}}
+Content-type: application/json
+
+{
+  "id": "{{newUserId}}",
+  "group": {
+    "schoolId" : [
+      "{{newUserSchoolId}}"
+    ]
+  },
+  "workingGroup": {
+    "schoolId":"{{newUserSchoolId}}"
+  }
+}
+
+###
+
+POST {{base}}/assign HTTP/1.1
+Authorization: {{auth}}
+content-type: application/json
+
+{
+  "userId": "{{newUserId}}",
+  "context": "assign-prog"
+}
+
+###
+
+POST {{base}}/mark HTTP/1.1
+Authorization: {{auth}}
+content-type: application/json
+
+{
+  "userId": "{{newUserId}}",
+  "experimentPoint": "SelectSection",
+  "partitionId": "picture_algebra_mix",
+  "condition": "control"
+}

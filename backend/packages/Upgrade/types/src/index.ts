@@ -14,6 +14,7 @@ import {
   IMetricMetaData,
   DATE_RANGE,
   REPEATED_MEASURE,
+  FILTER_MODE,
 } from './Experiment/enums';
 import {
   IEnrollmentCompleteCondition,
@@ -62,4 +63,5 @@ export {
   ILogInput,
   IGroupMetric,
   ISingleMetric,
+  FILTER_MODE,
 };

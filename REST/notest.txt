@@ -1,0 +1,53 @@
+// client-id = 656936260684-95u3t5qg5fadi3pr1o2vuv528kdk1gd9.apps.googleusercontent.com// secret = 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
+
+https://accounts.google.com/o/oauth2/auth 
+
+https://oauth2.googleapis.com/token
+
+New client id: 656936260684-ip1rv1hq6p7otn5s6r31fcnmqsoaucno.apps.googleusercontent.com
+
+Secret: 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
+
+AccessToken: {
+  "access_token": "ya29.A0ARrdaM8WhERY2sQZA6mNICsi-gptH9HFqZ4kmDiQccRZSLKzqDlbcPWqHTBrHoXx1l345S0WlkAGD2RmTIf09W16-JDdsUYNNh6SOm_QpjvEUohh33vaqghNthraVlzoehM_za1L5NdwUnG_bxViowczJpGy", 
+  "id_token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImY0YmIyMjBjZDA5NGIwYWU5MGRkNzNlMTBjMTBlN2RiNTRiODkyODAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI2NTY5MzYyNjA2ODQtaXAxcnYxaHE2cDdvdG41czZyMzFmY25tcXNvYXVjbm8uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI2NTY5MzYyNjA2ODQtaXAxcnYxaHE2cDdvdG41czZyMzFmY25tcXNvYXVjbm8uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTAxMzU2MzE3MjcwOTIyOTM4NjQiLCJoZCI6ImNhcm5lZ2llbGVhcm5pbmcuY29tIiwiZW1haWwiOiJkb3N3YWx0QGNhcm5lZ2llbGVhcm5pbmcuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJTTmV4a05laVBFa25HQWZoQ2dkc2V3IiwibmFtZSI6IkRhbiBPc3dhbHQiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUFUWEFKeUFzZ3NSNlZuekdNN3J4RG1sQWRTMFF5MVRjOE5IRDlDcUFlT009czk2LWMiLCJnaXZlbl9uYW1lIjoiRGFuIiwiZmFtaWx5X25hbWUiOiJPc3dhbHQiLCJsb2NhbGUiOiJlbiIsImlhdCI6MTY0NTE5OTYxMCwiZXhwIjoxNjQ1MjAzMjEwfQ.ZF2-bu4i1Ebn5ahLPAohWs4tEL1jhr0cwxo4LHkANxUNklE3NCz4TzKj-6xgMe3T2yz8-gY1C8KXDmr0miEtAwwliMjgEK9gc6AGqD2T1ZTt2qWQMMq9NS6CE6Jd-mDFPbRZ74eIjcdsH8DmpIaQnYv6yE5Gw_pxvGszaNES25Hn6UDp9JwCvh3qRP2d7rbdzoLYn4knEY7SaBZtJrjpZSu-6Bd5pFUzKP4c2cYxMIlE-YpqZTP1_ydA4hue_l9dTO0fWQf8atLj_tFJBVPbhJGB3PZ1QWOQ5we7nwlGd3oHKx7vIbYg2ZvlH7hG3ffXwKPr7tOMU8eVw4WNC0urTg", 
+  "expires_in": 3599, 
+  "token_type": "Bearer", 
+  "scope": "https://www.googleapis.com/auth/userinfo.email openid https://www.googleapis.com/auth/userinfo.profile", 
+  "refresh_token": "1//04YAIw0Q70Tp-CgYIARAAGAQSNwF-L9IradqX9HonAVKv7zl3SflVQnpCkmB31fneSMl032UWI6M5UEjKVVnqqG4g_NfjzKH2Dwo"
+}
+
+Staging Jump Host: ubuntu@52.90.191.168
+Staging DB: staging-cli-upgrade-dev-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com
+Prod Jump Host: ubuntu@18.206.229.52
+Prod DB: production-cli-upgrade-production-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com
+DB Username: doswalt
+DB Password: 5VdIEJhdWZ0h2uhbxNT4
+Example command to connect:
+psql -h staging-cli-upgrade-dev-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com -U doswalt -d postgres
+
+psql -h production-cli-upgrade-production-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com -U doswalt -d postgres
+
+/home/ubuntu/staging-cli-upgrade-dev-postgres.sql
+
+ssh ubuntu@52.90.191.168 "pg_dump -h staging-cli-upgrade-dev-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com -U doswalt -d postgres" > ~/upgrade_data/qa_clone.sql
+ssh ubuntu@18.206.229.52 "pg_dump -h production-cli-upgrade-production-postgres.c0ehk0fl3zte.us-east-1.rds.amazonaws.com -U doswalt -d postgres" > ~/upgrade_data/prod_clone.sql
+
+
+/api/workinggroup
+/api/assign
+/api/useraliases
+
+User id: 08fc8771-5c6f-4be7-a30d-f11937840809
+Client session: hc9knoxjb0cksjnavyiog5ell-i:1648223530829
+
+index="cl_upgrade" client_session_id="hc9knoxjb0cksjnavyiog5ell-i:1648223530829"
+index="cl_upgrade" "08fc8771-5c6f-4be7-a30d-f11937840809"
+
+index="cl_upgrade" message.status_code = 5* "Jersey/2.32"
+
+###########
+SOME SQL
+
+Get latest /marked 
+select * from monitored_experiment_point WHERE "experimentId" LIKE '%picture_algebra_mix%' ORDER BY "createdAt" DESC;
