@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-import { MatTableDataSource, MatPaginator, MatSort } from '@angular/material';
 import { ExcludeEntity, EntityTypes } from '../../../../../core/experiment-users/store/experiment-users.model';
 import { Subscription, Observable } from 'rxjs';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
@@ -9,6 +8,9 @@ import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { UserRole } from 'upgrade_types';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'users-experiment-users',

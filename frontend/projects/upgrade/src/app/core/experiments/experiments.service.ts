@@ -37,6 +37,7 @@ import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map, first, filter } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { FLAG_SEARCH_SORT_KEY } from '../feature-flags/store/feature-flags.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable()

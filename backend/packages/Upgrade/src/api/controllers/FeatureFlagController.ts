@@ -232,7 +232,7 @@ export class FeatureFlagsController {
   @Delete('/:id')
   public delete(@Param('id') id: string, @Req() request: AppRequest): Promise<FeatureFlag | undefined> {
     // TODO: Add server error
-    // if (!validator.isUUID(id)) {
+    // if (!isUUID(id)) {
     //   return Promise.reject(
     //     new Error(
     //       JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -280,7 +280,7 @@ export class FeatureFlagsController {
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
     // TODO: Add error log
-    // if (!validator.isUUID(id)) {
+    // if (!isUUID(id)) {
     //   return Promise.reject(
     //     new Error(
     //       JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })

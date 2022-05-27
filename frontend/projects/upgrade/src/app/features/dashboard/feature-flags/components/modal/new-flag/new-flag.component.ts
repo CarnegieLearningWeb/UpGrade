@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Inject } from '@angular/core';
 import { NewFlagDialogData, NewFlagDialogEvents, NewFlagPaths, FeatureFlag } from '../../../../../../core/feature-flags/store/feature-flags.model';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 
 @Component({

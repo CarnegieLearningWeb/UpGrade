@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { DeleteMetricsComponent } from './delete-metrics.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { AnalysisService } from '../../../../../../core/analysis/analysis.service';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 xdescribe('DeleteMetricsComponent', () => {
   let component: DeleteMetricsComponent;
