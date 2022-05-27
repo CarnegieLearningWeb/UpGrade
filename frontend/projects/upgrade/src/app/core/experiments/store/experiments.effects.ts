@@ -92,6 +92,7 @@ export class ExperimentEffects {
             const experiments = data.nodes;
             const experimentIds = experiments.map(experiment => experiment.id);
             const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
+
             return [
               ...actions,
               experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
@@ -262,7 +263,9 @@ export class ExperimentEffects {
       ofType(experimentAction.actionFetchAllPartitions),
       switchMap(() =>
         this.experimentDataService.fetchAllPartitions().pipe(
-          map(allPartitions => experimentAction.actionFetchAllPartitionSuccess({ partitions: allPartitions })),
+          map(
+            allPartitions => experimentAction.actionFetchAllPartitionSuccess({ partitions: allPartitions })
+          ),
           catchError(() => [experimentAction.actionFetchAllPartitionFailure()])
         )
       )
@@ -275,9 +278,9 @@ export class ExperimentEffects {
       switchMap(() =>
         this.experimentDataService.fetchAllExperimentNames().pipe(
           map(
-            (data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data }),
-            catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
-          )
+            (data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data })
+          ),
+          catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
         )
       )
     )
