@@ -5,7 +5,7 @@ import { TestingModule } from '../../../../../../../testing/testing.module';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 import { FlagVariationsComponent } from '../../flag-variations/flag-variations.component';
 import { FlagOverviewComponent } from '../../flag-overview/flag-overview.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 xdescribe('NewFlagComponent', () => {
   let component: NewFlagComponent;

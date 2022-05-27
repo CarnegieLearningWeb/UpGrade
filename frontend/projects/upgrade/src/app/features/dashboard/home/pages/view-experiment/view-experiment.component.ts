@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { MatDialog, MatSnackBar } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
@@ -20,6 +21,7 @@ import { DeleteComponent } from '../../../../../shared/components/delete/delete.
 import { QueriesModalComponent } from '../../components/modal/queries-modal/queries-modal.component';
 import { ExperimentEndCriteriaComponent } from '../../components/modal/experiment-end-criteria/experiment-end-criteria.component';
 import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
+import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 // Used in view-experiment component only
 enum DialogType {
@@ -124,7 +126,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(() => {});
   }
 
-  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: string) {
+  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: FLAG_SEARCH_SORT_KEY) {
     this.experimentService.setSearchKey(type);
     this.experimentService.setSearchString(value);
     this.router.navigate(['/home']);

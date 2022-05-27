@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/cor
 import { POST_EXPERIMENT_RULE, ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../experiment-status/experiment-status.component';
 
 @Component({

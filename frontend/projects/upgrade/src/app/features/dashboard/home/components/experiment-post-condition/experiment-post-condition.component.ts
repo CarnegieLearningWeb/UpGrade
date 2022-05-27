@@ -4,7 +4,7 @@ import { ExperimentVM, POST_EXPERIMENT_RULE, NewExperimentDialogData, NewExperim
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
-import { MAT_DIALOG_DATA } from '@angular/material';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'home-experiment-post-condition',

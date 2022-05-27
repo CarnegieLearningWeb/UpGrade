@@ -3,10 +3,9 @@ import { ExperimentExcludeService } from '../services/ExperimentExcludeService';
 import { ExplicitExperimentIndividualExclusion } from '../models/ExplicitExperimentIndividualExclusion';
 import { ExplicitExperimentGroupExclusion } from '../models/ExplicitExperimentGroupExclusion';
 import { SERVER_ERROR } from 'upgrade_types';
-import { Validator } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { AppRequest } from '../../types';
-const validator  = new Validator();
 
 /**
  * @swagger
@@ -153,7 +152,7 @@ export class ExperimentExcludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -254,7 +253,7 @@ export class ExperimentExcludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should be provided for delete.'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -342,7 +341,7 @@ export class ExperimentExcludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -458,7 +457,7 @@ export class ExperimentExcludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should be provided for delete'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })

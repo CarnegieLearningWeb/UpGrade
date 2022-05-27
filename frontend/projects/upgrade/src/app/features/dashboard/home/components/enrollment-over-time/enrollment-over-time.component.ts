@@ -3,7 +3,7 @@ import { ASSIGNMENT_UNIT } from 'upgrade_types';
 import { ExperimentVM, DATE_RANGE, IEnrollmentStatByDate } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { filter } from 'rxjs/operators';
-import { MatCheckboxChange } from '@angular/material';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 import { Subscription } from 'rxjs';
 
 // Used in EnrollmentOverTimeComponent
