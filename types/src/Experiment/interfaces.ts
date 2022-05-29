@@ -39,7 +39,7 @@ export interface IExperimentEnrollmentDetailStats {
 }
 
 // TODO Delete this after changing in clientSDK
-export type INewExperimentAssignment = Omit<IExperimentAssignment, 'expId' | 'expPoint'> & {
+export type INewExperimentAssignment = Pick<IExperimentAssignment, 'twoCharacterId' | 'description' | 'assignedCondition'> & {
   target: string;
   site: string;
 };
