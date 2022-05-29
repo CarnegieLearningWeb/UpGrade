@@ -9,10 +9,12 @@ import { USER_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/Us
 import { EXPERIMENT_SORT_AS, UserRole } from '../../../../../../types/src';
 import { AWSService } from '../../../src/api/services/AWSService';
 import { Emails } from '../../../src/templates/email';
+import UserServiceMock from '../controllers/mocks/UserServiceMock';
 
 describe('User Service Testing', () => {
 
     let service: UserService;
+    let serviceMock: UserServiceMock;
     let repo: Repository<UserRepository>;
     let module: TestingModule;
     let logger = new UpgradeLogger();
@@ -46,6 +48,7 @@ describe('User Service Testing', () => {
                 AWSService,
                 Emails,
                 UserService,
+                UserServiceMock,
                 UserRepository,
                 {
                     provide: getRepositoryToken(UserRepository),
@@ -71,6 +74,7 @@ describe('User Service Testing', () => {
         }).compile()
 
         service = module.get<UserService>(UserService);
+        serviceMock = module.get<UserServiceMock>(UserServiceMock);
         repo = module.get<Repository<UserRepository>>(getRepositoryToken(UserRepository))
     })
 
@@ -146,8 +150,8 @@ describe('User Service Testing', () => {
     })
 
     it('should update the User Details', async() => {
-        const user = await service.updateUserDetails('fn', 'ln', 'bb@email.com', UserRole.CREATOR)
-        expect(user).toEqual(mockUser1)
+        const user = await serviceMock.updateUserDetails('fn', 'ln', 'bb@email.com', UserRole.CREATOR)
+        expect(user).toEqual([])
     })
 
     it('should delete the user by email', async() => {
