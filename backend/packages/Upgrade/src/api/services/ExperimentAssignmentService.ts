@@ -11,7 +11,7 @@ import {
   POST_EXPERIMENT_RULE,
   ASSIGNMENT_UNIT,
   SERVER_ERROR,
-  IExperimentAssignment,
+  INewExperimentAssignment,
   FILTER_MODE,
   EXCLUSION_CODE,
 } from 'upgrade_types';
@@ -250,7 +250,7 @@ export class ExperimentAssignmentService {
     userId: string,
     context: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<IExperimentAssignment[]> {
+  ): Promise<INewExperimentAssignment[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);

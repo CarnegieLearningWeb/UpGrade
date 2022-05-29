@@ -454,9 +454,21 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
+    const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
+      experiment.userId,
+      experiment.context,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
+    );
+
+    return assignedData.map(({ site, target, ...rest }) => {
+      return {
+        expPoint: site,
+        expId: target,
+        ...rest,
+      };
     });
   }
 

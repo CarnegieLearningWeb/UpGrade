@@ -1,9 +1,8 @@
-
 import { MonitoredDecisionPoint } from '../../../src/api/models/MonitoredDecisionPoint';
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { IExperimentAssignment, ENROLLMENT_CODE } from 'upgrade_types';
+import { INewExperimentAssignment, ENROLLMENT_CODE } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
@@ -30,7 +29,7 @@ export function checkExperimentAssignedIsNull(
 }
 
 export function checkExperimentAssignedIsNotDefault(
-  experimentConditionAssignments: IExperimentAssignment[],
+  experimentConditionAssignments: INewExperimentAssignment[],
   experimentName: string,
   experimentPoint: string
 ): void {
@@ -87,7 +86,7 @@ export async function getAllExperimentCondition(
   userId: string,
   logger: UpgradeLogger,
   context: string = 'home'
-): Promise<IExperimentAssignment[]> {
+): Promise<INewExperimentAssignment[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   // getOriginalUserDoc

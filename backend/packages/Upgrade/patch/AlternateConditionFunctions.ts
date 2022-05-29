@@ -1,7 +1,7 @@
 // TODO delete this after x-prize competition
 
 import AlternateCondition from '../patch/alternateConditions.json';
-import { IExperimentAssignment } from 'upgrade_types';
+import { INewExperimentAssignment } from 'upgrade_types';
 
 // organize json data here
 const importedJsonArray: Array<{
@@ -12,10 +12,10 @@ const importedJsonArray: Array<{
   schoolId: string[];
 }> = AlternateCondition;
 
-export const assignAlternateCondition = (user: any): ((data: IExperimentAssignment) => IExperimentAssignment) => {
+export const assignAlternateCondition = (user: any): ((data: INewExperimentAssignment) => INewExperimentAssignment) => {
   // tslint:disable-next-line: no-string-literal
   const userSchoolIds: string[] = user?.group?.['schoolId'];
-  return (data: IExperimentAssignment): IExperimentAssignment => {
+  return (data: INewExperimentAssignment): INewExperimentAssignment => {
     const matchedConditions = importedJsonArray.filter(
       (importedJson) =>
         importedJson.experimentPoint === data.site &&

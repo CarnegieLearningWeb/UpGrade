@@ -38,9 +38,15 @@ export interface IExperimentEnrollmentDetailStats {
   conditions: IConditionEnrollmentStats[];
 }
 
-export interface IExperimentAssignment {
+// TODO Delete this after changing in clientSDK
+export type INewExperimentAssignment = Omit<IExperimentAssignment, 'expId' | 'expPoint'> & {
   target: string;
   site: string;
+};
+
+export interface IExperimentAssignment {
+  expId: string;
+  expPoint: string;
   twoCharacterId: string;
   description: string;
   assignedCondition: {
