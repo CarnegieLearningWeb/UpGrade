@@ -455,11 +455,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
+              if (condition.assignmentWeight.endsWith("%")) {
+                condition.assignmentWeight = Number(condition.assignmentWeight.slice(0,-1));
+              }
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
                 : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
             }
           );
+          console.log(experimentDesignFormData.conditions);
           order = 1;
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
             (partition, index) => {

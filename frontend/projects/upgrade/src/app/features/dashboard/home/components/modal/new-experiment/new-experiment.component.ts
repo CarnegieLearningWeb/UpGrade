@@ -65,7 +65,6 @@ export class NewExperimentComponent implements OnInit {
 
         this.stepper.next();
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
-          this.newExperimentData.queries = [];
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }

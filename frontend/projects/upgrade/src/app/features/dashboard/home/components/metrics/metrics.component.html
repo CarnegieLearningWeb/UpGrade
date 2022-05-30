@@ -10,7 +10,7 @@
       >
         <!-- Metric Column -->
         <ng-container matColumnDef="keys">
-          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
             {{ 'query.metric.text' | translate }}
           </mat-header-cell>
           <mat-cell
@@ -19,10 +19,10 @@
           >
           <ng-container formArrayName="keys">
             <div class="metric-keys">
-            <mat-form-field  *ngFor="let key of keys.controls; let formIndex = index" class="ft-14-600 form-control auto-complete" floatLabel="never">
+            <mat-form-field  *ngFor="let key of getKeys(groupIndex).controls; let formIndex = index" class="ft-12-600 form-control auto-complete" floatLabel="never">
               <ng-container [formGroupName]="formIndex">
                 <input
-                  class = "ft-14-400"
+                  class = "ft-12-400"
                   type="text"
                   matInput
                   [placeholder]="'Metric'"
@@ -30,12 +30,13 @@
                   [matAutocomplete]="auto"
                   >
                 <mat-autocomplete
+                  class = "ft-12-400"
                   (optionSelected)="selectedOption($event)"
                   #auto="matAutocomplete"
                   [displayWith]="displayFn"
                   panelWidth="fit-content"
                   >
-                  <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
+                  <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics$[formIndex] | async" [value]="option">
                     {{option.key}}
                   </mat-option>
                 </mat-autocomplete>
@@ -45,77 +46,44 @@
           </ng-container>
           </mat-cell>
         </ng-container>
-        <!-- <code>{{ !metricType(selectedNode) }}</code> -->
         <!-- Statistic Column -->
         <ng-container matColumnDef="operationType">
-          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
             {{ 'monitor.statistic.text' | translate }}
           </mat-header-cell>
           <mat-cell
             *matCellDef="let element; let groupIndex = index"
             [formGroupName]="groupIndex"
           >
-          <div class="secondary-form">
+          <div class="secondary-form" >
             <!-- statistic -->
-            <mat-form-field class="ft-14-600 form-control">
+            <mat-form-field class="ft-12-600 form-control" floatLabel="never">
               <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
-              <mat-select class="ft-14-400" formControlName="operationType">
+              <mat-select class="ft-12-400" formControlName="operationType">
                 <mat-option
-                  *ngFor="let operation of queryOperations"
+                  *ngFor="let operation of filteredStatistic$[groupIndex]"
                   [value]="operation.value"
                 >
                   {{ operation.viewValue | titlecase }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
-            <!-- repeated measure -->
-            
-            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode && !metricType(selectedNode)">
+            <!-- repeated measure -->  
+            <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[groupIndex] && metricType(selectedNode[groupIndex])" floatLabel="never">
               <mat-label>{{ 'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase }}</mat-label>
-              <mat-select class="ft-14-400" formControlName="repeatedMeasure">
-                <code>{{ RepeatedMeasure }}</code>
+              <mat-select class="ft-12-400" formControlName="repeatedMeasure">
                 <mat-option
                   *ngFor="let measure of RepeatedMeasure"
-                  [value]="measure.value"
+                  [value]="measure"
                 >
-                  {{ measure.viewValue | titlecase }}
+                  {{ measure | titlecase }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
-            <!-- <div *ngIf="selectedNode && metricType($event)">
-              <label>{{ 'monitor.metric-repeated-measure.text' | translate }}</label>
-              <br>
-              <mat-radio-group class="radio-group" formControlName="repeatedMeasure">
-                <mat-radio-button
-                  class="ft-14-600 repeated-measure"
-                  [value]="RepeatedMeasure.mean"
-                  color="primary"
-                >
-                  {{ 'monitor.metric-mean.text' | translate }}
-                </mat-radio-button>
-                <br>
-                <mat-radio-button
-                  class="ft-14-600 repeated-measure"
-                  [value]="RepeatedMeasure.earliest"
-                  color="primary"
-                >
-                  {{ 'monitor.metric-earliest.text' | translate }}
-                </mat-radio-button>
-                <br>
-                <mat-radio-button
-                  class="ft-14-600 repeated-measure"
-                  [value]="RepeatedMeasure.mostRecent"
-                  color="primary"
-                >
-                  {{ 'monitor.metric-most-recent.text' | translate }}
-                </mat-radio-button>
-              </mat-radio-group>
-            </div> -->
             <!-- comparison function -->
-            <!-- <code>{{ selectedNode?.metadata?.type }}</code> -->
-            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode && selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+            <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[groupIndex] && selectedNode[groupIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS" floatLabel="never">
               <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
-              <mat-select class="ft-14-400" formControlName="compareFn">
+              <mat-select class="ft-12-400" formControlName="compareFn">
                 <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
                 <mat-option
                   *ngFor="let fn of comparisonFns"
@@ -126,11 +94,11 @@
               </mat-select>
             </mat-form-field>
             <!-- compare value -->
-            <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode && selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+            <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[groupIndex] && selectedNode[groupIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS" floatLabel="never">
               <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
-              <mat-select class="ft-14-400" formControlName="compareValue">
+              <mat-select class="ft-12-400" formControlName="compareValue">
                 <mat-option
-                  *ngFor="let value of selectedNode?.allowedData"
+                  *ngFor="let value of selectedNode[groupIndex]?.allowedData"
                   [value]="value"
                 >
                   {{ value | titlecase }}
@@ -140,10 +108,9 @@
           </div>
           </mat-cell>
         </ng-container>
-
         <!-- Description Column -->
         <ng-container matColumnDef="queryName">
-          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
             {{ 'global.description.text' | translate }}
           </mat-header-cell>
           <mat-cell
@@ -163,7 +130,7 @@
         </ng-container>
 
         <ng-container matColumnDef="removeMetric">
-          <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef></mat-header-cell>
           <mat-cell
             *matCellDef="let element; let groupIndex = index"
             [formGroupName]="groupIndex"
