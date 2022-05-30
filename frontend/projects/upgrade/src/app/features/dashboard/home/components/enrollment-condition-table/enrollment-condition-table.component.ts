@@ -52,8 +52,8 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
           const partitions = [];
           (condition as any).partitions.forEach(partition => {
             const partitionObj: EnrollmentByConditionOrPartitionData = {
-              experimentPoint: this.getPartitionData(partition.id, 'expPoint'),
-              experimentId: this.getPartitionData(partition.id, 'expId') || '',
+              experimentPoint: this.getPartitionData(partition.id, 'site'),
+              experimentId: this.getPartitionData(partition.id, 'target') || '',
               userEnrolled: partition.users,
               groupEnrolled: partition.groups,
             };

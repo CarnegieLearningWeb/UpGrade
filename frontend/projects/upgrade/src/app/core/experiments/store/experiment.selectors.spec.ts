@@ -67,8 +67,8 @@ describe('Experiments Selectors', () => {
                         "versionNumber": 1,
                         "id": "is-it-cake_SelectSection",
                         "twoCharacterId": "17",
-                        "expPoint": "SelectSection",
-                        "expId": "is-it-cake",
+                        "site": "SelectSection",
+                        "target": "is-it-cake",
                         "description": "",
                         "order": 1
                     }
