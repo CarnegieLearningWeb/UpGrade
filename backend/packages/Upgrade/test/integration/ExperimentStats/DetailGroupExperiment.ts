@@ -231,7 +231,7 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       users: 1,
       groups: 1,
-      usersExcluded: 3,
+      usersExcluded: 2,
       groupsExcluded: 1,
     })
   );

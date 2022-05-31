@@ -61,11 +61,9 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       });
       this.partitionsFilterOptions = [];
       this.selectedPartition = [];
-      this.experiment.partitions.forEach((partition, index)=> {
+      this.experiment.partitions.forEach(partition => {
         this.partitionsFilterOptions.push({ point: partition.expPoint, id: partition.id, twoCharacterId: partition.twoCharacterId });
-        if (index === 0) {
-          this.selectedPartition.push(partition.id);
-        }
+        this.selectedPartition.push(partition.id);
       });
       this.groupFiltersOptions = this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL ? [INDIVIDUAL] : [INDIVIDUAL, this.experiment.group];
     }

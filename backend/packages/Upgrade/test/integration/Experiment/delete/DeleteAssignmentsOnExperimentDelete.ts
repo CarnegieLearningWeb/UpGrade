@@ -5,7 +5,7 @@ import { Container } from 'typedi';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
+import { IndividualEnrollment } from '../../../../src/api/models/IndividualEnrollment';
 import { getRepository } from 'typeorm';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
@@ -13,7 +13,7 @@ import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } 
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function UpdateExperimentState(): Promise<void> {
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
+  const individualEnrollmentRepository = getRepository(IndividualEnrollment);
 
   // const logger = new WinstonLogger(__filename);
   const experimentService = Container.get<ExperimentService>(ExperimentService);
@@ -49,7 +49,13 @@ export default async function UpdateExperimentState(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
@@ -74,11 +80,20 @@ export default async function UpdateExperimentState(): Promise<void> {
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
-  let individualAssignments = await individualAssignmentRepository.find();
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
+
+  let individualAssignments = await individualEnrollmentRepository.find();
   expect(individualAssignments.length).toEqual(1);
 
   await experimentService.delete(experimentId, user, new UpgradeLogger());
 
-  individualAssignments = await individualAssignmentRepository.find();
+  individualAssignments = await individualEnrollmentRepository.find();
   expect(individualAssignments.length).toEqual(0);
 }

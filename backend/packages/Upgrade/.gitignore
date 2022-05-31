@@ -18,6 +18,7 @@ src/api/schema.gql
 
 # Typing #
 typings/
+types/
 
 # Dist #
 dist/

@@ -2,12 +2,12 @@ import { Container } from 'typedi';
 import { individualAssignmentExperiment, secondExperiment } from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition } from '../../utils';
+import { getAllExperimentCondition, markExperimentPoint, checkMarkExperimentPointForUser } from '../../utils';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { getRepository } from 'typeorm';
-import { IndividualAssignment } from '../../../../src/api/models/IndividualAssignment';
+import { IndividualEnrollment } from '../../../../src/api/models/IndividualEnrollment';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
@@ -15,7 +15,7 @@ export default async function testCase(): Promise<void> {
   const userService = Container.get<UserService>(UserService);
 
   // get repository
-  const individualAssignmentRepository = getRepository(IndividualAssignment);
+  const individualEnrollmentRepository = getRepository(IndividualEnrollment);
 
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
@@ -25,6 +25,10 @@ export default async function testCase(): Promise<void> {
   // experiment object
   const experimentObject1 = individualAssignmentExperiment;
   experimentObject1.context = [context1];
+
+  const experimentName1 = experimentObject1.partitions[0].expId;
+  const experimentPoint1 = experimentObject1.partitions[0].expPoint;
+  const condition1 = experimentObject1.conditions[0].conditionCode;
 
   // create experiment 1
   await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
@@ -44,6 +48,10 @@ export default async function testCase(): Promise<void> {
 
   const experimentObject2 = secondExperiment;
   experimentObject2.context = [context2];
+
+  const experimentName2 = experimentObject2.partitions[0].expId;
+  const experimentPoint2 = experimentObject2.partitions[0].expPoint;
+  const condition2 = experimentObject2.conditions[0].conditionCode;
   // create experiment 2
   await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
   experiments = await experimentService.find(new UpgradeLogger());
@@ -88,23 +96,49 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  let allIndividualAssignments = await individualAssignmentRepository.find();
+  let allIndividualAssignments = await individualEnrollmentRepository.find();
   expect(allIndividualAssignments.length).toEqual(0);
 
   // get experiment with context1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger(), context1);
+  let experimentConditionAssignments = await getAllExperimentCondition(
+    experimentUsers[1].id,
+    new UpgradeLogger(),
+    context1
+  );
   expect(experimentConditionAssignments.length).toEqual(experimentObject1.partitions.length);
 
+  let markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
+
   // check that no assignment of context 2 is assigned
-  allIndividualAssignments = await individualAssignmentRepository.find();
+  allIndividualAssignments = await individualEnrollmentRepository.find();
   expect(allIndividualAssignments.length).toEqual(1);
 
   // get experiment with context2
-  experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger(), context2);
+  experimentConditionAssignments = await getAllExperimentCondition(
+    experimentUsers[1].id,
+    new UpgradeLogger(),
+    context2
+  );
   expect(experimentConditionAssignments.length).toEqual(experimentObject2.partitions.length);
 
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName2,
+    experimentPoint2,
+    condition2,
+    new UpgradeLogger()
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
+
   // check that no assignment of context 2 is assigned
-  allIndividualAssignments = await individualAssignmentRepository.find();
+  allIndividualAssignments = await individualEnrollmentRepository.find();
   expect(allIndividualAssignments.length).toEqual(2);
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());

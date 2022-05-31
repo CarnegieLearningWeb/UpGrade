@@ -16,7 +16,7 @@ import {
   IExperimentEnrollmentDetailDateStats,
   FILTER_MODE
 } from 'upgrade_types';
-import { SegmentInput } from '../../segments/store/segments.model';
+import { Segment, SegmentInput } from '../../segments/store/segments.model';
 
 export {
   CONSISTENCY_RULE,
@@ -155,8 +155,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE,
-  segmentInclude: SegmentInput[],
-  segmentExclude: SegmentInput[],
+  segmentInclude: Segment,
+  segmentExclude: Segment,
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;

@@ -13,7 +13,7 @@ export class QueryService {
   constructor(
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private logRepository: LogRepository,
-    public errorService: ErrorService,
+    public errorService: ErrorService
   ) {}
 
   public async find(logger: UpgradeLogger): Promise<Query[]> {
@@ -27,17 +27,16 @@ export class QueryService {
     });
   }
 
-  public async analyse(queryIds: string[], logger: UpgradeLogger): Promise<any> {
+  public async analyze(queryIds: string[], logger: UpgradeLogger): Promise<any> {
     logger.info({ message: `Get analysis of query with queryIds ${queryIds}` });
     const promiseArray = queryIds.map((queryId) =>
       this.queryRepository.findOne(queryId, {
         relations: ['metric', 'experiment'],
       })
     );
-
     const promiseResult = await Promise.all(promiseArray);
-    const analysePromise = promiseResult.map((query) => this.logRepository.analysis(query));
-    const response = await Promise.allSettled(analysePromise);
+    const analyzePromise = promiseResult.map((query) => this.logRepository.analysis(query));
+    const response = await Promise.allSettled(analyzePromise);
 
     const failedQuery = Array<Promise<any>>();
 
@@ -46,13 +45,18 @@ export class QueryService {
         return query.value;
       } else {
         logger.error({ message: `Error in Query Id ${queryIds[index]}` });
-        failedQuery.push(this.errorService.create({
-          endPoint: '/api/query/analyse',
-          errorCode: 500,
-          message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
-          name: 'Query Failed error',
-          type: SERVER_ERROR.QUERY_FAILED,
-        } as ExperimentError, logger));
+        failedQuery.push(
+          this.errorService.create(
+            {
+              endPoint: '/api/query/analyse',
+              errorCode: 500,
+              message: `Query Failed error: ${JSON.stringify(queryIds[index], undefined, 2)}`,
+              name: 'Query Failed error',
+              type: SERVER_ERROR.QUERY_FAILED,
+            } as ExperimentError,
+            logger
+          )
+        );
 
         return [];
       }

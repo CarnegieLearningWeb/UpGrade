@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
@@ -7,9 +7,11 @@ import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion
 export class ExperimentSegmentExclusionRepository extends Repository<ExperimentSegmentExclusion> {
   public async insertData(
     data: Partial<ExperimentSegmentExclusion>,
-    logger: UpgradeLogger
+    logger: UpgradeLogger,
+    entityManager: EntityManager
   ): Promise<ExperimentSegmentExclusion> {
-    const result = await this.createQueryBuilder('explicitExperimentIndividualExclusion')
+    const result = await entityManager
+      .createQueryBuilder()
       .insert()
       .into(ExperimentSegmentExclusion)
       .values(data)
