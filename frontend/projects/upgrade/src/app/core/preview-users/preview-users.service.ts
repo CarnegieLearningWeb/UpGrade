@@ -22,10 +22,10 @@ export class PreviewUsersService {
   constructor(private store$: Store<AppState>) {}
 
   isAllPreviewUsersFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipPreviewUsers)),
       this.store$.pipe(select(selectTotalPreviewUsers))
-    ).pipe(
+    ]).pipe(
       map(([skipPreviewUsers, totalPreviewUsers]) => skipPreviewUsers === totalPreviewUsers)
     );
   }

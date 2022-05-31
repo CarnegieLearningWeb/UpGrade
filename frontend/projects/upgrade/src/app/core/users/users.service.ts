@@ -41,10 +41,10 @@ export class UsersService {
   }
 
   isAllUsersFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipUsers)),
       this.store$.pipe(select(selectTotalUsers))
-    ).pipe(
+    ]).pipe(
       map(([skipUsers, totalUsers]) => skipUsers === totalUsers)
     );
   }

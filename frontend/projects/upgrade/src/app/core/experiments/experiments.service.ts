@@ -35,7 +35,7 @@ import {
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
-import { map, first, filter } from 'rxjs/operators';
+import { map, first, filter, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { FLAG_SEARCH_SORT_KEY } from '../feature-flags/store/feature-flags.model';
 import { environment } from '../../../environments/environment';
@@ -74,7 +74,7 @@ export class ExperimentService {
   pollingEnabled: boolean = environment.pollingEnabled;
 
   selectSearchExperimentParams(): Observable<Object> {
-    return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
+    return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString })),
       first()
@@ -82,7 +82,7 @@ export class ExperimentService {
   }
 
   isInitialExperimentsLoading() {
-    return combineLatest(this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$).pipe(
+    return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
       map(([isLoading, experiments]) => {
         return !isLoading || !!experiments.length;
       })
@@ -90,10 +90,10 @@ export class ExperimentService {
   }
 
   isAllExperimentsFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipExperiment)),
       this.store$.pipe(select(selectTotalExperiment))
-    ).pipe(
+    ]).pipe(
       map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments)
     );
   }
@@ -125,10 +125,9 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
 
-  // TODO: is this implementation correct? combineLatest and map seem misused,
   selectExperimentById(experimentId: string) {
-    return combineLatest(this.store$.pipe(select(selectExperimentById, { experimentId }))).pipe(
-      map(([experiment]) => {
+    return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(
+      tap(experiment => {
         if (!experiment) {
           this.fetchExperimentById(experimentId);
         }
