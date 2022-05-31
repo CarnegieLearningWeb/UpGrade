@@ -14,11 +14,21 @@
     </mat-form-field>
 
     <mat-table
-    class="member-table"
-    [dataSource]="members1DataSource"
-    formArrayName="members1"
-    #membersTable
+      class="member-table"
+      [dataSource]="members1DataSource"
+      formArrayName="members1"
+      #membersTable
     >
+    <!-- Members NUMBER Column -->
+      <ng-container matColumnDef="memberNumber">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          {{ 'global.number.text' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index">
+          <span>{{ groupIndex + 1 }}</span>
+        </mat-cell>
+      </ng-container>
+
       <!-- Members Type Column -->
       <ng-container matColumnDef="type">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -118,11 +128,21 @@
     <ng-container *ngIf="inclusionCriterisAsIncludeSpecific">
     <span class="title"> {{ 'segments.except.text' | translate }} </span>
     <mat-table
-    class="member-table"
-    [dataSource]="members2DataSource"
-    formArrayName="members2"
-    #membersExceptTable
+      class="member-table"
+      [dataSource]="members2DataSource"
+      formArrayName="members2"
+      #membersExceptTable
     >
+      <!-- Members NUMBER Column -->
+      <ng-container matColumnDef="memberNumber">
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          {{ 'global.number.text' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element; let groupIndex = index">
+          <span>{{ groupIndex + 1 }}</span>
+        </mat-cell>
+      </ng-container>
+
       <!-- Members Type Column -->
       <ng-container matColumnDef="type">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -157,7 +177,7 @@
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
-        <ng-container *ngIf="participantsForm.getRawValue('type')?.members1[groupIndex]?.type === 'Segment'; else noSelect">
+        <ng-container *ngIf="participantsForm2.getRawValue('type')?.members2[groupIndex]?.type === 'Segment'; else noSelect">
           <mat-form-field floatLabel="never" class="form-control">
             <mat-select formControlName="id">
               <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
@@ -222,7 +242,7 @@
           type="button"
           mat-raised-button
           class="modal-btn"
-          (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
+          (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
         >
           {{ 'global.cancel.text' | translate }}
         </button>
@@ -231,7 +251,7 @@
           *ngIf="experimentInfo && enableSave"
           mat-raised-button
           class="modal-btn default-button"
-          (click)="emitEvent(NewSegmentDialogEvents.SAVE_DATA)"
+          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
         >
           {{ 'global.save.text' | translate }}
         </button>
@@ -239,7 +259,7 @@
           type="button"
           mat-raised-button
           class="modal-btn default-button"
-          (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
+          (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
         >
           {{ 'global.next.text' | translate }}
         </button>

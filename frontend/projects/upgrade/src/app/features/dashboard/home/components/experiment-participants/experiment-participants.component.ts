@@ -17,7 +17,7 @@ import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths,
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'home-experiment-participants',
@@ -32,7 +32,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
-  @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
+  // @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
 
@@ -42,7 +42,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
   
   inclusionCriteria = [{ value: 'Include Specific'}, { value: 'Include All Except...'}];
-  membersDisplayedColumns = ['type', 'id', 'removeMember'];
+  membersDisplayedColumns = ['memberNumber', 'type', 'id', 'removeMember'];
   
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
@@ -79,6 +79,9 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+      this.contextMetaData = contextMetaData;
+    });
 
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(allSegments => {
       this.allSegments =  allSegments;
@@ -212,7 +215,11 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
     this.subSegmentTypes.push({ heading: 'group', value: groups });
   }
+
   gettingMembersValueToSend(members: any) {
+    this.userIdsToSend = [];
+    this.subSegmentIdsToSend = [];
+    this.groupsToSend = [];
     members.forEach(member => {
       if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
@@ -231,29 +238,40 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.membersCountError = membersCountErrorMsg;
     }
   }
-  emitEvent(eventType: NewSegmentDialogEvents) {
+
+  emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
-      case NewSegmentDialogEvents.CLOSE_DIALOG:
-        this.emitSegmentDialogEvent.emit({ type: eventType });
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
-      case NewSegmentDialogEvents.SEND_FORM_DATA:
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
         const { members1 } = this.participantsForm.value;
         const { members2 } = this.participantsForm2.value;
+        
         this.validateMembersCount(members1);
         this.validateMembersCount(members2);
         // TODO: Handle member2:
         if (this.participantsForm.valid && !this.membersCountError) {
+          const filterMode = this.participantsForm.get('inclusionCriteria').value === 'Include Specific' ? FILTER_MODE.INCLUDE_ALL : FILTER_MODE.EXCLUDE_ALL;
           this.gettingMembersValueToSend(members1);
-          const segmentMembersFormData = {
+          const segmentMembers1FormData = {
             userIds: this.userIdsToSend,
             groups: this.groupsToSend,
             subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PUBLIC
+            type: SEGMENT_TYPE.PRIVATE
           }
-          this.emitSegmentDialogEvent.emit({
-            type: this.segmentInfo ? NewSegmentDialogEvents.UPDATE_SEGMENT : eventType,
-            formData: segmentMembersFormData,
-            path: NewSegmentPaths.SEGMENT_MEMBERS
+          this.gettingMembersValueToSend(members2);
+          const segmentMembers2FormData = {
+            userIds: this.userIdsToSend,
+            groups: this.groupsToSend,
+            subSegmentIds: this.subSegmentIdsToSend,
+            type: SEGMENT_TYPE.PRIVATE
+          }
+
+          this.emitExperimentDialogEvent.emit({
+            type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
+            formData: { segmentInclude: segmentMembers1FormData, segmentExclude: segmentMembers2FormData, filterMode: filterMode },
+            path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS
           });
         }
       break;
@@ -273,5 +291,14 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   get inclusionCriterisAsIncludeSpecific() {
     return this.participantsForm.get('inclusionCriteria').value === 'Include Specific';
+  }
+
+  get NewExperimentDialogEvents() {
+    return NewExperimentDialogEvents;
+  }
+
+  ngOnDestroy() {
+    this.contextMetaDataSub.unsubscribe();
+    this.allSegmentsSub.unsubscribe();
   }
 }

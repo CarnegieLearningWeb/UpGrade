@@ -13,8 +13,10 @@ import {
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
-  IExperimentEnrollmentDetailDateStats
+  IExperimentEnrollmentDetailDateStats,
+  FILTER_MODE
 } from 'upgrade_types';
+import { SegmentInput } from '../../segments/store/segments.model';
 
 export {
   CONSISTENCY_RULE,
@@ -46,6 +48,7 @@ export enum NewExperimentDialogEvents {
 export enum NewExperimentPaths {
   EXPERIMENT_OVERVIEW = 'Experiment Overview',
   EXPERIMENT_DESIGN = 'Experiment Design',
+  EXPERIMENT_PARTICIPANTS = 'Experiment Participants',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
   POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
@@ -151,6 +154,9 @@ export interface Experiment {
   partitions: ExperimentPartition[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
+  filterMode: FILTER_MODE,
+  segmentInclude: SegmentInput[],
+  segmentExclude: SegmentInput[],
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;

@@ -68,6 +68,7 @@ export interface SegmentInput {
   subSegmentIds: string[];
   type: SEGMENT_TYPE;
 }
+
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
 }

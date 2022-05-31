@@ -71,6 +71,9 @@ export class ImportExperimentComponent {
       partitions: 'interface',
       queries: 'array',
       stateTimeLogs: 'interface',
+      filterMode: 'string',
+      segmentExclude: 'interface',
+      segmentInclude: 'interface',
     };
 
     const conditionSchema: Record<keyof ExperimentCondition, string> = {

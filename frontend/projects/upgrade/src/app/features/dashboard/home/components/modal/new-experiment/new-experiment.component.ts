@@ -64,6 +64,7 @@ export class NewExperimentComponent implements OnInit {
         this.currentContext  = this.newExperimentData.context[0];
 
         this.stepper.next();
+        console.log(' ----- the experiment data received is ---------', this.newExperimentData);
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
           this.newExperimentData.queries = [];
           this.experimentService.createNewExperiment(this.newExperimentData);
