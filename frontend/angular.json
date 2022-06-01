@@ -26,14 +26,17 @@
             "main": "projects/upgrade/src/main.ts",
             "polyfills": "projects/upgrade/src/polyfills.ts",
             "tsConfig": "projects/upgrade/tsconfig.app.json",
-            "aot": true,
-            "buildOptimizer": true,
             "assets": [
               "projects/upgrade/src/favicon.ico",
               "projects/upgrade/src/assets"
             ],
             "styles": ["projects/upgrade/src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -50,7 +53,6 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -93,7 +95,6 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -136,7 +137,6 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -179,7 +179,6 @@
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -208,7 +207,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
