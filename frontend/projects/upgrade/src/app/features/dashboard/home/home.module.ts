@@ -32,49 +32,40 @@ import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
 import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
 @NgModule({
-  declarations: [
-    HomeComponent,
-    ExperimentListComponent,
-    NewExperimentComponent,
-    ExperimentOverviewComponent,
-    ExperimentDesignComponent,
-    ExperimentScheduleComponent,
-    ViewExperimentComponent,
-    ExperimentStatusComponent,
-    PostExperimentRuleComponent,
-    EnrollmentOverTimeComponent,
-    EnrollmentConditionTableComponent,
-    EnrollmentPointPartitionTableComponent,
-    ExperimentPostConditionComponent,
-    ImportExperimentComponent,
-    TableRowComponent,
-    QueriesModalComponent,
-    CreateQueryComponent,
-    ExperimentQueryResultComponent,
-    ExperimentEndCriteriaComponent,
-    RepeatedMeasurePipe,
-    StateTimeLogsComponent
-  ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    SharedModule,
-    HomeRoutingModule,
-    MatDatepickerModule,
-    NgxChartsModule,
-    OwlDateTimeModule,
-    OwlNativeDateTimeModule,
-    NgxSkeletonLoaderModule
-  ],
-  providers: [OperationPipe],
-  entryComponents: [
-    NewExperimentComponent,
-    ExperimentStatusComponent,
-    PostExperimentRuleComponent,
-    ImportExperimentComponent,
-    QueriesModalComponent,
-    ExperimentEndCriteriaComponent,
-    StateTimeLogsComponent
-  ]
+    declarations: [
+        HomeComponent,
+        ExperimentListComponent,
+        NewExperimentComponent,
+        ExperimentOverviewComponent,
+        ExperimentDesignComponent,
+        ExperimentScheduleComponent,
+        ViewExperimentComponent,
+        ExperimentStatusComponent,
+        PostExperimentRuleComponent,
+        EnrollmentOverTimeComponent,
+        EnrollmentConditionTableComponent,
+        EnrollmentPointPartitionTableComponent,
+        ExperimentPostConditionComponent,
+        ImportExperimentComponent,
+        TableRowComponent,
+        QueriesModalComponent,
+        CreateQueryComponent,
+        ExperimentQueryResultComponent,
+        ExperimentEndCriteriaComponent,
+        RepeatedMeasurePipe,
+        StateTimeLogsComponent
+    ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        SharedModule,
+        HomeRoutingModule,
+        MatDatepickerModule,
+        NgxChartsModule,
+        OwlDateTimeModule,
+        OwlNativeDateTimeModule,
+        NgxSkeletonLoaderModule
+    ],
+    providers: [OperationPipe]
 })
 export class HomeModule {}
