@@ -86,7 +86,6 @@
     "stylelint": "^12.0.0",
     "stylelint-config-concentric-order": "^3.5.0",
     "stylelint-scss": "^3.13.0",
-    "ts-jest": "^25.0.0",
     "ts-node": "~7.0.1",
     "tslint": "~6.1.0",
     "typescript": "~4.0.8",
