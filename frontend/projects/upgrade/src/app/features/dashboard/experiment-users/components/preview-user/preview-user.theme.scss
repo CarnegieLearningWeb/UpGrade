@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 
 @mixin preview-user-component-theme($theme) {
   $foreground: map-get($theme, foreground);
@@ -7,10 +7,10 @@
     .preview-user-container {
       table {
         .action-icon {
-          color: mat-color($foreground, icon);
+          color: mat.get-color-from-palette($foreground, icon);
 
           &--small {
-            color: mat-color($foreground, icon);
+            color: mat.get-color-from-palette($foreground, icon);
           }
         }
       }

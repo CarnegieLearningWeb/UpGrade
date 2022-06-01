@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 
 @mixin flag-variations-component-theme($theme) {
   $foreground: map-get($theme, foreground);
@@ -6,7 +6,7 @@
   .flag-variation {
     .variation-table {
       .remove-icon {
-        color: mat-color($foreground, icon);
+        color: mat.get-color-from-palette($foreground, icon);
       }
     }
   }

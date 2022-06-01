@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 
 @mixin experiment-query-result-component-theme($theme) {
   $foreground: map-get($theme, foreground);
@@ -7,16 +7,16 @@
   .experiment-queries-result {
     .ngx-charts {
       text {
-        fill: mat-color($foreground, text);
+        fill: mat.get-color-from-palette($foreground, text);
       }
     }
 
     .ngx-charts .gridline-path {
-      stroke: mat-color($foreground, chart-border);
+      stroke: mat.get-color-from-palette($foreground, chart-border);
     }
 
     .mat-expansion-panel:not([class*=mat-elevation-z]) {
-      box-shadow: 0px 1px 5px 0px mat-color($background, shadow-color);
+      box-shadow: 0px 1px 5px 0px mat.get-color-from-palette($background, shadow-color);
     }
   }
 }

@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 
 @mixin enrollment-over-time-component-theme($theme) {
   $foreground: map-get($theme, foreground);
@@ -6,12 +6,12 @@
   .enrollment-over-time {
     .ngx-charts {
       text {
-        fill: mat-color($foreground, text);
+        fill: mat.get-color-from-palette($foreground, text);
       }
     }
 
     .ngx-charts .gridline-path {
-      stroke: mat-color($foreground, chart-border);
+      stroke: mat.get-color-from-palette($foreground, chart-border);
     }
   }
 }

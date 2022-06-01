@@ -1,10 +1,10 @@
+@use '~@angular/material' as mat;
 @import url('https://fonts.googleapis.com/css?family=Roboto:400,700|Material+Icons');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800&display=swap');
-@import '~@angular/material/theming';
 @import '~ng-pick-datetime-ex/assets/style/picker.min.css';
 @import '~jsoneditor/dist/jsoneditor.min.css';
 
-@include mat-core();
+@include mat.core();
 
 @import './styles/variables.css';
 @import './themes/light-theme';
@@ -73,12 +73,12 @@
 }
 
 .light-theme {
-  @include angular-material-theme($light-theme);
+  @include mat.all-component-themes($light-theme);
   @include custom-components-theme($light-theme);
 }
 
 .dark-theme {
-  @include angular-material-theme($dark-theme);
+  @include mat.all-component-themes($dark-theme);
   @include custom-components-theme($dark-theme);
 }
 

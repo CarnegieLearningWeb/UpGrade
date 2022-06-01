@@ -1,39 +1,39 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 
 @mixin view-experiment-component-theme($theme) {
   $background: map-get($theme, background);
   $foreground: map-get($theme, foreground);
 
   .experiment-container {
-    background-color: mat-color($background, background);
+    background-color: mat.get-color-from-palette($background, background);
 
     .experiment-link {
-      color: mat-color($foreground, text)
+      color: mat.get-color-from-palette($foreground, text)
     }
 
     .experiment {
-      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
 
       &-info {
-        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+        box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
 
         .action-buttons {
           .button {
-            background-color: mat-color($background, background);
+            background-color: mat.get-color-from-palette($background, background);
           }
           .button-long {
-            background-color: mat-color($background, background);
+            background-color: mat.get-color-from-palette($background, background);
           }
         }
       }
 
       &-secondary-info {
-        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+        box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
 
         &-container {
           .section-data {
             .edit-icon {
-              color: mat-color($foreground, icon);
+              color: mat.get-color-from-palette($foreground, icon);
             }
           }
         }
@@ -41,7 +41,7 @@
         .experiment-chips {
           &-values {
             span {
-              color: mat-color($foreground, text);
+              color: mat.get-color-from-palette($foreground, text);
             }
           }
         }
@@ -50,39 +50,39 @@
 
     .table-container {
       &-partition {
-        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+        box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
       }
     }
 
     .box-shadow {
-      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+      box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
     }
   }
 
   .owl-dt-container {
-    background-color: mat-color($background, card);
+    background-color: mat.get-color-from-palette($background, card);
   }
 
   .owl-dt-calendar-control,
   .owl-dt-calendar-table .owl-dt-calendar-header,
   .owl-dt-calendar-table .owl-dt-calendar-cell,
   .owl-dt-control-arrow-button svg {
-    color: mat-color($foreground, text);
+    color: mat.get-color-from-palette($foreground, text);
   }
 
   .owl-dt-control-button-arrow {
     svg {
-      fill: mat-color($foreground, text)
+      fill: mat.get-color-from-palette($foreground, text)
     }
   }
 
   .owl-dt-timer-divider:after,
   .owl-dt-timer-divider:before {
-    background-color: mat-color($foreground, text);
+    background-color: mat.get-color-from-palette($foreground, text);
   }
 
   .owl-dt-container-row,
   .owl-dt-calendar-table .owl-dt-calendar-header .owl-dt-calendar-table-divider:after {
-    border-bottom: 1px solid mat-color($background, shadow-color);
+    border-bottom: 1px solid mat.get-color-from-palette($background, shadow-color);
   }
 }

@@ -1,4 +1,4 @@
-@import '~@angular/material/theming';
+@use '~@angular/material' as mat;
 
 @mixin profile-info-component-theme($theme) {
   $background: map-get($theme, background);
@@ -6,11 +6,11 @@
 
   .profile-wrapper {
     .personal-information {
-      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+      box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
     }
 
     .icon {
-      color: mat-color($foreground, icon);
+      color: mat.get-color-from-palette($foreground, icon);
     }
   }
 }
