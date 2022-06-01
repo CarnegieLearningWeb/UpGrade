@@ -37,11 +37,11 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   private paginator: MatPaginator;
   private sort: MatSort;
 
-  @ViewChild(MatPaginator, { static: false }) set matPaginator(mp: MatPaginator) {
+  @ViewChild(MatPaginator) set matPaginator(mp: MatPaginator) {
     this.paginator = mp;
     this.allExcludedEntities.paginator = this.paginator;
   }
-  @ViewChild(MatSort, { static: false }) set matSort(ms: MatSort) {
+  @ViewChild(MatSort) set matSort(ms: MatSort) {
     this.sort = ms;
     this.allExcludedEntities.sort = this.sort;
   }

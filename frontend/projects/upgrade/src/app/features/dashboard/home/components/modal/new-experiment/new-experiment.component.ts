@@ -22,7 +22,7 @@ export class NewExperimentComponent implements OnInit {
   animationCompletedIndex: Number;
   currentContext: string;
   isContextChanged: boolean = false;
-  @ViewChild('stepper', { static: false }) stepper: any;
+  @ViewChild('stepper') stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,

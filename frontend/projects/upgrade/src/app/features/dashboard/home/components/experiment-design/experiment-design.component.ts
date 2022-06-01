@@ -33,9 +33,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
-  @ViewChild('conditionTable', { static: false, read: ElementRef }) conditionTable: ElementRef;
-  @ViewChild('partitionTable', { static: false, read: ElementRef }) partitionTable: ElementRef;
-  @ViewChild('conditionCode', { static: false }) conditionCode: ElementRef;
+  @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
+  @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
+  @ViewChild('conditionCode') conditionCode: ElementRef;
 
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);

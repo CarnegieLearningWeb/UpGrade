@@ -12,7 +12,7 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
 export class NewFlagComponent {
   newFlagData: any = {};
   flagInfo: FeatureFlag;
-  @ViewChild('stepper', { static: false }) stepper: any;
+  @ViewChild('stepper') stepper: any;
 
   constructor(
     private dialogRef: MatDialogRef<NewFlagComponent>,

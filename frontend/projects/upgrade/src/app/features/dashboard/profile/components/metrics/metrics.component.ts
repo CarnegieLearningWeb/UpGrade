@@ -37,7 +37,7 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   selectedMetricIndex = null;
 
-  @ViewChild('metricsTable', { static: false }) metricsTable: ElementRef;
+  @ViewChild('metricsTable') metricsTable: ElementRef;
 
   constructor(
     private analysisService: AnalysisService,

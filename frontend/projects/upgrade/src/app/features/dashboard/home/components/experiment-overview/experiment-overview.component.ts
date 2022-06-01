@@ -23,7 +23,7 @@ import { MatChipInputEvent } from '@angular/material/chips';
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
-  @ViewChild('contextInput', { static: false }) contextInput: ElementRef<HTMLInputElement>;
+  @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: FormGroup;
   unitOfAssignments = [{ value: ASSIGNMENT_UNIT.INDIVIDUAL }, { value: ASSIGNMENT_UNIT.GROUP }];
 

@@ -39,8 +39,8 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   editMode = null;
   isFormPopulatedFromEditMode = false;
 
-  @ViewChild('previewUserTable', { static: false }) previewUserTable: ElementRef;
-  @ViewChild('assignCondition', { static: false, read: ElementRef }) assignCondition: ElementRef;
+  @ViewChild('previewUserTable') previewUserTable: ElementRef;
+  @ViewChild('assignCondition', { read: ElementRef }) assignCondition: ElementRef;
 
   constructor(
     private _formBuilder: FormBuilder,

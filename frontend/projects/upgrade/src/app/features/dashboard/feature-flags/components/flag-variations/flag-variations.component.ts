@@ -15,7 +15,7 @@ export class FlagVariationsComponent implements OnChanges {
   @Input() flagInfo: FeatureFlag;
   @Input() variationType: string;
   @Output() emitFlagDialogEvent = new EventEmitter<NewFlagDialogData>();
-  @ViewChild('variationTable', { static: false, read: ElementRef }) variationTable: ElementRef;
+  @ViewChild('variationTable', { read: ElementRef }) variationTable: ElementRef;
 
   flagVariationsForm: FormGroup;
   variationsDataSource = new BehaviorSubject<AbstractControl[]>([]);
