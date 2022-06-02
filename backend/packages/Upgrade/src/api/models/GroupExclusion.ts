@@ -1,3 +1,5 @@
+import { EXCLUSION_CODE } from 'upgrade_types';
+import { IsNotEmpty } from 'class-validator';
 import { PrimaryColumn, Entity, ManyToOne, Column, Index } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
@@ -10,6 +12,10 @@ export class GroupExclusion extends BaseModel {
   @Index()
   @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
+
+  @IsNotEmpty()
+  @Column({ type: 'enum', enum: EXCLUSION_CODE, nullable: true })
+  public exclusionCode: EXCLUSION_CODE;
 
   @Column()
   public groupId: string;

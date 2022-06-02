@@ -48,6 +48,6 @@ export class QueryController {
     dataLogParams: DataLogAnalysisValidator, 
     @Req() request: AppRequest
   ): Promise<any> {
-    return this.queryService.analyse(dataLogParams.queryIds, request.logger);
+    return this.queryService.analyze(dataLogParams.queryIds, request.logger);
   }
 }

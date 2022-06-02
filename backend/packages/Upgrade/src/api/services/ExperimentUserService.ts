@@ -1,3 +1,4 @@
+import { IndividualEnrollmentRepository } from './../repositories/IndividualEnrollmentRepository';
 import { UpgradeLogger } from './../../lib/logger/UpgradeLogger';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
@@ -5,7 +6,6 @@ import { ExperimentUserRepository } from '../repositories/ExperimentUserReposito
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
-import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
 import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -16,16 +16,16 @@ export class ExperimentUserService {
   constructor(
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private experimentRepository: ExperimentRepository,
-    @OrmRepository() private individualAssignmentRepository: IndividualAssignmentRepository,
+    @OrmRepository() private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
-    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
+    @OrmRepository() private groupExclusionRepository: GroupExclusionRepository
   ) {}
 
   public find(logger?: UpgradeLogger): Promise<ExperimentUser[]> {
     if (logger) {
       logger.info({ message: `Find all users` });
     }
-      return this.userRepository.find();
+    return this.userRepository.find();
   }
 
   public findOne(id: string, logger: UpgradeLogger): Promise<ExperimentUser> {
@@ -45,7 +45,7 @@ export class ExperimentUserService {
     // update assignment if user group is changed
     const assignmentUpdated = updatedUsers.map((user: ExperimentUser, index: number) => {
       if (user.group && users[index].group) {
-        return this.removeAssignments(user.id, users[index].group, user.group);
+        return this.removeEnrollments(user.id, users[index].group, user.group);
       }
       return Promise.resolve();
     });
@@ -59,7 +59,11 @@ export class ExperimentUserService {
     return updatedUserDocument;
   }
 
-  public async setAliasesForUser(userId: string, aliases: string[], requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser[]> {
+  public async setAliasesForUser(
+    userId: string,
+    aliases: string[],
+    requestContext: { logger: UpgradeLogger; userDoc: any }
+  ): Promise<ExperimentUser[]> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
@@ -163,7 +167,11 @@ export class ExperimentUserService {
     return alreadyLinkedAliases;
   }
 
-  public async updateWorkingGroup(userId: string, workingGroup: any, requestContext: {logger: UpgradeLogger, userDoc: any}): Promise<ExperimentUser> {
+  public async updateWorkingGroup(
+    userId: string,
+    workingGroup: any,
+    requestContext: { logger: UpgradeLogger; userDoc: any }
+  ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
     let userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
@@ -190,10 +198,17 @@ export class ExperimentUserService {
   }
 
   // TODO should we check for workingGroup as a subset over here?
-  public async updateGroupMembership(userId: string, groupMembership: any, requestContext: {logger: UpgradeLogger, userDoc: any} ): Promise<ExperimentUser> { 
+  public async updateGroupMembership(
+    userId: string,
+    groupMembership: any,
+    requestContext: { logger: UpgradeLogger; userDoc: any }
+  ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
     let userExist = userDoc;
-    logger.info({ message: `Set Group Membership for userId: ${userId} with Group membership details as below:`, details: groupMembership });
+    logger.info({
+      message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
+      details: groupMembership,
+    });
     if (!userExist) {
       logger.error({ message: 'User not defined updateGroupMembership', details: userId });
       let error = new Error(
@@ -208,7 +223,7 @@ export class ExperimentUserService {
 
     // update assignments
     if (userExist && userExist.group) {
-      await this.removeAssignments(userExist.id, groupMembership, userExist.group);
+      await this.removeEnrollments(userExist.id, groupMembership, userExist.group);
     }
 
     const newDocument = { ...userExist, group: groupMembership };
@@ -250,7 +265,14 @@ export class ExperimentUserService {
     }
   }
 
-  private async removeAssignments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {
+  public async clearDB(logger: UpgradeLogger): Promise<string> {
+    await getConnection().transaction(async (transactionalEntityManager) => {
+      await this.experimentRepository.clearDB(transactionalEntityManager, logger);
+    });
+    return Promise.resolve('Cleared DB');
+  }
+
+  private async removeEnrollments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {
     const userGroupRemovedMap: Map<string, string[]> = new Map();
 
     // check the groups removed from setGroupMembership
@@ -293,24 +315,29 @@ export class ExperimentUserService {
     const filteredGroupExperiment = groupExperiments.filter((experiment) => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.GROUP;
     });
-
-    experimentAssignmentRemovalArray.push(this.groupExperimentsWithGroupConsistency(filteredGroupExperiment, userId));
+    if (filteredGroupExperiment.length > 0) {
+      experimentAssignmentRemovalArray.push(this.groupExperimentsWithGroupConsistency(filteredGroupExperiment, userId));
+    }
 
     const filteredIndividualExperiment = groupExperiments.filter((experiment) => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.INDIVIDUAL;
     });
 
-    experimentAssignmentRemovalArray.push(
-      this.groupExperimentsWithIndividualConsistency(filteredIndividualExperiment, userId)
-    );
+    if (filteredIndividualExperiment.length > 0) {
+      experimentAssignmentRemovalArray.push(
+        this.groupExperimentsWithIndividualConsistency(filteredIndividualExperiment, userId)
+      );
+    }
 
     const filteredExperimentExperiment = groupExperiments.filter((experiment) => {
       return groupKeys.includes(experiment.group) && experiment.consistencyRule === CONSISTENCY_RULE.EXPERIMENT;
     });
 
-    experimentAssignmentRemovalArray.push(
-      this.groupExperimentsWithExperimentConsistency(filteredExperimentExperiment, userId)
-    );
+    if (filteredExperimentExperiment.length > 0) {
+      experimentAssignmentRemovalArray.push(
+        this.groupExperimentsWithExperimentConsistency(filteredExperimentExperiment, userId)
+      );
+    }
 
     await Promise.all(experimentAssignmentRemovalArray);
     return;
@@ -324,7 +351,7 @@ export class ExperimentUserService {
     }
 
     // remove individual assignment related to that group
-    const individualAssignments = await this.individualAssignmentRepository.findAssignment(
+    const individualAssignments = await this.individualEnrollmentRepository.findEnrollments(
       userId,
       filteredExperimentIds
     );
@@ -332,7 +359,7 @@ export class ExperimentUserService {
       (individualAssignment) => individualAssignment.experiment.id
     );
     if (assignedExperimentIds.length > 0) {
-      await this.individualAssignmentRepository.deleteExperimentsForUserId(userId, assignedExperimentIds);
+      await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, assignedExperimentIds);
     }
 
     // remove individual exclusion related to that group
@@ -368,14 +395,9 @@ export class ExperimentUserService {
     }
 
     // remove individual assignment related to that group
-    const individualAssignments = await this.individualAssignmentRepository.findAssignment(
-      userId,
-      filteredExperimentIds
-    );
-    individualAssignments.map((individualAssignment) => individualAssignment.experiment.id);
+    const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
 
     // remove individual exclusion related to that group
-    const individualExclusions = await this.individualExclusionRepository.findExcluded(userId, filteredExperimentIds);
     const excludedExperimentIds = individualExclusions.map((individualExclusion) => individualExclusion.experiment.id);
     if (excludedExperimentIds.length > 0) {
       const otherExclusions = await this.individualExclusionRepository.find({
@@ -402,22 +424,6 @@ export class ExperimentUserService {
     }
 
     // remove individual assignment related to that group
-    const individualAssignments = await this.individualAssignmentRepository.findAssignment(
-      userId,
-      filteredExperimentIds
-    );
-    const assignedExperimentIds = individualAssignments.map(
-      (individualAssignment) => individualAssignment.experiment.id
-    );
-    if (assignedExperimentIds.length > 0) {
-      await this.individualAssignmentRepository.deleteExperimentsForUserId(userId, assignedExperimentIds);
-    }
-  }
-
-  public async clearDB(logger: UpgradeLogger): Promise<string> {
-    await getConnection().transaction(async (transactionalEntityManager) => {
-      await this.experimentRepository.clearDB(transactionalEntityManager, logger);
-    });
-    return Promise.resolve('Cleared DB');
+    await this.individualEnrollmentRepository.deleteEnrollmentsOfUserInExperiments(userId, filteredExperimentIds);
   }
 }

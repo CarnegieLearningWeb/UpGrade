@@ -26,6 +26,13 @@ export class GroupExclusionRepository extends Repository<GroupExclusion> {
     return result.raw;
   }
 
+  public async isGroupExcludedFromExperiment(groupId: string, experimentId: string): Promise<boolean> {
+    const exclusionCount = await this.count({
+      where: { experiment: { id: experimentId }, groupId },
+    });
+    return exclusionCount > 0;
+  }
+
   public findExcluded(groupIds: string[], experimentIds: string[]): Promise<GroupExclusion[]> {
     const primaryKeys = experimentIds.reduce((accu, experimentId) => {
       const selectedPrimaryKey = groupIds.map((groupId) => {
