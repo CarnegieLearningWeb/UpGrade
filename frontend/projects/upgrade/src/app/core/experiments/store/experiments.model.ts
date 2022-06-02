@@ -114,8 +114,8 @@ export interface ExperimentCondition {
 
 export interface ExperimentPartition {
   id: string;
-  expPoint: string;
-  expId: string;
+  site: string;
+  target: string;
   description: string;
   twoCharacterId: string;
   order: number;

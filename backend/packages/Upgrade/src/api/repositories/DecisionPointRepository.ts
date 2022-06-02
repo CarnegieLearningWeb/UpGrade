@@ -1,29 +1,29 @@
-import { ExperimentPartition } from '../models/ExperimentPartition';
+import { DecisionPoint } from '../models/DecisionPoint';
 import { Repository, EntityRepository, EntityManager } from 'typeorm';
 import repositoryError from './utils/repositoryError';
 
-@EntityRepository(ExperimentPartition)
-export class ExperimentPartitionRepository extends Repository<ExperimentPartition> {
-  public async upsertExperimentPartition(
-    partitionDoc: Partial<ExperimentPartition>,
+@EntityRepository(DecisionPoint)
+export class DecisionPointRepository extends Repository<DecisionPoint> {
+  public async upsertDecisionPoint(
+    decisionPointDoc: Partial<DecisionPoint>,
     entityManager: EntityManager
-  ): Promise<ExperimentPartition> {
+  ): Promise<DecisionPoint> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
-      .into(ExperimentPartition)
-      .values(partitionDoc)
-      .onConflict(`("id") DO UPDATE SET "expId" = :expId, "description" = :description, "order" = :order`)
-      .setParameter('expId', partitionDoc.expId)
-      .setParameter('description', partitionDoc.description)
-      .setParameter('order', partitionDoc.order)
+      .into(DecisionPoint)
+      .values(decisionPointDoc)
+      .onConflict(`("id") DO UPDATE SET "target" = :target, "description" = :description, "order" = :order`)
+      .setParameter('target', decisionPointDoc.target)
+      .setParameter('description', decisionPointDoc.description)
+      .setParameter('order', decisionPointDoc.order)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           this.constructor.name,
           'upsertExperimentPartition',
-          { partitionDoc },
+          { partitionDoc: decisionPointDoc },
           errorMsg
         );
         throw errorMsgString;
@@ -32,11 +32,11 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
     return result.raw[0];
   }
 
-  public async deleteByIds(ids: string[], entityManager: EntityManager): Promise<ExperimentPartition[]> {
+  public async deleteByIds(ids: string[], entityManager: EntityManager): Promise<DecisionPoint[]> {
     const result = await entityManager
       .createQueryBuilder()
       .delete()
-      .from(ExperimentPartition)
+      .from(DecisionPoint)
       .where('id IN (:...ids)', { ids })
       .execute()
       .catch((errorMsg: any) => {
@@ -47,30 +47,30 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
     return result.raw;
   }
 
-  public async insertPartitions(
-    partitionsDocs: ExperimentPartition[],
+  public async insertDecisionPoint(
+    decisionPointDoc: DecisionPoint[],
     entityManager: EntityManager
-  ): Promise<ExperimentPartition[]> {
+  ): Promise<DecisionPoint[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
-      .into(ExperimentPartition)
-      .values(partitionsDocs)
+      .into(DecisionPoint)
+      .values(decisionPointDoc)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'insertPartitions', { partitionsDocs }, errorMsg);
+        const errorMsgString = repositoryError(this.constructor.name, 'insertPartitions', { partitionsDocs: decisionPointDoc }, errorMsg);
         throw errorMsgString;
       });
 
     return result.raw;
   }
 
-  public async deletePartition(id: string, entityManager: EntityManager): Promise<void> {
+  public async deleteDecisionPoint(id: string, entityManager: EntityManager): Promise<void> {
     entityManager
       .createQueryBuilder()
       .delete()
-      .from(ExperimentPartition)
+      .from(DecisionPoint)
       .where('id = :id', { id })
       .execute()
       .catch((errorMsg: any) => {
@@ -79,9 +79,9 @@ export class ExperimentPartitionRepository extends Repository<ExperimentPartitio
       });
   }
 
-  public async partitionPointAndName(): Promise<Array<Pick<ExperimentPartition, 'expId' | 'expPoint'>>> {
+  public async partitionPointAndName(): Promise<Array<Pick<DecisionPoint, 'target' | 'site'>>> {
     return this.createQueryBuilder('experimentPartition')
-      .select(['experimentPartition.expPoint', 'experimentPartition.expId'])
+      .select(['experimentPartition.site', 'experimentPartition.target'])
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);

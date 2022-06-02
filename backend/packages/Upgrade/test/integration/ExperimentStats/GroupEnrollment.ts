@@ -47,19 +47,18 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         users: 0,
-        // TODO: uncomment when we have the groups count
-        // groups: 0,
+        groups: 0,
         id: experimentId,
       }),
     ])
   );
 
-  const experimentName1 = experimentObject.partitions[0].expId;
-  const experimentPoint1 = experimentObject.partitions[0].expPoint;
+  const experimentName1 = experimentObject.partitions[0].target;
+  const experimentPoint1 = experimentObject.partitions[0].site;
   const condition1 = experimentObject.conditions[0].conditionCode;
 
-  const experimentName2 = experimentObject.partitions[1].expId;
-  const experimentPoint2 = experimentObject.partitions[1].expPoint;
+  const experimentName2 = experimentObject.partitions[1].target;
+  const experimentPoint2 = experimentObject.partitions[1].site;
   const condition2 = experimentObject.conditions[1].conditionCode;
 
   // get all experiment condition for user 1
@@ -76,8 +75,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         users: 0,
-        // TODO: uncomment when we have the groups count
-        // groups: 0,
+        groups: 0,
         id: experimentId,
       }),
     ])
@@ -102,8 +100,7 @@ export default async function testCase(): Promise<void> {
     expect.arrayContaining([
       expect.objectContaining({
         users: 0,
-        // TODO: uncomment when we have the groups count
-        // groups: 0,
+        groups: 0,
         id: experimentId,
       }),
     ])
@@ -123,9 +120,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: "1",
-        // TODO: uncomment when we have the groups count
-        // groups: 1,
+        users: 1,
+        groups: 1,
         id: experimentId,
       }),
     ])
@@ -145,9 +141,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: "2",
-        // TODO: uncomment when we have the groups count
-        // groups: 1,
+        users: 2,
+        groups: 1,
         id: experimentId,
       }),
     ])

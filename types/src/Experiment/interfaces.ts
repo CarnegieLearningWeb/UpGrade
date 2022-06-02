@@ -38,6 +38,12 @@ export interface IExperimentEnrollmentDetailStats {
   conditions: IConditionEnrollmentStats[];
 }
 
+// TODO Delete this after changing in clientSDK
+export type INewExperimentAssignment = Pick<IExperimentAssignment, 'twoCharacterId' | 'description' | 'assignedCondition'> & {
+  target: string;
+  site: string;
+};
+
 export interface IExperimentAssignment {
   expId: string;
   expPoint: string;

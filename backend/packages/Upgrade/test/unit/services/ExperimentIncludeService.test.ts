@@ -10,13 +10,11 @@ import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
 import { ExperimentConditionRepository } from '../../../src/api/repositories/ExperimentConditionRepository';
-import { ExperimentPartitionRepository } from '../../../src/api/repositories/ExperimentPartitionRepository';
 import { ExperimentRepository } from '../../../src/api/repositories/ExperimentRepository';
 import { ExperimentUserRepository } from '../../../src/api/repositories/ExperimentUserRepository';
 import { GroupExclusionRepository } from '../../../src/api/repositories/GroupExclusionRepository';
 import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
 import { MetricRepository } from '../../../src/api/repositories/MetricRepository';
-import { MonitoredExperimentPointRepository } from '../../../src/api/repositories/MonitoredExperimentPointRepository';
 import { QueryRepository } from '../../../src/api/repositories/QueryRepository';
 import { StateTimeLogsRepository } from '../../../src/api/repositories/StateTimeLogsRepository';
 import { ErrorService } from '../../../src/api/services/ErrorService';
@@ -29,6 +27,8 @@ import { ScheduledJobRepository } from '../../../src/api/repositories/ScheduledJ
 import { AWSService } from '../../../src/api/services/AWSService';
 import { Experiment } from '../../../src/api/models/Experiment';
 import { EXPERIMENT_STATE } from '../../../../../../types/src';
+import { DecisionPointRepository } from '../../../src/api/repositories/DecisionPointRepository';
+import { MonitoredDecisionPointRepository } from '../../../src/api/repositories/MonitoredDecisionPointRepository';
 
 
 let includeArr = [1, 2, 3];
@@ -57,11 +57,11 @@ describe('Experiment Include Service Testing', () => {
                 ExplicitExperimentIndividualInclusionRepository,
                 ExperimentRepository,
                 ExperimentConditionRepository,
-                ExperimentPartitionRepository,
                 ExperimentAuditLogRepository,
                 IndividualExclusionRepository,
                 GroupExclusionRepository,
-                MonitoredExperimentPointRepository,
+                DecisionPointRepository,
+                MonitoredDecisionPointRepository,
                 ExperimentUserRepository,
                 MetricRepository,
                 QueryRepository,

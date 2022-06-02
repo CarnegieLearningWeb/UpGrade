@@ -45,21 +45,26 @@ export default async function testCase(): Promise<void> {
 
   const experimentId = experiments[0].id;
 
-  const experimentName1 = experimentObject.partitions[0].expId;
-  const experimentPoint1 = experimentObject.partitions[0].expPoint;
+  const experimentName1 = experimentObject.partitions[0].target;
+  const experimentPoint1 = experimentObject.partitions[0].site;
   const condition1 = experimentObject.conditions[0].conditionCode;
 
-  const experimentName2 = experimentObject.partitions[1].expId;
-  const experimentPoint2 = experimentObject.partitions[1].expPoint;
+  const experimentName2 = experimentObject.partitions[1].target;
+  const experimentPoint2 = experimentObject.partitions[1].site;
   const condition2 = experimentObject.conditions[1].conditionCode;
-
 
   // get all experiment condition for user 1
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   let checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
@@ -67,60 +72,51 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       id: experimentId,
       users: 0,
-      // TODO: uncomment when we have the groups count
-      // groups: 0,
+      groups: 0,
       usersExcluded: 0,
       groupsExcluded: 0,
       conditions: expect.arrayContaining([
         expect.objectContaining({
           id: experiments[0].conditions[0].id,
           users: 0,
-          // TODO: uncomment when we have the groups count
-          // groups: 0,
+          groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
           ]),
         }),
         expect.objectContaining({
           id: experiments[0].conditions[1].id,
           users: 0,
-          // TODO: uncomment when we have the groups count
-          // groups: 0,
+          groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
           ]),
         }),
@@ -136,60 +132,51 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       id: experimentId,
       users: 0,
-      // TODO: uncomment when we have the groups count
-      // groups: 0,
+      groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
       conditions: expect.arrayContaining([
         expect.objectContaining({
           id: experiments[0].conditions[0].id,
           users: 0,
-          // TODO: uncomment when we have the groups count
-          // groups: 0,
+          groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
           ]),
         }),
         expect.objectContaining({
           id: experiments[0].conditions[1].id,
           users: 0,
-          // TODO: uncomment when we have the groups count
-          // groups: 0,
+          groups: 0,
           partitions: expect.arrayContaining([
             expect.objectContaining({
               id: experiments[0].partitions[0].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[1].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
             expect.objectContaining({
               id: experiments[0].partitions[2].id,
               users: 0,
-              // TODO: uncomment when we have the groups count
-              // groups: 0,
+              groups: 0,
             }),
           ]),
         }),
@@ -204,15 +191,20 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName2, experimentPoint2, condition2, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName2,
+    experimentPoint2,
+    condition2,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
-      // TODO: uncomment when we have the groups count
-      // groups: 0,
+      groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
     })
@@ -227,14 +219,19 @@ export default async function testCase(): Promise<void> {
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
-      // TODO: uncomment when we have the groups count
-      // groups: 0,
+      groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
     })
   );
 
-  markedExperimentPoint = await markExperimentPoint(previewUser.id, experimentName2, experimentPoint2, condition2, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUser.id,
+    experimentName2,
+    experimentPoint2,
+    condition2,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUser.id, experimentName2, experimentPoint2);
 
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
@@ -242,15 +239,20 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[2].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 2,
-      // TODO: uncomment when we have the groups count
-      // groups: 0,
+      groups: 0,
       usersExcluded: 1,
       groupsExcluded: 0,
     })
@@ -260,15 +262,20 @@ export default async function testCase(): Promise<void> {
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[3].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
   checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 2,
-      // TODO: uncomment when we have the groups count
-      // groups: 0,
+      groups: 0,
       usersExcluded: 2,
       groupsExcluded: 0,
     })
