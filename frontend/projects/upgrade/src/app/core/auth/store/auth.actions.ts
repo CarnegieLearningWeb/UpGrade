@@ -5,7 +5,6 @@ export const actionInitializeGapi = createAction('[Auth] Initialize Gapi');
 
 export const actionBindAttachHandlerWithButton = createAction(
   '[Auth] Bind Google Sign In Attach Handler with Button',
-  props<{ element: any }>()
 );
 
 export const actionLoginStart = createAction('[Auth] Login Start');

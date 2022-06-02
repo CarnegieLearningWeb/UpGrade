@@ -88,10 +88,9 @@ export class AuthEffects {
     () => {
       return this.actions$.pipe(
         ofType(authActions.actionBindAttachHandlerWithButton),
-        map(action => action.element),
-        filter(element => !!element),
-        tap(element => {
-          this.auth2.attachClickHandler(element, {},
+        tap(() => {
+          const btn = this.authService.getGoogleSignInElementRef();
+          this.auth2.attachClickHandler(btn, {},
             googleUser => {
               this.hasUserClickedLogin = true;
               this.ngZone.run(() => {
