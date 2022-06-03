@@ -57,8 +57,8 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
   // delete one partition
   editedPartitions.pop();
 
-  editedPartitions[0].expId = 'T1';
-  editedPartitions[0].expPoint = 'Test';
+  editedPartitions[0].target = 'T1';
+  editedPartitions[0].site = 'Test';
   editedPartitions[0].id = 'T1_Test';
 
   // adding new condition
@@ -77,8 +77,8 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
     partitions: [
       ...editedPartitions,
       {
-        expPoint: 'CurriculumSequence ',
-        expId: 'W3',
+        site: 'CurriculumSequence ',
+        target: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
       },
@@ -116,14 +116,14 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
       ...editedPartitions.map((partition) => {
         return expect.objectContaining({
           id: partition.id,
-          expPoint: partition.expPoint,
-          expId: partition.expId,
+          site: partition.site,
+          target: partition.target,
           description: partition.description,
         });
       }),
       expect.objectContaining({
-        expPoint: 'CurriculumSequence ',
-        expId: 'W3',
+        site: 'CurriculumSequence ',
+        target: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
       }),

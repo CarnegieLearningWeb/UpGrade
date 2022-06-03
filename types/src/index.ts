@@ -1,9 +1,10 @@
-import {
+export {
   CONSISTENCY_RULE,
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
   EXPERIMENT_STATE,
   ENROLLMENT_CODE,
+  EXCLUSION_CODE,
   SERVER_ERROR,
   EXPERIMENT_LOG_TYPE,
   EXPERIMENT_SEARCH_KEY,
@@ -16,12 +17,13 @@ import {
   REPEATED_MEASURE,
   FILTER_MODE,
 } from './Experiment/enums';
-import {
+export {
   IEnrollmentCompleteCondition,
   IExperimentEnrollmentStats,
   IExperimentEnrollmentDetailStats,
   IExperimentEnrollmentDetailDateStats,
   IExperimentAssignment,
+  INewExperimentAssignment,
   IExperimentSearchParams,
   IExperimentSortParams,
   AuditLogData,
@@ -32,36 +34,3 @@ import {
   IGroupMetric,
   ISingleMetric,
 } from './Experiment/interfaces';
-
-export {
-  IEnrollmentCompleteCondition,
-  IExperimentEnrollmentStats,
-  IExperimentEnrollmentDetailStats,
-  IExperimentEnrollmentDetailDateStats,
-  IExperimentAssignment,
-  IExperimentSearchParams,
-  IExperimentSortParams,
-  AuditLogData,
-  CONSISTENCY_RULE,
-  ASSIGNMENT_UNIT,
-  POST_EXPERIMENT_RULE,
-  EXPERIMENT_STATE,
-  ENROLLMENT_CODE,
-  SERVER_ERROR,
-  EXPERIMENT_LOG_TYPE,
-  EXPERIMENT_SEARCH_KEY,
-  EXPERIMENT_SORT_KEY,
-  EXPERIMENT_SORT_AS,
-  UserRole,
-  OPERATION_TYPES,
-  IMetricMetaData,
-  DATE_RANGE,
-  REPEATED_MEASURE,
-  IMetricUnit,
-  IFeatureFlag,
-  IFlagVariation,
-  ILogInput,
-  IGroupMetric,
-  ISingleMetric,
-  FILTER_MODE,
-};
