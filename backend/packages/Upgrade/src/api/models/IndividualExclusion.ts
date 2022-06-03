@@ -1,4 +1,6 @@
-import { Entity, PrimaryColumn, ManyToOne } from 'typeorm';
+import { EXCLUSION_CODE } from 'upgrade_types';
+import { IsNotEmpty } from 'class-validator';
+import { Entity, PrimaryColumn, ManyToOne, Column } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { Experiment } from './Experiment';
 import { ExperimentUser } from './ExperimentUser';
@@ -10,6 +12,10 @@ export class IndividualExclusion extends BaseModel {
 
   @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
+
+  @IsNotEmpty()
+  @Column({ type: 'enum', enum: EXCLUSION_CODE, nullable: true })
+  public exclusionCode: EXCLUSION_CODE;
 
   @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;

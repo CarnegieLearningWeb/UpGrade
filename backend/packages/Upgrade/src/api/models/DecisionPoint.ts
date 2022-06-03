@@ -4,7 +4,7 @@ import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
 
 @Entity()
-export class ExperimentPartition extends BaseModel {
+export class DecisionPoint extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
@@ -15,10 +15,10 @@ export class ExperimentPartition extends BaseModel {
 
   @IsNotEmpty()
   @Column()
-  public expPoint: string;
+  public site: string;
 
   @Column({ nullable: true })
-  public expId: string;
+  public target: string;
 
   @Column()
   public description: string;

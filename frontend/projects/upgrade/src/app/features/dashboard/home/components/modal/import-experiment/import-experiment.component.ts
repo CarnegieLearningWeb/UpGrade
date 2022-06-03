@@ -41,7 +41,7 @@ export class ImportExperimentComponent implements OnInit {
       filter(partitions => !!partitions))
       .subscribe((partitions: any) => {
       this.allPartitions = partitions.map(partition =>
-        partition.expId ? partition.expPoint + partition.expId : partition.expPoint
+        partition.target ? partition.site + partition.target : partition.site
       );
     });
   }
@@ -72,11 +72,11 @@ export class ImportExperimentComponent implements OnInit {
   async validateDuplicateExperiment(partitions: any): Promise<any> {
     const alreadyExistedPartitions = [];
     partitions.forEach((partition) => {
-      const partitionInfo = partition.expId ? partition.expPoint + partition.expId : partition.expPoint;
+      const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
       if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
-        alreadyExistedPartitions.indexOf(partition.expId ? partition.expPoint + ' and ' + partition.expId : partition.expPoint) === -1) {
+        alreadyExistedPartitions.indexOf(partition.target ? partition.site + ' and ' + partition.target : partition.site) === -1) {
         // if we want to  show the duplicate partition details:
-        alreadyExistedPartitions.push(partition.expId ? partition.expPoint + ' and ' + partition.expId : partition.expPoint);
+        alreadyExistedPartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
       }
     });
 
@@ -142,8 +142,8 @@ export class ImportExperimentComponent implements OnInit {
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
       id: 'string',
-      expPoint: 'string',
-      expId: 'string',
+      site: 'string',
+      target: 'string',
       description: 'string',
       twoCharacterId: 'string',
       order: 'number',

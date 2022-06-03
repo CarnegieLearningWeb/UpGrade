@@ -48,8 +48,8 @@ export default async function LogOperations(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
   await settingService.setClientCheck(false, true, new UpgradeLogger());
