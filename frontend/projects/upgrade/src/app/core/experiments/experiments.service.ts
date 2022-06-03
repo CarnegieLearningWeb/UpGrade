@@ -126,7 +126,7 @@ export class ExperimentService {
 
   selectExperimentById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(
-      map(experiment => {
+      tap(experiment => {
         if (!experiment) {
           this.fetchExperimentById(experimentId);
         }

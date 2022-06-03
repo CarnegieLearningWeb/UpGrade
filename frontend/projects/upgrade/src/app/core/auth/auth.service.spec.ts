@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { BehaviorSubject } from "rxjs";
 import { UserRole } from "../../../../../../../types/src/Experiment/enums";
 import { AuthService } from "./auth.service";
 import { actionBindAttachHandlerWithButton, actionInitializeGapi, actionLoginStart, actionLogoutStart, actionSetRedirectUrl } from "./store/auth.actions";
@@ -75,11 +75,11 @@ describe('AuthService', () => {
 
     describe('#attachSignIn', () => {
         it('should dispatch actionBindAttachHandlerWithButton', () => {
-            const mockElement: any = { id: 'value' };
+            const btn: any = { id: 'value' };
 
-            service.attachSignIn(mockElement);
+            service.attachSignIn(btn);
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(actionBindAttachHandlerWithButton({ element: mockElement}));
+            expect(mockStore.dispatch).toHaveBeenCalledWith(actionBindAttachHandlerWithButton());
         })
     });
 

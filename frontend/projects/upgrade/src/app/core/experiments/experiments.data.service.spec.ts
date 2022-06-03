@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { FILTER_MODE } from 'upgrade_types';
 import { environment } from "../../../environments/environment";
 import { ExperimentDataService } from "./experiments.data.service";

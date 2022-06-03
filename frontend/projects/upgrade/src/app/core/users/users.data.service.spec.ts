@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { UserRole } from "./store/users.model";
 import { UsersDataService } from "./users.data.service";

@@ -1,5 +1,5 @@
 module.exports = {
-    "preset": "jest-preset-angular",
+    "preset": 'jest-preset-angular',
     "rootDir": "./projects/upgrade",
     "roots": ["<rootDir>", "../../../types"],
     "coverageDirectory": "../../coverage",
@@ -11,9 +11,9 @@ module.exports = {
     "setupFilesAfterEnv": [
         "<rootDir>/setup-jest.ts"
     ],
-    "transformIgnorePatterns": [
-        "node_modules/(?!@ngrx|ngx-socket-io)"
-    ],
+    // "transformIgnorePatterns": [
+    //     "node_modules/(?!@ngrx|rxjs|@angular)"
+    // ],
     "transform": {
         "^.+\\.(ts)$": "ts-jest"
     },
@@ -25,7 +25,10 @@ module.exports = {
     ],
     "globals": {
       "ts-jest": {
-          "tsconfig": "<rootDir>/tsconfig.spec.json"
-      }
-   }
+          "tsconfig": "<rootDir>/tsconfig.spec.json",
+          useESM: true,
+          stringifyContentPathRegex: '\\.html$',
+       }
+    },
+    
 };

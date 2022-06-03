@@ -2,7 +2,7 @@ import { fakeAsync, tick } from "@angular/core/testing";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRouteSnapshot } from "@angular/router";
 import { TranslateService } from "@ngx-translate/core";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { TitleService } from "./title.service";
 

@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { PreviewUsersDataService } from "./preview-users.data.service";
 import { PreviewUserAssignCondition } from "./store/preview-users.model";

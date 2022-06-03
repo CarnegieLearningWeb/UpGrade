@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { AnalysisDataService } from "./analysis.data.service";
 import { UpsertMetrics } from "./store/analysis.models";

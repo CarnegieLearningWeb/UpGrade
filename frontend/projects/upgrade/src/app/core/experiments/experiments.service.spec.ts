@@ -371,7 +371,7 @@ describe('ExperimentService', () => {
                     expect(fetchExperimentByIdSpy).not.toHaveBeenCalled() :
                     expect(fetchExperimentByIdSpy).toHaveBeenCalledWith(experimentId)
 
-                    expect(val).toBe(expectedValue)
+                    expect(val).toEqual(expectedValue)
                 })
             }))
         })

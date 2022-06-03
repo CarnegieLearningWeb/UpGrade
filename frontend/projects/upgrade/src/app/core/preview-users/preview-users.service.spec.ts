@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { BehaviorSubject } from "rxjs";
 import { PreviewUsersService } from './preview-users.service';
 import * as PreviewUsersSelectors from './store/preview-users.selectors';
 import * as PreviewUsersActions from './store/preview-users.actions';

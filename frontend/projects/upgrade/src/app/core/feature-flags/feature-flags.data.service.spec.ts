@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { FeatureFlagsDataService } from "./feature-flags.data.service";
 import { FeatureFlag, FeatureFlagsPaginationParams } from "./store/feature-flags.model";
