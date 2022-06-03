@@ -98,6 +98,16 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC');
@@ -973,8 +983,8 @@ export class ExperimentService {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: partitionDocToReturn as any,
-        segmentInclude: segmentIncludeDoc as any,
-        segmentExclude: segmentExcludeDoc as any,
+        // segmentInclude: segmentIncludeDoc as any,
+        // segmentExclude: segmentExcludeDoc as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;

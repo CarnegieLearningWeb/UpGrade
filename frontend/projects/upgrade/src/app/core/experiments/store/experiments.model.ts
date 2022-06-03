@@ -132,6 +132,13 @@ export interface ExperimentStateTimeLog {
   timeLog: Date;
 }
 
+export interface segmentNew {
+  updatedAt: string;
+  createdAt: string;
+  versionNumber: number;
+  segment: Segment;
+} 
+
 export interface Experiment {
   id: string;
   name: string;
@@ -155,8 +162,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE,
-  segmentInclude: Segment,
-  segmentExclude: Segment,
+  experimentSegmentInclusion: segmentNew,
+  experimentSegmentExclusion: segmentNew,
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
