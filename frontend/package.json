@@ -67,7 +67,7 @@
         "moment": "^2.29.2",
         "ng-pick-datetime-ex": "^8.0.1",
         "ngx-skeleton-loader": "^2.2.0",
-        "npm": "^8.5.1",
+        "npm": "^8.11.0",
         "papaparse": "^5.3.0",
         "rxjs": "~6.5.0",
         "tslib": "^1.9.0",
