@@ -17,10 +17,10 @@ export class LogsService {
   getAllErrorLogs$ = this.store$.pipe(select(selectAllErrorLogs));
 
   getAuditLogs() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectAllAuditLogs)),
       this.store$.pipe(select(selectAllExperiment))
-    ).pipe(
+    ]).pipe(
       map(([auditLogs, experiments]) =>
       auditLogs.map((log: AuditLogs) => {
           if (log.data.experimentId) {
@@ -41,19 +41,19 @@ export class LogsService {
   }
 
   isAllAuditLogsFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipAuditLog)),
       this.store$.pipe(select(selectTotalAuditLogs))
-    ).pipe(
+    ]).pipe(
       map(([skipAuditLogs, totalAuditLogs]) => skipAuditLogs === totalAuditLogs)
     );
   }
 
   isAllErrorLogsFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipErrorLog)),
       this.store$.pipe(select(selectTotalErrorLogs))
-    ).pipe(
+    ]).pipe(
       map(([skipErrorLogs, totalErrorLogs]) => skipErrorLogs === totalErrorLogs)
     );
   }
