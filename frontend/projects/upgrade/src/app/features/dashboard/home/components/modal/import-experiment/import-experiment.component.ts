@@ -6,7 +6,7 @@ import { VersionService } from '../../../../../../core/version/version.service';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ImportExperimentJSON {
   schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
@@ -53,9 +53,9 @@ export class ImportExperimentComponent implements OnInit {
   importExperiment() {
     this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
     if (this.isExperimentJSONValid) {
-      this.experimentInfo.id = uuid();
+      this.experimentInfo.id = uuidv4();
       this.experimentInfo.conditions.map(condition => {
-        condition.id = uuid();
+        condition.id = uuidv4();
       });
       this.experimentService.importExperiment({ ...this.experimentInfo });
       this.onCancelClick();
