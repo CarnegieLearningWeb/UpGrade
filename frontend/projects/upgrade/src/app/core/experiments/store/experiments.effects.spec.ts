@@ -1,13 +1,15 @@
-import { not } from '@angular/compiler/src/output/output_ast';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActionsSubject } from '@ngrx/store';
 import { BehaviorSubject, of, throwError } from 'rxjs';
-import { concatAll, concatMap, isEmpty, last, pairwise, scan, take, takeLast, takeUntil } from 'rxjs/operators';
-import { actionDeleteExperimentSuccess, actionFetchAllExperimentNames, actionDeleteExperiment, actionUpdateExperimentStateSuccess, actionFetchAllExperimentNamesFailure, actionFetchAllExperimentNamesSuccess, actionFetchAllPartitionFailure, actionFetchAllPartitions, actionFetchAllPartitionSuccess, actionFetchExperimentStats, actionFetchExperimentStatsFailure, actionFetchExperimentStatsSuccess, actionGetExperiments, actionGetExperimentsFailure, actionUpdateExperimentState, actionUpdateExperimentStateFailure, actionDeleteExperimentFailure, actionGetExperimentById, actionGetExperimentByIdSuccess, actionFetchExperimentDetailStatSuccess, actionFetchExperimentDetailStat, actionGetExperimentsSuccess, actionSetSkipExperiment, actionBeginExperimentDetailStatsPolling, actionFetchExperimentGraphInfo } from './experiments.actions';
+import { last, pairwise, scan, take } from 'rxjs/operators';
+import { actionDeleteExperimentSuccess, actionFetchAllExperimentNames, actionDeleteExperiment, actionUpdateExperimentStateSuccess, actionFetchAllExperimentNamesFailure, actionFetchAllExperimentNamesSuccess, actionFetchAllPartitionFailure, actionFetchAllPartitions, actionFetchAllPartitionSuccess, actionFetchExperimentStats, actionFetchExperimentStatsFailure, actionFetchExperimentStatsSuccess, actionGetExperiments, actionGetExperimentsFailure, actionUpdateExperimentState, actionUpdateExperimentStateFailure, actionDeleteExperimentFailure, actionGetExperimentById, actionGetExperimentByIdSuccess, actionFetchExperimentDetailStatSuccess, actionFetchExperimentDetailStat, actionGetExperimentsSuccess, actionSetSkipExperiment, actionBeginExperimentDetailStatsPolling, actionFetchExperimentGraphInfo, actionUpsertExperiment, actionUpsertExperimentFailure, actionUpsertExperimentSuccess, actionSetIsGraphLoading, actionFetchExperimentGraphInfoFailure, actionFetchExperimentGraphInfoSuccess, actionSetGraphRange, actionSetExperimentGraphInfo, actionRemoveExperimentStat, actionSetSearchString, actionSetSearchKey, actionFetchContextMetaData, actionFetchContextMetaDataSuccess, actionFetchContextMetaDataFailure, actionExportExperimentInfo, actionExportExperimentInfoSuccess, actionExportExperimentDesignFailure, actionExportExperimentInfoFailure, actionExportExperimentDesign, actionExportExperimentDesignSuccess } from './experiments.actions';
 import { ExperimentEffects } from './experiments.effects';
-import { DATE_RANGE, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, EXPERIMENT_STATE } from './experiments.model';
+import { DATE_RANGE, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, EXPERIMENT_STATE, UpsertExperimentType } from './experiments.model';
 import * as Selectors from './experiments.selectors';
 import { environment } from '../../../../environments/environment';
+import { actionExecuteQuery } from '../../analysis/store/analysis.actions';
+import { selectCurrentUser } from '../../auth/store/auth.selectors';
+import { UserRole } from '../../users/store/users.model';
 
 describe('ExperimentEffects', () => {
     let service: ExperimentEffects;
@@ -21,37 +23,23 @@ describe('ExperimentEffects', () => {
         actions$ = new ActionsSubject();
         store$ = new BehaviorSubject({});
         (store$ as any).dispatch = jest.fn();
-        experimentDataService = {
-
-        }
+        experimentDataService = {};
         router = {
-
-        }
+            navigate: jest.fn()
+        };
         snackbar = {
-
-        }
+            open: jest.fn()
+        };
         service = new ExperimentEffects(
             actions$,
             store$,
             experimentDataService,
             router,
             snackbar
-        )
+        );
     })
 
     describe('#getPaginatedExperiment$', () => {
-        const testExperimentList = [
-            {
-                id: '1',
-            } as any,
-            {
-                id: '2'
-            } as any,
-            {
-                id: '3'
-            } as any
-        ];
-
         it('should catch and dispatch actionGetExperimentsFailure on error and exercise skip<total filter', fakeAsync(() => {
             experimentDataService.getAllExperiment = jest.fn().mockReturnValue(throwError('testError'));
             Selectors.selectSkipExperiment.setResult(0)
@@ -247,6 +235,181 @@ describe('ExperimentEffects', () => {
             })
 
             actions$.next(actionFetchExperimentStats({ experimentIds }));
+        }))
+    })
+
+    describe('UpsertExperiment$', () => {
+        const experiment = {
+            id: 'test1',
+            queries: [
+                { id: 'queryid1' }
+            ]
+        } as any;
+
+        const stats = {
+            id: 'test1',
+            users: 10,
+            groups: 2,
+            usersExcluded: 1,
+            groupsExcluded: 1,
+            conditions: []
+        }
+
+        const experimentStats = {
+            'test0': {}    
+        }
+
+        beforeEach(() => {
+            experimentDataService.createNewExperiment = jest.fn().mockReturnValue(of(experiment));
+            experimentDataService.importExperiment = jest.fn().mockReturnValue(of(experiment));
+            experimentDataService.updateExperiment = jest.fn().mockReturnValue(of(experiment));
+        })
+
+        it('should not do anything if experiment is falsey', fakeAsync(() => {
+            const actionType = UpsertExperimentType.CREATE_NEW_EXPERIMENT;
+            let neverEmitted = true;
+            Selectors.selectExperimentStats.setResult({ 'test1': stats })
+
+            service.UpsertExperiment$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionUpsertExperiment({ experiment: null, actionType }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should not do anything if actionType is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            Selectors.selectExperimentStats.setResult({ 'test1': stats })
+
+            service.UpsertExperiment$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionUpsertExperiment({ experiment, actionType: null }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should call snackbar open and return actionUpsertExperimentFailure action if error is caught', fakeAsync(() => {
+            const actionType = UpsertExperimentType.CREATE_NEW_EXPERIMENT;
+            Selectors.selectExperimentStats.setResult({ 'test1': stats });
+            experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(throwError({ error: { message: 'test1' }}))
+
+            service.UpsertExperiment$.subscribe(resultingActions => {
+
+                const failureAction = actionUpsertExperimentFailure();
+
+                expect(resultingActions).toEqual(failureAction);
+            })
+
+            actions$.next(actionUpsertExperiment({ experiment, actionType }));
+
+            tick(0);
+        }))
+
+        it('should call createNewExperiment method with actiontype CREATE_NEW_EXPERIMENT and return array of 4 actions on successful stats call', fakeAsync(() => {
+            const actionType = UpsertExperimentType.CREATE_NEW_EXPERIMENT;
+            const expectedActions = [
+                actionFetchExperimentStatsSuccess({ stats: { 'test1': undefined } }), // this seems weird
+                actionUpsertExperimentSuccess({ experiment }),
+                actionFetchAllPartitions(),
+                actionExecuteQuery({ queryIds: ['queryid1'] })
+            ]
+
+            Selectors.selectExperimentStats.setResult({ 'test1': stats });
+            experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(experimentStats))
+
+            service.UpsertExperiment$.pipe(
+                take(4),
+                scan((acc, val) => {
+                    acc.unshift(val);
+                    acc.splice(4);
+                    return acc;
+                }, []),
+                last(),
+            ).subscribe(resultingActions => {
+                resultingActions.reverse();
+                expect(resultingActions).toEqual(expectedActions);
+                expect(experimentDataService.createNewExperiment).toHaveBeenCalled();
+                expect(experimentDataService.importExperiment).not.toHaveBeenCalled();
+                expect(experimentDataService.updateExperiment).not.toHaveBeenCalled();
+            })
+
+            actions$.next(actionUpsertExperiment({ experiment, actionType }));
+
+            tick(0);
+        }))
+
+        it('should call importExperiment method with actiontype IMPORT_EXPERIMENT and return array of 4 actions on successful stats call', fakeAsync(() => {
+            const actionType = UpsertExperimentType.IMPORT_EXPERIMENT;
+            const expectedActions = [
+                actionFetchExperimentStatsSuccess({ stats: { 'test1': undefined } }), // this seems weird
+                actionUpsertExperimentSuccess({ experiment }),
+                actionFetchAllPartitions(),
+                actionExecuteQuery({ queryIds: ['queryid1'] })
+            ]
+
+            Selectors.selectExperimentStats.setResult({ 'test1': stats });
+            experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(experimentStats))
+
+            service.UpsertExperiment$.pipe(
+                take(4),
+                scan((acc, val) => {
+                    acc.unshift(val);
+                    acc.splice(4);
+                    return acc;
+                }, []),
+                last(),
+            ).subscribe(resultingActions => {
+                resultingActions.reverse();
+                expect(resultingActions).toEqual(expectedActions);
+                expect(experimentDataService.createNewExperiment).not.toHaveBeenCalled();
+                expect(experimentDataService.importExperiment).toHaveBeenCalled();
+                expect(experimentDataService.updateExperiment).not.toHaveBeenCalled();
+            })
+
+            actions$.next(actionUpsertExperiment({ experiment, actionType }));
+
+            tick(0);
+        }))
+
+        it('should call updateExperiment method with actiontype UPDATE_EXPERIMENT and return array of 4 actions on successful stats call', fakeAsync(() => {
+            const actionType = UpsertExperimentType.UPDATE_EXPERIMENT;
+            const expectedActions = [
+                actionFetchExperimentStatsSuccess({ stats: { 'test1': undefined } }), // this seems weird
+                actionUpsertExperimentSuccess({ experiment }),
+                actionFetchAllPartitions(),
+                actionExecuteQuery({ queryIds: ['queryid1'] })
+            ]
+
+            Selectors.selectExperimentStats.setResult({ 'test1': stats });
+            experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(of(experimentStats))
+
+            service.UpsertExperiment$.pipe(
+                take(4),
+                scan((acc, val) => {
+                    acc.unshift(val);
+                    acc.splice(4);
+                    return acc;
+                }, []),
+                last(),
+            ).subscribe(resultingActions => {
+                resultingActions.reverse();
+                expect(resultingActions).toEqual(expectedActions);
+                expect(experimentDataService.createNewExperiment).not.toHaveBeenCalled();
+                expect(experimentDataService.importExperiment).not.toHaveBeenCalled();
+                expect(experimentDataService.updateExperiment).toHaveBeenCalled();
+            })
+
+            actions$.next(actionUpsertExperiment({ experiment, actionType }));
+
+            tick(0);
         }))
     })
 
@@ -610,6 +773,541 @@ describe('ExperimentEffects', () => {
 
             actions$.next(actionFetchAllExperimentNames());
 
+        }))
+    })
+
+    describe('#fetchGraphInfo$', () => {
+        const graphData = [{
+            date: 'testDate',
+            stats: {
+                id: 'test1',
+                conditions: [] 
+            }
+          }
+        ];
+
+        it('should do nothing if experimentId is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            Selectors.selectExperimentGraphInfo.setResult([])
+
+            service.fetchGraphInfo$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionFetchExperimentGraphInfo({
+                experimentId: '',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: -new Date().getTimezoneOffset()
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should do nothing if range is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            Selectors.selectExperimentGraphInfo.setResult([])
+
+            service.fetchGraphInfo$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionFetchExperimentGraphInfo({
+                experimentId: 'testId',
+                range: null,
+                clientOffset: -new Date().getTimezoneOffset()
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should do nothing if clientOffset is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            Selectors.selectExperimentGraphInfo.setResult([])
+
+            service.fetchGraphInfo$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionFetchExperimentGraphInfo({
+                experimentId: 'testId',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: null
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should return failure and loading actions when catching an error', fakeAsync(() => {
+            Selectors.selectExperimentGraphInfo.setResult(null);
+
+            experimentDataService.fetchExperimentGraphInfo = jest.fn().mockReturnValue(throwError('error'));
+
+            const expectedActions = [
+                actionFetchExperimentGraphInfoFailure(),
+                actionSetIsGraphLoading({ isGraphInfoLoading: false })
+            ]
+
+            service.fetchGraphInfo$.pipe(
+                take(2),
+                pairwise()
+            ).subscribe(resultingActions => {
+                expect(resultingActions).toEqual(expectedActions)
+            })
+
+            actions$.next(actionFetchExperimentGraphInfo({
+                experimentId: 'testId',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: -new Date().getTimezoneOffset()
+            }));
+
+            tick(0);
+        }))
+
+        it('should emit no actions if graphData is already present', fakeAsync(() => {
+            let neverEmitted = true;
+            Selectors.selectExperimentGraphInfo.setResult(graphData);
+
+            experimentDataService.fetchExperimentGraphInfo = jest.fn().mockReturnValue(of());
+
+            const expectedActions = []
+
+            service.fetchGraphInfo$.subscribe(resultingActions => {
+                neverEmitted = false;
+                expect(resultingActions).not.toEqual(expectedActions)
+            })
+
+            actions$.next(actionFetchExperimentGraphInfo({
+                experimentId: 'testId',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: -new Date().getTimezoneOffset()
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toEqual(true)
+        }))
+
+        it('should return single action to actionFetchExperimentGraphInfoSuccess on success', fakeAsync(() => {
+            Selectors.selectExperimentGraphInfo.setResult(null);
+
+            experimentDataService.fetchExperimentGraphInfo = jest.fn().mockReturnValue(of(graphData));
+
+            const expectedActions = actionFetchExperimentGraphInfoSuccess({
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                graphInfo: [{
+                    date: 'testDate',
+                    stats: {
+                        id: 'test1',
+                        conditions: [] 
+                    }
+                  }
+                ]
+            })
+
+            service.fetchGraphInfo$.subscribe(resultingActions => {
+                expect(resultingActions).toEqual(expectedActions)
+            })
+
+            actions$.next(actionFetchExperimentGraphInfo({
+                experimentId: 'testId',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: -new Date().getTimezoneOffset()
+            }));
+
+            tick(0);
+        }))
+    })
+
+    describe('#setExperimentGraphRange$', () => {
+        it('should do nothing if experimentId is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            store$.dispatch = jest.fn();
+
+            service.setExperimentGraphRange$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionSetGraphRange({
+                experimentId: '',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: -new Date().getTimezoneOffset()
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should call side effect to dispatch actionFetchExperimentGraphInfo if range is defined', fakeAsync(() => {
+            const graphData = {
+                experimentId: 'testId',
+                range: DATE_RANGE.LAST_SEVEN_DAYS,
+                clientOffset: -new Date().getTimezoneOffset()
+            }
+            store$.dispatch = jest.fn();
+
+            service.setExperimentGraphRange$.subscribe();
+
+            actions$.next(actionSetGraphRange(graphData));
+
+            tick(0);
+
+            expect(store$.dispatch).toHaveBeenCalledWith(actionFetchExperimentGraphInfo(graphData))
+        }))
+
+        it('should call side effect to dispatch actionSetExperimentGraphInfo if range is not defined', fakeAsync(() => {
+            const graphData = {
+                experimentId: 'testId',
+                range: undefined,
+                clientOffset: -new Date().getTimezoneOffset()
+            }
+            store$.dispatch = jest.fn();
+
+            service.setExperimentGraphRange$.subscribe();
+
+            actions$.next(actionSetGraphRange(graphData));
+
+            tick(0);
+
+            expect(store$.dispatch).toHaveBeenCalledWith(actionSetExperimentGraphInfo({ graphInfo: null }));
+        }))
+    })
+
+    describe('navigateOnDeleteExperiment$', () => {
+        it('should do nothing if experimentId is falsey', fakeAsync(() => {
+            const experimentId = ''
+            store$.dispatch = jest.fn();
+
+            service.navigateOnDeleteExperiment$.subscribe()
+
+            actions$.next(actionDeleteExperimentSuccess({
+                experimentId
+            }));
+
+            tick(0);
+
+            expect(store$.dispatch).not.toHaveBeenCalled();
+        }))
+
+        it('should dispatch actionRemoveExperimentStat and call router nav to home if experimentId is valid', fakeAsync(() => {
+            const experimentId = 'testId'
+            store$.dispatch = jest.fn();
+
+            service.navigateOnDeleteExperiment$.subscribe();
+
+            actions$.next(actionDeleteExperimentSuccess({
+                experimentId
+            }));
+
+            tick(0);
+
+            expect(store$.dispatch).toHaveBeenCalledWith(actionRemoveExperimentStat({ experimentStatId: experimentId }));
+        }))
+    })
+
+    describe('#fetchExperimentOnSearchString$', () => {
+        it('should dispatch actionGetExperiments if search string is not null', fakeAsync(() => {
+            const searchString = 'testString'
+            store$.dispatch = jest.fn();
+
+            service.fetchExperimentOnSearchString$.subscribe();
+
+            actions$.next(actionSetSearchString({
+                searchString
+            }));
+
+            tick(0);
+
+            expect(store$.dispatch).toHaveBeenCalledWith(actionGetExperiments({ fromStarting: true }));
+        }))
+
+        it('should not dispatch actionGetExperiments if search string is null', fakeAsync(() => {
+            const searchString = null;
+            store$.dispatch = jest.fn();
+
+            service.fetchExperimentOnSearchString$.subscribe();
+
+            actions$.next(actionSetSearchString({
+                searchString
+            }));
+
+            tick(0);
+
+            expect(store$.dispatch).not.toHaveBeenCalled();
+        }))
+    })
+
+    describe('#fetchExperimentOnSearchKeyChange$', () => {
+        it('should dispatch actionGetExperiments if search key changed as is truthy', fakeAsync(() => {
+            const searchString = 'test';
+            const searchKey = EXPERIMENT_SEARCH_KEY.ALL;
+            store$.dispatch = jest.fn();
+            Selectors.selectSearchString.setResult(searchString);
+
+            service.fetchExperimentOnSearchKeyChange$.subscribe();
+
+            actions$.next(actionSetSearchKey({
+                searchKey
+            }));
+
+            tick(0);
+
+            expect(store$.dispatch).toHaveBeenCalledWith(
+                actionGetExperiments({ fromStarting: true })
+            );
+        }))
+
+        it('should NOT dispatch actionGetExperiments if search key changed as is falsey', fakeAsync(() => {
+            const searchString = '';
+            const searchKey = EXPERIMENT_SEARCH_KEY.ALL;
+            store$.dispatch = jest.fn();
+            Selectors.selectSearchString.setResult(searchString);
+
+            service.fetchExperimentOnSearchKeyChange$.subscribe();
+
+            actions$.next(actionSetSearchKey({
+                searchKey
+            }));
+
+            tick(0);
+
+            expect(store$.dispatch).not.toHaveBeenCalled();
+        }))
+    })
+
+    describe('#fetchContextMetaData$', () => {
+        it('should not do anything if contextMetaData object already exists', fakeAsync(() => {
+            let neverEmitted = true;
+            Selectors.selectContextMetaData.setResult({
+                'label': {}
+            });
+            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of({}))
+
+            service.fetchContextMetaData$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionFetchContextMetaData());
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should fetch contextMetaData if it does not already exist', fakeAsync(() => {
+            const contextMetaData = {
+                'contextMetaDataName': {}
+            };
+
+            Selectors.selectContextMetaData.setResult({});
+            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of(contextMetaData))
+
+            const expectedAction = actionFetchContextMetaDataSuccess({ contextMetaData })
+
+            service.fetchContextMetaData$.subscribe(resultingActions => {
+                expect(resultingActions).toEqual(expectedAction);
+            })
+
+            actions$.next(actionFetchContextMetaData());
+
+            tick(0);
+        }))
+
+        it('should dispatch actionFetchContextMetaDataFailure error is caught fetching data', fakeAsync(() => {
+            Selectors.selectContextMetaData.setResult({});
+            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(throwError('test'));
+
+            const expectedAction = actionFetchContextMetaDataFailure();
+
+            service.fetchContextMetaData$.subscribe(resultingActions => {
+                expect(resultingActions).toEqual(expectedAction);
+            })
+
+            actions$.next(actionFetchContextMetaData());
+
+            tick(0);
+        }))
+    })
+
+    describe('#exportExperimentInfo$', () => {
+        it('should not do anything if experimentId is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            const experimentId = '';
+            const experimentName = 'asdf';
+            const user = {
+                createdAt: '1234',
+                updatedAt: '1234',
+                versionNumber: '2',
+                firstName: 'Johnny',
+                lastName: 'Quest',
+                imageUrl: 'www.jq.edu.gov.biz',
+                email: 'email@test.com',
+                role: UserRole.ADMIN
+            }
+            selectCurrentUser.setResult(user);
+            experimentDataService.exportExperimentInfo = jest.fn().mockReturnValue(of({}))
+
+            service.exportExperimentInfo$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionExportExperimentInfo({
+                experimentId,
+                experimentName
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should not do anything if email is falsey', fakeAsync(() => {
+            let neverEmitted = true;
+            const experimentId = 'test1';
+            const experimentName = 'asdf';
+            const user = {
+                createdAt: '1234',
+                updatedAt: '1234',
+                versionNumber: '2',
+                firstName: 'Johnny',
+                lastName: 'Quest',
+                imageUrl: 'www.jq.edu.gov.biz',
+                email: '',
+                role: UserRole.ADMIN
+            }
+            selectCurrentUser.setResult(user);
+            experimentDataService.exportExperimentInfo = jest.fn().mockReturnValue(of({}))
+
+            service.exportExperimentInfo$.subscribe(resultingActions => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionExportExperimentInfo({
+                experimentId,
+                experimentName
+            }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should dispatch actionExportExperimentInfoSuccess is email and experimentId are valid', fakeAsync(() => {
+            const experimentId = 'test1';
+            const experimentName = 'asdf';
+            const user = {
+                createdAt: '1234',
+                updatedAt: '1234',
+                versionNumber: '2',
+                firstName: 'Johnny',
+                lastName: 'Quest',
+                imageUrl: 'www.jq.edu.gov.biz',
+                email: 'email@test.com',
+                role: UserRole.ADMIN
+            }
+
+            selectCurrentUser.setResult(user);
+            experimentDataService.exportExperimentInfo = jest.fn().mockReturnValue(of({}));
+
+            const expectedAction = actionExportExperimentInfoSuccess();
+
+            service.exportExperimentInfo$.subscribe(resultingActions => {
+                expect(resultingActions).toEqual(expectedAction);
+            })
+
+            actions$.next(actionExportExperimentInfo({
+                experimentId,
+                experimentName
+            }));
+
+            tick(0);
+        }))
+
+        it('should dispatch actionExportExperimentDesignFailure on fetch error', fakeAsync(() => {
+            const experimentId = 'test1';
+            const experimentName = 'asdf';
+            const user = {
+                createdAt: '1234',
+                updatedAt: '1234',
+                versionNumber: '2',
+                firstName: 'Johnny',
+                lastName: 'Quest',
+                imageUrl: 'www.jq.edu.gov.biz',
+                email: 'email@test.com',
+                role: UserRole.ADMIN
+            }
+
+            selectCurrentUser.setResult(user);
+            experimentDataService.exportExperimentInfo = jest.fn().mockReturnValue(throwError('test'));
+
+            const expectedAction = actionExportExperimentInfoFailure();
+
+            service.exportExperimentInfo$.subscribe(resultingActions => {
+                expect(resultingActions).toEqual(expectedAction);
+            })
+
+            actions$.next(actionExportExperimentInfo({
+                experimentId,
+                experimentName
+            }));
+
+            tick(0);
+        }))
+    })
+
+    describe('exportExperimentDesign$', () => {
+        it('should not do anything if experimentId is falsey', fakeAsync(() => {
+            const experimentId = '';
+            let neverEmitted = true;
+
+            service.exportExperimentDesign$.subscribe(_ => {
+                neverEmitted = false;
+            })
+
+            actions$.next(actionExportExperimentDesign({ experimentId }));
+
+            tick(0);
+
+            expect(neverEmitted).toBeTruthy();
+        }))
+
+        it('should dispatch actionExportExperimentDesignSuccess and call download function on success', fakeAsync(() => {
+            const experimentId = 'testId';
+            const data = {
+                id: 'payloadObject'
+            }
+            experimentDataService.exportExperimentDesign = jest.fn().mockReturnValue(of(data));
+
+            const expectedAction = actionExportExperimentDesignSuccess();
+
+            service.exportExperimentDesign$.subscribe(resultingAction => {
+                expect(resultingAction).toEqual(expectedAction);
+            });
+
+            actions$.next(actionExportExperimentDesign({ experimentId }));
+
+            tick(0);
+        }))
+
+        it('should dispatch actionExportExperimentDesignFailure on fetch failure', fakeAsync(() => {
+            const experimentId = 'testId';
+            experimentDataService.exportExperimentDesign = jest.fn().mockReturnValue(throwError('error'));
+
+            const expectedAction = actionExportExperimentDesignFailure();
+
+            service.exportExperimentDesign$.subscribe(resultingAction => {
+                expect(resultingAction).toEqual(expectedAction);
+            });
+
+            actions$.next(actionExportExperimentDesign({ experimentId }));
+
+            tick(0);
         }))
     })
 })
