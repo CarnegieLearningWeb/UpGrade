@@ -17,24 +17,25 @@ export class LogsService {
   getAllErrorLogs$ = this.store$.pipe(select(selectAllErrorLogs));
 
   getAuditLogs() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectAllAuditLogs)),
       this.store$.pipe(select(selectAllExperiment))
-    ).pipe(
+    ]).pipe(
       map(([auditLogs, experiments]) =>
       auditLogs.map((log: AuditLogs) => {
+          const clonedLog = { ...log };
           if (log.data.experimentId) {
             const result = experiments.find(experiment => experiment.id === log.data.experimentId);
-            log.data = result
+            clonedLog.data = result
               ? {
                   ...log.data,
                   isExperimentExist: true
                 }
               : { ...log.data, isExperimentExist: false };
           } else {
-            log.data = { ...log.data, isExperimentExist: false };
+            clonedLog.data = { ...log.data, isExperimentExist: false };
           }
-          return log;
+          return clonedLog;
         })
       )
     );
