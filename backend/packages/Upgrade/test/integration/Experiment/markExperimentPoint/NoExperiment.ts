@@ -22,11 +22,11 @@ export default async function NoExperiment(): Promise<void> {
   // creating new user
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
-  let markedExperimentPoint = await markExperimentPoint(
+  const markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
     experimentName,
     experimentPoint,
@@ -68,6 +68,6 @@ export default async function NoExperiment(): Promise<void> {
   );
 
   // get all experiment condition for user 2
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
+  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 }
