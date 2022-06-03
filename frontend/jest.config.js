@@ -30,5 +30,5 @@ module.exports = {
           stringifyContentPathRegex: '\\.html$',
        }
     },
-    
+    "globalSetup": "jest-preset-angular/global-setup"
 };
