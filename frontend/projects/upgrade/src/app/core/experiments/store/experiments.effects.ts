@@ -438,8 +438,7 @@ export class ExperimentEffects {
     document.body.removeChild(element);
   }
   private getSearchString$ = () =>
-    combineLatest(this.store$.pipe(select(selectSearchString))).pipe(
-      map(([searchString]) => searchString),
+    this.store$.pipe(select(selectSearchString)).pipe(
       first()
     );
 }

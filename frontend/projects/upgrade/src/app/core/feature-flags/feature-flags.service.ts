@@ -31,10 +31,10 @@ export class FeatureFlagsService {
   );
 
   isInitialFeatureFlagsLoading() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectIsLoadingFeatureFlags)),
       this.allFeatureFlags$
-      ).pipe(
+    ]).pipe(
       map(([isLoading, experiments]) => {
         return !isLoading || !!experiments.length;
       })
@@ -42,10 +42,10 @@ export class FeatureFlagsService {
   }
 
   isAllFlagsFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipFlags)),
       this.store$.pipe(select(selectTotalFlags))
-    ).pipe(
+    ]).pipe(
       map(([skipFlags, totalFlags]) => skipFlags === totalFlags)
     );
   }
