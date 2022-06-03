@@ -15,10 +15,10 @@ export class NegateAuthGuard implements CanActivate {
   ) {}
 
   canActivate(): Observable<boolean> {
-    return combineLatest(
+    return combineLatest([
       this.authService.isLoggedIn$,
       this.authService.isAuthenticating$
-    ).pipe(
+    ]).pipe(
       filter(([, isAuthenticating]) => !isAuthenticating),
       map(([isLoggedIn]) => {
         if (isLoggedIn) {
