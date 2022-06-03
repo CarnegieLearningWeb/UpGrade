@@ -76,14 +76,16 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     this.allExcludedEntities.sort = this.sort;
 
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
-      this.contextMetaData = contextMetaData; 
-      if (contextMetaData) {
-        this.contexts = Object.keys(contextMetaData['contextMetadata']) || [];
+      this.contextMetaData = { ...contextMetaData}; 
+      if (contextMetaData && contextMetaData['contextMetadata']) {
+        this.contexts = Object.keys(contextMetaData['contextMetadata']);
         this.contexts.forEach(context => {
           this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
             this.groupTypes.add(group);
           });
         });
+      } else {
+        this.contexts = [];
       }
     });
 

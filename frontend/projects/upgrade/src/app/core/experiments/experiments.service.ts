@@ -132,7 +132,7 @@ export class ExperimentService {
         if (!experiment) {
           this.fetchExperimentById(experimentId);
         }
-        return experiment;
+        return { ...experiment };
       })
     );
   }
