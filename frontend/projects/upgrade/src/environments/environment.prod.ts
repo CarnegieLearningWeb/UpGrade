@@ -1,19 +1,19 @@
-const env = window['upgrade_env'];
-const endpointApi = env && env.endpointApi || 'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
+// const endpointApi = 'http://upgrade-production.us-east-1.elasticbeanstalk.com/api';
+const endpointApi = 'https://upgradeapi.qa-cli.net/api'; // temporary! this will need to change before promoting to staging!
 
 export const environment = {
-  appName: env && env.appName || 'UpGrade',
-  envName: env && env.envName || 'PROD',
-  endpointApi: env && env.endpointApi || endpointApi,
-  production: env && env.production || true,
-  test: env && env.test || false,
+  appName: 'UpGrade',
+  envName: 'PROD',
+  endpointApi: endpointApi,
+  production: true,
+  test: false,
   i18nPrefix: '',
   appVersion: require('../../../../package.json').version,
-  gapiClientId: env && env.gapiClientId || '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
-  domainName: env && env.domainName || '',
-  pollingEnabled: env && env.pollingEnabled || false,
-  pollingInterval: env && env.pollingInterval || 0,
-  pollingLimit: env && env.pollingLimit || 0,
+  gapiClientId: "656936260684-hdsihcgcdrcbeom72n56o8n5rb2mtc58.apps.googleusercontent.com",
+  domainName: '',
+  pollingEnabled: true,
+  pollingInterval: 10 * 1000,
+  pollingLimit: 600,
   api: {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
