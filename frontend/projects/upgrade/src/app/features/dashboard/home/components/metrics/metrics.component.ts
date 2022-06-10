@@ -14,7 +14,6 @@ import { Subscription, Observable } from 'rxjs';
 import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData, REPEATED_MEASURE } from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
-import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 
@@ -51,6 +50,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   options: any[] = [];
   selectedNode: any[] = [];
+  firstSelectedNode: any[] = [];
   controlTitles = ['Type', 'Key', 'Metric']; // Used to show different titles in grouped metrics
 
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -60,7 +60,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private analysisService: AnalysisService,
-    private experimentService: ExperimentService,
     private _formBuilder: FormBuilder,
   ) { }
 
@@ -78,21 +77,67 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       queries: this._formBuilder.array([ this._formBuilder.group({
         keys: this._formBuilder.array([this.addKey()]),
         queryName: [null, Validators.required],
-        operationType: [null, Validators.required],
+        operationType: [null],
         compareFn: [null],
         compareValue: [null],
-        // repeatedMeasure: [REPEATED_MEASURE.mostRecent]
-        repeatedMeasure: [null]
-
+        repeatedMeasure: [REPEATED_MEASURE.mostRecent]
         })
       ])
     });
 
-    // Bind predefined values of experiment points and ids from backend
+    // Bind predefined values of metrics from backend env file for auto complete:
     const metricsFormControl = this.queries as FormArray;
     metricsFormControl.controls.forEach((_, index) => {
       this.ManageKeysControl(index)
     });
+
+    // populate values in form to update experiment if experiment data is available
+    if (this.experimentInfo) {
+      // Remove previously added query instance.
+      this.queries.removeAt(0);
+      this.experimentInfo.queries.forEach(query => { 
+        let key;
+        if (query.metric.key) {
+          key = query.metric.key;
+        } else {
+          key = query.metric;
+        }
+        // separating keys in case of grouped metrics:
+        const rootKey = key.split(METRICS_JOIN_TEXT);
+        // set selectedNode for first key of grouped metrics:
+        let metric = this.allMetrics.find(metric => metric.key === rootKey[0]);
+        this.firstSelectedNode[this.queryIndex] = metric;
+        this.selectedNode[this.queryIndex] = metric;
+        const { metadata: { type } } = this.selectedNode[this.queryIndex];
+        this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
+        // push first key in query form:
+        if (query.query.compareFn && !!query.query.compareValue) {
+          this.queries.push(this.addMetric(rootKey[0], query.name, query.query.operationType, query.query.compareFn, query.query.compareValue, query.repeatedMeasure));
+        } else {
+          this.queries.push(this.addMetric(rootKey[0], query.name, query.query.operationType, null, null, query.repeatedMeasure));
+        }
+        // push remaining keys in query form:
+        let child_key;
+        if (rootKey.length > 1) {
+          rootKey.map( (key, index) => {
+            if (index != 0) {
+              const keys = this.metricKeys.getRawValue();
+              this.selectedNode[this.queryIndex] = metric
+              // call select option for first key of grouped metrics:
+              this.selectedOption(null, metric, key);
+              this.optionsSub();
+              metric = metric.children;
+              metric = metric.find(metric => metric.key == key);
+              child_key = key;
+            }
+          });
+          this.selectedOption(null, metric, child_key);
+        }
+        this.selectedOption(null, metric, null);
+        this.setQueryIndex(this.queryIndex+1);
+      });
+    }
+
     if (this.queryForm.get('queries').get('operationType')) {
       this.queryForm.get('queries').get('operationType').valueChanges.subscribe(operation => {
         if (operation === OPERATION_TYPES.PERCENTAGE) {
@@ -117,15 +162,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.queryForm.get('queries').get('compareValue').updateValueAndValidity()
       });
     }
-
-    // populate values in form to update experiment if experiment data is available
-    if (this.experimentInfo) {
-      // Remove previously added group of queries
-      this.queries.removeAt(0);
-      this.experimentInfo.queries.forEach(query => {
-        this.queries.push(this.addMetric(query.queryName, query.operationType, query.compareFn, query.compareValue, query.repeatedMeasure));
-      });
-    }
     this.updateView();
   }
 
@@ -135,7 +171,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   get metricKeys() { 
     const keysArray = this.queries.at(this.queryIndex).get('keys') as FormArray;
-    console.log(keysArray);
     return keysArray;
   }
 
@@ -153,17 +188,21 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get RepeatedMeasure() {
-    const temp = Object.values(REPEATED_MEASURE)
-    return temp;
+    const repeatedMeasure = Object.values(REPEATED_MEASURE);
+    return repeatedMeasure;
+  }
+
+  get experimentInfoQueriesLength() {
+    return this.experimentInfo.queries.length;
   }
 
   setQueryIndex(index) {
     this.queryIndex = index;
   }
 
-  addKey() {
+  addKey(key = null) {
     return this._formBuilder.group({
-      metricKey: [null, Validators.required]
+      metricKey: [key, Validators.required]
     });
   }
 
@@ -180,20 +219,24 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           const { metricKey } = keysArray.at(index - 1).value;
           this.options = metricKey.children;
         }
-        // const temp1 = this._filter(key, index);
-        // const temp2 = this.options;
-        // const temp3 = this.options.slice();
-        // const result = key ? this._filter(key, index) : this.options ? this.options.slice() : [];
-        return key ? this._filter(key, index) : this.options ? this.options.slice() : [];
+        return key ? this._filter(key) : this.options ? this.options.slice() : [];
       })
       );
   }
 
   displayFn(node?: any): string | undefined {
-    return node ? node.key : undefined;
+    if (this.experimentInfo) {
+      if ( node && node.key ) {
+        return node ? node.key : undefined;
+      } else {
+        return node ? node : undefined;
+      }
+    } else {
+      return node ? node.key : undefined;
+    }
   }
 
-  private _filter(key: any, index): any[] {
+  private _filter(key: any): any[] {
     let filterValue;
     if (typeof key === 'string') {
       filterValue = key.toLowerCase();
@@ -203,38 +246,59 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return this.options.filter(option => option.key.toLowerCase().indexOf(filterValue) === 0);
   }
 
-  addMoreSelectKey() {
-    this.metricKeys.push(this.addKey());
+  setFilteredStatistic(type: string) {
+    if (type && type === IMetricMetaData.CONTINUOUS) {
+      this.queryOperations = [
+        { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
+        { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
+        { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
+        { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+        { value: OPERATION_TYPES.AVERAGE, viewValue: 'Mean' },
+        { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
+        { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
+        { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' }
+      ];
+    } else if (type && type === IMetricMetaData.CATEGORICAL) {
+      this.queryOperations = [
+        { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
+        { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' }
+      ];
+    }
+    return this.queryOperations;
+  }
+
+  addMoreSelectKey(key = null) {
+    this.metricKeys.push(this.addKey(key));
     this.ManageKeysControl(this.metricKeys.length - 1);
   }
 
-  selectedOption(event) {
-    if (event.option.value) {
+  selectedOption(event = null, metric = null, key = null) {
+    if (event == null) {
+      if (metric) {
+        if (metric.children.length) {
+          this.metricKeys.at(this.metricKeys.length - 1).disable();
+          this.addMoreSelectKey(key);
+        } else {
+          this.metricKeys.at(this.metricKeys.length - 1).disable();
+          this.selectedNode[this.queryIndex] = metric;
+          // reset options for metric keys:
+          this.optionsSub();
+          this.filteredMetrics$ = [];
+        }
+      }
+    } else {
       if (event.option.value.children.length) {
+        // set selectedNode for first key of grouped metrics:
+        this.firstSelectedNode[this.queryIndex] = event.option.value.metricKey;
+        const { metadata: { type } } = this.firstSelectedNode[this.queryIndex];
+        this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
         this.addMoreSelectKey();
       } else {
         this.metricKeys.at(this.metricKeys.length - 1).disable();
         const keys = this.metricKeys.getRawValue();
         this.selectedNode[this.queryIndex] = keys[keys.length - 1].metricKey;
         const { metadata: { type } } = this.selectedNode[this.queryIndex];
-        if (type && type === IMetricMetaData.CONTINUOUS) {
-          this.queryOperations = [
-            { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
-            { value: OPERATION_TYPES.MIN, viewValue: 'Min' },
-            { value: OPERATION_TYPES.MAX, viewValue: 'Max' },
-            { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-            { value: OPERATION_TYPES.AVERAGE, viewValue: 'Mean' },
-            { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
-            { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
-            { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' }
-          ];
-        } else if (type && type === IMetricMetaData.CATEGORICAL) {
-          this.queryOperations = [
-            { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-            { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' }
-          ];
-        }
-        this.filteredStatistic$[this.queryIndex] = this.queryOperations;
+        this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
         // reset options for metric keys:
         this.optionsSub();
         this.filteredMetrics$ = [];
@@ -242,11 +306,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  addMetric(queryName = null, operationType = null, compareFn = null, compareValue = null, repeatedMeasure = null) {
+  addMetric(key = null, queryName = null, operationType = null, compareFn = null, compareValue = null, repeatedMeasure = REPEATED_MEASURE.mostRecent) {
     return  this._formBuilder.group({
-      keys: this._formBuilder.array([this.addKey()]),
+      keys: this._formBuilder.array([this.addKey(key)]),
       queryName: [queryName, Validators.required],
-      operationType: [operationType, Validators.required],
+      operationType: [operationType],
       compareFn: [compareFn],
       compareValue: [compareValue],
       repeatedMeasure: [repeatedMeasure]
@@ -266,14 +330,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   removeMetric(groupIndex: number) {
     this.queries.removeAt(groupIndex);
-    // const metricKey = this.queries.controls[groupIndex].get('keys').value;
-    // console.log("metricKey:  ", metricKey);
-    // if (this.experimentInfo) {
-    //   const deletedMetric = this.experimentInfo.queries.find(metric => metric.key === metricKey);
-    //   if (deletedMetric) {
-    //     delete this.experimentInfo.queries[groupIndex];
-    //   }
-    // }
+    if (this.experimentInfo) {
+      const deletedQuery = this.experimentInfo.queries[groupIndex];
+      if (deletedQuery) {
+        delete this.experimentInfo.queries[groupIndex];
+      }
+    }
     this.updateView();
   }
 
@@ -287,11 +349,27 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  metricType(selectedNode) {
-    if ( selectedNode.children.length ) {
-      return false;
+  metricType(selectedNode, queryIndex) {
+    if (this.experimentInfo && queryIndex && queryIndex+1 <= this.experimentInfoQueriesLength) {
+      let key;
+      if (this.experimentInfo.queries[queryIndex].metric.key != undefined) {
+        key = this.experimentInfo.queries[queryIndex].metric.key;
+      } else {
+        key = this.experimentInfo.queries[queryIndex].metric;
+      }
+      
+      const rootKey = key.split(METRICS_JOIN_TEXT);
+      if (rootKey.length > 1) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return true;
+      if ( selectedNode !== undefined && selectedNode.children.length) {
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -350,11 +428,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-
     if (this.isContextChanged) {
       this.isContextChanged = false;
-      // this.queries.clear();
-      // this.queries.push(this.addMetric());
+      this.queries.clear();
+      this.queries.push(this.addMetric());
       this.metricsDataSource.next(this.queries.controls);
     }
   }

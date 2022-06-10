@@ -455,7 +455,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
-              if (condition.assignmentWeight.endsWith("%")) {
+              if (isNaN(condition.assignmentWeight) && condition.assignmentWeight.endsWith("%")) {
                 condition.assignmentWeight = Number(condition.assignmentWeight.slice(0,-1));
               }
               return this.experimentInfo

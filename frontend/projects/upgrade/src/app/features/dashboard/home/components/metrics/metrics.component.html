@@ -31,13 +31,13 @@
                   >
                 <mat-autocomplete
                   class = "ft-12-400"
-                  (optionSelected)="selectedOption($event)"
+                  (optionSelected)="selectedOption($event, null, null)"
                   #auto="matAutocomplete"
-                  [displayWith]="displayFn"
+                  [displayWith]="displayFn.bind(this)"
                   panelWidth="fit-content"
                   >
                   <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics$[formIndex] | async" [value]="option">
-                    {{option.key}}
+                    {{ option.key }}
                   </mat-option>
                 </mat-autocomplete>
               </ng-container>
@@ -68,8 +68,8 @@
                 </mat-option>
               </mat-select>
             </mat-form-field>
-            <!-- repeated measure -->  
-            <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[groupIndex] && metricType(selectedNode[groupIndex])" floatLabel="never">
+            <!-- repeated measure -->
+            <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[groupIndex] && metricType(firstSelectedNode[groupIndex], groupIndex)" floatLabel="never">
               <mat-label>{{ 'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase }}</mat-label>
               <mat-select class="ft-12-400" formControlName="repeatedMeasure">
                 <mat-option
