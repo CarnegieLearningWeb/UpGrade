@@ -27,9 +27,9 @@
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}
           </button>
-          <button mat-flat-button class="ft-14-600 button button--query" (click)="openQueriesModal()">
+          <!-- <button mat-flat-button class="ft-14-600 button button--query" (click)="openQueriesModal()">
             {{ 'global.monitor.text' | translate | uppercase }}
-          </button>
+          </button> -->
           <button mat-flat-button class="ft-14-600 button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
             {{ 'global.delete.text' | translate }}
           </button>

@@ -463,7 +463,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
             }
           );
-          console.log(experimentDesignFormData.conditions);
           order = 1;
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
             (partition, index) => {

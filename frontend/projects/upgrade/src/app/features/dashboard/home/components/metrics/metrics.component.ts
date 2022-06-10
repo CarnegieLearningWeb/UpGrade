@@ -393,33 +393,41 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map(
           (query, index) => {
             let { keys, operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
-            keys = keys.map(key => key.metricKey.key);
-            let queryObj: Query = {
-              name: queryName,
-              query: {
-                operationType
-              },
-              metric: {
-                key: keys.join(METRICS_JOIN_TEXT)
-              },
-              repeatedMeasure
-            };
-            if (compareFn && !!compareValue) {
-              queryObj = {
-                ...queryObj,
-                query: {
-                  ...queryObj.query,
-                  compareFn,
-                  compareValue
+            if (keys) {
+              keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key);
+              if (keys.length)  {
+                let queryObj: Query = {
+                  name: queryName,
+                  query: {
+                    operationType
+                  },
+                  metric: {
+                    key: keys.join(METRICS_JOIN_TEXT)
+                  },
+                  repeatedMeasure
+                };
+                if (compareFn && !!compareValue) {
+                  queryObj = {
+                    ...queryObj,
+                    query: {
+                      ...queryObj.query,
+                      compareFn,
+                      compareValue
+                    }
+                  }
                 }
+                return this.experimentInfo
+                  ? ({ ...this.experimentInfo.queries[index], ...queryObj })
+                  : (queryObj.metric.key 
+                    ? ({...queryObj}) 
+                    : ({...this.removeMetricName(queryObj)})
+                  );
+              } else {
+                return;
               }
+            } else {
+              return;
             }
-            return this.experimentInfo
-              ? ({ ...this.experimentInfo.queries[index], ...queryObj })
-              : (queryObj.metric.key 
-                ? ({...queryObj}) 
-                : ({...this.removeMetricName(queryObj)})
-              );
           }
         );
         this.emitExperimentDialogEvent.emit({

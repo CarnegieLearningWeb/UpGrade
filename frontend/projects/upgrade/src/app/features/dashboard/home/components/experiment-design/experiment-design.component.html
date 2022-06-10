@@ -85,6 +85,7 @@
             <mat-checkbox
                   class="ft-8-100"
                   color="primary"
+                  [disabled]="true"
                   >
           </mat-checkbox>
           <!-- </mat-form-field> -->
@@ -135,7 +136,6 @@
     class="ft-14-600 validation-message"
     *ngFor="let error of expPointAndIdErrors"
   >{{ error }} </span>
-  <br>
   <br>
   <br>
   <!-- apply equal condition weights -->
