@@ -289,7 +289,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     } else {
       if (event.option.value.children.length) {
         // set selectedNode for first key of grouped metrics:
-        this.firstSelectedNode[this.queryIndex] = event.option.value.metricKey;
+        if (event.option.value.metricKey != undefined ) {
+          this.firstSelectedNode[this.queryIndex] = event.option.value.metricKey;
+        } else {
+          this.firstSelectedNode[this.queryIndex] = event.option.value;
+        }
         const { metadata: { type } } = this.firstSelectedNode[this.queryIndex];
         this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
         this.addMoreSelectKey();
