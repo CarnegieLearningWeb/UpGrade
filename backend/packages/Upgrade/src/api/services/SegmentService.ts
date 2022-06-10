@@ -22,9 +22,9 @@ export class SegmentService {
     private groupForSegmentRepository: GroupForSegmentRepository
   ) {}
 
-  public getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
+  public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
     logger.info({ message: `Find all segments`});
-    let queryBuilder = this.segmentRepository
+    let queryBuilder = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
@@ -35,9 +35,9 @@ export class SegmentService {
     return queryBuilder;
   }
 
-  public getSegmentById(id: string, logger: UpgradeLogger): Promise<Segment> {
+  public async getSegmentById(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Find segment by id. segmentId: ${id}`});
-    let segmentDoc = this.segmentRepository
+    let segmentDoc = await this.segmentRepository
     .createQueryBuilder('segment')
     .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
     .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
@@ -49,14 +49,27 @@ export class SegmentService {
     return segmentDoc;
   }
 
+  public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
+    //ogger.info({ message: `Find segment by id. segmentId: ${id}`});
+    let segmentDoc = await this.segmentRepository
+    .createQueryBuilder('segment')
+    .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+    .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+    .leftJoinAndSelect('segment.subSegments', 'subSegment')
+    .where('segment.id IN (:...ids)', {ids})
+    .getMany()
+
+    return segmentDoc;
+  }
+
   public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}`});
     return this.addSegmentDataInDB(segment,logger);
   }
 
-  public deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
+  public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Delete segment by id. segmentId: ${id}`});
-    return this.segmentRepository.deleteSegment(id, logger);
+    return await this.segmentRepository.deleteSegment(id, logger);
   }
 
   public async importSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {

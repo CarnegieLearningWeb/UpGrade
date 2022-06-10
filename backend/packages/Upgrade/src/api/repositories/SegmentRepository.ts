@@ -6,7 +6,7 @@ import { Segment } from '../models/Segment';
 @EntityRepository(Segment)
 export class SegmentRepository extends Repository<Segment> {
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
-    return this.createQueryBuilder('segment')
+    return await this.createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .getMany()
@@ -23,7 +23,7 @@ export class SegmentRepository extends Repository<Segment> {
   }
 
   public async getSegmentById(id: string, logger: UpgradeLogger): Promise<Segment> {
-    return this.createQueryBuilder('segment')
+    return await this.createQueryBuilder('segment')
       .where('segment.id=:id', { id })
       .getOne()
       .catch((errorMsg: any) => {
