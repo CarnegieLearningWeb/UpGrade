@@ -78,15 +78,15 @@ export class UsersEffects {
     )
   );
 
-  updateUserRole$ = createEffect(() =>
+  updateUserDetails$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(UsersActions.actionUpdateUserRole),
-      map(action => action.userRoleData),
-      filter(({ email, role }) => !!email && !!role),
-      switchMap(({ email, role }) =>
-        this.usersDataService.updateUserRole(email, role).pipe(
-          map((data: User) => UsersActions.actionUpdateUserRoleSuccess({ user: data[0] })),
-          catchError(() => [UsersActions.actionUpdateUserRoleFailure()])
+      ofType(UsersActions.actionUpdateUserDetails),
+      map(action => action.userDetailsData),
+      filter(({ firstName, lastName, email, role }) => !!firstName && !!lastName && !!email && !!role),
+      switchMap(({ firstName, lastName, email, role }) =>
+        this.usersDataService.updateUserDetails(firstName, lastName, email, role).pipe(
+          map((data: User) => UsersActions.actionUpdateUserDetailsSuccess({ user: data[0] })),
+          catchError(() => [UsersActions.actionUpdateUserDetailsFailure()])
         )
       )
     )
@@ -96,9 +96,9 @@ export class UsersEffects {
     this.actions$.pipe(
       ofType(UsersActions.actionCreateNewUser),
       map(action => action.user),
-      filter(({ email, role }) => !!email && !!role),
-      switchMap(({ email, role }) => {
-        return this.usersDataService.createNewUser(email, role).pipe(
+      filter(({ firstName, lastName, email, role }) => !!firstName && !!lastName && !!email && !!role),
+      switchMap(({ firstName, lastName, email, role }) => {
+        return this.usersDataService.createNewUser(firstName, lastName, email, role).pipe(
           map((data: User) => UsersActions.actionCreateNewUserSuccess({ user: data })),
           catchError(() => [UsersActions.actionCreateNewUserFailure()])
         );
@@ -148,11 +148,10 @@ export class UsersEffects {
   );
 
   private getSearchString$ = () =>
-    combineLatest(
+    combineLatest([
       this.store$.pipe(select(selectSearchString)),
       this.store$.pipe(select(selectSortAs)),
-
-    ).pipe(
+    ]).pipe(
       map(([searchString, sortAs]) => ({ searchString, sortAs })),
       first()
     );

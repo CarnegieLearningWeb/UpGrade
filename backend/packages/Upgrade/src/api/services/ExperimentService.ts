@@ -1,3 +1,4 @@
+import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
@@ -10,20 +11,20 @@ import {
 } from '../models/Experiment';
 import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
-import { ExperimentPartitionRepository } from '../repositories/ExperimentPartitionRepository';
+import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { ExperimentPartition, getExperimentPartitionID } from '../models/ExperimentPartition';
+import { DecisionPoint, getExperimentPartitionID } from '../models/DecisionPoint';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR } from 'upgrade_types';
+import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, SERVER_ERROR, EXCLUSION_CODE } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
-import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
 import { User } from '../models/User';
 import { ASSIGNMENT_TYPE } from '../../types/index';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types';
@@ -34,38 +35,39 @@ import { QueryRepository } from '../repositories/QueryRepository';
 import { env } from '../../env';
 import { ErrorService } from './ErrorService';
 import { StateTimeLog } from '../models/StateTimeLogs';
-import { BadRequestError } from 'routing-controllers/http-error/BadRequestError';
+import { BadRequestError } from 'routing-controllers';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { IndividualExclusion } from '../models/IndividualExclusion';
 
 @Service()
 export class ExperimentService {
   constructor(
     @OrmRepository() private experimentRepository: ExperimentRepository,
     @OrmRepository() private experimentConditionRepository: ExperimentConditionRepository,
-    @OrmRepository() private experimentPartitionRepository: ExperimentPartitionRepository,
+    @OrmRepository() private decisionPointRepository: DecisionPointRepository,
     @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
     @OrmRepository() private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
-    @OrmRepository() private monitoredExperimentPointRepository: MonitoredExperimentPointRepository,
+    @OrmRepository() private monitoredDecisionPointRepository: MonitoredDecisionPointRepository,
     @OrmRepository() private userRepository: ExperimentUserRepository,
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     public previewUserService: PreviewUserService,
     public scheduledJobService: ScheduledJobService,
-    public errorService: ErrorService,
+    public errorService: ErrorService
   ) {}
 
   public async find(logger?: UpgradeLogger): Promise<Experiment[]> {
     if (logger) {
-      logger.info({ message: `Find all experiments`});
+      logger.info({ message: `Find all experiments` });
     }
     return this.experimentRepository.findAllExperiments();
   }
 
   public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
-    logger.info({ message: `Find all experiment names`});
+    logger.info({ message: `Find all experiment names` });
     return this.experimentRepository.findAllName();
   }
 
@@ -74,7 +76,7 @@ export class ExperimentService {
     take: number,
     logger: UpgradeLogger,
     searchParams?: IExperimentSearchParams,
-    sortParams?: IExperimentSortParams,
+    sortParams?: IExperimentSortParams
   ): Promise<Experiment[]> {
     logger.info({ message: `Find paginated experiments` });
 
@@ -107,7 +109,7 @@ export class ExperimentService {
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
     if (logger) {
-      logger.info({ message: `Find experiment by id => ${id}`});
+      logger.info({ message: `Find experiment by id => ${id}` });
     }
     const experiment = await this.experimentRepository
       .createQueryBuilder('experiment')
@@ -127,14 +129,14 @@ export class ExperimentService {
   }
 
   public getContextMetaData(logger: UpgradeLogger): object {
-    logger.info({ message: `Get context metadata`});
+    logger.info({ message: `Get context metadata` });
     return {
       contextMetadata: env.initialization.contextMetadata,
     };
   }
 
   public create(experiment: ExperimentInput, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ message: 'Create a new experiment =>', details:  experiment });
+    logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
     experiment.conditions.forEach((condition, index) => {
@@ -147,6 +149,7 @@ export class ExperimentService {
       const newPartition = { ...partition, order: index + 1 };
       experiment.partitions[index] = newPartition;
     });
+    experiment.backendVersion = env.app.version;
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
@@ -155,9 +158,13 @@ export class ExperimentService {
     return this.addBulkExperiments(experiment, logger);
   }
 
-  public async delete(experimentId: string, currentUser: User, logger?: UpgradeLogger): Promise<Experiment | undefined> {
+  public async delete(
+    experimentId: string,
+    currentUser: User,
+    logger?: UpgradeLogger
+  ): Promise<Experiment | undefined> {
     if (logger) {
-      logger.info({ message: `Delete experiment =>  ${ experimentId }` });
+      logger.info({ message: `Delete experiment =>  ${experimentId}` });
     }
     return getConnection().transaction(async (transactionalEntityManager) => {
       const experiment = await this.findOne(experimentId, logger);
@@ -185,33 +192,35 @@ export class ExperimentService {
   }
 
   public update(experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
-    if ( logger ) {
+    if (logger) {
       logger.info({ message: `Update the experiment`, details: experiment });
     }
     return this.updateExperimentInDB(experiment as any, currentUser, logger);
   }
 
   public async getExperimentalConditions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentCondition[]> {
-    logger.info({ message: `getExperimentalConditions experiment => ${ experimentId }` });
+    logger.info({ message: `getExperimentalConditions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
     return experiment.conditions;
   }
 
-  public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<ExperimentPartition[]> {
+  public async getExperimentPartitions(experimentId: string, logger: UpgradeLogger): Promise<DecisionPoint[]> {
     logger.info({ message: `getExperimentPartitions experiment => ${experimentId}` });
     const experiment: Experiment = await this.findOne(experimentId, logger);
     return experiment.partitions;
   }
 
-  public async getAllExperimentPartitions(logger: UpgradeLogger): Promise<Array<Pick<ExperimentPartition, 'expId' | 'expPoint'>>> {
+  public async getAllExperimentPartitions(
+    logger: UpgradeLogger
+  ): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
     logger.info({ message: 'getAllExperimentPartitions experiment' });
-    return this.experimentPartitionRepository.partitionPointAndName();
+    return this.decisionPointRepository.partitionPointAndName();
   }
 
   public async getAllUniqueIdentifiers(logger: UpgradeLogger): Promise<string[]> {
     logger.info({ message: 'getAllUniqueIdentifiers' });
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
-    const partitionsUniqueIdentifier = this.experimentPartitionRepository.getAllUniqueIdentifier();
+    const partitionsUniqueIdentifier = this.decisionPointRepository.getAllUniqueIdentifier();
     const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
     return [...conditionIds, ...partitionsIds];
   }
@@ -222,16 +231,20 @@ export class ExperimentService {
     user: User,
     logger: UpgradeLogger,
     scheduleDate?: Date,
-    entityManager?: EntityManager,
+    entityManager?: EntityManager
   ): Promise<Experiment> {
-    if (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) {
-      await this.populateExclusionTable(experimentId, state, logger);
-    }
-
     const oldExperiment = await this.experimentRepository.findOne(
       { id: experimentId },
       { relations: ['stateTimeLogs'] }
     );
+
+    if (
+      (state === EXPERIMENT_STATE.ENROLLING || state === EXPERIMENT_STATE.PREVIEW) &&
+      oldExperiment.state !== EXPERIMENT_STATE.ENROLLMENT_COMPLETE
+    ) {
+      await this.populateExclusionTable(experimentId, state, logger);
+    }
+
     let data: AuditLogData = {
       experimentId,
       experimentName: oldExperiment.name,
@@ -288,7 +301,7 @@ export class ExperimentService {
 
     // Remove the partitions which already exist
     for (const partition of experimentPartitions) {
-      const partitionExist = await this.experimentPartitionRepository.findOne(partition.id);
+      const partitionExist = await this.decisionPointRepository.findOne(partition.id);
       if (partitionExist) {
         if (experimentPartitions.indexOf(partition) >= 0) {
           experimentPartitions.splice(experimentPartitions.indexOf(partition), 1);
@@ -341,6 +354,7 @@ export class ExperimentService {
       where: { id: experimentId },
       relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
     });
+    experimentDetails.backendVersion = env.app.version;
     this.experimentAuditLogRepository.saveRawJson(
       EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
       { experimentName: experimentDetails.name },
@@ -349,7 +363,11 @@ export class ExperimentService {
     return experimentDetails;
   }
 
-  private async updateExperimentSchedules(experimentId: string, logger: UpgradeLogger, entityManager?: EntityManager): Promise<void> {
+  private async updateExperimentSchedules(
+    experimentId: string,
+    logger: UpgradeLogger,
+    entityManager?: EntityManager
+  ): Promise<void> {
     const experimentRepo = entityManager ? entityManager.getRepository(Experiment) : this.experimentRepository;
     logger.info({ message: `Updating experiment schedules for experiment ${experimentId}` });
     const experiment = await experimentRepo.findByIds([experimentId]);
@@ -358,7 +376,11 @@ export class ExperimentService {
     }
   }
 
-  private async populateExclusionTable(experimentId: string, state: EXPERIMENT_STATE, logger: UpgradeLogger): Promise<void> {
+  private async populateExclusionTable(
+    experimentId: string,
+    state: EXPERIMENT_STATE,
+    logger: UpgradeLogger
+  ): Promise<void> {
     // query all sub-experiment
     const experiment: Experiment = await this.experimentRepository.findOne({
       where: { id: experimentId },
@@ -374,11 +396,11 @@ export class ExperimentService {
     const previewUsers = await this.previewUserService.find(logger);
 
     // query all monitored experiment point for this experiment Id
-    let monitoredExperimentPoints: MonitoredExperimentPoint[] = [];
+    let monitoredDecisionPoints: MonitoredDecisionPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
-      monitoredExperimentPoints = await this.monitoredExperimentPointRepository.find({
+      monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
         relations: ['user'],
-        where: { experimentId: In(subExperiments) },
+        where: { decisionPoint: In(subExperiments) },
       });
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       const previewUsersIds = previewUsers.map((user) => user.id);
@@ -390,30 +412,23 @@ export class ExperimentService {
           });
           return [...acc, ...monitoredIds];
         }, []);
-        monitoredExperimentPoints = await this.monitoredExperimentPointRepository.findByIds(monitoredPointsToSearch, {
+        monitoredDecisionPoints = await this.monitoredDecisionPointRepository.findByIds(monitoredPointsToSearch, {
           relations: ['user'],
         });
       }
     }
 
     const uniqueUserIds = new Set(
-      monitoredExperimentPoints.map((monitoredPoint: MonitoredExperimentPoint) => monitoredPoint.user.id)
+      monitoredDecisionPoints.map((monitoredPoint: MonitoredDecisionPoint) => monitoredPoint.user.id)
     );
-    logger.info({message: `Found ${monitoredExperimentPoints.length} monitored experiment points`, details: monitoredExperimentPoints});
+    logger.info({
+      message: `Found ${monitoredDecisionPoints.length} monitored experiment points`,
+      details: monitoredDecisionPoints,
+    });
 
     // end the loop if no users
     if (uniqueUserIds.size === 0) {
       return;
-    }
-
-    // update document of monitoredExperimentPoints to ENROLLMENT CODE STUDENT EXCLUDED
-    if (experiment.consistencyRule !== CONSISTENCY_RULE.EXPERIMENT) {
-      const monitoredExperimentIds = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.id);
-
-      await this.monitoredExperimentPointRepository.updateEnrollmentCode(
-        ENROLLMENT_CODE.STUDENT_EXCLUDED,
-        monitoredExperimentIds
-      );
     }
 
     const userDetails = await this.userRepository.findByIds([...uniqueUserIds]);
@@ -429,10 +444,13 @@ export class ExperimentService {
       const groupsToExclude = new Set(workingGroups);
 
       // group exclusion documents
-      const groupExclusionDocs = [...groupsToExclude].map((groupId) => {
+      const groupExclusionDocs: Array<Omit<GroupExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>> = [
+        ...groupsToExclude,
+      ].map((groupId) => {
         return {
           experiment,
           groupId,
+          exclusionCode: EXCLUSION_CODE.REACHED_PRIOR,
         };
       });
 
@@ -441,13 +459,16 @@ export class ExperimentService {
 
     if (consistencyRule === CONSISTENCY_RULE.INDIVIDUAL || consistencyRule === CONSISTENCY_RULE.GROUP) {
       // individual exclusion document
-      const individualExclusionDocs = [...uniqueUserIds].map((userId) => {
+      const individualExclusionDocs: Array<
+        Omit<IndividualExclusion, 'id' | 'createdAt' | 'updatedAt' | 'versionNumber'>
+      > = [...uniqueUserIds].map((userId) => {
         const user = userDetails.find((userDetail) => userDetail.id === userId);
         const isPreviewUser = previewUsers.find((previewUser) => previewUser.id === userId);
         return {
           user,
           experiment,
           assignmentType: isPreviewUser ? ASSIGNMENT_TYPE.MANUAL : ASSIGNMENT_TYPE.ALGORITHMIC,
+          exclusionCode: EXCLUSION_CODE.REACHED_PRIOR,
         };
       });
       await this.individualExclusionRepository.saveRawJson(individualExclusionDocs);
@@ -465,7 +486,11 @@ export class ExperimentService {
     }
   }
 
-  private async updateExperimentInDB(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<Experiment> {
+  private async updateExperimentInDB(
+    experiment: ExperimentInput,
+    user: User,
+    logger: UpgradeLogger
+  ): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
@@ -526,11 +551,11 @@ export class ExperimentService {
             partitions.map((partition) => {
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = partition;
-              const joinedForId = getExperimentPartitionID(rest.expPoint, rest.expId);
+              const joinedForId = getExperimentPartitionID(rest.site, rest.target);
               if (rest.id && rest.id === joinedForId) {
                 rest.id = rest.id;
               } else {
-                rest.id = getExperimentPartitionID(rest.expPoint, rest.expId);
+                rest.id = getExperimentPartitionID(rest.site, rest.target);
               }
               rest.experiment = experimentDoc;
               return rest;
@@ -574,13 +599,13 @@ export class ExperimentService {
 
         // delete partitions which don't exist in new experiment document
         const toDeletePartitions = [];
-        oldPartitions.forEach(({ id, expPoint, expId }) => {
+        oldPartitions.forEach(({ id, site, target }) => {
           if (
             !partitionDocToSave.find((doc) => {
-              return doc.id === id && doc.expPoint === expPoint && doc.expId === expId;
+              return doc.id === id && doc.site === site && doc.target === target;
             })
           ) {
-            toDeletePartitions.push(this.experimentPartitionRepository.deletePartition(id, transactionalEntityManager));
+            toDeletePartitions.push(this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager));
           }
         });
 
@@ -603,7 +628,7 @@ export class ExperimentService {
 
         // saving conditions, saving partitions and saving queries
         let conditionDocs: ExperimentCondition[];
-        let partitionDocs: ExperimentPartition[];
+        let partitionDocs: DecisionPoint[];
         let queryDocs: Query[];
         try {
           [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
@@ -617,10 +642,7 @@ export class ExperimentService {
             ) as any,
             Promise.all(
               partitionDocToSave.map(async (partitionDoc) => {
-                return this.experimentPartitionRepository.upsertExperimentPartition(
-                  partitionDoc,
-                  transactionalEntityManager
-                );
+                return this.decisionPointRepository.upsertDecisionPoint(partitionDoc, transactionalEntityManager);
               })
             ) as any,
             Promise.all(
@@ -705,7 +727,7 @@ export class ExperimentService {
           delete condition.createdAt;
           delete (condition as any).experimentId;
         });
-        logger.info({ message:'Updated experiment:', details: newExperiment })
+        logger.info({ message: 'Updated experiment:', details: newExperiment });
         // add AuditLogs here
         const updateAuditLog: AuditLogData = {
           experimentId: experiment.id,
@@ -757,7 +779,7 @@ export class ExperimentService {
   }
 
   private setConditionOrPartitionIdentifiers(
-    data: ExperimentCondition[] | ExperimentPartition[],
+    data: ExperimentCondition[] | DecisionPoint[],
     uniqueIdentifiers: string[]
   ): any[] {
     const updatedData = (data as any).map((conditionOrPartition) => {
@@ -819,7 +841,7 @@ export class ExperimentService {
         partitions &&
         partitions.length > 0 &&
         partitions.map((partition) => {
-          partition.id = getExperimentPartitionID(partition.expPoint, partition.expId);
+          partition.id = getExperimentPartitionID(partition.site, partition.target);
           partition.experiment = experimentDoc;
           return partition;
         });
@@ -851,12 +873,12 @@ export class ExperimentService {
 
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
-      let partitionDocs: ExperimentPartition[];
+      let partitionDocs: DecisionPoint[];
       let queryDocs: any;
       try {
         [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
+          this.decisionPointRepository.insertDecisionPoint(partitionDocsToSave, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
@@ -962,7 +984,7 @@ export class ExperimentService {
         experiment.partitions &&
         experiment.partitions.length > 0 &&
         experiment.partitions.map((partition) => {
-          partition.id = getExperimentPartitionID(partition.expPoint, partition.expId);
+          partition.id = getExperimentPartitionID(partition.site, partition.target);
           partition.experiment = experiment as any;
           return partition;
         });
@@ -1009,11 +1031,11 @@ export class ExperimentService {
       }
       // saving conditions and saving partitions
       let conditionDocs: ExperimentCondition[];
-      let partitionDocs: ExperimentPartition[];
+      let partitionDocs: DecisionPoint[];
       try {
         [conditionDocs, partitionDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.experimentPartitionRepository.insertPartitions(partitionDocsToSave, transactionalEntityManager),
+          this.decisionPointRepository.insertDecisionPoint(partitionDocsToSave, transactionalEntityManager),
         ]);
 
         const conditionDocToReturn = this.arrayGroupBy(conditionDocs, 'experimentId');

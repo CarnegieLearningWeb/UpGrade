@@ -43,12 +43,12 @@ export default async function testCase(): Promise<void> {
 
   const experimentId = experiments[0].id;
 
-  const experimentName1 = experimentObject.partitions[0].expId;
-  const experimentPoint1 = experimentObject.partitions[0].expPoint;
+  const experimentName1 = experimentObject.partitions[0].target;
+  const experimentPoint1 = experimentObject.partitions[0].site;
   const condition1 = experimentObject.conditions[0].conditionCode;
 
-  const experimentName2 = experimentObject.partitions[1].expId;
-  const experimentPoint2 = experimentObject.partitions[1].expPoint;
+  const experimentName2 = experimentObject.partitions[1].target;
+  const experimentPoint2 = experimentObject.partitions[1].site;
   const condition2 = experimentObject.conditions[1].conditionCode;
 
 
@@ -231,7 +231,7 @@ export default async function testCase(): Promise<void> {
     expect.objectContaining({
       users: 1,
       groups: 1,
-      usersExcluded: 3,
+      usersExcluded: 2,
       groupsExcluded: 1,
     })
   );

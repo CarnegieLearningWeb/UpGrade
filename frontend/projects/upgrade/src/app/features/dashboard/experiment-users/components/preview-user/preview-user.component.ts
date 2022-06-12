@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { PreviewUsersService } from '../../../../../core/preview-users/preview-users.service';
 import { Subscription } from 'rxjs';

@@ -15,12 +15,12 @@ import { ExperimentScheduleComponent } from './components/experiment-schedule/ex
 import { ViewExperimentComponent } from './pages/view-experiment/view-experiment.component';
 import { ExperimentStatusComponent } from './components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from './components/modal/post-experiment-rule/post-experiment-rule.component';
-import { MatDatepickerModule } from '@angular/material';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { EnrollmentOverTimeComponent } from './components/enrollment-over-time/enrollment-over-time.component';
 import { EnrollmentConditionTableComponent } from './components/enrollment-condition-table/enrollment-condition-table.component';
 import { EnrollmentPointPartitionTableComponent } from './components/enrollment-point-partition-table/enrollment-point-partition-table.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
-import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime-ex';
 import { ExperimentPostConditionComponent } from './components/experiment-post-condition/experiment-post-condition.component';
 import { TableRowComponent } from './components/table-row/table-row.component';
 import { QueriesModalComponent } from './components/modal/queries-modal/queries-modal.component';

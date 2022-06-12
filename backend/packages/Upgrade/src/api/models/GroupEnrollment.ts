@@ -1,0 +1,25 @@
+import { PrimaryColumn, ManyToOne, Entity, Column, Index } from 'typeorm';
+import { ExperimentCondition } from './ExperimentCondition';
+import { BaseModel } from './base/BaseModel';
+import { Experiment } from './Experiment';
+import { DecisionPoint } from './DecisionPoint';
+
+@Entity()
+export class GroupEnrollment extends BaseModel {
+  @PrimaryColumn()
+  public id: string;
+
+  @Index()
+  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  public experiment: Experiment;
+
+  @Index()
+  @ManyToOne((type) => DecisionPoint, { onDelete: 'CASCADE' })
+  public partition: DecisionPoint;
+
+  @Column()
+  public groupId: string;
+
+  @ManyToOne((type) => ExperimentCondition, { onDelete: 'CASCADE' })
+  public condition: ExperimentCondition;
+}

@@ -2,19 +2,38 @@ import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
-import { UserRole } from 'upgrade_types';
+import { SERVER_ERROR, UserRole } from 'upgrade_types';
 import { IUserSearchParams, IUserSortParams, USER_SEARCH_SORT_KEY } from '../controllers/validators/UserPaginatedParamsValidator';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
+import { AWSService } from './AWSService';
+import { env } from '../../env';
+import { ErrorWithType } from '../errors/ErrorWithType';
+import { Emails } from '../../templates/email';
 
 @Service()
 export class UserService {
   constructor(
-    @OrmRepository() private userRepository: UserRepository,
+    @OrmRepository()
+    private userRepository: UserRepository,
+    public awsService: AWSService,
+    public emails: Emails
   ) {}
 
   public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
+
+    const isUserExists = await this.userRepository.find({ where: {email: user.email }});
+    const response = await this.userRepository.upsertUser(user);
+    if (!isUserExists && response) {
+      this.sendWelcomeEmail(user.email)
+    }
+    return response
+  }
+
+  public async upsertAdminUser(user: User, logger: UpgradeLogger): Promise<User> {
+    logger.info({ message: `Upsert a new Admin user => ${JSON.stringify(user, undefined, 2)}` });
+
     return this.userRepository.upsertUser(user);
   }
 
@@ -66,8 +85,12 @@ export class UserService {
     return this.userRepository.findByIds([email]);
   }
 
-  public updateUserRole(email: string, role: UserRole): Promise<User> {
-    return this.userRepository.updateUserRole(email, role);
+  public async updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole): Promise<User> {
+    const response = await this.userRepository.updateUserDetails(firstName, lastName, email, role);
+    if (response) {
+      this.sendRoleChangedEmail(email, role);
+    }
+    return response;
   }
 
   public deleteUser(email: string): Promise<User> {
@@ -93,7 +116,7 @@ export class UserService {
         break;
       default:
         // TODO: Update column name
-        // searchString.push("coalesce(users.firstName::TEXT,'')");
+        // searchString.push("coalesce(users.firstName::TEXT,'')"); 
         // searchString.push("coalesce(users.lastName::TEXT,'')");
         searchString.push("coalesce(users.email::TEXT,'')");
         searchString.push("coalesce(users.role::TEXT,'')");
@@ -102,5 +125,31 @@ export class UserService {
     const stringConcat = searchString.join(',');
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
+  }
+  
+  public sendWelcomeEmail(email: string): void {
+    const emailSubject = `Welcome to UpGrade!`;
+    const emailBody = this.emails.welcomeEmailBody();
+    this.sendEmail(email, emailSubject, emailBody);
+  }
+
+  public sendRoleChangedEmail(email: string, role: UserRole): void {
+    const emailSubject = `UpGrade Role Changed`;
+    const emailBody = this.emails.roleChangeEmailBody(role);
+    this.sendEmail(email, emailSubject, emailBody);
+  }
+
+  public async sendEmail(email_to: string, emailSubject: string, emailBody: string):Promise<string> {
+    try {
+      const email_from = env.email.from;
+      const emailText = this.emails.generateEmailText(emailBody);
+      await this.awsService.sendEmail(email_from, email_to, emailText, emailSubject);
+    } catch (err) {
+      const error = err as ErrorWithType;
+      error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
+      throw error;
+    } 
+
+    return '';
   }
 }

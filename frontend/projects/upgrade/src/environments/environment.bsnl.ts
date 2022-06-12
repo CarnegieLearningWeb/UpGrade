@@ -10,6 +10,9 @@ export const environment = {
   i18nPrefix: '',
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
   domainName: '',
+  pollingEnabled: false,
+  pollingInterval: 10 * 1000,
+  pollingLimit: 600,
   api: {
     getAllExperiments: `${endpointApi}/experiments/paginated`,
     createNewExperiments: `${endpointApi}/experiments`,
@@ -29,7 +32,7 @@ export const environment = {
     users: `${endpointApi}/users`,
     loginUser: `${endpointApi}/login/user`, // Used to create a new user after login if doesn't exist in DB
     getAllUsers: `${endpointApi}/users/paginated`,
-    userRole: `${endpointApi}/users/role`,
+    userDetails: `${endpointApi}/users/details`,
     excludeUsers: `${endpointApi}/explicitExclude/global/user`,
     excludeGroups: `${endpointApi}/explicitExclude/global/group`,
     previewUsers: `${endpointApi}/previewUsers`,

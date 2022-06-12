@@ -12,14 +12,14 @@ export class UsersDataService {
     return this.http.post(url, params);
   }
 
-  updateUserRole(email: string, role: UserRole) {
-    const url = environment.api.userRole;
-    return this.http.post(url, { email, role });
+  updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole) {
+    const url = environment.api.userDetails;
+    return this.http.post(url, { firstName, lastName, email, role });
   }
 
-  createNewUser(email: string, role: UserRole) {
+  createNewUser(firstName: string, lastName: string, email: string, role: UserRole) {
     const url = environment.api.users;
-    return this.http.post(url, { email, role });
+    return this.http.post(url, { firstName, lastName, email, role });
   }
 
   deleteUser(email: string) {

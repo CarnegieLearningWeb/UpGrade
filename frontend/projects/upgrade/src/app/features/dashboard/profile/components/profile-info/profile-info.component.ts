@@ -5,13 +5,16 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { UserRole } from 'upgrade_types';
 import { User, USER_SEARCH_SORT_KEY } from '../../../../../core/users/store/users.model';
 import { debounceTime } from 'rxjs/operators';
-import { MatSort, MatDialog, MatTableDataSource } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { UsersService } from '../../../../../core/users/users.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { NewUserComponent } from '../modals/new-user/new-user.component';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
+import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'profile-info',
@@ -22,7 +25,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
   theme$ = this.settingsService.theme$;
   displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit', 'deleteUser'];
-  userRoleForm: FormGroup;
+  userDetailsForm: FormGroup;
   editMode = null;
   userRoles = [UserRole.ADMIN, UserRole.CREATOR, UserRole.USER_MANAGER, UserRole.READER];
   allUsers: any;
@@ -80,7 +83,10 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.usersService.fetchUsers(true);
     this.permissions$ = this.authService.userPermissions$;
-    this.userRoleForm = this._formBuilder.group({
+    this.userDetailsForm = this._formBuilder.group({
+      firstName: [null, Validators.required],
+      lastName: [null, Validators.required],
+      email: [null, Validators.required],
       role: [null, Validators.required]
     });
     this.currentUserSub = this.authService.currentUser$.subscribe(currentUser => {
@@ -125,16 +131,19 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
 
   editPermission(user: User, index: number) {
     this.editMode = index;
-    this.userRoleForm.setValue({
+    this.userDetailsForm.setValue({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
       role: user.role
     });
   }
 
   updatePermission(user: User) {
-    const { role } = this.userRoleForm.value;
+    const { firstName, lastName, email, role } = this.userDetailsForm.value;
     this.editMode = null;
-    this.userRoleForm.reset();
-    this.usersService.updateUserRole(user.email, role);
+    this.userDetailsForm.reset();
+    this.usersService.updateUserDetails(firstName, lastName, email, role);
     if (user.email === this.currentUser.email) {
       window.location.reload();
     }
@@ -143,7 +152,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   // Reset form to keep consistency of selected user in form
   resetForm() {
     this.editMode = null;
-    this.userRoleForm.reset();
+    this.userDetailsForm.reset();
   }
 
   applyFilter(filterValue: string) {
@@ -188,7 +197,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.usersService.setSearchKey(this.selectedUserFilterOption);
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.usersService.setSearchString(searchString);
   }
 

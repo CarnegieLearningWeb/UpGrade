@@ -11,12 +11,12 @@ import {
   Scenario8,
   RevertToDefault,
   RevertToCondition,
-  PreviewScenario1,
-  PreviewScenario2,
-  PreviewScenario3,
-  PreviewScenario4,
-  PreviewScenario5,
-  PreviewForcedAssigned,
+  // PreviewScenario1,
+  // PreviewScenario2,
+  // PreviewScenario3,
+  // PreviewScenario4,
+  // PreviewScenario5,
+  // PreviewForcedAssigned,
 } from './ExperimentAssignment';
 import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
 import { UpdateExperiment, ExperimentEndDate, ExperimentStartDate } from './Experiment/update';
@@ -54,19 +54,21 @@ import {
 import { NoExperimentUserOnAssignment } from './ExperimentUser';
 import { DeleteAssignmentOnExperimentDelete } from './Experiment/delete/index';
 import { IndividualUserCount, GroupUserCount } from './Experiment/conditionalStateChange/index';
-import { GetAssignments } from './Support/index';
 import { StatsIndividualEnrollment, StatsGroupEnrollment } from './ExperimentStats/index';
 import { MetricCRUD } from './Experiment/metric';
 import { CreateLog, LogOperations, RepeatedMeasure } from './Experiment/dataLog';
 import { QueryCRUD } from './Experiment/query';
 import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
-import { IndividualExperimentEnrollmentCode } from './Experiment/enrollmentCode';
-import { GroupExperimentEnrollmentCode, ExperimentExperimentEnrollmentCode } from './Experiment/enrollmentCode/index';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssigmentWeight';
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
-import { ExperimentExcludeUser, ExperimentExcludeGroup, ExperimentIncludeUser, ExperimentIncludeGroup } from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
+import {
+  ExperimentExcludeUser,
+  ExperimentExcludeGroup,
+  ExperimentIncludeUser,
+  ExperimentIncludeGroup,
+} from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -144,11 +146,6 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Support Get Assignments', async (done) => {
-    await GetAssignments();
-    done();
-  });
-
   test('User not defined', async (done) => {
     await UserNotDefined();
     done();
@@ -169,50 +166,50 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async (done) => {
-    await PreviewScenario1();
-    done();
-  });
+  // test('Experiment Preview Scenario 1 - Individual Assignment With Individual Consistency for Preview', async (done) => {
+  //   await PreviewScenario1();
+  //   done();
+  // });
 
   test('Experiment Scenario 2 - Individual Assignment With Experiment Consistency', async (done) => {
     await Scenario2();
     done();
   });
 
-  test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async (done) => {
-    await PreviewScenario2();
-    done();
-  });
+  // test('Experiment Preview Scenario 2 - Individual Assignment With Experiment Consistency for Preview', async (done) => {
+  //   await PreviewScenario2();
+  //   done();
+  // });
 
   test('Experiment Scenario 3 - Group Assignment With Group Consistency', async (done) => {
     await Scenario3();
     done();
   });
 
-  test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async (done) => {
-    await PreviewScenario3();
-    done();
-  });
+  // test('Experiment Preview Scenario 3 - Group Assignment With Group Consistency for Preview', async (done) => {
+  //   await PreviewScenario3();
+  //   done();
+  // });
 
   test('Experiment Scenario 4 - Group Assignment With Individual Consistency', async (done) => {
     await Scenario4();
     done();
   });
 
-  test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async (done) => {
-    await PreviewScenario4();
-    done();
-  });
+  // test('Experiment Preview Scenario 4 - Group Assignment With Individual Consistency for Preview', async (done) => {
+  //   await PreviewScenario4();
+  //   done();
+  // });
 
   test('Experiment Scenario 5 - Group Assignment With Experiment Consistency', async (done) => {
     await Scenario5();
     done();
   });
 
-  test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async (done) => {
-    await PreviewScenario5();
-    done();
-  });
+  // test('Experiment Preview Scenario 5 - Group Assignment With Experiment Consistency for Preview', async (done) => {
+  //   await PreviewScenario5();
+  //   done();
+  // });
 
   test('Experiment Scenario 6 - Group Switching before assignment Group Assignment With Group Consistency', async (done) => {
     await Scenario6();
@@ -234,15 +231,16 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Preview User Forced assignment', async (done) => {
-    await PreviewForcedAssigned();
-    done();
-  });
+  // test('Preview User Forced assignment', async (done) => {
+  //   await PreviewForcedAssigned();
+  //   done();
+  // });
 
   test('Revert to Default', async (done) => {
     await RevertToDefault();
     done();
   });
+
   test('Revert to Condition', async (done) => {
     await RevertToCondition();
     done();
@@ -408,20 +406,20 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Individual Experiment Enrollment Code', async (done) => {
-    await IndividualExperimentEnrollmentCode();
-    done();
-  });
+   // test('Individual Experiment Enrollment Code', async (done) => {
+   //   await IndividualExperimentEnrollmentCode();
+   //   done();
+   // });
 
-  test('Group Experiment Enrollment Code', async (done) => {
-    await GroupExperimentEnrollmentCode();
-    done();
-  });
+   // test('Group Experiment Enrollment Code', async (done) => {
+   //   await GroupExperimentEnrollmentCode();
+   //   done();
+   // });
 
-  test('Experiment Experiment Enrollment Code', async (done) => {
-    await ExperimentExperimentEnrollmentCode();
-    done();
-  });
+   // test('Experiment Experiment Enrollment Code', async (done) => {
+   //   await ExperimentExperimentEnrollmentCode();
+   //   done();
+   // });
 
   test('Experiment Context Assignment', async (done) => {
     await ExperimentContextAssignments();

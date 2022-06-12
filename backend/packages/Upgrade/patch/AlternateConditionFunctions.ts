@@ -1,7 +1,7 @@
 // TODO delete this after x-prize competition
 
 import AlternateCondition from '../patch/alternateConditions.json';
-import { IExperimentAssignment } from 'upgrade_types';
+import { INewExperimentAssignment } from 'upgrade_types';
 
 // organize json data here
 const importedJsonArray: Array<{
@@ -12,25 +12,28 @@ const importedJsonArray: Array<{
   schoolId: string[];
 }> = AlternateCondition;
 
-export const assignAlternateCondition = (user: any): ((data: IExperimentAssignment) => IExperimentAssignment) => {
+export const assignAlternateCondition = (user: any): ((data: INewExperimentAssignment) => INewExperimentAssignment) => {
   // tslint:disable-next-line: no-string-literal
   const userSchoolIds: string[] = user?.group?.['schoolId'];
-  return (data: IExperimentAssignment): IExperimentAssignment => {
-    const findData = importedJsonArray.find(
+  return (data: INewExperimentAssignment): INewExperimentAssignment => {
+    const matchedConditions = importedJsonArray.filter(
       (importedJson) =>
-        importedJson.experimentPoint === data.expPoint &&
-        importedJson.id === data.expId &&
+        importedJson.experimentPoint === data.site &&
+        importedJson.id === data.target &&
         importedJson.condition === data.assignedCondition.conditionCode
     );
-    if (findData) {
+    if (matchedConditions) {
       // search for schoolId
-      const schoolExist = userSchoolIds.some((userSchoolId) => {
-        return findData.schoolId.includes(userSchoolId);
-      });
-      // replace assigned condition
-      if (schoolExist) {
-        data.assignedCondition.conditionCode = findData.workspace;
-      }
+      matchedConditions.forEach((expCondPair) =>{
+        const schoolExist = userSchoolIds.some((userSchoolId) => {
+          return expCondPair.schoolId.includes(userSchoolId);
+        });
+        // replace assigned condition
+        if (schoolExist) {
+          data.assignedCondition.conditionCode = expCondPair.workspace;
+        }
+      })
+
     }
     return data;
   };

@@ -6,6 +6,7 @@ import * as UsersActions from './store/users.actions';
 import { UserRole, USER_SEARCH_SORT_KEY, SORT_AS } from './store/users.model';
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { FLAG_SEARCH_SORT_KEY } from '../feature-flags/store/feature-flags.model';
 
 @Injectable()
 export class UsersService {
@@ -27,12 +28,12 @@ export class UsersService {
     this.store$.dispatch(UsersActions.actionFetchUsers({ fromStarting }));
   }
 
-  updateUserRole(email: string, role: UserRole) {
-    this.store$.dispatch(UsersActions.actionUpdateUserRole({ userRoleData: { email, role } }));
+  updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole) {
+    this.store$.dispatch(UsersActions.actionUpdateUserDetails({ userDetailsData: { firstName, lastName, email, role } }));
   }
 
-  createNewUser(email: string, role: UserRole) {
-    this.store$.dispatch(UsersActions.actionCreateNewUser({ user: { email, role } }));
+  createNewUser(firstName: string, lastName: string, email: string, role: UserRole) {
+    this.store$.dispatch(UsersActions.actionCreateNewUser({ user: { firstName, lastName, email, role } }));
   }
 
   deleteUser(email: string) {
@@ -40,10 +41,10 @@ export class UsersService {
   }
 
   isAllUsersFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipUsers)),
       this.store$.pipe(select(selectTotalUsers))
-    ).pipe(
+    ]).pipe(
       map(([skipUsers, totalUsers]) => skipUsers === totalUsers)
     );
   }
