@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
-import { SegmentInput } from '../../../../../../core/segments/store/segments.model';
 
 @Component({
   selector: 'app-duplicate-segment',

@@ -14,7 +14,7 @@ import { SEGMENT_TYPE } from 'upgrade_types';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 
 @Component({
-  selector: 'segment-view-flag',
+  selector: 'view-segment',
   templateUrl: './view-segment.component.html',
   styleUrls: ['./view-segment.component.scss']
 })

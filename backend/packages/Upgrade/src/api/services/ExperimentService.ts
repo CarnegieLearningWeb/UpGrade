@@ -42,7 +42,6 @@ import { IndividualExclusion } from '../models/IndividualExclusion';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import { Segment } from '../models/Segment';
 import { SegmentService } from './SegmentService';
-import { SegmentRepository } from '../repositories/SegmentRepository';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
@@ -62,7 +61,6 @@ export class ExperimentService {
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
-    @OrmRepository() private segmentRepository: SegmentRepository,
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     public previewUserService: PreviewUserService,
@@ -139,6 +137,16 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
       .where({ id })
       .getOne();

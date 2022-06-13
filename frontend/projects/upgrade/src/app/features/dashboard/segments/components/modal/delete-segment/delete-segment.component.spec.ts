@@ -4,7 +4,7 @@ import { TestingModule } from '../../../../../../../testing/testing.module';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
-xdescribe('DeleteFlagComponent', () => {
+xdescribe('DeleteSegmentComponent', () => {
   let component: DeleteSegmentComponent;
   let fixture: ComponentFixture<DeleteSegmentComponent>;
 

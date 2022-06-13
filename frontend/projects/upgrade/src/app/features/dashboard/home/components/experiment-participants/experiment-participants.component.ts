@@ -14,13 +14,11 @@ import { TranslateService } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExperimentParticipantsComponent implements OnInit {
-  // @Input() segmentInfo: Segment;
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
-  // @Output() emitSegmentDialogEvent = new EventEmitter<NewSegmentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
 
@@ -32,6 +30,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   inclusionCriteria = [{ value: 'Include Specific'}, { value: 'Include All Except...'}];
   membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember' ];
 
+  enableSave = true;
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
@@ -73,21 +72,13 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(allSegments => {
       this.allSegments =  allSegments;
     });
- 
+
     if (this.allSegments) {
       this.allSegments.forEach((segment) => {
-        // if (this.experimentInfo) {
-          
-        //   if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.id !== this.experimentInfo.segmentExclude.id && segment.id !== this.experimentInfo.segmentInclude.id) {
-        //     this.subSegmentIds.push(segment.name);
-        //     this.segmentNameId.set(segment.name, segment.id);
-        //   }
-        // } else {
-        //   if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-        //     this.subSegmentIds.push(segment.name);
-        //     this.segmentNameId.set(segment.name, segment.id);
-        //   }
-        // }  
+        if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+          this.subSegmentIds.push(segment.name);
+          this.segmentNameId.set(segment.name, segment.id);
+        }
       });
     }
 
@@ -98,16 +89,14 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
 
     this.participantsForm2 = this._formBuilder2.group({
-      inclusionCriteria: [null],
-      except: [null],
+      // inclusionCriteria: [null],
+      // except: [null],
       members2: this._formBuilder.array([this.addMembers2()]),
     });
 
     this.participantsForm.get('inclusionCriteria').setValue('Include Specific');
 
     if (this.experimentInfo) {
-      console.log('----------------------- the experiment data in edit mode ----------------------------', this.experimentInfo);
-    
       if( this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
         this.participantsForm.get('inclusionCriteria').setValue('Include Specific');
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
@@ -140,29 +129,9 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
         });
       }
-        
 
-      
       this.members1.removeAt(0);
       this.members2.removeAt(0);
-      // this.experimentInfo.segmentInclude.individualForSegment.forEach((id) => {
-      //   this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
-      // });
-      // this.segmentInfo.groupForSegment.forEach((group) => {
-      //   this.members1.push(this.addMembers1(group.type, group.groupId));
-      // });
-      // this.segmentInfo.subSegments.forEach((id) => {
-      //   this.members1.push(this.addMembers1(MemberTypes.SEGMENT, id.name));
-      // });
-      // this.segmentInfo.individualForSegment.forEach((id) => {
-      //   this.members2.push(this.addMembers2(MemberTypes.INDIVIDUAL, id.userId));
-      // });
-      // this.segmentInfo.groupForSegment.forEach((group) => {
-      //   this.members2.push(this.addMembers2(group.type, group.groupId));
-      // });
-      // this.segmentInfo.subSegments.forEach((id) => {
-      //   this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
-      // });
     }
 
     this.updateView1();
@@ -228,20 +197,11 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.subSegmentTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
     this.subSegmentTypes.push({ heading: '', value: [MemberTypes.SEGMENT] });
     const groups = [];
-    // if (this.currentContext === 'any') {
-    //   const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
-    //   contexts.forEach(context => {
-    //     this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
-    //       groups.push(group);
-    //     });
-    //   });
-    // }
     if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
         groups.push(type);
       });
     }
-
     this.subSegmentTypes.push({ heading: 'group', value: groups });
   }
 
@@ -261,20 +221,13 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
   }
 
-  // validateMembersCount(members: any) {
-  //   const membersCountErrorMsg = this.translate.instant("segments.global-members.segments-count-members-error.text");
-  //   this.membersCountError = null;
-  //   if (members.length === 0) {
-  //     this.membersCountError = membersCountErrorMsg;
-  //   }
-  // }
-
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+      case NewExperimentDialogEvents.SAVE_DATA:
         const filterMode = this.participantsForm.get('inclusionCriteria').value === 'Include Specific'
           ? FILTER_MODE.EXCLUDE_ALL
           : FILTER_MODE.INCLUDE_ALL;
@@ -285,9 +238,7 @@ export class ExperimentParticipantsComponent implements OnInit {
 
         const { members1 } = this.participantsForm.value;
         const { members2 } = this.participantsForm2.value;
-        
-        // this.validateMembersCount(members1);
-        // this.validateMembersCount(members2);
+
         // TODO: Handle member2:
         if (this.participantsForm.valid && this.participantsForm2.valid) {
           this.gettingMembersValueToSend(members1);
@@ -297,7 +248,7 @@ export class ExperimentParticipantsComponent implements OnInit {
             subSegmentIds: this.subSegmentIdsToSend,
             type: SEGMENT_TYPE.PRIVATE
           }
-          
+
           // if dropdown is includeall except then members2.clear()
           this.gettingMembersValueToSend(members2);
           const segmentMembers2FormData = {
@@ -309,13 +260,8 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.emitExperimentDialogEvent.emit({
             type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
             formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
-              ? { segmentIncludea: segmentMembers1FormData, segmentExcludea: segmentMembers2FormData, filterMode: filterMode }
-              : { segmentIncludea: segmentMembers2FormData, segmentExcludea: segmentMembers1FormData, filterMode: filterMode },
-            // if dropdown is include specific
-            //    formData : { segmentInclude: table1, segmentExclude: table2, filterMode: ExcludeAll  }
-            // else
-            //    formData : { segmentInclude: table2, segmentExclude: table1, filterMode: IncludeAll }
-            // formData: { segmentInclude: segmentMembers1FormData, segmentExclude: segmentMembers2FormData, filterMode: filterMode },
+              ? { segmentInclude: segmentMembers1FormData, segmentExclude: segmentMembers2FormData, filterMode: filterMode }
+              : { segmentInclude: segmentMembers2FormData, segmentExclude: segmentMembers1FormData, filterMode: filterMode },
             path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS
           });
         }

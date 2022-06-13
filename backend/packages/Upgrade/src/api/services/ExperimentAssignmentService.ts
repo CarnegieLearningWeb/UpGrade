@@ -911,17 +911,51 @@ export class ExperimentAssignmentService {
     // Check if user or group is in global exclusion list
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(user);
 
-    const [,filteredExperiment] = await this.experimentLevelExclusionInclusion([experiment], user, logger);
+    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion([experiment], user, logger);
     // experiment level exclusion
     let experimentExcluded = false;
-    if (filteredExperiment.length === 0) {
+    if (includedExperiments.length === 0) {
       experimentExcluded = true;
     }
 
     // Don't mark the experiment if user or group are in exclusion list
     // TODO update this with segment implementation
-    if (userExcluded || groupExcluded || experimentExcluded) {
+    if (userExcluded) {
+      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+        user,
+        experiment,
+        exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+      };
+      await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
       return;
+    } else if (groupExcluded) {
+      const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
+        groupId: user?.workingGroup[experiment.group],
+        experiment,
+        exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+      };
+      await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
+      return;
+    } else if (experimentExcluded) {
+      // TODO: testing this
+      if(excludedExperiment[0].reason === 'user') {
+        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+          user,
+          experiment,
+          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+        };
+        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+      } else if (excludedExperiment[0].reason === 'group') {
+        const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
+          groupId: user?.workingGroup[experiment.group],
+          experiment,
+          exclusionCode: EXCLUSION_CODE.GROUP_ON_EXCLUSION_LIST,
+        };
+        await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
+      } else {
+        // TODO
+      }
+      return ;
     }
 
     // if group experiment check if group is valid
@@ -1210,7 +1244,7 @@ export class ExperimentAssignmentService {
     experiments: Experiment[],
     experimentUser: ExperimentUser,
     logger: UpgradeLogger
-  ): Promise<[Experiment[], Object[]]> {
+  ): Promise<[Experiment[], {experiment: Experiment, reason: string}[]]> {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
 
@@ -1258,7 +1292,7 @@ export class ExperimentAssignmentService {
 
       exp.allExcludedSegmentIds.forEach((excludedSegmentId) => {
         const foundSegment = segmentDetails.find(({id}) => id === excludedSegmentId);
-        
+
         foundSegment.individualForSegment.forEach((individual) => {
           if (individual.userId === experimentUser.id) {
             explicitExperimentIndividualExclusionFilteredData.push({
@@ -1307,7 +1341,7 @@ export class ExperimentAssignmentService {
     experiments.forEach((experiment) => {
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
         if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          excludedExperiments.push(experiment,'user');
+          excludedExperiments.push({ experiment: experiment, reason: 'user'});
         } else if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           includedExperiments.push(experiment);
         } else {
@@ -1315,7 +1349,7 @@ export class ExperimentAssignmentService {
             if (explicitExperimentGroupExclusionFilteredData.some((e) =>
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
-              excludedExperiments.push(experiment,'group');
+              excludedExperiments.push({experiment: experiment, reason: 'group'});
             }
           }
           includedExperiments.push(experiment);
@@ -1324,7 +1358,7 @@ export class ExperimentAssignmentService {
         if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           includedExperiments.push(experiment);
         } else if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          excludedExperiments.push(experiment,'filterMode');
+          excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
         } else {
           for (let userGroup of userGroups) {
             if (explicitExperimentGroupInclusionFilteredData.some((e) =>
@@ -1333,7 +1367,7 @@ export class ExperimentAssignmentService {
               includedExperiments.push(experiment);
             }
           }
-          excludedExperiments.push(experiment,'filterMode');
+          excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
         }
       }
     });

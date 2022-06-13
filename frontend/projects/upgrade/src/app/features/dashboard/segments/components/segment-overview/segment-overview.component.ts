@@ -55,9 +55,9 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       });
     }
 
-    // if (this.segmentInfo && this.segmentInfo.context === 'any') {
-    //   this.overviewForm.disable();
-    // }
+    if (this.segmentInfo && this.segmentInfo.context === 'ALL') {
+      this.overviewForm.disable();
+    }
   }
 
   emitEvent(eventType: NewSegmentDialogEvents) {

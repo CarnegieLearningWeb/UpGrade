@@ -141,7 +141,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     this.memberTypesDum.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
     this.memberTypesDum.push({ heading: '', value: [MemberTypes.SEGMENT] });
     const groups = [];
-    if (this.currentContext === 'any') {
+    if (this.currentContext === 'ALL') {
       const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
       contexts.forEach(context => {
         this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {

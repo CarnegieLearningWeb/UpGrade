@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { SegmentsRootComponent } from './segments-root.component';
 import { TestingModule } from '../../../../../testing/testing.module';
 import { SegmentsListComponent } from '../components/segments-list/segments-list.component';

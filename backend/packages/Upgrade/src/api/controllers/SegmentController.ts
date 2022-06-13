@@ -214,7 +214,7 @@ export class SegmentController {
     const segments = await this.segmentService.getAllSegments(request.logger);
     const includeData = await this.segmentService.getExperimentSegmenInclusionData();
     const excludeData = await this.segmentService.getExperimentSegmenExclusionData();
-  
+
     return [segments, includeData, excludeData];
   }
 
