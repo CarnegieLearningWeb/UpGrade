@@ -12,14 +12,22 @@ import { ErrorWithType } from '../errors/ErrorWithType';
 import { IndividualForSegment } from '../models/IndividualForSegment';
 import { GroupForSegment } from '../models/GroupForSegment';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
+import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 
 @Service()
 export class SegmentService {
   constructor(
     @OrmRepository()
     private segmentRepository: SegmentRepository,
+    @OrmRepository()
     private individualForSegmentRepository: IndividualForSegmentRepository,
-    private groupForSegmentRepository: GroupForSegmentRepository
+    @OrmRepository()
+    private groupForSegmentRepository: GroupForSegmentRepository,
+    @OrmRepository()
+    private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @OrmRepository()
+    private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -62,6 +70,16 @@ export class SegmentService {
     return segmentDoc;
   }
 
+  public async getExperimentSegmenExclusionData() {
+    let queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionData();
+    return queryBuilder;
+  }
+
+  public async getExperimentSegmenInclusionData() {
+    let queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
+    return queryBuilder;
+  }
+ 
   public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}`});
     return this.addSegmentDataInDB(segment,logger);

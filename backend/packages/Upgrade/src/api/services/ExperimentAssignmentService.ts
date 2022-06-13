@@ -348,7 +348,7 @@ export class ExperimentAssignmentService {
       }
 
       // experiment level inclusion and exclusion
-      const filteredExperiments = await this.experimentLevelExclusionInclusion(
+      const [filteredExperiments,] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
         experimentUser,
         logger
@@ -911,7 +911,7 @@ export class ExperimentAssignmentService {
     // Check if user or group is in global exclusion list
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(user);
 
-    const filteredExperiment = await this.experimentLevelExclusionInclusion([experiment], user, logger);
+    const [,filteredExperiment] = await this.experimentLevelExclusionInclusion([experiment], user, logger);
     // experiment level exclusion
     let experimentExcluded = false;
     if (filteredExperiment.length === 0) {
@@ -1210,9 +1210,7 @@ export class ExperimentAssignmentService {
     experiments: Experiment[],
     experimentUser: ExperimentUser,
     logger: UpgradeLogger
-  ): Promise<Experiment[]> {
-    let expLevelFilteredExperiments = [];
-
+  ): Promise<[Experiment[], Object[]]> {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
 
@@ -1303,41 +1301,43 @@ export class ExperimentAssignmentService {
     //           Else include the user
     //     Else exclude the user
 
-    expLevelFilteredExperiments = experiments.filter((experiment) => {
+    let includedExperiments: Experiment[] = [];
+    let excludedExperiments = [];
+
+    experiments.forEach((experiment) => {
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
         if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          return false;
+          excludedExperiments.push(experiment,'user');
         } else if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          return true;
+          includedExperiments.push(experiment);
         } else {
           for (let userGroup of userGroups) {
             if (explicitExperimentGroupExclusionFilteredData.some((e) =>
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
-              return false;
+              excludedExperiments.push(experiment,'group');
             }
           }
-          return true;
+          includedExperiments.push(experiment);
         }
       } else {
         if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          return true;
+          includedExperiments.push(experiment);
         } else if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          return false;
+          excludedExperiments.push(experiment,'filterMode');
         } else {
           for (let userGroup of userGroups) {
             if (explicitExperimentGroupInclusionFilteredData.some((e) =>
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
-              return true;
+              includedExperiments.push(experiment);
             }
           }
-          return false;
+          excludedExperiments.push(experiment,'filterMode');
         }
-
       }
     });
 
-    return expLevelFilteredExperiments;
+    return [includedExperiments, excludedExperiments];
   }
 }

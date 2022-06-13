@@ -5,6 +5,8 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { Validator } from 'class-validator';
 import { AppRequest } from '../../types';
 import { SegmentInputValidator } from './validators/SegmentInputValidator';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
+import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 const validator  = new Validator();
 
 /**
@@ -182,7 +184,7 @@ const validator  = new Validator();
 @Authorized()
 @JsonController('/segments')
 export class SegmentController {
-  constructor(public segment: SegmentService) {}
+  constructor(public segmentService: SegmentService) {}
 
   /**
    * @swagger
@@ -204,8 +206,16 @@ export class SegmentController {
    *            description: Authorization Required Error
    */
   @Get()
-  public getAllSegments( @Req() request: AppRequest ): Promise<Segment[]> {
-    return this.segment.getAllSegments(request.logger);
+  public async getAllSegments( @Req() request: AppRequest ): Promise<[
+    Segment[],
+    Partial<ExperimentSegmentInclusion>[],
+    Partial<ExperimentSegmentExclusion>[]
+  ]> {
+    const segments = await this.segmentService.getAllSegments(request.logger);
+    const includeData = await this.segmentService.getExperimentSegmenInclusionData();
+    const excludeData = await this.segmentService.getExperimentSegmenExclusionData();
+  
+    return [segments, includeData, excludeData];
   }
 
   /**
@@ -248,7 +258,7 @@ export class SegmentController {
         )
       );
     }
-    return this.segment.getSegmentById(segmentId, request.logger);
+    return this.segmentService.getSegmentById(segmentId, request.logger);
   }
 
   /**
@@ -282,7 +292,7 @@ export class SegmentController {
   public upsertSegment(
     @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
     @Req() request: AppRequest ): Promise<Segment> {
-    return this.segment.upsertSegment(segment, request.logger);
+    return this.segmentService.upsertSegment(segment, request.logger);
   }
 
   /**
@@ -323,7 +333,7 @@ export class SegmentController {
         )
       );
     }
-    return this.segment.deleteSegment(segmentId, request.logger);
+    return this.segmentService.deleteSegment(segmentId, request.logger);
   }
 
   /**
@@ -357,7 +367,7 @@ export class SegmentController {
 public importSegment(
   @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
   @Req() request: AppRequest ): Promise<Segment> {
-  return this.segment.importSegment(segment, request.logger);
+  return this.segmentService.importSegment(segment, request.logger);
 }
 
   @Get('/export/:id')
@@ -372,6 +382,6 @@ public importSegment(
         )
       );
     }
-    return this.segment.exportSegment(id, request.logger);
+    return this.segmentService.exportSegment(id, request.logger);
   }
 }

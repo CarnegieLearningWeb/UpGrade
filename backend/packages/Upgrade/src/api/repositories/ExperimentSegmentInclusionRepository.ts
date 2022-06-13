@@ -32,6 +32,19 @@ export class ExperimentSegmentInclusionRepository extends Repository<ExperimentS
     return result.raw;
   }
 
+  public async getExperimentSegmentInclusionData(): Promise<Partial<ExperimentSegmentInclusion>[]> {
+    return this.createQueryBuilder('experimentSegmentInclusion')
+      .select(['experiment.id', 'experiment.name', 'experiment.state', 'experiment.context', 'segment.id'])
+      .leftJoin('experimentSegmentInclusion.experiment', 'experiment')
+      .leftJoin('experimentSegmentInclusion.segment', 'segment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegments')
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError('ExperimentSegmentInclusion', 'getdata', {}, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
   public async deleteData(
     segmentId: string,
     experimentId: string,
