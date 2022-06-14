@@ -26,7 +26,7 @@ export const actionSetIsAuthenticating = createAction(
 
 export const actionSetUserInfo = createAction(
   '[Auth] Set User Information',
-  props<{ user: User }>()
+  props<{ user: any }>()
 );
 
 export const actionSetUserInfoSuccess = createAction(

@@ -8,8 +8,8 @@ import * as analysisActions from '../../analysis/store/analysis.actions';
 import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
-import { Store, select } from '@ngrx/store';
-import { environment as env } from '../../../../environments/environment';
+import { Store, select, Action } from '@ngrx/store';
+import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
@@ -43,46 +43,58 @@ export class AuthEffects {
         ofType(authActions.actionInitializeGapi),
         tap(() => {
           this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: true }));
-          gapi.load('auth2', () => {
-            let initConfig: any = {
-              client_id: env.gapiClientId,
-              cookiepolicy: 'single_host_origin',
-              scope: this.scope,
-            }
-            if (env.domainName) {
-              initConfig = {
-                ...initConfig,
-                hosted_domain: env.domainName
-              }
-            }
-            this.auth2 = gapi.auth2.init(initConfig);
-            this.auth2.currentUser.listen(currentUser => {
-              this.ngZone.run(() => {
-                if (!this.hasUserClickedLogin) {
-                  const profile = currentUser.getBasicProfile();
-                  const isCurrentUserSignedIn = this.auth2.isSignedIn.get();
-
-                  const action = isCurrentUserSignedIn
-                    ? authActions.actionSetIsLoggedIn({ isLoggedIn: true })
-                    : authActions.actionSetIsLoggedIn({ isLoggedIn: false });
-                  this.store$.dispatch(action);
-                  this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: false }));
-                  if (!!profile && isCurrentUserSignedIn) {
-                    const user: any = {
-                      token: currentUser.getAuthResponse().id_token,
-                      email: profile.getEmail()
-                    };
-                    this.store$.dispatch(authActions.actionSetUserInfo({ user }));
-                  }
-                }
-              });
-            });
-          });
+          gapi.load('auth2', () => this.handleGapiInit({
+            client_id: environment.gapiClientId,
+            hosted_domain: environment.domainName
+          }));
         })
       );
     },
     { dispatch: false }
   );
+
+  handleGapiInit = ({
+    client_id,
+    hosted_domain
+  }) => {
+    let initConfig: any = {
+      client_id,
+      cookiepolicy: 'single_host_origin',
+      scope: this.scope,
+    }
+    if (hosted_domain) {
+      initConfig = {
+        ...initConfig,
+        hosted_domain
+      }
+    }
+    this.auth2 = gapi.auth2.init(initConfig);
+    this.auth2.currentUser.listen(this.handleUserLoginInNgZone);
+  }
+
+  handleUserLoginInNgZone = currentUser => {
+    this.ngZone.run(() => this.handleUserLogin(currentUser));
+  }
+
+  handleUserLogin = (currentUser) => {
+    if (!this.hasUserClickedLogin) {
+      const profile = currentUser.getBasicProfile();
+      const isCurrentUserSignedIn = this.auth2.isSignedIn.get();
+
+      const action = authActions.actionSetIsLoggedIn({ isLoggedIn: !!isCurrentUserSignedIn })
+
+      this.store$.dispatch(action);
+      this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: false }));
+
+      if (!!profile && isCurrentUserSignedIn) {
+        const user: any = {
+          token: currentUser.getAuthResponse().id_token,
+          email: profile.getEmail()
+        };
+        this.store$.dispatch(authActions.actionSetUserInfo({ user }));
+      }
+    }
+  }
 
   attachSignIn$ = createEffect(
     () => {
@@ -90,42 +102,53 @@ export class AuthEffects {
         ofType(authActions.actionBindAttachHandlerWithButton),
         map(action => action.element),
         filter(element => !!element),
-        tap(element => {
-          this.auth2.attachClickHandler(element, {},
-            googleUser => {
-              this.hasUserClickedLogin = true;
-              this.ngZone.run(() => {
-                const profile = googleUser.getBasicProfile();
-                const user = {
-                  firstName: profile.getGivenName(),
-                  lastName: profile.getFamilyName(),
-                  email: profile.getEmail(),
-                  imageUrl: profile.getImageUrl(),
-                };
-                const token = googleUser.getAuthResponse().id_token;
-                // Store the token in the ngrx store as this is being passed in every request via http interceptor
-                this.store$.dispatch(authActions.actionSetUserInfo({ user: { token } as User }));
-                this.authDataService.login(user).pipe(
-                    tap((res: User) => {
-                      this.hasUserClickedLogin = false;
-                      this.store$.dispatch(authActions.actionLoginSuccess());
-                      this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
-                    }),
-                    catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
-                  )
-                  .subscribe();
-              });
-            },
-            error => {
-              console.log(JSON.stringify(error, undefined, 2));
-              this.store$.dispatch(authActions.actionLoginFailure());
-            }
-          );
-        })
+        tap((element) => this.handleAttachGoogleAuthClickHandler(element))
       );
     },
     { dispatch: false }
   );
+
+  handleAttachGoogleAuthClickHandler= (element) => {
+    this.auth2.attachClickHandler(element, {},
+      this.onAuthedUserFetchSuccess,
+      this.onAuthedUserFetchError
+    );
+  }
+
+  onAuthedUserFetchSuccess = (googleUser) => {
+    this.hasUserClickedLogin = true;
+    this.ngZone.run(() => this.handleGoogleAuthClickInNgZone(googleUser))
+  }
+
+  onAuthedUserFetchError = (error) => {
+    console.log(JSON.stringify(error, undefined, 2));
+    this.store$.dispatch(authActions.actionLoginFailure());
+  }
+
+  handleGoogleAuthClickInNgZone = (googleUser) => {
+    const profile = googleUser.getBasicProfile();
+    const user = {
+      firstName: profile.getGivenName(),
+      lastName: profile.getFamilyName(),
+      email: profile.getEmail(),
+      imageUrl: profile.getImageUrl(),
+    };
+    const token = googleUser.getAuthResponse().id_token;
+    // Store the token in the ngrx store as this is being passed in every request via http interceptor
+    this.store$.dispatch(authActions.actionSetUserInfo({ user: { token } as User }));
+    this.doLogin(user, token);
+  };
+
+  doLogin = (user, token: string) => {
+    this.authDataService.login(user).pipe(
+      tap((res: User) => {
+        this.hasUserClickedLogin = false;
+        this.store$.dispatch(authActions.actionLoginSuccess());
+        this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
+      }),
+      catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
+    ).subscribe();
+  }
 
   setUserInfoInStore$ = createEffect(
     () => {
@@ -145,37 +168,45 @@ export class AuthEffects {
           // Set theme from local storage if exist
           this.settingsService.setLocalStorageTheme();
           if (user.role) {
-            this.authService.setUserPermissions(user.role);
-            return [
-              authActions.actionSetUserInfoSuccess({ user }),
-              ...actions
-            ];
+            return this.setUserSettingsWithRole(user, actions);
           } else {
-            return this.authDataService.getUserByEmail(user.email).pipe(
-              switchMap((res: User) => {
-                if (res[0]) {
-                  // Avoid null name in account
-                  if (res[0].firstName) {
-                    this.authService.setUserPermissions(res[0].role);
-                    return [
-                      authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }),
-                      ...actions
-                    ];
-                  } else {
-                    return [authActions.actionLogoutStart()];
-                  }
-                } else {
-                  return [
-                    authActions.actionSetUserInfoFailed()
-                  ];
-                }
-              })
-            )
+            return this.trySetUserSettingWithEmail(user, actions);
           }
         })
       );
     },
   );
+
+  setUserSettingsWithRole = (user: any, actions: Action[]) => {
+    this.authService.setUserPermissions(user.role);
+    return [
+      authActions.actionSetUserInfoSuccess({ user }),
+      ...actions
+    ];
+  }
+
+  trySetUserSettingWithEmail = (user: any, actions: Action[]) => {
+    return this.authDataService.getUserByEmail(user.email).pipe(
+      switchMap((res: User) => {
+        if (res[0]) {
+          // Avoid null name in account
+          if (res[0].firstName) {
+            this.authService.setUserPermissions(res[0].role);
+            return [
+              authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }),
+              ...actions
+            ];
+          } else {
+            return [authActions.actionLogoutStart()];
+          }
+        } else {
+          return [
+            authActions.actionSetUserInfoFailed()
+          ];
+        }
+      })
+    )
+  }
 
   logout$ = createEffect(
     () => {
