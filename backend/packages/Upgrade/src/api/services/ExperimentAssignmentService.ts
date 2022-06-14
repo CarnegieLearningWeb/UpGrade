@@ -163,7 +163,7 @@ export class ExperimentAssignmentService {
       const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
       if (matchedCondition.length === 0 && condition !== null) {
         const error = new Error(`Condition not found: ${condition}`);
-        (error as any).type = SERVER_ERROR.CONDTION_NOT_FOUND;
+        (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
         logger.error(error);
         throw error;
       }
