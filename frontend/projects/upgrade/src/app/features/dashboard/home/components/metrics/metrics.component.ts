@@ -305,7 +305,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
         // reset options for metric keys:
         this.optionsSub();
-        this.filteredMetrics$ = [];
       }
     }
   }

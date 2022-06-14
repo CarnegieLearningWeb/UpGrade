@@ -1,7 +1,7 @@
 .experiment-design {
   .condition-table,
   .partition-table {
-    max-height: 180px;
+    max-height: 135px;
     overflow: auto;
 
     mat-header-row {
@@ -14,14 +14,15 @@
     }
 
     mat-header-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 15px;
       color: var(--grey-6);
     }
 
     mat-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 15px;
+      margin-bottom: -5px;
     }
 
     .cdk-column-removeCondition,
@@ -50,7 +51,7 @@
 
     mat-form-field {
       width: 100%;
-      text-align: center;
+      text-align: left;
     }
 
     .condition-description {
@@ -90,6 +91,12 @@
     }
   }
 
+  .title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
   ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
     bottom: unset;
     background-color: unset !important;
@@ -102,6 +109,6 @@
 
 .header-group {
   display: grid;
-  margin-left: -80px;
-  justify-content: center;
+  margin-left: 10px;
+  justify-content: left;
 }

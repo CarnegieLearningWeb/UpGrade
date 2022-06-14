@@ -169,7 +169,7 @@ export class ImportExperimentComponent implements OnInit {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
     });
     if (missingPartitionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.partition.text') + ": " + missingPartitionProperties;
+      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.decision-points.text') + ": " + missingPartitionProperties;
     }
     missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
     return missingPropertiesFlag;

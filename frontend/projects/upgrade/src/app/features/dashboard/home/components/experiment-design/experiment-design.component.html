@@ -1,5 +1,6 @@
 <form class="experiment-design" [formGroup]="experimentDesignForm">
   <!-- Partition Table -->
+  <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
   <ng-container>
     <mat-table
       class="partition-table"
@@ -8,7 +9,7 @@
       #partitionTable
     >
       <!-- Site Column -->
-      <ng-container matColumnDef="expPoint">
+      <ng-container matColumnDef="site">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home.new-experiment.design.partition-point.text' | translate }}
         </mat-header-cell>
@@ -18,7 +19,7 @@
         >
           <mat-form-field floatLabel="never">
             <span
-              [matTooltip]="experimentDesignForm.getRawValue('expPoint')?.partitions[groupIndex]?.expPoint"
+              [matTooltip]="experimentDesignForm.getRawValue('site')?.partitions[groupIndex]?.site"
               matTooltipPosition="above"
               >
               <input
@@ -27,12 +28,12 @@
                   'home.new-experiment.design.partition-point.placeholder.text'
                     | translate
                 "
-                formControlName="expPoint"
+                formControlName="site"
                 [matAutocomplete]="autoCompleteExperimentPoints"
               />
               <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
-                <mat-option *ngFor="let expPoint of filteredExpPoints$[groupIndex] | async" [value]="expPoint">
-                  {{ expPoint }}
+                <mat-option *ngFor="let site of filteredExpPoints$[groupIndex] | async" [value]="site">
+                  {{ site }}
                 </mat-option>
               </mat-autocomplete>
             </span>
@@ -41,7 +42,7 @@
       </ng-container>
 
       <!-- Target Column -->
-      <ng-container matColumnDef="expId">
+      <ng-container matColumnDef="target">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home.new-experiment.design.partition-id.text' | translate }}
         </mat-header-cell>
@@ -51,7 +52,7 @@
         >
           <mat-form-field floatLabel="never">
             <span
-              [matTooltip]="experimentDesignForm.getRawValue('expId')?.partitions[groupIndex]?.expId"
+              [matTooltip]="experimentDesignForm.getRawValue('target')?.partitions[groupIndex]?.target"
               matTooltipPosition="above">
               <input
                 matInput
@@ -59,12 +60,12 @@
                   'home.new-experiment.design.partition-id.placeholder.text'
                     | translate
                 "
-                formControlName="expId"
+                formControlName="target"
                 [matAutocomplete]="autoCompleteExperimentIds"
               />
               <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                <mat-option *ngFor="let expId of filteredExpIds$[groupIndex] | async" [value]="expId">
-                  {{ expId }}
+                <mat-option *ngFor="let target of filteredExpIds$[groupIndex] | async" [value]="target">
+                  {{ target }}
                 </mat-option>
               </mat-autocomplete>
             </span>
@@ -80,6 +81,7 @@
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
+          style="margin-left: 25px;"
         >
           <!-- <mat-form-field floatLabel="never"> -->
             <mat-checkbox
@@ -97,6 +99,7 @@
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
+          style="justify-content: flex-end;"
         >
           <mat-icon
             class="remove-icon"
@@ -125,7 +128,7 @@
   <span
     class="ft-14-600 validation-message"
     *ngFor="let error of partitionPointErrors"
-  >{{ error }} </span>
+  >{{ error }}</span>
   <span
       class="ft-14-600 validation-message"
       *ngIf="partitionCountError"
@@ -135,9 +138,11 @@
   <span
     class="ft-14-600 validation-message"
     *ngFor="let error of expPointAndIdErrors"
-  >{{ error }} </span>
+  >{{ error }}</span>
   <br>
   <br>
+  <!-- Condition table -->
+  <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
   <!-- apply equal condition weights -->
   <div class="header-group">
     <mat-checkbox
@@ -147,7 +152,6 @@
     {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
     </mat-checkbox>
   </div>
-  <!-- Condition table -->
   <ng-container>
     <mat-table
       class="condition-table"
@@ -158,7 +162,7 @@
       <!-- CONDITION NAME Column -->
       <ng-container matColumnDef="conditionCode">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-          {{ 'global.condition.text' | translate }}
+          {{ 'home.new-experiment.design.name.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
@@ -196,6 +200,7 @@
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
+          style="margin-left: 5px;"
         >
           <mat-form-field floatLabel="never">
             <input
@@ -238,6 +243,7 @@
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
+          style="justify-content: flex-end;"
         >
           <mat-icon
             class="remove-icon"
@@ -252,6 +258,13 @@
         *matRowDef="let row; columns: conditionDisplayedColumns"
       ></mat-row>
     </mat-table>
+    <button
+      type="button"
+      class="ft-12-700 add-condition"
+      (click)="addConditionOrPartition('condition')"
+    >
+      + {{ 'home.new-experiment.design.add-condition.text' | translate }}
+    </button>
     <span
       class="ft-14-600 validation-message"
       *ngIf="experimentDesignForm.errors?.assignmentWeightsSumError"
@@ -266,15 +279,7 @@
       *ngIf="conditionCountError"
       [innerHTML]="conditionCountError"
     ></span>
-    <button
-      type="button"
-      class="ft-12-700 add-condition"
-      (click)="addConditionOrPartition('condition')"
-    >
-      + {{ 'home.new-experiment.design.add-condition.text' | translate }}
-    </button>
   </ng-container>
-  <br>
   <br>
   <br>
   <div class="button-container">

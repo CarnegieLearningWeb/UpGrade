@@ -1,6 +1,6 @@
 .metric-design {
   .metric-table {
-    max-height: 380px;
+    max-height: 400px;
     overflow: auto;
     overflow-x: hidden;
 
@@ -9,36 +9,35 @@
     }
 
     mat-row {
-      min-height: 126px;
-      max-height: 126px;
+      min-height: 120px;
+      max-height: 120px;
     }
 
     mat-header-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 10px;
       color: var(--grey-6);
     }
 
     mat-cell {
       margin-top: -20px;
-      justify-content: center;
+      justify-content: left;
       margin-right: 10px;
       margin-bottom: -20px;
       width: 70%;
     }
 
     .metric-keys {
-      display: flex;
+      display: grid;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content: space-between;
     }
 
     .secondary-form {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content:space-evenly;
+      justify-content:left;
       margin-top: -25px;
   
       .form-control {
@@ -81,7 +80,7 @@
     mat-form-field {
       width: 100%;
       margin-bottom: 10px;
-      text-align: center;
+      text-align: left;
     }
   }
 
