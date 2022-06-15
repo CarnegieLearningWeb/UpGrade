@@ -5,7 +5,7 @@ import repositoryError from './utils/repositoryError';
 @EntityRepository(Query)
 export class QueryRepository extends Repository<Query> {
   public async deleteQuery(id: string, entityManager: EntityManager): Promise<void> {
-    entityManager
+    await entityManager
       .createQueryBuilder()
       .delete()
       .from(Query)
