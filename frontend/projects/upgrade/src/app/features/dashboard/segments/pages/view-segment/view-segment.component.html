@@ -66,9 +66,23 @@
       <!-- Status -->
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'segments.global-status.text' | translate | uppercase }}</span>
-        <span class="ft-18-700 section-data-value">
-          ----------
+        <span class="ft-18-700 section-data-value"
+        (click)="openExperimentSegmentList()"
+        >
+         click here
         </span>
+          <!-- <div class="segment-state-container">
+            <span
+              class="state-circle"
+            >
+            </span>
+            <span
+              class="ft-18-700 section-data-value"
+              (click)="openDialog(DialogType.CHANGE_STATUS)"
+            >
+            {{ yashil }}
+            </span>
+          </div> -->
       </div>
 
       <!-- Description -->

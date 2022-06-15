@@ -18,6 +18,16 @@ export const selectIsLoadingSegments = createSelector(
   (state) => state.isLoadingSegments
 );
 
+export const selectExperimentSegmentsInclusion = createSelector(
+  selectSegmentsState,
+  (state) => state.allExperimentSegmentsInclusion
+);
+
+export const selectExperimentSegmentsExclusion = createSelector(
+  selectSegmentsState,
+  (state) => state.allExperimentSegmentsExclusion
+);
+
 export const selectSelectedSegment = createSelector(
   selectRouterState,
   selectSegmentsState,

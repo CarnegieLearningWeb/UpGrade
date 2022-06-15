@@ -9,6 +9,12 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 const validator  = new Validator();
 
+export interface getSegmentData {
+  segmentsData: Segment[];
+  experimentSegmentInclusionData: Partial<ExperimentSegmentInclusion>[];
+  experimentSegmentExclusionData: Partial<ExperimentSegmentExclusion>[];
+}
+
 /**
  * @swagger
  * definitions:
@@ -206,16 +212,17 @@ export class SegmentController {
    *            description: Authorization Required Error
    */
   @Get()
-  public async getAllSegments( @Req() request: AppRequest ): Promise<[
-    Segment[],
-    Partial<ExperimentSegmentInclusion>[],
-    Partial<ExperimentSegmentExclusion>[]
-  ]> {
-    const segments = await this.segmentService.getAllSegments(request.logger);
+  public async getAllSegments( @Req() request: AppRequest ): Promise<getSegmentData> {
+    // TODO: transactional entity manager
+    const segmentsData = await this.segmentService.getAllSegments(request.logger);
     const includeData = await this.segmentService.getExperimentSegmenInclusionData();
     const excludeData = await this.segmentService.getExperimentSegmenExclusionData();
 
-    return [segments, includeData, excludeData];
+    return {
+      segmentsData: segmentsData,
+      experimentSegmentInclusionData: includeData,
+      experimentSegmentExclusionData: excludeData
+    }
   }
 
   /**

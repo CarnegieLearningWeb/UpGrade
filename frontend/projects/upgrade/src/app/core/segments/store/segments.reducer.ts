@@ -15,7 +15,9 @@ export const {
 } = adapter.getSelectors();
 
 export const initialState: SegmentState = adapter.getInitialState({
-  isLoadingSegments: false
+  isLoadingSegments: false,
+  allExperimentSegmentsInclusion: null,
+  allExperimentSegmentsExclusion: null,
 });
 
 const reducer = createReducer(
@@ -27,8 +29,14 @@ const reducer = createReducer(
   ),
   on(
     SegmentsActions.actionFetchSegmentsSuccess,
-    (state, { segments }) => {
-      return adapter.upsertMany(segments, { ...state, isLoadingSegments: false });
+    (state, { segments, experimentSegmentExclusion, experimentSegmentInclusion }) => {
+      const newState = {
+        ...state,
+        segments,
+        allExperimentSegmentsInclusion: experimentSegmentInclusion,
+        allExperimentSegmentsExclusion: experimentSegmentExclusion
+      };
+      return adapter.upsertMany(segments, { ...newState, isLoadingSegments: false });
     }
   ),
   on(

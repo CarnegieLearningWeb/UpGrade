@@ -71,6 +71,9 @@ export interface SegmentInput {
 
 export interface SegmentState extends EntityState<Segment> {
   isLoadingSegments: boolean;
+  // TODO: remove any
+  allExperimentSegmentsInclusion: any;
+  allExperimentSegmentsExclusion: any;
 }
 
 export interface State extends AppState {

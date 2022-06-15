@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../core.state';
 import * as SegmentsActions from './store/segments.actions';
-import { selectIsLoadingSegments, selectAllSegments, selectSelectedSegment } from './store/segments.selectors';
+import {
+  selectIsLoadingSegments,
+  selectAllSegments,
+  selectSelectedSegment,
+  selectExperimentSegmentsInclusion,
+  selectExperimentSegmentsExclusion 
+} from './store/segments.selectors';
 import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { filter, map } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
@@ -14,6 +20,9 @@ export class SegmentsService {
 
   isLoadingSegments$ = this.store$.pipe(select(selectIsLoadingSegments));
   selectedSegment$ = this.store$.pipe(select(selectSelectedSegment));
+  allExperimentSegmentsInclusion$ = this.store$.pipe(select(selectExperimentSegmentsInclusion));
+  allExperimentSegmentsExclusion$ = this.store$.pipe(select(selectExperimentSegmentsExclusion));
+
   allSegments$ = this.store$.pipe(
     select(selectAllSegments),
     filter(allSegments => !!allSegments),
@@ -31,8 +40,8 @@ export class SegmentsService {
       this.store$.pipe(select(selectIsLoadingSegments)),
       this.allSegments$
       ).pipe(
-      map(([isLoading, experiments]) => {
-        return !isLoading || !!experiments.length;
+      map(([isLoading, segments]) => {
+        return !isLoading || !!segments.length;
       })
     );
   }

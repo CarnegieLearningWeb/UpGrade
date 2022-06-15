@@ -28,7 +28,7 @@ export class SegmentsEffects {
       ),
       switchMap(() =>
         this.segmentsDataService.fetchSegments().pipe(
-          map((data: any) => SegmentsActions.actionFetchSegmentsSuccess({ segments: data })),
+          map((data: any) => SegmentsActions.actionFetchSegmentsSuccess({ segments: data.segmentsData, experimentSegmentInclusion: data.experimentSegmentInclusionData, experimentSegmentExclusion: data.experimentSegmentExclusionData })),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
         )
       )

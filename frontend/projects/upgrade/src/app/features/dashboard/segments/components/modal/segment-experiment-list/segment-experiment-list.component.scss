@@ -1,0 +1,75 @@
+.segment-experiment-list-modal {
+  .title {
+    display: block;
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .heading {
+    padding: 40px 40px 0;
+    height: 108px;
+  }
+
+  .segment-experiment-list-view {
+    margin: 20px;
+    padding: 0 40px;
+  
+    .segment-experiment-list-table-container {
+      min-height: 250px;
+      max-height: 500px;
+  
+      .table {
+        max-height: 500px;
+        overflow: auto;
+  
+        mat-header-row {
+          min-height: 35px;
+        }
+  
+        mat-row {
+          height: 46px;
+        }
+  
+        mat-header-cell {
+          justify-content: center;
+          margin-right: 13px;
+          color: var(--grey-6);
+        }
+  
+        mat-cell {
+          justify-content: center;
+          margin-right: 13px;
+        }
+  
+        .cdk-column-Number {
+          flex : 0 0 10%;
+        }
+  
+        .cdk-column-experimentName {
+          flex : 0 0 30%;
+          // width: 40%;
+          justify-content: left;
+        }
+        .cdk-column-experimentState {
+          flex : 0 0 20%;
+          // width: 40%;
+          justify-content: left;
+        }
+        .cdk-column-experimentContext {
+          flex : 0 0 15%;
+          // width: 40%;
+          justify-content: left;
+        }
+        .cdk-column-usedList {
+          flex : 0 0 15%;
+          // width: 40%;
+          justify-content: left;
+        }
+      }
+    }
+  }
+
+  .zero-state {
+    min-height: 250px;
+  }
+}

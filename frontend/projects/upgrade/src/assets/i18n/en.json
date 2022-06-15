@@ -293,6 +293,13 @@
   "segments.import-segment.text": "IMPORT SEGMENT",
   "segments.import-segmemt.message.text": "Select the JSON to import segment:",
   "segments.import-segment.error.message.text": "Invalid Segment JSON data",
+  "segments.segment-experiment-list-title.text": "Experiments using '{{ segmentName }}' ",
+  "segments.segment-experiment-list-name.text": "Name",
+  "segments.segment-experiment-list-state.text": "State",
+  "segments.segment-experiment-list-context.text": "Context",
+  "segments.segment-experiment-list-usedList.text": "Used List",
+  "segments.segment-experiment-list-zeroState.text": "No Data",
+  
   "metrics.subtitle.text": "Manage metrics here",
   "metric.delete-metric.message.text": "Type the metric path separated by space to confirm deletion:",
   "metric.delete-metric.input-placeholder.text": "Metric path",

@@ -12,7 +12,7 @@ import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segm
 import { MemberTypes, Segment } from '../../../../../core/segments/store/segments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
-
+import { SegmentExperimentListComponent } from '../../components/modal/segment-experiment-list/segment-experiment-list.component';
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
@@ -82,6 +82,16 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   duplicateSegmentDialog() {
     const dialogRef = this.dialog.open(DuplicateSegmentComponent, {
       panelClass: 'duplicate-segment-modal',
+      data: { segment: this.segment }
+    });
+    dialogRef.afterClosed().subscribe(() => {
+      // Add code of further actions after deleting feature segment
+    });
+  }
+
+  openExperimentSegmentList() {
+    const dialogRef = this.dialog.open(SegmentExperimentListComponent, {
+      panelClass: 'segment-experiment-list-modal',
       data: { segment: this.segment }
     });
     dialogRef.afterClosed().subscribe(() => {

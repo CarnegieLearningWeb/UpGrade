@@ -8,7 +8,8 @@ export const actionFetchSegments = createAction(
 
 export const actionFetchSegmentsSuccess = createAction(
   '[Segments] Fetch Segments Success',
-  props<{ segments: Segment[] }>()
+  // TODO - fix this about any
+  props<{ segments: Segment[], experimentSegmentInclusion: any, experimentSegmentExclusion: any }>()
 );
 
 export const actionFetchSegmentsFailure = createAction(

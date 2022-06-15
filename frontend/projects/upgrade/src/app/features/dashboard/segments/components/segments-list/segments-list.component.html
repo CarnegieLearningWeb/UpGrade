@@ -64,6 +64,7 @@
         </td>
       </ng-container>
 
+      <!-- TODO THIS -->
       <ng-container matColumnDef="status">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'segments.global-status.text.text' | translate" matTooltipPosition="above">
@@ -71,8 +72,7 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <!-- TODO THIS 
-          </mat-slide-toggle> -->
+          <span> {{ segment.status }} </span>
         </td>
       </ng-container>
 

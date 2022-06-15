@@ -45,6 +45,7 @@
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 @import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -82,6 +83,7 @@
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
   @include import-segment-component-theme($theme);
+  @include segment-experiment-list-modal-component-theme($theme);
 }
 
 .light-theme {
@@ -135,7 +137,7 @@
   }
 }
 
-
+.segment-experiment-list-modal,
 .state-time-logs-modal {
   border-radius: 7px;
 
@@ -176,6 +178,10 @@
 .experiment-ending-criteria {
   width: 600px;
   min-height: 400px;
+}
+
+.segment-experiment-list-modal {
+  width: 700px;
 }
 
 .state-time-logs-modal {
