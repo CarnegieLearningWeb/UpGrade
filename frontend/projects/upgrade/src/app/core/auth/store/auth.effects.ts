@@ -100,49 +100,16 @@ export class AuthEffects {
     () => {
       return this.actions$.pipe(
         ofType(authActions.actionBindAttachHandlerWithButton),
-        tap(() => {
-          const btn = this.authService.getGoogleSignInElementRef();
-          this.auth2.attachClickHandler(btn, {},
-            googleUser => {
-              this.hasUserClickedLogin = true;
-              this.ngZone.run(() => {
-                const profile = googleUser.getBasicProfile();
-                const user = {
-                  firstName: profile.getGivenName(),
-                  lastName: profile.getFamilyName(),
-                  email: profile.getEmail(),
-                  imageUrl: profile.getImageUrl(),
-                };
-                const token = googleUser.getAuthResponse().id_token;
-                // Store the token in the ngrx store as this is being passed in every request via http interceptor
-                this.store$.dispatch(authActions.actionSetUserInfo({ user: { token } as User }));
-                this.authDataService.login(user).pipe(
-                    tap((res: User) => {
-                      this.hasUserClickedLogin = false;
-                      this.store$.dispatch(authActions.actionLoginSuccess());
-                      this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
-                    }),
-                    catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
-                  )
-                  .subscribe();
-              });
-            },
-            error => {
-              console.log(JSON.stringify(error, undefined, 2));
-              this.store$.dispatch(authActions.actionLoginFailure());
-            }
-          );
-        })
-        map(action => action.element),
-        filter(element => !!element),
-        tap((element) => this.handleAttachGoogleAuthClickHandler(element))
-      );
+        tap(() => this.handleAttachGoogleAuthClickHandler())
+      )
     },
     { dispatch: false }
   );
 
-  handleAttachGoogleAuthClickHandler= (element) => {
-    this.auth2.attachClickHandler(element, {},
+  handleAttachGoogleAuthClickHandler= () => {
+    const btn = this.authService.getGoogleSignInElementRef();
+    console.log({ btn })
+    this.auth2.attachClickHandler(btn, {},
       this.onAuthedUserFetchSuccess,
       this.onAuthedUserFetchError
     );

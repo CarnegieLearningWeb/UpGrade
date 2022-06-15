@@ -67,7 +67,8 @@ describe('AuthEffects', () => {
             login: jest.fn()
         };
         authService = {
-            setUserPermissions: jest.fn()
+            setUserPermissions: jest.fn(),
+            getGoogleSignInElementRef: jest.fn()
         };
         settingsService = {
             setLocalStorageTheme: jest.fn()
@@ -201,26 +202,9 @@ describe('AuthEffects', () => {
     })
 
     describe('#attachSignIn$', () => {
-        it('should do nothing if element is falsey', fakeAsync(() => {
-            let neverEmitted = true;
-            service.handleAttachGoogleAuthClickHandler = jest.fn();
-
-            service.attachSignIn$.subscribe(() => {
-                neverEmitted = false;
-            })
-
-            tick(0);
-
-            actions$.next(AuthActions.actionBindAttachHandlerWithButton(null))
-
-            expect(neverEmitted).toEqual(true);
-            expect(service.handleAttachGoogleAuthClickHandler).not.toHaveBeenCalled();
-        }))
-
         it('should call handler if element is truthy', fakeAsync(() => {
             let neverEmitted = true;
             service.handleAttachGoogleAuthClickHandler = jest.fn();
-            const mockElement = { truthy: 'object' };
 
             service.attachSignIn$.subscribe(() => {
                 neverEmitted = false;
@@ -228,9 +212,7 @@ describe('AuthEffects', () => {
 
             tick(0);
 
-            actions$.next(AuthActions.actionBindAttachHandlerWithButton({
-                element: mockElement
-            }))
+            actions$.next(AuthActions.actionBindAttachHandlerWithButton())
 
             expect(neverEmitted).toEqual(false);
             expect(service.handleAttachGoogleAuthClickHandler).toHaveBeenCalled();
@@ -240,11 +222,13 @@ describe('AuthEffects', () => {
     describe('#handleAttachGoogleAuthClickHandler', () => {
         it('should attach click handler', () => {
             service.auth2 = mockOAuth;
-            const mockElement = {};
-            service.handleAttachGoogleAuthClickHandler(mockElement);
+            const mockBtn = {};
+            authService.getGoogleSignInElementRef = jest.fn().mockReturnValue({})
+
+            service.handleAttachGoogleAuthClickHandler();
 
             expect(service.auth2.attachClickHandler).toHaveBeenCalledWith(
-                mockElement,
+                mockBtn,
                 {},
                 service.onAuthedUserFetchSuccess,
                 service.onAuthedUserFetchError
