@@ -9,7 +9,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeleteSegmentComponent {
-  flagName: string;
+  segmentName: string;
   constructor(
     public dialogRef: MatDialogRef<DeleteSegmentComponent>,
     private segmentsService: SegmentsService,
