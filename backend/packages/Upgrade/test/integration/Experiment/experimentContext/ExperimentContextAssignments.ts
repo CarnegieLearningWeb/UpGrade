@@ -26,8 +26,8 @@ export default async function testCase(): Promise<void> {
   const experimentObject1 = individualAssignmentExperiment;
   experimentObject1.context = [context1];
 
-  const experimentName1 = experimentObject1.partitions[0].expId;
-  const experimentPoint1 = experimentObject1.partitions[0].expPoint;
+  const experimentName1 = experimentObject1.partitions[0].target;
+  const experimentPoint1 = experimentObject1.partitions[0].site;
   const condition1 = experimentObject1.conditions[0].conditionCode;
 
   // create experiment 1
@@ -49,8 +49,8 @@ export default async function testCase(): Promise<void> {
   const experimentObject2 = secondExperiment;
   experimentObject2.context = [context2];
 
-  const experimentName2 = experimentObject2.partitions[0].expId;
-  const experimentPoint2 = experimentObject2.partitions[0].expPoint;
+  const experimentName2 = experimentObject2.partitions[0].target;
+  const experimentPoint2 = experimentObject2.partitions[0].site;
   const condition2 = experimentObject2.conditions[0].conditionCode;
   // create experiment 2
   await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());

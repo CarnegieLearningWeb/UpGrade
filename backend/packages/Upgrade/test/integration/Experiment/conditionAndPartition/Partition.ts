@@ -19,28 +19,28 @@ export default async function NoPartitionPoint(): Promise<void> {
   const experiments = await experimentService.find(new UpgradeLogger());
 
   // sort partitions
-  experiments[0].partitions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experiments[0].partitions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
 
   expect(experiments[0].partitions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        expPoint: 'CurriculumSequence',
-        expId: 'W1',
+        site: 'CurriculumSequence',
+        target: 'W1',
         description: 'Partition on Workspace 1',
         twoCharacterId: 'W1',
         order: 1,
       }),
       expect.objectContaining({
-        expPoint: 'CurriculumSequence',
-        expId: 'W2',
+        site: 'CurriculumSequence',
+        target: 'W2',
         description: 'Partition on Workspace 2',
         twoCharacterId: 'W2',
         order: 2,
       }),
       expect.objectContaining({
-        expPoint: 'CurriculumSequence',
+        site: 'CurriculumSequence',
         description: 'No Partition',
         twoCharacterId: 'NP',
         order: 3,
@@ -48,27 +48,26 @@ export default async function NoPartitionPoint(): Promise<void> {
     ])
   );
 
-
   // adding new partition
   const newExperimentDoc = {
     ...experiments[0],
     partitions: [
       ...experiments[0].partitions,
       {
-        expPoint: 'CurriculumSequence ',
-        expId: 'W3',
+        site: 'CurriculumSequence ',
+        target: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
       },
     ],
-  }
+  };
 
   // delete first partition
-  newExperimentDoc.partitions.shift()
+  newExperimentDoc.partitions.shift();
 
   // order for condition
-  newExperimentDoc.partitions.forEach((partition,index) => {
-    const newPartition = {...partition, order: index + 1};
+  newExperimentDoc.partitions.forEach((partition, index) => {
+    const newPartition = { ...partition, order: index + 1 };
     newExperimentDoc.partitions[index] = newPartition;
   });
 
@@ -77,25 +76,25 @@ export default async function NoPartitionPoint(): Promise<void> {
   expect(updatedExperimentDoc.partitions).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        expPoint: 'CurriculumSequence',
-        expId: 'W2',
+        site: 'CurriculumSequence',
+        target: 'W2',
         description: 'Partition on Workspace 2',
         twoCharacterId: 'W2',
         order: 1,
       }),
       expect.objectContaining({
-        expPoint: 'CurriculumSequence',
+        site: 'CurriculumSequence',
         description: 'No Partition',
         twoCharacterId: 'NP',
         order: 2,
       }),
       expect.objectContaining({
-        expPoint: 'CurriculumSequence ',
-        expId: 'W3',
+        site: 'CurriculumSequence ',
+        target: 'W3',
         description: 'Partition on Workspace 3',
         twoCharacterId: 'W3',
         order: 3,
       }),
     ])
-  )
+  );
 }

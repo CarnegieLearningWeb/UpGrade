@@ -34,23 +34,24 @@ export const experiment = {
   ],
   partitions: [
     {
-      expPoint: 'CurriculumSequence',
-      expId: 'W1',
+      site: 'CurriculumSequence',
+      target: 'W1',
       description: 'Partition on Workspace 1',
       twoCharacterId: 'W1',
     },
     {
-      expPoint: 'CurriculumSequence',
-      expId: 'W2',
+      site: 'CurriculumSequence',
+      target: 'W2',
       description: 'Partition on Workspace 2',
       twoCharacterId: 'W2',
     },
     {
-      expPoint: 'CurriculumSequence',
+      site: 'CurriculumSequence',
       description: 'No Partition',
       twoCharacterId: 'NP',
     },
   ],
+  backendVersion: "1.0.0",
 };
 
 export const experimentSecond = {
@@ -87,18 +88,19 @@ export const experimentSecond = {
   ],
   partitions: [
     {
-      expPoint: 'CurriculumSequence2',
-      expId: 'W1',
+      site: 'CurriculumSequence2',
+      target: 'W1',
       description: 'Partition on Workspace 1',
       twoCharacterId: 'X1',
     },
     {
-      expPoint: 'CurriculumSequence2',
-      expId: 'W2',
+      site: 'CurriculumSequence2',
+      target: 'W2',
       description: 'Partition on Workspace 2',
       twoCharacterId: 'X2',
     },
   ],
+  backendVersion: "1.0.0",
 };
 
 export const experimentThird = {
@@ -135,18 +137,19 @@ export const experimentThird = {
   ],
   partitions: [
     {
-      expPoint: 'CurriculumSequence3',
-      expId: 'W1',
+      site: 'CurriculumSequence3',
+      target: 'W1',
       description: 'Partition on Workspace 1',
       twoCharacterId: 'Y1',
     },
     {
-      expPoint: 'CurriculumSequence3',
-      expId: 'W2',
+      site: 'CurriculumSequence3',
+      target: 'W2',
       description: 'Partition on Workspace 2',
       twoCharacterId: 'Y2',
     },
   ],
+  backendVersion: "1.0.0",
 };
 
 export const experimentFourth = {
@@ -182,16 +185,17 @@ export const experimentFourth = {
   ],
   partitions: [
     {
-      expPoint: 'CurriculumSequence3',
-      expId: 'W1',
+      site: 'CurriculumSequence3',
+      target: 'W1',
       description: 'Partition on Workspace 1',
       twoCharacterId: 'Y1',
     },
     {
-      expPoint: 'CurriculumSequence3',
-      expId: 'W2',
+      site: 'CurriculumSequence3',
+      target: 'W2',
       description: 'Partition on Workspace 2',
       twoCharacterId: 'Y2',
     },
   ],
+  backendVersion: "1.0.0",
 };

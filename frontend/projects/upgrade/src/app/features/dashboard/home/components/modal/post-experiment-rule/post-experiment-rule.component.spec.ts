@@ -4,7 +4,7 @@ import { PostExperimentRuleComponent } from './post-experiment-rule.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 xdescribe('PostExperimentRuleComponent', () => {
   let component: PostExperimentRuleComponent;

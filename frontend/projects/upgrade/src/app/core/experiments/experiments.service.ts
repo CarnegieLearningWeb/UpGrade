@@ -10,11 +10,13 @@ import {
   EXPERIMENT_SORT_AS,
   DATE_RANGE,
   ExperimentLocalStorageKeys,
+  EXPERIMENT_STATE,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
   selectAllExperiment,
   selectIsLoadingExperiment,
+  selectIsLoadingExperimentDetailStats,
   selectSelectedExperiment,
   selectAllPartitions,
   selectAllExperimentNames,
@@ -28,12 +30,15 @@ import {
   selectIsGraphLoading,
   selectSortKey,
   selectSortAs,
-  selectContextMetaData
+  selectContextMetaData,
+  selectIsPollingExperimentDetailStats
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
-import { map, first, filter } from 'rxjs/operators';
+import { map, first, filter, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { FLAG_SEARCH_SORT_KEY } from '../feature-flags/store/feature-flags.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class ExperimentService {
@@ -53,6 +58,8 @@ export class ExperimentService {
     )
   );
   isLoadingExperiment$ = this.store$.pipe(select(selectIsLoadingExperiment));
+  isLoadingExperimentDetailStats$ = this.store$.pipe(select(selectIsLoadingExperimentDetailStats));
+  isPollingExperimentDetailStats$ = this.store$.pipe(select(selectIsPollingExperimentDetailStats));
   selectedExperiment$ = this.store$.pipe(select(selectSelectedExperiment));
   allPartitions$ = this.store$.pipe(select(selectAllPartitions));
   allExperimentNames$ = this.store$.pipe(select(selectAllExperimentNames));
@@ -64,9 +71,10 @@ export class ExperimentService {
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
+  pollingEnabled: boolean = environment.pollingEnabled;
 
   selectSearchExperimentParams(): Observable<Object> {
-    return combineLatest(this.selectSearchKey$, this.selectSearchString$).pipe(
+    return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString })),
       first()
@@ -74,7 +82,7 @@ export class ExperimentService {
   }
 
   isInitialExperimentsLoading() {
-    return combineLatest(this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$).pipe(
+    return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
       map(([isLoading, experiments]) => {
         return !isLoading || !!experiments.length;
       })
@@ -82,10 +90,10 @@ export class ExperimentService {
   }
 
   isAllExperimentsFetched() {
-    return combineLatest(
+    return combineLatest([
       this.store$.pipe(select(selectSkipExperiment)),
       this.store$.pipe(select(selectTotalExperiment))
-    ).pipe(
+    ]).pipe(
       map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments)
     );
   }
@@ -117,14 +125,12 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionDeleteExperiment({ experimentId }));
   }
 
-  // TODO: is this implementation correct? combineLatest and map seem misused,
   selectExperimentById(experimentId: string) {
-    return combineLatest(this.store$.pipe(select(selectExperimentById, { experimentId }))).pipe(
-      map(([experiment]) => {
+    return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(
+      tap(experiment => {
         if (!experiment) {
           this.fetchExperimentById(experimentId);
         }
-        return experiment;
       })
     );
   }
@@ -179,5 +185,25 @@ export class ExperimentService {
 
   fetchExperimentDetailStat(experimentId: string) {
     this.store$.dispatch(experimentAction.actionFetchExperimentDetailStat({ experimentId }));
+  }
+
+  toggleDetailsPolling(experiment: Experiment, isPolling: boolean) {
+    if (!isPolling && experiment.state === EXPERIMENT_STATE.ENROLLING) {
+      this.beginDetailStatsPolling(experiment.id);
+    }
+ 
+    if (isPolling && experiment.state !== EXPERIMENT_STATE.ENROLLING) {
+      this.endDetailStatsPolling();
+    }
+  }
+
+  beginDetailStatsPolling(experimentId: string) {
+    if (this.pollingEnabled) {
+      this.store$.dispatch(experimentAction.actionBeginExperimentDetailStatsPolling({ experimentId }))
+    }
+  }
+
+  endDetailStatsPolling() {
+    this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling())
   }
 }

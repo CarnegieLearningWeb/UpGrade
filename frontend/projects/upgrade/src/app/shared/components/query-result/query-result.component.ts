@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AnalysisService } from '../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../core/experiments/store/experiments.model';
 import { Observable } from 'rxjs';

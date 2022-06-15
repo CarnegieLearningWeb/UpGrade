@@ -3,10 +3,9 @@ import { ExperimentUserService } from '../services/ExperimentUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { SERVER_ERROR } from 'upgrade_types';
-import { Validator } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
 
-const validator = new Validator();
 // TODO delete this from experiment system
 /**
  * @swagger
@@ -76,7 +75,7 @@ export class UserController {
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
   public one(@Param('id') id: string, @Req() request: AppRequest ): Promise<ExperimentUser> {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
     }
     return this.userService.findOne(id, request.logger);

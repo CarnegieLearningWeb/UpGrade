@@ -1,19 +1,19 @@
 import { EntityRepository, EntityManager, Repository } from 'typeorm';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import repositoryError from './utils/repositoryError';
 
-@EntityRepository(MonitoredExperimentPoint)
-export class MonitoredExperimentPointRepository extends Repository<MonitoredExperimentPoint> {
+@EntityRepository(MonitoredDecisionPoint)
+export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisionPoint> {
   public async saveRawJson(
-    rawData: Omit<MonitoredExperimentPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id' | 'monitoredPointLogs'>
-  ): Promise<MonitoredExperimentPoint> {
-    const id = `${rawData.experimentId}_${rawData.user.id}`;
+    rawData: Omit<MonitoredDecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id' | 'monitoredPointLogs'>
+  ): Promise<MonitoredDecisionPoint> {
+    const id = `${rawData.decisionPoint}_${rawData.user.id}`;
     const result = await this.createQueryBuilder('monitoredPoint')
       .insert()
-      .into(MonitoredExperimentPoint)
+      .into(MonitoredDecisionPoint)
       .values({ id, ...rawData })
-      .onConflict(`("id") DO UPDATE SET "experimentId" = :experimentId`)
-      .setParameter('experimentId', rawData.experimentId)
+      .onConflict(`("id") DO UPDATE SET "decisionPoint" = :decisionPoint`)
+      .setParameter('decisionPoint', rawData.decisionPoint)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
@@ -24,11 +24,11 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     return result.raw.length > 0 ? result.raw[0] : {};
   }
 
-  public async deleteByExperimentId(ids: string[], entityManager: EntityManager): Promise<MonitoredExperimentPoint[]> {
+  public async deleteByExperimentId(ids: string[], entityManager: EntityManager): Promise<MonitoredDecisionPoint[]> {
     const result = await entityManager
       .createQueryBuilder()
       .delete()
-      .from(MonitoredExperimentPoint)
+      .from(MonitoredDecisionPoint)
       .where('experimentId IN (:...ids)', { ids })
       .execute()
       .catch((errorMsg: any) => {
@@ -39,7 +39,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
     return result.raw;
   }
 
-  public async getByDateRange(ids: string[], from: Date, to: Date): Promise<MonitoredExperimentPoint[]> {
+  public async getByDateRange(ids: string[], from: Date, to: Date): Promise<MonitoredDecisionPoint[]> {
     const qb = this.createQueryBuilder('monitoredExperiment')
       .leftJoinAndSelect('monitoredExperiment.user', 'user')
       .where('monitoredExperiment.experimentId IN (:...ids)', { ids });
@@ -129,7 +129,7 @@ export class MonitoredExperimentPointRepository extends Repository<MonitoredExpe
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           this.constructor.name,
-          'getMinitoredExperimentPointCount',
+          'getMonitoredExperimentPointCount',
           { monitorPointIds },
           errorMsg
         );

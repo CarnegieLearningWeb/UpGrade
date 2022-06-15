@@ -3,12 +3,10 @@ import { ExperimentIncludeService } from '../services/ExperimentIncludeService';
 import { ExplicitExperimentIndividualInclusion } from '../models/ExplicitExperimentIndividualInclusion';
 import { ExplicitExperimentGroupInclusion } from '../models/ExplicitExperimentGroupInclusion';
 import { SERVER_ERROR } from 'upgrade_types';
-import { Validator } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { AppRequest } from '../../types';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
-const validator = new Validator();
-
 /**
  * @swagger
  * definitions:
@@ -182,7 +180,7 @@ export class ExperimentIncludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -283,7 +281,7 @@ export class ExperimentIncludeController {
      if (!experimentId) {
        return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null.'));
      }
-     if (!validator.isUUID(experimentId)) {
+     if (!isUUID(experimentId)) {
        return Promise.reject(
          new Error(
            JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -371,7 +369,7 @@ export class ExperimentIncludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experiment should not be null.'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -487,7 +485,7 @@ export class ExperimentIncludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should be provided for delete'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (!isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })

@@ -40,8 +40,8 @@ export default async function UpdateExperimentState(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1

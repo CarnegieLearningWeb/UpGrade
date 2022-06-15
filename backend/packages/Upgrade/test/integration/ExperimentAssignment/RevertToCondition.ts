@@ -34,8 +34,8 @@ export default async function testCase(): Promise<void> {
     ])
   );
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
   // get all experiment condition for user 1
@@ -151,8 +151,8 @@ function checkConditionAssigned(
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        expId: experimentName,
-        expPoint: experimentPoint,
+        target: experimentName,
+        site: experimentPoint,
         assignedCondition: expect.objectContaining({ id: conditionAssigned }),
       }),
     ])

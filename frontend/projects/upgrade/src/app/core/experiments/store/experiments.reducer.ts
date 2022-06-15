@@ -16,6 +16,8 @@ export const {
 
 export const initialState: ExperimentState = adapter.getInitialState({
   isLoadingExperiment: false,
+  isLoadingExperimentDetailStats: false,
+  isPollingExperimentDetailStats: false,
   skipExperiment: 0,
   totalExperiments: null,
   searchKey: EXPERIMENT_SEARCH_KEY.ALL,
@@ -65,12 +67,18 @@ const reducer = createReducer(
       stats = Object.keys(stats).map(key => {
         newStats[key] = { ...state.stats[key], ...stats[key] };
       });
-      return { ...state, stats: { ...state.stats, ...newStats } };
+      return { ...state, stats: { ...state.stats, ...newStats }, isLoadingExperimentDetailStats: false };
     }
   ),
   on(
     experimentsAction.actionSetIsGraphLoading,
     (state, { isGraphInfoLoading }) => ({ ...state, isGraphInfoLoading })
+  ),
+  on(
+    experimentsAction.actionFetchExperimentGraphInfo,
+    (state) => {
+      return { ...state, graphInfo: null };
+    }
   ),
   on(
     experimentsAction.actionFetchExperimentGraphInfoSuccess,
@@ -164,13 +172,53 @@ const reducer = createReducer(
     (state, { contextMetaData }) => ({ ...state, contextMetaData })
   ),
   on(
+    experimentsAction.actionFetchExperimentDetailStat,
+    (state) => { 
+      return {
+        ...state,
+        isLoadingExperimentDetailStats: true 
+      }
+    }
+  ),
+  on(
+    experimentsAction.actionFetchExperimentDetailStatFailure,
+    (state) => { 
+      return {
+        ...state,
+        isLoadingExperimentDetailStats: false 
+      }
+    }
+  ),
+  on(
     experimentsAction.actionFetchExperimentDetailStatSuccess,
     (state, { stat }) => {
       state.stats[stat.id] = stat;
       const updatedStat = state.stats[stat.id];
-      return { ...state, updatedStat };
+      return {
+        ...state,
+        updatedStat,
+        isLoadingExperimentDetailStats: false
+      };
     }
-  )
+  ),
+  on(
+    experimentsAction.actionBeginExperimentDetailStatsPolling,
+    (state) => {
+      return {
+        ...state,
+        isPollingExperimentDetailStats: true
+      }
+    }
+  ),
+  on(
+    experimentsAction.actionEndExperimentDetailStatsPolling,
+    (state) => {
+      return {
+        ...state,
+        isPollingExperimentDetailStats: false
+      }
+    }
+  ),
 );
 
 export function experimentsReducer(

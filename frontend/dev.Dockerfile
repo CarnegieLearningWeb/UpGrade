@@ -1,4 +1,4 @@
-FROM node:12.22.10-alpine
+FROM node:16.3.0-alpine
 
 WORKDIR /usr/src/app
 
@@ -10,5 +10,5 @@ RUN ["npm", "ci"]
 WORKDIR /usr/src/app/frontend
 
 EXPOSE 4200
-
+ENV NODE_OPTIONS=--max_old_space_size=4096
 CMD ["npm", "run", "docker:local"]

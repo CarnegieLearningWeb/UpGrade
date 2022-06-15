@@ -109,15 +109,21 @@ export interface ExperimentCondition {
   assignmentWeight: number;
   twoCharacterId: string;
   order: number;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
 }
 
 export interface ExperimentPartition {
   id: string;
-  expPoint: string;
-  expId: string;
+  site: string;
+  target: string;
   description: string;
   twoCharacterId: string;
   order: number;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
 }
 
 export interface ExperimentNameVM {
@@ -129,7 +135,10 @@ export interface ExperimentStateTimeLog {
   id: string;
   fromState: EXPERIMENT_STATE;
   toState: EXPERIMENT_STATE;
-  timeLog: Date;
+  timeLog: string;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
 }
 
 export interface segmentNew {
@@ -145,6 +154,7 @@ export interface Experiment {
   description: string;
   createdAt: string;
   updatedAt: string;
+  versionNumber: number;
   state: EXPERIMENT_STATE;
   context: string[];
   startOn: string;
@@ -164,6 +174,7 @@ export interface Experiment {
   filterMode: FILTER_MODE,
   experimentSegmentInclusion: segmentNew,
   experimentSegmentExclusion: segmentNew,
+  backendVersion: string;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -197,6 +208,8 @@ export interface ExperimentVM extends Experiment {
 
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
+  isLoadingExperimentDetailStats: boolean;
+  isPollingExperimentDetailStats: boolean;
   skipExperiment: number;
   totalExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;
@@ -211,7 +224,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
-  contextMetaData: {}
+  contextMetaData: {};
+  updatedStat?: IExperimentEnrollmentDetailStats;
 }
 
 export interface State extends AppState {

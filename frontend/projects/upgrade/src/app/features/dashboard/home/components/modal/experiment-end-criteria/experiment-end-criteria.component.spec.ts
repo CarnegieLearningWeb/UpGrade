@@ -2,9 +2,9 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExperimentEndCriteriaComponent } from './experiment-end-criteria.component';
 import { TestingModule } from '../../../../../../../testing/testing.module';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { OwlNativeDateTimeModule, OwlDateTimeModule } from 'ng-pick-datetime';
+import { OwlNativeDateTimeModule, OwlDateTimeModule } from 'ng-pick-datetime-ex';
 import { TestMockData } from '../../../../../../../testing/test.mock.data';
 
 xdescribe('ExperimentEndCriteriaComponent', () => {

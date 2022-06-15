@@ -1,7 +1,7 @@
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
@@ -252,14 +252,14 @@ export class AnalyticsService {
       });
       const individualEnrollmentRepository = await getCustomRepository(IndividualEnrollmentRepository, 'export');
       const groupEnrollmentRepository = await getCustomRepository(GroupEnrollmentRepository, 'export');
-      const monitoredExperimentPointRepository: MonitoredExperimentPointRepository = await getCustomRepository(
-        MonitoredExperimentPointRepository,
+      const monitoredDecisionPointRepository: MonitoredDecisionPointRepository = await getCustomRepository(
+        MonitoredDecisionPointRepository,
         'export'
       );
       const promiseData = await Promise.all([
         individualEnrollmentRepository.getEnrollmentCountByCondition(experimentId),
         groupEnrollmentRepository.getEnrollmentCountByCondition(experimentId),
-        monitoredExperimentPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
+        monitoredDecisionPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
       ]);
 
       let csvRows: any = [
@@ -299,9 +299,9 @@ export class AnalyticsService {
               ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
               : 'revert (to default)',
           // tslint:disable-next-line: object-literal-key-quotes
-          ExperimentPoints: partitions.map((partition) => partition.expPoint).join(','),
+          ExperimentPoints: partitions.map((partition) => partition.site).join(','),
           // tslint:disable-next-line: object-literal-key-quotes
-          ExperimentIDs: partitions.map((partition) => partition.expId).join(','),
+          ExperimentIDs: partitions.map((partition) => partition.target).join(','),
         },
       ];
 

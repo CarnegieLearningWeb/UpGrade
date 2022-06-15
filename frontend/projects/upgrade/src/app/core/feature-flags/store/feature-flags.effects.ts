@@ -8,7 +8,6 @@ import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.module';
 import { selectTotalFlags, selectSearchKey, selectSkipFlags, selectSortKey, selectSortAs, selectSearchString } from './feature-flags.selectors';
-import { combineLatest } from 'rxjs';
 
 @Injectable()
 export class FeatureFlagsEffects {
@@ -157,8 +156,7 @@ export class FeatureFlagsEffects {
   );
 
   private getSearchString$ = () =>
-  combineLatest(this.store$.pipe(select(selectSearchString))).pipe(
-    map(([searchString]) => searchString),
-    first()
-  );
+    this.store$.pipe(select(selectSearchString)).pipe(
+      first()
+    );
 }

@@ -11,8 +11,7 @@ import { PreviewUserRepository } from '../../../src/api/repositories/PreviewUser
 import { ExplicitIndividualAssignment } from '../../../src/api/models/ExplicitIndividualAssignment';
 import { ExperimentCondition } from '../../../src/api/models/ExperimentCondition';
 import { PreviewUser } from '../../../src/api/models/PreviewUser';
-import { Validator } from 'class-validator';
-const validator = new Validator();
+import { isUUID } from 'class-validator';
 
 let logger = new UpgradeLogger();
 
@@ -118,7 +117,7 @@ describe('Preview User Service Testing', () => {
 
     it('should create a user', async() => {
         const results = await service.create( {assignments: [assign1]}, logger);
-        expect(validator.isUUID(results)).toBeTruthy()
+        expect(isUUID(results)).toBeTruthy()
     })
 
     it('should update the user id', async() => {
