@@ -1,5 +1,6 @@
 <ng-container *ngIf="options?.length" >
   <form class="metric-design" [formGroup]="queryForm">
+    <span class="title">{{ 'home.new-experiment.metrics.defined-metrics.text' | translate }}</span>
     <!-- Metric Table -->
     <ng-container>
       <mat-table
@@ -160,6 +161,11 @@
       </button>
     </ng-container>
     <br>
+    <span
+      class="ft-14-600 validation-message"
+      *ngIf="queryNameError.length > 0"
+      [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
+    ></span>
     <br>
     <br>
     <div class="button-container">

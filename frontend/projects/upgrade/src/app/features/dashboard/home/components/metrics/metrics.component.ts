@@ -2,8 +2,7 @@ import {
   ChangeDetectionStrategy,
   ViewChild,
   ElementRef,
-  OnChanges,
-  SimpleChanges
+  OnChanges
 } from '@angular/core';
 
 import { AbstractControl } from '@angular/forms';
@@ -57,6 +56,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
   queryIndex = 0;
+
+  queryNameError = [];
 
   constructor(
     private analysisService: AnalysisService,
@@ -381,6 +382,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return metric;
   }
 
+  checkQueryNameError(queryName){
+    if (queryName == null || queryName === '') {
+      this.queryNameError.push(true);
+    }
+  }
+
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -388,13 +395,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
+        this.queryNameError = [];        
         const monitoredMetricsFormData = this.queryForm.getRawValue();
         monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map(
           (query, index) => {
             let { keys, operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
             if (keys) {
               keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key);
-              if (keys.length)  {
+              if (keys.length) {
+                this.checkQueryNameError(queryName);                
                 let queryObj: Query = {
                   name: queryName,
                   query: {
@@ -422,23 +431,25 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
                     : ({...this.removeMetricName(queryObj)})
                   );
               } else {
-                return;
+                  return;
               }
             } else {
               return;
             }
-          }
-        );
-        this.emitExperimentDialogEvent.emit({
-          type: eventType,
-          formData: monitoredMetricsFormData,
-          path: NewExperimentPaths.MONITORED_METRIC
-        });
-        break;
+          });
+
+        if (this.queryNameError.length == 0) {
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: monitoredMetricsFormData,
+            path: NewExperimentPaths.MONITORED_METRIC
+          });
+          break;
+        }
     }
   }
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges() {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.queries.clear();

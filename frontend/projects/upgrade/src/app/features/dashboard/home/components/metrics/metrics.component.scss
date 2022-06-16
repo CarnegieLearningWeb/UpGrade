@@ -106,6 +106,12 @@
     }
   }
 
+  .title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
   ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
     bottom: unset;
     background-color: unset !important;
