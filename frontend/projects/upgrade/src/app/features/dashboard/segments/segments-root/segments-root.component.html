@@ -4,7 +4,6 @@
     class="subtitle ft-16-400"
     [innerHTML]="'segments.subtitle.text' | translate"
   ></span>
-
   <ng-container *ngIf="isLoadingSegments$ | async; else loadingSegmentState">
     <mat-card class="segments-table" *ngIf="(segments$ | async).length; else noSegmentsTemplate">
       <segments-list></segments-list>

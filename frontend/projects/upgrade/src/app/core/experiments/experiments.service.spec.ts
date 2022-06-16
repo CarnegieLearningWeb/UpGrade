@@ -51,8 +51,10 @@ describe('ExperimentService', () => {
         partitions: [],
         queries: [],
         stateTimeLogs: [],
-        backendVersion: '1.0.0',
-        filterMode: FILTER_MODE.INCLUDE_ALL
+        filterMode: FILTER_MODE.INCLUDE_ALL,
+        // experimentSegmentInclusion: [],
+        // experimentSegmentExclusion: [],
+        backendVersion: '1.0.0'
     }
     let mockExperimentStateInfo = {
         newStatus: EXPERIMENT_STATE.INACTIVE,

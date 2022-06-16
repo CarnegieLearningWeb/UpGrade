@@ -1,6 +1,28 @@
 <mat-card class="segments-list-container">
   <div class="header">
     <div>
+      <mat-form-field class="filter-options">
+        <mat-select
+          class="ft-16-600"
+          [(ngModel)]="selectedExperimentFilterOption"
+        >
+          <mat-option *ngFor="let filterOption of experimentFilterOptions" [value]="filterOption">
+            {{ filterOption | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          class="search-input ft-16-400"
+          matInput
+          #searchInput
+          [(ngModel)]="searchValue"
+          [placeholder]="'global.search.text' | translate"
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    <div>
       <button
         mat-flat-button
         color="primary"
@@ -94,7 +116,8 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span> {{ segment.context }} </span>
+          <mat-chip class="ft-12-600" *ngIf="segment.context != 'ALL'"> {{ segment.context }} </mat-chip>
+          <span class="ft-12-600" *ngIf="segment.context == 'ALL'" style="margin-left: 10px;"> {{ segment.context }} </span>
         </td>
       </ng-container>
 
@@ -111,12 +134,12 @@
 
       <ng-container matColumnDef="membersCount">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
-          <span [matTooltip]="'segments.global-members.text' | translate" matTooltipPosition="above">
+          <span style="margin-left: 70px;" [matTooltip]="'segments.global-members.text' | translate" matTooltipPosition="above">
             {{ 'segments.global-members.text' | translate | uppercase }}
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span class="segment-description"> {{ segment.groupForSegment?.length + segment.individualForSegment?.length + segment.subSegments?.length }} </span>
+          <span class="segment-description" style="margin-left: 70px;"> {{ segment.groupForSegment?.length + segment.individualForSegment?.length + segment.subSegments?.length }} {{ 'segments.global-member.text' | translate}}</span>
         </td>
       </ng-container>
 

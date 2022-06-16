@@ -9,6 +9,7 @@ import { NewSegmentComponent } from '../modal/new-segment/new-segment.component'
 import { ImportSegmentComponent } from '../modal/import-segment/import-segment.component';
 import { E } from '@angular/cdk/keycodes';
 import { CustomMatTableSource } from './CustomMatTableSource';
+import { EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'segments-list',
@@ -30,6 +31,14 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   allSegments: MatTableDataSource<Segment>;
   allSegmentsSub: Subscription;
   isLoadingSegments$ = this.segmentsService.isLoadingSegments$;
+  experimentFilterOptions = [
+    EXPERIMENT_SEARCH_KEY.ALL,
+    EXPERIMENT_SEARCH_KEY.NAME,
+    EXPERIMENT_SEARCH_KEY.STATUS,
+    EXPERIMENT_SEARCH_KEY.CONTEXT
+  ];
+  selectedExperimentFilterOption = EXPERIMENT_SEARCH_KEY.ALL;
+  searchValue: string;
 
   isAllSegmentsFetchedSub: Subscription;
 

@@ -6,16 +6,6 @@
     formArrayName="members"
     #membersTable
   >
-    <!-- Members NUMBER Column -->
-    <ng-container matColumnDef="memberNumber">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-        {{ 'global.number.text' | translate }}
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element; let groupIndex = index">
-        <span>{{ groupIndex + 1 }}</span>
-      </mat-cell>
-    </ng-container>
-
     <!-- Members Type Column -->
     <ng-container matColumnDef="type">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -25,8 +15,10 @@
         *matCellDef="let element; let groupIndex = index"
         [formGroupName]="groupIndex"
       >
-        <mat-form-field appearance="fill" floatLabel="never" class="form-control">
-          <mat-select formControlName="type">
+        <mat-form-field floatLabel="never" class="form-control">
+          <mat-select formControlName="type" 
+            [placeholder]="'segments.members-placeholder-type.text' | translate"
+          >
             <mat-optgroup
               *ngFor="let type of memberTypesDum"
               [class.hideLabel]="type.heading == ''"
@@ -102,7 +94,9 @@
   >
     + {{ 'segments.members-add-members.text' | translate }}
   </button>
-
+  <br>
+  <br>
+  <br>
   <div class="button-container">
     <button
       matStepperPrevious
@@ -122,7 +116,6 @@
       <button
         matStepperNext
         mat-raised-button
-        *ngIf="groupIndex !== 0"
         class="modal-btn default-button"
         (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
       >

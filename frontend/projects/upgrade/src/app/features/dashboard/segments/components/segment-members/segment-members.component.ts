@@ -36,7 +36,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   segmentNameId = new Map();
   membersCountError: string = null;
 
-  membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember'];
+  membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
     private _formBuilder: FormBuilder,
     private segmentsService: SegmentsService,

@@ -54,10 +54,14 @@
           </button>
         </div>
       </div>
-
       <span class="ft-14-700 segment-create-date">
         {{
           ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate: 'medium date')
+        }}
+      </span>
+      <span class="ft-14-700 segment-update-date">
+        {{
+          ('home.view-experiment.last-updated-on.text' | translate) + (segment.updatedAt | formatDate: 'medium date')
         }}
       </span>
     </div> 
@@ -96,7 +100,10 @@
       <!-- Context -->
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
-        <span class="ft-18-700 section-data-value">
+        <mat-chip class="ft-14-700" *ngIf="segment.context != 'ALL'">
+          {{ segment.context }}
+        </mat-chip>
+        <span class="ft-14-700 section-data-value" *ngIf="segment.context == 'ALL'">
           {{ segment.context }}
         </span>
       </div>
@@ -106,16 +113,6 @@
     <div class="table-container">
       <span class="ft-24-700">{{ 'segments.new-segment-members-stepper.text' | translate }}</span>
       <mat-table [dataSource]="members" class="table">
-        <!-- Number Column -->
-        <ng-container matColumnDef="variationNumber">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            <span [matTooltip]="'global.number.text' | translate" matTooltipPosition="above">
-              {{ 'global.number.text' | translate }}
-            </span>
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
-        </ng-container>
-
         <!-- 'Type' Column -->
         <ng-container matColumnDef="value">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>

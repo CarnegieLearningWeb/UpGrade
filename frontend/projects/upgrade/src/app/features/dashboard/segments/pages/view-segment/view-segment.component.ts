@@ -25,7 +25,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   segmentSub: Subscription;
   members: {type: string, id: string}[] = [];
 
-  displayedVariationColumns: string[] = ['variationNumber', 'value', 'name'];
+  displayedVariationColumns: string[] = ['value', 'name'];
 
   constructor(
     private segmentsService: SegmentsService,

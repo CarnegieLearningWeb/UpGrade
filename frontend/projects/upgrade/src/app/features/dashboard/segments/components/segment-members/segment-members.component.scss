@@ -4,7 +4,7 @@
 
 .segment-members {
   .members-table {
-    max-height: 200px;
+    max-height: 170px;
     overflow: auto;
 
     mat-header-row {
@@ -17,13 +17,13 @@
     }
 
     mat-header-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 15px;
       color: var(--grey-6);
     }
 
     mat-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 15px;
     }
 
@@ -53,7 +53,7 @@
 
     mat-form-field {
       width: 100%;
-      text-align: center;
+      text-align: left;
     }
   }
 

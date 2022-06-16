@@ -77,8 +77,13 @@ $font-size-small: 15px;
 
     &-create-date {
       display: block;
-      padding-bottom: 23px;
       padding-top: 23px;
+      color: var(--grey-5);
+    }
+
+    &-update-date {
+      display: block;
+      padding-bottom: 23px;
       color: var(--grey-5);
     }
 
@@ -113,7 +118,7 @@ $font-size-small: 15px;
       mat-cell,
       mat-header-cell {
         display: flex;
-        justify-content: center;
+        justify-content: left;
         padding: 10px;
         word-break: break-word;
       }

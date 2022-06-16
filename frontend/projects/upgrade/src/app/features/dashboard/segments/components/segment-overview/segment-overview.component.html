@@ -19,7 +19,7 @@
   </mat-form-field>
 
   <mat-form-field class="ft-14-600 chips">
-    <mat-label>{{ 'Context' }}</mat-label>
+    <mat-label>{{ 'segments.overview.segment-app-context.text' | translate }}</mat-label>
     <mat-select class="ft-14-400" formControlName="context">
       <mat-option *ngFor="let context of allContexts" [value]="context">
         {{ context }}

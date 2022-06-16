@@ -9,13 +9,15 @@
   .name,
   .key,
   .variationType {
-    width: 50%;
+    width: 30%;
   }
 
   .description {
     width: 100%;
   }
-
+  .chips{
+    width: 30%;
+  }
   .button-container {
     display: flex;
     justify-content: flex-end;

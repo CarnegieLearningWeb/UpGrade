@@ -32,14 +32,14 @@ export class DashboardRootComponent implements OnInit {
       iconType: 'supervisor_account'
     },
     {
-      path: ['/logs'],
-      text: 'global.logs.title',
-      iconType: 'list'
-    },
-    {
       path: ['/segments'],
       text: 'global.segments.title',
       iconType: 'group'
+    },
+    {
+      path: ['/logs'],
+      text: 'global.logs.title',
+      iconType: 'list'
     }
   ];
 
