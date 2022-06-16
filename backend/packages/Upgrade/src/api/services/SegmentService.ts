@@ -128,10 +128,25 @@ export class SegmentService {
 
   private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
-
+      let segmentDoc: Segment;
       if (segment.id) {
         try {
-          await transactionalEntityManager.getRepository(Segment).delete(segment.id);
+          // get segment by ids
+          segmentDoc = await transactionalEntityManager
+            .getRepository(Segment)
+            .findOne(segment.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
+
+          // delete individual for segment
+          if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
+            await transactionalEntityManager
+              .getRepository(IndividualForSegment)
+              .delete(segmentDoc.individualForSegment as any);
+          }
+
+          // delete group for segment
+          if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
+            await transactionalEntityManager.getRepository(GroupForSegment).delete(segmentDoc.groupForSegment as any);
+          }
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = 'Error in deleting segment from DB';
@@ -141,14 +156,14 @@ export class SegmentService {
         }
       }
 
+      // create/update segment document
       segment.id = segment.id || uuid();
-      let segmentDoc: Segment;
-
-      const { userIds, groups, subSegmentIds, ...segmentData } = segment;
-      let subSegmentData = segment.subSegmentIds.map((subSegmentId) => ({id: subSegmentId}));
-
+      const { id, name, description, context, type } = segment;
+      const subSegmentData = segment.subSegmentIds.map((subSegmentId) => ({ id: subSegmentId }));
       try {
-        segmentDoc = await transactionalEntityManager.getRepository(Segment).save({...segmentData, subSegments: subSegmentData});
+        segmentDoc = await transactionalEntityManager
+          .getRepository(Segment)
+          .save({ id, name, description, context, type,  subSegments: subSegmentData });
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in saving segment in DB';
@@ -157,23 +172,27 @@ export class SegmentService {
         throw error;
       }
 
-      const individualForSegmentDocsToSave = 
-        segment.userIds.map((userId) => ({
-          userId: userId,
-          segment: segmentDoc
-        }))
+      const individualForSegmentDocsToSave = segment.userIds.map((userId) => ({
+        userId,
+        segment: segmentDoc,
+      }));
 
-      const groupForSegmentDocsToSave = 
-        segment.groups.map((group) => {
-          return {...group, segment: segmentDoc};
-        })
-
-      let individualDocs: IndividualForSegment[];
-      let groupDocs: GroupForSegment[];
+      const groupForSegmentDocsToSave = segment.groups.map((group) => {
+        return { ...group, segment: segmentDoc };
+      });
+      
       try {
-        [individualDocs, groupDocs] = await Promise.all([
-          this.individualForSegmentRepository.insertIndividualForSegment(individualForSegmentDocsToSave, transactionalEntityManager, logger),
-          this.groupForSegmentRepository.insertGroupForSegment(groupForSegmentDocsToSave, transactionalEntityManager, logger),
+        await Promise.all([
+          this.individualForSegmentRepository.insertIndividualForSegment(
+            individualForSegmentDocsToSave,
+            transactionalEntityManager,
+            logger
+          ),
+          this.groupForSegmentRepository.insertGroupForSegment(
+            groupForSegmentDocsToSave,
+            transactionalEntityManager,
+            logger
+          ),
         ]);
       } catch (err) {
         const error = err as Error;
@@ -182,29 +201,9 @@ export class SegmentService {
         throw error;
       }
 
-      const individualDocToReturn = individualDocs ? individualDocs.map((individualDoc) => {
-        const { segment, ...restDoc } = individualDoc;
-        return restDoc;
-      }) : [];
-
-      const groupDocToReturn = groupDocs ? groupDocs.map((groupDoc) => {
-        const { segment, ...restDoc } = groupDoc;
-        return restDoc;
-      }) : [];
-
-      const results = await Promise.all(segmentDoc.subSegments.map(async (item): Promise<Partial<Segment>> => {
-        const { individualForSegment, groupForSegment, subSegments, ...restDoc } = await this.getSegmentById(item.id,logger);
-        return restDoc;
-      }));
-
-      const newSegment = {
-        ...segmentDoc,
-        individualForSegment: individualDocToReturn as IndividualForSegment[],
-        groupForSegment: groupDocToReturn as GroupForSegment[],
-        subSegments: results as Segment[],
-      }
-
-      return newSegment;
+      return transactionalEntityManager
+        .getRepository(Segment)
+        .findOne(segmentDoc.id, { relations: ['individualForSegment', 'groupForSegment', 'subSegments'] });
     });
 
     return createdSegment;
