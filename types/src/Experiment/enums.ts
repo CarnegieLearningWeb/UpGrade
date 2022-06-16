@@ -137,3 +137,11 @@ export enum SEGMENT_TYPE {
   PRIVATE = 'private',
   GLOBAL_EXCLUDE = 'global_exclude'
 }
+
+export enum SEGMENT_STATUS {
+  USED = 'used',
+  UNUSED = 'unused',
+  GLOBAL = 'global',
+  LOCKED = 'locked',
+  UNLOCKED = 'unlocked',
+}

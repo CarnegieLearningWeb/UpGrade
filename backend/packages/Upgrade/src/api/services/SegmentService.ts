@@ -14,6 +14,7 @@ import { GroupForSegment } from '../models/GroupForSegment';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
+import { getSegmentData } from '../controllers/SegmentController';
 
 @Service()
 export class SegmentService {
@@ -58,7 +59,7 @@ export class SegmentService {
   }
 
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    //ogger.info({ message: `Find segment by id. segmentId: ${id}`});
+    //logger.info({ message: `Find segment by id. segmentId: ${id}`});
     let segmentDoc = await this.segmentRepository
     .createQueryBuilder('segment')
     .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -68,6 +69,49 @@ export class SegmentService {
     .getMany()
 
     return segmentDoc;
+  }
+
+  public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
+
+    const segmentsData = await this.getAllSegments(logger);
+    const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
+    const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
+
+    let segmentsUsedList = [];
+
+    if (allExperimentSegmentsInclusion) {
+      allExperimentSegmentsInclusion.forEach((ele) => {
+        let subSegments = ele.segment.subSegments;
+        subSegments.forEach((subSegment) => {
+          segmentsUsedList.push(subSegment.id);
+          // TODO for lock/unlock - add experiment details
+        });
+      });
+    }
+
+    if (allExperimentSegmentsExclusion) {
+      allExperimentSegmentsExclusion.forEach((ele) => {
+        let subSegments = ele.segment.subSegments;
+        subSegments.forEach((subSegment) => {
+          segmentsUsedList.push(subSegment.id);
+          // TODO for lock/unlock - add experiment details
+        });
+      });
+    }
+
+    const segmentsDataWithStatus = segmentsData.map((segment) => {
+      if (segmentsUsedList.find(segmentId => segmentId === segment.id)) {
+        return {...segment, status: 'Used'};
+      } else {
+        return {...segment, status: 'Unused'};
+      }      
+    });
+
+    return {
+      segmentsData: segmentsDataWithStatus,
+      experimentSegmentInclusionData: allExperimentSegmentsInclusion,
+      experimentSegmentExclusionData: allExperimentSegmentsExclusion
+    }
   }
 
   public async getExperimentSegmenExclusionData() {

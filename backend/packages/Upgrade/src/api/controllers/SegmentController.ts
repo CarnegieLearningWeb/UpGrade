@@ -211,19 +211,11 @@ export class SegmentController {
    *          '401':
    *            description: Authorization Required Error
    */
-  @Get()
-  public async getAllSegments( @Req() request: AppRequest ): Promise<getSegmentData> {
-    // TODO: transactional entity manager
-    const segmentsData = await this.segmentService.getAllSegments(request.logger);
-    const includeData = await this.segmentService.getExperimentSegmenInclusionData();
-    const excludeData = await this.segmentService.getExperimentSegmenExclusionData();
-
-    return {
-      segmentsData: segmentsData,
-      experimentSegmentInclusionData: includeData,
-      experimentSegmentExclusionData: excludeData
-    }
-  }
+   @Get()
+   public async getAllSegments( @Req() request: AppRequest ): Promise<getSegmentData> {
+     // TODO: transactional entity manager
+     return this.segmentService.getAllSegmentWithStatus(request.logger);
+   }
 
   /**
    * @swagger

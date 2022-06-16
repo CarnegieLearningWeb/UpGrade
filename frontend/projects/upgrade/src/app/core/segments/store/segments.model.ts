@@ -1,6 +1,7 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
+export { SEGMENT_STATUS }
 
 export enum NewSegmentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
@@ -53,6 +54,7 @@ export interface Segment {
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
   type: SEGMENT_TYPE;
+  status: string;
 }
 
 export interface SegmentInput {

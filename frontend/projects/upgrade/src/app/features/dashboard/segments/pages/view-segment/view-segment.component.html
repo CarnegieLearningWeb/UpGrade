@@ -73,20 +73,16 @@
         <span class="ft-18-700 section-data-value"
         (click)="openExperimentSegmentList()"
         >
-         click here
+         {{ segment.status }}
         </span>
-          <!-- <div class="segment-state-container">
-            <span
-              class="state-circle"
-            >
-            </span>
-            <span
-              class="ft-18-700 section-data-value"
-              (click)="openDialog(DialogType.CHANGE_STATUS)"
-            >
-            {{ yashil }}
-            </span>
-          </div> -->
+        <!-- <div class="segment-status-container">
+          <span class="status-circle" [ngStyle]="{ 'background-color':  experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+          <span class="ft-18-700 section-data-value section-data-value--editable"
+            (click)="openExperimentSegmentList()"
+          >
+            {{ segment.status | segmentStatus }}
+          </span>
+        </div> -->
       </div>
 
       <!-- Description -->

@@ -36,7 +36,6 @@ export class SegmentExperimentListComponent implements OnInit {
     });
 
     if (this.allExperimentSegmentsInclusion) {
-      console.log('allExperimentSegmentsInclusion', this.allExperimentSegmentsInclusion);
       this.allExperimentSegmentsInclusion.forEach((ele) => {
         let subSegments = ele.segment.subSegments;
         subSegments.forEach((subSegment) => {
@@ -48,7 +47,6 @@ export class SegmentExperimentListComponent implements OnInit {
     }
 
     if (this.allExperimentSegmentsExclusion) {
-      console.log('allExperimentSegmentsExclusion', this.allExperimentSegmentsExclusion);
       this.allExperimentSegmentsExclusion.forEach((ele) => {
         let subSegments = ele.segment.subSegments;
         subSegments.forEach((subSegment) => {
@@ -58,6 +56,6 @@ export class SegmentExperimentListComponent implements OnInit {
         });
       });
     }
-  }
 
+  }
 }

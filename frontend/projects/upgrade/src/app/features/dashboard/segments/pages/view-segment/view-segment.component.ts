@@ -13,6 +13,8 @@ import { MemberTypes, Segment } from '../../../../../core/segments/store/segment
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { SegmentExperimentListComponent } from '../../components/modal/segment-experiment-list/segment-experiment-list.component';
+import { SEGMENT_STATUS } from '../../../../../../../../../../types/src/Experiment/enums';
+import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
@@ -106,5 +108,13 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.segmentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+  }
+
+  get SegmentStatus() {
+    return SEGMENT_STATUS;
+  }
+
+  get SegmnetStatusPipeTypes() {
+    return SegmentStatusPipeType;
   }
 }

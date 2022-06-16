@@ -107,6 +107,29 @@ $font-size-small: 15px;
         &-value {
           color: $dark-grey-text-color;
         }
+
+        .segment-status-containser {
+          display: flex;
+          align-items: center;
+          
+          .status-circle {
+            display: inline-block;
+            margin-right: 6px;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+          }
+
+          .icons {
+            display: inline-flex;
+            margin-right: 6px;
+
+            ::ng-deep svg {
+              width: 15px;
+              height: 15px;
+            }
+          }
+        }
       }
     }
   }
