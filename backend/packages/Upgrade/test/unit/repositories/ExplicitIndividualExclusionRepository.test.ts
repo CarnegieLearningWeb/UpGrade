@@ -27,7 +27,7 @@ afterEach(() => {
 
 describe('ExplicitIndividualExclusionRepository Testing', () => {
 
-    it('should insert a new group experiment exclusion', async () => {
+    it('should insert a new individual experiment exclusion', async () => {
         createQueryBuilderStub = sandbox.stub(ExplicitIndividualExclusionRepository.prototype, 
             'createQueryBuilder').withArgs('explicitIndividualExclusion').returns(insertQueryBuilder);
         const result =  {
@@ -73,7 +73,7 @@ describe('ExplicitIndividualExclusionRepository Testing', () => {
         insertMock.verify();
     });
 
-    it('should delete a group experiment exclusion', async () => {
+    it('should delete a individual experiment exclusion', async () => {
         createQueryBuilderStub = sandbox.stub(ExplicitIndividualExclusionRepository.prototype, 
             'createQueryBuilder').withArgs().returns(deleteQueryBuilder);
         const result =  {
@@ -95,7 +95,7 @@ describe('ExplicitIndividualExclusionRepository Testing', () => {
         let res = await repo.deleteById(individual.userId);
 
         sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+        deleteMock.verify();
 
         expect(res).toEqual([individual])
 
@@ -114,7 +114,7 @@ describe('ExplicitIndividualExclusionRepository Testing', () => {
         expect(async() => {await repo.deleteById(individual.userId)}).rejects.toThrow(err);
 
         sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+        deleteMock.verify();
 
     });
 
