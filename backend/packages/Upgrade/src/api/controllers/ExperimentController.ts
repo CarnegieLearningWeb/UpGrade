@@ -16,16 +16,15 @@ import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService'; 
 import { SERVER_ERROR } from 'upgrade_types';
-import { Validator, validate } from 'class-validator';
+import { validate, isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
 import { ExperimentPaginatedParamsValidator } from './validators/ExperimentPaginatedParamsValidator';
 import { User } from '../models/User';
-import { ExperimentPartition } from '../models/ExperimentPartition';
+import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
 import { ExperimentInput } from '../../types/ExperimentInput';
-const validator = new Validator();
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -539,7 +538,7 @@ export class ExperimentController {
    *            description: Experiment Partitions not found
    */
   @Get('/partitions')
-  public getAllExperimentPoints( @Req() request: AppRequest ): Promise<Array<Pick<ExperimentPartition, 'expPoint' | 'expId'>>> {
+  public getAllExperimentPoints( @Req() request: AppRequest ): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
     return this.experimentService.getAllExperimentPartitions(request.logger);
   }
 
@@ -574,7 +573,7 @@ export class ExperimentController {
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
   public one(@Param('id') id: string,  @Req() request: AppRequest ): Promise<Experiment> | undefined {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -657,7 +656,7 @@ export class ExperimentController {
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
   public getCondition(@Param('id') id: string, @Req() request: AppRequest ): Promise<ExperimentCondition[]> {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -779,7 +778,7 @@ export class ExperimentController {
 
   @Delete('/:id')
   public delete(@Param('id') id: string, @CurrentUser() currentUser: User, @Req() request: AppRequest ): Promise<Experiment | undefined> {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -893,7 +892,7 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment> {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -938,7 +937,7 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment> {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : experiment id should be of type UUID.' })

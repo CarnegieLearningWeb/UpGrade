@@ -45,10 +45,19 @@ export enum SERVER_ERROR {
 }
 
 export enum ENROLLMENT_CODE {
-  INCLUDED = 'Student included in experiment',
-  PRIOR_EXPERIMENT_ENROLLING = 'Student reached experiment point prior to experiment enrolling',
-  STUDENT_EXCLUDED = 'Student was on exclusion list',
-  GROUP_EXCLUDED = 'GROUP was on exclusion list',
+  ALGORITHMIC = 'participant enrolled via algorithm',
+  GROUP_LOGIC = 'participant enrolled due to group enrollment',
+}
+
+export enum EXCLUSION_CODE {
+  ERROR = 'participant excluded due to unspecified error',
+  REACHED_PRIOR = 'participant reached experiment prior to experiment enrolling',
+  REACHED_AFTER = 'participant reached experiment during enrollment complete',
+  PARTICIPANT_ON_EXCLUSION_LIST = 'participant was on the exclusion list',
+  GROUP_ON_EXCLUSION_LIST = 'participant’s group was on the exclusion list',
+  EXCLUDED_DUE_TO_GROUP_LOGIC = 'participant excluded due to group assignment logic',
+  NO_GROUP_SPECIFIED = 'participant excluded due to incomplete group information',
+  INVALID_GROUP_OR_WORKING_GROUP = "participant's group or working group is incorrect",
 }
 
 export enum EXPERIMENT_LOG_TYPE {

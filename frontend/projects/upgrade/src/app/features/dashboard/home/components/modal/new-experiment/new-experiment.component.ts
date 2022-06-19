@@ -1,5 +1,6 @@
 import { Component, Inject, ViewChild, OnInit } from '@angular/core';
-import { MatDialogRef, MatSnackBar, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -59,7 +60,7 @@ export class NewExperimentComponent implements OnInit {
           this.currentContext = this.experimentInfo.context[0];
         }
 
-        this.isContextChanged = this.currentContext ? (this.currentContext !== this.newExperimentData.context[0]) : false;
+        this.isContextChanged = this.currentContext !== this.newExperimentData.context[0];
 
         this.currentContext  = this.newExperimentData.context[0];
 

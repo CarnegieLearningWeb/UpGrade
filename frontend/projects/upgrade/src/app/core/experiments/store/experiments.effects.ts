@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisAction from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil, mapTo, distinctUntilChanged, takeWhile, take, flatMap } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -25,11 +25,14 @@ import {
   selectSearchString,
   selectExperimentGraphInfo,
   selectContextMetaData,
-  selectExperimentById
+  selectExperimentById,
+  selectIsPollingExperimentDetailStats,
+  selectExperimentGraphRange
 } from './experiments.selectors';
-import { combineLatest } from 'rxjs';
+import { combineLatest, interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { environment } from '../../../../environments/environment';
 
 @Injectable()
 export class ExperimentEffects {
@@ -90,6 +93,7 @@ export class ExperimentEffects {
             const experiments = data.nodes;
             const experimentIds = experiments.map(experiment => experiment.id);
             const actions = fromStarting ? [experimentAction.actionSetSkipExperiment({ skipExperiment: 0 })] : [];
+
             return [
               ...actions,
               experimentAction.actionGetExperimentsSuccess({ experiments, totalExperiments: data.total }),
@@ -229,12 +233,40 @@ export class ExperimentEffects {
     )
   );
 
+  beginExperimentDetailStatsPolling$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionBeginExperimentDetailStatsPolling),
+      map(action => action.experimentId),
+      filter(experimentId => !!experimentId),
+      switchMap(experimentId => {
+        return interval(environment.pollingInterval).pipe(
+          switchMap(() => this.store$.pipe(select(selectIsPollingExperimentDetailStats))),
+          takeWhile((isPolling) => isPolling),
+          take(environment.pollingLimit),
+          switchMap(() => this.store$.pipe(select(selectExperimentGraphRange))),
+          switchMap((graphRange) => {
+            return [
+              experimentAction.actionFetchExperimentDetailStat({ experimentId }),
+              experimentAction.actionFetchExperimentGraphInfo({
+                experimentId,
+                range: graphRange,
+                clientOffset: -new Date().getTimezoneOffset()
+              })
+            ]
+          })
+        )
+      })
+    )
+  )
+
   fetchAllPartitions = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionFetchAllPartitions),
       switchMap(() =>
         this.experimentDataService.fetchAllPartitions().pipe(
-          map(allPartitions => experimentAction.actionFetchAllPartitionSuccess({ partitions: allPartitions })),
+          map(
+            allPartitions => experimentAction.actionFetchAllPartitionSuccess({ partitions: allPartitions })
+          ),
           catchError(() => [experimentAction.actionFetchAllPartitionFailure()])
         )
       )
@@ -247,9 +279,9 @@ export class ExperimentEffects {
       switchMap(() =>
         this.experimentDataService.fetchAllExperimentNames().pipe(
           map(
-            (data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data }),
-            catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
-          )
+            (data: any) => experimentAction.actionFetchAllExperimentNamesSuccess({ allExperimentNames: data })
+          ),
+          catchError(() => [experimentAction.actionFetchAllExperimentNamesFailure()])
         )
       )
     )
@@ -415,7 +447,7 @@ export class ExperimentEffects {
       )
     )
   );
-  
+
   private download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
@@ -426,8 +458,7 @@ export class ExperimentEffects {
     document.body.removeChild(element);
   }
   private getSearchString$ = () =>
-    combineLatest(this.store$.pipe(select(selectSearchString))).pipe(
-      map(([searchString]) => searchString),
+    this.store$.pipe(select(selectSearchString)).pipe(
       first()
     );
 }

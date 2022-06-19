@@ -57,8 +57,8 @@ export default async function testCase(): Promise<void> {
   delete experimentUser.updatedAt;
   expect(experimentUser).toEqual(objectToCheck);
 
-  const experimentName = experimentObject.partitions[0].expId;
-  const experimentPoint = experimentObject.partitions[0].expPoint;
+  const experimentName = experimentObject.partitions[0].target;
+  const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
 
   // create experiment

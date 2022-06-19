@@ -26,13 +26,18 @@ export const selectIsLoadingExperiment = createSelector(
   state => state.isLoadingExperiment
 );
 
+export const selectIsLoadingExperimentDetailStats = createSelector(
+  selectExperimentState,
+  state => state.isLoadingExperimentDetailStats
+);
+
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
   ({ state: { params } }, experimentState) => {
     return experimentState.stats[params.experimentId]
       ? ({ ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] })
-      : ({ id: params.experimentId , ...experimentState.entities[params.experimentId], stat: null });
+      : ({ ...experimentState.entities[params.experimentId], stat: null });
   }
 );
 
@@ -128,3 +133,7 @@ export const selectGroupAssignmentStatus = createSelector(
     return null;
   }
 );
+export const selectIsPollingExperimentDetailStats = createSelector(
+  selectExperimentState,
+  (state) => state.isPollingExperimentDetailStats
+)

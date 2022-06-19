@@ -148,11 +148,10 @@ export class UsersEffects {
   );
 
   private getSearchString$ = () =>
-    combineLatest(
+    combineLatest([
       this.store$.pipe(select(selectSearchString)),
       this.store$.pipe(select(selectSortAs)),
-
-    ).pipe(
+    ]).pipe(
       map(([searchString, sortAs]) => ({ searchString, sortAs })),
       first()
     );

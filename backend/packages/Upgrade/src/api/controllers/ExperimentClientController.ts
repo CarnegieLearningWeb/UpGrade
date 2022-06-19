@@ -6,7 +6,7 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
@@ -330,7 +330,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: MarkExperimentValidator
-  ): Promise<MonitoredExperimentPoint> {
+  ): Promise<MonitoredDecisionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
@@ -454,9 +454,21 @@ export class ExperimentClientController {
       request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
-    return this.experimentAssignmentService.getAllExperimentConditions(experiment.userId, experiment.context, {
-      logger: request.logger,
-      userDoc: experimentUserDoc,
+    const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
+      experiment.userId,
+      experiment.context,
+      {
+        logger: request.logger,
+        userDoc: experimentUserDoc,
+      }
+    );
+
+    return assignedData.map(({ site, target, ...rest }) => {
+      return {
+        expPoint: site,
+        expId: target,
+        ...rest,
+      };
     });
   }
 
@@ -563,12 +575,15 @@ export class ExperimentClientController {
       });
     }).catch((error) => {
       request.logger.error(error);     
-      throw new Error(
+      error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: error.message,
         })
       );
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404
+      throw error;
     });
   }
 

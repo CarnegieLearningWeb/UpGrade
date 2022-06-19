@@ -1,6 +1,6 @@
 import { IsNotEmpty, ValidateIf, ValidateNested } from 'class-validator';
 import { ExperimentCondition } from '../api/models/ExperimentCondition';
-import { ExperimentPartition } from '../api/models/ExperimentPartition';
+import { DecisionPoint } from '../api/models/DecisionPoint';
 import { StateTimeLog } from '../api/models/StateTimeLogs';
 import {
   EXPERIMENT_STATE,
@@ -53,7 +53,7 @@ export class ExperimentInput {
   public conditions: ExperimentCondition[];
 
   @ValidateNested()
-  public partitions: ExperimentPartition[];
+  public partitions: DecisionPoint[];
 
   @ValidateNested()
   public stateTimeLogs: StateTimeLog[];
@@ -64,4 +64,5 @@ export class ExperimentInput {
   public createdAt: Date;
   public updatedAt: Date;
   public versionNumber: number;
+  public backendVersion: string;
 }

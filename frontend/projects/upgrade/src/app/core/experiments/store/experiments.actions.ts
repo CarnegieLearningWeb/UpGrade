@@ -1,4 +1,5 @@
 import { createAction, props } from '@ngrx/store';
+import { FLAG_SEARCH_SORT_KEY } from '../../feature-flags/store/feature-flags.model';
 import {
   Experiment,
   UpsertExperimentType,
@@ -228,3 +229,11 @@ export const actionFetchGroupAssignmentStatusSuccess = createAction(
 export const actionFetchGroupAssignmentStatusFailure = createAction(
   '[Experiment] Fetch group counts having met ending criteria Failure'
 );
+export const actionBeginExperimentDetailStatsPolling = createAction(
+  '[Experiment] Begin polling every n seconds for details stats',
+  props<{ experimentId: string }>()
+)
+
+export const actionEndExperimentDetailStatsPolling = createAction(
+  '[Experiment] End polling for detail stats'
+)

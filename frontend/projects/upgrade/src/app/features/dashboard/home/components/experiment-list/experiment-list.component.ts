@@ -11,7 +11,7 @@ import { MatSort } from '@angular/material/sort';
 import { Experiment, EXPERIMENT_STATE, EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription, fromEvent, Observable } from 'rxjs';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { NewExperimentComponent } from '../modal/new-experiment/new-experiment.component';
 import { ExperimentStatePipeType } from '../../../../../shared/pipes/experiment-state.pipe';
 import { debounceTime } from 'rxjs/operators';
@@ -20,6 +20,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { SettingsService } from '../../../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
+import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 
 @Component({
   selector: 'home-experiment-list',
@@ -127,7 +128,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   // Used to search based on partition point and name
   isPartitionFound(data: Experiment, filterValue: string): boolean {
     const isPartitionFound = data.partitions.filter(
-      partition => (partition.expId ? partition.expId.toLocaleLowerCase().includes(filterValue) : false) || partition.expPoint.toLocaleLowerCase().includes(filterValue)
+      partition => (partition.target ? partition.target.toLocaleLowerCase().includes(filterValue) : false) || partition.site.toLocaleLowerCase().includes(filterValue)
     );
     return !!isPartitionFound.length;
   }
@@ -143,7 +144,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.setSearchKey(this.selectedExperimentFilterOption);
   }
 
-  setSearchString(searchString: string) {
+  setSearchString(searchString: FLAG_SEARCH_SORT_KEY) {
     this.experimentService.setSearchString(searchString);
   }
 
@@ -157,12 +158,11 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     this.experimentService.loadExperiments(true);
   }
 
-  filterExperimentByChips(tagValue: string, type: EXPERIMENT_SEARCH_KEY) {
-    this.searchValue = tagValue;
+  filterExperimentByChips(tagValue: FLAG_SEARCH_SORT_KEY, type: EXPERIMENT_SEARCH_KEY) {
     this.selectedExperimentFilterOption = type;
     this.applyFilter(tagValue);
     this.setSearchKey();
-    this.setSearchString(this.searchValue);
+    this.setSearchString(tagValue);
   }
 
   openNewExperimentDialog() {

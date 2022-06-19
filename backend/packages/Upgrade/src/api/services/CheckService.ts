@@ -1,36 +1,36 @@
+import { GroupEnrollment } from './../models/GroupEnrollment';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { GroupAssignmentRepository } from '../repositories/GroupAssignmentRepository';
-import { IndividualAssignmentRepository } from '../repositories/IndividualAssignmentRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
-import { GroupAssignment } from '../models/GroupAssignment';
-import { IndividualAssignment } from '../models/IndividualAssignment';
 import { GroupExclusion } from '../models/GroupExclusion';
 import { IndividualExclusion } from '../models/IndividualExclusion';
-import { MonitoredExperimentPoint } from '../models/MonitoredExperimentPoint';
-import { MonitoredExperimentPointRepository } from '../repositories/MonitoredExperimentPointRepository';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
+import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
+import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
+import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
+import { IndividualEnrollment } from '../models/IndividualEnrollment';
 
 @Service()
 export class CheckService {
   constructor(
     @OrmRepository()
-    private groupAssignmentRepository: GroupAssignmentRepository,
+    private groupEnrollmentRepository: GroupEnrollmentRepository,
     @OrmRepository()
-    private individualAssignmentRepository: IndividualAssignmentRepository,
+    private individualEnrollmentRepository: IndividualEnrollmentRepository,
     @OrmRepository() private groupExclusionRepository: GroupExclusionRepository,
     @OrmRepository()
     private individualExclusionRepository: IndividualExclusionRepository,
     @OrmRepository()
-    private monitoredExperimentPointRepository: MonitoredExperimentPointRepository
+    private monitoredExperimentPointRepository: MonitoredDecisionPointRepository
   ) {}
 
-  public getAllGroupAssignments(): Promise<GroupAssignment[]> {
-    return this.groupAssignmentRepository.find({ relations: ['condition'] });
+  public getAllGroupAssignments(): Promise<GroupEnrollment[]> {
+    return this.groupEnrollmentRepository.find({ relations: ['condition'] });
   }
 
-  public getAllIndividualAssignment(): Promise<IndividualAssignment[]> {
-    return this.individualAssignmentRepository.find({
+  public getAllIndividualAssignment(): Promise<IndividualEnrollment[]> {
+    return this.individualEnrollmentRepository.find({
       relations: ['experiment', 'user', 'condition'],
     });
   }
@@ -43,7 +43,7 @@ export class CheckService {
     return this.individualExclusionRepository.find();
   }
 
-  public getAllMarkedExperimentPoints(): Promise<MonitoredExperimentPoint[]> {
+  public getAllMarkedExperimentPoints(): Promise<MonitoredDecisionPoint[]> {
     return this.monitoredExperimentPointRepository.find({ relations: ['user', 'monitoredPointLogs'] });
   }
 }

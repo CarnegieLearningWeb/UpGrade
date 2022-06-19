@@ -29,7 +29,7 @@ export class FlagVariationRepository extends Repository<FlagVariation> {
   }
 
   public async deleteVariation(id: string, entityManager: EntityManager): Promise<void> {
-    entityManager
+    await entityManager
       .createQueryBuilder()
       .delete()
       .from(FlagVariation)

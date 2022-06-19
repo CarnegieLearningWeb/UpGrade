@@ -10,7 +10,13 @@ import {
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { checkExperimentAssignedIsNull, checkExperimentAssignedIsNotDefault, getAllExperimentCondition } from '../../utils';
+import {
+  checkExperimentAssignedIsNull,
+  checkExperimentAssignedIsNotDefault,
+  checkMarkExperimentPointForUser,
+  getAllExperimentCondition,
+  markExperimentPoint,
+} from '../../utils';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 import { ExperimentClientController } from '../../../../src/api/controllers/ExperimentClientController';
 
@@ -24,15 +30,15 @@ export default async function testCase(): Promise<void> {
 
   // create individual and group experiment
   const experimentObject1 = individualAssignmentExperiment;
-  const experimentName1 = experimentObject1.partitions[0].expId;
-  const experimentPoint1 = experimentObject1.partitions[0].expPoint;
+  const experimentName1 = experimentObject1.partitions[0].target;
+  const experimentPoint1 = experimentObject1.partitions[0].site;
   // const condition1 = experimentObject1.conditions[0].conditionCode;
   await experimentService.create(experimentObject1 as any, user, new UpgradeLogger());
 
   const experimentObject2 = groupAssignmentWithIndividualConsistencyExperimentSecond;
-  const experimentName2 = experimentObject2.partitions[0].expId;
-  const experimentPoint2 = experimentObject2.partitions[0].expPoint;
-  // const condition2 = experimentObject2.conditions[0].conditionCode;
+  const experimentName2 = experimentObject2.partitions[0].target;
+  const experimentPoint2 = experimentObject2.partitions[0].site;
+  const condition = experimentObject2.conditions[0].conditionCode;
   await experimentService.create(experimentObject2 as any, user, new UpgradeLogger());
 
   let experiments = await experimentService.find(new UpgradeLogger());
@@ -88,10 +94,20 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
+  // mark experiment2
+  const markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName2,
+    experimentPoint2,
+    condition,
+    new UpgradeLogger()
+  );
+  checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName2, experimentPoint2);
+
   // create new group experiment
   const experimentObject3 = groupAssignmentWithIndividualConsistencyExperimentThird;
-  const experimentName3 = experimentObject3.partitions[0].expId;
-  const experimentPoint3 = experimentObject3.partitions[0].expPoint;
+  const experimentName3 = experimentObject3.partitions[0].target;
+  const experimentPoint3 = experimentObject3.partitions[0].site;
   await experimentService.create(experimentObject3 as any, user, new UpgradeLogger());
 
   experiments = await experimentService.find(new UpgradeLogger());
@@ -117,13 +133,16 @@ export default async function testCase(): Promise<void> {
         postExperimentRule: experimentObject3.postExperimentRule,
         assignmentUnit: experimentObject3.assignmentUnit,
         consistencyRule: experimentObject3.consistencyRule,
-      })
+      }),
     ])
   );
   // getOriginalUserDoc call for alias
   const experimentUserDoc = await experimentClientController.getUserDoc(experimentUsers[0].id, new UpgradeLogger());
   // remove user group
-  await experimentUserService.updateWorkingGroup(experimentUsers[0].id, null, { logger: new UpgradeLogger(), userDoc: experimentUserDoc});
+  await experimentUserService.updateWorkingGroup(experimentUsers[0].id, null, {
+    logger: new UpgradeLogger(),
+    userDoc: experimentUserDoc,
+  });
   const experimentUser = await experimentUserService.findOne(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentUser.workingGroup).toBeNull();
 

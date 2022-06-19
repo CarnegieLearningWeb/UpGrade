@@ -6,6 +6,7 @@ import { ExperimentService } from './experiments.service';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, DATE_RANGE, ExperimentLocalStorageKeys, ExperimentVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, UpsertExperimentType } from './store/experiments.model';
 import * as ExperimentSelectors from './store/experiments.selectors';
 import { actionDeleteExperiment, actionExportExperimentDesign, actionExportExperimentInfo, actionFetchAllExperimentNames, actionFetchContextMetaData, actionFetchExperimentDetailStat, actionGetExperimentById, actionGetExperiments, actionSetGraphRange, actionSetSearchKey, actionSetSearchString, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpsertExperiment } from './store/experiments.actions';
+import { FILTER_MODE } from 'upgrade_types';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
@@ -30,6 +31,7 @@ describe('ExperimentService', () => {
         description: 'abc123',
         createdAt: 'time',
         updatedAt: 'time',
+        versionNumber: 0,
         state: EXPERIMENT_STATE.INACTIVE,
         context: [],
         startOn: 'test',
@@ -48,7 +50,9 @@ describe('ExperimentService', () => {
         conditions: [],
         partitions: [],
         queries: [],
-        stateTimeLogs: []
+        stateTimeLogs: [],
+        backendVersion: '1.0.0',
+        filterMode: FILTER_MODE.INCLUDE_ALL
     }
     let mockExperimentStateInfo = {
         newStatus: EXPERIMENT_STATE.INACTIVE,

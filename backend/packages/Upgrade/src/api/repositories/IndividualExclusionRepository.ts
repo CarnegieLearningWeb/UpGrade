@@ -26,11 +26,18 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
     return result.raw;
   }
 
+  public async isUserExcludedFromExperiment(userId: string, experimentId: string): Promise<boolean> {
+    const excludedCount = await this.count({
+      where: { experiment: { id: experimentId }, user: { id: userId } },
+    });
+    return excludedCount > 0;
+  }
+
   public async findExcluded(userId: string, experimentIds: string[]): Promise<IndividualExclusion[]> {
     const primaryKeys = experimentIds.map((experimentId) => {
       return `${experimentId}_${userId}`;
     });
-    return this.createQueryBuilder('individualExclusion')
+    return await this.createQueryBuilder('individualExclusion')
       .leftJoinAndSelect('individualExclusion.experiment', 'experiment')
       .leftJoinAndSelect('individualExclusion.user', 'user')
       .whereInIds(primaryKeys)
@@ -47,7 +54,7 @@ export class IndividualExclusionRepository extends Repository<IndividualExclusio
   }
 
   public async findExcludedByExperimentId(experimentId: string): Promise<IndividualExclusion[]> {
-    return this.createQueryBuilder('individualExclusion')
+    return await this.createQueryBuilder('individualExclusion')
       .leftJoinAndSelect('individualExclusion.experiment', 'experiment')
       .leftJoinAndSelect('individualExclusion.user', 'user')
       .where('experiment.id = :experimentId', { experimentId })

@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
-import { MatChipInputEvent, MatAutocompleteSelectedEvent } from '@angular/material';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -9,11 +8,11 @@ import {
   IContextMetaData
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import * as find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Observable, Subscription } from 'rxjs';
-import { startWith, map } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
+import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
   selector: 'home-experiment-overview',

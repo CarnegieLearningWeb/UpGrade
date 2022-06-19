@@ -18,8 +18,8 @@ export function CreateSystemUser(): Promise<User> {
   // Create default admin user in system
   if (env.initialization.adminUsers && env.initialization.adminUsers.length) {
     env.initialization.adminUsers.forEach(async (adminUser) => {
-      await userService.upsertUser(adminUser as any, new UpgradeLogger());
+      await userService.upsertAdminUser(adminUser as any, new UpgradeLogger());
     });
   }
-  return userService.upsertUser(systemUserDoc as any, new UpgradeLogger());
+  return userService.upsertAdminUser(systemUserDoc as any, new UpgradeLogger());
 }

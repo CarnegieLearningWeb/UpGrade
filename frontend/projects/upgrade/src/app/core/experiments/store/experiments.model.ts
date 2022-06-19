@@ -13,7 +13,8 @@ import {
   IExperimentSortParams,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
-  IExperimentEnrollmentDetailDateStats
+  IExperimentEnrollmentDetailDateStats,
+  FILTER_MODE
 } from 'upgrade_types';
 
 export {
@@ -106,15 +107,21 @@ export interface ExperimentCondition {
   assignmentWeight: number;
   twoCharacterId: string;
   order: number;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
 }
 
 export interface ExperimentPartition {
   id: string;
-  expPoint: string;
-  expId: string;
+  site: string;
+  target: string;
   description: string;
   twoCharacterId: string;
   order: number;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
 }
 
 export interface ExperimentNameVM {
@@ -126,7 +133,10 @@ export interface ExperimentStateTimeLog {
   id: string;
   fromState: EXPERIMENT_STATE;
   toState: EXPERIMENT_STATE;
-  timeLog: Date;
+  timeLog: string;
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
 }
 
 export interface Experiment {
@@ -135,6 +145,7 @@ export interface Experiment {
   description: string;
   createdAt: string;
   updatedAt: string;
+  versionNumber: number;
   state: EXPERIMENT_STATE;
   context: string[];
   startOn: string;
@@ -152,6 +163,8 @@ export interface Experiment {
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   groupSatisfied: number;
+  backendVersion: string;
+  filterMode: FILTER_MODE;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -185,6 +198,8 @@ export interface ExperimentVM extends Experiment {
 
 export interface ExperimentState extends EntityState<Experiment> {
   isLoadingExperiment: boolean;
+  isLoadingExperimentDetailStats: boolean;
+  isPollingExperimentDetailStats: boolean;
   skipExperiment: number;
   totalExperiments: number;
   searchKey: EXPERIMENT_SEARCH_KEY;
@@ -199,7 +214,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
-  contextMetaData: {}
+  contextMetaData: {};
+  updatedStat?: IExperimentEnrollmentDetailStats;
 }
 
 export interface State extends AppState {
