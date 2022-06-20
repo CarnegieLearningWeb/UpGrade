@@ -7,7 +7,6 @@ import { filter } from 'rxjs/operators';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { NewSegmentComponent } from '../../components/modal/new-segment/new-segment.component';
 import * as clonedeep from 'lodash.clonedeep';
-import { DeleteSegmentComponent } from '../../components/modal/delete-segment/delete-segment.component';
 import { DuplicateSegmentComponent } from '../../components/modal/duplicate-segment/duplicate-segment.component';
 import { MemberTypes, Segment } from '../../../../../core/segments/store/segments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
@@ -113,7 +112,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     return SEGMENT_STATUS;
   }
 
-  get SegmnetStatusPipeTypes() {
+  get SegmentStatusPipeTypes() {
     return SegmentStatusPipeType;
   }
 }

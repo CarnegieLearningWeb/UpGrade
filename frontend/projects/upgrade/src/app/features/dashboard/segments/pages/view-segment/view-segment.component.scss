@@ -106,9 +106,18 @@ $font-size-small: 15px;
 
         &-value {
           color: $dark-grey-text-color;
+
+          &--editable {
+            margin-right: 8px;
+            text-decoration: underline;
+
+            &:hover {
+              cursor: pointer;
+            }
+          }
         }
 
-        .segment-status-containser {
+        .segment-status-container {
           display: flex;
           align-items: center;
           

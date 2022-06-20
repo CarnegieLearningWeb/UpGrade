@@ -27,7 +27,7 @@
         mat-flat-button
         color="primary"
         class="ft-14-700 export-segments"
-        (click)="openExportAllSegmentsDialog()"
+        (click)="openExportAllSegmentDialog()"
         *ngIf="(permissions$ | async)?.segments.create"
       >
         <mat-icon>download</mat-icon>
@@ -93,8 +93,17 @@
             {{ 'segments.global-status.text' | translate | uppercase }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <span> {{ segment.status }} </span>
+        <td
+          class="ft-12-600"
+          mat-cell
+          *matCellDef="let segment"
+        >
+          <div class="segment-status">
+            <span class="segment-status-circle" [ngStyle]="{'backgroundColor': segment.status | segmentStatus: SegmentStatusPipeTypes.COLOR }"></span>
+            <span>
+              {{ segment.status | segmentStatus }}
+            </span>
+          </div>
         </td>
       </ng-container>
 

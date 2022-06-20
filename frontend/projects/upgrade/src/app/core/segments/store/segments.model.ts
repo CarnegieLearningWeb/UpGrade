@@ -31,6 +31,21 @@ export enum MemberTypes {
   SEGMENT = 'Segment'
 }
 
+export interface experimentSegmentInclusionExclusionData {
+  createdAt: string;
+  updatedAt: string;
+  versionNumber: number;
+  experiment: {
+    name: string;
+    context: Array<any>;
+    state: string;
+  };
+  segment: {
+    id: string;
+    subSegments: Array<any>;
+  };
+}
+
 export interface GroupForSegment {
   groupId: string;
   type: string;

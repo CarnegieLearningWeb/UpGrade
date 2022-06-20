@@ -10,8 +10,8 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
 })
 export class DuplicateSegmentComponent {
 
-  segmentName;
-  segmentDescription;
+  segmentName: string;
+  segmentDescription: string;
 
   constructor(
     public dialogRef: MatDialogRef<DuplicateSegmentComponent>,
@@ -27,19 +27,19 @@ export class DuplicateSegmentComponent {
   }
 
   onDuplicateClick(segmentName: string, segmentDescription: string) {
-    const newSegment: any =  { ...this.data.segment, name: segmentName, description: segmentDescription, id: null };
+    const duplicateSegmentData =  { ...this.data.segment, name: segmentName, description: segmentDescription, id: null };
     
-    newSegment.userIds = newSegment.individualForSegment.map((individual) => {
+    duplicateSegmentData.userIds = duplicateSegmentData.individualForSegment.map((individual) => {
       return individual.userId;
     });
-    newSegment.subSegmentIds = newSegment.subSegments.map((subSegment) => {
+    duplicateSegmentData.subSegmentIds = duplicateSegmentData.subSegments.map((subSegment) => {
       return subSegment.id;
     });
-    newSegment.groups = newSegment.groupForSegment.map((group) => {
+    duplicateSegmentData.groups = duplicateSegmentData.groupForSegment.map((group) => {
       return { type: group.type, groupId: group.groupId } ;
     });
 
-    this.segmentsService.createNewSegment(newSegment);
+    this.segmentsService.createNewSegment(duplicateSegmentData);
     this.onCancelClick();
   }
 }

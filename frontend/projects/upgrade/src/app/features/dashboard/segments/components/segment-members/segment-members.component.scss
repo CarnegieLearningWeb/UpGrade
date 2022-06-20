@@ -4,7 +4,7 @@
 
 .segment-members {
   .members-table {
-    max-height: 170px;
+    height: 190px;
     overflow: auto;
 
     mat-header-row {
@@ -30,13 +30,22 @@
     .cdk-column-removeMember {
       margin-right: 0;
       padding-right: 0;
+      flex: 0 0 10%;
+      justify-content: left;
     }
 
 
-    .cdk-column-memberNumber,
-    .cdk-column-removeMember {
+    .cdk-column-type {
+      flex: 0 0 30%;
+      justify-content: left;
+    }
+    .cdk-column-id {
+      flex: 0 0 55%;
+      justify-content: left;
+    }
+    .cdk-column-memberNumber {
       flex: 0 0 10%;
-      width: 10%;
+      justify-content: left;
     }
 
     .remove-icon {

@@ -29,7 +29,7 @@ export class ImportSegmentComponent {
   }
 
   importSegment() {
-    /// improve the logic here 
+    // TODO: improve the logic here 
     let { individualForSegment, groupForSegment, subSegments, ...rest } = this.segmentInfo;
   
     const userIds = this.segmentInfo.individualForSegment.map((individual) => {
@@ -71,7 +71,8 @@ export class ImportSegmentComponent {
       userIds: 'array',
       groups: 'interface',
       subSegmentIds: 'array',
-      type: 'enum'
+      type: 'enum',
+      status: 'string'
     };
 
     const groupSchema: Record<keyof any, string> = {

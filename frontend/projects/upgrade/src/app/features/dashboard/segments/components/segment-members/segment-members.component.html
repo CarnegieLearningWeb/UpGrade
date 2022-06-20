@@ -20,7 +20,7 @@
             [placeholder]="'segments.members-placeholder-type.text' | translate"
           >
             <mat-optgroup
-              *ngFor="let type of memberTypesDum"
+              *ngFor="let type of segmentMemberTypes"
               [class.hideLabel]="type.heading == ''"
               [disabled]="type.disabled"
               [label]="type.heading"
@@ -94,9 +94,7 @@
   >
     + {{ 'segments.members-add-members.text' | translate }}
   </button>
-  <br>
-  <br>
-  <br>
+
   <div class="button-container">
     <button
       matStepperPrevious

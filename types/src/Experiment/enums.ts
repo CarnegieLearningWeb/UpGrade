@@ -145,3 +145,8 @@ export enum SEGMENT_STATUS {
   LOCKED = 'Locked',
   UNLOCKED = 'Unlocked',
 }
+
+export enum INCLUSION_CRITERIA {
+  INCLUDE_SPECIFIC = 'Include Specific',
+  EXCEPT = 'Include All Except...',
+}

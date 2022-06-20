@@ -6,7 +6,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
-import { TranslateService } from '@ngx-translate/core';
+import { INCLUSION_CRITERIA } from '../../../../../../../../../../types/src/Experiment/enums';
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -27,7 +27,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   members1DataSource = new BehaviorSubject<AbstractControl[]>([]);
   members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
 
-  inclusionCriteria = [{ value: 'Include Specific'}, { value: 'Include All Except...'}];
+  inclusionCriteria  = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
   membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember' ];
 
   enableSave = true;
@@ -52,6 +52,15 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   ngOnChanges() {
     if (this.currentContext) {
+      this.subSegmentIds = [];
+      if (this.allSegments) {
+        this.allSegments.forEach((segment) => {
+          if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE && segment.context === this.currentContext) {
+            this.subSegmentIds.push(segment.name);
+            this.segmentNameId.set(segment.name, segment.id);
+          }
+        });
+      }
       this.setMemberTypes();
     }
 
@@ -73,15 +82,6 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.allSegments =  allSegments;
     });
 
-    if (this.allSegments) {
-      this.allSegments.forEach((segment) => {
-        if (segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE) {
-          this.subSegmentIds.push(segment.name);
-          this.segmentNameId.set(segment.name, segment.id);
-        }
-      });
-    }
-
     this.participantsForm = this._formBuilder.group({
       inclusionCriteria: [null],
       except: [null],
@@ -89,16 +89,14 @@ export class ExperimentParticipantsComponent implements OnInit {
     });
 
     this.participantsForm2 = this._formBuilder2.group({
-      // inclusionCriteria: [null],
-      // except: [null],
       members2: this._formBuilder.array([this.addMembers2()]),
     });
 
-    this.participantsForm.get('inclusionCriteria').setValue('Include Specific');
+    this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
 
     if (this.experimentInfo) {
       if( this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
-        this.participantsForm.get('inclusionCriteria').setValue('Include Specific');
+        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
         });
@@ -118,7 +116,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.members2.push(this.addMembers2(MemberTypes.SEGMENT, id.name));
         });
       } else {
-        this.participantsForm.get('inclusionCriteria').setValue('Include All Except...');
+        this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.EXCEPT);
         this.experimentInfo.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
         });
@@ -228,7 +226,7 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        const filterMode = this.participantsForm.get('inclusionCriteria').value === 'Include Specific'
+        const filterMode = this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
           ? FILTER_MODE.EXCLUDE_ALL
           : FILTER_MODE.INCLUDE_ALL;
 
@@ -282,7 +280,8 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   get inclusionCriterisAsIncludeSpecific() {
-    return this.participantsForm.get('inclusionCriteria').value === 'Include Specific';
+    return this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC;
+    
   }
 
   get NewExperimentDialogEvents() {

@@ -96,6 +96,24 @@
         text-decoration: underline;
       }
 
+      &-status {
+        display: flex;
+        align-items: center;
+
+        &-circle {
+          display: inline-block;
+          margin-right: 6px;
+          border-radius: 50%;
+          width: 12px;
+          height: 12px;
+        }
+
+        .icons {
+          display: inline-flex;
+          margin-right: 6px;
+        }
+      }
+
       &-description {
         color: var(--grey-3);
       }

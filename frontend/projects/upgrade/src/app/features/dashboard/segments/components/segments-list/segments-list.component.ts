@@ -7,10 +7,10 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { Segment } from '../../../../../core/segments/store/segments.model';
 import { NewSegmentComponent } from '../modal/new-segment/new-segment.component';
 import { ImportSegmentComponent } from '../modal/import-segment/import-segment.component';
-import { E } from '@angular/cdk/keycodes';
 import { CustomMatTableSource } from './CustomMatTableSource';
 import { EXPERIMENT_SEARCH_KEY } from '../../../../../core/experiments/store/experiments.model';
-
+import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
+import  { SEGMENT_STATUS } from '../../../../../core/segments/store/segments.model';
 @Component({
   selector: 'segments-list',
   templateUrl: './segments-list.component.html',
@@ -85,6 +85,10 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  openExportAllSegmentDialog() {
+
+  }
+
   ngOnDestroy() {
     this.allSegmentsSub.unsubscribe();
   }
@@ -93,9 +97,13 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.segmentsTableContainer.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
+  }
 
-    // fromEvent(this.searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(searchInput => {
-    //   this.setSearchString((searchInput as any).target.value);
-    // });
+  get SegmentStatus() {
+    return SEGMENT_STATUS;
+  }
+
+  get SegmentStatusPipeTypes() {
+    return SegmentStatusPipeType;
   }
 }

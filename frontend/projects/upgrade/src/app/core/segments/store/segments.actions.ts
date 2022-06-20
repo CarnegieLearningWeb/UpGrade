@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Segment, SegmentInput, UpsertSegmentType } from './segments.model';
+import { Segment, SegmentInput, UpsertSegmentType, experimentSegmentInclusionExclusionData } from './segments.model';
 
 export const actionFetchSegments = createAction(
   '[Segments] Segment',
@@ -8,8 +8,7 @@ export const actionFetchSegments = createAction(
 
 export const actionFetchSegmentsSuccess = createAction(
   '[Segments] Fetch Segments Success',
-  // TODO - fix this about any
-  props<{ segments: Segment[], experimentSegmentInclusion: any, experimentSegmentExclusion: any }>()
+  props<{ segments: Segment[], experimentSegmentInclusion: experimentSegmentInclusionExclusionData[], experimentSegmentExclusion: experimentSegmentInclusionExclusionData[] }>()
 );
 
 export const actionFetchSegmentsFailure = createAction(

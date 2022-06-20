@@ -4,7 +4,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
-import { SEGMENT_TYPE } from 'upgrade_types';
+import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -28,7 +28,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   allSegments: Segment[];
   allSegmentsSub: Subscription;
 
-  memberTypesDum : any[];
+  segmentMemberTypes : any[];
   subSegmentIds = [];
   userIdsToSend = [];
   groupsToSend = [];
@@ -137,9 +137,9 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   setMemberTypes() {
-    this.memberTypesDum = [];
-    this.memberTypesDum.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
-    this.memberTypesDum.push({ heading: '', value: [MemberTypes.SEGMENT] });
+    this.segmentMemberTypes = [];
+    this.segmentMemberTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
+    this.segmentMemberTypes.push({ heading: '', value: [MemberTypes.SEGMENT] });
     const groups = [];
     if (this.currentContext === 'ALL') {
       const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
@@ -154,7 +154,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         groups.push(type);
       });
     }
-    this.memberTypesDum.push({ heading: 'group', value: groups });
+    this.segmentMemberTypes.push({ heading: 'group', value: groups });
   }
 
   gettingMembersValueToSend(members: any) {
@@ -183,7 +183,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
             userIds: this.userIdsToSend,
             groups: this.groupsToSend,
             subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PUBLIC
+            type: SEGMENT_TYPE.PUBLIC,
+            status: SEGMENT_STATUS.UNUSED
           }
           this.emitSegmentDialogEvent.emit({
             type: this.segmentInfo ? NewSegmentDialogEvents.UPDATE_SEGMENT : eventType,
@@ -204,7 +205,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   get getMemberTypes() {
-    return this.memberTypesDum;
+    return this.segmentMemberTypes;
   }
 
   ngOnDestroy() {

@@ -14,8 +14,8 @@ export class SegmentExperimentListComponent implements OnInit {
   segment: any;
   allExperimentSegmentsInclusionSub: Subscription;
   allExperimentSegmentsExclusionSub: Subscription;
-  allExperimentSegmentsInclusion: any;
-  allExperimentSegmentsExclusion: any;
+  allExperimentSegmentsInclusion = [];
+  allExperimentSegmentsExclusion = [];
   segmentsExperimentList = [];
 
   constructor(
@@ -27,12 +27,12 @@ export class SegmentExperimentListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.allExperimentSegmentsInclusionSub = this.segmentsService.allExperimentSegmentsInclusion$.subscribe(x => {
-      this.allExperimentSegmentsInclusion = x;
+    this.allExperimentSegmentsInclusionSub = this.segmentsService.allExperimentSegmentsInclusion$.subscribe(ele => {
+      this.allExperimentSegmentsInclusion = ele;
     });
 
-    this.allExperimentSegmentsExclusionSub = this.segmentsService.allExperimentSegmentsExclusion$.subscribe(x => {
-      this.allExperimentSegmentsExclusion = x;
+    this.allExperimentSegmentsExclusionSub = this.segmentsService.allExperimentSegmentsExclusion$.subscribe(ele => {
+      this.allExperimentSegmentsExclusion = ele;
     });
 
     if (this.allExperimentSegmentsInclusion) {
