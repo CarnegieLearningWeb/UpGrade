@@ -3,7 +3,7 @@ import { Action } from '@ngrx/store';
 import { actionBeginExperimentDetailStatsPolling, actionDeleteExperimentSuccess, actionEndExperimentDetailStatsPolling, actionFetchAllExperimentNamesSuccess, actionFetchAllPartitionSuccess, actionFetchContextMetaDataSuccess, actionFetchExperimentDetailStat, actionFetchExperimentDetailStatFailure, actionFetchExperimentDetailStatSuccess, actionFetchExperimentGraphInfo, actionFetchExperimentGraphInfoSuccess, actionFetchExperimentStatsSuccess, actionGetExperimentById, actionGetExperimentByIdFailure, actionGetExperimentByIdSuccess, actionGetExperiments, actionGetExperimentsFailure, actionGetExperimentsSuccess, actionRemoveExperimentStat, actionSetExperimentGraphInfo, actionSetGraphRange, actionSetIsGraphLoading, actionSetIsLoadingExperiment, actionSetSearchKey, actionSetSearchString, actionSetSkipExperiment, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpdateExperimentStateSuccess, actionUpsertExperiment, actionUpsertExperimentFailure, actionUpsertExperimentSuccess } from "./experiments.actions";
 import { DATE_RANGE, ExperimentState, ExperimentVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, UpsertExperimentType } from "./experiments.model";
 
-fdescribe('ExperimentsReducer', () => {
+describe('ExperimentsReducer', () => {
     it('should not affect state if no action is recognized', () => {
         const previousState = { ...initialState };
         const testAction: Action = {

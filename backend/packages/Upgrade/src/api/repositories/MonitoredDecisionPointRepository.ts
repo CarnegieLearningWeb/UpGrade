@@ -129,7 +129,7 @@ export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisi
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(
           this.constructor.name,
-          'getMinitoredExperimentPointCount',
+          'getMonitoredExperimentPointCount',
           { monitorPointIds },
           errorMsg
         );
