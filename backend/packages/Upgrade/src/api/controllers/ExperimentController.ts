@@ -980,7 +980,7 @@ export class ExperimentController {
   @Get('/getGroupAssignmentStatus/:id')
   @OnUndefined(ExperimentNotFoundError)
   public async getGroupAssignmentStatus(@Param('id') id: string, @Req() request: AppRequest ): Promise<number> | undefined {
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
