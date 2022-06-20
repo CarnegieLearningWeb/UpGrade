@@ -5,7 +5,7 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { SEGMENT_TYPE, SERVER_ERROR } from 'upgrade_types'
+import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types'
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
@@ -14,8 +14,8 @@ import { GroupForSegment } from '../models/GroupForSegment';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
-import { getSegmentData } from '../controllers/SegmentController';
-
+import { getSegmentData } from '../controllers/SegmentController'
+import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 @Service()
 export class SegmentService {
   constructor(
@@ -72,46 +72,57 @@ export class SegmentService {
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
+    const segmentsData = await getConnection().transaction(async (transactionalEntityManager) => {
 
-    const segmentsData = await this.getAllSegments(logger);
-    const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
-    const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
+      const segmentsData = await this.getAllSegments(logger);
+      const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
+      const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
 
-    let segmentsUsedList = [];
+      let segmentsUsedLockedList = [];
+      let segmentsUsedUnlockedList = [];
 
-    if (allExperimentSegmentsInclusion) {
-      allExperimentSegmentsInclusion.forEach((ele) => {
-        let subSegments = ele.segment.subSegments;
-        subSegments.forEach((subSegment) => {
-          segmentsUsedList.push(subSegment.id);
-          // TODO for lock/unlock - add experiment details
+      if (allExperimentSegmentsInclusion) {
+        allExperimentSegmentsInclusion.forEach((ele) => {
+          let subSegments = ele.segment.subSegments;
+          subSegments.forEach((subSegment) => {
+            ele.experiment.state ===  EXPERIMENT_STATE.ENROLLING 
+              ?  segmentsUsedLockedList.push(subSegment.id)
+              : segmentsUsedUnlockedList.push(subSegment.id);
+          });
         });
-      });
-    }
+      }
 
-    if (allExperimentSegmentsExclusion) {
-      allExperimentSegmentsExclusion.forEach((ele) => {
-        let subSegments = ele.segment.subSegments;
-        subSegments.forEach((subSegment) => {
-          segmentsUsedList.push(subSegment.id);
-          // TODO for lock/unlock - add experiment details
+      if (allExperimentSegmentsExclusion) {
+        allExperimentSegmentsExclusion.forEach((ele) => {
+          let subSegments = ele.segment.subSegments;
+          subSegments.forEach((subSegment) => {
+            ele.experiment.state ===  EXPERIMENT_STATE.ENROLLING
+              ?  segmentsUsedLockedList.push(subSegment.id)
+              : segmentsUsedUnlockedList.push(subSegment.id);
+          });
         });
-      });
-    }
+      }
 
-    const segmentsDataWithStatus = segmentsData.map((segment) => {
-      if (segmentsUsedList.find(segmentId => segmentId === segment.id)) {
-        return {...segment, status: 'Used'};
-      } else {
-        return {...segment, status: 'Unused'};
-      }      
+      const segmentsDataWithStatus = segmentsData.map((segment) => {
+        if (segment.id === globalExcludeSegment.id) {
+          return {...segment, status: SEGMENT_STATUS.GLOBAL};
+        } else if (segmentsUsedLockedList.find(segmentId => segmentId === segment.id)) {
+          return {...segment, status: SEGMENT_STATUS.LOCKED};
+        } else if (segmentsUsedUnlockedList.find(segmentId => segmentId === segment.id)) {
+          return {...segment, status: SEGMENT_STATUS.UNLOCKED};
+        } else {
+          return {...segment, status: SEGMENT_STATUS.UNUSED };
+        }      
+      });
+
+      return {
+        segmentsData: segmentsDataWithStatus,
+        experimentSegmentInclusionData: allExperimentSegmentsInclusion,
+        experimentSegmentExclusionData: allExperimentSegmentsExclusion
+      }
     });
 
-    return {
-      segmentsData: segmentsDataWithStatus,
-      experimentSegmentInclusionData: allExperimentSegmentsInclusion,
-      experimentSegmentExclusionData: allExperimentSegmentsExclusion
-    }
+    return segmentsData;
   }
 
   public async getExperimentSegmenExclusionData() {
@@ -173,6 +184,7 @@ export class SegmentService {
   private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
+  
       if (segment.id) {
         try {
           // get segment by ids
@@ -182,14 +194,20 @@ export class SegmentService {
 
           // delete individual for segment
           if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-            await transactionalEntityManager
-              .getRepository(IndividualForSegment)
-              .delete(segmentDoc.individualForSegment as any);
+            const usersToDelete = segmentDoc.individualForSegment.map(individual => {
+              return { userId: individual.userId, segment: segment.id }
+            });
+            await transactionalEntityManager.getRepository(IndividualForSegment)
+              .delete(usersToDelete as any);
           }
 
           // delete group for segment
           if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-            await transactionalEntityManager.getRepository(GroupForSegment).delete(segmentDoc.groupForSegment as any);
+            const groupToDelete = segmentDoc.groupForSegment.map(group => {
+              return { groupId: group.groupId, type: group.type, segment: segment.id }
+            });
+            await transactionalEntityManager.getRepository(GroupForSegment)
+              .delete(groupToDelete as any);
           }
         } catch (err) {
           const error = err as ErrorWithType;

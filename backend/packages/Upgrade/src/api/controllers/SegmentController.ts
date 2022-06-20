@@ -2,12 +2,11 @@ import { JsonController, Get, Delete, Param, Authorized, Post, Req, Body } from 
 import { SegmentService } from '../services/SegmentService';
 import { Segment } from '../models/Segment';
 import { SERVER_ERROR } from 'upgrade_types';
-import { Validator } from 'class-validator';
+import { isUUID } from 'class-validator';
 import { AppRequest } from '../../types';
 import { SegmentInputValidator } from './validators/SegmentInputValidator';
 import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
-const validator  = new Validator();
 
 export interface getSegmentData {
   segmentsData: Segment[];
@@ -211,11 +210,10 @@ export class SegmentController {
    *          '401':
    *            description: Authorization Required Error
    */
-   @Get()
-   public async getAllSegments( @Req() request: AppRequest ): Promise<getSegmentData> {
-     // TODO: transactional entity manager
-     return this.segmentService.getAllSegmentWithStatus(request.logger);
-   }
+  @Get()
+  public async getAllSegments( @Req() request: AppRequest ): Promise<getSegmentData> {
+    return this.segmentService.getAllSegmentWithStatus(request.logger);
+  }
 
   /**
    * @swagger
@@ -250,7 +248,7 @@ export class SegmentController {
     if (!segmentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
-    if (!validator.isUUID(segmentId)) {
+    if (!isUUID(segmentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
@@ -325,7 +323,7 @@ export class SegmentController {
     if (!segmentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
-    if (!validator.isUUID(segmentId)) {
+    if (!isUUID(segmentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })
@@ -374,7 +372,7 @@ public importSegment(
     if (!id) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
-    if (!validator.isUUID(id)) {
+    if (!isUUID(id)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : segmentId should be of type UUID.' })

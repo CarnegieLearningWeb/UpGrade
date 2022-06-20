@@ -34,10 +34,13 @@ export class ExperimentSegmentExclusionRepository extends Repository<ExperimentS
 
   public async getExperimentSegmentExclusionData(): Promise<Partial<ExperimentSegmentExclusion>[]> {
     return this.createQueryBuilder('experimentSegmentExclusion')
-      .select(['experiment.id', 'experiment.name', 'experiment.state', 'experiment.context', 'segment.id'])
       .leftJoin('experimentSegmentExclusion.experiment', 'experiment')
       .leftJoin('experimentSegmentExclusion.segment', 'segment')
       .leftJoinAndSelect('segment.subSegments', 'subSegments')
+      .addSelect('experiment.name')
+      .addSelect('experiment.state')
+      .addSelect('experiment.context')
+      .addSelect('segment.id')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentSegmentExclusion', 'getdata', {}, errorMsg);

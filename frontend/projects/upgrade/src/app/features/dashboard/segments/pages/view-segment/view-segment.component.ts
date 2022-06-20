@@ -44,8 +44,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
       .subscribe(segment => {
         this.segment = segment;
 
-        if(this.segment.type === SEGMENT_TYPE.GLOBAL_EXCLUDE)
-          this.permissions.segments.delete = false;
+        this.permissions.segments.delete = (this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE);
         this.members = [];
         this.segment.individualForSegment.forEach(user => {
           this.members.push({type: MemberTypes.INDIVIDUAL, id: user.userId});

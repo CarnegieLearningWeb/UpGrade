@@ -50,6 +50,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SegmentService } from './SegmentService';
 import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
+import { globalExcludeSegment } from 'src/init/seed/globalExcludeSegment';
 
 // TODO delete this after x-prize competition
 import {
@@ -443,20 +444,19 @@ export class ExperimentAssignmentService {
 
     const globalExcludeSegmentObj = {};
     const segmentDetails: Segment[] = [], excludedUsers:string[] = [], excludedGroups = [];
-    const globalExcludeSegmentId = '77777777-7777-7777-7777-777777777777';
 
-    globalExcludeSegmentObj[globalExcludeSegmentId] = {
-      segmentIdsQueue: [globalExcludeSegmentId],
+    globalExcludeSegmentObj[globalExcludeSegment.id] = {
+      segmentIdsQueue: [globalExcludeSegment.id],
       currentIncludedSegmentIds: [],
-      currentExcludedSegmentIds: [globalExcludeSegmentId],
+      currentExcludedSegmentIds: [globalExcludeSegment.id],
       allIncludedSegmentIds: [],
-      allExcludedSegmentIds: [globalExcludeSegmentId],
+      allExcludedSegmentIds: [globalExcludeSegment.id],
     }
 
-    const [globalExcludeSegmentObj2, segmentDetails2] = await this.resolveSegment(globalExcludeSegmentObj, segmentDetails, 0);
+    const [updatedGlobalExcludeSegmentObj, updatedSegmentDetails] = await this.resolveSegment(globalExcludeSegmentObj, segmentDetails, 0);
 
-    globalExcludeSegmentObj2[globalExcludeSegmentId].allExcludedSegmentIds.forEach((segmentId) => {
-      const foundSegment: Segment = segmentDetails2.find((segment) => segment.id === segmentId);
+    updatedGlobalExcludeSegmentObj[globalExcludeSegment.id].allExcludedSegmentIds.forEach((segmentId) => {
+      const foundSegment: Segment = updatedSegmentDetails.find((segment) => segment.id === segmentId);
       excludedUsers.push(...foundSegment.individualForSegment.map((individual) => individual.userId));
       excludedGroups.push(...foundSegment.groupForSegment.map((group) => `${group.type}_${group.groupId}`));
     });
@@ -1351,7 +1351,11 @@ export class ExperimentAssignmentService {
     let includedExperiments: Experiment[] = [];
     let excludedExperiments = [];
 
+
     experiments.forEach((experiment) => {
+      let flag1 = false;
+      let flag2 = false;
+      
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
         if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           excludedExperiments.push({ experiment: experiment, reason: 'user'});
@@ -1363,9 +1367,12 @@ export class ExperimentAssignmentService {
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
               excludedExperiments.push({experiment: experiment, reason: 'group'});
+              flag1=true;
             }
           }
-          includedExperiments.push(experiment);
+          if(!flag1) {
+            includedExperiments.push(experiment);
+          } 
         }
       } else {
         if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
@@ -1378,9 +1385,12 @@ export class ExperimentAssignmentService {
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
               includedExperiments.push(experiment);
+              flag2=true;
             }
           }
-          excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
+          if(!flag2) {
+            excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
+          }
         }
       }
     });

@@ -307,7 +307,6 @@
   "segments.segment-experiment-list-context.text": "Context",
   "segments.segment-experiment-list-usedList.text": "Used List",
   "segments.segment-experiment-list-zeroState.text": "No Data",
-  
   "metrics.subtitle.text": "Manage metrics here",
   "metric.delete-metric.message.text": "Type the metric path separated by space to confirm deletion:",
   "metric.delete-metric.input-placeholder.text": "Metric path",

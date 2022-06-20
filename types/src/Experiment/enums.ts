@@ -139,9 +139,9 @@ export enum SEGMENT_TYPE {
 }
 
 export enum SEGMENT_STATUS {
-  USED = 'used',
-  UNUSED = 'unused',
-  GLOBAL = 'global',
-  LOCKED = 'locked',
-  UNLOCKED = 'unlocked',
+  USED = 'Used',
+  UNUSED = 'Unused',
+  GLOBAL = 'Global',
+  LOCKED = 'Locked',
+  UNLOCKED = 'Unlocked',
 }
