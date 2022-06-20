@@ -214,6 +214,26 @@ export class ExperimentService {
           currentUser
         );
 
+        try {
+          await transactionalEntityManager.getRepository(Segment).delete(experiment.experimentSegmentInclusion.segment.id)
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in deleting Include Segment fron DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
+        try {
+          await transactionalEntityManager.getRepository(Segment).delete(experiment.experimentSegmentExclusion.segment.id)
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in deleting Exclude Segment fron DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
         return deletedExperiment;
       }
 
@@ -546,7 +566,7 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+        const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -557,6 +577,47 @@ export class ExperimentService {
           logger.error(error);
           throw error;
         }
+
+        const segmentIncludeData: SegmentInputValidator = {
+          ...segmentInclude,
+          id: experimentDoc.experimentSegmentInclusion.segment.id,
+          name: experimentDoc.experimentSegmentInclusion.segment.name,
+          description: experimentDoc.experimentSegmentInclusion.segment.description,
+          context: experiment.context[0],
+        }
+
+        const segmentExcludeData: SegmentInputValidator = {
+          ...segmentExclude,
+          id: experimentDoc.experimentSegmentExclusion.segment.id,
+          name: experimentDoc.experimentSegmentExclusion.segment.name,
+          description: experimentDoc.experimentSegmentExclusion.segment.description,
+          context: experiment.context[0],
+        }
+
+        let segmentIncludeDoc: Segment;
+        let segmentExcludeDoc: Segment;
+        try {
+          segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in updating IncludeSegment in DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
+        try {
+          segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in updating ExcludeSegment in DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
+        experimentDoc.experimentSegmentInclusion.segment = segmentIncludeDoc;
+        experimentDoc.experimentSegmentExclusion.segment = segmentExcludeDoc;
 
         // Check for conditionCode is 'default' then return error:
         this.checkConditionCodeDefault(conditions);
@@ -707,7 +768,7 @@ export class ExperimentService {
           ...experimentDoc,
           conditions: conditionDocToReturn as any,
           partitions: partitionDocToReturn as any,
-          queries: (queryDocToReturn as any) || [],
+          queries: (queryDocToReturn as any) || []
         };
 
         // removing unwanted params for diff
@@ -917,13 +978,13 @@ export class ExperimentService {
       let includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
       includeTempDoc.experiment = experimentDoc;
-      let { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
+      var { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
 
       // creating segmentExclude doc
       let excludeTempDoc = new ExperimentSegmentExclusion();
       excludeTempDoc.segment = segmentExcludeDoc;
       excludeTempDoc.experiment = experimentDoc;
-      const { createdAt: createdAt2, updatedAt: updatedAt2, versionNumber: versionNumber2, ...segmentExcludeDocToSave } = excludeTempDoc;
+      var { createdAt, updatedAt, versionNumber, ...segmentExcludeDocToSave } = excludeTempDoc;
 
       // creating queries docs
       const promiseArray = [];
@@ -990,8 +1051,8 @@ export class ExperimentService {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: partitionDocToReturn as any,
-        // segmentInclude: segmentIncludeDoc as any,
-        // segmentExclude: segmentExcludeDoc as any,
+        experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
+        experimentSegmentExclusion: experimentSegmentInclusionDoc as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;
