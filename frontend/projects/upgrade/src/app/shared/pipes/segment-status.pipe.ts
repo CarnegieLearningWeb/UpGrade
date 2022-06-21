@@ -15,15 +15,15 @@ export class SegmentStatusPipe implements PipeTransform {
       // TODO add more cases
       // TODO test case
       case SEGMENT_STATUS.USED:
-        return type === SegmentStatusPipeType.TEXT ? 'Used' : '#000';
+        return type === SegmentStatusPipeType.TEXT ? 'Used' : '#829CF8';
       case SEGMENT_STATUS.UNUSED:
-        return type === SegmentStatusPipeType.TEXT ? 'Unused' : '#d8d8d8';
+        return type === SegmentStatusPipeType.TEXT ? 'Unused' : '#D8D8D8';
       case SEGMENT_STATUS.LOCKED:
-        return type === SegmentStatusPipeType.TEXT ? 'Used (Locked)' : '#0cdda5';
+        return type === SegmentStatusPipeType.TEXT ? 'Used (Locked)' : '#0CDDA5';
       case SEGMENT_STATUS.UNLOCKED:
-        return type === SegmentStatusPipeType.TEXT ? 'Unlocked' : '#ff0000';
+        return type === SegmentStatusPipeType.TEXT ? 'Unlocked' : '#829CF8';
       case SEGMENT_STATUS.GLOBAL:
-        return type === SegmentStatusPipeType.TEXT ? 'Global' : '#ff0000';
+        return type === SegmentStatusPipeType.TEXT ? 'Global' : '#FD9099';
     }
   }
 }

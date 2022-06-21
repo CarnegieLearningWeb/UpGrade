@@ -498,71 +498,6 @@ export class ExperimentExcludeController {
 
   /**
    * @swagger
-   * /explicitExclude/experiment/segment:
-   *    post:
-   *       description: Exclude segment from an experiment
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: body
-   *           required: true
-   *           schema:
-   *             type: object
-   *             required:
-   *               - experimentId
-   *               - segmentId
-   *             properties:
-   *              experimentId:
-   *                type: string
-   *              segmentId:
-   *                type: string
-   *           description: SegmentId and experimetId
-   *       tags:
-   *         - ExplicitExperimentExclude
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Exclude segment from an experiment
-   *            schema:
-   *              $ref: '#/definitions/segmentExplicitExperimentExcludeResponse'
-   *          '401':
-   *            description: Authorization Required Error
-   *          '500':
-   *            description: Internal Server Error, Insert Error in database, ExperimentId is not valid, JSON Format is not valid
-   */
-  @Post('/segment')
-  public experimentExcludeSegment(
-    @Req() request: AppRequest,
-    @BodyParam('experimentId') experimentId: string,
-    @BodyParam('segmentId') segmentId: string
-  ): Promise<ExperimentSegmentExclusion> {
-    if (!experimentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null'));
-    }
-    if (!validator.isUUID(experimentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
-    if (!segmentId) {
-      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null'));
-    }
-    if (!validator.isUUID(segmentId)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-        )
-      );
-    }
-    return this.experimentExclude.experimentExcludeSegment(experimentId, segmentId, request.logger);
-  }
-
-  /**
-   * @swagger
    * /explicitExclude/experiment/segment/{experimentId}/{segmentId}:
    *    delete:
    *       description: Delete excluded segment from an experiment
@@ -602,7 +537,7 @@ export class ExperimentExcludeController {
     if (!experimentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null'));
     }
-    if (!validator.isUUID(experimentId)) {
+    if (isUUID(experimentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -612,7 +547,7 @@ export class ExperimentExcludeController {
     if (!segmentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null'));
     }
-    if (!validator.isUUID(segmentId)) {
+    if (isUUID(segmentId)) {
       return Promise.reject(
         new Error(
           JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })

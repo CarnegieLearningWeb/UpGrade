@@ -18,7 +18,7 @@ import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, ENROLLMENT_CODE, SERVER_ERROR, SEGMENT_TYPE, EXCLUSION_CODE } from 'upgrade_types';
+import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, SERVER_ERROR, EXCLUSION_CODE } from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
@@ -1052,7 +1052,7 @@ export class ExperimentService {
         conditions: conditionDocToReturn as any,
         partitions: partitionDocToReturn as any,
         experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
-        experimentSegmentExclusion: experimentSegmentInclusionDoc as any,
+        experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;

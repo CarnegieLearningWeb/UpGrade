@@ -1,6 +1,6 @@
 import { SegmentInputValidator } from "src/api/controllers/validators/SegmentInputValidator";
-import { SegmentService } from "src/api/services/SegmentService";
-import { UpgradeLogger } from "src/lib/logger/UpgradeLogger";
+import { SegmentService } from "../../../src/api/services/SegmentService";
+import { UpgradeLogger } from "../../../src/lib/logger/UpgradeLogger";
 import Container from "typedi";
 import { SEGMENT_TYPE } from "upgrade_types";
 
@@ -16,7 +16,7 @@ export const globalExcludeSegment: SegmentInputValidator = {
 }
 
 export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise<any> {
-  const segmentService: SegmentService = Container.get(SegmentService);
+  const segmentService= Container.get<SegmentService>(SegmentService);
   if (! await segmentService.getSegmentById(globalExcludeSegment.id, new UpgradeLogger())) {
     try {
       return segmentService.upsertSegment(globalExcludeSegment, logger);

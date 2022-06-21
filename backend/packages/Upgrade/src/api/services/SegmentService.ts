@@ -107,9 +107,9 @@ export class SegmentService {
         if (segment.id === globalExcludeSegment.id) {
           return {...segment, status: SEGMENT_STATUS.GLOBAL};
         } else if (segmentsUsedLockedList.find(segmentId => segmentId === segment.id)) {
-          return {...segment, status: SEGMENT_STATUS.LOCKED};
+          return {...segment, status: SEGMENT_STATUS.USED}; // TODO change to locked
         } else if (segmentsUsedUnlockedList.find(segmentId => segmentId === segment.id)) {
-          return {...segment, status: SEGMENT_STATUS.UNLOCKED};
+          return {...segment, status: SEGMENT_STATUS.USED}; // TODO change to unlocked
         } else {
           return {...segment, status: SEGMENT_STATUS.UNUSED };
         }      

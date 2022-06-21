@@ -102,17 +102,6 @@ export class ExperimentExcludeService {
     return this.explicitExperimentGroupExclusionRepository.deleteGroup(groupId, type, experimentId, logger);
   }
 
-  public async experimentExcludeSegment(experimentId: string, segmentId: string, logger: UpgradeLogger): Promise<ExperimentSegmentExclusion> {
-    logger.info({ message: `Explicitly exclude segment from the experiment. experimentId: ${experimentId}, segmentId: ${segmentId}`});
-
-    let tempDoc = new ExperimentSegmentExclusion();
-    tempDoc.experiment = await this.experimentService.findOne(experimentId, logger);
-    tempDoc.segment = await this.segmentService.getSegmentById(segmentId, logger);
-    
-    const { createdAt, updatedAt, versionNumber, ...docToSend } = tempDoc;
-    return this.experimentSegmentExclusionRepository.insertData(docToSend, logger);
-  }
-
   public deleteExperimentSegment(experimentId: string, segmentId: string, logger: UpgradeLogger): Promise<ExperimentSegmentExclusion | undefined> {
     logger.info({ message: `Delete explicitly excluded segment from the experiment. experimentId: ${experimentId}, segmentId: ${segmentId}`});
     return this.experimentSegmentExclusionRepository.deleteData(segmentId, experimentId, logger);

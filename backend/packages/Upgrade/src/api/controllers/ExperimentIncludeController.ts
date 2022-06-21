@@ -6,7 +6,8 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { isUUID } from 'class-validator';
 import { UserNotFoundError } from '../errors/UserNotFoundError';
 import { AppRequest } from '../../types';
-import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';3.
+
 /**
  * @swagger
  * definitions:
@@ -495,71 +496,6 @@ export class ExperimentIncludeController {
     return this.experimentInclude.deleteExperimentGroup(id, type, experimentId, request.logger);
   }
 
-/**
-   * @swagger
-   * /explicitInclude/experiment/segment:
-   *    post:
-   *       description: Include segment from an experiment
-   *       consumes:
-   *         - application/json
-   *       parameters:
-   *         - in: body
-   *           name: body
-   *           required: true
-   *           schema:
-   *             type: object
-   *             required:
-   *               - experimentId
-   *               - segmentId
-   *             properties:
-   *              experimentId:
-   *                type: string
-   *              segmentId:
-   *                type: string
-   *           description: SegmentId and experimetId
-   *       tags:
-   *         - ExplicitExperimentInclude
-   *       produces:
-   *         - application/json
-   *       responses:
-   *          '200':
-   *            description: Include segment from an experiment
-   *            schema:
-   *              $ref: '#/definitions/segmentExplicitExperimentIncludeResponse'
-   *          '401':
-   *            description: Authorization Required Error
-   *          '500':
-   *            description: Internal Server Error, Insert Error in database, ExperimentId is not valid, JSON Format is not valid
-   */
- @Post('/segment')
- public experimentIncludeSegment(
-   @Req() request: AppRequest,
-   @BodyParam('experimentId') experimentId: string,
-   @BodyParam('segmentId') segmentId: string
- ): Promise<ExperimentSegmentInclusion> {
-   if (!experimentId) {
-     return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null'));
-   }
-   if (!validator.isUUID(experimentId)) {
-     return Promise.reject(
-       new Error(
-         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-       )
-     );
-   }
-   if (!segmentId) {
-     return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null'));
-   }
-   if (!validator.isUUID(segmentId)) {
-     return Promise.reject(
-       new Error(
-         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
-       )
-     );
-   }
-   return this.experimentInclude.experimentIncludeSegment(experimentId, segmentId, request.logger);
- }
-
  /**
   * @swagger
   * /explicitInclude/experiment/segment/{experimentId}/{segmentId}:
@@ -601,7 +537,7 @@ export class ExperimentIncludeController {
    if (!experimentId) {
      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : experimentId should not be null'));
    }
-   if (!validator.isUUID(experimentId)) {
+   if (isUUID(experimentId)) {
      return Promise.reject(
        new Error(
          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })
@@ -611,7 +547,7 @@ export class ExperimentIncludeController {
    if (!segmentId) {
      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null'));
    }
-   if (!validator.isUUID(segmentId)) {
+   if (isUUID(segmentId)) {
      return Promise.reject(
        new Error(
          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : id should be of type UUID.' })

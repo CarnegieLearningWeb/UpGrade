@@ -50,7 +50,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { SegmentService } from './SegmentService';
 import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
-import { globalExcludeSegment } from 'src/init/seed/globalExcludeSegment';
+import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 
 // TODO delete this after x-prize competition
 import {
@@ -130,7 +130,17 @@ export class ExperimentAssignmentService {
       where: {
         id: decisionPoint,
       },
-      relations: ['experiment', 'experiment.partitions', 'experiment.conditions'],
+      relations: [
+        'experiment',
+        'experiment.partitions',
+        'experiment.conditions',
+        'experiment.experimentSegmentInclusion',
+        'experiment.experimentSegmentExclusion',
+        'experiment.experimentSegmentInclusion.segment',
+        'experiment.experimentSegmentExclusion.segment',
+        'experiment.experimentSegmentInclusion.segment.subSegments',
+        'experiment.experimentSegmentExclusion.segment.subSegments'
+      ],
     });
 
     logger.info({
@@ -1353,8 +1363,8 @@ export class ExperimentAssignmentService {
 
 
     experiments.forEach((experiment) => {
-      let flag1 = false;
-      let flag2 = false;
+      let inclusionFlag = false;
+      let exclusionFlag = false;
       
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
         if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
@@ -1366,13 +1376,14 @@ export class ExperimentAssignmentService {
             if (explicitExperimentGroupExclusionFilteredData.some((e) =>
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
-              excludedExperiments.push({experiment: experiment, reason: 'group'});
-              flag1=true;
+              inclusionFlag=true;
             }
           }
-          if(!flag1) {
+          if(!inclusionFlag) {
             includedExperiments.push(experiment);
-          } 
+          } else {
+            excludedExperiments.push({experiment: experiment, reason: 'group'});
+          }
         }
       } else {
         if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
@@ -1384,12 +1395,13 @@ export class ExperimentAssignmentService {
             if (explicitExperimentGroupInclusionFilteredData.some((e) =>
                   e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
             ) {
-              includedExperiments.push(experiment);
-              flag2=true;
+              exclusionFlag=true;
             }
           }
-          if(!flag2) {
+          if(!exclusionFlag) {
             excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
+          } else {
+            includedExperiments.push(experiment);
           }
         }
       }
