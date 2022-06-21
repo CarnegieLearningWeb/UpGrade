@@ -25,6 +25,7 @@ import {
   selectSearchString,
   selectExperimentGraphInfo,
   selectContextMetaData,
+  selectExperimentById,
   selectIsPollingExperimentDetailStats,
   selectExperimentGraphRange
 } from './experiments.selectors';
@@ -286,6 +287,25 @@ export class ExperimentEffects {
     )
   );
 
+  fetchGroupAssignmentStatus$ = createEffect(() => 
+    this.actions$.pipe(
+      ofType(experimentAction.actionFetchGroupAssignmentStatus),
+      map(action => action.experimentId),
+      switchMap(( experimentId ) => 
+        this.experimentDataService.fetchGroupAssignmentStatus(experimentId).pipe(
+          withLatestFrom(
+            this.store$.pipe(select(selectExperimentById, { experimentId }))
+          ),
+          map(([ actionData, experimentData ]) => {
+            experimentData.groupSatisfied = actionData;
+            return experimentAction.actionFetchGroupAssignmentStatusSuccess({ experiment: experimentData });
+          }),
+          catchError(() => [experimentAction.actionFetchGroupAssignmentStatusFailure()])
+        )
+      )
+    )
+  );
+
   fetchGraphInfo$ = createEffect(
     () =>
       this.actions$.pipe(
@@ -427,7 +447,7 @@ export class ExperimentEffects {
       )
     )
   );
-  
+
   private download(filename, text) {
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));

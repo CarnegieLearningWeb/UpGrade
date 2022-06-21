@@ -47,6 +47,7 @@ export enum NewExperimentDialogEvents {
 export enum NewExperimentPaths {
   EXPERIMENT_OVERVIEW = 'Experiment Overview',
   EXPERIMENT_DESIGN = 'Experiment Design',
+  MONITORED_METRIC = 'Monitored Metric',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
   POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
@@ -162,6 +163,7 @@ export interface Experiment {
   partitions: ExperimentPartition[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
+  groupSatisfied?: number;
   backendVersion: string;
   filterMode: FILTER_MODE;
 }
