@@ -147,7 +147,7 @@ describe('ErrorHandler Middleware tests', () => {
 
     test('Condition not found error test', async () => {
         let error = {
-            type:SERVER_ERROR.CONDTION_NOT_FOUND,
+            type:SERVER_ERROR.CONDITION_NOT_FOUND,
             message:"Condition not found error",
             httpCode: 500
         };

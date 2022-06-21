@@ -54,13 +54,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   previousAssignmentWeightValues =  [];
 
-  conditionDisplayedColumns = [ 'conditionNumber', 'conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['partitionNumber', 'site', 'target', 'removePartition'];
+  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
+  partitionDisplayedColumns = ['site', 'target', 'requiredId', 'removePartition'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
   filteredConditionCodes$: Observable<string[]>[] = [];
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
+  // filteredRequiredIds$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
@@ -177,6 +178,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         startWith<string>(''),
         map(target => this.filterExpPointsAndIds(target, 'expIds'))
       );
+
+    // this.filteredRequiredIds$[index] = partitionFormControl.at(index).get('requiredId').valueChanges
+    //   .pipe(
+    //     startWith<string>(''),
+    //     map(expId => this.filterExpPointsAndIds(expId, 'requiredIds'))
+    //   );
   }
 
   private filterConditionCodes(value: string): string[] {
@@ -448,6 +455,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
+              if (isNaN(condition.assignmentWeight) && condition.assignmentWeight.endsWith("%")) {
+                condition.assignmentWeight = Number(condition.assignmentWeight.slice(0,-1));
+              }
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
                 : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
@@ -481,7 +491,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const len = conditions.controls.length;
       conditions.controls.forEach( control => {
         this.previousAssignmentWeightValues.push(control.get('assignmentWeight').value);
-        control.get('assignmentWeight').setValue((100.0/len).toFixed(2));
+        control.get('assignmentWeight').setValue((100.0/len).toFixed(1).toString() + '%');
       });
     } else {
         conditions.controls.forEach( (control, index) => {
