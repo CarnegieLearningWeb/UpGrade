@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { first } from 'rxjs/operators';
 import { EXPORT_METHOD } from '../../../../../../../../../../../types/src/Experiment/enums';
 import { AuthService } from '../../../../../../core/auth/auth.service';
