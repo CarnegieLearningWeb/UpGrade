@@ -1,0 +1,37 @@
+.export-experiment-container {
+  .title {
+    display: block;
+    padding: 30px 40px 0;
+    height: 88px;
+  }
+
+  &-form {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 0 40px;
+
+    mat-form-field {
+      margin-right: 10px;
+      width: 75%;
+    }
+  }
+
+  .info-msg {
+    display: block;
+    padding-top: -40px;
+    padding-bottom: 30px;
+    padding-left: 35px;
+    padding-right: 35px;
+  }
+
+  .info-msg {
+    color: var(--blue);
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 40px 40px;
+  }
+}
