@@ -9,6 +9,8 @@ import { ExperimentService } from '../../../src/api/services/ExperimentService';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { useContainer as ormUseContainer } from 'typeorm';
+import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
+import ExperimentAssignmentServieMock from './mocks/ExperimentAssignmentServiceMock';
 
 describe('Experiment Controller Testing', () => {
   beforeAll(() => {
@@ -19,6 +21,7 @@ describe('Experiment Controller Testing', () => {
 
     // set mock container
     Container.set(ExperimentService, new ExperimentServieMock());
+    Container.set(ExperimentAssignmentService, new ExperimentAssignmentServieMock());
   });
 
   afterAll(() => {
