@@ -4,13 +4,13 @@ import { configureLogger } from '../../utils/logger';
 import { useContainer as routingUseContainer } from 'routing-controllers';
 import { Container } from 'typedi';
 import uuid from 'uuid/v4';
-import ExperimentServieMock from './mocks/ExperimentServiceMock';
+import ExperimentServiceMock from './mocks/ExperimentServiceMock';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 
 import { useContainer as classValidatorUseContainer } from 'class-validator';
 import { useContainer as ormUseContainer } from 'typeorm';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
-import ExperimentAssignmentServieMock from './mocks/ExperimentAssignmentServiceMock';
+import ExperimentAssignmentServiceMock from './mocks/ExperimentAssignmentServiceMock';
 
 describe('Experiment Controller Testing', () => {
   beforeAll(() => {
@@ -20,8 +20,8 @@ describe('Experiment Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     // set mock container
-    Container.set(ExperimentService, new ExperimentServieMock());
-    Container.set(ExperimentAssignmentService, new ExperimentAssignmentServieMock());
+    Container.set(ExperimentService, new ExperimentServiceMock());
+    Container.set(ExperimentAssignmentService, new ExperimentAssignmentServiceMock());
   });
 
   afterAll(() => {
@@ -56,14 +56,16 @@ describe('Experiment Controller Testing', () => {
     ],
     partitions: [
       {
-        point: "string",
-        name: "string",
-        description: "string"
+        site: "string",
+        target: "string",
+        id: "string",
+        description: "string",
+        order: 0
       }
     ],
     metrics: [
       {}
-    ]
+    ],
   }
 
   test('Get request for /api/experiments', async done => {

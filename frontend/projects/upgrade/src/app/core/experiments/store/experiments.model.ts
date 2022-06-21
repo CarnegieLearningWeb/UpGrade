@@ -162,7 +162,7 @@ export interface Experiment {
   partitions: ExperimentPartition[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
-  groupSatisfied: number;
+  groupSatisfied?: number;
   backendVersion: string;
   filterMode: FILTER_MODE;
 }
