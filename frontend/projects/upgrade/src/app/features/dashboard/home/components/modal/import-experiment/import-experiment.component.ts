@@ -100,7 +100,8 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   private validateExperimentJSON(experiment: Experiment) {
-    const experimentSchema: Record<keyof Experiment, string> = {
+    // TODO remove this any after typescript version updation
+    const experimentSchema: any = {
       id: 'string',
       name: 'string',
       description: 'string',

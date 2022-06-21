@@ -36,6 +36,7 @@ import { In } from 'typeorm';
 import uuid from 'uuid/v4';
 import { PreviewUserService } from './PreviewUserService';
 import { ExperimentUser } from '../models/ExperimentUser';
+import { ExperimentService } from './ExperimentService';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
 import { MonitoredDecisionPoint, getMonitoredDecisionPointId } from '../models/MonitoredDecisionPoint';
@@ -113,7 +114,8 @@ export class ExperimentAssignmentService {
     public experimentUserService: ExperimentUserService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService,
-    public settingService: SettingService
+    public settingService: SettingService,
+    public experimentService: ExperimentService
   ) {}
   public async markExperimentPoint(
     userId: string,
@@ -227,7 +229,7 @@ export class ExperimentAssignmentService {
           logger
         );
         if (experiment.enrollmentCompleteCondition) {
-          await this.checkEnrollmentEndingCriteriaForCount(experiment);
+          await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
         }
       }
     }
@@ -788,12 +790,42 @@ export class ExperimentAssignmentService {
     return [...updatedLog, ...newLogData];
   }
 
+  private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {
+    // get groupAssignment and individual assignment details
+    const partitions = experimentDoc.partitions;
+    const individualAssignments = await this.individualEnrollmentRepository.find({
+      where: { experiment: experimentDoc },
+      relations: ['user'],
+    });
+
+    // get the monitored document for all the partitions in the experiment
+    const experimentPartitionIds = partitions.map((partition) => {
+      const experimentId = partition.target;
+      const experimentPoint = partition.site;
+      return getExperimentPartitionID(experimentPoint, experimentId);
+    });
+
+    const monitoredDocumentIds = [];
+    individualAssignments.forEach((individualAssignment) => {
+      experimentPartitionIds.forEach((experimentPartitionId) => {
+        monitoredDocumentIds.push(getMonitoredDecisionPointId(experimentPartitionId, individualAssignment.user.id));
+      });
+    });
+
+    // fetch all the monitored document if exist
+    const monitoredDocuments = await this.monitoredDecisionPointRepository.findByIds(monitoredDocumentIds, {
+      relations: ['user'],
+    });
+
+    return monitoredDocuments;
+  }
+
   /**
    * Check the enrollment complete condition for experiments with ending criteria
    * of group count and participants count defined in experiment
    * experiment - Experiment definition
    */
-  private async checkEnrollmentEndingCriteriaForCount(experiment: Experiment): Promise<void> {
+  private async checkEnrollmentEndingCriteriaForCount(experiment: Experiment, logger: UpgradeLogger): Promise<void> {
     const { enrollmentCompleteCondition } = experiment;
     const { groupCount, userCount } = enrollmentCompleteCondition;
 
@@ -809,6 +841,13 @@ export class ExperimentAssignmentService {
     stateTimeLogDoc.experiment = experiment;
 
     if (groupCount && userCount && experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP) {
+      const groupSatisfied: number = await this.getGroupAssignmentStatus(experiment.id, logger);
+
+      if (groupSatisfied >= groupCount) {
+        await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        await this.stateTimeLogsRepository.save(stateTimeLogDoc);
+      }
+
       const usersPerGroup = await this.analyticsRepository.getEnrollmentCountPerGroup(experiment.id);
       const validGroups = usersPerGroup.filter(({ count }) => count >= userCount);
       if (validGroups.length >= groupCount) {
@@ -822,6 +861,15 @@ export class ExperimentAssignmentService {
         experiment.id
       );
       // fetch all the monitored document if exist
+      const monitoredDocuments = await this.getMonitoredDocumentOfExperiment(experiment);
+      const userIds = monitoredDocuments.map((doc) => {
+        return doc.user.id;
+      });
+      const uniqueUser = new Set(userIds);
+      if (uniqueUser.size >= userCount) {
+        await this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined);
+        await this.stateTimeLogsRepository.save(stateTimeLogDoc);
+      }
       if (individualEnrollmentNumber >= userCount) {
         await Promise.all([
           this.experimentRepository.updateState(experiment.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, undefined),
@@ -829,6 +877,33 @@ export class ExperimentAssignmentService {
         ]);
       }
     }
+  }
+
+  public async getGroupAssignmentStatus(experimentId: string, logger: UpgradeLogger) {
+    const experiment = await this.experimentService.findOne(experimentId, logger);
+    if (experiment) {
+      if (
+        experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+        experiment.enrollmentCompleteCondition &&
+        experiment.enrollmentCompleteCondition.groupCount &&
+        experiment.enrollmentCompleteCondition.userCount
+      ) {
+        const { enrollmentCompleteCondition } = experiment;
+        const { userCount } = enrollmentCompleteCondition;
+        const usersPerGroup = await this.analyticsRepository.getEnrollmentCountPerGroup(experiment.id);
+
+        let groupSatisfied = usersPerGroup.filter(({ count }) => {
+          if (count >= userCount) {
+            return true;
+          }
+          return false;
+        });
+
+        return groupSatisfied.length;
+      }
+      return null;
+    }
+    return undefined;
   }
 
   private getRootMetric(object: any, keys: string[]): any {

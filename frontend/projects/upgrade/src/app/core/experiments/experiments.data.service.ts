@@ -85,4 +85,9 @@ export class ExperimentDataService {
     const url = environment.api.contextMetaData;
     return this.http.get(url);
   }
+
+  fetchGroupAssignmentStatus(experimentId: string) {
+    const url = `${environment.api.getGroupAssignmentStatus}/${experimentId}`;
+    return this.http.get(url);
+  }
 }

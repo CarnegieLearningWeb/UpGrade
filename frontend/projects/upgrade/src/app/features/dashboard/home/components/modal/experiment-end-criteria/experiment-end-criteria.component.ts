@@ -15,6 +15,7 @@ export class ExperimentEndCriteriaComponent implements OnInit {
   experiment: ExperimentVM;
   experimentEndForm: FormGroup;
   minDate = new Date();
+  groupSatisfied: number;
 
   constructor(
     private dialogRef: MatDialogRef<ExperimentEndCriteriaComponent>,
@@ -77,7 +78,8 @@ export class ExperimentEndCriteriaComponent implements OnInit {
         endCondition,
         dateOfExperimentEnd: endOn ? new Date(endOn) : null,
         userCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.userCount : null,
-        groupCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.groupCount : null
+        groupCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.groupCount : null,
+        groupSatisfied: this.experiment.groupSatisfied
       });
     }
   }

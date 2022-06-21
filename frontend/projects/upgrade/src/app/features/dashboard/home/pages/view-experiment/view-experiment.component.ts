@@ -71,7 +71,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experimentService.fetchExperimentById(experimentIdFromParams);
     });
 
-    this.experimentSub = this.experimentService.selectedExperiment$
+    this.experimentSub = this.experimentService.selectedExperiment$      
       .pipe(
         withLatestFrom(
           this.isLoadingExperimentDetailStats$,
@@ -84,6 +84,11 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       ).subscribe(({ experiment, isPolling }) => {
         this.onExperimentChange(experiment, isPolling);
       })
+
+      if (this.experiment) {
+        this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
+        this.experimentService.groupSatisfied$(this.experiment.id).subscribe(data => this.experiment.groupSatisfied = data);
+      }
   }
 
   onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
@@ -180,6 +185,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.experimentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
+    this.experimentIdSub.unsubscribe();
     this.experimentService.endDetailStatsPolling();
   }
 
