@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/cor
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Subscription } from 'rxjs';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
+import { ExperimentStatePipeType } from '../../../../../../shared/pipes/experiment-state.pipe';
+import { EXPERIMENT_STATE } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
   selector: 'app-segment-experiment-list',
   templateUrl: './segment-experiment-list.component.html',
@@ -10,7 +12,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
 })
 export class SegmentExperimentListComponent implements OnInit {
 
-  segmentExperimentListDisplayedColumns = ['Number', 'experimentName', 'experimentState', 'experimentContext','usedList'];
+  segmentExperimentListDisplayedColumns = ['experimentName', 'experimentState', 'experimentContext','usedList'];
   segment: any;
   allExperimentSegmentsInclusionSub: Subscription;
   allExperimentSegmentsExclusionSub: Subscription;
@@ -57,5 +59,13 @@ export class SegmentExperimentListComponent implements OnInit {
       });
     }
 
+  }
+
+  get ExperimentStatePipeTypes() {
+    return ExperimentStatePipeType;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
   }
 }

@@ -14,16 +14,6 @@
           [dataSource]="segmentsExperimentList"
         >
 
-          <!-- NUMBER Column -->
-          <ng-container matColumnDef="Number">
-            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-              {{ 'global.number.text' | translate }}
-            </mat-header-cell>
-            <mat-cell *matCellDef="let element; let groupIndex = index">
-              <span>{{ groupIndex + 1 }}</span>
-            </mat-cell>
-          </ng-container>
-
           <!-- Experiment NAME Column -->
           <ng-container matColumnDef="experimentName">
             <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -40,7 +30,27 @@
               {{ 'segments.segment-experiment-list-state.text' | translate}}
             </mat-header-cell>
             <mat-cell class="ft-12-600" *matCellDef="let element"> 
-              {{ element.experimentState }}
+              <div class="experiment-state">
+                <ng-container
+                  *ngIf="element.experimentState === ExperimentState.PREVIEW || element.experimentState === ExperimentState.CANCELLED || element.experimentState === ExperimentState.SCHEDULED; else experimentStateTemplate"
+                >
+                  <app-shared-icons class="icons" [iconType]="element.experimentState"></app-shared-icons>
+                </ng-container>
+                <ng-template #experimentStateTemplate>
+                  <span class="experiment-state-circle" [ngStyle]="{'backgroundColor': element.experimentState | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+                </ng-template>
+                <span
+                  [ngClass]="{'experiment-state--light': element.experimentState === ExperimentState.INACTIVE || element.experimentState === ExperimentState.CANCELLED }"
+                >
+                  {{ element.experimentState | experimentState }}
+                </span>
+              </div>
+              <span
+                class="experiment-schedule ft-10-400"
+                *ngIf="element.experimentState === ExperimentState.SCHEDULED"
+              >
+                {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
+              </span>
             </mat-cell>
           </ng-container>
 
