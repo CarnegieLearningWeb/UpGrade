@@ -36,7 +36,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: SERVER_ERROR.INVALID_TOKEN, viewValue: SERVER_ERROR.INVALID_TOKEN },
     { value: SERVER_ERROR.TOKEN_NOT_PRESENT, viewValue: SERVER_ERROR.TOKEN_NOT_PRESENT },
     { value: SERVER_ERROR.EMAIL_SEND_ERROR, viewValue: SERVER_ERROR.EMAIL_SEND_ERROR },
-    { value: SERVER_ERROR.CONDTION_NOT_FOUND, viewValue: SERVER_ERROR.CONDTION_NOT_FOUND },
+    { value: SERVER_ERROR.CONDITION_NOT_FOUND, viewValue: SERVER_ERROR.CONDITION_NOT_FOUND },
   ];
   filterOptions = [];
   selectedFilterOption: string;

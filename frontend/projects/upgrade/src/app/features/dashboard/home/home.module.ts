@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { NewExperimentComponent } from './components/modal/new-experiment/new-experiment.component';
 import { ExperimentOverviewComponent } from './components/experiment-overview/experiment-overview.component';
 import { ExperimentDesignComponent } from './components/experiment-design/experiment-design.component';
+import { MonitoredMetricsComponent } from './components/metrics/metrics.component';
 import { ExperimentScheduleComponent } from './components/experiment-schedule/experiment-schedule.component';
 import { ViewExperimentComponent } from './pages/view-experiment/view-experiment.component';
 import { ExperimentStatusComponent } from './components/modal/experiment-status/experiment-status.component';
@@ -31,6 +32,7 @@ import { ExperimentEndCriteriaComponent } from './components/modal/experiment-en
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
 import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
+import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
 @NgModule({
     declarations: [
         HomeComponent,
@@ -38,6 +40,7 @@ import { StateTimeLogsComponent } from './components/modal/state-time-logs/state
         NewExperimentComponent,
         ExperimentOverviewComponent,
         ExperimentDesignComponent,
+        MonitoredMetricsComponent,
         ExperimentScheduleComponent,
         ViewExperimentComponent,
         ExperimentStatusComponent,

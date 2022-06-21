@@ -109,6 +109,7 @@
 .new-flag-modal,
 .new-user-modal,
 .queries-modal,
+.export-modal,
 .query-result,
 .add-metric-modal,
 .experiment-ending-criteria {
@@ -162,11 +163,16 @@
 }
 
 .new-experiment-modal {
-  width: 900px;
+  height: 775px;
+  width: 1000px;
 }
 
 .queries-modal {
   width: 1000px;
+}
+
+.export-modal {
+  width: 700px;
 }
 
 .new-flag-modal {
@@ -182,7 +188,7 @@
   margin-left: 20px !important;
   border-radius: 3px !important;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
-  width: 90px;
+  width: 100px;
   height: 36px;
   font-family: 'Open Sans';
   font-size: var(--text-size-normal);

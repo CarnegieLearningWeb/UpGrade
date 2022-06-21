@@ -172,6 +172,12 @@ const reducer = createReducer(
     (state, { contextMetaData }) => ({ ...state, contextMetaData })
   ),
   on(
+    experimentsAction.actionFetchGroupAssignmentStatusSuccess,
+    (state, { experiment }) => {
+      return adapter.upsertOne(experiment, state);
+    }
+  ),
+  on(
     experimentsAction.actionFetchExperimentDetailStat,
     (state) => { 
       return {
