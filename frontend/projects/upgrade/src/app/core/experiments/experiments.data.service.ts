@@ -90,7 +90,7 @@ export class ExperimentDataService {
   }
 
   fetchGroupAssignmentStatus(experimentId: string) {
-    const url = `${environment.api.getGroupAssignmentStatus}/${experimentId}`;
+    const url = `${this.environment.api.getGroupAssignmentStatus}/${experimentId}`;
     return this.http.get(url);
   }
 }

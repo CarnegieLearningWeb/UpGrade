@@ -37,6 +37,7 @@ export interface APIEndpoints {
     queryResult: string,
     getVersion: string,
     contextMetaData: string,
+    getGroupAssignmentStatus: string
 }
 
 export interface Environment {
