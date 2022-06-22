@@ -54,6 +54,7 @@ export const experiment = {
     },
   ],
   backendVersion: "1.0.0",
+  groupSatisfied: 0,
 };
 
 export const experimentSecond = {
@@ -105,6 +106,7 @@ export const experimentSecond = {
     },
   ],
   backendVersion: "1.0.0",
+  groupSatisfied: 0,
 };
 
 export const experimentThird = {
@@ -156,6 +158,7 @@ export const experimentThird = {
     },
   ],
   backendVersion: "1.0.0",
+  groupSatisfied: 0,
 };
 
 export const experimentFourth = {
@@ -207,4 +210,5 @@ export const experimentFourth = {
     },
   ],
   backendVersion: "1.0.0",
+  groupSatisfied: 0,
 };

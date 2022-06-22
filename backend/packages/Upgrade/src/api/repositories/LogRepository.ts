@@ -151,8 +151,7 @@ export class LogRepository extends Repository<Log> {
       jsonDataValue = `logs.data ->> ${metricString}`;
     }
 
-    let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue);
-
+    let executeQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue, query.metric.type);
     // const result = await executeQuery.execute();
 
     let valueToUse = 'extracted.value';
@@ -178,7 +177,7 @@ export class LogRepository extends Repository<Log> {
         castFn = `(cast(${valueToUse} as ${castType}))`;
       }
       if (query.metric.type === IMetricMetaData.CATEGORICAL) {
-        percentQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue)
+        percentQuery = this.getCommonAnalyticQuery(metric, experimentId, queryId, jsonDataValue, query.metric.type)
           .andWhere(`${castFn} In (:...allowedData)`, {
             allowedData: query.metric.allowedData,
           })
@@ -206,7 +205,7 @@ export class LogRepository extends Repository<Log> {
         const { conditionId } = res;
         const percentageQueryConditionRes = percentQueryResult.find((queryRes) => queryRes.conditionId === conditionId);
         return {
-          conditionId,
+          conditionId: conditionId,
           result: (res.result / percentageQueryConditionRes.result) * 100,
         };
       });
@@ -289,45 +288,56 @@ export class LogRepository extends Repository<Log> {
     metric: string,
     experimentId: string,
     queryId: string,
-    metricString: string
+    metricString: string,
+    metricType: string
   ): SelectQueryBuilder<Experiment> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
-    return (
-      experimentRepo
-        .createQueryBuilder('experiment')
-        .innerJoin('experiment.queries', 'queries')
-        .innerJoin('queries.metric', 'metric')
-        .innerJoinAndSelect('metric.logs', 'logs')
-        .innerJoinAndSelect(
-          (qb) => {
-            return qb
-              .subQuery()
-              .select([
-                `"individualEnrollment"."userId" as "userId"`,
-                `"individualEnrollment"."experimentId" as "experimentId"`,
-                `"individualEnrollment"."conditionId" as "conditionId"`,
-              ])
-              .distinct()
-              .from(IndividualEnrollment, 'individualEnrollment');
-          },
-          'individualEnrollment',
-          'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
-        )
-        .innerJoinAndSelect(
-          (qb) => {
-            return qb
-              .subQuery()
-              .select([`${metricString} as value`, 'logs.id as id'])
-              .from(Log, 'logs');
-          },
-          'extracted',
-          'extracted.id = logs.id'
-        )
-        .where('metric.key = :metric', { metric })
-        .andWhere('experiment.id = :experimentId', { experimentId })
-        .andWhere('queries.id = :queryId', { queryId })
-        .andWhere(`jsonb_typeof(${metricString}) = 'number'`)
-    );
+
+    let analyticsQuery = experimentRepo
+    .createQueryBuilder('experiment')
+    .innerJoin('experiment.queries', 'queries')
+    .innerJoin('queries.metric', 'metric')
+    .innerJoinAndSelect('metric.logs', 'logs')
+    .innerJoinAndSelect(
+      (qb) => {
+        return qb
+          .subQuery()
+          .select([
+            `"individualEnrollment"."userId" as "userId"`,
+            `"individualEnrollment"."experimentId" as "experimentId"`,
+            `"individualEnrollment"."conditionId" as "conditionId"`,
+          ])
+          .distinct()
+          .from(IndividualEnrollment, 'individualEnrollment');
+      },
+      'individualEnrollment',
+      'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
+    )
+    .innerJoinAndSelect(
+      (qb) => {
+        return qb
+          .subQuery()
+          .select([`${metricString} as value`, 'logs.id as id'])
+          .from(Log, 'logs');
+      },
+      'extracted',
+      'extracted.id = logs.id'
+    )
+    .where('metric.key = :metric', { metric })
+    .andWhere('experiment.id = :experimentId', { experimentId })
+    .andWhere('queries.id = :queryId', { queryId });
+
+    if (metricType == 'continuous') {
+      return (
+        analyticsQuery
+          .andWhere(`jsonb_typeof(${metricString}) = 'number'`)
+      );
+    } else {
+      return (
+        analyticsQuery
+          .andWhere(`${metricString} IS NOT NULL`)
+      );
+    }
   }
 }

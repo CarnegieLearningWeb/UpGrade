@@ -49,6 +49,7 @@ export enum NewExperimentPaths {
   EXPERIMENT_OVERVIEW = 'Experiment Overview',
   EXPERIMENT_DESIGN = 'Experiment Design',
   EXPERIMENT_PARTICIPANTS = 'Experiment Participants',
+  MONITORED_METRIC = 'Monitored Metric',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
   POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
@@ -174,6 +175,7 @@ export interface Experiment {
   filterMode: FILTER_MODE,
   experimentSegmentInclusion: segmentNew,
   experimentSegmentExclusion: segmentNew,
+  groupSatisfied?: number;
   backendVersion: string;
 }
 

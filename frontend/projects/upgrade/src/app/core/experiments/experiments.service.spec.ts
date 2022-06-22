@@ -87,7 +87,8 @@ describe('ExperimentService', () => {
         filterMode: FILTER_MODE.INCLUDE_ALL,
         experimentSegmentInclusion: dummyInclusionData,
         experimentSegmentExclusion: dummyExclusionData,
-        backendVersion: '1.0.0'
+        backendVersion: '1.0.0',
+        groupSatisfied: 0
     }
     let mockExperimentStateInfo = {
         newStatus: EXPERIMENT_STATE.INACTIVE,

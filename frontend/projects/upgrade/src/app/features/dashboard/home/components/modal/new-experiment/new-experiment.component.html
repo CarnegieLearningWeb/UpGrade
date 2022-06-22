@@ -53,6 +53,21 @@
   <mat-step>
     <ng-template matStepLabel>
       <span class="step-label ft-18-400">
+        {{ 'home.new-experiment.monitored-metrics.text' | translate }}
+      </span>
+    </ng-template>
+    <home-monitored-metrics
+      [experimentInfo]="experimentInfo"
+      [currentContext]="currentContext"
+      [isContextChanged]="isContextChanged"
+      [animationCompleteStepperIndex]="animationCompletedIndex"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
+    ></home-monitored-metrics>
+  </mat-step>
+  
+  <mat-step>
+    <ng-template matStepLabel>
+      <span class="step-label ft-18-400">
         {{ 'home.new-experiment.schedule.text' | translate }}
       </span>
     </ng-template>

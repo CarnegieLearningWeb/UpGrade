@@ -27,17 +27,14 @@
           >
             {{ 'home.view-experiment.edit-button.text' | translate }}
           </button>
-          <button mat-flat-button class="ft-14-600 button button--query" (click)="openQueriesModal()">
+          <!-- <button mat-flat-button class="ft-14-600 button button--query" (click)="openQueriesModal()">
             {{ 'global.monitor.text' | translate | uppercase }}
-          </button>
+          </button> -->
           <button mat-flat-button class="ft-14-600 button" (click)="deleteExperiment()" *ngIf="permissions?.experiments.delete">
             {{ 'global.delete.text' | translate }}
           </button>
-          <button mat-flat-button class="ft-14-600 button-long" (click)="exportExperimentInfo(experiment.id, experiment.name)">
+          <button mat-flat-button class="ft-14-600 button" (click)="openExportModal()">
             {{ 'home.view-experiment.export-button.text' | translate }}
-          </button>
-          <button mat-flat-button class="ft-14-600 button-long" (click)="exportExperimentDesign(experiment.id, experiment.name)">
-            {{ 'home.view-experiment.export-experiment-button.text' | translate }}
           </button>
         </div>
       </div>

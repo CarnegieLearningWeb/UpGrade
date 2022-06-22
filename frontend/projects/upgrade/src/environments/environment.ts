@@ -57,5 +57,6 @@ export const environment = {
     segments: `${endpointApi}/segments`,
     importSegment: `${endpointApi}/segments/import`,
     exportSegment: `${endpointApi}/segments/export`,
+    getGroupAssignmentStatus: `${endpointApi}/experiments/getGroupAssignmentStatus`,
   }
 };

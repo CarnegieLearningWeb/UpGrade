@@ -6,7 +6,9 @@
     line-height: 20px;
   }
 
-  .name,
+  .name {
+    width: 30%;
+  }
   .description {
     width: 100%;
   }
@@ -30,6 +32,13 @@
   .chips {
     margin-top: 5px;
     margin-bottom: 5px;
+    width: 30%;
+  }
+
+  .tags {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width: 100%;
   }
 
   .button-container {

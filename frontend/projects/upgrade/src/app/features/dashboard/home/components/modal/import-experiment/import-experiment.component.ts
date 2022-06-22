@@ -100,7 +100,8 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   private validateExperimentJSON(experiment: Experiment) {
-    const experimentSchema: Record<keyof Experiment, string> = {
+    // TODO remove this any after typescript version updation
+    const experimentSchema: any = {
       id: 'string',
       name: 'string',
       description: 'string',
@@ -171,7 +172,7 @@ export class ImportExperimentComponent implements OnInit {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
     });
     if (missingPartitionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.partition.text') + ": " + missingPartitionProperties;
+      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.decision-points.text') + ": " + missingPartitionProperties;
     }
     missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
     return missingPropertiesFlag;

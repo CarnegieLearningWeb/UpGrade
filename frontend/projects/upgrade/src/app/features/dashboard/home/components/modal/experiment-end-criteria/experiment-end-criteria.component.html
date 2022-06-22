@@ -66,6 +66,10 @@
           ></span>
         </div>
       </div>
+      <div class="groupsatisfied-status" *ngIf="experiment.group">
+        <span  *ngIf="experiment.groupSatisfied">{{ 'home.new-experiment.schedule.group-count-having-met-ending-criters.text' | translate: { groupSatisfied: experiment.groupSatisfied } }}</span>
+        <span  *ngIf="!experiment.groupSatisfied">{{ 'home.new-experiment.schedule.group-count-having-met-ending-criters.text' | translate: { groupSatisfied: 0 } }}</span>
+      </div>
 
     </mat-radio-group>
   </form>
@@ -100,7 +104,7 @@
       class="modal-btn default-button"
       (click)="updateEndingCriteria()"
     >
-      {{ 'global.save.text' | translate }}
+      {{ 'global.update.text' | translate }}
     </button>
   </div>
 </div>
