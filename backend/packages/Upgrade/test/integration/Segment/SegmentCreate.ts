@@ -2,6 +2,7 @@ import Container from 'typedi';
 import { SegmentService } from '../../../src/api/services/SegmentService';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { segment, segmentSecond } from '../mockData/segment';
+import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 
 export default async function SegmentCreate(): Promise<void> {
   const segmentService = Container.get<SegmentService>(SegmentService);
@@ -13,9 +14,18 @@ export default async function SegmentCreate(): Promise<void> {
   await segmentService.upsertSegment(segmentObject, new UpgradeLogger());
   let segments = await segmentService.getAllSegments(new UpgradeLogger());
 
-  expect(segments.length).toEqual(1);
+  expect(segments.length).toEqual(2);
   expect(segments).toEqual(
     expect.arrayContaining([
+      expect.objectContaining({
+        name: globalExcludeSegment.name,
+        description: globalExcludeSegment.description,
+        context: globalExcludeSegment.context,
+        type: globalExcludeSegment.type,
+        individualForSegment: expect.arrayContaining([]),
+        groupForSegment: expect.arrayContaining([]),
+        subSegments: expect.arrayContaining([]),
+      }),
       expect.objectContaining({
         name: segmentObject.name,
         description: segmentObject.description,
@@ -50,9 +60,18 @@ export default async function SegmentCreate(): Promise<void> {
 
   await segmentService.upsertSegment(segmentObject2, new UpgradeLogger());
   segments = await segmentService.getAllSegments(new UpgradeLogger());
-  expect(segments.length).toEqual(2);
+  expect(segments.length).toEqual(3);
   expect(segments).toEqual(
     expect.arrayContaining([
+      expect.objectContaining({
+        name: globalExcludeSegment.name,
+        description: globalExcludeSegment.description,
+        context: globalExcludeSegment.context,
+        type: globalExcludeSegment.type,
+        individualForSegment: expect.arrayContaining([]),
+        groupForSegment: expect.arrayContaining([]),
+        subSegments: expect.arrayContaining([]),
+      }),
       expect.objectContaining({
         name: segmentObject.name,
         description: segmentObject.description,

@@ -1,6 +1,9 @@
 import TestCase1 from './SegmentCreate';
 import TestCase2 from './SegmentDelete';
 import TestCase3 from './SegmentUpdate';
+import TestCase4 from './SegmentMemberUserEnrollment';
+import TestCase5 from './SegmentMemberGroupEnrollment';
+import TestCase6 from './SubSegmentEnrollment';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../src/api/services/CheckService';
 import { experimentUsers } from '../mockData/experimentUsers/index';
@@ -55,3 +58,18 @@ export const SegmentUpdate = async () => {
   await initialChecks();
   await TestCase3();
 };
+
+export const SegmentMemberUserEnrollment = async () => {
+  await initialChecks();
+  await TestCase4();
+};
+
+export const SegmentMemberGroupEnrollment = async () => {
+  await initialChecks();
+  await TestCase5();
+}
+
+export const SubSegmentEnrollment = async () => {
+  await initialChecks();
+  await TestCase6();
+}
