@@ -57,19 +57,16 @@ export class QueryService {
             logger
           )
         );
-
-        return [];
+        return [query.status];
       }
     });
 
     if (failedQuery.length) {
       await Promise.all(failedQuery);
     }
-
     modifiedResponse = modifiedResponse.map((res, index) => {
       return { id: queryIds[index], result: res };
     });
-
     return modifiedResponse;
   }
 }

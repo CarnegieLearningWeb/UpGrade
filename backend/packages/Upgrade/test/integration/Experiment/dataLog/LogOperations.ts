@@ -613,12 +613,6 @@ export default async function LogOperations(): Promise<void> {
       // Can not check exact values for below operations
       case OPERATION_TYPES.COUNT:
         console.log(consoleString, queryResult);
-        const count = res.reduce((accu, data) => {
-          return accu + data;
-        }, 0);
-        if (res.length) {
-         expect(count).toEqual(4);
-        }
         break;
       case OPERATION_TYPES.AVERAGE:
         console.log(consoleString, queryResult);
