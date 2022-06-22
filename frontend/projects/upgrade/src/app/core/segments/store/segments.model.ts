@@ -52,7 +52,7 @@ export interface GroupForSegment {
   segmentId: string;
 }
 
-export interface individualForSegment {
+export interface IndividualForSegment {
   userId: string;
   segmentId: string;
 }
@@ -65,7 +65,7 @@ export interface Segment {
   name: string;
   context: string;
   description: string;
-  individualForSegment: individualForSegment[];
+  individualForSegment: IndividualForSegment[];
   groupForSegment: GroupForSegment[];
   subSegments: Segment[];
   type: SEGMENT_TYPE;
