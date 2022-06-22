@@ -1023,7 +1023,7 @@ export class ExperimentAssignmentService {
       };
       await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
       return;
-    } else if (groupExcluded) {
+    } else if (groupExcluded.length > 0) {
       const excludeGroupDoc: Pick<GroupExclusion, 'groupId' | 'experiment' | 'exclusionCode'> = {
         groupId: user?.workingGroup[experiment.group],
         experiment,
@@ -1048,7 +1048,12 @@ export class ExperimentAssignmentService {
         };
         await this.groupExclusionRepository.saveRawJson([excludeGroupDoc]);
       } else {
-        // TODO
+        const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+          user,
+          experiment,
+          exclusionCode: EXCLUSION_CODE.PARTICIPANT_ON_EXCLUSION_LIST,
+        };
+        await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
       }
       return ;
     }

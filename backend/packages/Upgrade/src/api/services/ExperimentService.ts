@@ -566,7 +566,7 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
+        let { conditions, partitions, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -576,6 +576,33 @@ export class ExperimentService {
           error.type = SERVER_ERROR.QUERY_FAILED;
           logger.error(error);
           throw error;
+        }
+
+        experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
+        experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
+
+        if (!segmentInclude && experimentDoc.experimentSegmentInclusion.segment) {
+          const oldIncludeSegment = experimentDoc.experimentSegmentInclusion.segment;
+          segmentInclude = {
+            type : oldIncludeSegment.type,
+            userIds : oldIncludeSegment.individualForSegment.map(x => x.userId),
+            groups : oldIncludeSegment.groupForSegment.map(x => {
+              return {type: x.type, groupId: x.groupId}
+            }),
+            subSegmentIds : oldIncludeSegment.subSegments.map(x => x.id)
+          }
+        }
+
+        if (!segmentExclude && experimentDoc.experimentSegmentExclusion.segment) {
+          const oldExcludeSegment = experimentDoc.experimentSegmentExclusion.segment; 
+          segmentExclude = {
+            type : oldExcludeSegment.type,
+            userIds : oldExcludeSegment.individualForSegment.map(x => x.userId),
+            groups : oldExcludeSegment.groupForSegment.map(x => {
+              return {type: x.type, groupId: x.groupId}
+            }),
+            subSegmentIds : oldExcludeSegment.subSegments.map(x => x.id)
+          }
         }
 
         const segmentIncludeData: SegmentInputValidator = {

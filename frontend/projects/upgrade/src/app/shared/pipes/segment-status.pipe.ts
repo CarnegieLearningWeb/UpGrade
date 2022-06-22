@@ -12,8 +12,6 @@ export enum SegmentStatusPipeType {
 export class SegmentStatusPipe implements PipeTransform {
   transform(segmentStatus: SEGMENT_STATUS, type: SegmentStatusPipeType = SegmentStatusPipeType.TEXT): any {
     switch (segmentStatus) {
-      // TODO add more cases
-      // TODO test case
       case SEGMENT_STATUS.USED:
         return type === SegmentStatusPipeType.TEXT ? 'Used' : '#829CF8';
       case SEGMENT_STATUS.UNUSED:

@@ -67,7 +67,7 @@ export class ExperimentInput {
   public updatedAt: Date;
   public versionNumber: number;
 
-  public filterMode: FILTER_MODE; 
+  public filterMode: FILTER_MODE;
   public segmentInclude: Omit<SegmentInputValidator, 'id' | 'name' | 'description' | 'context'>;
   public segmentExclude: Omit<SegmentInputValidator, 'id' | 'name' | 'description' | 'context'>;
   public backendVersion: string;
