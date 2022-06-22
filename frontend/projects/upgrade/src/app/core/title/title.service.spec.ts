@@ -1,9 +1,7 @@
 import { fakeAsync, tick } from "@angular/core/testing";
-import { Title } from "@angular/platform-browser";
-import { ActivatedRouteSnapshot } from "@angular/router";
-import { TranslateService } from "@ngx-translate/core";
 import { of } from "rxjs/internal/observable/of";
 import { environment } from "../../../environments/environment";
+import { Environment } from "../../../environments/environment-types";
 import { TitleService } from "./title.service";
 
 class MockTranslateService {
@@ -17,19 +15,20 @@ class MockTitle {
 describe('TitleService', () => {
     let mockTranslateService: any;
     let mockTitle: any;
+    let mockEnvironment: Environment = { ...environment };
     let service: TitleService;
 
     beforeEach(() => {
        mockTranslateService = new MockTranslateService();
        mockTitle = new MockTitle();
-       service = new TitleService(mockTranslateService, mockTitle);
+       service = new TitleService(mockTranslateService, mockTitle, mockEnvironment);
     })
 
     describe('#setTitle', () => {
         const testCases = [
             {
                 whenCondition: 'snapshot is valid and title does NOT match the translated title',
-                expectedValue: environment.appName + ' - bambino',
+                expectedValue: mockEnvironment.appName + ' - bambino',
                 mockTranslatedTitle: 'bambino',
                 snapshot: {
                     children: [
@@ -43,7 +42,7 @@ describe('TitleService', () => {
             },
             {
                 whenCondition: 'snapshot has no title data',
-                expectedValue: environment.appName,
+                expectedValue: mockEnvironment.appName,
                 mockTranslatedTitle: null,
                 snapshot: {
                     children: [
@@ -57,7 +56,7 @@ describe('TitleService', () => {
             },
             {
                 whenCondition: 'title will not get set if translated title matches title data',
-                expectedValue: environment.appName,
+                expectedValue: mockEnvironment.appName,
                 mockTranslatedTitle: 'child',
                 snapshot: {
                     children: [
@@ -77,6 +76,7 @@ describe('TitleService', () => {
             mockTranslatedTitle,
             snapshot
         }) => {
+            console.log('here')
 
             it(`WHEN ${whenCondition}, THEN the expected value is ${expectedValue}`, fakeAsync(() => {
                 mockTranslateService.get = jest.fn().mockReturnValue(of(mockTranslatedTitle));

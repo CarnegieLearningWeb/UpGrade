@@ -7,6 +7,8 @@ import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, DATE_RANGE, ExperimentLocalStorageKe
 import * as ExperimentSelectors from './store/experiments.selectors';
 import { actionDeleteExperiment, actionExportExperimentDesign, actionExportExperimentInfo, actionFetchAllExperimentNames, actionFetchContextMetaData, actionFetchExperimentDetailStat, actionGetExperimentById, actionGetExperiments, actionSetGraphRange, actionSetSearchKey, actionSetSearchString, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpsertExperiment } from './store/experiments.actions';
 import { FILTER_MODE } from 'upgrade_types';
+import { Environment } from '../../../environments/environment-types';
+import { environment } from '../../../environments/environment';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
@@ -18,6 +20,7 @@ class MockLocalStorageService extends LocalStorageService {
 describe('ExperimentService', () => {
     let mockStore: any;
     let mockLocalStorageService: LocalStorageService;
+    let mockEnvironment: Environment;
     let service: ExperimentService;
     let mockExperimentsList: any = [
         { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
@@ -63,7 +66,8 @@ describe('ExperimentService', () => {
     beforeEach(() => {
         mockStore = MockStateStore$;
         mockLocalStorageService = new MockLocalStorageService();
-        service = new ExperimentService(mockStore, mockLocalStorageService);
+        mockEnvironment = { ...environment };
+        service = new ExperimentService(mockStore, mockLocalStorageService, mockEnvironment);
     })
 
     describe('#experiments$', () => {

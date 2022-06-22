@@ -1,29 +1,32 @@
-import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { Inject, Injectable } from '@angular/core';
 import { UserRole } from './store/users.model';
 import { HttpClient } from '@angular/common/http';
+import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class UsersDataService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(ENV) private environment: Environment
+  ) {}
 
   fetchUsers(params: any) {
-    const url = environment.api.getAllUsers;
+    const url = this.environment.api.getAllUsers;
     return this.http.post(url, params);
   }
 
   updateUserDetails(firstName: string, lastName: string, email: string, role: UserRole) {
-    const url = environment.api.userDetails;
+    const url = this.environment.api.userDetails;
     return this.http.post(url, { firstName, lastName, email, role });
   }
 
   createNewUser(firstName: string, lastName: string, email: string, role: UserRole) {
-    const url = environment.api.users;
+    const url = this.environment.api.users;
     return this.http.post(url, { firstName, lastName, email, role });
   }
 
   deleteUser(email: string) {
-    const url = `${environment.api.users}/${email}`;
+    const url = `${this.environment.api.users}/${email}`;
     return this.http.delete(url);
   }
 }
