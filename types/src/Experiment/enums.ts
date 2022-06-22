@@ -135,7 +135,7 @@ export enum FILTER_MODE {
 export enum SEGMENT_TYPE {
   PUBLIC = 'public',
   PRIVATE = 'private',
-  GLOBAL_EXCLUDE = 'global_exclude'
+  GLOBAL_EXCLUDE = 'global_exclude',
 }
 
 export enum SEGMENT_STATUS {
