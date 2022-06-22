@@ -33,7 +33,6 @@ describe('Experiments Selectors', () => {
                 "group": "schoolId",
                 "logging": false,
                 "filterMode": FILTER_MODE.INCLUDE_ALL,
-                "groupSatisfied": 0,
                 "backendVersion": "1.0.0",
                 "experimentSegmentInclusion": {
                     "updatedAt": '2022-06-20T13:14:52.900Z',

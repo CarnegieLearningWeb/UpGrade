@@ -164,6 +164,7 @@ export class Experiment extends BaseModel {
   @OneToOne((type) => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
   @Type(() => ExperimentSegmentExclusion)
   public experimentSegmentExclusion: ExperimentSegmentExclusion;
+  
   @Column({ default: '1.0.0' })
   public backendVersion: string;
 }

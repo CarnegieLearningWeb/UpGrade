@@ -29,7 +29,12 @@ import { Experiment } from '../../../src/api/models/Experiment';
 import { EXPERIMENT_STATE } from '../../../../../../types/src';
 import { DecisionPointRepository } from '../../../src/api/repositories/DecisionPointRepository';
 import { MonitoredDecisionPointRepository } from '../../../src/api/repositories/MonitoredDecisionPointRepository';
-
+import { ExperimentSegmentInclusionRepository } from '../../../src/api/repositories/ExperimentSegmentInclusionRepository';
+import { ExperimentSegmentExclusionRepository } from '../../../src/api/repositories/ExperimentSegmentExclusionRepository';
+import { SegmentService } from '../../../src/api/services/SegmentService';
+import { SegmentRepository } from '../../../src/api/repositories/SegmentRepository';
+import { IndividualForSegmentRepository } from '../../../src/api/repositories/IndividualForSegmentRepository';
+import { GroupForSegmentRepository } from '../../../src/api/repositories/GroupForSegmentRepository';
 
 let excludeArr = [1, 2, 3];
 let explicitExperimentIndividualExclusion = new ExplicitExperimentIndividualExclusion();
@@ -66,10 +71,16 @@ describe('Experiment Exclude Service Testing', () => {
                 MetricRepository,
                 QueryRepository,
                 StateTimeLogsRepository,
+                ExperimentSegmentInclusionRepository,
+                ExperimentSegmentExclusionRepository,
                 PreviewUserService,
                 ScheduledJobService,
                 ErrorService,
                 PreviewUserRepository,
+                SegmentService,
+                SegmentRepository,
+                IndividualForSegmentRepository,
+                GroupForSegmentRepository,
                 ExplicitIndividualAssignmentRepository,
                 ScheduledJobRepository,
                 ErrorRepository,
