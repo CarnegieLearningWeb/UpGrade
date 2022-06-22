@@ -41,7 +41,7 @@ export enum SERVER_ERROR {
   TOKEN_NOT_PRESENT = 'Token is not present in request',
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
-  CONDTION_NOT_FOUND = 'Condition not found',
+  CONDITION_NOT_FOUND = 'Condition not found',
 }
 
 export enum ENROLLMENT_CODE {
@@ -130,4 +130,9 @@ export enum REPEATED_MEASURE {
 export enum FILTER_MODE {
   INCLUDE_ALL = 'includeAll',
   EXCLUDE_ALL = 'excludeAll',
+}
+
+export enum EXPORT_METHOD {
+  DESIGN = 'Download Experiment Design (JSON)',
+  DATA = 'Email Experiment Data (CSV)',
 }

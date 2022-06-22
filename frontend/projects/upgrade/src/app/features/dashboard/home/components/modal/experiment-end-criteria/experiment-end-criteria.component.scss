@@ -73,4 +73,12 @@
   ::ng-deep .owl-dt-control .owl-dt-control-content {
     color: var(--blue);
   }
+
+  .groupsatisfied-status {
+    display: flex;
+    justify-content: flex-start;
+    padding: 0 30px 30px;
+    color: var(--grey-3);
+    font-size: small;
+  }
 }

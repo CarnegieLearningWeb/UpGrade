@@ -123,7 +123,7 @@ describe('Query Service Testing', () => {
         expect(response).toEqual([
             {
                 "id": mockquery1.id,
-                result: []
+                result: ["rejected",]
             }
         ]);
     })

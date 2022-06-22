@@ -1,0 +1,31 @@
+<div class="export-experiment-container">
+  <span class="ft-24-700 title">{{ 'home.view-experiment.export-experiment.text' | translate | titlecase }}</span>
+
+  <form [formGroup]="exportForm" class="export-experiment-container-form">
+    <mat-form-field class="ft-16-400">
+      <mat-label>{{ 'home.view-experiment.export-method.text' | translate }}</mat-label>
+      <mat-select class="ft-16-400 export-selection" formControlName="exportMethod">
+        <mat-option *ngFor="let method of exportMethod" [value]="method.value">
+          {{ method.value }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+  <span
+    class="info-msg"
+    *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)'"
+    [innerHTML]="'home.view-experiment.export-warning.text' | translate: { email: emailId }"
+  ></span>
+  <div class="button-container">
+    <button class="modal-btn" mat-raised-button (click)="onCancelClick()">
+      {{ 'global.cancel.text' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      class="modal-btn default-button"
+      (click)="exportExperiment()"
+    >
+      {{ 'home.view-experiment.export-button.text' | translate }}
+    </button>
+  </div>
+</div>

@@ -1,5 +1,3 @@
-const apiBaseUrl = 'http://staging-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
-
 export const environment = {
   appName: 'UpGrade',
   envName: 'staging',
@@ -49,5 +47,6 @@ export const environment = {
     queryResult: '/query/analyse',
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
+    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus'
   }
 };

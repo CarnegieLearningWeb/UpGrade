@@ -565,7 +565,7 @@ export class ExperimentService {
         // creating queries docs
         const promiseArray = [];
         let queriesDocToSave =
-          (queries &&
+          (queries[0] &&
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
@@ -849,7 +849,7 @@ export class ExperimentService {
       // creating queries docs
       const promiseArray = [];
       let queryDocsToSave =
-        (queries &&
+        (queries[0] &&
           queries.length > 0 &&
           queries.map((query: any) => {
             promiseArray.push(this.metricRepository.findOne(query.metric.key));
