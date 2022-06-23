@@ -42,6 +42,12 @@ $font-size-small: 15px;
             width: 85px;
             height: 40px;
             color: var(--blue);
+            &--disabled {
+              opacity: 0.7;
+              pointer-events: none;
+              color: var(--grey-3);
+              border: 1px solid var(--grey-3);
+            }
 
             .icon {
               margin-right: 3px;
@@ -55,6 +61,13 @@ $font-size-small: 15px;
             width: 120px;
             height: 40px;
             color: var(--blue);
+
+            &--disabled {
+              opacity: 0.7;
+              pointer-events: none;
+              color: var(--grey-3);
+              border: 1px solid var(--grey-3);
+            }
 
             &--query {
               width: auto;

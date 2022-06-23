@@ -29,7 +29,8 @@
             mat-flat-button
             class="ft-14-600 button"
             (click)="deleteSegment()"
-            *ngIf="permissions?.segments.delete"
+            [ngClass]="{ 'button--disabled': permissions && !permissions.segments.delete }"
+            [disabled]="permissions && !permissions.segments.delete"
           >
             {{ 'global.delete.text' | translate }}
           </button>
@@ -39,7 +40,8 @@
             mat-flat-button
             class="ft-14-600 button-long"
             (click)="duplicateSegmentDialog()"
-            *ngIf="segment?.type !== 'global_exclude'"
+            [ngClass]="{ 'button-long--disabled': segment?.type == 'global_exclude' }"
+            [disabled]="segment?.type == 'global_exclude'"
           >
             {{ 'global.duplicate.text' | translate }}
           </button>
