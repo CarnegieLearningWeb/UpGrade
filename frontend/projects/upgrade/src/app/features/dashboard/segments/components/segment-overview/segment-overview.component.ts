@@ -4,6 +4,7 @@ import {  Segment,  NewSegmentDialogEvents ,NewSegmentDialogData, NewSegmentPath
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
+import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
 
 @Component({
   selector: 'segment-overview',
@@ -55,7 +56,8 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.segmentInfo && this.segmentInfo.context === 'ALL') {
+    if (this.segmentInfo && this.segmentInfo.type === SEGMENT_TYPE.GLOBAL_EXCLUDE) {
+      this.allContexts.push(this.segmentInfo.context);
       this.overviewForm.disable();
     }
   }

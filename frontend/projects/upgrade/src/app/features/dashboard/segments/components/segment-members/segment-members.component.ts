@@ -183,7 +183,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
             userIds: this.userIdsToSend,
             groups: this.groupsToSend,
             subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PUBLIC,
+            type: this.segmentInfo ? this.segmentInfo.type : SEGMENT_TYPE.PUBLIC,
             status: SEGMENT_STATUS.UNUSED
           }
           this.emitSegmentDialogEvent.emit({
