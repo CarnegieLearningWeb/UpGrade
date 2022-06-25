@@ -19,10 +19,6 @@ import {
 import { Type } from 'class-transformer';
 import { Query } from './Query';
 import { StateTimeLog } from './StateTimeLogs';
-import { ExplicitExperimentGroupExclusion } from './ExplicitExperimentGroupExclusion';
-import { ExplicitExperimentGroupInclusion } from './ExplicitExperimentGroupInclusion';
-import { ExplicitExperimentIndividualExclusion } from './ExplicitExperimentIndividualExclusion';
-import { ExplicitExperimentIndividualInclusion } from './ExplicitExperimentIndividualInclusion';
 import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
 import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 
@@ -128,34 +124,6 @@ export class Experiment extends BaseModel {
   @OneToMany((type) => StateTimeLog, (state) => state.experiment)
   @Type(() => StateTimeLog)
   public stateTimeLogs: StateTimeLog[];
-
-  @OneToMany(
-    (type) => ExplicitExperimentGroupExclusion,
-    (explicitExperimentGroupExclusion) => explicitExperimentGroupExclusion.experiment
-  )
-  @Type(() => ExplicitExperimentGroupExclusion)
-  public explicitExperimentGroupExclusion: ExplicitExperimentGroupExclusion[];
-
-  @OneToMany(
-    (type) => ExplicitExperimentGroupInclusion,
-    (explicitExperimentGroupInclusion) => explicitExperimentGroupInclusion.experiment
-  )
-  @Type(() => ExplicitExperimentGroupInclusion)
-  public explicitExperimentGroupInclusion: ExplicitExperimentGroupInclusion[];
-
-  @OneToMany(
-    (type) => ExplicitExperimentIndividualExclusion,
-    (explicitExperimentIndividualExclusion) => explicitExperimentIndividualExclusion.experiment
-  )
-  @Type(() => ExplicitExperimentIndividualExclusion)
-  public explicitExperimentIndividualExclusion: ExplicitExperimentIndividualExclusion[];
-
-  @OneToMany(
-    (type) => ExplicitExperimentIndividualInclusion,
-    (explicitExperimentIndividualInclusion) => explicitExperimentIndividualInclusion.experiment
-  )
-  @Type(() => ExplicitExperimentIndividualInclusion)
-  public explicitExperimentIndividualInclusion: ExplicitExperimentIndividualInclusion[];
 
   @OneToOne((type) => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
   @Type(() => ExperimentSegmentInclusion)

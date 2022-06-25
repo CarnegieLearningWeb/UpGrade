@@ -250,17 +250,6 @@ describe('Integration Tests', () => {
     done();
   });
 
-  // // testing exclusion over here
-  // test('Individual Exclude', async (done) => {
-  //   await IndividualExclude();
-  //   done();
-  // });
-
-  // test('Group Exclude', async (done) => {
-  //   await GroupExclude();
-  //   done();
-  // });
-
   // testing experiment update over here
   test('Update Experiment', async (done) => {
     await UpdateExperiment();

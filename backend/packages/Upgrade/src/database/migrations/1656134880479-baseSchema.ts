@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class baseSchema1653548645608 implements MigrationInterface {
-    name = 'baseSchema1653548645608'
+export class baseSchema1656134880479 implements MigrationInterface {
+    name = 'baseSchema1656134880479'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "experiment_condition" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" uuid NOT NULL, "twoCharacterId" character(2) NOT NULL, "name" character varying, "description" character varying, "conditionCode" character varying NOT NULL, "assignmentWeight" real NOT NULL, "order" integer, "experimentId" uuid, CONSTRAINT "UQ_5b64b4936c5532dc91f224ecdcd" UNIQUE ("twoCharacterId"), CONSTRAINT "PK_5bdfd20bb9ace3415008c296fff" PRIMARY KEY ("id"))`);
@@ -15,10 +15,12 @@ export class baseSchema1653548645608 implements MigrationInterface {
         await queryRunner.query(`CREATE TYPE "state_time_log_fromstate_enum" AS ENUM('inactive', 'preview', 'scheduled', 'enrolling', 'enrollmentComplete', 'cancelled')`);
         await queryRunner.query(`CREATE TYPE "state_time_log_tostate_enum" AS ENUM('inactive', 'preview', 'scheduled', 'enrolling', 'enrollmentComplete', 'cancelled')`);
         await queryRunner.query(`CREATE TABLE "state_time_log" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" uuid NOT NULL, "fromState" "state_time_log_fromstate_enum" NOT NULL, "toState" "state_time_log_tostate_enum" NOT NULL, "timeLog" TIMESTAMP NOT NULL, "experimentId" uuid, CONSTRAINT "PK_760d29f7bfded82e5b51cfabb26" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "explicit_experiment_group_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_69db9e251922003412d06070755" PRIMARY KEY ("groupId", "type", "experimentId"))`);
-        await queryRunner.query(`CREATE TABLE "explicit_experiment_group_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_ccfa78f9bd8ef48576b84538ad8" PRIMARY KEY ("groupId", "type", "experimentId"))`);
-        await queryRunner.query(`CREATE TABLE "explicit_experiment_individual_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_f8581673a763df1a1702cec57f5" PRIMARY KEY ("userId", "experimentId"))`);
-        await queryRunner.query(`CREATE TABLE "explicit_experiment_individual_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "PK_757b62cf84e8ffd940f47d0a919" PRIMARY KEY ("userId", "experimentId"))`);
+        await queryRunner.query(`CREATE TABLE "experiment_segment_exclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "segmentId" uuid NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "REL_915022e01487b0245a16cbc55f" UNIQUE ("segmentId"), CONSTRAINT "REL_7d22a811ae04d2ed1b8af0e9c0" UNIQUE ("experimentId"), CONSTRAINT "PK_54747bc2fc0d9a509f551371b60" PRIMARY KEY ("segmentId", "experimentId"))`);
+        await queryRunner.query(`CREATE TABLE "group_for_segment" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "groupId" character varying NOT NULL, "type" character varying NOT NULL, "segmentId" uuid NOT NULL, CONSTRAINT "PK_831eaa3563190f840db9ebe4f95" PRIMARY KEY ("groupId", "type", "segmentId"))`);
+        await queryRunner.query(`CREATE TABLE "individual_for_segment" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "userId" character varying NOT NULL, "segmentId" uuid NOT NULL, CONSTRAINT "PK_0a965e751d45b5921549274a65c" PRIMARY KEY ("userId", "segmentId"))`);
+        await queryRunner.query(`CREATE TYPE "segment_type_enum" AS ENUM('public', 'private', 'global_exclude')`);
+        await queryRunner.query(`CREATE TABLE "segment" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "id" uuid NOT NULL, "name" character varying NOT NULL, "description" character varying, "context" character varying NOT NULL, "type" "segment_type_enum" NOT NULL DEFAULT 'public', CONSTRAINT "PK_d648ac58d8e0532689dfb8ad7ef" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "experiment_segment_inclusion" ("createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "versionNumber" integer NOT NULL, "segmentId" uuid NOT NULL, "experimentId" uuid NOT NULL, CONSTRAINT "REL_95161b8f3f8284268fd3af07f1" UNIQUE ("segmentId"), CONSTRAINT "REL_f9e3c925808cc88fe34cafa0ec" UNIQUE ("experimentId"), CONSTRAINT "PK_b3f79c9b9aae99668e0c9860b97" PRIMARY KEY ("segmentId", "experimentId"))`);
         await queryRunner.query(`CREATE TYPE "experiment_state_enum" AS ENUM('inactive', 'preview', 'scheduled', 'enrolling', 'enrollmentComplete', 'cancelled')`);
         await queryRunner.query(`CREATE TYPE "experiment_consistencyrule_enum" AS ENUM('individual', 'experiment', 'group')`);
         await queryRunner.query(`CREATE TYPE "experiment_assignmentunit_enum" AS ENUM('individual', 'group')`);
@@ -61,16 +63,21 @@ export class baseSchema1653548645608 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "metric_log" ("metricKey" character varying NOT NULL, "logId" integer NOT NULL, CONSTRAINT "PK_ebb632fa6382d423de632631326" PRIMARY KEY ("metricKey", "logId"))`);
         await queryRunner.query(`CREATE INDEX "IDX_81c6609c523e34b8f001cad717" ON "metric_log" ("metricKey") `);
         await queryRunner.query(`CREATE INDEX "IDX_c022cd84fd9fa789cbaee40b41" ON "metric_log" ("logId") `);
+        await queryRunner.query(`CREATE TABLE "segment_for_segment" ("childSegmentId" uuid NOT NULL, "parentSegmentId" uuid NOT NULL, CONSTRAINT "PK_e4606af021f20ee98736d83d2fa" PRIMARY KEY ("childSegmentId", "parentSegmentId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_7cbe54e77df890c36415493e98" ON "segment_for_segment" ("childSegmentId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_cb101a942537f1fc0a7ef7994c" ON "segment_for_segment" ("parentSegmentId") `);
         await queryRunner.query(`ALTER TABLE "experiment_condition" ADD CONSTRAINT "FK_390a67a227a832e28d48d33607e" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "experiment_user" ADD CONSTRAINT "FK_f1d4193d241e06d2de07527c980" FOREIGN KEY ("originalUserId") REFERENCES "experiment_user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "log" ADD CONSTRAINT "FK_cea2ed3a494729d4b21edbd2983" FOREIGN KEY ("userId") REFERENCES "experiment_user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "query" ADD CONSTRAINT "FK_16b236f2ca1472930abdbaf048a" FOREIGN KEY ("metricKey") REFERENCES "metric"("key") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "query" ADD CONSTRAINT "FK_80e30ce407c8e0555a6ad46d659" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "state_time_log" ADD CONSTRAINT "FK_aa0df63ad4adcf2e827eaad3338" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_group_exclusion" ADD CONSTRAINT "FK_2b27448c9c812f4b8034b9d9a83" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_group_inclusion" ADD CONSTRAINT "FK_715783397ec4bc97b1f66a3e804" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_individual_exclusion" ADD CONSTRAINT "FK_f6ad55b6af879555d3d8f0df5b8" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_individual_inclusion" ADD CONSTRAINT "FK_00a1d27140e6f49db66b3acccfc" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_exclusion" ADD CONSTRAINT "FK_915022e01487b0245a16cbc55f3" FOREIGN KEY ("segmentId") REFERENCES "segment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_exclusion" ADD CONSTRAINT "FK_7d22a811ae04d2ed1b8af0e9c05" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "group_for_segment" ADD CONSTRAINT "FK_715bbd2f483a715789a991123eb" FOREIGN KEY ("segmentId") REFERENCES "segment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "individual_for_segment" ADD CONSTRAINT "FK_cb84433b17891682f9a77126754" FOREIGN KEY ("segmentId") REFERENCES "segment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_inclusion" ADD CONSTRAINT "FK_95161b8f3f8284268fd3af07f17" FOREIGN KEY ("segmentId") REFERENCES "segment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_inclusion" ADD CONSTRAINT "FK_f9e3c925808cc88fe34cafa0ec3" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "decision_point" ADD CONSTRAINT "FK_a12b2ac5e10ea27d692b43fd80c" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "experiment_audit_log" ADD CONSTRAINT "FK_89d077ecfd3b7cc18fe6d6a89f8" FOREIGN KEY ("userEmail") REFERENCES "user"("email") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "explicit_individual_assignment" ADD CONSTRAINT "FK_6763c88d585ff2ca4ef849491e0" FOREIGN KEY ("previewUserId") REFERENCES "preview_user"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
@@ -92,9 +99,13 @@ export class baseSchema1653548645608 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "scheduled_job" ADD CONSTRAINT "FK_8b449f6d80b8378f792c1a6bee2" FOREIGN KEY ("experimentId") REFERENCES "experiment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
         await queryRunner.query(`ALTER TABLE "metric_log" ADD CONSTRAINT "FK_81c6609c523e34b8f001cad7170" FOREIGN KEY ("metricKey") REFERENCES "metric"("key") ON DELETE CASCADE ON UPDATE CASCADE`);
         await queryRunner.query(`ALTER TABLE "metric_log" ADD CONSTRAINT "FK_c022cd84fd9fa789cbaee40b41c" FOREIGN KEY ("logId") REFERENCES "log"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "segment_for_segment" ADD CONSTRAINT "FK_7cbe54e77df890c36415493e981" FOREIGN KEY ("childSegmentId") REFERENCES "segment"("id") ON DELETE CASCADE ON UPDATE CASCADE`);
+        await queryRunner.query(`ALTER TABLE "segment_for_segment" ADD CONSTRAINT "FK_cb101a942537f1fc0a7ef7994c4" FOREIGN KEY ("parentSegmentId") REFERENCES "segment"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "segment_for_segment" DROP CONSTRAINT "FK_cb101a942537f1fc0a7ef7994c4"`);
+        await queryRunner.query(`ALTER TABLE "segment_for_segment" DROP CONSTRAINT "FK_7cbe54e77df890c36415493e981"`);
         await queryRunner.query(`ALTER TABLE "metric_log" DROP CONSTRAINT "FK_c022cd84fd9fa789cbaee40b41c"`);
         await queryRunner.query(`ALTER TABLE "metric_log" DROP CONSTRAINT "FK_81c6609c523e34b8f001cad7170"`);
         await queryRunner.query(`ALTER TABLE "scheduled_job" DROP CONSTRAINT "FK_8b449f6d80b8378f792c1a6bee2"`);
@@ -116,16 +127,21 @@ export class baseSchema1653548645608 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "explicit_individual_assignment" DROP CONSTRAINT "FK_6763c88d585ff2ca4ef849491e0"`);
         await queryRunner.query(`ALTER TABLE "experiment_audit_log" DROP CONSTRAINT "FK_89d077ecfd3b7cc18fe6d6a89f8"`);
         await queryRunner.query(`ALTER TABLE "decision_point" DROP CONSTRAINT "FK_a12b2ac5e10ea27d692b43fd80c"`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_individual_inclusion" DROP CONSTRAINT "FK_00a1d27140e6f49db66b3acccfc"`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_individual_exclusion" DROP CONSTRAINT "FK_f6ad55b6af879555d3d8f0df5b8"`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_group_inclusion" DROP CONSTRAINT "FK_715783397ec4bc97b1f66a3e804"`);
-        await queryRunner.query(`ALTER TABLE "explicit_experiment_group_exclusion" DROP CONSTRAINT "FK_2b27448c9c812f4b8034b9d9a83"`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_inclusion" DROP CONSTRAINT "FK_f9e3c925808cc88fe34cafa0ec3"`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_inclusion" DROP CONSTRAINT "FK_95161b8f3f8284268fd3af07f17"`);
+        await queryRunner.query(`ALTER TABLE "individual_for_segment" DROP CONSTRAINT "FK_cb84433b17891682f9a77126754"`);
+        await queryRunner.query(`ALTER TABLE "group_for_segment" DROP CONSTRAINT "FK_715bbd2f483a715789a991123eb"`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_exclusion" DROP CONSTRAINT "FK_7d22a811ae04d2ed1b8af0e9c05"`);
+        await queryRunner.query(`ALTER TABLE "experiment_segment_exclusion" DROP CONSTRAINT "FK_915022e01487b0245a16cbc55f3"`);
         await queryRunner.query(`ALTER TABLE "state_time_log" DROP CONSTRAINT "FK_aa0df63ad4adcf2e827eaad3338"`);
         await queryRunner.query(`ALTER TABLE "query" DROP CONSTRAINT "FK_80e30ce407c8e0555a6ad46d659"`);
         await queryRunner.query(`ALTER TABLE "query" DROP CONSTRAINT "FK_16b236f2ca1472930abdbaf048a"`);
         await queryRunner.query(`ALTER TABLE "log" DROP CONSTRAINT "FK_cea2ed3a494729d4b21edbd2983"`);
         await queryRunner.query(`ALTER TABLE "experiment_user" DROP CONSTRAINT "FK_f1d4193d241e06d2de07527c980"`);
         await queryRunner.query(`ALTER TABLE "experiment_condition" DROP CONSTRAINT "FK_390a67a227a832e28d48d33607e"`);
+        await queryRunner.query(`DROP INDEX "IDX_cb101a942537f1fc0a7ef7994c"`);
+        await queryRunner.query(`DROP INDEX "IDX_7cbe54e77df890c36415493e98"`);
+        await queryRunner.query(`DROP TABLE "segment_for_segment"`);
         await queryRunner.query(`DROP INDEX "IDX_c022cd84fd9fa789cbaee40b41"`);
         await queryRunner.query(`DROP INDEX "IDX_81c6609c523e34b8f001cad717"`);
         await queryRunner.query(`DROP TABLE "metric_log"`);
@@ -168,10 +184,12 @@ export class baseSchema1653548645608 implements MigrationInterface {
         await queryRunner.query(`DROP TYPE "experiment_assignmentunit_enum"`);
         await queryRunner.query(`DROP TYPE "experiment_consistencyrule_enum"`);
         await queryRunner.query(`DROP TYPE "experiment_state_enum"`);
-        await queryRunner.query(`DROP TABLE "explicit_experiment_individual_inclusion"`);
-        await queryRunner.query(`DROP TABLE "explicit_experiment_individual_exclusion"`);
-        await queryRunner.query(`DROP TABLE "explicit_experiment_group_inclusion"`);
-        await queryRunner.query(`DROP TABLE "explicit_experiment_group_exclusion"`);
+        await queryRunner.query(`DROP TABLE "experiment_segment_inclusion"`);
+        await queryRunner.query(`DROP TABLE "segment"`);
+        await queryRunner.query(`DROP TYPE "segment_type_enum"`);
+        await queryRunner.query(`DROP TABLE "individual_for_segment"`);
+        await queryRunner.query(`DROP TABLE "group_for_segment"`);
+        await queryRunner.query(`DROP TABLE "experiment_segment_exclusion"`);
         await queryRunner.query(`DROP TABLE "state_time_log"`);
         await queryRunner.query(`DROP TYPE "state_time_log_tostate_enum"`);
         await queryRunner.query(`DROP TYPE "state_time_log_fromstate_enum"`);
