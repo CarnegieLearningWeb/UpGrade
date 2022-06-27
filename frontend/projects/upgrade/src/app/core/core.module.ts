@@ -7,9 +7,6 @@ import { EffectsModule } from '@ngrx/effects';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-
-import { environment } from '../../environments/environment';
-
 import { AppState, reducers, metaReducers, selectRouterState } from './core.state';
 import { TitleService } from './title/title.service';
 import { AppErrorHandler } from './error-handler/app-error-handler.service';
@@ -27,7 +24,11 @@ import { UsersModule } from './users/users.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 import { AnalysisModule } from './analysis/analysis.module';
+import { SegmentsModule } from './segments/segments.module';
 import { HttpCancelInterceptor } from './http-interceptors/http-cancel.interceptor';
+import { BaseUrlInterceptor } from './http-interceptors/http-base-url-interceptor';
+import { ENV, Environment } from '../../environments/environment-types';
+import { environment } from '../../environments/environment';
 
 export {
   TitleService,
@@ -37,7 +38,7 @@ export {
   NotificationService
 };
 
-export function HttpLoaderFactory(http: HttpClient) {
+export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
   return new TranslateHttpLoader(http, `${environment.i18nPrefix}/assets/i18n/`, '.json');
 }
 
@@ -56,6 +57,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     PreviewUsersModule,
     UsersModule,
     FeatureFlagsModule,
+    SegmentsModule,
     AnalysisModule,
 
     // ngrx
@@ -73,12 +75,13 @@ export function HttpLoaderFactory(http: HttpClient) {
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient]
+        deps: [HttpClient, ENV]
       }
     })
   ],
   declarations: [],
   providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: BaseUrlInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },

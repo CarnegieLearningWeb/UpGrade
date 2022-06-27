@@ -15,6 +15,7 @@ export interface UserPermission {
   manageRoles: CRUD,
   featureFlags: CRUD,
   metrics: CRUD,
+  segments: CRUD,
 }
 
 export interface AuthState {

@@ -37,11 +37,11 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   private paginator: MatPaginator;
   private sort: MatSort;
 
-  @ViewChild(MatPaginator) set matPaginator(mp: MatPaginator) {
+  @ViewChild(MatPaginator, { static: false }) set matPaginator(mp: MatPaginator) {
     this.paginator = mp;
     this.allExcludedEntities.paginator = this.paginator;
   }
-  @ViewChild(MatSort) set matSort(ms: MatSort) {
+  @ViewChild(MatSort, { static: false }) set matSort(ms: MatSort) {
     this.sort = ms;
     this.allExcludedEntities.sort = this.sort;
   }
@@ -76,9 +76,9 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     this.allExcludedEntities.sort = this.sort;
 
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
-      this.contextMetaData = { ...contextMetaData}; 
-      if (contextMetaData && contextMetaData['contextMetadata']) {
-        this.contexts = Object.keys(contextMetaData['contextMetadata']);
+      this.contextMetaData = contextMetaData; 
+      if (contextMetaData['contextMetadata']) {
+        this.contexts = Object.keys(contextMetaData['contextMetadata']) || [];
         this.contexts.forEach(context => {
           this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
             this.groupTypes.add(group);

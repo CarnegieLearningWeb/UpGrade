@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
+import { Environment } from "../../../environments/environment-types";
 import { PreviewUsersDataService } from "./preview-users.data.service";
 import { PreviewUserAssignCondition } from "./store/preview-users.model";
 
@@ -13,7 +14,8 @@ class MockHTTPClient {
 }
 
 describe('PreviewUsersDataService', () => {
-    let mockHttpClient: any; 
+    let mockHttpClient: any;
+    let mockEnvironment: Environment;
     let service: PreviewUsersDataService;
     let mockParams: any;
     let mockId: string;
@@ -21,7 +23,8 @@ describe('PreviewUsersDataService', () => {
 
     beforeEach(() => {
         mockHttpClient = new MockHTTPClient();
-        service = new PreviewUsersDataService(mockHttpClient as HttpClient);
+        mockEnvironment = { ...environment };
+        service = new PreviewUsersDataService(mockHttpClient as HttpClient, mockEnvironment);
         mockParams = {
             skip: 0,
             take: 10
@@ -35,7 +38,7 @@ describe('PreviewUsersDataService', () => {
 
     describe('#fetchPreviewUsers', () => {
         it('should get the fetchPreviewUsers http observable', () => {
-            const expectedUrl = environment.api.getAllPreviewUsers;
+            const expectedUrl = mockEnvironment.api.getAllPreviewUsers;
             const params = { ...mockParams };
 
             service.fetchPreviewUsers(params);
@@ -46,7 +49,7 @@ describe('PreviewUsersDataService', () => {
 
     describe('#addPreviewUser', () => {
         it('should get the addPreviewUser http observable', () => {
-            const expectedUrl = environment.api.previewUsers;
+            const expectedUrl = mockEnvironment.api.previewUsers;
             const id = mockId;
 
             service.addPreviewUser(id);
@@ -58,7 +61,7 @@ describe('PreviewUsersDataService', () => {
     describe('#deletePreviewUser', () => {
         it('should get the deletePreviewUser http observable', () => {
             const id = mockId;
-            const expectedUrl = `${environment.api.previewUsers}/${id}`;
+            const expectedUrl = `${mockEnvironment.api.previewUsers}/${id}`;
 
             service.deletePreviewUser(id);
 
@@ -69,7 +72,7 @@ describe('PreviewUsersDataService', () => {
     describe('#assignConditionToPreviewUser', () => {
         it('should get the assignConditionToPreviewUser http observable', () => {
             const data = mockData;
-            const expectedUrl = environment.api.previewUsersAssignCondition;
+            const expectedUrl = mockEnvironment.api.previewUsersAssignCondition;
 
             service.assignConditionToPreviewUser(data);
 

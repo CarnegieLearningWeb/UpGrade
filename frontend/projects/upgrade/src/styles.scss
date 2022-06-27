@@ -31,6 +31,11 @@
 @import './app/features/dashboard/feature-flags/components/modal/new-flag/new-flag.theme.scss';
 @import './app/features/dashboard/feature-flags/components/flag-variations/flag-variations.theme.scss';
 @import './app/features/dashboard/feature-flags/pages/view-feature-flag/view-feature-flag.theme.scss';
+@import './app/features/dashboard/segments/segments-root/segments-root.theme.scss';
+@import './app/features/dashboard/segments/components/segments-list/segments-list.theme.scss';
+@import './app/features/dashboard/segments/components/modal/new-segment/new-segment.theme.scss';
+@import './app/features/dashboard/segments/components/segment-members/segment-members.theme.scss';
+@import './app/features/dashboard/segments/pages/view-segment/view-segment.theme.scss';
 @import './app/features/dashboard/home/components/modal/queries-modal/queries-modal.theme.scss';
 @import './app/shared/components/query-result/query-result.theme.scss';
 @import './app/features/dashboard/profile/components/metrics/metrics.theme.scss';
@@ -39,6 +44,8 @@
 @import './app/features/dashboard/home/components/modal/experiment-end-criteria/experiment-ending-criteria.theme.scss';
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
+@import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
   @include dashboard-component-theme($theme);
@@ -61,6 +68,11 @@
   @include feature-flags-list-component-theme($theme);
   @include new-flag-component-theme($theme);
   @include flag-variations-component-theme($theme);
+  @include view-segment-component-theme($theme);
+  @include segments-root-component-theme($theme);
+  @include segments-list-component-theme($theme);
+  @include new-segment-component-theme($theme);
+  @include segment-members-component-theme($theme);
   @include view-feature-flag-component-theme($theme);
   @include queries-modal-component-theme($theme);
   @include query-result-component-theme($theme);
@@ -70,6 +82,8 @@
   @include experiment-ending-criteria-component-theme($theme);
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
+  @include import-segment-component-theme($theme);
+  @include segment-experiment-list-modal-component-theme($theme);
 }
 
 .light-theme {
@@ -104,14 +118,17 @@
 
 .delete-modal,
 .import-experiment-modal,
+.import-segment-modal,
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
+.new-segment-modal,
 .new-user-modal,
 .queries-modal,
 .export-modal,
 .query-result,
 .add-metric-modal,
+.duplicate-segment-modal,
 .experiment-ending-criteria {
   border-radius: 7px;
   box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.12);
@@ -121,6 +138,7 @@
   }
 }
 
+.segment-experiment-list-modal,
 .state-time-logs-modal {
   border-radius: 7px;
 
@@ -138,6 +156,16 @@
   }
 }
 
+.duplicate-segment-modal {
+  width: 700px;
+  min-height: 192px;
+
+  .mat-dialog-container {
+    padding: 40px;
+  }
+}
+
+.import-segment-modal,
 .import-experiment-modal {
   width: 500px;
 }
@@ -151,6 +179,10 @@
 .experiment-ending-criteria {
   width: 600px;
   min-height: 400px;
+}
+
+.segment-experiment-list-modal {
+  width: 700px;
 }
 
 .state-time-logs-modal {
@@ -177,6 +209,11 @@
 
 .new-flag-modal {
   width: 844px;
+}
+
+.new-segment-modal {
+  width: 844px;
+  height: 505px;
 }
 
 .new-user-modal {

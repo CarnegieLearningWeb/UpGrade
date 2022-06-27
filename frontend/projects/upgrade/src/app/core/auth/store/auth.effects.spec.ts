@@ -4,7 +4,7 @@ import { AuthEffects } from "./auth.effects";
 import * as AuthActions from "./auth.actions";
 import { fakeAsync, tick } from "@angular/core/testing";
 import { environment } from "../../../../environments/environment";
-import { User, UserRole } from "../../users/store/users.model";
+import { UserRole } from "../../users/store/users.model";
 import { actionFetchExcludedGroups, actionFetchExcludedUsers } from "../../experiment-users/store/experiment-users.actions";
 import { actionFetchAllPartitions } from "../../experiments/store/experiments.actions";
 import { actionFetchUsers } from "../../users/store/users.actions";
@@ -12,6 +12,7 @@ import { actionGetSetting } from "../../settings/store/settings.actions";
 import { actionFetchMetrics } from "../../analysis/store/analysis.actions";
 import { last, scan, take } from "rxjs/operators";
 import { selectRedirectUrl } from "./auth.selectors";
+import { Environment } from "../../../../environments/environment-types";
 
 declare let window: {
     gapi: any
@@ -26,6 +27,7 @@ describe('AuthEffects', () => {
     let authDataService: any;
     let authService: any;
     let settingsService: any;
+    let mockEnvironment: Environment;
     let mockUser = {
         currentUser: {
             listen: jest.fn(),
@@ -73,6 +75,7 @@ describe('AuthEffects', () => {
         settingsService = {
             setLocalStorageTheme: jest.fn()
         };
+        mockEnvironment = { ...environment };
         
         service = new AuthEffects(
             actions$,
@@ -82,6 +85,7 @@ describe('AuthEffects', () => {
             authDataService,
             authService,
             settingsService,
+            mockEnvironment
         );
 
         // mock gapi.js object that is loaded via script on index.html

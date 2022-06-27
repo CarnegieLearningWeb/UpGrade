@@ -20,7 +20,7 @@ export class TimelineComponent {
   @Input() theme: ThemeOptions;
   // Used to change setting icon based on theme
   systemUserEmail = 'system@gmail.com';
-  endPoint = env.environment.endpointApi.substring(0, env.environment.endpointApi.lastIndexOf('/'));
+  endPoint = env.environment.apiBaseUrl.substring(0, env.environment.apiBaseUrl.lastIndexOf('/'));
 
   get LogType() {
     return LogType;

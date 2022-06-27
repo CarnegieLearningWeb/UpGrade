@@ -1,0 +1,11 @@
+@import '~@angular/material/theming';
+
+@mixin new-segment-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .segment-stepper {
+    .mat-horizontal-stepper-header-container {
+      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+    }
+  }
+}

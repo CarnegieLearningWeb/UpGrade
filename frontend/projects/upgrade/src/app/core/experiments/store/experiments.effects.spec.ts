@@ -10,6 +10,7 @@ import { environment } from '../../../../environments/environment';
 import { actionExecuteQuery } from '../../analysis/store/analysis.actions';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { UserRole } from '../../users/store/users.model';
+import { Environment } from '../../../../environments/environment-types';
 
 describe('ExperimentEffects', () => {
     let service: ExperimentEffects;
@@ -18,6 +19,7 @@ describe('ExperimentEffects', () => {
     let experimentDataService: any;
     let router: any;
     let snackbar: any;
+    let mockEnvironment: Environment;
 
     beforeEach(() => {
         actions$ = new ActionsSubject();
@@ -30,12 +32,14 @@ describe('ExperimentEffects', () => {
         snackbar = {
             open: jest.fn()
         };
+        mockEnvironment = { ...environment }
         service = new ExperimentEffects(
             actions$,
             store$,
             experimentDataService,
             router,
-            snackbar
+            snackbar,
+            mockEnvironment
         );
     })
 
@@ -631,8 +635,7 @@ describe('ExperimentEffects', () => {
 
         it('should not emit anything if pollingLimit is surpassed', fakeAsync(() => {
             let neverEmitted = true;
-            const originalPollingLimit = environment.pollingLimit;
-            environment.pollingLimit = 0;
+            mockEnvironment.pollingLimit = 0;
 
             service.beginExperimentDetailStatsPolling$.subscribe(_ => {
                 neverEmitted = false;
@@ -643,14 +646,11 @@ describe('ExperimentEffects', () => {
             tick(0);
 
             expect(neverEmitted).toBeTruthy();
-
-            environment.pollingLimit = originalPollingLimit;
         }))
 
         it('should not emit anything if isPolling is false', fakeAsync(() => {
             let neverEmitted = true;
-            const originalInterval = environment.pollingInterval;
-            environment.pollingInterval = 2;
+            mockEnvironment.pollingInterval = 2;
             Selectors.selectIsPollingExperimentDetailStats.setResult(false);
 
             service.beginExperimentDetailStatsPolling$.subscribe(isEmpty => {
@@ -662,12 +662,10 @@ describe('ExperimentEffects', () => {
             tick(10);
 
             expect(neverEmitted).toBeTruthy();
-            environment.pollingInterval = originalInterval;
         }))
 
         it('should dispatch actionFetchExperimentDetailStat and actionFetchExperimentGraphInfo when polling', fakeAsync(() => {
-            const originalInterval = environment.pollingInterval;
-            environment.pollingInterval = 2;
+            mockEnvironment.pollingInterval = 2;
             const experimentId = 'test1';
             const graphInfo = {
                 experimentId,
@@ -694,8 +692,6 @@ describe('ExperimentEffects', () => {
             tick(4);
 
             Selectors.selectIsPollingExperimentDetailStats.setResult(false);
-
-            environment.pollingInterval = originalInterval;
         }))
     })
 

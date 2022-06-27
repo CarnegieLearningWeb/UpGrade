@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToMany, OneToOne } from 'typeorm';
 import { IsNotEmpty, ValidateNested, ValidateIf } from 'class-validator';
 import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
@@ -19,10 +19,8 @@ import {
 import { Type } from 'class-transformer';
 import { Query } from './Query';
 import { StateTimeLog } from './StateTimeLogs';
-import { ExplicitExperimentGroupExclusion } from './ExplicitExperimentGroupExclusion';
-import { ExplicitExperimentGroupInclusion } from './ExplicitExperimentGroupInclusion';
-import { ExplicitExperimentIndividualExclusion } from './ExplicitExperimentIndividualExclusion';
-import { ExplicitExperimentIndividualInclusion } from './ExplicitExperimentIndividualInclusion';
+import { ExperimentSegmentInclusion } from './ExperimentSegmentInclusion';
+import { ExperimentSegmentExclusion } from './ExperimentSegmentExclusion';
 
 export {
   EXPERIMENT_SEARCH_KEY,
@@ -127,34 +125,14 @@ export class Experiment extends BaseModel {
   @Type(() => StateTimeLog)
   public stateTimeLogs: StateTimeLog[];
 
-  @OneToMany(
-    (type) => ExplicitExperimentGroupExclusion,
-    (explicitExperimentGroupExclusion) => explicitExperimentGroupExclusion.experiment
-  )
-  @Type(() => ExplicitExperimentGroupExclusion)
-  public explicitExperimentGroupExclusion: ExplicitExperimentGroupExclusion[];
+  @OneToOne((type) => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
+  @Type(() => ExperimentSegmentInclusion)
+  public experimentSegmentInclusion: ExperimentSegmentInclusion;
 
-  @OneToMany(
-    (type) => ExplicitExperimentGroupInclusion,
-    (explicitExperimentGroupInclusion) => explicitExperimentGroupInclusion.experiment
-  )
-  @Type(() => ExplicitExperimentGroupInclusion)
-  public explicitExperimentGroupInclusion: ExplicitExperimentGroupInclusion[];
-
-  @OneToMany(
-    (type) => ExplicitExperimentIndividualExclusion,
-    (explicitExperimentIndividualExclusion) => explicitExperimentIndividualExclusion.experiment
-  )
-  @Type(() => ExplicitExperimentIndividualExclusion)
-  public explicitExperimentIndividualExclusion: ExplicitExperimentIndividualExclusion[];
-
-  @OneToMany(
-    (type) => ExplicitExperimentIndividualInclusion,
-    (explicitExperimentIndividualInclusion) => explicitExperimentIndividualInclusion.experiment
-  )
-  @Type(() => ExplicitExperimentIndividualInclusion)
-  public explicitExperimentIndividualInclusion: ExplicitExperimentIndividualInclusion[];
-
+  @OneToOne((type) => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
+  @Type(() => ExperimentSegmentExclusion)
+  public experimentSegmentExclusion: ExperimentSegmentExclusion;
+  
   @Column({ default: '1.0.0' })
   public backendVersion: string;
 }

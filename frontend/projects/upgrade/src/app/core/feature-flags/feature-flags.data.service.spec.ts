@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
+import { Environment } from "../../../environments/environment-types";
 import { FeatureFlagsDataService } from "./feature-flags.data.service";
 import { FeatureFlag, FeatureFlagsPaginationParams } from "./store/feature-flags.model";
 
@@ -12,7 +13,8 @@ class MockHTTPClient {
 }
 
 describe('FeatureFlagsDataService', () => {
-    let mockHttpClient: any; 
+    let mockHttpClient: any;
+    let mockEnvironment: Environment;
     let service: FeatureFlagsDataService;
     let mockFlagId: string;
     let mockParams: FeatureFlagsPaginationParams;
@@ -21,7 +23,8 @@ describe('FeatureFlagsDataService', () => {
 
     beforeEach(() => {
         mockHttpClient = new MockHTTPClient();
-        service = new FeatureFlagsDataService(mockHttpClient as HttpClient);
+        mockEnvironment = { ...environment };
+        service = new FeatureFlagsDataService(mockHttpClient as HttpClient, mockEnvironment);
         mockParams = {
             skip: 0,
             take: 10
@@ -44,7 +47,7 @@ describe('FeatureFlagsDataService', () => {
 
     describe('#fetchFeatureFlags', () => {
         it('should get the fetchFeatureFlags http observable', () => {
-            const expectedUrl = environment.api.getPaginatedFlags;
+            const expectedUrl = mockEnvironment.api.getPaginatedFlags;
             const params = { ...mockParams };
 
             service.fetchFeatureFlags(params);
@@ -55,7 +58,7 @@ describe('FeatureFlagsDataService', () => {
 
     describe('#createNewFeatureFlag', () => {
         it('should get the createNewFeatureFlag http observable', () => {
-            const expectedUrl = environment.api.featureFlag;
+            const expectedUrl = mockEnvironment.api.featureFlag;
             const flag = mockFlag;
 
             service.createNewFeatureFlag(flag);
@@ -66,7 +69,7 @@ describe('FeatureFlagsDataService', () => {
 
     describe('#updateFlagStatus', () => {
         it('should get the updateFlagStatus http observable', () => {
-            const expectedUrl = environment.api.updateFlagStatus;
+            const expectedUrl = mockEnvironment.api.updateFlagStatus;
             const flagId = mockFlagId;
             const status = mockStatus;
 
@@ -79,7 +82,7 @@ describe('FeatureFlagsDataService', () => {
     describe('#deleteFeatureFlag', () => {
         it('should get the deleteFeatureFlag http observable', () => {
             const id = mockFlagId;
-            const expectedUrl = `${environment.api.featureFlag}/${id}`;
+            const expectedUrl = `${mockEnvironment.api.featureFlag}/${id}`;
 
             service.deleteFeatureFlag(id);
 
@@ -90,7 +93,7 @@ describe('FeatureFlagsDataService', () => {
     describe('#updateFeatureFlag', () => {
         it('should get the updateFeatureFlag http observable', () => {
             const flag = { ...mockFlag };
-            const mockUrl = `${environment.api.featureFlag}/${flag.id}`;
+            const mockUrl = `${mockEnvironment.api.featureFlag}/${flag.id}`;
 
             service.updateFeatureFlag(flag);
 

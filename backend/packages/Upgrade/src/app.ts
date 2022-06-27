@@ -20,6 +20,7 @@ import { CreateSystemUser } from './init/seed/systemUser';
 import { enableMetricFiltering } from './init/seed/EnableMetricFiltering';
 import { InitMetrics } from './init/seed/initMetrics';
 import { banner } from './lib/banner';
+import { createGlobalExcludeSegment } from './init/seed/globalExcludeSegment';
 
 /*
  * EXPRESS TYPESCRIPT BOILERPLATE
@@ -44,5 +45,9 @@ bootstrapMicroframework({
   })
   .then(() => {
     banner(logger);
+  })
+  .then(() => {
+    // Create global exclude segment
+    return createGlobalExcludeSegment(logger);
   });
 

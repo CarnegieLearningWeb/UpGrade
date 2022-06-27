@@ -39,6 +39,13 @@ import { BadRequestError } from 'routing-controllers';
 import { StateTimeLogsRepository } from '../repositories/StateTimeLogsRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { IndividualExclusion } from '../models/IndividualExclusion';
+import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
+import { Segment } from '../models/Segment';
+import { SegmentService } from './SegmentService';
+import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion';
+import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
+import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
+import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 
 @Service()
 export class ExperimentService {
@@ -54,7 +61,10 @@ export class ExperimentService {
     @OrmRepository() private metricRepository: MetricRepository,
     @OrmRepository() private queryRepository: QueryRepository,
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
+    @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     public previewUserService: PreviewUserService,
+    public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
     public errorService: ErrorService
   ) {}
@@ -86,6 +96,16 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC');
@@ -117,6 +137,16 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
+      .leftJoinAndSelect('experimentSegmentExclusion.segment', 'segmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
+      .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
       .where({ id })
       .getOne();
@@ -183,6 +213,26 @@ export class ExperimentService {
           deleteAuditLogData,
           currentUser
         );
+
+        try {
+          await transactionalEntityManager.getRepository(Segment).delete(experiment.experimentSegmentInclusion.segment.id)
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in deleting Include Segment fron DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
+        try {
+          await transactionalEntityManager.getRepository(Segment).delete(experiment.experimentSegmentExclusion.segment.id)
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in deleting Exclude Segment fron DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
 
         return deletedExperiment;
       }
@@ -516,7 +566,7 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        const { conditions, partitions, queries, versionNumber, createdAt, updatedAt, ...expDoc } = experiment;
+        let { conditions, partitions, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -527,6 +577,74 @@ export class ExperimentService {
           logger.error(error);
           throw error;
         }
+
+        experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
+        experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
+
+        if (!segmentInclude && experimentDoc.experimentSegmentInclusion.segment) {
+          const oldIncludeSegment = experimentDoc.experimentSegmentInclusion.segment;
+          segmentInclude = {
+            type : oldIncludeSegment.type,
+            userIds : oldIncludeSegment.individualForSegment.map(x => x.userId),
+            groups : oldIncludeSegment.groupForSegment.map(x => {
+              return {type: x.type, groupId: x.groupId}
+            }),
+            subSegmentIds : oldIncludeSegment.subSegments.map(x => x.id)
+          }
+        }
+
+        if (!segmentExclude && experimentDoc.experimentSegmentExclusion.segment) {
+          const oldExcludeSegment = experimentDoc.experimentSegmentExclusion.segment; 
+          segmentExclude = {
+            type : oldExcludeSegment.type,
+            userIds : oldExcludeSegment.individualForSegment.map(x => x.userId),
+            groups : oldExcludeSegment.groupForSegment.map(x => {
+              return {type: x.type, groupId: x.groupId}
+            }),
+            subSegmentIds : oldExcludeSegment.subSegments.map(x => x.id)
+          }
+        }
+
+        const segmentIncludeData: SegmentInputValidator = {
+          ...segmentInclude,
+          id: experimentDoc.experimentSegmentInclusion.segment.id,
+          name: experimentDoc.experimentSegmentInclusion.segment.name,
+          description: experimentDoc.experimentSegmentInclusion.segment.description,
+          context: experiment.context[0],
+        }
+
+        const segmentExcludeData: SegmentInputValidator = {
+          ...segmentExclude,
+          id: experimentDoc.experimentSegmentExclusion.segment.id,
+          name: experimentDoc.experimentSegmentExclusion.segment.name,
+          description: experimentDoc.experimentSegmentExclusion.segment.description,
+          context: experiment.context[0],
+        }
+
+        let segmentIncludeDoc: Segment;
+        let segmentExcludeDoc: Segment;
+        try {
+          segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in updating IncludeSegment in DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
+        try {
+          segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
+        } catch (err) {
+          const error = err as ErrorWithType;
+          error.details = 'Error in updating ExcludeSegment in DB';
+          error.type = SERVER_ERROR.QUERY_FAILED;
+          logger.error(error);
+          throw error;
+        }
+
+        experimentDoc.experimentSegmentInclusion.segment = segmentIncludeDoc;
+        experimentDoc.experimentSegmentExclusion.segment = segmentExcludeDoc;
 
         // Check for conditionCode is 'default' then return error:
         this.checkConditionCodeDefault(conditions);
@@ -677,7 +795,7 @@ export class ExperimentService {
           ...experimentDoc,
           conditions: conditionDocToReturn as any,
           partitions: partitionDocToReturn as any,
-          queries: (queryDocToReturn as any) || [],
+          queries: (queryDocToReturn as any) || []
         };
 
         // removing unwanted params for diff
@@ -811,7 +929,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, queries, ...expDoc } = experiment;
+      const { conditions, partitions, queries, segmentInclude, segmentExclude, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -826,6 +944,43 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
+
+      // creating Include Segment
+      const segmentIncludeData: SegmentInputValidator = { ...segmentInclude,
+        id: uuid(),
+        name: experiment.id + ' Inclusion Segment',
+        description: experiment.id + ' Inclusion Segment',
+        context: experiment.context[0]
+      };
+      let segmentIncludeDoc: Segment;
+      try {
+        segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in adding segment in DB';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      // creating Exclude Segment
+      const segmentExcludeData: SegmentInputValidator = { ...segmentExclude,
+        id: uuid(),
+        name: experiment.id + ' Exclusion Segment',
+        description: experiment.id + ' Exclusion Segment',
+        context: experiment.context[0]
+      };
+      let segmentExcludeDoc: Segment;
+      try {
+        segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in adding segment in DB';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+      
       // creating condition docs
       const conditionDocsToSave =
         conditions &&
@@ -845,6 +1000,18 @@ export class ExperimentService {
           partition.experiment = experimentDoc;
           return partition;
         });
+
+      // creating segmentInclude doc
+      let includeTempDoc = new ExperimentSegmentInclusion();
+      includeTempDoc.segment = segmentIncludeDoc;
+      includeTempDoc.experiment = experimentDoc;
+      var { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
+
+      // creating segmentExclude doc
+      let excludeTempDoc = new ExperimentSegmentExclusion();
+      excludeTempDoc.segment = segmentExcludeDoc;
+      excludeTempDoc.experiment = experimentDoc;
+      var { createdAt, updatedAt, versionNumber, ...segmentExcludeDocToSave } = excludeTempDoc;
 
       // creating queries docs
       const promiseArray = [];
@@ -871,14 +1038,18 @@ export class ExperimentService {
         queryDocsToSave = queryDocsToSave.filter((doc) => doc.metric);
       }
 
-      // saving conditions and saving partitions
+      // saving conditions, partitions, queries, segmentInclude, segmentExclude
       let conditionDocs: ExperimentCondition[];
+      let experimentSegmentInclusionDoc: ExperimentSegmentInclusion;
+      let experimentSegmentExclusionDoc: ExperimentSegmentExclusion;
       let partitionDocs: DecisionPoint[];
       let queryDocs: any;
       try {
-        [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
+        [conditionDocs, partitionDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(partitionDocsToSave, transactionalEntityManager),
+          this.experimentSegmentInclusionRepository.insertData(segmentIncludeDocToSave, logger, transactionalEntityManager),
+          this.experimentSegmentExclusionRepository.insertData(segmentExcludeDocToSave, logger, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
@@ -897,14 +1068,18 @@ export class ExperimentService {
         const { experimentId, ...restDoc } = partitionDoc as any;
         return restDoc;
       });
+
       let queryDocToReturn = [];
       if (queryDocs.length > 0) {
         queryDocToReturn = queryDocsToSave;
       }
+
       const newExperiment = {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: partitionDocToReturn as any,
+        experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
+        experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;

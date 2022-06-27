@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Observable, combineLatest } from 'rxjs';
 import {
   Experiment,
@@ -38,13 +38,14 @@ import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
 import { map, first, filter, tap } from 'rxjs/operators';
 import { LocalStorageService } from '../local-storage/local-storage.service';
-import { environment } from '../../../environments/environment';
+import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class ExperimentService {
   constructor(
     private store$: Store<AppState>,
-    private localStorageService: LocalStorageService
+    private localStorageService: LocalStorageService,
+    @Inject(ENV) private environment: Environment
   ) {}
 
   experiments$: Observable<Experiment[]> = this.store$.pipe(
@@ -72,7 +73,7 @@ export class ExperimentService {
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
-  pollingEnabled: boolean = environment.pollingEnabled;
+  pollingEnabled: boolean = this.environment.pollingEnabled;
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(

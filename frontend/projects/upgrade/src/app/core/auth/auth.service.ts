@@ -62,7 +62,8 @@ export class AuthService {
           logs: { create: true, read: true, update: true, delete: true },
           manageRoles: { create: true, read: true, update: true, delete: true },
           featureFlags: { create: true, read: true, update: true, delete: true },
-          metrics: { create: true, read: true, update: true, delete: true }
+          metrics: { create: true, read: true, update: true, delete: true },
+          segments: { create: true, read: true, update: true, delete: true },
         });
         break;
       case UserRole.CREATOR:
@@ -72,7 +73,8 @@ export class AuthService {
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
           featureFlags: { create: true, read: true, update: true, delete: true },
-          metrics: { create: true, read: true, update: true, delete: true }
+          metrics: { create: true, read: true, update: true, delete: true },
+          segments: { create: true, read: true, update: true, delete: true },
         });
         break;
       case UserRole.USER_MANAGER:
@@ -82,7 +84,8 @@ export class AuthService {
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
           featureFlags: { create: false, read: true, update: false, delete: false },
-          metrics: { create: false, read: true, update: false, delete: false }
+          metrics: { create: false, read: true, update: false, delete: false },
+          segments: { create: false, read: true, update: false, delete: false },
         });
         break;
       case UserRole.READER:
@@ -92,7 +95,8 @@ export class AuthService {
           logs: { create: false, read: true, update: false, delete: false },
           manageRoles: { create: false, read: true, update: false, delete: false },
           featureFlags: { create: false, read: true, update: false, delete: false },
-          metrics: { create: false, read: true, update: false, delete: false }
+          metrics: { create: false, read: true, update: false, delete: false },
+          segments: { create: false, read: true, update: false, delete: false },
         });
         break;
     }

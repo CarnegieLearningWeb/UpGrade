@@ -1,0 +1,90 @@
+<div class="segment-experiment-list-modal">
+  <ng-container>
+    <span class="ft-24-700 title">
+      {{ 'segments.segment-experiment-list-title.text' | translate: { segmentName: data.segment.name } }}
+    </span>
+  </ng-container>
+
+  <div class="segment-experiment-list-view">
+    <div class="segment-experiment-list-table-container">
+
+      <ng-container *ngIf="segmentsExperimentList?.length; else zeroState"> 
+        <mat-table
+          class="table"
+          [dataSource]="segmentsExperimentList"
+        >
+
+          <!-- Experiment NAME Column -->
+          <ng-container matColumnDef="experimentName">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{'segments.segment-experiment-list-name.text' | translate }}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element"> 
+              {{ element.experimentName }}
+            </mat-cell>
+          </ng-container>
+
+          <!-- Experiment State Column -->
+          <ng-container matColumnDef="experimentState">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{ 'segments.segment-experiment-list-state.text' | translate}}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element"> 
+              <div class="experiment-state">
+                <ng-container
+                  *ngIf="element.experimentState === ExperimentState.PREVIEW || element.experimentState === ExperimentState.CANCELLED || element.experimentState === ExperimentState.SCHEDULED; else experimentStateTemplate"
+                >
+                  <app-shared-icons class="icons" [iconType]="element.experimentState"></app-shared-icons>
+                </ng-container>
+                <ng-template #experimentStateTemplate>
+                  <span class="experiment-state-circle" [ngStyle]="{'backgroundColor': element.experimentState | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+                </ng-template>
+                <span
+                  [ngClass]="{'experiment-state--light': element.experimentState === ExperimentState.INACTIVE || element.experimentState === ExperimentState.CANCELLED }"
+                >
+                  {{ element.experimentState | experimentState }}
+                </span>
+              </div>
+              <span
+                class="experiment-schedule ft-10-400"
+                *ngIf="element.experimentState === ExperimentState.SCHEDULED"
+              >
+                {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Experiment context Column -->
+          <ng-container matColumnDef="experimentContext">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{ 'segments.segment-experiment-list-context.text' | translate}}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element"> 
+              {{ element.experimentContext }}
+            </mat-cell>
+          </ng-container>
+
+          <!-- Used List Column -->
+          <ng-container matColumnDef="usedList">
+            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+              {{ 'segments.segment-experiment-list-usedList.text' | translate}}
+            </mat-header-cell>
+            <mat-cell class="ft-12-600" *matCellDef="let element"> 
+              {{ element.usedList }}
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="segmentExperimentListDisplayedColumns; sticky: true"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: segmentExperimentListDisplayedColumns"></mat-row>
+        </mat-table>
+      </ng-container>
+    </div>
+    <ng-template #zeroState>
+      <span
+        class="zero-state"
+        [innerHTML]="'segments.segment-experiment-list-zeroState.text' | translate"
+      >
+      </span>
+    </ng-template>
+  </div>
+</div>

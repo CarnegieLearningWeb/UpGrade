@@ -6,7 +6,12 @@ import { ExperimentService } from './experiments.service';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, DATE_RANGE, ExperimentLocalStorageKeys, ExperimentVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, UpsertExperimentType } from './store/experiments.model';
 import * as ExperimentSelectors from './store/experiments.selectors';
 import { actionDeleteExperiment, actionExportExperimentDesign, actionExportExperimentInfo, actionFetchAllExperimentNames, actionFetchContextMetaData, actionFetchExperimentDetailStat, actionGetExperimentById, actionGetExperiments, actionSetGraphRange, actionSetSearchKey, actionSetSearchString, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpsertExperiment } from './store/experiments.actions';
-import { FILTER_MODE } from 'upgrade_types';
+import { Environment } from '../../../environments/environment-types';
+import { environment } from '../../../environments/environment';
+import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
+import { segmentNew } from './store/experiments.model';
+import { Segment } from '../segments/store/segments.model';
+// import { SEGMENT_TYPE } from 'upgrade_types';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
@@ -18,6 +23,7 @@ class MockLocalStorageService extends LocalStorageService {
 describe('ExperimentService', () => {
     let mockStore: any;
     let mockLocalStorageService: LocalStorageService;
+    let mockEnvironment: Environment;
     let service: ExperimentService;
     let mockExperimentsList: any = [
         { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
@@ -25,6 +31,36 @@ describe('ExperimentService', () => {
         { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
         { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
     ]
+
+    const segmentData: Segment = {
+        id: 'segment-id',
+        name: 'segment-name',
+        description: 'segment-description',
+        createdAt: '04/23/17 04:34:22 +0000',
+        updatedAt: '04/23/17 04:34:22 +0000',
+        versionNumber: 1,
+        context: 'segment-context',
+        individualForSegment: [],
+        groupForSegment: [],
+        subSegments: [],
+        type: SEGMENT_TYPE.PUBLIC,
+        status: 'segment-status'
+    }
+
+    const dummyInclusionData: segmentNew = {
+        updatedAt: '2022-06-20T13:14:52.900Z',
+        createdAt: '2022-06-20T13:14:52.900Z',
+        versionNumber: 1,
+        segment: segmentData,
+    }
+
+    const dummyExclusionData: segmentNew = {
+        updatedAt: '2022-06-20T13:14:52.900Z',
+        createdAt: '2022-06-20T13:14:52.900Z',
+        versionNumber: 1,
+        segment: segmentData,
+    }
+
     let mockExperiment = {
         id: 'abc123',
         name: 'abc123',
@@ -51,8 +87,10 @@ describe('ExperimentService', () => {
         partitions: [],
         queries: [],
         stateTimeLogs: [],
-        backendVersion: '1.0.0',
         filterMode: FILTER_MODE.INCLUDE_ALL,
+        experimentSegmentInclusion: dummyInclusionData,
+        experimentSegmentExclusion: dummyExclusionData,
+        backendVersion: '1.0.0',
         groupSatisfied: 0
     }
     let mockExperimentStateInfo = {
@@ -64,7 +102,8 @@ describe('ExperimentService', () => {
     beforeEach(() => {
         mockStore = MockStateStore$;
         mockLocalStorageService = new MockLocalStorageService();
-        service = new ExperimentService(mockStore, mockLocalStorageService);
+        mockEnvironment = { ...environment };
+        service = new ExperimentService(mockStore, mockLocalStorageService, mockEnvironment);
     })
 
     describe('#experiments$', () => {

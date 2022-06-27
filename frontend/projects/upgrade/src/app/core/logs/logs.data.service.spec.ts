@@ -1,6 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
+import { Environment } from "../../../environments/environment-types";
 import { LogsDataService } from "./logs.data.service";
 import { AuditLogParams, ErrorLogParams } from "./store/logs.model";
 
@@ -13,13 +14,15 @@ class MockHTTPClient {
 
 describe('LogsDataService', () => {
     let mockHttpClient: any; 
+    let mockEnvironment: Environment;
     let service: LogsDataService;
     let mockAuditLogParams: AuditLogParams;
     let mockErrorLogParams: ErrorLogParams;
 
     beforeEach(() => {
         mockHttpClient = new MockHTTPClient();
-        service = new LogsDataService(mockHttpClient as HttpClient);
+        mockEnvironment = { ...environment };
+        service = new LogsDataService(mockHttpClient as HttpClient, mockEnvironment);
         mockAuditLogParams = {
             skip: 0,
             take: 10
@@ -32,7 +35,7 @@ describe('LogsDataService', () => {
 
     describe('#getAllAuditLogs', () => {
         it('should get the getAllAuditLogs http observable', () => {
-            const expectedUrl = environment.api.getAllAuditLogs;
+            const expectedUrl = mockEnvironment.api.getAllAuditLogs;
             const params = { ...mockAuditLogParams };
 
             service.getAllAuditLogs(params);
@@ -43,7 +46,7 @@ describe('LogsDataService', () => {
 
     describe('#getAllErrorLogs', () => {
         it('should get the getAllErrorLogs http observable', () => {
-            const expectedUrl = environment.api.getAllErrorLogs;
+            const expectedUrl = mockEnvironment.api.getAllErrorLogs;
             const params = mockErrorLogParams;
 
             service.getAllErrorLogs(mockErrorLogParams);

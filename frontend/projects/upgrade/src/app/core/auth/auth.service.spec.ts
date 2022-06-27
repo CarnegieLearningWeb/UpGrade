@@ -101,7 +101,8 @@ describe('AuthService', () => {
                 logs: { create: true, read: true, update: true, delete: true },
                 manageRoles: { create: true, read: true, update: true, delete: true },
                 featureFlags: { create: true, read: true, update: true, delete: true },
-                metrics: { create: true, read: true, update: true, delete: true }
+                metrics: { create: true, read: true, update: true, delete: true },
+                segments: { create: true, read: true, update: true, delete: true },
             };
 
             service.setUserPermissions(UserRole.ADMIN);
@@ -120,7 +121,8 @@ describe('AuthService', () => {
                 logs: { create: false, read: true, update: false, delete: false },
                 manageRoles: { create: false, read: true, update: false, delete: false },
                 featureFlags: { create: true, read: true, update: true, delete: true },
-                metrics: { create: true, read: true, update: true, delete: true }
+                metrics: { create: true, read: true, update: true, delete: true },
+                segments: { create: true, read: true, update: true, delete: true },
             }
 
             service.setUserPermissions(UserRole.CREATOR);
@@ -139,7 +141,8 @@ describe('AuthService', () => {
                 logs: { create: false, read: true, update: false, delete: false },
                 manageRoles: { create: false, read: true, update: false, delete: false },
                 featureFlags: { create: false, read: true, update: false, delete: false },
-                metrics: { create: false, read: true, update: false, delete: false }
+                metrics: { create: false, read: true, update: false, delete: false },
+                segments: { create: false, read: true, update: false, delete: false },
             };
 
             service.setUserPermissions(UserRole.USER_MANAGER);
@@ -158,7 +161,8 @@ describe('AuthService', () => {
                 logs: { create: false, read: true, update: false, delete: false },
                 manageRoles: { create: false, read: true, update: false, delete: false },
                 featureFlags: { create: false, read: true, update: false, delete: false },
-                metrics: { create: false, read: true, update: false, delete: false }
+                metrics: { create: false, read: true, update: false, delete: false },
+                segments: { create: false, read: true, update: false, delete: false },
             }
 
             service.setUserPermissions(UserRole.READER);

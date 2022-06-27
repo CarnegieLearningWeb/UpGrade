@@ -124,8 +124,10 @@ export class ImportExperimentComponent implements OnInit {
       partitions: 'interface',
       queries: 'array',
       stateTimeLogs: 'interface',
-      backendVersion: 'string',
-      filterMode: 'string'
+      filterMode: 'string',
+      experimentSegmentInclusion: 'interface',
+      experimentSegmentExclusion: 'interface',
+      backendVersion: 'string'
     };
 
     const conditionSchema: Record<keyof ExperimentCondition, string> = {

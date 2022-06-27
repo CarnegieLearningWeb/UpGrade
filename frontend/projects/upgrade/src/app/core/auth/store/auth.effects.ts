@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, Inject, NgZone } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as authActions from './auth.actions';
 import * as experimentUserActions from '../../experiment-users/store/experiment-users.actions';
@@ -9,13 +9,13 @@ import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select, Action } from '@ngrx/store';
-import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
 import { AuthService } from '../auth.service';
 import { User } from '../../users/store/users.model';
 import { SettingsService } from '../../settings/settings.service';
+import { ENV, Environment } from '../../../../environments/environment-types';
 
 declare const gapi: any;
 
@@ -34,7 +34,8 @@ export class AuthEffects {
     private ngZone: NgZone,
     private authDataService: AuthDataService,
     private authService: AuthService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    @Inject(ENV) private environment: Environment
   ) {}
 
   initializeGapi$ = createEffect(
@@ -44,8 +45,8 @@ export class AuthEffects {
         tap(() => {
           this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: true }));
           gapi.load('auth2', () => this.handleGapiInit({
-            client_id: environment.gapiClientId,
-            hosted_domain: environment.domainName
+            client_id: this.environment.gapiClientId,
+            hosted_domain: this.environment.domainName
           }));
         })
       );

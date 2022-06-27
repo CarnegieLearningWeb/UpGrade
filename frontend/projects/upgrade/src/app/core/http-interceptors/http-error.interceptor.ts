@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, isDevMode } from '@angular/core';
 import {
   HttpEvent,
   HttpInterceptor,
@@ -8,13 +8,14 @@ import { Observable, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../auth/auth.service';
 import { NotificationsService, NotificationType } from 'angular2-notifications';
-import { environment } from '../../../environments/environment';
+import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
-    private _notifications: NotificationsService
+    private _notifications: NotificationsService,
+    @Inject(ENV) private environment: Environment
   ) { }
 
   openPopup(error) {
@@ -24,10 +25,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       content: error.url,
       animate: 'fromRight'
     };
-    if (!environment.production) {
+    if (!this.environment.production) {
       temp.title += ' See console for details.';
     }
-    if (!((error as any).status === 401) && !environment.production) {
+    if (!((error as any).status === 401) && !this.environment.production) {
     this._notifications.create(temp.title, temp.content, temp.type, temp);
     }
   }

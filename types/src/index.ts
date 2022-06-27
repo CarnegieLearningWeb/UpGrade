@@ -16,6 +16,8 @@ export {
   DATE_RANGE,
   REPEATED_MEASURE,
   FILTER_MODE,
+  SEGMENT_TYPE,
+  SEGMENT_STATUS,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -32,5 +34,5 @@ export {
   IFlagVariation,
   ILogInput,
   IGroupMetric,
-  ISingleMetric,
+  ISingleMetric
 } from './Experiment/interfaces';

@@ -1,4 +1,4 @@
-import { FILTER_MODE } from "../../../../../../../../types/src";
+import { FILTER_MODE, SEGMENT_TYPE } from "../../../../../../../../types/src";
 import { ExperimentState, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, DATE_RANGE, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT, CONSISTENCY_RULE } from "./experiments.model";
 import { initialState } from "./experiments.reducer"
 import { selectAllExperiment, selectAllExperimentNames, selectAllPartitions, selectContextMetaData, selectExperimentById, selectExperimentGraphInfo, selectExperimentGraphRange, selectExperimentStatById, selectExperimentState, selectExperimentStats, selectIsGraphLoading, selectIsLoadingExperiment, selectIsLoadingExperimentDetailStats, selectIsPollingExperimentDetailStats, selectSearchKey, selectSearchString, selectSelectedExperiment, selectSkipExperiment, selectSortAs, selectSortKey, selectTotalExperiment } from "./experiments.selectors";
@@ -33,8 +33,45 @@ describe('Experiments Selectors', () => {
                 "group": "schoolId",
                 "logging": false,
                 "filterMode": FILTER_MODE.INCLUDE_ALL,
-                "groupSatisfied": 0,
                 "backendVersion": "1.0.0",
+                "experimentSegmentInclusion": {
+                    "updatedAt": '2022-06-20T13:14:52.900Z',
+                    "createdAt": '2022-06-20T13:14:52.900Z',
+                    "versionNumber": 1,
+                    "segment": {
+                        "id": 'segment-id',
+                        "name": 'segment-name',
+                        "description": 'segment-description',
+                        "createdAt": '04/23/17 04:34:22 +0000',
+                        "updatedAt": '04/23/17 04:34:22 +0000',
+                        "versionNumber": 1,
+                        "context": 'segment-context',
+                        "individualForSegment": [],
+                        "groupForSegment": [],
+                        "subSegments": [],
+                        "type": SEGMENT_TYPE.PUBLIC,
+                        "status": 'segment-status'
+                    }
+                },
+                "experimentSegmentExclusion": {
+                    "updatedAt": '2022-06-20T13:14:52.900Z',
+                    "createdAt": '2022-06-20T13:14:52.900Z',
+                    "versionNumber": 1,
+                    "segment": {
+                        "id": 'segment-id',
+                        "name": 'segment-name',
+                        "description": 'segment-description',
+                        "createdAt": '04/23/17 04:34:22 +0000',
+                        "updatedAt": '04/23/17 04:34:22 +0000',
+                        "versionNumber": 1,
+                        "context": 'segment-context',
+                        "individualForSegment": [],
+                        "groupForSegment": [],
+                        "subSegments": [],
+                        "type": SEGMENT_TYPE.PUBLIC,
+                        "status": 'segment-status'
+                    }
+                },
                 "conditions": [
                     {
                         "createdAt": "2022-04-05T21:22:16.770Z",
