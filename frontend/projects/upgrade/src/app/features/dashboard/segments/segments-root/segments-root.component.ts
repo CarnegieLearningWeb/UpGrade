@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SegmentsService } from '../../../../core/segments/segments.service';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { NewSegmentComponent } from '../components/modal/new-segment/new-segment.component';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { Observable } from 'rxjs';

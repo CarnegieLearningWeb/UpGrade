@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { BehaviorSubject } from "rxjs";
 import { SegmentsService } from './segments.service';
 import * as SegmentSelectors from './store/segments.selectors';
 import { Segment, SegmentInput, UpsertSegmentType } from "./store/segments.model";

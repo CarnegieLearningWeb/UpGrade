@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 import { ExperimentStatePipeType } from '../../../../../../shared/pipes/experiment-state.pipe';

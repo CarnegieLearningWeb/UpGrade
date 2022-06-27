@@ -58,7 +58,8 @@ import { ExportModalComponent } from './components/modal/export-experiment/expor
         ExperimentEndCriteriaComponent,
         RepeatedMeasurePipe,
         StateTimeLogsComponent,
-        ExperimentParticipantsComponent
+        ExperimentParticipantsComponent,
+        ExportModalComponent
     ],
     imports: [
         CommonModule,
