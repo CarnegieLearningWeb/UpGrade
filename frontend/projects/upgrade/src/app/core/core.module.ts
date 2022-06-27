@@ -24,6 +24,7 @@ import { UsersModule } from './users/users.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 import { AnalysisModule } from './analysis/analysis.module';
+import { SegmentsModule } from './segments/segments.module';
 import { HttpCancelInterceptor } from './http-interceptors/http-cancel.interceptor';
 import { BaseUrlInterceptor } from './http-interceptors/http-base-url-interceptor';
 import { ENV, Environment } from '../../environments/environment-types';
@@ -56,6 +57,7 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     PreviewUsersModule,
     UsersModule,
     FeatureFlagsModule,
+    SegmentsModule,
     AnalysisModule,
 
     // ngrx

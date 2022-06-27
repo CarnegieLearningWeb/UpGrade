@@ -1,0 +1,20 @@
+@import '~@angular/material/theming';
+
+@mixin segments-list-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .segments-list-container {
+    .header {
+      box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+    }
+
+    .segments-list {
+      .segment {
+        &-name {
+          color: mat-color($foreground, text);
+        }
+      }
+    }
+  }
+}

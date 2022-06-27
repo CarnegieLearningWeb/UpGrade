@@ -7,6 +7,7 @@ import { NewExperimentComponent } from '../components/modal/new-experiment/new-e
 import { AuthService } from '../../../../core/auth/auth.service';
 import { UserPermission } from '../../../../core/auth/store/auth.models';
 import { ImportExperimentComponent } from '../components/modal/import-experiment/import-experiment.component';
+import { SegmentsService } from '../../../../core/segments/segments.service';
 
 @Component({
   selector: 'app-home',
@@ -22,12 +23,14 @@ export class HomeComponent implements OnInit {
   constructor(
     private experimentService: ExperimentService,
     public dialog: MatDialog,
+    private segmentsService: SegmentsService,
     private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
     this.experimentService.loadExperiments(true);
+    this.segmentsService.fetchSegments(true);
   }
 
   openNewExperimentDialog() {

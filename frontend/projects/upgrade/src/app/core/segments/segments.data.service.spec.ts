@@ -1,0 +1,113 @@
+import { HttpClient } from "@angular/common/http";
+import { of } from "rxjs/internal/observable/of";
+import { environment } from "../../../environments/environment";
+import { SegmentsDataService } from "./segments.data.service";
+import { SegmentInput, IndividualForSegment, GroupForSegment} from "./store/segments.model";
+import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
+
+
+class MockHTTPClient {
+    get = jest.fn().mockReturnValue(of());
+    post = jest.fn().mockReturnValue(of());
+    delete = jest.fn().mockReturnValue(of());
+    put = jest.fn().mockReturnValue(of());
+}
+
+describe('SegmentDataService', () => {
+    let mockHttpClient: any; 
+    let service: SegmentsDataService;
+    let mockSegment: SegmentInput;
+    let mockSegmentId: string;
+    let mockSegmentIds: string[];
+    
+    beforeEach(() => {
+        mockHttpClient = new MockHTTPClient();
+        service = new SegmentsDataService(mockHttpClient as HttpClient);
+       
+        mockSegmentId = 'segmentId1';
+        mockSegmentIds = [
+            'segmentId101',
+            'segmentId102'
+        ]
+        mockSegment = {
+            createdAt: 'time',
+            updatedAt: 'time',
+            versionNumber: 0,
+            id: 'segmentId1',
+            name: 'segmentId1',
+            context: 'any',
+            description: 'segment testing',
+            userIds: [],
+            groups: [],
+            subSegmentIds: [],
+            type: SEGMENT_TYPE.PUBLIC,
+        }
+    });
+
+    describe('#fetchSegments', () => {
+        it('should get the fetchSegments http observable', () => {
+            const expectedUrl = environment.api.segments;
+
+            service.fetchSegments();
+
+            expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+        })
+    });
+
+
+    describe('#createNewSegment', () => {
+        it('should get the createNewSegment http observable', () => {
+            const expectedUrl = environment.api.segments;
+            const segment = { ...mockSegment };
+
+            service.createNewSegment(segment);
+
+            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { ...segment });
+        })
+    });
+
+    describe('#deleteSegment', () => {
+        it('should get the deleteSegment http observable', () => {
+            const segmentId = mockSegmentId;
+            const expectedUrl = `${environment.api.segments}/${segmentId}`;
+
+            service.deleteSegment(segmentId);
+
+            expect(mockHttpClient.delete).toHaveBeenCalledWith(expectedUrl);
+        })
+    })
+
+    describe('#updateSegment', () => {
+        it('should get the updateSegment http observable', () => {
+            const segment = { ...mockSegment };
+            const expectedUrl = environment.api.segments;
+
+            service.updateSegment(segment);
+
+            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { ...segment });
+        })
+    })
+
+    describe('#exportSegment', () => {
+        it('should get the exportSegment http observable', () => {
+            const segmentId = mockSegmentId;
+            const expectedUrl = `${environment.api.exportSegment}/${segmentId}`;
+
+            service.exportSegment(segmentId);
+
+            expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+        })
+    })
+
+    describe('#importSegment', () => {
+        it('should get the importSegment http observable', () => {
+            const mockUrl = environment.api.importSegment;
+            const segment = { ...mockSegment };
+
+            service.importSegment(segment);
+
+            expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, { ...segment });
+        })
+    })
+
+})

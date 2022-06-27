@@ -1,0 +1,143 @@
+<mat-card class="segment-container" *ngIf="segment">
+  <span class="ft-16-400">
+    <a [routerLink]="['/segments']" class="ft-16-400 segment-link">{{ 'segments.title.text' | translate }} </a>
+    > <b> {{ segment?.name }} </b>
+  </span>
+  <mat-card class="segment">
+    <div class="segment-info">
+      <div class="segment-overview">
+        <span class="ft-32-700 segment-overview-title">
+          {{ segment?.name }}
+          <span class="ft-16-400 segment-overview-partitions">
+            ( {{ members.length + ' ' + ('segments.view-segment.members-subtitle.text' | translate) }} )
+          </span>
+        </span>
+
+        <div class="action-buttons">
+          <!-- Edit Button -->
+          <button
+            mat-flat-button
+            class="ft-14-600 button"
+            (click)="openEditSegmentDialog()"
+            *ngIf="permissions?.segments.update"
+          >
+            {{ 'home.view-experiment.edit-button.text' | translate }}
+          </button>
+
+          <!-- Delete Button -->
+          <button
+            mat-flat-button
+            class="ft-14-600 button"
+            (click)="deleteSegment()"
+            [ngClass]="{ 'button--disabled': permissions && !permissions.segments.delete }"
+            [disabled]="permissions && !permissions.segments.delete"
+          >
+            {{ 'global.delete.text' | translate }}
+          </button>
+
+          <!-- Duplicate Button -->
+          <button
+            mat-flat-button
+            class="ft-14-600 button-long"
+            (click)="duplicateSegmentDialog()"
+            [ngClass]="{ 'button-long--disabled': segment?.type == 'global_exclude' }"
+            [disabled]="segment?.type == 'global_exclude'"
+          >
+            {{ 'global.duplicate.text' | translate }}
+          </button>
+
+          <!-- Export Button -->
+          <button
+            mat-flat-button
+            class="ft-14-600 button"
+            (click)="exportSegment(segment.id)"
+          >
+            {{ 'global.export.text' | translate }}
+          </button>
+        </div>
+      </div>
+      <span class="ft-14-700 segment-create-date">
+        {{
+          ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate: 'medium date')
+        }}
+      </span>
+      <span class="ft-14-700 segment-update-date">
+        {{
+          ('home.view-experiment.last-updated-on.text' | translate) + (segment.updatedAt | formatDate: 'medium date')
+        }}
+      </span>
+    </div> 
+
+    <div class="segment-secondary-info">
+      <!-- Status -->
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'segments.global-status.text' | translate | uppercase }}</span>
+        <div class="segment-status-container">
+          <span class="status-circle" [ngStyle]="{ 'background-color':  segment.status | segmentStatus: SegmentStatusPipeTypes.COLOR }"></span>
+          <span class="ft-18-700 section-data-value section-data-value--editable"
+            (click)="openExperimentSegmentList()"
+          >
+            {{ segment.status | segmentStatus }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'segments.global-description.text' | translate | uppercase }}</span>
+        <span class="ft-18-700 section-data-value">
+          {{ segment.description }}
+        </span>
+      </div>
+
+      <!-- Context -->
+      <div class="section-data section-data--fixed">
+        <span class="ft-16-600 section-data-title">{{ 'global.context.text' | translate }}</span>
+        <mat-chip class="ft-14-700" *ngIf="segment.context != 'ALL'">
+          {{ segment.context }}
+        </mat-chip>
+        <span class="ft-14-700 section-data-value" *ngIf="segment.context == 'ALL'">
+          {{ segment.context }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Segment members Table  -->
+    <div class="table-container">
+      <span class="ft-24-700">{{ 'segments.new-segment-members-stepper.text' | translate }}</span>
+      <mat-table [dataSource]="members" class="table">
+        <!-- 'Type' Column -->
+        <ng-container matColumnDef="value">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            <span [matTooltip]="'segments.global-members-type.text' | translate" matTooltipPosition="above">
+              {{ 'segments.global-members-type.text' | translate | uppercase }}
+            </span>
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data"> {{ data.type }} </mat-cell>
+        </ng-container>
+
+        <!-- Id/Name Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            <span [matTooltip]="'segments.global-members-id/name.text' | translate" matTooltipPosition="above">
+              {{ 'segments.global-members-id/name.text' | translate | uppercase }}
+            </span>
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            <span *ngIf="data.name?.length < 50; else conditionCode">
+              {{ data.id }}
+            </span>
+            <ng-template #conditionCode>
+              <span [matTooltip]="data.name" matTooltipPosition="above">
+                {{ data.id | truncate: 50 }}
+              </span>
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedVariationColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedVariationColumns"></mat-row>
+      </mat-table>
+    </div>
+  </mat-card>
+</mat-card> 

@@ -1,0 +1,31 @@
+<div mat-dialog-content class="delete-segment-dialog">
+  <p class="ft-16-600">
+    {{ 'segments.delete-segment.message.text' | translate }}
+  </p>
+  <mat-form-field class="ft-14-600 name">
+    <input
+      matInput
+      class="ft-14-400 name-input"
+      [placeholder]="'segments.delete-segment.input-placeholder.text' | translate"
+      [(ngModel)]="segmentName"
+    />
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="delete-segment-dialog-actions">
+  <button
+    class="modal-btn"
+    mat-flat-button
+    (click)="onCancelClick()"
+  >
+    {{ 'global.cancel.text' | translate }}
+  </button>
+  <button
+    class="modal-btn default-button delete-btn"
+    mat-flat-button
+    [ngClass]="{ 'default-button--disabled': segmentName !== data.segmentName }"
+    [disabled]="segmentName !== data.segmentName"
+    (click)="deleteSegment()"
+  >
+    {{ 'global.delete.text' | translate }}
+  </button>
+</div>

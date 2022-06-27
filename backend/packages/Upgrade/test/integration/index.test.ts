@@ -18,7 +18,6 @@ import {
   // PreviewScenario5,
   // PreviewForcedAssigned,
 } from './ExperimentAssignment';
-import { IndividualExclude, GroupExclude } from './ExplicitExclude/index';
 import { UpdateExperiment, ExperimentEndDate, ExperimentStartDate } from './Experiment/update';
 import { ExperimentContextAssignments } from './Experiment/experimentContext';
 import { NoGroup, NoWorkingGroup, IncorrectWorkingGroup, IncorrectGroup } from './Experiment/incorrectGroup';
@@ -46,6 +45,7 @@ import Container from 'typedi';
 import { AWSService } from '../../src/api/services/AWSService';
 import AWSServiceMock from './mockData/AWSServiceMock';
 import { CreateSystemUser } from '../../src/init/seed/systemUser';
+import { createGlobalExcludeSegment } from '../../src/init/seed/globalExcludeSegment';
 import { SystemUserCreated } from './SystemUser/index';
 import {
   DeletePreviewAssignmentOnExperimentDelete,
@@ -64,11 +64,14 @@ import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssig
 import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
 import {
-  ExperimentExcludeUser,
-  ExperimentExcludeGroup,
-  ExperimentIncludeUser,
-  ExperimentIncludeGroup,
-} from './ExperimentAssignment/ExperimentIncludeAndExclude/index';
+  SegmentCreate,
+  SegmentDelete,
+  SegmentUpdate,
+  SegmentMemberGroupEnrollment,
+  SegmentMemberUserEnrollment,
+  SubSegmentEnrollment
+} from './Segment/index';
+import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -89,6 +92,7 @@ describe('Integration Tests', () => {
 
     // create System Users
     await CreateSystemUser();
+    await createGlobalExcludeSegment(new UpgradeLogger());
   });
 
   // -------------------------------------------------------------------------
@@ -243,17 +247,6 @@ describe('Integration Tests', () => {
 
   test('Revert to Condition', async (done) => {
     await RevertToCondition();
-    done();
-  });
-
-  // testing exclusion over here
-  test('Individual Exclude', async (done) => {
-    await IndividualExclude();
-    done();
-  });
-
-  test('Group Exclude', async (done) => {
-    await GroupExclude();
     done();
   });
 
@@ -436,26 +429,55 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Experiment Level exclusion of user with FilterMode as IncludeAll', async (done) => {
-    await ExperimentExcludeUser();
+  // test('Experiment Level exclusion of user with FilterMode as IncludeAll', async (done) => {
+  //   await ExperimentExcludeUser();
+  //   done();
+  // });
+
+  // test('Experiment Level exclusion of group with FilterMode as IncludeAll', async (done) => {
+  //   await ExperimentExcludeGroup();
+  //   done();
+  // });
+
+  // test('Experiment Level inclusion of user with FilterMode as ExcludeAll', async (done) => {
+  //   await ExperimentIncludeUser();
+  //   done();
+  // });
+
+  // test('Experiment Level inclusion of group with FilterMode as ExcludeAll', async (done) => {
+  //   await ExperimentIncludeGroup();
+  //   done();
+  // });
+
+  test('Segments CRUD operations - Create', async (done) => {
+    await SegmentCreate();
     done();
   });
 
-  test('Experiment Level exclusion of group with FilterMode as IncludeAll', async (done) => {
-    await ExperimentExcludeGroup();
+  test('Segments CRUD operations - Update', async (done) => {
+    await SegmentUpdate();
     done();
   });
 
-  test('Experiment Level inclusion of user with FilterMode as ExcludeAll', async (done) => {
-    await ExperimentIncludeUser();
+  test('Segments CRUD operations - Delete', async (done) => {
+    await SegmentDelete();
     done();
   });
 
-  test('Experiment Level inclusion of group with FilterMode as ExcludeAll', async (done) => {
-    await ExperimentIncludeGroup();
+  test('Enrollment of User of Segment', async (done) => {
+    await SegmentMemberUserEnrollment();
     done();
   });
 
+  test('Enrollment of Group of Segment', async (done) => {
+    await SegmentMemberGroupEnrollment();
+    done();
+  });
+
+  test('Enrollment of User of subSegment', async (done) => {
+    await SubSegmentEnrollment();
+    done();
+  });
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

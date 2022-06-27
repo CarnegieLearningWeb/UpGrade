@@ -1,10 +1,11 @@
 import { HttpClient } from "@angular/common/http";
 import { of } from "rxjs/internal/observable/of";
-import { FILTER_MODE } from 'upgrade_types';
+import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { environment } from "../../../environments/environment";
 import { Environment } from "../../../environments/environment-types";
+import { Segment } from "../segments/store/segments.model";
 import { ExperimentDataService } from "./experiments.data.service";
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, Experiment, ExperimentPaginationParams, ExperimentStateInfo, EXPERIMENT_STATE, POST_EXPERIMENT_RULE } from "./store/experiments.model";
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, Experiment, ExperimentPaginationParams, ExperimentStateInfo, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, segmentNew } from "./store/experiments.model";
 
 class MockHTTPClient {
     get = jest.fn().mockReturnValue(of());
@@ -37,6 +38,34 @@ describe('ExperimentDataService', () => {
             'abc123',
             'qwerty99'
         ]
+        const segmentData: Segment = {
+            id: 'segment-id',
+            name: 'segment-name',
+            description: 'segment-description',
+            createdAt: '04/23/17 04:34:22 +0000',
+            updatedAt: '04/23/17 04:34:22 +0000',
+            versionNumber: 1,
+            context: 'segment-context',
+            individualForSegment: [],
+            groupForSegment: [],
+            subSegments: [],
+            type: SEGMENT_TYPE.PUBLIC,
+            status: 'segment-status'
+        }
+    
+        const dummyInclusionData: segmentNew = {
+            updatedAt: '2022-06-20T13:14:52.900Z',
+            createdAt: '2022-06-20T13:14:52.900Z',
+            versionNumber: 1,
+            segment: segmentData,
+        }
+    
+        const dummyExclusionData: segmentNew = {
+            updatedAt: '2022-06-20T13:14:52.900Z',
+            createdAt: '2022-06-20T13:14:52.900Z',
+            versionNumber: 1,
+            segment: segmentData,
+        }
         mockExperiment = {
             id: 'abc123',
             name: 'abc123',
@@ -65,7 +94,9 @@ describe('ExperimentDataService', () => {
             stateTimeLogs: [],
             backendVersion: '1.0.0',
             filterMode: FILTER_MODE.INCLUDE_ALL,
-            groupSatisfied: 0
+            groupSatisfied: 0,
+            experimentSegmentInclusion: dummyInclusionData,
+            experimentSegmentExclusion: dummyExclusionData,
         }
     });
 
