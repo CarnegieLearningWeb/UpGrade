@@ -1,0 +1,176 @@
+::ng-deep .mat-optgroup.hideLabel .mat-optgroup-label {
+  display: none;
+}
+
+.experiment-participants {
+  display: flex;
+  flex-direction: column;
+
+  .title {
+    font-size: var(--text-size-medium);
+    font: bolder;
+  }
+
+  .member-table {
+    max-height: 140px;
+    overflow: auto;
+
+    mat-header-row {
+      min-height: 35px;
+    }
+
+    mat-row {
+      min-height: 66px;
+      max-height: 66px;
+    }
+
+    mat-header-cell {
+      justify-content: center;
+      margin-right: 15px;
+      color: var(--grey-6);
+    }
+
+    mat-cell {
+      justify-content: center;
+      margin-right: 15px;
+    }
+
+    // .secondary-form {
+    //   display: flex;
+    //   flex-direction: row;
+    //   flex-wrap: wrap;
+    //   justify-content: space-between;
+    //   margin-top: 0px;
+  
+    //   .form-control {
+    //     flex: 0 0 25%;
+    //     line-height: 20px;
+    //     min-height: 16px;
+    //     max-height: 20px;
+    //   }
+    // }
+
+    .cdk-column-removeMember {
+      flex: 0 0 10%;
+      width: 10%;
+    }
+
+    .cdk-column-id,
+    .cdk-column-type {
+      flex: 0 0 30%;
+      width: 30%;
+    }
+
+    .remove-icon {
+      position: relative;
+      top: -3px;
+      width: 18px;
+      height: 18px;
+      font-size: var(--text-size-x-large);
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    mat-form-field {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  .add-member {
+    // margin-top: 10px;
+    outline: 0;
+    border: 0;
+    background-color: transparent;
+    color: var(--blue);
+  }
+
+
+  .property-container {
+    .inclusion-criteria {
+      width: 30%;
+    }
+
+    .except {
+      margin-left: 10%;
+      width: 25%;
+    }
+  }
+  
+  .member-table {
+    margin-top: 30px;
+  }
+
+  .button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+
+    .btn-back {
+      margin-left: 0 !important;
+    }
+  }
+
+  ::ng-deep .mat-form-field-label {
+    color: var(--grey-6);
+  }
+}
+
+
+// members adding table [ref file:- segment-members.component.scss
+
+// .members-table {
+//   height: 200px;
+//   overflow: auto;
+
+//   mat-header-row {
+//     min-height: 35px;
+//   }
+
+//   mat-row {
+//     min-height: 46px;
+//     max-height: 46px;
+//   }
+
+//   mat-header-cell {
+//     justify-content: center;
+//     margin-right: 15px;
+//     color: var(--grey-6);
+//   }
+
+//   mat-cell {
+//     justify-content: center;
+//     margin-right: 15px;
+//   }
+
+//   .cdk-column-removeMember {
+//     margin-right: 0;
+//     padding-right: 0;
+//   }
+
+
+//   .cdk-column-memberNumber,
+//   .cdk-column-removeMember {
+//     flex: 0 0 10%;
+//     width: 10%;
+//   }
+
+//   .remove-icon {
+//     position: relative;
+//     top: -3px;
+//     width: 18px;
+//     height: 18px;
+//     font-size: var(--text-size-x-large);
+
+//     &:hover {
+//       cursor: pointer;
+//     }
+//   }
+
+//   mat-form-field {
+//     width: 100%;
+//     text-align: center;
+//   }
+// }

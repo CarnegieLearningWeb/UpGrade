@@ -32,6 +32,7 @@ import { ExperimentEndCriteriaComponent } from './components/modal/experiment-en
 import { RepeatedMeasurePipe } from './pipes/repeated-measure.pipe';
 import { ImportExperimentComponent } from './components/modal/import-experiment/import-experiment.component';
 import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
+import { ExperimentParticipantsComponent } from './components/experiment-participants/experiment-participants.component';
 import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
 @NgModule({
   declarations: [
@@ -57,7 +58,8 @@ import { ExportModalComponent } from './components/modal/export-experiment/expor
     ExperimentQueryResultComponent,
     ExperimentEndCriteriaComponent,
     RepeatedMeasurePipe,
-    StateTimeLogsComponent
+    StateTimeLogsComponent,
+    ExperimentParticipantsComponent
   ],
   imports: [
     CommonModule,

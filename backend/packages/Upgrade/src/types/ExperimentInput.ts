@@ -8,8 +8,10 @@ import {
   ASSIGNMENT_UNIT,
   POST_EXPERIMENT_RULE,
   IEnrollmentCompleteCondition,
+  FILTER_MODE,
 } from 'upgrade_types';
 import { Query } from '../api/models/Query';
+import { SegmentInputValidator } from 'src/api/controllers/validators/SegmentInputValidator';
 
 export class ExperimentInput {
   public id: string;
@@ -64,5 +66,9 @@ export class ExperimentInput {
   public createdAt: Date;
   public updatedAt: Date;
   public versionNumber: number;
+
+  public filterMode: FILTER_MODE;
+  public segmentInclude: Omit<SegmentInputValidator, 'id' | 'name' | 'description' | 'context'>;
+  public segmentExclude: Omit<SegmentInputValidator, 'id' | 'name' | 'description' | 'context'>;
   public backendVersion: string;
 }

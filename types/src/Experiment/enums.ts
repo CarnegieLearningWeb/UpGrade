@@ -132,6 +132,24 @@ export enum FILTER_MODE {
   EXCLUDE_ALL = 'excludeAll',
 }
 
+export enum SEGMENT_TYPE {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+  GLOBAL_EXCLUDE = 'global_exclude',
+}
+
+export enum SEGMENT_STATUS {
+  USED = 'Used',
+  UNUSED = 'Unused',
+  GLOBAL = 'Global',
+  LOCKED = 'Locked',
+  UNLOCKED = 'Unlocked',
+}
+
+export enum INCLUSION_CRITERIA {
+  INCLUDE_SPECIFIC = 'Include Specific',
+  EXCEPT = 'Include All Except...',
+}
 export enum EXPORT_METHOD {
   DESIGN = 'Download Experiment Design (JSON)',
   DATA = 'Email Experiment Data (CSV)',

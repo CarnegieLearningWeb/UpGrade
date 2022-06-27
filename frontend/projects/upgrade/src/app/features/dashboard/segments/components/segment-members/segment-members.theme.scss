@@ -1,0 +1,13 @@
+@import '~@angular/material/theming';
+
+@mixin segment-members-component-theme($theme) {
+  $foreground: map-get($theme, foreground);
+
+  .segment-member {
+    .member-table {
+      .remove-icon {
+        color: mat-color($foreground, icon);
+      }
+    }
+  }
+}

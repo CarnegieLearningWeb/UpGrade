@@ -39,6 +39,7 @@ import { ExperimentStatePipe } from './pipes/experiment-state.pipe';
 import { FormatDatePipe } from './pipes/format-date.pipe';
 import { ScrollDirective } from './directives/scroll.directive';
 import { OperationPipe } from './pipes/operation.pipe';
+import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
 import { DeleteComponent } from './components/delete/delete.component';
 
@@ -84,6 +85,7 @@ import { DeleteComponent } from './components/delete/delete.component';
     ScrollDirective,
     FormatDatePipe,
     OperationPipe,
+    SegmentStatusPipe,
     QueryResultComponent,
     DeleteComponent
   ],
@@ -129,6 +131,7 @@ import { DeleteComponent } from './components/delete/delete.component';
     FormatDatePipe,
     ScrollDirective,
     OperationPipe,
+    SegmentStatusPipe,
     QueryResultComponent,
     DeleteComponent
   ],

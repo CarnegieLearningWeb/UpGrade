@@ -1,0 +1,19 @@
+.delete-segment-dialog {
+  .name {
+    width: 100%;
+    line-height: 18px;
+
+    &-input {
+      line-height: 18px;
+    }
+  }
+
+  &-actions {
+    justify-content: flex-end;
+    margin: 0;
+
+    .delete-btn {
+      background-color: var(--red) !important;
+    }
+  }
+}

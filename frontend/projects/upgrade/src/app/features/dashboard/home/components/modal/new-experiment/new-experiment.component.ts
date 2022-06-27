@@ -87,6 +87,7 @@ export class NewExperimentComponent implements OnInit {
   openSnackBar() {
     this._snackBar.open(this.translate.instant('global.save-confirmation.message.text') , null, { duration: 2000 });
   }
+
   stepChanged(event) {
     this.selectedStepperIndex = event.selectedIndex;
   }

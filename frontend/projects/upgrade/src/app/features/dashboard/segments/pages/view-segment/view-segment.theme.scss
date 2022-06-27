@@ -1,0 +1,35 @@
+@import '~@angular/material/theming';
+
+@mixin view-segment-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .segment-container {
+    background-color: mat-color($background, background);
+
+    .segment-link {
+      color: mat-color($foreground, text)
+    }
+
+    .segment {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+
+      &-info {
+        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+
+        .action-buttons {
+          .button {
+            background-color: mat-color($background, background);
+          }
+          .button-long {
+            background-color: mat-color($background, background);
+          }
+        }
+      }
+
+      &-secondary-info {
+        box-shadow: 0 8px 8px -8px mat-color($background, shadow-color);
+      }
+    }
+  }
+}

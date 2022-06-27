@@ -1,0 +1,18 @@
+@import '~@angular/material/theming';
+
+@mixin segment-experiment-list-modal-component-theme($theme) {
+  $background: map-get($theme, background);
+  $foreground: map-get($theme, foreground);
+
+  .segment-experiment-list-modal {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+
+    .segment-experiment-list-modal {
+      .icon {
+        color: mat-color($foreground, icon);
+      }
+    }
+  }
+}

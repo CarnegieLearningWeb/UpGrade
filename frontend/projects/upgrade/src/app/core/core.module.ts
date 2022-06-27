@@ -27,6 +27,7 @@ import { UsersModule } from './users/users.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { HttpAuthInterceptor } from './http-interceptors/http-auth.interceptor';
 import { AnalysisModule } from './analysis/analysis.module';
+import { SegmentsModule } from './segments/segments.module';
 import { HttpCancelInterceptor } from './http-interceptors/http-cancel.interceptor';
 
 export {
@@ -56,6 +57,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     PreviewUsersModule,
     UsersModule,
     FeatureFlagsModule,
+    SegmentsModule,
     AnalysisModule,
 
     // ngrx
