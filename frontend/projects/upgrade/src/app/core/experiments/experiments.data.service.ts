@@ -1,44 +1,47 @@
-import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { Inject, Injectable } from '@angular/core';
 import { Experiment, ExperimentStateInfo, ExperimentPaginationParams } from './store/experiments.model';
 import { HttpClient } from '@angular/common/http';
+import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class ExperimentDataService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient, 
+    @Inject(ENV) private environment: Environment
+  ) {}
 
   getAllExperiment(params: ExperimentPaginationParams) {
-    const url = environment.api.getAllExperiments;
+    const url = this.environment.api.getAllExperiments;
     return this.http.post(url, params);
   }
 
   getAllExperimentsStats(experimentIds: string[]) {
-    const url = environment.api.experimentsStats;
+    const url = this.environment.api.experimentsStats;
     return this.http.post(url, { experimentIds: experimentIds });
   }
 
   getExperimentDetailStat(experimentId: string) {
-    const url = environment.api.experimentDetailStat;
+    const url = this.environment.api.experimentDetailStat;
     return this.http.post(url, { experimentId });
   }
 
   createNewExperiment(experiment: Experiment) {
-    const url = environment.api.createNewExperiments;
+    const url = this.environment.api.createNewExperiments;
     return this.http.post(url, { ...experiment });
   }
 
   importExperiment(experiment: Experiment) {
-    const url = environment.api.importExperiment;
+    const url = this.environment.api.importExperiment;
     return this.http.post(url, {...experiment});
   }
 
   updateExperiment(experiment: Experiment) {
-    const url = `${environment.api.updateExperiments}/${experiment.id}`;
+    const url = `${this.environment.api.updateExperiments}/${experiment.id}`;
     return this.http.put(url, { ...experiment });
   }
 
   updateExperimentState(experimentId: string, experimentStateInfo: ExperimentStateInfo) {
-    const url = environment.api.updateExperimentState;
+    const url = this.environment.api.updateExperimentState;
     return this.http.post(url, {
       experimentId,
       state: experimentStateInfo.newStatus,
@@ -47,47 +50,47 @@ export class ExperimentDataService {
   }
 
   deleteExperiment(experimentId: string) {
-    const url = `${environment.api.updateExperiments}/${experimentId}`;
+    const url = `${this.environment.api.updateExperiments}/${experimentId}`;
     return this.http.delete(url);
   }
 
   getExperimentById(experimentId: string) {
-    const url = `${environment.api.getExperimentById}/${experimentId}`;
+    const url = `${this.environment.api.getExperimentById}/${experimentId}`;
     return this.http.get(url);
   }
 
   fetchAllPartitions() {
-    const url = environment.api.allPartitions;
+    const url = this.environment.api.allPartitions;
     return this.http.get(url);
   }
 
   fetchAllExperimentNames() {
-    const url = environment.api.allExperimentNames;
+    const url = this.environment.api.allExperimentNames;
     return this.http.get(url);
   }
 
   exportExperimentInfo(experimentId: string, email: string) {
-    const url = environment.api.generateCsv;
+    const url = this.environment.api.generateCsv;
     return this.http.post(url, { experimentId, email });
   }
 
   exportExperimentDesign(experimentId: string) {
-    const url = `${environment.api.exportExperiment}/${experimentId}`;
+    const url = `${this.environment.api.exportExperiment}/${experimentId}`;
     return this.http.get(url);
   }
 
   fetchExperimentGraphInfo(params: any) {
-    const url = environment.api.experimentGraphInfo;
+    const url = this.environment.api.experimentGraphInfo;
     return this.http.post(url, params);
   }
 
   fetchContextMetaData() {
-    const url = environment.api.contextMetaData;
+    const url = this.environment.api.contextMetaData;
     return this.http.get(url);
   }
 
   fetchGroupAssignmentStatus(experimentId: string) {
-    const url = `${environment.api.getGroupAssignmentStatus}/${experimentId}`;
+    const url = `${this.environment.api.getGroupAssignmentStatus}/${experimentId}`;
     return this.http.get(url);
   }
 }

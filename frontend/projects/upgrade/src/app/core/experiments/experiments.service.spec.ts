@@ -6,6 +6,8 @@ import { ExperimentService } from './experiments.service';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, DATE_RANGE, ExperimentLocalStorageKeys, ExperimentVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, UpsertExperimentType } from './store/experiments.model';
 import * as ExperimentSelectors from './store/experiments.selectors';
 import { actionDeleteExperiment, actionExportExperimentDesign, actionExportExperimentInfo, actionFetchAllExperimentNames, actionFetchContextMetaData, actionFetchExperimentDetailStat, actionGetExperimentById, actionGetExperiments, actionSetGraphRange, actionSetSearchKey, actionSetSearchString, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpsertExperiment } from './store/experiments.actions';
+import { Environment } from '../../../environments/environment-types';
+import { environment } from '../../../environments/environment';
 import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
 import { segmentNew } from './store/experiments.model';
 import { Segment } from '../segments/store/segments.model';
@@ -21,6 +23,7 @@ class MockLocalStorageService extends LocalStorageService {
 describe('ExperimentService', () => {
     let mockStore: any;
     let mockLocalStorageService: LocalStorageService;
+    let mockEnvironment: Environment;
     let service: ExperimentService;
     let mockExperimentsList: any = [
         { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
@@ -99,7 +102,8 @@ describe('ExperimentService', () => {
     beforeEach(() => {
         mockStore = MockStateStore$;
         mockLocalStorageService = new MockLocalStorageService();
-        service = new ExperimentService(mockStore, mockLocalStorageService);
+        mockEnvironment = { ...environment };
+        service = new ExperimentService(mockStore, mockLocalStorageService, mockEnvironment);
     })
 
     describe('#experiments$', () => {

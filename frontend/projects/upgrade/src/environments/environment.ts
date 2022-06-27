@@ -1,15 +1,15 @@
 // The file contents for the current environment will overwrite these during build.
-// The build system defaults to the dev environment which uses `environment.ts`, but if you do
+// The build system defaults to the dev environment which uses 'environment.ts', but if you do
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
-// const endpointApi = 'http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
-const endpointApi = 'http://localhost:3030/api';
+// const apiBaseUrl = 'http://development-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api';
+// const apiBaseUrl = 'http://localhost:3030/api';
 
 export const environment = {
   appName: 'UpGrade',
   envName: 'DEV',
-  endpointApi,
+  apiBaseUrl: 'http://localhost:3030/api',
   production: false,
   test: false,
   i18nPrefix: '',
@@ -20,43 +20,43 @@ export const environment = {
   pollingInterval: 10 * 1000,
   pollingLimit: 600,
   api: {
-    getAllExperiments: `${endpointApi}/experiments/paginated`,
-    createNewExperiments: `${endpointApi}/experiments`,
-    importExperiment : `${endpointApi}/experiments/import`,
-    exportExperiment : `${endpointApi}/experiments/export`,
-    updateExperiments: `${endpointApi}/experiments`,
-    getExperimentById: `${endpointApi}/experiments/single`,
-    getAllAuditLogs: `${endpointApi}/audit`,
-    getAllErrorLogs: `${endpointApi}/error`,
-    experimentsStats: `${endpointApi}/stats/enrollment`,
-    experimentDetailStat: `${endpointApi}/stats/enrollment/detail`,
-    generateCsv: `${endpointApi}/stats/csv`,
-    experimentGraphInfo: `${endpointApi}/stats/enrollment/date`,
-    deleteExperiment: `${endpointApi}/experiments`,
-    updateExperimentState: `${endpointApi}/experiments/state`,
-    users: `${endpointApi}/users`,
-    loginUser: `${endpointApi}/login/user`, // Used to create a new user after login if doesn't exist in DB
-    getAllUsers: `${endpointApi}/users/paginated`,
-    userDetails: `${endpointApi}/users/details`,
-    excludeUsers: `${endpointApi}/explicitExclude/global/user`,
-    excludeGroups: `${endpointApi}/explicitExclude/global/group`,
-    previewUsers: `${endpointApi}/previewUsers`,
-    getAllPreviewUsers: `${endpointApi}/previewUsers/paginated`,
-    previewUsersAssignCondition: `${endpointApi}/previewUsers/assign`,
-    allPartitions: `${endpointApi}/experiments/partitions`,
-    allExperimentNames: `${endpointApi}/experiments/names`,
-    featureFlag: `${endpointApi}/flags`,
-    updateFlagStatus: `${endpointApi}/flags/status`,
-    getPaginatedFlags: `${endpointApi}/flags/paginated`,
-    setting: `${endpointApi}/setting`,
-    metrics: `${endpointApi}/metric`,
-    metricsSave: `${endpointApi}/metric/save`,
-    queryResult: `${endpointApi}/query/analyse`,
-    getVersion: `${endpointApi}/version`,
-    contextMetaData: `${endpointApi}/experiments/contextMetaData`,
-    segments: `${endpointApi}/segments`,
-    importSegment: `${endpointApi}/segments/import`,
-    exportSegment: `${endpointApi}/segments/export`,
-    getGroupAssignmentStatus: `${endpointApi}/experiments/getGroupAssignmentStatus`,
+    getAllExperiments: '/experiments/paginated',
+    createNewExperiments: '/experiments',
+    importExperiment : '/experiments/import',
+    exportExperiment : '/experiments/export',
+    updateExperiments: '/experiments',
+    getExperimentById: '/experiments/single',
+    getAllAuditLogs: '/audit',
+    getAllErrorLogs: '/error',
+    experimentsStats: '/stats/enrollment',
+    experimentDetailStat: '/stats/enrollment/detail',
+    generateCsv: '/stats/csv',
+    experimentGraphInfo: '/stats/enrollment/date',
+    deleteExperiment: '/experiments',
+    updateExperimentState: '/experiments/state',
+    users: '/users',
+    loginUser: '/login/user', // Used to create a new user after login if doesn't exist in DB
+    getAllUsers: '/users/paginated',
+    userDetails: '/users/details',
+    excludeUsers: '/explicitExclude/global/user',
+    excludeGroups: '/explicitExclude/global/group',
+    previewUsers: '/previewUsers',
+    getAllPreviewUsers: '/previewUsers/paginated',
+    previewUsersAssignCondition: '/previewUsers/assign',
+    allPartitions: '/experiments/partitions',
+    allExperimentNames: '/experiments/names',
+    featureFlag: '/flags',
+    updateFlagStatus: '/flags/status',
+    getPaginatedFlags: '/flags/paginated',
+    setting: '/setting',
+    metrics: '/metric',
+    metricsSave: '/metric/save',
+    queryResult: '/query/analyse',
+    getVersion: '/version',
+    contextMetaData: '/experiments/contextMetaData',
+    segments: `/segments`,
+    importSegment: `/segments/import`,
+    exportSegment: `/segments/export`,
+    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus'
   }
 };

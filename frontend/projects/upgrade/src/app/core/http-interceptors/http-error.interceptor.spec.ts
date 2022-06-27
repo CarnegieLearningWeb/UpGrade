@@ -15,22 +15,26 @@ class MockNotificationService {
 describe('HttpErrorInterceptor', () => {
     let mockAuthService: any = new MockAuthService();
     let mockNotificationService: any = new MockNotificationService();
-    let env = { ...environment };
+    let mockEnvironment = { ...environment };
     let mockTemp = {
         type: NotificationType.Error,
         title: 'Network call failed.',
         content: 'test.html',
         animate: 'fromRight'
     }
+    let service: HttpErrorInterceptor;
 
-    let service = new HttpErrorInterceptor(mockAuthService, mockNotificationService)
+    beforeEach(() => {
+        service = new HttpErrorInterceptor(mockAuthService, mockNotificationService, mockEnvironment)
+    })
+
 
     describe('#openPopup', () => {
         it('should call notification service with an error of "Network call failed. See console for details." when not in production and not 401', () => {
             const mockError = { status: 400, url: 'test.html' } as any;
             const expectedValue = { ...mockTemp };
             expectedValue.title = 'Network call failed. See console for details.';
-            env.production = false;
+            mockEnvironment.production = false;
     
             service.openPopup(mockError);
     
@@ -42,7 +46,7 @@ describe('HttpErrorInterceptor', () => {
             const mockError = { status: 401, url: 'test.html' } as any;
             const expectedValue = { ...mockTemp };
             expectedValue.title = 'Network call failed. See console for details.';
-            env.production = false;
+            mockEnvironment.production = false;
     
             service.openPopup(mockError);
     
@@ -54,7 +58,7 @@ describe('HttpErrorInterceptor', () => {
             const mockError = { status: 401, url: 'test.html' } as any;
             const expectedValue = { ...mockTemp };
             expectedValue.title =  'Network call failed. See console for details.';
-            env.production = true;
+            mockEnvironment.production = true;
     
             service.openPopup(mockError);
     

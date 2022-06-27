@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisAction from '../../analysis/store/analysis.actions';
@@ -29,10 +29,10 @@ import {
   selectIsPollingExperimentDetailStats,
   selectExperimentGraphRange
 } from './experiments.selectors';
-import { combineLatest, interval } from 'rxjs';
+import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { environment } from '../../../../environments/environment';
+import { ENV, Environment } from '../../../../environments/environment-types';
 
 @Injectable()
 export class ExperimentEffects {
@@ -41,7 +41,8 @@ export class ExperimentEffects {
     private store$: Store<AppState>,
     private experimentDataService: ExperimentDataService,
     private router: Router,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    @Inject(ENV) private environment: Environment
   ) {}
 
   getPaginatedExperiment$ = createEffect(() =>
@@ -239,10 +240,10 @@ export class ExperimentEffects {
       map(action => action.experimentId),
       filter(experimentId => !!experimentId),
       switchMap(experimentId => {
-        return interval(environment.pollingInterval).pipe(
+        return interval(this.environment.pollingInterval).pipe(
           switchMap(() => this.store$.pipe(select(selectIsPollingExperimentDetailStats))),
           takeWhile((isPolling) => isPolling),
-          take(environment.pollingLimit),
+          take(this.environment.pollingLimit),
           switchMap(() => this.store$.pipe(select(selectExperimentGraphRange))),
           switchMap((graphRange) => {
             return [

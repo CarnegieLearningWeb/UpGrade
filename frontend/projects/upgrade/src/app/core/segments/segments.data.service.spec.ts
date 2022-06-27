@@ -4,6 +4,7 @@ import { environment } from "../../../environments/environment";
 import { SegmentsDataService } from "./segments.data.service";
 import { SegmentInput, IndividualForSegment, GroupForSegment} from "./store/segments.model";
 import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
+import { Environment } from "../../../environments/environment-types";
 
 
 class MockHTTPClient {
@@ -19,10 +20,12 @@ describe('SegmentDataService', () => {
     let mockSegment: SegmentInput;
     let mockSegmentId: string;
     let mockSegmentIds: string[];
+    let mockEnvironment: Environment;
     
     beforeEach(() => {
         mockHttpClient = new MockHTTPClient();
-        service = new SegmentsDataService(mockHttpClient as HttpClient);
+        mockEnvironment = { ...environment };
+        service = new SegmentsDataService(mockHttpClient as HttpClient, mockEnvironment);
        
         mockSegmentId = 'segmentId1';
         mockSegmentIds = [
@@ -46,7 +49,7 @@ describe('SegmentDataService', () => {
 
     describe('#fetchSegments', () => {
         it('should get the fetchSegments http observable', () => {
-            const expectedUrl = environment.api.segments;
+            const expectedUrl = mockEnvironment.api.segments;
 
             service.fetchSegments();
 
@@ -57,7 +60,7 @@ describe('SegmentDataService', () => {
 
     describe('#createNewSegment', () => {
         it('should get the createNewSegment http observable', () => {
-            const expectedUrl = environment.api.segments;
+            const expectedUrl = mockEnvironment.api.segments;
             const segment = { ...mockSegment };
 
             service.createNewSegment(segment);
@@ -69,7 +72,7 @@ describe('SegmentDataService', () => {
     describe('#deleteSegment', () => {
         it('should get the deleteSegment http observable', () => {
             const segmentId = mockSegmentId;
-            const expectedUrl = `${environment.api.segments}/${segmentId}`;
+            const expectedUrl = `${mockEnvironment.api.segments}/${segmentId}`;
 
             service.deleteSegment(segmentId);
 
@@ -80,7 +83,7 @@ describe('SegmentDataService', () => {
     describe('#updateSegment', () => {
         it('should get the updateSegment http observable', () => {
             const segment = { ...mockSegment };
-            const expectedUrl = environment.api.segments;
+            const expectedUrl = mockEnvironment.api.segments;
 
             service.updateSegment(segment);
 
@@ -91,7 +94,7 @@ describe('SegmentDataService', () => {
     describe('#exportSegment', () => {
         it('should get the exportSegment http observable', () => {
             const segmentId = mockSegmentId;
-            const expectedUrl = `${environment.api.exportSegment}/${segmentId}`;
+            const expectedUrl = `${mockEnvironment.api.exportSegment}/${segmentId}`;
 
             service.exportSegment(segmentId);
 
@@ -101,7 +104,7 @@ describe('SegmentDataService', () => {
 
     describe('#importSegment', () => {
         it('should get the importSegment http observable', () => {
-            const mockUrl = environment.api.importSegment;
+            const mockUrl = mockEnvironment.api.importSegment;
             const segment = { ...mockSegment };
 
             service.importSegment(segment);
