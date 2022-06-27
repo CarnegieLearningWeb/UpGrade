@@ -7,7 +7,7 @@ import { debounce } from '../decorator/debounce.decorator';
 })
 export class ScrollDirective {
 
-  constructor(private el: ElementRef) { }
+  constructor(private el: ElementRef) {}
   // Event output the current scroll percentage
   @Output() scrolled = new EventEmitter<number>();
   @Input() scrollPercentage = 80;

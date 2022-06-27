@@ -41,8 +41,8 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
   isAllFlagsFetched = false;
   isAllFlagsFetchedSub: Subscription;
 
-  @ViewChild('tableContainer', { static: false }) featureFlagsTableContainer: ElementRef;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
+  @ViewChild('tableContainer') featureFlagsTableContainer: ElementRef;
+  @ViewChild('searchInput') searchInput: ElementRef;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 

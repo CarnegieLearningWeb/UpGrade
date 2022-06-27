@@ -11,7 +11,7 @@ import { AnalysisService } from '../../../../../../core/analysis/analysis.servic
 export class AddMetricsComponent implements OnInit {
   options = new JsonEditorOptions();
   metricsEditorError = false;
-  @ViewChild('metricsEditor', { static: false }) metricsEditor: JsonEditorComponent;
+  @ViewChild('metricsEditor') metricsEditor: JsonEditorComponent;
   constructor(
     private dialogRef: MatDialogRef<AddMetricsComponent>,
     private analysisService: AnalysisService

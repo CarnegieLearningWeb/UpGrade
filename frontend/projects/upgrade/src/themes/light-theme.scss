@@ -1,7 +1,7 @@
-@import '~@angular/material/theming';
-@include mat-core();
+@use '@angular/material' as mat;
+@include mat.core();
 
-$mat-blue: (
+mat.$blue-palette: (
 50: #e7edff,
 100: #c2d1ff,
 200: #99b3ff,
@@ -34,7 +34,7 @@ contrast: (
 )
 );
 
-$mat-red: (
+mat.$red-palette: (
 50 : #ffe0e0,
 100 : #ffb3b3,
 200 : #ff8080,
@@ -76,11 +76,11 @@ $chart-border: #ddd;
 $icon-color: #646E7B;
 $text-color: #222b45;
 
-$primary: mat-palette($mat-blue);
-$accent: mat-palette($mat-light-blue);
-$warn: mat-palette($mat-red);
+$primary: mat.define-palette(mat.$blue-palette);
+$accent: mat.define-palette(mat.$light-blue-palette);
+$warn: mat.define-palette(mat.$red-palette);
 
-$light-theme: mat-light-theme($primary, $accent, $warn);
+$light-theme: mat.define-light-theme($primary, $accent, $warn);
 
 // Insert and bind custom background and foreground colors
 $background: map-get($light-theme, background);

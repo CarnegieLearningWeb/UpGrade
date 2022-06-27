@@ -23,18 +23,19 @@ export class LogsService {
     ]).pipe(
       map(([auditLogs, experiments]) =>
       auditLogs.map((log: AuditLogs) => {
+          const clonedLog = { ...log };
           if (log.data.experimentId) {
             const result = experiments.find(experiment => experiment.id === log.data.experimentId);
-            log.data = result
+            clonedLog.data = result
               ? {
                   ...log.data,
                   isExperimentExist: true
                 }
               : { ...log.data, isExperimentExist: false };
           } else {
-            log.data = { ...log.data, isExperimentExist: false };
+            clonedLog.data = { ...log.data, isExperimentExist: false };
           }
-          return log;
+          return clonedLog;
         })
       )
     );

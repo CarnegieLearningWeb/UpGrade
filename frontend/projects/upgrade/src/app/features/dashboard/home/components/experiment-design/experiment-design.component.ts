@@ -18,7 +18,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { filter, map, startWith } from 'rxjs/operators';
-import * as uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'home-experiment-design',
@@ -33,9 +33,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() animationCompleteStepperIndex: Number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
-  @ViewChild('conditionTable', { static: false, read: ElementRef }) conditionTable: ElementRef;
-  @ViewChild('partitionTable', { static: false, read: ElementRef }) partitionTable: ElementRef;
-  @ViewChild('conditionCode', { static: false }) conditionCode: ElementRef;
+  @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
+  @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
+  @ViewChild('conditionCode') conditionCode: ElementRef;
 
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -460,7 +460,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
               }
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
-                : ({ id: uuid.v4(), ...condition, name: '', order: order++ });
+                : ({ id: uuidv4(), ...condition, name: '', order: order++ });
             }
           );
           order = 1;

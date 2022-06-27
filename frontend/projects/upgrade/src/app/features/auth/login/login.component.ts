@@ -12,7 +12,7 @@ import { ThemeOptions } from '../../../core/settings/store/settings.model';
 export class LoginComponent implements AfterViewInit {
 
   theme$ = this.settingsService.theme$;
-  @ViewChild('googleBtn', { static: false }) googleSignInBtn: ElementRef;
+  @ViewChild('googleBtn') googleSignInBtn: ElementRef;
   constructor(
     private authService: AuthService,
     private settingsService: SettingsService

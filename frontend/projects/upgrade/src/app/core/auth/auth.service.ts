@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ElementRef, Injectable } from '@angular/core';
 import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
@@ -21,6 +21,15 @@ export class AuthService {
     map(currentUser => !!currentUser ? currentUser['token'] : null)
   )
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
+  googleSignInElementRef: ElementRef;
+
+  setSignInButtonElement(element: ElementRef) {
+    this.googleSignInElementRef = element;
+  }
+
+  getGoogleSignInElementRef(): ElementRef {
+    return this.googleSignInElementRef
+  }
 
   authLoginStart() {
     this.store$.dispatch(AuthActions.actionLoginStart());
@@ -34,8 +43,9 @@ export class AuthService {
     this.store$.dispatch(AuthActions.actionInitializeGapi());
   }
 
-  attachSignIn(element) {
-    this.store$.dispatch(AuthActions.actionBindAttachHandlerWithButton({ element }));
+  attachSignIn(btn: ElementRef) {
+    this.setSignInButtonElement(btn);
+    this.store$.dispatch(AuthActions.actionBindAttachHandlerWithButton());
   }
 
   setRedirectionUrl(redirectUrl: string) {

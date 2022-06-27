@@ -84,6 +84,8 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
             this.groupTypes.add(group);
           });
         });
+      } else {
+        this.contexts = [];
       }
     });
 

@@ -101,8 +101,8 @@ const reducer = createReducer(
   on(
     experimentsAction.actionRemoveExperimentStat,
     (state, { experimentStatId }) => {
-      delete state.stats[experimentStatId];
-      const stats = state.stats;
+      const stats = { ...state.stats };
+      delete stats[experimentStatId];
       return { ...state, stats };
     }
   ),
@@ -198,11 +198,11 @@ const reducer = createReducer(
   on(
     experimentsAction.actionFetchExperimentDetailStatSuccess,
     (state, { stat }) => {
-      state.stats[stat.id] = stat;
-      const updatedStat = state.stats[stat.id];
+      const stats = { ...state.stats }
+      stats[stat.id] = stat;
       return {
         ...state,
-        updatedStat,
+        stats,
         isLoadingExperimentDetailStats: false
       };
     }

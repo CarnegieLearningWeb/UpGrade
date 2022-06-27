@@ -56,8 +56,8 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   isAllExperimentsFetchedSub: Subscription;
   experimentSortKey$: Observable<string>;
   experimentSortAs$: Observable<string>;
-  @ViewChild('tableContainer', { static: false }) experimentTableContainer: ElementRef;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
+  @ViewChild('tableContainer') experimentTableContainer: ElementRef;
+  @ViewChild('searchInput') searchInput: ElementRef;
 
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 

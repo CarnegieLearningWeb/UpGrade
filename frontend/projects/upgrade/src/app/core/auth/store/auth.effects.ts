@@ -101,16 +101,16 @@ export class AuthEffects {
     () => {
       return this.actions$.pipe(
         ofType(authActions.actionBindAttachHandlerWithButton),
-        map(action => action.element),
-        filter(element => !!element),
-        tap((element) => this.handleAttachGoogleAuthClickHandler(element))
-      );
+        tap(() => this.handleAttachGoogleAuthClickHandler())
+      )
     },
     { dispatch: false }
   );
 
-  handleAttachGoogleAuthClickHandler= (element) => {
-    this.auth2.attachClickHandler(element, {},
+  handleAttachGoogleAuthClickHandler= () => {
+    const btn = this.authService.getGoogleSignInElementRef();
+    console.log({ btn })
+    this.auth2.attachClickHandler(btn, {},
       this.onAuthedUserFetchSuccess,
       this.onAuthedUserFetchError
     );

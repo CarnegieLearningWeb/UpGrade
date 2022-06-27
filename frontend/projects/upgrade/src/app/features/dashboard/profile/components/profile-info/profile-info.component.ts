@@ -48,8 +48,8 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   ];
   selectedUserFilterOption = USER_SEARCH_SORT_KEY.ALL;
 
-  @ViewChild('profileInfoContainer', { static: false }) profileInfoContainer: ElementRef;
-  @ViewChild('usersTable', { static: false }) set content(content: ElementRef) {
+  @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;
+  @ViewChild('usersTable') set content(content: ElementRef) {
     if (content) {
       const windowHeight = window.innerHeight;
       content.nativeElement.style.maxHeight = (windowHeight - 557) + 'px';
@@ -57,7 +57,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
  }
  // Used to prevent execution of searchInput setter multiple times
  isSearchInputRefSet = false;
- @ViewChild('searchInput', { static: false }) set searchInput(searchInput: ElementRef) {
+ @ViewChild('searchInput') set searchInput(searchInput: ElementRef) {
    if (searchInput && !this.isSearchInputRefSet) {
     this.isSearchInputRefSet = true;
     fromEvent(searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(input => {
@@ -67,7 +67,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
  }
 
   private sort: MatSort;
-  @ViewChild(MatSort, { static: false }) set matSort(ms: MatSort) {
+  @ViewChild(MatSort) set matSort(ms: MatSort) {
     this.sort = ms;
     this.allUsers.sort = this.sort;
   }

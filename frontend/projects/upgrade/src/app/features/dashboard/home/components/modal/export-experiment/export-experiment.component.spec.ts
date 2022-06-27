@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogRef } from '@angular/material';
+import { MatDialogRef } from '@angular/material/dialog';
 import { TestingModule } from '../../../../../../../testing/testing.module';
 import { ExportModalComponent } from './export-experiment.component';
 

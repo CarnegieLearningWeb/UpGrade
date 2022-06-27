@@ -18,7 +18,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
   theme$ = this.settingsService.theme$;
-  @ViewChild('auditLogContainer', { static: false }) auditLogContainer: ElementRef;
+  @ViewChild('auditLogContainer') auditLogContainer: ElementRef;
 
   constructor(
     private logsService: LogsService,

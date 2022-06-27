@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { BehaviorSubject } from "rxjs";
 import { FeatureFlagsService } from './feature-flags.service';
 import * as FeatureFlagSelectors from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';

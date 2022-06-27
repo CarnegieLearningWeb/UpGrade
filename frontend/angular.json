@@ -26,14 +26,17 @@
             "main": "projects/upgrade/src/main.ts",
             "polyfills": "projects/upgrade/src/polyfills.ts",
             "tsConfig": "projects/upgrade/tsconfig.app.json",
-            "aot": true,
-            "buildOptimizer": true,
             "assets": [
               "projects/upgrade/src/favicon.ico",
               "projects/upgrade/src/assets"
             ],
             "styles": ["projects/upgrade/src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -46,12 +49,9 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -73,6 +73,10 @@
                   "baseline": "2mb",
                   "maximumWarning": "3mb",
                   "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
                 }
               ]
             },
@@ -86,12 +90,9 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -113,6 +114,10 @@
                   "baseline": "2mb",
                   "maximumWarning": "3mb",
                   "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
                 }
               ]
             },
@@ -126,12 +131,9 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -153,6 +155,10 @@
                   "baseline": "2mb",
                   "maximumWarning": "3mb",
                   "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
                 }
               ]
             },
@@ -166,12 +172,9 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "bundle",
@@ -193,10 +196,15 @@
                   "baseline": "2mb",
                   "maximumWarning": "3mb",
                   "maximumError": "200kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -213,17 +221,6 @@
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
             "browserTarget": "upgrade:build"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/upgrade/tsconfig.app.json",
-              "projects/upgrade/tsconfig.spec.json",
-              "projects/upgrade/e2e/tsconfig.json"
-            ],
-            "exclude": ["**/node_modules/**"]
           }
         },
         "e2e": {

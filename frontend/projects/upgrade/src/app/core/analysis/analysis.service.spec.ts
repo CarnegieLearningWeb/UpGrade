@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { BehaviorSubject } from "rxjs";
 import { AnalysisService } from "./analysis.service";
 import { actionDeleteMetric, actionExecuteQuery, actionSetMetricsFilterValue, actionSetQueryResult, actionUpsertMetrics } from "./store/analysis.actions";
 import { UpsertMetrics } from "./store/analysis.models";

@@ -1,27 +1,27 @@
-@import '~@angular/material/theming';
+@use '@angular/material' as mat;
 
 @mixin dashboard-component-theme($theme) {
   $background: map-get($theme, background);
   $foreground: map-get($theme, foreground);
 
   mat-drawer {
-    box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
   }
 
   .drawer-container {
     .logo,
     .user {
-      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+      box-shadow: 0 0 8px 0 mat.get-color-from-palette($background, shadow-color);
     }
 
     .list-item-container {
       .nav-item {
-        color: mat-color($foreground, text);
+        color: mat.get-color-from-palette($foreground, text);
       }
     }
   }
 
   .drawer__main-content {
-    background-color: mat-color($background, background);
+    background-color: mat.get-color-from-palette($background, background);
   }
 }

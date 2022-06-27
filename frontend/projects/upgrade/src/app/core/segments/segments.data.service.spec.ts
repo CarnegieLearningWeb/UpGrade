@@ -1,9 +1,9 @@
 import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { SegmentsDataService } from "./segments.data.service";
-import { SegmentInput, IndividualForSegment, GroupForSegment} from "./store/segments.model";
-import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
+import { SegmentInput } from "./store/segments.model";
+import { SEGMENT_TYPE } from 'upgrade_types';
 import { Environment } from "../../../environments/environment-types";
 
 

@@ -12,20 +12,19 @@ import { DeleteMetricsComponent } from './components/modals/delete-metrics/delet
 import { NgJsonEditorModule } from 'ang-jsoneditor';
 
 @NgModule({
-  declarations: [
-    ProfileRootComponent,
-    NewUserComponent,
-    ProfileInfoComponent,
-    MetricsComponent,
-    AddMetricsComponent,
-    DeleteMetricsComponent
-  ],
-  imports: [
-    CommonModule,
-    ProfileRoutingModule,
-    SharedModule,
-    NgJsonEditorModule
-  ],
-  entryComponents: [NewUserComponent, AddMetricsComponent, DeleteMetricsComponent]
+    declarations: [
+        ProfileRootComponent,
+        NewUserComponent,
+        ProfileInfoComponent,
+        MetricsComponent,
+        AddMetricsComponent,
+        DeleteMetricsComponent
+    ],
+    imports: [
+        CommonModule,
+        ProfileRoutingModule,
+        SharedModule,
+        NgJsonEditorModule
+    ]
 })
 export class ProfileModule {}

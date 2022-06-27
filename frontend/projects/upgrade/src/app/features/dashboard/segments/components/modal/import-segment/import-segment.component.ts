@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
 import { SegmentInput, Segment } from '../../../../../../core/segments/store/segments.model';
 

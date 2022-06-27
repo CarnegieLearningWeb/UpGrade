@@ -1,5 +1,5 @@
 import { fakeAsync, tick } from "@angular/core/testing";
-import { of } from "rxjs/internal/observable/of";
+import { of } from "rxjs";
 import { environment } from "../../../environments/environment";
 import { Environment } from "../../../environments/environment-types";
 import { TitleService } from "./title.service";

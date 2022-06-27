@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs/internal/BehaviorSubject";
+import { BehaviorSubject } from "rxjs";
 import * as UsersSelectors from './store/users.selectors';
 import * as UsersActions from './store/users.actions';
 import { fakeAsync, tick } from "@angular/core/testing";
