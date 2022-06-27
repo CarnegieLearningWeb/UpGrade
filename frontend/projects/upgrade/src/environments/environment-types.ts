@@ -37,6 +37,9 @@ export interface APIEndpoints {
     queryResult: string,
     getVersion: string,
     contextMetaData: string,
+    segments: string,
+    importSegment: string,
+    exportSegment: string,
     getGroupAssignmentStatus: string
 }
 
@@ -53,5 +56,5 @@ export interface Environment {
     pollingEnabled: boolean,
     pollingInterval: number,
     pollingLimit: number,
-    api: APIEndpoints
+    api: APIEndpoints,
 }
