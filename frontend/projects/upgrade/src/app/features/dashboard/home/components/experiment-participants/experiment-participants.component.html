@@ -19,16 +19,6 @@
       formArrayName="members1"
       #membersTable
     >
-    <!-- Members NUMBER Column -->
-      <ng-container matColumnDef="memberNumber">
-        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-          {{ 'global.number.text' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element; let groupIndex = index">
-          <span>{{ groupIndex + 1 }}</span>
-        </mat-cell>
-      </ng-container>
-
       <!-- Members Type Column -->
       <ng-container matColumnDef="type">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -243,20 +233,20 @@
         </button>
         <button
           type="button"
-          *ngIf="experimentInfo && enableSave"
-          mat-raised-button
-          class="modal-btn default-button"
-          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-        >
-          {{ 'global.save.text' | translate }}
-        </button>
-        <button
-          type="button"
           mat-raised-button
           class="modal-btn default-button"
           (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
         >
           {{ 'global.next.text' | translate }}
+        </button>
+        <button
+          type="button"
+          *ngIf="experimentInfo && enableSave"
+          mat-raised-button
+          class="modal-btn default-button"
+          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+        >
+          {{ 'global.update.text' | translate }}
         </button>
       </div>
     </div>

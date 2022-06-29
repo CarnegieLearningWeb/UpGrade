@@ -67,15 +67,26 @@ export class ExperimentScheduleComponent implements OnInit {
           this.experimentScheduleForm.get('userCount').disable();
           this.experimentScheduleForm.get('groupCount').disable();
         } else if (endCondition === EndExperimentCondition.END_CRITERIA) {
-          this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
-          this.experimentScheduleForm.get('userCount').enable();
-          this.experimentScheduleForm.get('groupCount').enable();
+          if (this.experimentInfo && this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+            this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
+            this.experimentScheduleForm.get('userCount').disable();
+            this.experimentScheduleForm.get('groupCount').disable();
+          } else {
+            this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
+            this.experimentScheduleForm.get('userCount').enable();
+            this.experimentScheduleForm.get('groupCount').enable();
+          }
         }
       }
     );
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
+      // disable control on edit:
+      if (this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+        this.experimentScheduleForm.get('userCount').disable();
+        this.experimentScheduleForm.get('groupCount').disable();
+      }
       const { enrollmentCompleteCondition, endOn, startOn } = this.experimentInfo;
       const isEndAutomaticallyChecked = !!endOn || !!enrollmentCompleteCondition;
       const endCondition = isEndAutomaticallyChecked
@@ -140,6 +151,13 @@ export class ExperimentScheduleComponent implements OnInit {
               ...scheduleData,
               state: this.experimentInfo.state
             };
+            if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+              this.emitExperimentDialogEvent.emit({
+                type: eventType,
+                formData: scheduleData,
+                path: NewExperimentPaths.EXPERIMENT_SCHEDULE
+              });
+            }
           }
           const { endExperimentAutomatically, endCondition, dateOfExperimentEnd, userCount, groupCount, dateOfExperimentStart } = this.experimentScheduleForm.value;
           if (endExperimentAutomatically) {
@@ -198,5 +216,9 @@ export class ExperimentScheduleComponent implements OnInit {
 
   get groupTypeValue(): boolean {
     return this.experimentScheduleForm && this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
   }
 }

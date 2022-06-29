@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -136,6 +136,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.experimentInfo.partitions.forEach(partition => {
         this.partition.push(this.addPartitions(partition.site, partition.target, partition.description, partition.order));
       });
+
+      // disable control on edit:
+      if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+        this.experimentDesignForm.disable();
+      }
     }
     this.updateView();
 
@@ -442,6 +447,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
+        if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: this.experimentInfo,
+            path: NewExperimentPaths.EXPERIMENT_DESIGN
+          });
+          break;
+        }
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
         this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
@@ -511,6 +524,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
   }
 
   ngOnDestroy() {

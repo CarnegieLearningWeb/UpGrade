@@ -20,8 +20,6 @@
             (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
             *ngIf="
               permissions?.experiments.update &&
-              experiment.state !== ExperimentState.ENROLLING &&
-              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE &&
               experiment.state !== ExperimentState.CANCELLED
             "
           >

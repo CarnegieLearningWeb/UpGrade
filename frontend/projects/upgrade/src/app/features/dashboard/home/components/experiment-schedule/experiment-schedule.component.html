@@ -4,6 +4,7 @@
     <mat-checkbox
       class="ft-14-700"
       color="primary"
+      [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
       formControlName="startExperimentAutomatically"
     >
       {{ 'home.new-experiment.schedule.start-automatically.text' | translate }}
@@ -30,14 +31,17 @@
       </mat-form-field>
     </div>
 
-    <mat-checkbox class="ft-14-700" color="primary" formControlName="endExperimentAutomatically">
+    <mat-checkbox class="ft-14-700" color="primary" formControlName="endExperimentAutomatically"
+    [disabled]= "experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+    >
       {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
     </mat-checkbox>
 
     <mat-radio-group formControlName="endCondition">
-
       <div class="date-picker-container">
-        <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_ON_DATE" color="primary">
+        <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_ON_DATE" color="primary"
+        [disabled]= "experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        >
           {{ 'home.new-experiment.schedule.end-on.text' | translate }}
         </mat-radio-button>
         <mat-form-field class="ft-14-700">
@@ -55,11 +59,13 @@
       </div>
 
       <div class="experiment-end-criteria">
-        <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_CRITERIA" color="primary">
+        <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_CRITERIA" color="primary"
+        [disabled]= "experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        >
           {{ 'home.new-experiment.schedule.end-criteria.text' | translate }}
         </mat-radio-button>
         <div class="end-criteria" *ngIf="groupType">
-          <mat-form-field class="ft-14-700 group-type-control">
+          <mat-form-field class="ft-12-700 group-type-control">
             <input
               type="number"
               matInput
@@ -75,7 +81,7 @@
           ></span>
         </div>
         <div class="end-criteria">
-          <mat-form-field class="ft-14-700">
+          <mat-form-field class="ft-12-700">
             <input
               type="number"
               matInput
@@ -149,6 +155,8 @@
         *ngIf="experimentInfo" 
         mat-raised-button
         class="modal-btn default-button"
+        [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
+        [disabled]= "experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}
