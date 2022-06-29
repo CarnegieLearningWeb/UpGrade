@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -113,6 +113,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
+      if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+        this.overviewForm.disable();
+      }
       this.currentContext = this.experimentInfo.context[0];
       const { groupType } = this.setGroupTypeControlValue();
       this.overviewForm.setValue({
@@ -195,6 +198,13 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
+        if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: this.experimentInfo,
+            path: NewExperimentPaths.EXPERIMENT_OVERVIEW
+          });
+        }
         if (this.overviewForm.valid) {
           const {
             experimentName,
@@ -244,5 +254,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   get tags(): FormArray {
     return this.overviewForm.get('tags') as FormArray;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
   }
 }

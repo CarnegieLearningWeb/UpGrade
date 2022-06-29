@@ -25,13 +25,13 @@
     }
 
     mat-header-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 15px;
       color: var(--grey-6);
     }
 
     mat-cell {
-      justify-content: center;
+      justify-content: left;
       margin-right: 15px;
     }
 
@@ -62,7 +62,7 @@
     }
 
     .remove-icon {
-      position: relative;
+      position: right;
       top: -3px;
       width: 18px;
       height: 18px;
@@ -75,7 +75,7 @@
 
     mat-form-field {
       width: 100%;
-      text-align: center;
+      text-align: left;
     }
   }
 
