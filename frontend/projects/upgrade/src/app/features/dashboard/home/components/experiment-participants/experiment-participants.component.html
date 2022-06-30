@@ -29,6 +29,7 @@
           [formGroupName]="groupIndex"
         >
         <mat-form-field floatLabel="never" class="form-control">
+          <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
           <mat-select formControlName="type">
             <mat-optgroup
               *ngFor="let type of subSegmentTypes"
@@ -77,6 +78,7 @@
       <ng-container matColumnDef="removeMember">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
         <mat-cell
+          style="justify-content: flex-end;"
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
@@ -138,6 +140,7 @@
           [formGroupName]="groupIndex"
         >
         <mat-form-field floatLabel="never" class="form-control">
+          <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
           <mat-select formControlName="type">
             <mat-optgroup
               *ngFor="let type of subSegmentTypes"
@@ -186,6 +189,7 @@
       <ng-container matColumnDef="removeMember">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
         <mat-cell
+          style="justify-content: flex-end;"
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >

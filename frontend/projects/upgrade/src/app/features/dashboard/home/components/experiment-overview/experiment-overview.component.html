@@ -83,7 +83,7 @@
   </mat-form-field>
 
   <mat-form-field class="ft-14-600 tags">
-    <mat-chip-list #tagsList aria-label="Tags">
+    <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
       <mat-chip
         *ngFor="let experimentTag of tags.value"
         [selectable]="isChipSelectable"
