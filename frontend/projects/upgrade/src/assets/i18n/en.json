@@ -134,6 +134,7 @@
   "home.new-experiment.metrics.repeatedmeasure.placeholder.text": "Repeated Measure",
   "home.new-experiment.metrics.description.placeholder.text": "Description",
   "home.new-experiment.metrics.description-exist.validation.text": "Query Name/Description is required",
+  "home.new-experiment.metrics.no-available-metrics.text": "Currently no metrics available to select. Metrics can be added later when available. You can continue to next step.",
   "home.new-experiment.schedule.start-automatically.text": "Start Automatically",
   "home.new-experiment.schedule.end-automatically.text": "End Automatically",
   "home.new-experiment.schedule.start-on.text": "Starts on",
