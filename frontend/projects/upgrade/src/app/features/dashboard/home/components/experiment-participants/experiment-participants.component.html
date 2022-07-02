@@ -19,16 +19,6 @@
       formArrayName="members1"
       #membersTable
     >
-    <!-- Members NUMBER Column -->
-      <ng-container matColumnDef="memberNumber">
-        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-          {{ 'global.number.text' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let element; let groupIndex = index">
-          <span>{{ groupIndex + 1 }}</span>
-        </mat-cell>
-      </ng-container>
-
       <!-- Members Type Column -->
       <ng-container matColumnDef="type">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -39,6 +29,7 @@
           [formGroupName]="groupIndex"
         >
         <mat-form-field floatLabel="never" class="form-control">
+          <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
           <mat-select formControlName="type">
             <mat-optgroup
               *ngFor="let type of subSegmentTypes"
@@ -87,6 +78,7 @@
       <ng-container matColumnDef="removeMember">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
         <mat-cell
+          style="justify-content: flex-end;"
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
@@ -148,6 +140,7 @@
           [formGroupName]="groupIndex"
         >
         <mat-form-field floatLabel="never" class="form-control">
+          <mat-label>{{ 'segments.members-placeholder-type.text' | translate }}</mat-label>
           <mat-select formControlName="type">
             <mat-optgroup
               *ngFor="let type of subSegmentTypes"
@@ -196,6 +189,7 @@
       <ng-container matColumnDef="removeMember">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
         <mat-cell
+          style="justify-content: flex-end;"
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
         >
@@ -243,20 +237,20 @@
         </button>
         <button
           type="button"
-          *ngIf="experimentInfo && enableSave"
-          mat-raised-button
-          class="modal-btn default-button"
-          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-        >
-          {{ 'global.save.text' | translate }}
-        </button>
-        <button
-          type="button"
           mat-raised-button
           class="modal-btn default-button"
           (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
         >
           {{ 'global.next.text' | translate }}
+        </button>
+        <button
+          type="button"
+          *ngIf="experimentInfo && enableSave"
+          mat-raised-button
+          class="modal-btn default-button"
+          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+        >
+          {{ 'global.update.text' | translate }}
         </button>
       </div>
     </div>

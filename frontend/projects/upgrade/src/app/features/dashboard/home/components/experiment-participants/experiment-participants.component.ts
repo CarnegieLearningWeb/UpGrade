@@ -1,9 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
-import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ViewChild, ElementRef } from '@angular/core';
+import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from '../../../../../../../../../../types/src/Experiment/enums';
@@ -28,7 +28,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
 
   inclusionCriteria  = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
-  membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember' ];
+  membersDisplayedColumns = [ 'type', 'id', 'removeMember' ];
 
   enableSave = true;
   contextMetaData: IContextMetaData | {} = {};
@@ -256,7 +256,7 @@ export class ExperimentParticipantsComponent implements OnInit {
             type: SEGMENT_TYPE.PRIVATE
           }
           this.emitExperimentDialogEvent.emit({
-            type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
+            type: eventType,
             formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
               ? { segmentInclude: segmentMembers1FormData, segmentExclude: segmentMembers2FormData, filterMode: filterMode }
               : { segmentInclude: segmentMembers2FormData, segmentExclude: segmentMembers1FormData, filterMode: filterMode },

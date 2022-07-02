@@ -83,7 +83,7 @@
   </mat-form-field>
 
   <mat-form-field class="ft-14-600 tags">
-    <mat-chip-list #tagsList aria-label="Tags">
+    <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
       <mat-chip
         *ngFor="let experimentTag of tags.value"
         [selectable]="isChipSelectable"
@@ -130,6 +130,8 @@
       *ngIf="experimentInfo && enableSave"
       mat-raised-button
       class="modal-btn default-button"
+      [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
+        [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
       (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
     >
       {{ 'global.update.text' | translate }}

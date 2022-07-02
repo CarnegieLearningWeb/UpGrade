@@ -66,6 +66,9 @@
     border: 0;
     background-color: transparent;
     color: var(--blue);
+    &--disabled {
+      color: var(--grey-6);
+    }
   }
 
   mat-checkbox {
