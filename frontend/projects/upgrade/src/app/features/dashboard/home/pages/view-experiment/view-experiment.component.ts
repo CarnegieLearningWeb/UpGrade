@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
 import { PostExperimentRuleComponent } from '../../components/modal/post-experiment-rule/post-experiment-rule.component';
 import { NewExperimentComponent } from '../../components/modal/new-experiment/new-experiment.component';
@@ -46,15 +45,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   isLoadingExperimentDetailStats$: Observable<boolean>;
   isPollingExperimentDetailStats$: Observable<boolean>;
 
-  displayedConditionColumns: string[] = ['no', 'conditionCode', 'assignmentWeight', 'description'];
-  displayedPartitionColumns: string[] = ['no', 'partitionPoint', 'partitionId'];
+  displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
+  displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'required'];
 
   constructor(
     private experimentService: ExperimentService,
     private dialog: MatDialog,
     private authService: AuthService,
     private router: Router,
-    private _snackBar: MatSnackBar,
     private _Activatedroute: ActivatedRoute
   ) {}
 
