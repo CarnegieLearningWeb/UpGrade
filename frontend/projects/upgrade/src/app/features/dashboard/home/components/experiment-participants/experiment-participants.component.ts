@@ -70,6 +70,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
+      this.addMember1();
     }
   }
 
@@ -128,7 +129,9 @@ export class ExperimentParticipantsComponent implements OnInit {
         });
       }
 
-      this.members1.removeAt(0);
+      if (this.members1.length !== 1) {
+        this.members1.removeAt(0);
+      }
       this.members2.removeAt(0);
     }
 
