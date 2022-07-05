@@ -27,16 +27,16 @@ export class TableRowComponent implements OnDestroy {
       'home.view-experiment.global.weight.text',
       'home.view-experiment.global.users-enrolled.text',
       'home.view-experiment.global.group-enrolled.text',
-      'home.view-experiment-global.experiment-point.text',
-      'home.view-experiment-global.experiment-partition.text'
+      'home.view-experiment-global.experiment-site.text',
+      'home.view-experiment-global.experiment-target.text'
     ]).subscribe(arrayValues => {
       this.columnHeaders = {
         condition: arrayValues['global.condition.text'],
         weight: arrayValues['home.view-experiment.global.weight.text'],
         userEnrolled: arrayValues['home.view-experiment.global.users-enrolled.text'],
         groupEnrolled: arrayValues['home.view-experiment.global.group-enrolled.text'],
-        experimentPoint: arrayValues['home.view-experiment-global.experiment-point.text'],
-        experimentId: arrayValues['home.view-experiment-global.experiment-partition.text'],
+        experimentPoint: arrayValues['home.view-experiment-global.experiment-site.text'],
+        experimentId: arrayValues['home.view-experiment-global.experiment-target.text'],
       }
     })
   }

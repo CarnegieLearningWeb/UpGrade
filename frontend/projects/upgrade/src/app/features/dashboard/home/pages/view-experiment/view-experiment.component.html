@@ -282,18 +282,71 @@
       </div>
     </div>
 
+     <!-- Experiment Decision Points Table -->
+     <div class="table-container table-container-partition">
+      <span class="ft-24-700">{{ 'home.view-experiment.experiment-partitions-title.text' | translate }}</span>
+      <mat-table [dataSource]="experiment.partitions" class="table">
+        <!-- Site Column -->
+        <ng-container matColumnDef="partitionPoint">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            {{ 'home.view-experiment-global.experiment-site.text' | translate }}
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            <span *ngIf="data.site?.length < 50; else partitionPoint">
+              {{ data.site }}
+            </span>
+            <ng-template #partitionPoint>
+              <span [matTooltip]="data.site" matTooltipPosition="above">
+                {{ data.site | truncate: 50 }}
+              </span>
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Target Column -->
+        <ng-container matColumnDef="partitionId">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            {{ 'home.view-experiment-global.experiment-target.text' | translate }}
+          </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let data">
+            <span *ngIf="data.target?.length < 50; else partitionName">
+              {{ data.target }}
+            </span>
+            <ng-template #partitionName>
+              <span [matTooltip]="data.target" matTooltipPosition="above">
+                {{ data.target | truncate: 50 }}
+              </span>
+            </ng-template>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Required Column -->
+        <!-- <ng-container matColumnDef="required">
+          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+            {{ 'home.view-experiment.design.required.text' | translate }}
+          </mat-header-cell>
+          <mat-cell
+            *matCellDef="let element; let groupIndex = index"
+            style="margin-left: 25px;"
+          >
+            <mat-checkbox
+                    class="ft-8-100"
+                    color="primary"
+                    [disabled]="true"
+                    >
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container> -->
+
+        <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>
+      </mat-table>
+    </div>
+
     <!-- Experiment Conditions Table -->
     <div class="table-container">
       <span class="ft-24-700">{{ 'home.view-experiment.experiment-conditions-title.text' | translate }}</span>
       <mat-table [dataSource]="experiment.conditions" class="table">
-        <!-- Number Column -->
-        <ng-container matColumnDef="no">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'global.number.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
-        </ng-container>
-
         <!-- Condition Code Column -->
         <ng-container matColumnDef="conditionCode">
           <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -340,57 +393,7 @@
         <mat-row *matRowDef="let row; columns: displayedConditionColumns"></mat-row>
       </mat-table>
     </div>
-
-    <!-- Experiment Partitions Table -->
-    <div class="table-container table-container-partition">
-      <span class="ft-24-700">{{ 'home.view-experiment.experiment-partitions-title.text' | translate }}</span>
-      <mat-table [dataSource]="experiment.partitions" class="table">
-        <!-- Number Column -->
-        <ng-container matColumnDef="no">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'global.number.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data; let index = index"> {{ index + 1 }} </mat-cell>
-        </ng-container>
-
-        <!-- Partition Point Column -->
-        <ng-container matColumnDef="partitionPoint">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'home.view-experiment-global.experiment-point.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data">
-            <span *ngIf="data.site?.length < 50; else partitionPoint">
-              {{ data.site }}
-            </span>
-            <ng-template #partitionPoint>
-              <span [matTooltip]="data.site" matTooltipPosition="above">
-                {{ data.site | truncate: 50 }}
-              </span>
-            </ng-template>
-          </mat-cell>
-        </ng-container>
-
-        <!-- Partition Id Column -->
-        <ng-container matColumnDef="partitionId">
-          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-            {{ 'home.view-experiment-global.experiment-partition.text' | translate }}
-          </mat-header-cell>
-          <mat-cell class="ft-12-600" *matCellDef="let data">
-            <span *ngIf="data.target?.length < 50; else partitionName">
-              {{ data.target }}
-            </span>
-            <ng-template #partitionName>
-              <span [matTooltip]="data.target" matTooltipPosition="above">
-                {{ data.target | truncate: 50 }}
-              </span>
-            </ng-template>
-          </mat-cell>
-        </ng-container>
-
-        <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>
-      </mat-table>
-    </div>
+    <br>
 
     <!-- Enrollment over time section -->
     <home-enrollment-over-time [experiment]="experiment"></home-enrollment-over-time>
