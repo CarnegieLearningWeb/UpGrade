@@ -340,6 +340,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         delete this.experimentInfo.queries[groupIndex];
       }
     }
+    // reset options for metric keys:
+    this.optionsSub();
+    this.filteredMetrics$ = [];
     this.updateView();
   }
 
