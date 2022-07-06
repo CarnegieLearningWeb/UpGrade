@@ -55,7 +55,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   previousAssignmentWeightValues =  [];
 
   conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['site', 'target', 'requiredId', 'removePartition'];
+  partitionDisplayedColumns = ['site', 'target', 'removePartition'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
   filteredConditionCodes$: Observable<string[]>[] = [];
