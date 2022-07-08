@@ -160,6 +160,7 @@
     <mat-checkbox
     class="ft-8-100"
     color="primary"
+    [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
     [checked]="equalWeightFlag"
     (change)="changeEqualWeightFlag($event)">
     {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
