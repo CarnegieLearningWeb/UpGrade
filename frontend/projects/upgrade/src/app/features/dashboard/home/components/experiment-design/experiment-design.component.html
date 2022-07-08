@@ -74,7 +74,7 @@
       </ng-container>
 
       <!-- Required Column -->
-      <ng-container matColumnDef="requiredId">
+      <!-- <ng-container matColumnDef="requiredId">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef>
           {{ 'home.new-experiment.design.required.text' | translate }}
         </mat-header-cell>
@@ -83,16 +83,14 @@
           [formGroupName]="groupIndex"
           style="margin-left: 25px;"
         >
-          <!-- <mat-form-field floatLabel="never"> -->
-            <mat-checkbox
+          <mat-checkbox
                   class="ft-8-100"
                   color="primary"
                   [disabled]="true"
                   >
           </mat-checkbox>
-          <!-- </mat-form-field> -->
         </mat-cell>
-      </ng-container>
+      </ng-container> -->
 
       <ng-container matColumnDef="removePartition">
         <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
@@ -101,12 +99,15 @@
           [formGroupName]="groupIndex"
           style="justify-content: flex-end;"
         >
+        <button mat-icon-button
+          [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+          (click)="removeConditionOrPartition('partition', groupIndex)">
           <mat-icon
             class="remove-icon"
-            (click)="removeConditionOrPartition('partition', groupIndex)"
           >
             delete_outline
           </mat-icon>
+        </button>
         </mat-cell>
       </ng-container>
 
@@ -115,10 +116,21 @@
       ></mat-header-row>
       <mat-row *matRowDef="let row; columns: partitionDisplayedColumns"></mat-row>
     </mat-table>
-    
     <button
       type="button"
       class="ft-12-700 add-partition"
+      *ngIf="!experimentInfo"
+      (click)="addConditionOrPartition('partition')"
+    >
+      +
+      {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
+    </button>
+    <button
+      type="button"
+      class="ft-12-700 add-partition"
+      *ngIf="experimentInfo"
+      [ngClass]="{ 'add-partition--disabled': this.experimentInfo && (this.experimentInfo.state == ExperimentState.ENROLLING || this.experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+      [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
       (click)="addConditionOrPartition('partition')"
     >
       +
@@ -148,7 +160,9 @@
     <mat-checkbox
     class="ft-8-100"
     color="primary"
-    (change)="applyEqualWeight($event)">
+    [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+    [checked]="equalWeightFlag"
+    (change)="changeEqualWeightFlag($event)">
     {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
     </mat-checkbox>
   </div>
@@ -245,12 +259,15 @@
           [formGroupName]="groupIndex"
           style="justify-content: flex-end;"
         >
+        <button mat-icon-button
+          [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+          (click)="removeConditionOrPartition('condition', groupIndex)">
           <mat-icon
             class="remove-icon"
-            (click)="removeConditionOrPartition('condition', groupIndex)"
           >
             delete_outline
           </mat-icon>
+        </button>
         </mat-cell>
       </ng-container>
       <mat-header-row *matHeaderRowDef="conditionDisplayedColumns; sticky: true"></mat-header-row>
@@ -259,8 +276,19 @@
       ></mat-row>
     </mat-table>
     <button
+    type="button"
+    class="ft-12-700 add-condition"
+    *ngIf="!experimentInfo"
+    (click)="addConditionOrPartition('condition')"
+  >
+    + {{ 'home.new-experiment.design.add-condition.text' | translate }}
+  </button>
+    <button
       type="button"
       class="ft-12-700 add-condition"
+      *ngIf="experimentInfo"
+      [ngClass]="{ 'add-condition--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+      [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
       (click)="addConditionOrPartition('condition')"
     >
       + {{ 'home.new-experiment.design.add-condition.text' | translate }}
@@ -312,6 +340,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="modal-btn default-button"
+        [ngClass]="{ 'default-button--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+        [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}

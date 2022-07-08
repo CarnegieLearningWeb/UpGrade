@@ -20,8 +20,6 @@
             (click)="openDialog(DialogType.EDIT_EXPERIMENT)"
             *ngIf="
               permissions?.experiments.update &&
-              experiment.state !== ExperimentState.ENROLLING &&
-              experiment.state !== ExperimentState.ENROLLMENT_COMPLETE &&
               experiment.state !== ExperimentState.CANCELLED
             "
           >
@@ -323,7 +321,7 @@
         </ng-container>
 
         <!-- Required Column -->
-        <ng-container matColumnDef="required">
+        <!-- <ng-container matColumnDef="required">
           <mat-header-cell class="ft-14-700" *matHeaderCellDef>
             {{ 'home.view-experiment.design.required.text' | translate }}
           </mat-header-cell>
@@ -331,16 +329,14 @@
             *matCellDef="let element; let groupIndex = index"
             style="margin-left: 25px;"
           >
-            <!-- <mat-form-field floatLabel="never"> -->
-              <mat-checkbox
+            <mat-checkbox
                     class="ft-8-100"
                     color="primary"
                     [disabled]="true"
                     >
             </mat-checkbox>
-            <!-- </mat-form-field> -->
           </mat-cell>
-        </ng-container>
+        </ng-container> -->
 
         <mat-header-row *matHeaderRowDef="displayedPartitionColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedPartitionColumns"></mat-row>

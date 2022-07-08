@@ -1,12 +1,17 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ViewChild, ElementRef, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
-import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
+import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ViewChild, ElementRef } from '@angular/core';
+import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from '../../../../../../../../../../types/src/Experiment/enums';
+
+type ParticipantMember = {
+  id: string;
+  type: string;
+}
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -28,7 +33,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
 
   inclusionCriteria  = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
-  membersDisplayedColumns = [ 'memberNumber', 'type', 'id', 'removeMember' ];
+  membersDisplayedColumns = [ 'type', 'id', 'removeMember' ];
 
   enableSave = true;
   contextMetaData: IContextMetaData | {} = {};
@@ -70,6 +75,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
+      this.addMember1();
     }
   }
 
@@ -128,7 +134,9 @@ export class ExperimentParticipantsComponent implements OnInit {
         });
       }
 
-      this.members1.removeAt(0);
+      if (this.members1.length !== 1) {
+        this.members1.removeAt(0);
+      }
       this.members2.removeAt(0);
     }
 
@@ -190,6 +198,31 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
+  checkForEmptyRows(includedMembers: ParticipantMember[], excludedMembers: ParticipantMember[]) {
+    const includedMembersFiltered = this.removeEmptyRows(includedMembers);
+    const excludedMembersFiltered = this.removeEmptyRows(excludedMembers);
+
+    if (includedMembersFiltered.length === 0) {
+      this.members1.clear();
+    }
+
+    if (excludedMembersFiltered.length === 0) {
+      this.members2.clear();
+    }
+  }
+
+  removeEmptyRows(members: ParticipantMember[]): ParticipantMember[] {
+    if (!members) {
+      return; // form will be invalid
+    }
+
+    return members.filter((memberRow) => {
+      // only return false if both type and id are falsey, which indicates empty/unneeded row
+      // otherwise, if one is false and other is truthy, don't remove row, handle as invalid form
+      return !(!memberRow.type && !memberRow.id)
+    })
+  }
+
   setMemberTypes() {
     this.subSegmentTypes = [];
     this.subSegmentTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
@@ -237,6 +270,8 @@ export class ExperimentParticipantsComponent implements OnInit {
         const { members1 } = this.participantsForm.value;
         const { members2 } = this.participantsForm2.value;
 
+        this.checkForEmptyRows(members1, members2);
+
         // TODO: Handle member2:
         if (this.participantsForm.valid && this.participantsForm2.valid) {
           this.gettingMembersValueToSend(members1);
@@ -256,7 +291,7 @@ export class ExperimentParticipantsComponent implements OnInit {
             type: SEGMENT_TYPE.PRIVATE
           }
           this.emitExperimentDialogEvent.emit({
-            type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
+            type: eventType,
             formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
               ? { segmentInclude: segmentMembers1FormData, segmentExclude: segmentMembers2FormData, filterMode: filterMode }
               : { segmentInclude: segmentMembers2FormData, segmentExclude: segmentMembers1FormData, filterMode: filterMode },
