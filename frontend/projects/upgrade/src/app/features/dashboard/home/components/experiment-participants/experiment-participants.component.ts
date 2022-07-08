@@ -7,6 +7,11 @@ import { Segment, MemberTypes  } from '../../../../../core/segments/store/segmen
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from '../../../../../../../../../../types/src/Experiment/enums';
+
+type ParticipantMember = {
+  id: string;
+  type: string;
+}
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -70,6 +75,7 @@ export class ExperimentParticipantsComponent implements OnInit {
       this.members2.clear();
       this.members1DataSource.next(this.members1.controls);
       this.members2DataSource.next(this.members2.controls);
+      this.addMember1();
     }
   }
 
@@ -128,7 +134,9 @@ export class ExperimentParticipantsComponent implements OnInit {
         });
       }
 
-      this.members1.removeAt(0);
+      if (this.members1.length !== 1) {
+        this.members1.removeAt(0);
+      }
       this.members2.removeAt(0);
     }
 
@@ -190,6 +198,31 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
+  checkForEmptyRows(includedMembers: ParticipantMember[], excludedMembers: ParticipantMember[]) {
+    const includedMembersFiltered = this.removeEmptyRows(includedMembers);
+    const excludedMembersFiltered = this.removeEmptyRows(excludedMembers);
+
+    if (includedMembersFiltered.length === 0) {
+      this.members1.clear();
+    }
+
+    if (excludedMembersFiltered.length === 0) {
+      this.members2.clear();
+    }
+  }
+
+  removeEmptyRows(members: ParticipantMember[]): ParticipantMember[] {
+    if (!members) {
+      return; // form will be invalid
+    }
+
+    return members.filter((memberRow) => {
+      // only return false if both type and id are falsey, which indicates empty/unneeded row
+      // otherwise, if one is false and other is truthy, don't remove row, handle as invalid form
+      return !(!memberRow.type && !memberRow.id)
+    })
+  }
+
   setMemberTypes() {
     this.subSegmentTypes = [];
     this.subSegmentTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
@@ -236,6 +269,8 @@ export class ExperimentParticipantsComponent implements OnInit {
 
         const { members1 } = this.participantsForm.value;
         const { members2 } = this.participantsForm2.value;
+
+        this.checkForEmptyRows(members1, members2);
 
         // TODO: Handle member2:
         if (this.participantsForm.valid && this.participantsForm2.valid) {
