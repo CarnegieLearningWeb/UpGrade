@@ -106,7 +106,7 @@
   "home.new-experiment.design.name.text": "NAME",
   "home.new-experiment.design.condition.placeholder.text": "Condition",
   "home.new-experiment.design.condition.invalid.text": "DEFAULT",
-  "home.new-experiment.design.assignment-weight.placeholder.text": "Weight",
+  "home.new-experiment.design.assignment-weight.placeholder.text": "Assignment Weight",
   "home.new-experiment.design.description.placeholder.text": "Description",
   "home.new-experiment.design.add-condition.text": "Add Condition",
   "home.new-experiment.design.partition-point.text": "SITE",
