@@ -1,3 +1,10 @@
+.modal-step-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 575px;
+}
+
 .experiment-design {
   .condition-table,
   .partition-table {
@@ -84,16 +91,6 @@
     margin-top: 30px;
   }
 
-  .button-container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-
-    .btn-back {
-      margin-left: 0 !important;
-    }
-  }
-
   .title {
     font-size: 20px;
     font-weight: bold;
@@ -114,4 +111,14 @@
   display: grid;
   margin-left: 10px;
   justify-content: left;
+}
+
+.modal-buttons-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+
+  .btn-back {
+    margin-left: 0 !important;
+  }
 }

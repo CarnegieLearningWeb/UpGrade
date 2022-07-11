@@ -1,3 +1,10 @@
+.modal-step-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 575px;
+}
+
 .experiment-overview {
   display: flex;
   flex-direction: column;
@@ -41,12 +48,6 @@
     width: 100%;
   }
 
-  .button-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 30px;
-  }
-
   ::ng-deep .mat-chip-list-wrapper {
     max-height: 60px;
     overflow: auto;
@@ -55,4 +56,10 @@
   ::ng-deep .mat-form-field-label {
     color: var(--grey-6);
   }
+}
+
+.modal-buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
 }

@@ -1,3 +1,10 @@
+.modal-step-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 575px;
+}
+
 .post-experiment-rule-form {
   display: flex;
   justify-content: space-between;
@@ -9,7 +16,7 @@
   }
 }
 
-.button-container {
+.modal-buttons-container {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
