@@ -1,5 +1,5 @@
-<div class="modal-step-container">
-  <section class="modal-form-container">
+<div class="shared-modal--step-container">
+  <section class="shared-modal--form-container">
     <form class="experiment-overview" [formGroup]="overviewForm">
       <mat-form-field class="ft-14-600 name">
         <input
@@ -111,33 +111,42 @@
       </mat-checkbox>
     </form>
   </section>
-  <section class="modal-buttons-container">
-    <button
-      type="button"
-      mat-raised-button
-      class="modal-btn"
-      (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
-    >
-      {{ 'global.cancel.text' | translate }}
-    </button>
-    <button
-      type="button"
-      mat-raised-button
-      class="modal-btn default-button"
-      (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-    >
-      {{ 'global.next.text' | translate }}
-    </button>
-    <button
-      type="button"
-      *ngIf="experimentInfo && enableSave"
-      mat-raised-button
-      class="modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
-        [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
-      (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
+      <!-- 
+        empty left-side spacer for flex-box;
+        first modal step has no left side / back btn
+      -->
+    </span>
+    <span class="shared-modal--buttons-right">
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn"
+        (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
       >
-      {{ 'global.update.text' | translate }}
-    </button>
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+      >
+        {{ 'global.next.text' | translate }}
+      </button>
+      <button
+        type="button"
+        *ngIf="experimentInfo && enableSave"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
+          [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+        >
+        {{ 'global.update.text' | translate }}
+      </button>
+    </span>
   </section>
 </div>

@@ -1,9 +1,3 @@
-.modal-step-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 575px;
-}
 
 .metric-design {
   .metric-table {
@@ -123,14 +117,4 @@
   display: grid;
   margin-left: -80px;
   justify-content: center;
-}
-
-.modal-buttons-container {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
-
-  .btn-back {
-    margin-left: 0 !important;
-  }
 }

@@ -1,6 +1,5 @@
-<div class="modal-step-container">
-
-  <section class="modal-form-container">
+<div class="shared-modal--step-container">
+  <section class="shared-modal--form-container">
     <form class="experiment-participants" [formGroup]="participantsForm">
       <!-- Table -->
       <div class="property-container">
@@ -227,19 +226,21 @@
     </form>
   </section>
 
-  <section class="modal-buttons-container">
-    <button
-      matStepperPrevious
-      mat-raised-button
-      class="modal-btn btn-back default-button"
-    >
-      {{ 'global.back.text' | translate }}
-    </button>
-    <div>
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="shared-modal--modal-btn btn-back default-button"
+      >
+        {{ 'global.back.text' | translate }}
+      </button>
+    </span>
+    <span class="shared-modal--buttons-right">
       <button
         type="button"
         mat-raised-button
-        class="modal-btn"
+        class="shared-modal--modal-btn"
         (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
       >
         {{ 'global.cancel.text' | translate }}
@@ -247,7 +248,7 @@
       <button
         type="button"
         mat-raised-button
-        class="modal-btn default-button"
+        class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
       >
         {{ 'global.next.text' | translate }}
@@ -256,11 +257,11 @@
         type="button"
         *ngIf="experimentInfo && enableSave"
         mat-raised-button
-        class="modal-btn default-button"
+        class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}
       </button>
-    </div>
+    </span>
   </section>
 </div>

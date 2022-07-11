@@ -1,6 +1,5 @@
-<div class="modal-step-container">
-
-  <section class="modal-form-containter">
+<div class="shared-modal--step-container">
+  <section class="shared-modal--form-container">
     <form class="metric-design" [formGroup]="queryForm">
       <span class="title">{{ 'home.new-experiment.metrics.defined-metrics.text' | translate }}</span>
       <ng-container *ngIf="options?.length; else noAvailableMetricsMessage">
@@ -183,40 +182,42 @@
     </form>
   </section>
 
-  <section class="modal-buttons-container">
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
       <button
         matStepperPrevious
         mat-raised-button
-        class="modal-btn btn-back default-button"
+        class="shared-modal--modal-btn btn-back default-button"
       >
         {{ 'global.back.text' | translate }}
       </button>
-      <div>
-        <button
-          type="button"
-          mat-raised-button
-          class="modal-btn"
-          (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
-        >
-          {{ 'global.cancel.text' | translate }}
-        </button>
-        <button
-          type="button"
-          mat-raised-button
-          class="modal-btn default-button"
-          (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-        >
-          {{ 'global.next.text' | translate }}
-        </button>
-        <button
-          type="button"
-          *ngIf="experimentInfo"
-          mat-raised-button
-          class="modal-btn default-button"
-          (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-        >
-          {{ 'global.update.text' | translate }}
-        </button>
-      </div>
+    </span>
+    <span class="shared-modal--buttons-right">
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn"
+        (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+      >
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+      >
+        {{ 'global.next.text' | translate }}
+      </button>
+      <button
+        type="button"
+        *ngIf="experimentInfo"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+      >
+        {{ 'global.update.text' | translate }}
+      </button>
+    </span>
   </section>
 </div>

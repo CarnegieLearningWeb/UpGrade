@@ -2,13 +2,6 @@
   display: none;
 }
 
-.modal-step-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 575px;
-}
-
 .experiment-participants {
   display: flex;
   flex-direction: column;
@@ -98,16 +91,5 @@
 
   ::ng-deep .mat-form-field-label {
     color: var(--grey-6);
-  }
-}
-
-.modal-buttons-container {
-  display: flex;
-  justify-content: space-between;
-  flex-direction: row;
-  margin-top: 15px;
-
-  .btn-back {
-    margin-left: 0 !important;
   }
 }
