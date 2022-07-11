@@ -66,6 +66,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
+  equalWeightFlag: boolean = true;
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -105,6 +106,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.partitionDataSource.next(this.partition.controls);
       this.conditionDataSource.next(this.condition.controls);
     }
+
+    this.applyEqualWeight();
   }
 
   ngOnInit() {
@@ -127,6 +130,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
+      this.equalWeightFlag = false;
       // Remove previously added group of conditions and partitions
       this.condition.removeAt(0);
       this.partition.removeAt(0);
@@ -169,6 +173,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         startWith<string>(''),
         map(conditionCode => this.filterConditionCodes(conditionCode))
       );
+    this.applyEqualWeight(); 
   }
 
   manageExpPointAndIdControl(index: number) {
@@ -265,6 +270,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           this.experimentInfo.revertTo = null;
         }
       }
+    }
+    if (type === 'condition'){
+      this.previousAssignmentWeightValues.splice(groupIndex, 1);  
+      this.applyEqualWeight();
     }
     this.updateView();
   }
@@ -456,13 +465,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
         this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
-        this.validateConditionCount(this.experimentDesignForm.get('conditions').value);
+        this.validateConditionCount((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
         this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
         this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
-        this.validateHasAssignmentWeightsNegative(this.experimentDesignForm.get('conditions').value);
+        this.validateHasAssignmentWeightsNegative((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
         
         // TODO: Uncomment to validate partitions with predefined site and target
         // this.validatePartitions();
+
+        // enabling Assignment weight for form to validate
+        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && !this.conditionCodeErrors.length && !this.partitionCountError) {
+          (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach(control => {
+            control.get('assignmentWeight').enable();
+          });
+        }
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
@@ -497,21 +513,34 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
   
-  applyEqualWeight(event) {
-    const conditions = this.experimentDesignForm.get('conditions') as FormArray;
-
-    if(event.checked) { 
-      const len = conditions.controls.length;
-      conditions.controls.forEach( control => {
-        this.previousAssignmentWeightValues.push(control.get('assignmentWeight').value);
-        control.get('assignmentWeight').setValue((100.0/len).toFixed(1).toString() + '%');
-      });
-    } else {
-        conditions.controls.forEach( (control, index) => {
-        control.get('assignmentWeight').setValue(this.previousAssignmentWeightValues[index]);
-        }); 
+  applyEqualWeight() {
+    if (this.experimentDesignForm){
+      const conditions = this.experimentDesignForm.get('conditions') as FormArray;
+      if (this.equalWeightFlag) {
+        const len = conditions.controls.length;
         this.previousAssignmentWeightValues =  [];
+        conditions.controls.forEach( control => {
+          control.get('assignmentWeight').setValue((100.0/len).toFixed(1).toString() + '%');
+          this.previousAssignmentWeightValues.push(control.get('assignmentWeight').value);
+          control.get('assignmentWeight').disable();
+        });
+      } else {
+        conditions.controls.forEach( (control, index) => {
+        control.get('assignmentWeight').setValue(control.value.assignmentWeight 
+          ? control.value.assignmentWeight
+          : this.previousAssignmentWeightValues[index]
+        );
+        if (this.experimentInfo.state !== this.ExperimentState.ENROLLING && this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
+          control.get('assignmentWeight').enable();
+        }
+        });
+      }
     }
+  }
+
+  changeEqualWeightFlag(event) {
+    event.checked ? this.equalWeightFlag = true : this.equalWeightFlag = false
+    this.applyEqualWeight();
   }
 
   get condition(): FormArray {

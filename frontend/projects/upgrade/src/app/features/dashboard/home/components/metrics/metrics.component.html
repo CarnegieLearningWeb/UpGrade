@@ -1,7 +1,7 @@
 <ng-container>
   <form class="metric-design" [formGroup]="queryForm">
     <span class="title">{{ 'home.new-experiment.metrics.defined-metrics.text' | translate }}</span>
-    <ng-container *ngIf="false; else noAvailableMetricsMessage">
+    <ng-container *ngIf="options?.length; else noAvailableMetricsMessage">
       <!-- Metric Table -->
       <ng-container>
         <mat-table
@@ -113,7 +113,7 @@
           <!-- Description Column -->
           <ng-container matColumnDef="queryName">
             <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-              {{ 'global.description.text' | translate }}
+              {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
             </mat-header-cell>
             <mat-cell
               *matCellDef="let element; let groupIndex = index"

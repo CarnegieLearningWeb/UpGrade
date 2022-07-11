@@ -161,7 +161,8 @@
     class="ft-8-100"
     color="primary"
     [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
-    (change)="applyEqualWeight($event)">
+    [checked]="equalWeightFlag"
+    (change)="changeEqualWeightFlag($event)">
     {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
     </mat-checkbox>
   </div>
@@ -207,15 +208,15 @@
 
       <!-- ASSIGNMENT WEIGHT Column -->
       <ng-container matColumnDef="assignmentWeight">
-        <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+        <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: center;">
           {{ 'home-global.assignment-weight.text' | translate }}
         </mat-header-cell>
         <mat-cell
           *matCellDef="let element; let groupIndex = index"
           [formGroupName]="groupIndex"
-          style="margin-left: 5px;"
+          style="justify-content: center;"
         >
-          <mat-form-field floatLabel="never">
+          <mat-form-field floatLabel="never" style="text-align: center;">
             <input
               type="string"
               matInput
