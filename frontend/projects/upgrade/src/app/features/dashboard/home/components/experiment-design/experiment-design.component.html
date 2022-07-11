@@ -209,15 +209,15 @@
 
           <!-- ASSIGNMENT WEIGHT Column -->
           <ng-container matColumnDef="assignmentWeight">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: center;">
               {{ 'home-global.assignment-weight.text' | translate }}
             </mat-header-cell>
             <mat-cell
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
-              style="margin-left: 5px;"
+              style="justify-content: center;"
             >
-              <mat-form-field floatLabel="never">
+              <mat-form-field floatLabel="never" style="text-align: center;">
                 <input
                   type="string"
                   matInput
