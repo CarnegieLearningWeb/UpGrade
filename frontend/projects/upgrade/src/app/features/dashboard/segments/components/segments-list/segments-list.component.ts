@@ -13,6 +13,7 @@ import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-statu
 import  { SEGMENT_STATUS } from '../../../../../core/segments/store/segments.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+
 @Component({
   selector: 'segments-list',
   templateUrl: './segments-list.component.html',
@@ -59,6 +60,9 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.permissions$ = this.authService.userPermissions$;
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(
       allSegments => {
+        allSegments = allSegments.map(segment => {
+          return {...segment, status: segment.status || SEGMENT_STATUS.UNUSED};
+        });
         this.allSegments = new CustomMatTableSource();
         this.allSegments.data = [...allSegments];
         this.allSegments.sort = this.sort;
