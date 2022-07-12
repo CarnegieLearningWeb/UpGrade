@@ -29,12 +29,13 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   allSegmentsSub: Subscription;
 
   segmentMemberTypes : any[];
-  subSegmentIds = [];
-  userIdsToSend = [];
-  groupsToSend = [];
+  subSegmentIds: string[] = [];
+  userIdsToSend: string[] = [];
+  groupsToSend: {type: string, groupId: string}[] = [];;
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
+  groupString: string = ' ( group )';
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -138,26 +139,25 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   setMemberTypes() {
     this.segmentMemberTypes = [];
-    this.segmentMemberTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
-    this.segmentMemberTypes.push({ heading: '', value: [MemberTypes.SEGMENT] });
-    const groups = [];
+    this.segmentMemberTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
+    this.segmentMemberTypes.push({'name': MemberTypes.SEGMENT, 'value': MemberTypes.SEGMENT});
+
     if (this.currentContext === 'ALL') {
       const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
       contexts.forEach(context => {
         this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
-          groups.push(group);
+          this.segmentMemberTypes.push({'name': group + this.groupString, 'value': group});
         });
       });
     }
     else if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
-        groups.push(type);
+        this.segmentMemberTypes.push({'name': type + this.groupString, 'value': type});
       });
     }
-    this.segmentMemberTypes.push({ heading: 'group', value: groups });
   }
 
-  gettingMembersValueToSend(members: any) {
+  gettingMembersValueToSend(members: {type: string, id:string}[]) {
     members.forEach(member => {
       if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);

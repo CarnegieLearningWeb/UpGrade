@@ -11,26 +11,17 @@
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'segments.global-members-type.text' | translate }}
       </mat-header-cell>
-      <mat-cell
+      <mat-cell 
         *matCellDef="let element; let groupIndex = index"
         [formGroupName]="groupIndex"
       >
-        <mat-form-field floatLabel="never" class="form-control">
-          <mat-select formControlName="type" 
-            [placeholder]="'segments.members-placeholder-type.text' | translate"
-          >
-            <mat-optgroup
-              *ngFor="let type of segmentMemberTypes"
-              [class.hideLabel]="type.heading == ''"
-              [disabled]="type.disabled"
-              [label]="type.heading"
-            >
-              <mat-option *ngFor="let val of type.value" [value]="val">
-                {{ val }}
-              </mat-option>
-            </mat-optgroup>
-          </mat-select>
-        </mat-form-field>
+        <mat-select formControlName="type" 
+          [placeholder]="'segments.members-placeholder-type.text' | translate"
+        >
+          <mat-option *ngFor="let val of segmentMemberTypes" [value]="val.value">
+            {{ val.name }}
+          </mat-option>
+        </mat-select>
       </mat-cell>
     </ng-container>
 
