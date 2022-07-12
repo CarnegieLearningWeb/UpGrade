@@ -32,14 +32,14 @@
   <div class="button-container">
     <button
       mat-raised-button
-      class="modal-btn"
+      class="shared-modal--modal-btn"
       (click)="onCancelClick()"
     >
       {{ 'global.cancel.text' | translate }}
     </button>
     <button
       mat-raised-button
-      class="modal-btn default-button"
+      class="shared-modal--modal-btn default-button"
       [ngClass]="{'default-button--disabled': !this.postExperimentRuleForm.valid}"
       [disabled]="!this.postExperimentRuleForm.valid"
       (click)="changePostExperimentRule()"

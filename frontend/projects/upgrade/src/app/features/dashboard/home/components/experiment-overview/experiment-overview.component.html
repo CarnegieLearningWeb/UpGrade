@@ -1,140 +1,152 @@
-<form class="experiment-overview" [formGroup]="overviewForm">
-  <mat-form-field class="ft-14-600 name">
-    <input
-      matInput
-      class="ft-14-400"
-      [placeholder]="
-        'home.new-experiment.overview.name.placeHolder' | translate
-      "
-      formControlName="experimentName"
-      cdkFocusInitial
-    />
-  </mat-form-field>
+<div class="shared-modal--step-container">
+  <section class="shared-modal--form-container">
+    <form class="experiment-overview" [formGroup]="overviewForm">
+      <mat-form-field class="ft-14-600 name">
+        <input
+          matInput
+          class="ft-14-400"
+          [placeholder]="
+            'home.new-experiment.overview.name.placeHolder' | translate
+          "
+          formControlName="experimentName"
+          cdkFocusInitial
+        />
+      </mat-form-field>
 
-  <mat-form-field class="ft-14-600 description">
-    <input
-      matInput
-      class="ft-14-400"
-      [placeholder]="
-        'home.new-experiment.overview.description.placeHolder' | translate
-      "
-      formControlName="description"
-    />
-  </mat-form-field>
+      <mat-form-field class="ft-14-600 description">
+        <input
+          matInput
+          class="ft-14-400"
+          [placeholder]="
+            'home.new-experiment.overview.description.placeHolder' | translate
+          "
+          formControlName="description"
+        />
+      </mat-form-field>
 
-  <mat-form-field class="ft-14-600 chips">
-    <mat-label>{{ 'Context' }}</mat-label>
-    <mat-select class="ft-14-400" formControlName="context">
-      <mat-option *ngFor="let context of allContexts" [value]="context">
-        {{ context }}
-      </mat-option>
-    </mat-select>
-    <mat-error
-      *ngIf="overviewForm.controls.context.hasError('required')"
-    >
-      {{ 'home.new-experiment.overview.context.error.text' | translate }}
-    </mat-error>
-  </mat-form-field>
-
-  <div class="property-container">
-    <mat-form-field class="ft-14-600 unit-of-assignment">
-      <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
-      <mat-select class="ft-14-400" formControlName="unitOfAssignment">
-        <mat-option
-          *ngFor="let unitOfAssignment of unitOfAssignments"
-          [value]="unitOfAssignment.value"
+      <mat-form-field class="ft-14-600 chips">
+        <mat-label>{{ 'Context' }}</mat-label>
+        <mat-select class="ft-14-400" formControlName="context">
+          <mat-option *ngFor="let context of allContexts" [value]="context">
+            {{ context }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="overviewForm.controls.context.hasError('required')"
         >
-          {{ unitOfAssignment.value | titlecase }}
-        </mat-option>
-      </mat-select>
-      <mat-error
-        *ngIf="overviewForm.controls.unitOfAssignment.hasError('required')"
+          {{ 'home.new-experiment.overview.context.error.text' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <div class="property-container">
+        <mat-form-field class="ft-14-600 unit-of-assignment">
+          <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="unitOfAssignment">
+            <mat-option
+              *ngFor="let unitOfAssignment of unitOfAssignments"
+              [value]="unitOfAssignment.value"
+            >
+              {{ unitOfAssignment.value | titlecase }}
+            </mat-option>
+          </mat-select>
+          <mat-error
+            *ngIf="overviewForm.controls.unitOfAssignment.hasError('required')"
+          >
+            {{ 'home.new-experiment.overview.unit-of-assignment.error.text' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
+          <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
+          <mat-select class="ft-14-400" formControlName="groupType">
+            <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
+            {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field class="ft-14-600 consistency-rule">
+        <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
+        <mat-select class="ft-14-400" formControlName="consistencyRule">
+          <mat-option
+            *ngFor="let consistencyRule of consistencyRules"
+            [value]="consistencyRule.value"
+          >
+            {{ consistencyRule.value | titlecase }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="overviewForm.controls.consistencyRule.hasError('required')"
+        >
+          {{ 'home.new-experiment.overview.consistency-rule.error.text' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="ft-14-600 tags">
+        <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
+          <mat-chip
+            *ngFor="let experimentTag of tags.value"
+            [selectable]="isChipSelectable"
+            [removable]="isChipRemovable"
+            (removed)="removeChip(experimentTag, 'tags')"
+          >
+            {{ experimentTag }}
+            <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
+          </mat-chip>
+          <input
+            [placeholder]="
+              'home.new-experiment.overview.tags.placeHolder' | translate
+            "
+            [matChipInputFor]="tagsList"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            [matChipInputAddOnBlur]="addChipOnBlur"
+            (matChipInputTokenEnd)="addChip($event, 'tags')"
+          />
+        </mat-chip-list>
+      </mat-form-field>
+      <mat-checkbox class="ft-14-700" color="primary" formControlName="logging">
+        {{ 'home.view-experiment.logging.text' | translate }}
+      </mat-checkbox>
+    </form>
+  </section>
+
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
+      <!-- 
+        empty left-side spacer for flex-box;
+        first modal step has no left side / back btn
+      -->
+    </span>
+    <span class="shared-modal--buttons-right">
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn"
+        (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
       >
-        {{ 'home.new-experiment.overview.unit-of-assignment.error.text' | translate }}
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
-      <mat-label>{{ 'home.new-experiment.overview.group-type.placeHolder' | translate }}</mat-label>
-      <mat-select class="ft-14-400" formControlName="groupType">
-        <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
-      </mat-select>
-      <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
-        {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
-      </mat-error>
-    </mat-form-field>
-  </div>
-
-  <mat-form-field class="ft-14-600 consistency-rule">
-    <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
-    <mat-select class="ft-14-400" formControlName="consistencyRule">
-      <mat-option
-        *ngFor="let consistencyRule of consistencyRules"
-        [value]="consistencyRule.value"
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        type="button"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
       >
-        {{ consistencyRule.value | titlecase }}
-      </mat-option>
-    </mat-select>
-    <mat-error
-      *ngIf="overviewForm.controls.consistencyRule.hasError('required')"
-    >
-      {{ 'home.new-experiment.overview.consistency-rule.error.text' | translate }}
-    </mat-error>
-  </mat-form-field>
-
-  <mat-form-field class="ft-14-600 tags">
-    <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
-      <mat-chip
-        *ngFor="let experimentTag of tags.value"
-        [selectable]="isChipSelectable"
-        [removable]="isChipRemovable"
-        (removed)="removeChip(experimentTag, 'tags')"
-      >
-        {{ experimentTag }}
-        <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
-      </mat-chip>
-      <input
-        [placeholder]="
-          'home.new-experiment.overview.tags.placeHolder' | translate
-        "
-        [matChipInputFor]="tagsList"
-        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-        [matChipInputAddOnBlur]="addChipOnBlur"
-        (matChipInputTokenEnd)="addChip($event, 'tags')"
-      />
-    </mat-chip-list>
-  </mat-form-field>
-  <mat-checkbox class="ft-14-700" color="primary" formControlName="logging">
-    {{ 'home.view-experiment.logging.text' | translate }}
-  </mat-checkbox>
-
-  <div class="button-container">
-    <button
-      type="button"
-      mat-raised-button
-      class="modal-btn"
-      (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
-    >
-      {{ 'global.cancel.text' | translate }}
-    </button>
-    <button
-      type="button"
-      mat-raised-button
-      class="modal-btn default-button"
-      (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-    >
-      {{ 'global.next.text' | translate }}
-    </button>
-    <button
-      type="button"
-      *ngIf="experimentInfo && enableSave"
-      mat-raised-button
-      class="modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
-      [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
-      (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-    >
-      {{ 'global.update.text' | translate }}
-    </button>
-  </div>
-</form>
+        {{ 'global.next.text' | translate }}
+      </button>
+      <button
+        type="button"
+        *ngIf="experimentInfo && enableSave"
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
+          [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
+        >
+        {{ 'global.update.text' | translate }}
+      </button>
+    </span>
+  </section>
+</div>

@@ -158,14 +158,14 @@
     <button
       matStepperPrevious
       mat-raised-button
-      class="modal-btn default-button btn-back"
+      class="shared-modal--modal-btn default-button btn-back"
     >
       {{ 'global.back.text' | translate }}
     </button>
     <div>
       <button
         mat-raised-button
-        class="modal-btn"
+        class="shared-modal--modal-btn"
         (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)"
       >
         {{ 'global.cancel.text' | translate }}
@@ -173,7 +173,7 @@
       <button
         matStepperNext
         mat-raised-button
-        class="modal-btn default-button"
+        class="shared-modal--modal-btn default-button"
         [ngClass]="{'default-button--disabled': !flagVariationsForm.valid }"
         [disabled]="!flagVariationsForm.valid"
         (click)="emitEvent(NewFlagDialogEvents.SEND_FORM_DATA)"
