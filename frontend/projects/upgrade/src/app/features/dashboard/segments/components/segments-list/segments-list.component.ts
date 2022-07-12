@@ -13,7 +13,7 @@ import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-statu
 import  { SEGMENT_STATUS } from '../../../../../core/segments/store/segments.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { A } from '@angular/cdk/keycodes';
+
 @Component({
   selector: 'segments-list',
   templateUrl: './segments-list.component.html',
