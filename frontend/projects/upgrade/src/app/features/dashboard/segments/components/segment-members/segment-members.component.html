@@ -90,14 +90,14 @@
     <button
       matStepperPrevious
       mat-raised-button
-      class="modal-btn default-button btn-back"
+      class="shared-modal--modal-btn default-button btn-back"
     >
       {{ 'global.back.text' | translate }}
     </button>
     <div>
       <button
         mat-raised-button
-        class="modal-btn"
+        class="shared-modal--modal-btn"
         (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
       >
         {{ 'global.cancel.text' | translate }}
@@ -105,7 +105,7 @@
       <button
         matStepperNext
         mat-raised-button
-        class="modal-btn default-button"
+        class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
       >
       {{ segmentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}

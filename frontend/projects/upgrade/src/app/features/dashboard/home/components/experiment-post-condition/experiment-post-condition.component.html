@@ -1,57 +1,63 @@
-<form
-  [formGroup]="postExperimentRuleForm"
-  class="post-experiment-rule-form"
->
-  <mat-form-field class="ft-14-600">
-    <mat-label>{{ 'home-global.post-experiment-rule.text' | translate }}</mat-label>
-    <mat-select class="ft-14-600" formControlName="postExperimentRule">
-      <mat-option
-        *ngFor="let rule of postExperimentRules"
-        [value]="rule.value"
-      >
-        {{ rule.value | titlecase }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field class="ft-14-600">
-    <mat-label>{{ 'global.condition.text' | translate }}</mat-label>
-    <mat-select class="ft-14-600" formControlName="revertTo">
-      <mat-option
-        *ngFor="let condition of experimentConditions"
-        [value]="condition.id"
-      >
-        {{ condition.value }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-</form>
-
-<div class="button-container">
-  <button
-    matStepperPrevious
-    mat-raised-button
-    class="modal-btn btn-back default-button"
-  >
-    {{ 'global.back.text' | translate }}
-  </button>
-  <div>
-    <button
-      mat-raised-button
-      class="modal-btn"
-      (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+<div class="shared-modal--step-container">
+  <section class="shared-modal--form-container">
+    <form
+      [formGroup]="postExperimentRuleForm"
+      class="post-experiment-rule-form"
     >
-      {{ 'global.cancel.text' | translate }}
-    </button>
-    <button
-      matStepperNext
-      mat-raised-button
-      class="modal-btn default-button"
-      [ngClass]="{'default-button--disabled': !this.postExperimentRuleForm.valid}"
-      [disabled]="!this.postExperimentRuleForm.valid"
-      (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-    >
-      {{ experimentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
-    </button>
-  </div>
+      <mat-form-field class="ft-14-600">
+        <mat-label>{{ 'home-global.post-experiment-rule.text' | translate }}</mat-label>
+        <mat-select class="ft-14-600" formControlName="postExperimentRule">
+          <mat-option
+            *ngFor="let rule of postExperimentRules"
+            [value]="rule.value"
+          >
+            {{ rule.value | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    
+      <mat-form-field class="ft-14-600">
+        <mat-label>{{ 'global.condition.text' | translate }}</mat-label>
+        <mat-select class="ft-14-600" formControlName="revertTo">
+          <mat-option
+            *ngFor="let condition of experimentConditions"
+            [value]="condition.id"
+          >
+            {{ condition.value }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </section>
+  
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="shared-modal--modal-btn btn-back default-button"
+      >
+        {{ 'global.back.text' | translate }}
+      </button>
+    </span>
+    <span class="shared-modal--buttons-right">
+      <button
+        mat-raised-button
+        class="shared-modal--modal-btn"
+        (click)="emitEvent(NewExperimentDialogEvents.CLOSE_DIALOG)"
+      >
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        matStepperNext
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        [ngClass]="{'default-button--disabled': !this.postExperimentRuleForm.valid}"
+        [disabled]="!this.postExperimentRuleForm.valid"
+        (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+      >
+        {{ experimentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
+      </button>
+    </span>
+  </section>
 </div>

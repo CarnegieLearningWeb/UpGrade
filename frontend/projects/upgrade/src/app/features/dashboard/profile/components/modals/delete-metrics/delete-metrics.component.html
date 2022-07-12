@@ -13,14 +13,14 @@
 </div>
 <div mat-dialog-actions class="metric-delete-dialog-actions">
   <button
-    class="modal-btn"
+    class="shared-modal--modal-btn"
     mat-flat-button
     (click)="onCancelClick()"
   >
     {{ 'global.cancel.text' | translate }}
   </button>
   <button
-    class="modal-btn default-button delete-btn"
+    class="shared-modal--modal-btn default-button delete-btn"
     mat-flat-button
     [ngClass]="{ 'default-button--disabled': metricName !== data.key.join(' ') }"
     [disabled]="metricName !== data.key.join(' ')"
