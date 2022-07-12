@@ -47,6 +47,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   membersCountError: string = null;
   userIdsToSend = [];
   groupsToSend = [];
+  groupString: string = ' ( group )';
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -225,15 +226,13 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   setMemberTypes() {
     this.subSegmentTypes = [];
-    this.subSegmentTypes.push({ heading: '', value: [MemberTypes.INDIVIDUAL] });
-    this.subSegmentTypes.push({ heading: '', value: [MemberTypes.SEGMENT] });
-    const groups = [];
+    this.subSegmentTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
+    this.subSegmentTypes.push({'name': MemberTypes.SEGMENT, 'value': MemberTypes.SEGMENT});
     if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
-        groups.push(type);
+        this.subSegmentTypes.push({'name': type + this.groupString, 'value': type});
       });
     }
-    this.subSegmentTypes.push({ heading: 'group', value: groups });
   }
 
   gettingMembersValueToSend(members: any) {
