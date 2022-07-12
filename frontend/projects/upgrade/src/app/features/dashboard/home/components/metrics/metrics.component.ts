@@ -58,6 +58,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryIndex = 0;
 
   queryNameError = [];
+  queryStatisticError = [];
+  queryComparisonStatisticError = [];
 
   constructor(
     private analysisService: AnalysisService,
@@ -78,10 +80,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       queries: this._formBuilder.array([ this._formBuilder.group({
         keys: this._formBuilder.array([this.addKey()]),
         queryName: [null, Validators.required],
-        operationType: [null],
-        compareFn: [null],
-        compareValue: [null],
-        repeatedMeasure: [REPEATED_MEASURE.mostRecent]
+        operationType: [null, Validators.required],
+        compareFn: [null, Validators.required],
+        compareValue: [null, Validators.required],
+        repeatedMeasure: [REPEATED_MEASURE.mostRecent, Validators.required]
         })
       ])
     });
@@ -213,9 +215,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       .pipe(
       startWith<string>(''),
       map(key => {
-        for (let i = index - 1; i >= 0; i--) {
-           keysArray.at(i).disable();
-        }
         if (index - 1 >= 0) {
           const { metricKey } = keysArray.at(index - 1).value;
           this.options = metricKey.children;
@@ -277,10 +276,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     if (event == null) {
       if (metric) {
         if (metric.children.length) {
-          this.metricKeys.at(this.metricKeys.length - 1).disable();
+          // this.metricKeys.at(this.metricKeys.length - 1).disable();
           this.addMoreSelectKey(key);
         } else {
-          this.metricKeys.at(this.metricKeys.length - 1).disable();
+          // this.metricKeys.at(this.metricKeys.length - 1).disable();
           this.selectedNode[this.queryIndex] = metric;
           // reset options for metric keys:
           this.optionsSub();
@@ -299,7 +298,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
         this.addMoreSelectKey();
       } else {
-        this.metricKeys.at(this.metricKeys.length - 1).disable();
+        // this.metricKeys.at(this.metricKeys.length - 1).disable();
         const keys = this.metricKeys.getRawValue();
         this.selectedNode[this.queryIndex] = keys[keys.length - 1].metricKey;
         const { metadata: { type } } = this.selectedNode[this.queryIndex];
@@ -314,10 +313,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return  this._formBuilder.group({
       keys: this._formBuilder.array([this.addKey(key)]),
       queryName: [queryName, Validators.required],
-      operationType: [operationType],
-      compareFn: [compareFn],
-      compareValue: [compareValue],
-      repeatedMeasure: [repeatedMeasure]
+      operationType: [operationType, Validators.required],
+      compareFn: [compareFn, Validators.required],
+      compareValue: [compareValue, Validators.required],
+      repeatedMeasure: [repeatedMeasure, Validators.required]
     });
   }
 
@@ -391,6 +390,18 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  checkStatisticError(statistic: any) {
+    if (statistic == null || statistic === '') {
+      this.queryStatisticError.push(true);
+    }
+  }
+
+  checkComparisonStatisticError(compareFn: any, compareValue: any) {
+    if (compareFn == null || compareFn === '' || compareValue == null || compareValue === '') {
+      this.queryComparisonStatisticError.push(true);
+    }
+  }
+
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -398,7 +409,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        this.queryNameError = [];        
+        this.queryNameError = [];
+        this.queryStatisticError = []; 
+        this.queryComparisonStatisticError = [];    
         const monitoredMetricsFormData = this.queryForm.getRawValue();
         monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map(
           (query, index) => {
@@ -406,7 +419,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
             if (keys) {
               keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key);
               if (keys.length) {
-                this.checkQueryNameError(queryName);                
+                this.checkQueryNameError(queryName);
+                this.checkStatisticError(operationType);
+                if (operationType && (operationType === OPERATION_TYPES.COUNT || operationType === OPERATION_TYPES.PERCENTAGE)) {
+                  this.checkComparisonStatisticError(compareFn, compareValue);
+                }
+
                 let queryObj: Query = {
                   name: queryName,
                   query: {
@@ -441,7 +459,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
             }
           });
 
-        if (this.queryNameError.length == 0) {
+        if (this.queryNameError.length == 0 && this.queryStatisticError.length == 0 && this.queryComparisonStatisticError.length == 0) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: monitoredMetricsFormData,

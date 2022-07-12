@@ -9,8 +9,8 @@
     }
 
     mat-row {
-      min-height: 120px;
-      max-height: 120px;
+      min-height: 80px;
+      max-height: 200px;
     }
 
     mat-header-cell {
@@ -24,13 +24,19 @@
       justify-content: left;
       margin-right: 10px;
       margin-bottom: -20px;
-      width: 70%;
+      width: 100%;
     }
 
     .metric-keys {
       display: grid;
       flex-direction: row;
       flex-wrap: wrap;
+
+      .dropdown {
+        position: absolute;
+        right: 0;
+        top: 0; 
+      }
     }
 
     .secondary-form {
@@ -38,13 +44,19 @@
       flex-direction: row;
       flex-wrap: wrap;
       justify-content:left;
-      margin-top: -25px;
+      margin-top: -35px;
   
       .form-control {
         flex: 0 0 10%;
         line-height: 20px;
         min-height: 16px;
         max-height: 20px;
+      }
+
+      mat-form-field {
+        width: 130%;
+        margin-bottom: 4px;
+        text-align: left;
       }
     }
 
@@ -53,15 +65,22 @@
       width: 10%;
     }
 
-    .cdk-column-keys,
-    .cdk-column-operationType,
+    .cdk-column-keys {
+      flex: 0 0 35%;
+      width: 35%;
+    }
+
+    .cdk-column-operationType {
+      flex: 0 0 25%;
+      width: 25%;
+    }
+
     .cdk-column-queryName {
       flex: 0 0 30%;
       width: 30%;
     }
-
     .remove-icon {
-      position: relative;
+      position: center;
       top: -3px;
       width: 18px;
       height: 18px;
@@ -78,8 +97,8 @@
     }
 
     mat-form-field {
-      width: 100%;
-      margin-bottom: 10px;
+      width: 130%;
+      margin-bottom: 5px;
       text-align: left;
     }
   }
