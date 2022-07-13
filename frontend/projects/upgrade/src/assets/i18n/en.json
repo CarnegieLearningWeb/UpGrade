@@ -130,6 +130,7 @@
   "home.new-experiment.design.partition-id-selection-error.text": " Please select Target from predefined values",
   "home.new-experiment.metrics.defined-metrics.text": "Defined Metrics",
   "home.new-experiment.metrics.metric.placeholder.text": "Metric",
+  "home.new-experiment.metrics.key.placeholder.text": "Key",
   "home.new-experiment.metrics.statistics.placeholder.text": "Statistics",
   "home.new-experiment.metrics.repeatedmeasure.placeholder.text": "Repeated Measure",
   "home.new-experiment.metrics.description.placeholder.text": "Display Name",

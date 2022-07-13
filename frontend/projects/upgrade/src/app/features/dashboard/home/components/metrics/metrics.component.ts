@@ -15,6 +15,8 @@ import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
+
 
 @Component({
   selector: 'home-monitored-metrics',
@@ -64,6 +66,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private analysisService: AnalysisService,
     private _formBuilder: FormBuilder,
+    private translate: TranslateService,
   ) { }
 
   optionsSub() {
@@ -353,6 +356,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         behavior: 'smooth'
       });
     }
+  }
+
+  getMetricPlaceHolder(formIndex) {
+    if (formIndex == 0 || formIndex == 2) return this.translate.instant('home.new-experiment.metrics.metric.placeholder.text');
+    if (formIndex == 1) return this.translate.instant('home.new-experiment.metrics.key.placeholder.text');
   }
 
   metricType(selectedNode, queryIndex) {
