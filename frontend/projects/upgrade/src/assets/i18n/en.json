@@ -260,7 +260,7 @@
   "feature-flags.global-status.text": "Status",
   "feature-flags.global-active-variation.text": "Active Variation",
   "feature-flags.global-variation-value.text": "Value",
-  "feature-flags.title.text": "Featured Flags",
+  "feature-flags.title.text": "Feature Flags",
   "feature-flags.subtitle.text": "Manage feature flags",
   "feature-flags.no-flags.text": "Welcome! <br> Let's start by creating a new flag!",
   "feature-flags.delete-flag.message.text": "Type the name of feature flag to confirm deletion:",
