@@ -22,7 +22,7 @@
               >
               <ng-container formArrayName="keys">
                 <div class="metric-keys">
-                <mat-form-field  *ngFor="let key of getKeys(groupIndex).controls; let formIndex = index" class="ft-12-600 form-control auto-complete" floatLabel="never">
+                <mat-form-field *ngFor="let key of getKeys(groupIndex).controls; let formIndex = index" class="ft-12-600 form-control auto-complete" floatLabel="never">
                   <ng-container [formGroupName]="formIndex">
                     <input
                       class = "ft-12-400"
@@ -34,7 +34,7 @@
                       >
                     <mat-autocomplete
                       class = "ft-12-400"
-                      (optionSelected)="selectedOption($event, null, null)"
+                      (optionSelected)="selectedOption($event, null, null, formIndex)"
                       #auto="matAutocomplete"
                       [displayWith]="displayFn.bind(this)"
                       panelWidth="fit-content"
@@ -72,7 +72,7 @@
                   </mat-select>
                 </mat-form-field>
                 <!-- repeated measure -->
-                <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[groupIndex] && metricType(firstSelectedNode[groupIndex], groupIndex)" floatLabel="never">
+                <mat-form-field class="ft-12-600 form-control" *ngIf="firstSelectedNode[groupIndex] && isMetricRepeated(firstSelectedNode[groupIndex], groupIndex)" floatLabel="never">
                   <mat-label>{{ 'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase }}</mat-label>
                   <mat-select class="ft-12-400" formControlName="repeatedMeasure">
                     <mat-option

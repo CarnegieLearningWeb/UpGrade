@@ -127,7 +127,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         if (rootKey.length > 1) {
           rootKey.map( (key, index) => {
             if (index != 0) {
-              const keys = this.metricKeys.getRawValue();
               this.selectedNode[this.queryIndex] = metric
               // call select option for first key of grouped metrics:
               this.selectedOption(null, metric, key);
@@ -275,7 +274,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.ManageKeysControl(this.metricKeys.length - 1);
   }
 
-  selectedOption(event = null, metric = null, key = null) {
+  selectedOption(event = null, metric = null, key = null, formIndex = null) {
+    // for edit mode
     if (event == null) {
       if (metric) {
         if (metric.children.length) {
@@ -299,7 +299,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         }
         const { metadata: { type } } = this.firstSelectedNode[this.queryIndex];
         this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
-        this.addMoreSelectKey();
+        if (this.isMetricRepeated(this.firstSelectedNode[this.queryIndex], this.queryIndex) && formIndex == 0) {
+          this.addMoreSelectKey();
+          this.metricKeys.push(this.addKey(null));
+        } else {
+          this.ManageKeysControl(this.metricKeys.length - 1);
+        }
       } else {
         // this.metricKeys.at(this.metricKeys.length - 1).disable();
         const keys = this.metricKeys.getRawValue();
@@ -363,7 +368,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     if (formIndex == 1) return this.translate.instant('home.new-experiment.metrics.key.placeholder.text');
   }
 
-  metricType(selectedNode, queryIndex) {
+  isMetricRepeated(selectedNode, queryIndex) {
     if (this.experimentInfo && queryIndex && queryIndex+1 <= this.experimentInfoQueriesLength) {
       let key;
       if (this.experimentInfo.queries[queryIndex].metric.key != undefined) {
