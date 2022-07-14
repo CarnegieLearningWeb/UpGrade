@@ -41,7 +41,7 @@ export class ImportSegmentComponent {
     const groups = this.segmentInfo.groupForSegment.map((group) => {
       return { type: group.type, groupId: group.groupId } ;
     });
-
+    
     this.segmentTemp = {...rest, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups};
     this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
     if (this.isSegmentJSONValid) {
@@ -71,8 +71,7 @@ export class ImportSegmentComponent {
       userIds: 'array',
       groups: 'interface',
       subSegmentIds: 'array',
-      type: 'enum',
-      status: 'string'
+      type: 'enum'
     };
 
     const groupSchema: Record<keyof any, string> = {
