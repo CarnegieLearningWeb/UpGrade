@@ -227,14 +227,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   displayFn(node?: any): string | undefined {
-    if (this.experimentInfo) {
-      if ( node && node.key ) {
-        return node ? node.key : undefined;
-      } else {
-        return node ? node : undefined;
-      }
-    } else {
+    if ( node && node.key ) {
       return node ? node.key : undefined;
+    } else {
+      return node ? node : undefined;
     }
   }
 
@@ -299,16 +295,24 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         }
         const { metadata: { type } } = this.firstSelectedNode[this.queryIndex];
         this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
-        if (this.isMetricRepeated(this.firstSelectedNode[this.queryIndex], this.queryIndex) && formIndex == 0) {
+        const repeatedMetric = this.isMetricRepeated(this.firstSelectedNode[this.queryIndex], this.queryIndex);
+        if (repeatedMetric && formIndex == 0 && this.metricKeys.length != 3) {
           this.addMoreSelectKey();
           this.metricKeys.push(this.addKey(null));
         } else {
           this.ManageKeysControl(this.metricKeys.length - 1);
         }
       } else {
+        if (formIndex == 0 && this.metricKeys.length > 1) {
+          this.metricKeys.clear();
+          this.addMoreSelectKey(event.option.value.key);
+          let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+          this.selectedNode[this.queryIndex] = metric;
+        } else {
+          const keys = this.metricKeys.getRawValue();
+          this.selectedNode[this.queryIndex] = keys[keys.length - 1].metricKey;
+        }
         // this.metricKeys.at(this.metricKeys.length - 1).disable();
-        const keys = this.metricKeys.getRawValue();
-        this.selectedNode[this.queryIndex] = keys[keys.length - 1].metricKey;
         const { metadata: { type } } = this.selectedNode[this.queryIndex];
         this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
         // reset options for metric keys:
@@ -424,13 +428,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       case NewExperimentDialogEvents.SAVE_DATA:
         this.queryNameError = [];
         this.queryStatisticError = []; 
-        this.queryComparisonStatisticError = [];    
+        this.queryComparisonStatisticError = [];
         const monitoredMetricsFormData = this.queryForm.getRawValue();
         monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map(
           (query, index) => {
             let { keys, operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
             if (keys) {
-              keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key);
+              keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key ? key.metricKey.key : key.metricKey);
               if (keys.length) {
                 this.checkQueryNameError(queryName);
                 this.checkStatisticError(operationType);

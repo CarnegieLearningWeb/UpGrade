@@ -36,7 +36,7 @@
                       class = "ft-12-400"
                       (optionSelected)="selectedOption($event, null, null, formIndex)"
                       #auto="matAutocomplete"
-                      [displayWith]="displayFn.bind(this)"
+                      [displayWith]="displayFn"
                       panelWidth="fit-content"
                       >
                       <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics$[formIndex] | async" [value]="option">
