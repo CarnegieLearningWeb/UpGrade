@@ -10,21 +10,16 @@
     }
 
     mat-row {
-      min-height: 80px;
-      max-height: 200px;
+      min-height: 40px;
     }
 
     mat-header-cell {
       justify-content: left;
-      margin-right: 10px;
       color: var(--grey-6);
     }
 
     mat-cell {
-      margin-top: -20px;
       justify-content: left;
-      margin-right: 10px;
-      margin-bottom: -20px;
       width: 100%;
     }
 
@@ -41,23 +36,11 @@
     }
 
     .secondary-form {
-      display: flex;
-      flex-direction: row;
       flex-wrap: wrap;
-      justify-content:left;
-      margin-top: -35px;
-  
-      .form-control {
-        flex: 0 0 10%;
-        line-height: 20px;
-        min-height: 16px;
-        max-height: 20px;
-      }
 
-      mat-form-field {
-        width: 130%;
-        margin-bottom: 4px;
-        text-align: left;
+      .form-control {
+        margin-top: -10px;
+        margin-bottom: -10px;
       }
     }
 
@@ -80,12 +63,14 @@
       flex: 0 0 30%;
       width: 30%;
     }
+
     .remove-icon {
       position: center;
-      top: -3px;
+      top: -7px;
       width: 18px;
       height: 18px;
       font-size: var(--text-size-x-large);
+      color: gray;
 
       &:hover {
         cursor: pointer;
@@ -99,7 +84,6 @@
 
     mat-form-field {
       width: 130%;
-      margin-bottom: 5px;
       text-align: left;
     }
   }

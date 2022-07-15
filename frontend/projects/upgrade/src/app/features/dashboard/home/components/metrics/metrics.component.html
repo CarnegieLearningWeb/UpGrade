@@ -58,7 +58,7 @@
                 *matCellDef="let element; let groupIndex = index"
                 [formGroupName]="groupIndex"
               >
-              <div class="secondary-form" >
+              <div class="secondary-form">
                 <!-- statistic -->
                 <mat-form-field class="ft-12-600 form-control" floatLabel="never">
                   <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
@@ -120,14 +120,13 @@
                 *matCellDef="let element; let groupIndex = index"
                 [formGroupName]="groupIndex"
               >
-                <mat-form-field floatLabel="never">
-                  <span>
+                <mat-form-field  class="ft-12-600" floatLabel="never">
                     <input
+                      class = "ft-12-400"
                       matInput
                       [placeholder]="'home.new-experiment.metrics.description.placeholder.text'| translate"
                       formControlName="queryName"
                     />
-                  </span>
                 </mat-form-field>
               </mat-cell>
             </ng-container>
