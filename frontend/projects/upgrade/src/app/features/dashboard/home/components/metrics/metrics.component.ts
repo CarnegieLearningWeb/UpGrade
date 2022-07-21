@@ -57,7 +57,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
-  queryIndex = 0;
+  queryIndex: number = 0;
+  editMode: Boolean = false;
 
   queryNameError = [];
   queryStatisticError = [];
@@ -91,55 +92,54 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       ])
     });
 
-    // Bind predefined values of metrics from backend env file for auto complete:
-    const metricsFormControl = this.queries as FormArray;
-    metricsFormControl.controls.forEach((_, index) => {
-      this.ManageKeysControl(index)
-    });
-
-    // populate values in form to update experiment if experiment data is available
+    // populate values in form to update experiment if experiment data is available in edit mode
     if (this.experimentInfo) {
-      // Remove previously added query instance.
+      // Remove the default empty row
       this.queries.removeAt(0);
-      this.experimentInfo.queries.forEach(query => { 
+      this.experimentInfo.queries.forEach((query, queryIndex) => {
         let key;
         if (query.metric.key) {
           key = query.metric.key;
         } else {
           key = query.metric;
         }
-        // separating keys in case of grouped metrics:
+
+        // separating keys from metric
         const rootKey = key.split(METRICS_JOIN_TEXT);
-        // set selectedNode for first key of grouped metrics:
-        let metric = this.allMetrics.find(metric => metric.key === rootKey[0]);
-        this.firstSelectedNode[this.queryIndex] = metric;
-        this.selectedNode[this.queryIndex] = metric;
-        const { metadata: { type } } = this.selectedNode[this.queryIndex];
-        this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
+
+        // set selectedNode for first key of simple/repeated metrics
+        let metricObj = this.allMetrics.find(metric => metric.key === rootKey[0]);
+        this.firstSelectedNode[queryIndex] = metricObj;
+        this.selectedNode[queryIndex] = metricObj;
+        const { metadata: { type } } = this.selectedNode[queryIndex];
+        this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+
         // push first key in query form:
         if (query.query.compareFn && !!query.query.compareValue) {
           this.queries.push(this.addMetric(rootKey[0], query.name, query.query.operationType, query.query.compareFn, query.query.compareValue, query.repeatedMeasure));
         } else {
           this.queries.push(this.addMetric(rootKey[0], query.name, query.query.operationType, null, null, query.repeatedMeasure));
         }
-        // push remaining keys in query form:
-        let child_key;
+
+        // push remaining keys in query form in case of repeated metrics
+        let childKey;
         if (rootKey.length > 1) {
-          rootKey.map( (key, index) => {
-            if (index != 0) {
-              this.selectedNode[this.queryIndex] = metric
+          rootKey.map( (key, keyindex) => {
+            if (keyindex != 0) {
+              this.selectedNode[this.queryIndex] = metricObj
               // call select option for first key of grouped metrics:
-              this.selectedOption(null, metric, key);
+              this.selectedOption(null, metricObj, key, queryIndex, keyindex);
               this.optionsSub();
-              metric = metric.children;
-              metric = metric.find(metric => metric.key == key);
-              child_key = key;
+              metricObj = metricObj.children;
+              metricObj = metricObj.find(metric => metric.key == key);
+              childKey = key;
             }
           });
-          this.selectedOption(null, metric, child_key);
+          this.selectedOption(null, metricObj, childKey, queryIndex, rootKey.length-1);
         }
-        this.selectedOption(null, metric, null);
+        this.selectedOption(null, metricObj, null, queryIndex, rootKey.length - 1);
         this.setQueryIndex(this.queryIndex+1);
+        this.ManageKeysControl(queryIndex, 0);
       });
     }
 
@@ -168,20 +168,17 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       });
     }
     this.updateView();
+
+    // Bind predefined values of metrics from backend env file for auto complete:
+    // const metricsFormControl = this.queries as FormArray;
+    // metricsFormControl.controls.forEach((_, queryIndex) => {
+    //   this.ManageKeysControl(queryIndex, null)
+    // });
   }
 
+  // getters
   get queries(): FormArray {
     return this.queryForm.get('queries') as FormArray;
-  }
-
-  get metricKeys() { 
-    const keysArray = this.queries.at(this.queryIndex).get('keys') as FormArray;
-    return keysArray;
-  }
-
-  getKeys(index: number) { 
-    const keysArray = this.queries.at(index).get('keys') as FormArray;
-    return keysArray;
   }
 
   get NewExperimentDialogEvents() {
@@ -201,29 +198,19 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return this.experimentInfo.queries.length;
   }
 
-  setQueryIndex(index) {
-    this.queryIndex = index;
+  getKeys(queryIndex: number) { 
+    const keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    return keysArray;
+  }
+
+  setQueryIndex(queryIndex: number) {
+    this.queryIndex = queryIndex;
   }
 
   addKey(key = null) {
     return this._formBuilder.group({
       metricKey: [key, Validators.required]
     });
-  }
-
-  ManageKeysControl(index: number) {
-    const keysArray = this.queries.at(this.queryIndex).get('keys') as FormArray;
-    this.filteredMetrics$[index] = keysArray.at(index).get('metricKey').valueChanges
-      .pipe(
-      startWith<string>(''),
-      map(key => {
-        if (index - 1 >= 0) {
-          const { metricKey } = keysArray.at(index - 1).value;
-          this.options = metricKey.children;
-        }
-        return key ? this._filter(key) : this.options ? this.options.slice() : [];
-      })
-      );
   }
 
   displayFn(node?: any): string | undefined {
@@ -265,60 +252,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return this.queryOperations;
   }
 
-  addMoreSelectKey(key = null) {
-    this.metricKeys.push(this.addKey(key));
-    this.ManageKeysControl(this.metricKeys.length - 1);
-  }
-
-  selectedOption(event = null, metric = null, key = null, formIndex = null) {
-    // for edit mode
-    if (event == null) {
-      if (metric) {
-        if (metric.children.length) {
-          // this.metricKeys.at(this.metricKeys.length - 1).disable();
-          this.addMoreSelectKey(key);
-        } else {
-          // this.metricKeys.at(this.metricKeys.length - 1).disable();
-          this.selectedNode[this.queryIndex] = metric;
-          // reset options for metric keys:
-          this.optionsSub();
-          this.filteredMetrics$ = [];
-        }
-      }
-    } else {
-      if (event.option.value.children.length) {
-        // set selectedNode for first key of grouped metrics:
-        if (event.option.value.metricKey != undefined ) {
-          this.firstSelectedNode[this.queryIndex] = event.option.value.metricKey;
-        } else {
-          this.firstSelectedNode[this.queryIndex] = event.option.value;
-        }
-        const { metadata: { type } } = this.firstSelectedNode[this.queryIndex];
-        this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
-        const repeatedMetric = this.isMetricRepeated(this.firstSelectedNode[this.queryIndex], this.queryIndex);
-        if (repeatedMetric && formIndex == 0 && this.metricKeys.length != 3) {
-          this.addMoreSelectKey();
-          this.metricKeys.push(this.addKey(null));
-        } else {
-          this.ManageKeysControl(this.metricKeys.length - 1);
-        }
-      } else {
-        if (formIndex == 0 && this.metricKeys.length > 1) {
-          this.metricKeys.clear();
-          this.addMoreSelectKey(event.option.value.key);
-          let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
-          this.selectedNode[this.queryIndex] = metric;
-        } else {
-          const keys = this.metricKeys.getRawValue();
-          this.selectedNode[this.queryIndex] = keys[keys.length - 1].metricKey;
-        }
-        // this.metricKeys.at(this.metricKeys.length - 1).disable();
-        const { metadata: { type } } = this.selectedNode[this.queryIndex];
-        this.filteredStatistic$[this.queryIndex] = this.setFilteredStatistic(type);
-        // reset options for metric keys:
-        this.optionsSub();
-      }
-    }
+  addMoreSelectKey(key = null, queryIndex: number, keyIndex: number) {
+    this.getKeys(queryIndex).push(this.addKey(key));
+    this.ManageKeysControl(queryIndex, keyIndex);
   }
 
   addMetric(key = null, queryName = null, operationType = null, compareFn = null, compareValue = null, repeatedMeasure = REPEATED_MEASURE.mostRecent) {
@@ -340,15 +276,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     const index = this.queries.length;
     this.setQueryIndex(index-1);
     const metricFormControl = this.queries.at(index-1).get('keys') as FormArray;
-    this.ManageKeysControl(metricFormControl.controls.length - 1);
+    this.ManageKeysControl(this.queryIndex, metricFormControl.controls.length - 1);
   }
 
-  removeMetric(groupIndex: number) {
-    this.queries.removeAt(groupIndex);
+  removeMetric(queryIndex: number) {
+    this.queries.removeAt(queryIndex);
     if (this.experimentInfo) {
-      const deletedQuery = this.experimentInfo.queries[groupIndex];
+      const deletedQuery = this.experimentInfo.queries[queryIndex];
       if (deletedQuery) {
-        delete this.experimentInfo.queries[groupIndex];
+        delete this.experimentInfo.queries[queryIndex];
       }
     }
     // reset options for metric keys:
@@ -357,42 +293,23 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.updateView();
   }
 
-  updateView(type?: string) {
-    this.metricsDataSource.next(this.queries.controls);
-    if (type) {
-      this[type].nativeElement.scroll({
-        top: this[type].nativeElement.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
+  getMetricPlaceHolder(keyIndex: number) {
+    if (keyIndex == 0 || keyIndex == 2) return this.translate.instant('home.new-experiment.metrics.metric.placeholder.text');
+    if (keyIndex == 1) return this.translate.instant('home.new-experiment.metrics.key.placeholder.text');
   }
 
-  getMetricPlaceHolder(formIndex) {
-    if (formIndex == 0 || formIndex == 2) return this.translate.instant('home.new-experiment.metrics.metric.placeholder.text');
-    if (formIndex == 1) return this.translate.instant('home.new-experiment.metrics.key.placeholder.text');
-  }
-
-  isMetricRepeated(selectedNode, queryIndex) {
-    if (this.experimentInfo && queryIndex && queryIndex+1 <= this.experimentInfoQueriesLength) {
+  isMetricRepeated(selectedNode, queryIndex: number, editMode = false) {
+    if (this.experimentInfo && queryIndex && queryIndex+1 <= this.experimentInfoQueriesLength && !editMode) {
       let key;
       if (this.experimentInfo.queries[queryIndex].metric.key != undefined) {
         key = this.experimentInfo.queries[queryIndex].metric.key;
       } else {
         key = this.experimentInfo.queries[queryIndex].metric;
       }
-      
       const rootKey = key.split(METRICS_JOIN_TEXT);
-      if (rootKey.length > 1) {
-        return true;
-      } else {
-        return false;
-      }
+      return rootKey.length > 1 ? true : false;
     } else {
-      if ( selectedNode !== undefined && selectedNode.children.length) {
-        return true;
-      } else {
-        return false;
-      }
+      return selectedNode !== undefined && selectedNode.children.length ? true : false;
     }
   }
 
@@ -416,6 +333,122 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   checkComparisonStatisticError(compareFn: any, compareValue: any) {
     if (compareFn == null || compareFn === '' || compareValue == null || compareValue === '') {
       this.queryComparisonStatisticError.push(true);
+    }
+  }
+
+  ManageKeysControl(queryIndex: number, keyIndex: number) {
+    let keysArray;
+    if (queryIndex == null) {
+      queryIndex = this.queryIndex;
+    }
+    // Prepare filteredMetrics for each query and its keys for experimentInfo while in edit Mode
+    if (this.experimentInfo) {
+      if (this.experimentInfo.queries.length > 0) {
+        keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+        this.filteredMetrics$[keyIndex] = keysArray.at(keyIndex).get('metricKey').valueChanges
+        .pipe(
+          startWith<string>(''),
+          map(key => {
+            if (keyIndex - 1 >= 0) {
+              const { metricKey } = keysArray.at(keyIndex - 1).value;
+              this.options = metricKey.children;
+            }
+            return key ? this._filter(key) : this.options ? this.options.slice() : [];
+          })
+        );
+      }
+    } else {
+      // Prepare filteredMetrics for each query and its keys for new experiment
+      keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+      this.filteredMetrics$[keyIndex] = keysArray.at(keyIndex).get('metricKey').valueChanges
+      .pipe(
+        startWith<string>(''),
+        map(key => {
+          if (keyIndex - 1 >= 0) {
+            const { metricKey } = keysArray.at(keyIndex - 1).value;
+            this.options = metricKey.children;
+          }
+          return key ? this._filter(key) : this.options ? this.options.slice() : [];
+        })
+      );
+    }
+  }
+
+  selectedOption(event = null, metric = null, key = null,  queryIndex: number = null, keyIndex: number = null) {
+    // for setting up the metric key in the form from experimentInfo
+    if (event == null) {
+      if (metric) {
+        if (metric.children.length) {
+          this.addMoreSelectKey(key, queryIndex, keyIndex);
+        } else {
+          this.selectedNode[queryIndex] = metric;
+          // reset options for metric keys:
+          this.optionsSub();
+          this.filteredMetrics$ = [];
+        }
+      }
+    } else { // for selectedOption event fired from UI
+      
+      // If the selected option is a repeated metric, add two new nodes
+      if (event.option.value.children.length) {
+
+        // set selectedNode for first key of repeated metrics:
+        if (event.option.value.metricKey != undefined ) {
+          this.firstSelectedNode[queryIndex] = event.option.value.metricKey;
+        } else {
+          this.firstSelectedNode[queryIndex] = event.option.value;
+        }
+        
+        // set fileredStats for the repeated metrics:
+        const { metadata: { type } } = this.firstSelectedNode[queryIndex];
+        this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+
+        // if it is the first Node of the repeated metric, add two new nodes
+        if (keyIndex == 0) {
+          // push middle node from addMoreSelectKey
+          this.addMoreSelectKey(null, queryIndex, keyIndex+1);
+          // push leaf node of the repeated metric
+          this.getKeys(queryIndex).push(this.addKey(null));
+        } else {
+          // if its middle node just prepare filtered list of metrics for leaf node
+          this.ManageKeysControl(queryIndex, keyIndex+1);
+        }
+      } else { // if the selected option is not a repeated metric or it is the leaf node of repeated metric, set selectedNode
+        
+        // if the selected option is a simple metric and it was earlier a repeated metrics, we will clear the keys and set selectedNode
+        if (keyIndex == 0 && this.getKeys(queryIndex).length > 1) {
+          this.getKeys(queryIndex).clear();
+          this.addMoreSelectKey(event.option.value.key, queryIndex, keyIndex);
+          let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+          this.firstSelectedNode[queryIndex] = metric;
+          this.selectedNode[queryIndex] = metric;
+          const { metadata: { type } } = this.selectedNode[queryIndex];
+          this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+          // set editMode to true to avoid isMetricRepeated() function to take experimentInfo instead of current form changes
+          this.editMode = true;
+        } else {
+          // if the selected option is a simple metric and it was earlier not a repeated metrics, set selectedNode
+          const keys = this.getKeys(queryIndex).getRawValue();
+          this.selectedNode[queryIndex] = keys[keys.length - 1].metricKey;
+          const { metadata: { type } } = this.selectedNode[queryIndex];
+          this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+        }
+        // handling leaf node of repeated metrics
+        let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+        this.selectedNode[queryIndex] = metric;
+        // reset options for metric keys:
+        this.optionsSub();
+      }
+    }
+  }
+
+  updateView(type?: string) {
+    this.metricsDataSource.next(this.queries.controls);
+    if (type) {
+      this[type].nativeElement.scroll({
+        top: this[type].nativeElement.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }
 
