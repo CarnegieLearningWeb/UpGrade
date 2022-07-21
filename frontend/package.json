@@ -76,7 +76,7 @@
     "@angular/compiler-cli": "~13.3.11",
     "@angular/language-service": "~13.3.11",
     "@types/jest": "^27.0.0",
-    "@types/node": "^16.0.00",
+    "@types/node": "^16.0.0",
     "@types/uuid": "^8.3.4",
     "codelyzer": "^6.0.2",
     "coverage-badge-creator": "^1.0.11",

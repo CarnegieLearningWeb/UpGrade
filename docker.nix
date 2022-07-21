@@ -16,7 +16,7 @@ stdenv.mkDerivation {
     name = "upgrade-shell";
     buildInputs = 
         # packages everyone gets
-        [ bash nodejs-12_x python38 cacert ]
+        [ bash nodejs-16_x python38 cacert ]
         ++ lib.optional stdenv.isDarwin
         [ darwin.apple_sdk.frameworks.CoreServices ];
 }
