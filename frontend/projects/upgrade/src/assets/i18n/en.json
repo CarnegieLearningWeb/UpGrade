@@ -135,6 +135,7 @@
   "home.new-experiment.metrics.repeatedmeasure.placeholder.text": "Repeated Measure",
   "home.new-experiment.metrics.description.placeholder.text": "Display Name",
   "home.new-experiment.metrics.description-header.placeholder.text": "DISPLAY NAME",
+  "home.new-experiment.metrics.metrics-key-exist.validation.text": "Metric/Key are required",
   "home.new-experiment.metrics.statistics-exist.validation.text": "Statistics are required",
   "home.new-experiment.metrics.comparison-statistics-exist.validation.text": "Comparison Statistics are required",
   "home.new-experiment.metrics.description-exist.validation.text": "Query Name/Description is required",

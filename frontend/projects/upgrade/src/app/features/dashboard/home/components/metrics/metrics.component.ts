@@ -60,6 +60,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryIndex: number = 0;
   editMode: Boolean = false;
 
+  queryMetricKeyError = [];
   queryNameError = [];
   queryStatisticError = [];
   queryComparisonStatisticError = [];
@@ -91,6 +92,14 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         })
       ])
     });
+
+    // Bind predefined values of metrics from backend env file for auto complete:
+    const metricsFormControl = this.queries as FormArray;
+    metricsFormControl.controls.forEach((_, keyIndex) => {
+      this.ManageKeysControl(null, keyIndex);
+      this.setQueryIndex(this.queryIndex+1);
+    });
+    this.queryIndex = 0;
 
     // populate values in form to update experiment if experiment data is available in edit mode
     if (this.experimentInfo) {
@@ -168,12 +177,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       });
     }
     this.updateView();
-
-    // Bind predefined values of metrics from backend env file for auto complete:
-    // const metricsFormControl = this.queries as FormArray;
-    // metricsFormControl.controls.forEach((_, queryIndex) => {
-    //   this.ManageKeysControl(queryIndex, null)
-    // });
   }
 
   // getters
@@ -284,12 +287,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.experimentInfo) {
       const deletedQuery = this.experimentInfo.queries[queryIndex];
       if (deletedQuery) {
-        delete this.experimentInfo.queries[queryIndex];
+        this.experimentInfo.queries.splice(queryIndex, 1);
       }
     }
     // reset options for metric keys:
     this.optionsSub();
-    this.filteredMetrics$ = [];
+    this.setQueryIndex(this.queryIndex - 1);
     this.updateView();
   }
 
@@ -318,19 +321,25 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return metric;
   }
 
-  checkQueryNameError(queryName){
+  checkMetricKeyRequiredError(metricKeyMissing: Boolean){
+    if (metricKeyMissing) {
+      this.queryMetricKeyError.push(true);
+    }
+  }
+
+  checkQueryNameRequiredError(queryName: any){
     if (queryName == null || queryName === '') {
       this.queryNameError.push(true);
     }
   }
 
-  checkStatisticError(statistic: any) {
+  checkStatisticRequiredError(statistic: any) {
     if (statistic == null || statistic === '') {
       this.queryStatisticError.push(true);
     }
   }
 
-  checkComparisonStatisticError(compareFn: any, compareValue: any) {
+  checkComparisonStatisticRequiredError(compareFn: any, compareValue: any) {
     if (compareFn == null || compareFn === '' || compareValue == null || compareValue === '') {
       this.queryComparisonStatisticError.push(true);
     }
@@ -459,9 +468,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        this.queryNameError = [];
+        this.queryMetricKeyError = [];
         this.queryStatisticError = []; 
         this.queryComparisonStatisticError = [];
+        this.queryNameError = [];
         const monitoredMetricsFormData = this.queryForm.getRawValue();
         monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map(
           (query, index) => {
@@ -469,10 +479,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
             if (keys) {
               keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key ? key.metricKey.key : key.metricKey);
               if (keys.length) {
-                this.checkQueryNameError(queryName);
-                this.checkStatisticError(operationType);
+                this.checkQueryNameRequiredError(queryName);
+                this.checkStatisticRequiredError(operationType);
                 if (operationType && (operationType === OPERATION_TYPES.COUNT || operationType === OPERATION_TYPES.PERCENTAGE)) {
-                  this.checkComparisonStatisticError(compareFn, compareValue);
+                  this.checkComparisonStatisticRequiredError(compareFn, compareValue);
                 }
 
                 let queryObj: Query = {
@@ -502,14 +512,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
                     : ({...this.removeMetricName(queryObj)})
                   );
               } else {
-                  return;
+                this.checkMetricKeyRequiredError(true);
+                return;
               }
             } else {
               return;
             }
           });
 
-        if (this.queryNameError.length == 0 && this.queryStatisticError.length == 0 && this.queryComparisonStatisticError.length == 0) {
+        if (this.queryMetricKeyError.length == 0 && this.queryStatisticError.length == 0 && this.queryComparisonStatisticError.length == 0 && this.queryNameError.length == 0) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: monitoredMetricsFormData,

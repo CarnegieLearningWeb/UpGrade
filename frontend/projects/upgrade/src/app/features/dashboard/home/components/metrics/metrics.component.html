@@ -164,8 +164,8 @@
         <br>
         <span
           class="ft-14-600 validation-message"
-          *ngIf="queryNameError.length > 0"
-          [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
+          *ngIf="queryMetricKeyError.length > 0"
+          [innerHTML]="'home.new-experiment.metrics.metrics-key-exist.validation.text' | translate"
         ></span>
         <span
         class="ft-14-600 validation-message"
@@ -177,6 +177,11 @@
         *ngIf="queryComparisonStatisticError.length > 0"
         [innerHTML]="'home.new-experiment.metrics.comparison-statistics-exist.validation.text' | translate"
       ></span>
+      <span
+          class="ft-14-600 validation-message"
+          *ngIf="queryNameError.length > 0"
+          [innerHTML]="'home.new-experiment.metrics.description-exist.validation.text' | translate"
+        ></span>
       </ng-container>
       <ng-template #noAvailableMetricsMessage>
         <br>
