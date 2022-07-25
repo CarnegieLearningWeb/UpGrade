@@ -35,11 +35,8 @@ export const selectQueryResult = createSelector(
 export const selectQueryResultById = createSelector(
   selectAnalysisState,
   (state: AnalysisState, { queryId }) => {
-    console.log('queryId:', queryId)
     if (state.queryResult) {
-      console.log('stateQueryResult:', state.queryResult)
       const queryResult = state.queryResult.filter(res => res.id === queryId);
-      console.log('queryResult:', queryResult)
       return queryResult.length && queryResult[0].result || [];
     }
     return [];
