@@ -16,6 +16,7 @@ import { ExperimentSegmentExclusionRepository } from '../repositories/Experiment
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { getSegmentData } from '../controllers/SegmentController'
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
+import { CacheService } from './CacheService';
 @Service()
 export class SegmentService {
   constructor(
@@ -28,7 +29,8 @@ export class SegmentService {
     @OrmRepository()
     private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
     @OrmRepository()
-    private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository
+    private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
+    private cacheService: CacheService
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
@@ -58,8 +60,34 @@ export class SegmentService {
     return segmentDoc;
   }
 
+  // public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
+  //   //logger.info({ message: `Find segment by id. segmentId: ${id}`});
+  //   let segmentDoc = await this.segmentRepository
+  //   .createQueryBuilder('segment')
+  //   .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+  //   .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+  //   .leftJoinAndSelect('segment.subSegments', 'subSegment')
+  //   .where('segment.id IN (:...ids)', {ids})
+  //   .getMany()
+
+  //   return segmentDoc;
+  // }
+
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
     //logger.info({ message: `Find segment by id. segmentId: ${id}`});
+
+    let cachedSegmentsDoc: Segment[] = [];
+    ids.filter(async id => {
+      const cacheData = await this.cacheService.getCache(id);
+      if (cacheData) {
+        cachedSegmentsDoc.push(cacheData);
+        console.log('===Cache Data===', cacheData);
+        return false;
+      } else {
+        return true;
+      }
+    });
+
     let segmentDoc = await this.segmentRepository
     .createQueryBuilder('segment')
     .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
@@ -68,7 +96,10 @@ export class SegmentService {
     .where('segment.id IN (:...ids)', {ids})
     .getMany()
 
-    return segmentDoc;
+    segmentDoc.forEach(segment => {
+      this.cacheService.setCache(segment.id, segment);
+    });
+    return segmentDoc.concat(cachedSegmentsDoc);
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
