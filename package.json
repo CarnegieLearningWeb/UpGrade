@@ -21,8 +21,6 @@
   "bugs": {
     "url": "https://github.com/CarnegieLearningWeb/UpGrade/issues"
   },
-  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme",
-  "dependencies": {
-    "cache-manager": "^4.1.0"
+  "homepage": "https://github.com/CarnegieLearningWeb/UpGrade#readme"
   }
 }
