@@ -58,7 +58,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
   queryIndex: number = 0;
-  editMode: Boolean = false;
+  editMode: boolean = false;
 
   queryMetricKeyError = [];
   queryNameError = [];
@@ -80,7 +80,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     this.optionsSub();
-
     this.queryForm = this._formBuilder.group({
       queries: this._formBuilder.array([ this._formBuilder.group({
         keys: this._formBuilder.array([this.addKey()]),
@@ -96,7 +95,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     // Bind predefined values of metrics from backend env file for auto complete:
     const metricsFormControl = this.queries as FormArray;
     metricsFormControl.controls.forEach((_, keyIndex) => {
-      this.ManageKeysControl(null, keyIndex);
+      this.ManageKeysControl(this.queryIndex, keyIndex);
       this.setQueryIndex(this.queryIndex+1);
     });
     this.queryIndex = 0;
@@ -140,7 +139,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
               this.selectedOption(null, metricObj, key, queryIndex, keyindex);
               this.optionsSub();
               metricObj = metricObj.children;
-              metricObj = metricObj.find(metric => metric.key == key);
+              metricObj = metricObj.find(metric => metric.key === key);
               childKey = key;
             }
           });
@@ -291,14 +290,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
     // reset options for metric keys:
+    this.firstSelectedNode[queryIndex] = null;
     this.optionsSub();
     this.setQueryIndex(this.queryIndex - 1);
     this.updateView();
   }
 
   getMetricPlaceHolder(keyIndex: number) {
-    if (keyIndex == 0 || keyIndex == 2) return this.translate.instant('home.new-experiment.metrics.metric.placeholder.text');
-    if (keyIndex == 1) return this.translate.instant('home.new-experiment.metrics.key.placeholder.text');
+    if (keyIndex === 0 || keyIndex === 2) return this.translate.instant('home.new-experiment.metrics.metric.placeholder.text');
+    if (keyIndex === 1) return this.translate.instant('home.new-experiment.metrics.key.placeholder.text');
   }
 
   isMetricRepeated(selectedNode, queryIndex: number, editMode = false) {
@@ -321,71 +321,52 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return metric;
   }
 
-  checkMetricKeyRequiredError(metricKeyMissing: Boolean){
+  checkMetricKeyRequiredError(metricKeyMissing: boolean){
     if (metricKeyMissing) {
       this.queryMetricKeyError.push(true);
     }
   }
 
   checkQueryNameRequiredError(queryName: any){
-    if (queryName == null || queryName === '') {
+    if (!queryName) {
       this.queryNameError.push(true);
     }
   }
 
   checkStatisticRequiredError(statistic: any) {
-    if (statistic == null || statistic === '') {
+    if (!statistic) {
       this.queryStatisticError.push(true);
     }
   }
 
   checkComparisonStatisticRequiredError(compareFn: any, compareValue: any) {
-    if (compareFn == null || compareFn === '' || compareValue == null || compareValue === '') {
+    if (!compareFn || !compareValue) {
       this.queryComparisonStatisticError.push(true);
     }
   }
 
   ManageKeysControl(queryIndex: number, keyIndex: number) {
-    let keysArray;
-    if (queryIndex == null) {
-      queryIndex = this.queryIndex;
+    if(keyIndex === 0) {
+      this.optionsSub();
     }
-    // Prepare filteredMetrics for each query and its keys for experimentInfo while in edit Mode
-    if (this.experimentInfo) {
-      if (this.experimentInfo.queries.length > 0) {
-        keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
-        this.filteredMetrics$[keyIndex] = keysArray.at(keyIndex).get('metricKey').valueChanges
-        .pipe(
-          startWith<string>(''),
-          map(key => {
-            if (keyIndex - 1 >= 0) {
-              const { metricKey } = keysArray.at(keyIndex - 1).value;
-              this.options = metricKey.children;
-            }
-            return key ? this._filter(key) : this.options ? this.options.slice() : [];
-          })
-        );
-      }
-    } else {
-      // Prepare filteredMetrics for each query and its keys for new experiment
-      keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
-      this.filteredMetrics$[keyIndex] = keysArray.at(keyIndex).get('metricKey').valueChanges
-      .pipe(
-        startWith<string>(''),
-        map(key => {
-          if (keyIndex - 1 >= 0) {
-            const { metricKey } = keysArray.at(keyIndex - 1).value;
-            this.options = metricKey.children;
-          }
-          return key ? this._filter(key) : this.options ? this.options.slice() : [];
-        })
-      );
-    }
+    // Prepare filteredMetrics for each query and its keys for new experiment and for experimentInfo while in edit Mode
+    let keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    this.filteredMetrics$[keyIndex] = keysArray.at(keyIndex).get('metricKey').valueChanges
+    .pipe(
+      startWith<string>(''),
+      map(key => {
+        if (keyIndex - 1 >= 0) {
+          const { metricKey } = keysArray.at(keyIndex - 1).value;
+          this.options = metricKey.children;
+        }
+        return key ? this._filter(key) : this.options ? this.options.slice() : [];
+      })
+    );
   }
 
   selectedOption(event = null, metric = null, key = null,  queryIndex: number = null, keyIndex: number = null) {
     // for setting up the metric key in the form from experimentInfo
-    if (event == null) {
+    if (event === null) {
       if (metric) {
         if (metric.children.length) {
           this.addMoreSelectKey(key, queryIndex, keyIndex);
@@ -397,12 +378,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         }
       }
     } else { // for selectedOption event fired from UI
-      
       // If the selected option is a repeated metric, add two new nodes
       if (event.option.value.children.length) {
 
         // set selectedNode for first key of repeated metrics:
-        if (event.option.value.metricKey != undefined ) {
+        if (event.option.value.metricKey !== undefined ) {
           this.firstSelectedNode[queryIndex] = event.option.value.metricKey;
         } else {
           this.firstSelectedNode[queryIndex] = event.option.value;
@@ -413,7 +393,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
 
         // if it is the first Node of the repeated metric, add two new nodes
-        if (keyIndex == 0) {
+        if (keyIndex === 0) {
           // push middle node from addMoreSelectKey
           this.addMoreSelectKey(null, queryIndex, keyIndex+1);
           // push leaf node of the repeated metric
@@ -425,7 +405,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       } else { // if the selected option is not a repeated metric or it is the leaf node of repeated metric, set selectedNode
         
         // if the selected option is a simple metric and it was earlier a repeated metrics, we will clear the keys and set selectedNode
-        if (keyIndex == 0 && this.getKeys(queryIndex).length > 1) {
+        if (keyIndex === 0 && this.getKeys(queryIndex).length > 1) {
           this.getKeys(queryIndex).clear();
           this.addMoreSelectKey(event.option.value.key, queryIndex, keyIndex);
           let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
@@ -520,7 +500,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
             }
           });
 
-        if (this.queryMetricKeyError.length == 0 && this.queryStatisticError.length == 0 && this.queryComparisonStatisticError.length == 0 && this.queryNameError.length == 0) {
+        if (this.queryMetricKeyError.length === 0 && this.queryStatisticError.length === 0 && this.queryComparisonStatisticError.length === 0 && this.queryNameError.length === 0) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: monitoredMetricsFormData,
