@@ -67,7 +67,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
   }
 
   public async deleteDecisionPoint(id: string, entityManager: EntityManager): Promise<void> {
-    entityManager
+    await entityManager
       .createQueryBuilder()
       .delete()
       .from(DecisionPoint)
