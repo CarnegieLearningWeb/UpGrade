@@ -10,7 +10,6 @@ describe('AuthReducer', () => {
             type: 'test'
         }
 
-        
         const newState = authReducer(previousState, testAction);
 
         expect(newState).toBe(previousState);
