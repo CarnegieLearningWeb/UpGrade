@@ -76,7 +76,7 @@ export class ExperimentConditionRepository extends Repository<ExperimentConditio
   }
 
   public async deleteCondition(id: string, entityManager: EntityManager): Promise<void> {
-    entityManager
+    await entityManager
       .createQueryBuilder()
       .delete()
       .from(ExperimentCondition)
