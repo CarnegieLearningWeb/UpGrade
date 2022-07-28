@@ -530,7 +530,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           ? control.value.assignmentWeight
           : this.previousAssignmentWeightValues[index]
         );
-        if (this.experimentInfo.state !== this.ExperimentState.ENROLLING && this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
+        if (this.experimentInfo?.state !== this.ExperimentState.ENROLLING && this.experimentInfo?.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
           control.get('assignmentWeight').enable();
         }
         });
