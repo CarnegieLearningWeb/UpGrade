@@ -3,7 +3,7 @@
     <form class="experiment-schedule-form" [formGroup]="experimentScheduleForm">
 
       <mat-checkbox
-        class="ft-14-700"
+        class="ft-13-700"
         color="primary"
         [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
         formControlName="startExperimentAutomatically"
@@ -32,7 +32,7 @@
         </mat-form-field>
       </div>
 
-      <mat-checkbox class="ft-14-700" color="primary" formControlName="endExperimentAutomatically"
+      <mat-checkbox class="ft-13-700" color="primary" formControlName="endExperimentAutomatically"
       [disabled]= "experimentInfo && experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
       >
         {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}

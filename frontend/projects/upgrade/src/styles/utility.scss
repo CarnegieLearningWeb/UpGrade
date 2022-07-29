@@ -125,6 +125,10 @@ button,
   @include set-font(12, 700);
 }
 
+.ft-13-700 {
+  @include set-font(13, 700);
+}
+
 .ft-14-400 {
   @include set-font(14, 400);
 }
