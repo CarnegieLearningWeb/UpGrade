@@ -321,9 +321,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return metric;
   }
 
-  checkMetricKeyRequiredError(metricKeyMissing: boolean){
-    if (metricKeyMissing) {
-      this.queryMetricKeyError.push(true);
+  checkMetricKeyRequiredError(metricKeys: any){
+    for (let i = 0; i < metricKeys.length; i++) {
+      if (metricKeys[i].metricKey === null) {
+        this.queryMetricKeyError.push(true);
+      }
     }
   }
 
@@ -457,11 +459,14 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           (query, index) => {
             let { keys, operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
             if (keys) {
+              this.checkMetricKeyRequiredError(keys);
               keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key ? key.metricKey.key : key.metricKey);
               if (keys.length) {
                 this.checkQueryNameRequiredError(queryName);
                 this.checkStatisticRequiredError(operationType);
-                if (operationType && (operationType === OPERATION_TYPES.COUNT || operationType === OPERATION_TYPES.PERCENTAGE)) {
+                let metric = this.allMetrics.find(metric => metric.key === keys[0]);
+                const { metadata: { type } } = metric;
+                if (type === IMetricMetaData.CATEGORICAL) {
                   this.checkComparisonStatisticRequiredError(compareFn, compareValue);
                 }
 
@@ -492,7 +497,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
                     : ({...this.removeMetricName(queryObj)})
                   );
               } else {
-                this.checkMetricKeyRequiredError(true);
                 return;
               }
             } else {
