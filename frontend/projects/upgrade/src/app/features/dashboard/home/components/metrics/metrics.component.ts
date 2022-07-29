@@ -323,7 +323,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   checkMetricKeyRequiredError(metricKeys: any){
     for (let i = 0; i < metricKeys.length; i++) {
-      if (metricKeys[i].metricKey === null) {
+      if (!metricKeys[i]?.metricKey) {
         this.queryMetricKeyError.push(true);
       }
     }
@@ -459,7 +459,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           (query, index) => {
             let { keys, operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
             if (keys) {
-              this.checkMetricKeyRequiredError(keys);
+              // check for metric key required except default row:
+              if ( keys[0].metricKey || operationType || queryName || compareFn || compareValue ) {
+                this.checkMetricKeyRequiredError(keys);
+              }
               keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key ? key.metricKey.key : key.metricKey);
               if (keys.length) {
                 this.checkQueryNameRequiredError(queryName);
@@ -495,14 +498,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
                   : (queryObj.metric.key 
                     ? ({...queryObj}) 
                     : ({...this.removeMetricName(queryObj)})
-                  );
-              } else {
-                return;
+                );
               }
-            } else {
-              return;
             }
-          });
+          }
+        );
 
         if (this.queryMetricKeyError.length === 0 && this.queryStatisticError.length === 0 && this.queryComparisonStatisticError.length === 0 && this.queryNameError.length === 0) {
           this.emitExperimentDialogEvent.emit({
