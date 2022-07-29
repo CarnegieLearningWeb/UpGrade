@@ -38,13 +38,10 @@
     .secondary-form {
       flex-wrap: wrap;
 
-      mat-select {
-        width: 40%;
-      }
-
       .form-control {
         margin-top: -10px;
         margin-bottom: -10px;
+        width: 80%;
       }
     }
 
