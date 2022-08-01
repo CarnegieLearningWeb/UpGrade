@@ -99,7 +99,7 @@
             <mat-cell
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
-              style="justify-content: flex-end;"
+              style="justify-content: flex-start;"
             >
             <button mat-icon-button
               [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
@@ -210,7 +210,7 @@
 
           <!-- ASSIGNMENT WEIGHT Column -->
           <ng-container matColumnDef="assignmentWeight">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: center;">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: right;">
               {{ 'home-global.assignment-weight.text' | translate }}
             </mat-header-cell>
             <mat-cell
@@ -218,7 +218,7 @@
               [formGroupName]="groupIndex"
               style="justify-content: center;"
             >
-              <mat-form-field floatLabel="never" style="text-align: center;">
+              <mat-form-field floatLabel="never" style="text-align: right;">
                 <input
                   type="string"
                   matInput
@@ -259,7 +259,7 @@
             <mat-cell
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
-              style="justify-content: flex-end;"
+              style="justify-content: flex-start;"
             >
             <button mat-icon-button
               [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
