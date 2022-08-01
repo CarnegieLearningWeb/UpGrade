@@ -84,23 +84,10 @@
     margin-top: 10px;
     margin-bottom: 10px;
     font-size: 13px;
-    &.mat-checkbox-checked {
-      color: var(--blue);
-    }
   }
 
   .partition-table {
     margin-top: 30px;
-  }
-
-  .button-container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-
-    .btn-back {
-      margin-left: 0 !important;
-    }
   }
 
   .title {

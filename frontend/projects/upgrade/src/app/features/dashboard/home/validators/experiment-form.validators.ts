@@ -20,7 +20,7 @@ export class ExperimentFormValidators {
           let sumOfAssignmentWeights = 0.0;
           conditions.forEach(condition => (sumOfAssignmentWeights += parseFloat(condition.assignmentWeight)));
           // checking if sum is not equal to 100
-          return Math.ceil(sumOfAssignmentWeights) !== 100.0 ? { assignmentWeightsSumError: true } : null;
+          return Math.round(sumOfAssignmentWeights) !== 100.0 ? { assignmentWeightsSumError: true } : null;
         }
       }
     }

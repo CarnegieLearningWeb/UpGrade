@@ -284,7 +284,7 @@ export class AnalyticsRepository {
       return {
         id,
         users: userObject?.users ? parseInt(userObject.users, 10) : 0,
-        groups: groupObject?.groups ? parseInt(groupObject?.groups, 10) : 0,
+        groups: groupObject?.groups ? parseInt(groupObject.groups, 10) : 0,
       };
     });
 

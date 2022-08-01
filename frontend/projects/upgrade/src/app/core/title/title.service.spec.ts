@@ -76,8 +76,6 @@ describe('TitleService', () => {
             mockTranslatedTitle,
             snapshot
         }) => {
-            console.log('here')
-
             it(`WHEN ${whenCondition}, THEN the expected value is ${expectedValue}`, fakeAsync(() => {
                 mockTranslateService.get = jest.fn().mockReturnValue(of(mockTranslatedTitle));
 

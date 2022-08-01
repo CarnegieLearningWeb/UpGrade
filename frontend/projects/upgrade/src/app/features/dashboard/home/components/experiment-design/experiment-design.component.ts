@@ -520,7 +520,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         const len = conditions.controls.length;
         this.previousAssignmentWeightValues =  [];
         conditions.controls.forEach( control => {
-          control.get('assignmentWeight').setValue((100.0/len).toFixed(1).toString() + '%');
+          control.get('assignmentWeight').setValue(parseFloat((100.0/len).toFixed(1)).toString());
           this.previousAssignmentWeightValues.push(control.get('assignmentWeight').value);
           control.get('assignmentWeight').disable();
         });
@@ -530,7 +530,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           ? control.value.assignmentWeight
           : this.previousAssignmentWeightValues[index]
         );
-        if (this.experimentInfo.state !== this.ExperimentState.ENROLLING && this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
+        if (this.experimentInfo?.state !== this.ExperimentState.ENROLLING && this.experimentInfo?.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
           control.get('assignmentWeight').enable();
         }
         });
