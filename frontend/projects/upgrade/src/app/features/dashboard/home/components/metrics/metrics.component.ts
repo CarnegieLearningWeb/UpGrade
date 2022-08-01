@@ -321,9 +321,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return metric;
   }
 
-  checkMetricKeyRequiredError(metricKeyMissing: boolean){
-    if (metricKeyMissing) {
-      this.queryMetricKeyError.push(true);
+  checkMetricKeyRequiredError(metricKeys: any){
+    for (let i = 0; i < metricKeys.length; i++) {
+      if (!metricKeys[i]?.metricKey) {
+        this.queryMetricKeyError.push(true);
+      }
     }
   }
 
@@ -457,11 +459,17 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           (query, index) => {
             let { keys, operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
             if (keys) {
+              // check for metric key required except default row:
+              if ( keys[0].metricKey || operationType || queryName || compareFn || compareValue ) {
+                this.checkMetricKeyRequiredError(keys);
+              }
               keys = keys.filter((key) => key.metricKey !== null).map(key => key.metricKey.key ? key.metricKey.key : key.metricKey);
               if (keys.length) {
                 this.checkQueryNameRequiredError(queryName);
                 this.checkStatisticRequiredError(operationType);
-                if (operationType && (operationType === OPERATION_TYPES.COUNT || operationType === OPERATION_TYPES.PERCENTAGE)) {
+                let metric = this.allMetrics.find(metric => metric.key === keys[0]);
+                const { metadata: { type } } = metric;
+                if (type === IMetricMetaData.CATEGORICAL) {
                   this.checkComparisonStatisticRequiredError(compareFn, compareValue);
                 }
 
@@ -490,15 +498,11 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
                   : (queryObj.metric.key 
                     ? ({...queryObj}) 
                     : ({...this.removeMetricName(queryObj)})
-                  );
-              } else {
-                this.checkMetricKeyRequiredError(true);
-                return;
+                );
               }
-            } else {
-              return;
             }
-          });
+          }
+        );
 
         if (this.queryMetricKeyError.length === 0 && this.queryStatisticError.length === 0 && this.queryComparisonStatisticError.length === 0 && this.queryNameError.length === 0) {
           this.emitExperimentDialogEvent.emit({
