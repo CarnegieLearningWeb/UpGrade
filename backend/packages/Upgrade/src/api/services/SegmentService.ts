@@ -34,77 +34,53 @@ export class SegmentService {
   ) {}
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
-    logger.info({ message: `Find all segments`});
+    logger.info({ message: `Find all segments` });
     let queryBuilder = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segment.subSegments', 'subSegment')
-      .where('segment.type != :private', {private: SEGMENT_TYPE.PRIVATE})
+      .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
       .getMany();
 
     return queryBuilder;
   }
 
   public async getSegmentById(id: string, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Find segment by id. segmentId: ${id}`});
-    let segmentDoc = await this.segmentRepository
-    .createQueryBuilder('segment')
-    .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
-    .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
-    .leftJoinAndSelect('segment.subSegments', 'subSegment')
-    .where('segment.type != :private', {private: SEGMENT_TYPE.PRIVATE})
-    .andWhere({ id })
-    .getOne()
+    logger.info({ message: `Find segment by id. segmentId: ${id}` });
+    const segmentDoc = await this.segmentRepository
+      .createQueryBuilder('segment')
+      .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+      .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+      .leftJoinAndSelect('segment.subSegments', 'subSegment')
+      .where('segment.type != :private', { private: SEGMENT_TYPE.PRIVATE })
+      .andWhere({ id })
+      .getOne();
 
     return segmentDoc;
   }
 
-  // public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-  //   //logger.info({ message: `Find segment by id. segmentId: ${id}`});
-  //   let segmentDoc = await this.segmentRepository
-  //   .createQueryBuilder('segment')
-  //   .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
-  //   .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
-  //   .leftJoinAndSelect('segment.subSegments', 'subSegment')
-  //   .where('segment.id IN (:...ids)', {ids})
-  //   .getMany()
-
-  //   return segmentDoc;
-  // }
-
   public async getSegmentByIds(ids: string[]): Promise<Segment[]> {
-    //logger.info({ message: `Find segment by id. segmentId: ${id}`});
+    return this.cacheService.wrapFunction(ids, async () => {
+      const result = await this.segmentRepository
+        .createQueryBuilder('segment')
+        .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
+        .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
+        .leftJoinAndSelect('segment.subSegments', 'subSegment')
+        .where('segment.id IN (:...ids)', { ids })
+        .getMany();
 
-    let cachedSegmentsDoc: Segment[] = [];
-    ids.filter(async id => {
-      const cacheData = await this.cacheService.getCache(id);
-      if (cacheData) {
-        cachedSegmentsDoc.push(cacheData);
-        console.log('===Cache Data===', cacheData);
-        return false;
-      } else {
-        return true;
-      }
+      // sort according to ids
+      const sortedData = ids.map((id) => {
+        return result.find((data) => data.id === id);
+      });
+
+      return sortedData;
     });
-
-    let segmentDoc = await this.segmentRepository
-    .createQueryBuilder('segment')
-    .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
-    .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
-    .leftJoinAndSelect('segment.subSegments', 'subSegment')
-    .where('segment.id IN (:...ids)', {ids})
-    .getMany()
-
-    segmentDoc.forEach(segment => {
-      this.cacheService.setCache(segment.id, segment);
-    });
-    return segmentDoc.concat(cachedSegmentsDoc);
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
     const segmentsData = await getConnection().transaction(async (transactionalEntityManager) => {
-
       const segmentsData = await this.getAllSegments(logger);
       const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
       const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
@@ -116,8 +92,8 @@ export class SegmentService {
         allExperimentSegmentsInclusion.forEach((ele) => {
           let subSegments = ele.segment.subSegments;
           subSegments.forEach((subSegment) => {
-            ele.experiment.state ===  EXPERIMENT_STATE.ENROLLING 
-              ?  segmentsUsedLockedList.push(subSegment.id)
+            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
+              ? segmentsUsedLockedList.push(subSegment.id)
               : segmentsUsedUnlockedList.push(subSegment.id);
           });
         });
@@ -127,8 +103,8 @@ export class SegmentService {
         allExperimentSegmentsExclusion.forEach((ele) => {
           let subSegments = ele.segment.subSegments;
           subSegments.forEach((subSegment) => {
-            ele.experiment.state ===  EXPERIMENT_STATE.ENROLLING
-              ?  segmentsUsedLockedList.push(subSegment.id)
+            ele.experiment.state === EXPERIMENT_STATE.ENROLLING
+              ? segmentsUsedLockedList.push(subSegment.id)
               : segmentsUsedUnlockedList.push(subSegment.id);
           });
         });
@@ -136,21 +112,21 @@ export class SegmentService {
 
       const segmentsDataWithStatus = segmentsData.map((segment) => {
         if (segment.id === globalExcludeSegment.id) {
-          return {...segment, status: SEGMENT_STATUS.GLOBAL};
-        } else if (segmentsUsedLockedList.find(segmentId => segmentId === segment.id)) {
-          return {...segment, status: SEGMENT_STATUS.USED}; // TODO change to locked
-        } else if (segmentsUsedUnlockedList.find(segmentId => segmentId === segment.id)) {
-          return {...segment, status: SEGMENT_STATUS.USED}; // TODO change to unlocked
+          return { ...segment, status: SEGMENT_STATUS.GLOBAL };
+        } else if (segmentsUsedLockedList.find((segmentId) => segmentId === segment.id)) {
+          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to locked
+        } else if (segmentsUsedUnlockedList.find((segmentId) => segmentId === segment.id)) {
+          return { ...segment, status: SEGMENT_STATUS.USED }; // TODO change to unlocked
         } else {
-          return {...segment, status: SEGMENT_STATUS.UNUSED };
-        }      
+          return { ...segment, status: SEGMENT_STATUS.UNUSED };
+        }
       });
 
       return {
         segmentsData: segmentsDataWithStatus,
         experimentSegmentInclusionData: allExperimentSegmentsInclusion,
-        experimentSegmentExclusionData: allExperimentSegmentsExclusion
-      }
+        experimentSegmentExclusionData: allExperimentSegmentsExclusion,
+      };
     });
 
     return segmentsData;
@@ -165,14 +141,14 @@ export class SegmentService {
     let queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
     return queryBuilder;
   }
- 
+
   public upsertSegment(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}`});
-    return this.addSegmentDataInDB(segment,logger);
+    logger.info({ message: `Upsert segment => ${JSON.stringify(segment, undefined, 2)}` });
+    return this.addSegmentDataInDB(segment, logger);
   }
 
   public async deleteSegment(id: string, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Delete segment by id. segmentId: ${id}`});
+    logger.info({ message: `Delete segment by id. segmentId: ${id}` });
     return await this.segmentRepository.deleteSegment(id, logger);
   }
 
@@ -186,7 +162,7 @@ export class SegmentService {
     }
 
     // check for each subSegment to exists
-    segment.subSegmentIds.forEach(subSegmentId => {
+    segment.subSegmentIds.forEach((subSegmentId) => {
       const subSegment = this.segmentRepository.findOne(subSegmentId);
       if (!subSegment) {
         const error = new Error('SubSegment not found');
@@ -195,16 +171,16 @@ export class SegmentService {
         throw error;
       }
     });
-    
-    logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}`});
+
+    logger.info({ message: `Import segment => ${JSON.stringify(segment, undefined, 2)}` });
     return this.addSegmentDataInDB(segment, logger);
   }
 
   public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
-    logger.info({ message: `Export segment by id. segmentId: ${segmentId}`});
+    logger.info({ message: `Export segment by id. segmentId: ${segmentId}` });
     let segmentDoc = await this.segmentRepository.findOne({
       where: { id: segmentId },
-      relations: ['individualForSegment', 'groupForSegment', 'subSegments']
+      relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
     });
     if (!segmentDoc) {
       throw new Error(SERVER_ERROR.QUERY_FAILED);
@@ -215,7 +191,7 @@ export class SegmentService {
   private async addSegmentDataInDB(segment: SegmentInputValidator, logger: UpgradeLogger): Promise<Segment> {
     const createdSegment = await getConnection().transaction(async (transactionalEntityManager) => {
       let segmentDoc: Segment;
-  
+
       if (segment.id) {
         try {
           // get segment by ids
@@ -225,20 +201,18 @@ export class SegmentService {
 
           // delete individual for segment
           if (segmentDoc && segmentDoc.individualForSegment && segmentDoc.individualForSegment.length > 0) {
-            const usersToDelete = segmentDoc.individualForSegment.map(individual => {
-              return { userId: individual.userId, segment: segment.id }
+            const usersToDelete = segmentDoc.individualForSegment.map((individual) => {
+              return { userId: individual.userId, segment: segment.id };
             });
-            await transactionalEntityManager.getRepository(IndividualForSegment)
-              .delete(usersToDelete as any);
+            await transactionalEntityManager.getRepository(IndividualForSegment).delete(usersToDelete as any);
           }
 
           // delete group for segment
           if (segmentDoc && segmentDoc.groupForSegment && segmentDoc.groupForSegment.length > 0) {
-            const groupToDelete = segmentDoc.groupForSegment.map(group => {
-              return { groupId: group.groupId, type: group.type, segment: segment.id }
+            const groupToDelete = segmentDoc.groupForSegment.map((group) => {
+              return { groupId: group.groupId, type: group.type, segment: segment.id };
             });
-            await transactionalEntityManager.getRepository(GroupForSegment)
-              .delete(groupToDelete as any);
+            await transactionalEntityManager.getRepository(GroupForSegment).delete(groupToDelete as any);
           }
         } catch (err) {
           const error = err as ErrorWithType;
@@ -256,7 +230,7 @@ export class SegmentService {
       try {
         segmentDoc = await transactionalEntityManager
           .getRepository(Segment)
-          .save({ id, name, description, context, type,  subSegments: subSegmentData });
+          .save({ id, name, description, context, type, subSegments: subSegmentData });
       } catch (err) {
         const error = err as ErrorWithType;
         error.details = 'Error in saving segment in DB';
@@ -273,7 +247,7 @@ export class SegmentService {
       const groupForSegmentDocsToSave = segment.groups.map((group) => {
         return { ...group, segment: segmentDoc };
       });
-      
+
       try {
         await Promise.all([
           this.individualForSegmentRepository.insertIndividualForSegment(
@@ -293,6 +267,9 @@ export class SegmentService {
         logger.error(error);
         throw error;
       }
+
+      // reset caching
+      this.cacheService.resetCache();
 
       return transactionalEntityManager
         .getRepository(Segment)

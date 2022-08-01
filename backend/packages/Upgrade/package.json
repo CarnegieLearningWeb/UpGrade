@@ -27,6 +27,7 @@
     "license": "ISC",
     "devDependencies": {
         "@types/body-parser": "^1.17.1",
+        "@types/cache-manager": "^4.0.1",
         "@types/compression": "^1.0.1",
         "@types/cors": "^2.8.6",
         "@types/dotenv": "^6.1.1",
