@@ -283,7 +283,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.partitionDataSource.next(this.partition.controls);
     if (type) {
       this[type].nativeElement.scroll({
-        top: this[type].nativeElement.scrollHeight,
+        top: this[type].nativeElement.scrollHeight - 91,
         behavior: 'smooth'
       });
     }

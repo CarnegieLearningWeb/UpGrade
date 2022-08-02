@@ -1,6 +1,7 @@
 .experiment-design {
   .condition-table,
   .partition-table {
+    margin-top: 5px;
     max-height: 135px;
     overflow: auto;
 
@@ -90,20 +91,9 @@
     }
   }
 
-  mat-checkbox {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 13px;
-  }
-
-  .partition-table {
-    margin-top: 30px;
-  }
-
   .title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
   }
 
   ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
@@ -116,8 +106,12 @@
   }
 }
 
+.validation-container {
+  min-height: 30px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
 .header-group {
-  display: grid;
-  margin-left: 10px;
-  justify-content: left;
+  margin-top: 5px;
 }
