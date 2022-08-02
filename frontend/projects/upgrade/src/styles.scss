@@ -10,6 +10,7 @@
 @import './themes/light-theme';
 @import './themes/dark-theme';
 @import './styles/utility.scss';
+@import './styles/shared-modal.scss';
 @import './app/features/dashboard/dashboard-root/dashboard-root.theme.scss';
 @import './app/features/dashboard/home/root/home.theme.scss';
 @import './app/features/dashboard/home/components/experiment-list/experiment-list.theme.scss';
@@ -218,18 +219,6 @@
 
 .new-user-modal {
   width: 805px;
-}
-
-// Common style for modal button
-.modal-btn {
-  margin-left: 20px !important;
-  border-radius: 3px !important;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
-  width: 100px;
-  height: 36px;
-  font-family: 'Open Sans';
-  font-size: var(--text-size-normal);
-  font-weight: 600;
 }
 
 .mat-button,

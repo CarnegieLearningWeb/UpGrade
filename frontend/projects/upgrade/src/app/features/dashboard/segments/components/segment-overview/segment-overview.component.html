@@ -34,7 +34,7 @@
 
   <div class="button-container">
     <button
-      class="modal-btn"
+      class="shared-modal--modal-btn"
       mat-raised-button
       (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
     >
@@ -42,7 +42,7 @@
     </button>
     <button
       mat-raised-button
-      class="modal-btn default-button"
+      class="shared-modal--modal-btn default-button"
       (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
     >
       {{ 'global.next.text' | translate }}

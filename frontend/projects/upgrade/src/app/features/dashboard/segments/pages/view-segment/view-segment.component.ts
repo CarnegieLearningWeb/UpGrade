@@ -41,7 +41,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     this.segmentSub = this.segmentsService.selectedSegment$
       .pipe(filter(segment => !!segment))
       .subscribe(segment => {
-        this.segment = segment;
+        this.segment = {...segment, status: segment.status || SEGMENT_STATUS.UNUSED};
 
         this.permissions.segments.delete = (this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE);
         this.members = [];

@@ -53,7 +53,7 @@
   </div>
   <div class="action-buttons">
     <button
-      class="modal-btn"
+      class="shared-modal--modal-btn"
       mat-raised-button
       (click)="onNoClick()"
     >
@@ -61,7 +61,7 @@
     </button>
     <button
       mat-raised-button
-      class="modal-btn default-button"
+      class="shared-modal--modal-btn default-button"
       [ngClass]="{ 'default-button--disabled': !this.newUserForm.valid }"
       [disabled]="!this.newUserForm.valid"
       (click)="addNewUser()"
