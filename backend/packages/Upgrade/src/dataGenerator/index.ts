@@ -123,11 +123,11 @@ const experiment = {
 //  decision points must be 4 times the experiments created
 const generateFakeExperiments = async (numberOfAssignemts: number, host: string) => {
     const data = await mocker()
-        .schema('partition', decisionPoint, { uniqueField: ['expPoint', 'expId'], min: numberOfAssignemts * 4, max: numberOfAssignemts * 5 }) 
-        .schema('experiment', experiment, { uniqueField: 'partition.expId', min: numberOfAssignemts, max: numberOfAssignemts }) 
+        .schema('partition', decisionPoint, { uniqueField: ['expPoint', 'expId'], min: numberOfAssignemts * 4, max: numberOfAssignemts * 5 })
+        .schema('experiment', experiment, { uniqueField: 'partition.expId', min: numberOfAssignemts, max: numberOfAssignemts })
         .build();
 
-    const decisionPoints = data.partition; 
+    const decisionPoints = data.partition;
     const experiments = data.experiment.map((exp: any) => {
         const group = exp.consistencyRule === 'group' ? groups[faker.random.number({ min: 1, max: 4 })] : null;
         // Change the condition assignment weight
