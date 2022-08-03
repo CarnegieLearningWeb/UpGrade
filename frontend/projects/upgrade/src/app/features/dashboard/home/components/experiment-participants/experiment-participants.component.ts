@@ -183,7 +183,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.members1DataSource.next(this.members1.controls);
     if (this.members1Table) {
       this.members1Table.nativeElement.scroll({
-        top: this.members1Table.nativeElement.scrollHeight,
+        top: this.members1Table.nativeElement.scrollHeight - 94,
         behavior: 'smooth'
       });
     }
@@ -193,7 +193,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.members2DataSource.next(this.members2.controls);
     if (this.members2Table) {
       this.members2Table.nativeElement.scroll({
-        top: this.members2Table.nativeElement.scrollHeight,
+        top: this.members2Table.nativeElement.scrollHeight - 94,
         behavior: 'smooth'
       });
     }
