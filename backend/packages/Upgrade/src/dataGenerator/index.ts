@@ -21,8 +21,8 @@ const context = [
 const groups = ['class', 'school', 'district'];
 const numberOfCond = [1, 2, 4, 5];
 
-// Define partition schema generator
-const partition = {
+// Define decision point schema generator
+const decisionPoint = { 
     expPoint: {
         faker: 'random.word()',
     },
@@ -120,14 +120,14 @@ const experiment = {
     },
 };
 
-//  partitions must be 4 times the experiments created
+//  decision points must be 4 times the experiments created
 const generateFakeExperiments = async (numberOfAssignemts: number, host: string) => {
     const data = await mocker()
-        .schema('partition', partition, { uniqueField: ['expPoint', 'expId'], min: numberOfAssignemts * 4, max: numberOfAssignemts * 5 })
-        .schema('experiment', experiment, { uniqueField: 'partition.expId', min: numberOfAssignemts, max: numberOfAssignemts })
+        .schema('partition', decisionPoint, { uniqueField: ['expPoint', 'expId'], min: numberOfAssignemts * 4, max: numberOfAssignemts * 5 }) 
+        .schema('experiment', experiment, { uniqueField: 'partition.expId', min: numberOfAssignemts, max: numberOfAssignemts }) 
         .build();
 
-    const partitions = data.partition;
+    const decisionPoints = data.partition; 
     const experiments = data.experiment.map((exp: any) => {
         const group = exp.consistencyRule === 'group' ? groups[faker.random.number({ min: 1, max: 4 })] : null;
         // Change the condition assignment weight
@@ -137,14 +137,14 @@ const generateFakeExperiments = async (numberOfAssignemts: number, host: string)
                 assignmentWeight: 100 / exp.conditions.length,
             };
         });
-        // add the partitions.
-        const currPartitions = [];
+        // add the decision points.
+        const currDecisionPoints = [];
         for (let i = 0; i < faker.random.number({ min: 1, max: 4 }); i++) {
-            const splicingIndex = faker.random.number({ min: 0, max: partitions.length - 1 });
-            currPartitions.push(partitions.splice(splicingIndex, 1)[0]);
+            const splicingIndex = faker.random.number({ min: 0, max: decisionPoints.length - 1 });
+            currDecisionPoints.push(decisionPoints.splice(splicingIndex, 1)[0]);
         }
 
-        return { ...exp, group, conditions, partitions: currPartitions };
+        return { ...exp, group, conditions, partitions: currDecisionPoints };
     });
     try {
         const response = await fetch(host, {

@@ -113,7 +113,7 @@ export class Experiment extends BaseModel {
   @Type(() => ExperimentCondition)
   public conditions: ExperimentCondition[];
 
-  @OneToMany((type) => DecisionPoint, (partition) => partition.experiment)
+  @OneToMany((type) => DecisionPoint, (decisionPoint) => decisionPoint.experiment)
   @ValidateNested()
   @Type(() => DecisionPoint)
   public partitions: DecisionPoint[];
