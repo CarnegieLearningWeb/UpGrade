@@ -309,6 +309,7 @@
   "segments.overview.segment-app-context.text": "App Context",
   "segments.members-add-members.text": "Add Member",
   "segments.members-placeholder-type.text": "Type",
+  "segments.members-placeholder-id/name.text": "ID/Name",
   "segments.include.text": "Include",
   "segments.except.text": "Except",
   "segments.global-members-type.text": "TYPE",
