@@ -87,7 +87,7 @@
             {{ experiment.description }}
           </span>
           <ng-template #experimentDescription>
-            <span class="experiment-description ft-10-400" [matTooltip]="experiment.description" matTooltipPosition="above">
+            <span class="experiment-description ft-10-400" [matTooltip]="experiment.description" matTooltipPosition="below">
               {{ experiment.description | truncate: 35 }}
             </span>
           </ng-template>
