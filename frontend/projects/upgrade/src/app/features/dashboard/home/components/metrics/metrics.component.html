@@ -41,9 +41,21 @@
                       [displayWith]="displayFn"
                       panelWidth="fit-content"
                       >
-                      <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics$[keyIndex] | async" [value]="option">
-                        {{ option.key }}
-                      </mat-option>
+                      <div *ngIf="keyIndex == 0">
+                        <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics1$[queryIndex] | async" [value]="option">
+                          {{ option.key }}
+                        </mat-option>
+                      </div>
+                      <div *ngIf="keyIndex == 1">
+                        <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics2$[queryIndex] | async" [value]="option">
+                          {{ option.key }}
+                        </mat-option>
+                      </div>
+                      <div *ngIf="keyIndex == 2">
+                        <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics3$[queryIndex] | async" [value]="option">
+                          {{ option.key }}
+                        </mat-option>
+                      </div>
                     </mat-autocomplete>
                   </ng-container>
                 </mat-form-field>
