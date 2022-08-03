@@ -22,7 +22,7 @@ const groups = ['class', 'school', 'district'];
 const numberOfCond = [1, 2, 4, 5];
 
 // Define decision point schema generator
-const decisionPoint = { 
+const decisionPoint = {
     expPoint: {
         faker: 'random.word()',
     },
