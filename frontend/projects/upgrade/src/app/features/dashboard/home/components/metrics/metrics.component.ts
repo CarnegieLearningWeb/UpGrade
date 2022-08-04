@@ -395,7 +395,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         // if it is the first Node of the repeated metric, add two new nodes for the first time selection
         if (keyIndex === 0) {
           this.ManageKeysControl(queryIndex, 0);
-          if(!this.firstSelectedNode[queryIndex]) {
+          if(this.getKeys(queryIndex).length !== 3) {
             // push middle node from addMoreSelectKey
             this.addMoreSelectKey(null, queryIndex, keyIndex+1);
             this.ManageKeysControl(queryIndex, keyIndex+1);
@@ -418,9 +418,10 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
           this.firstSelectedNode[queryIndex] = event.option.value.metricKey;
         } else {
           this.firstSelectedNode[queryIndex] = event.option.value;
+          this.selectedNode[queryIndex] = event.option.value;
         }
         // set fileredStats for the repeated metrics:
-        const { metadata: { type } } = this.firstSelectedNode[queryIndex];
+        const { metadata: { type } } = this.selectedNode[queryIndex];
         this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
       } else { // if the selected option is not a repeated metric or it is the leaf node of repeated metric, set selectedNode
         
