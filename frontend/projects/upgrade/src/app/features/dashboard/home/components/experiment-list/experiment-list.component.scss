@@ -66,6 +66,13 @@ $experiment-state-light-color: #8f9bb3;
     tr.mat-footer-row,
     tr.mat-row {
       height: 55px;
+      cursor: pointer;
+      border-left: 3px solid white;
+
+      &:hover {
+        border-left: 3px solid var(--blue);
+        opacity: 0.8;
+      }
     }
 
     td {
@@ -81,6 +88,7 @@ $experiment-state-light-color: #8f9bb3;
 
       &.cdk-column-name {
         width: 15%;
+        padding-left: 15px;
       }
 
       &.cdk-column-postExperimentRule {
@@ -111,10 +119,6 @@ $experiment-state-light-color: #8f9bb3;
     }
 
     .experiment {
-      &-name {
-        text-decoration: underline;
-      }
-
       &-state {
         display: flex;
         align-items: center;
