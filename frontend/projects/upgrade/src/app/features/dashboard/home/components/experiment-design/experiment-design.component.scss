@@ -1,57 +1,73 @@
 .experiment-design {
   .condition-table,
   .partition-table {
+    margin-top: 5px;
     max-height: 135px;
     overflow: auto;
 
     mat-header-row {
       min-height: 35px;
+      justify-content: space-between;
     }
 
     mat-row {
       min-height: 46px;
       max-height: 46px;
+      justify-content: space-between;
     }
 
     mat-header-cell {
       justify-content: left;
-      margin-right: 15px;
       color: var(--grey-6);
     }
 
     mat-cell {
       justify-content: left;
-      margin-right: 15px;
       margin-bottom: -5px;
     }
 
     .cdk-column-removeCondition,
     .cdk-column-removePartition {
-      flex: 0 0 11%;
-      width: 11%;
+      flex: 0 0 60px;
+      width: 60px;
     }
 
-    .cdk-column-target,
     .cdk-column-site {
-      flex: 0 0 42%;
-      width: 42%;
+      flex: 0 0 220px;
+      width: 220px;
+    }
+
+    .cdk-column-target {
+      margin-left: 30px;
+      width: 100%;
+      max-width: 530px;
     }
 
     .cdk-column-conditionCode {
-      flex: 0 0 25%;
-      width: 25%;
+      flex: 0 0 220px;
+      width: 220px;
     }
+
     .cdk-column-assignmentWeight {
-      flex: 0 0 30%;
-      width: 30%;
+      flex: 0 0 82px;
+      width: 82px;
+    }
+    
+    .cdk-column-description {
+      margin-left: 30px;
+      width: 100%;
+      max-width: 350px;
     }
 
     .remove-icon {
-      position: relative;
-      top: -3px;
-      width: 18px;
-      height: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: -3px;
+      min-width: 60px;
+      height: 16px;
       font-size: var(--text-size-x-large);
+      color: gray;
 
       &:hover {
         cursor: pointer;
@@ -61,10 +77,6 @@
     mat-form-field {
       width: 100%;
       text-align: left;
-    }
-
-    .condition-description {
-      padding: 10px 0;
     }
   }
 
@@ -80,23 +92,9 @@
     }
   }
 
-  mat-checkbox {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    &.mat-checkbox-checked {
-      color: var(--blue);
-    }
-  }
-
-  .partition-table {
-    margin-top: 30px;
-  }
-
   .title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
   }
 
   ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
@@ -109,8 +107,12 @@
   }
 }
 
+.validation-container {
+  min-height: 30px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
 .header-group {
-  display: grid;
-  margin-left: 10px;
-  justify-content: left;
+  margin-top: 5px;
 }

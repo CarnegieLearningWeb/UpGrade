@@ -99,7 +99,7 @@
             <mat-cell
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
-              style="justify-content: flex-end;"
+              style="justify-content: flex-start;"
             >
             <button mat-icon-button
               [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
@@ -139,29 +139,31 @@
           {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
         </button>
       </ng-container>
-      <span
-        class="ft-14-600 validation-message"
-        *ngFor="let error of partitionPointErrors"
-      >{{ error }}</span>
-      <span
+      <div class="validation-container">
+        <span
+          class="ft-14-600 validation-message"
+          *ngFor="let error of partitionPointErrors"
+        >{{ error }}</span>
+        <span
           class="ft-14-600 validation-message"
           *ngIf="partitionCountError"
           [innerHTML]="partitionCountError"
-      ></span>
-      <!-- If experiment point and id are not from predefined value -->
-      <span
-        class="ft-14-600 validation-message"
-        *ngFor="let error of expPointAndIdErrors"
-      >{{ error }}</span>
-      <br>
-      <br>
+        ></span>
+        <!-- If experiment point and id are not from predefined value -->
+        <span
+          class="ft-14-600 validation-message"
+          *ngFor="let error of expPointAndIdErrors"
+        >{{ error }}</span>
+      </div>
+
       <!-- Condition table -->
       <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
       <!-- apply equal condition weights -->
       <div class="header-group">
         <mat-checkbox
-        class="ft-8-100"
+        class="ft-13-700"
         color="primary"
+        [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
         [checked]="equalWeightFlag"
         (change)="changeEqualWeightFlag($event)">
         {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
@@ -209,7 +211,7 @@
 
           <!-- ASSIGNMENT WEIGHT Column -->
           <ng-container matColumnDef="assignmentWeight">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: center;">
+            <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: right;">
               {{ 'home-global.assignment-weight.text' | translate }}
             </mat-header-cell>
             <mat-cell
@@ -217,7 +219,7 @@
               [formGroupName]="groupIndex"
               style="justify-content: center;"
             >
-              <mat-form-field floatLabel="never" style="text-align: center;">
+              <mat-form-field floatLabel="never" style="text-align: right;">
                 <input
                   type="string"
                   matInput
@@ -258,7 +260,7 @@
             <mat-cell
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
-              style="justify-content: flex-end;"
+              style="justify-content: flex-start;"
             >
             <button mat-icon-button
               [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
@@ -294,23 +296,23 @@
         >
           + {{ 'home.new-experiment.design.add-condition.text' | translate }}
         </button>
+      </ng-container>
+      <div class="validation-container">
         <span
           class="ft-14-600 validation-message"
           *ngIf="experimentDesignForm.errors?.assignmentWeightsSumError"
           [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
         ></span>
         <span
-        class="ft-14-600 validation-message"
-        *ngFor="let error of conditionCodeErrors"
+          class="ft-14-600 validation-message"
+          *ngFor="let error of conditionCodeErrors"
         >{{ error }} </span>
         <span
           class="ft-14-600 validation-message"
           *ngIf="conditionCountError"
           [innerHTML]="conditionCountError"
         ></span>
-      </ng-container>
-      <br>
-      <br>
+      </div>
       
     </form>
   </section>

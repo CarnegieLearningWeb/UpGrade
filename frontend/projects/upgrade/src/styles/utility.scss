@@ -87,7 +87,6 @@ button,
 
 .validation-message {
   display: block;
-  padding: 5px 0;
   color: var(--red);
 }
 
@@ -123,6 +122,10 @@ button,
 
 .ft-12-700 {
   @include set-font(12, 700);
+}
+
+.ft-13-700 {
+  @include set-font(13, 700);
 }
 
 .ft-14-400 {

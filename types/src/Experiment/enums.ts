@@ -124,7 +124,7 @@ export enum DATE_RANGE {
 export enum REPEATED_MEASURE {
   mean = 'MEAN',
   earliest = 'EARLIEST',
-  mostRecent = 'MOST_RECENT',
+  mostRecent = 'MOST RECENT',
 }
 
 export enum FILTER_MODE {
