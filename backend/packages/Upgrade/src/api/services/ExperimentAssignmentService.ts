@@ -365,7 +365,7 @@ export class ExperimentAssignmentService {
       }
 
       // experiment level inclusion and exclusion
-      const [filteredExperiments,] = await this.experimentLevelExclusionInclusion(
+      const [filteredExperiments] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
         experimentUser,
         logger
@@ -1309,10 +1309,10 @@ export class ExperimentAssignmentService {
     const segmentsToFetchArray = Object.keys(segmentObj).map((expId) => segmentObj[expId].segmentIdsQueue);
     const segmentsToFetch = segmentsToFetchArray.flat();
 
-    if(depth === 5 || segmentsToFetch.length === 0) {
+    if (depth === 5 || segmentsToFetch.length === 0) {
       return [segmentObj, segmentDetails];
     }
-    
+
     const segmentDetailsFetched = await this.segmentService.getSegmentByIds(segmentsToFetch);
     segmentDetails.push(...segmentDetailsFetched);
 
