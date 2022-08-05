@@ -66,12 +66,16 @@ $experiment-state-light-color: #8f9bb3;
     tr.mat-footer-row,
     tr.mat-row {
       height: 55px;
-      cursor: pointer;
-      border-left: 3px solid white;
-
+      
       &:hover {
-        border-left: 3px solid var(--blue);
+        cursor: pointer;
         opacity: 0.8;
+
+        .experiment-name {
+          opacity: 1.0;
+          font-weight: 900;
+          color: var(--blue);
+        }
       }
     }
 
