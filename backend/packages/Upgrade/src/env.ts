@@ -95,6 +95,9 @@ export const env = {
   },
   hostUrl: getOsEnv('HOST_URL'),
   tokenSecretKey: getOsEnv('TOKEN_SECRET_KEY'),
+  caching: {
+    enabled: toBool(getOsEnvOptional('CACHING_ENABLED')),
+  },
   clientApi: {
     secret: getOsEnv('CLIENT_API_SECRET'),
     key: getOsEnv('CLIENT_API_KEY'),
