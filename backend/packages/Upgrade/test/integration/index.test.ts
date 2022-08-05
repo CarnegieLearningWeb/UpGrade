@@ -344,8 +344,8 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Experiment without partition', async (done) => {
-    await NoPartitionPoint();
+  test('Experiment without decision point', async (done) => {
+    await NoPartitionPoint(); 
     done();
   });
 
@@ -424,7 +424,7 @@ describe('Integration Tests', () => {
     done();
   });
 
-  test('Order For Partition', async (done) => {
+  test('Order For Decision Point', async (done) => {
     await PartitionOrder();
     done();
   });
