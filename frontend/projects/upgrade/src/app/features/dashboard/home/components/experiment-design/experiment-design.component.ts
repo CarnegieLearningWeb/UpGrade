@@ -101,8 +101,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.isContextChanged = false;
       this.partition.clear();
       this.condition.clear();
-      this.partition.push(this.addPartitions());
-      this.condition.push(this.addConditions());
       this.partitionDataSource.next(this.partition.controls);
       this.conditionDataSource.next(this.condition.controls);
     }
@@ -355,7 +353,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text');
     if (conditions.length) {
       const hasDefaultConditionCode = conditions.filter(
-        condition => condition.conditionCode.toUpperCase() === defaultKeyword
+        condition => condition.conditionCode && condition.conditionCode.toUpperCase().trim() === defaultKeyword
       );
       if (hasDefaultConditionCode.length && this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText) === -1) {
         this.conditionCodeErrors.push(defaultConditionCodeErrorText);
