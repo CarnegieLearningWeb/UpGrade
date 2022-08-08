@@ -221,13 +221,14 @@
             >
               <mat-form-field floatLabel="never" style="text-align: right;">
                 <input
-                  type="string"
+                  type="number"
                   matInput
                   [placeholder]="
                     'home.new-experiment.design.assignment-weight.placeholder.text'
                       | translate
                   "
                   formControlName="assignmentWeight"
+                  autocomplete="off"
                 />
               </mat-form-field>
             </mat-cell>
