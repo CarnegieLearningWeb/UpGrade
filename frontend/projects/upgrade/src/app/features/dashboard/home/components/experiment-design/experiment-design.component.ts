@@ -353,7 +353,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text');
     if (conditions.length) {
       const hasDefaultConditionCode = conditions.filter(
-        condition => condition.conditionCode && condition.conditionCode.toUpperCase().trim() === defaultKeyword
+        condition => typeof condition.conditionCode === 'string' && condition.conditionCode.toUpperCase().trim() === defaultKeyword
       );
       if (hasDefaultConditionCode.length && this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText) === -1) {
         this.conditionCodeErrors.push(defaultConditionCodeErrorText);
