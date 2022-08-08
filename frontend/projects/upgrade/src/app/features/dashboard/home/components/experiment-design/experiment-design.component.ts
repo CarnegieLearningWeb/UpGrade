@@ -388,7 +388,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateConditionCount(conditions: ExperimentCondition[]) {
     const conditionCountErrorMsg = this.translate.instant('home.new-experiment.design.condition-count-new-exp-error.text');
-    if (conditions.length === 0 || !conditions.every(condition => condition.conditionCode && condition.assignmentWeight && condition.conditionCode.trim())) {
+    if (conditions.length === 0 || !conditions.every(condition => typeof condition.conditionCode === 'string' && condition.conditionCode.trim() && condition.assignmentWeight !== null)) {
       this.conditionCountError = conditionCountErrorMsg;
     } else {
       this.conditionCountError = null;
@@ -397,7 +397,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validatePartitionCount(partitions: ExperimentPartition[]) {
     const partitionCountErrorMsg = this.translate.instant('home.new-experiment.design.partition-count-new-exp-error.text');
-    if (partitions.length === 0 || !partitions.every(partition => partition.site && partition.target && partition.site.trim() && partition.target.trim())) {
+    if (partitions.length === 0 || !partitions.every(partition => typeof partition.site === 'string' && partition.site.trim() && typeof partition.target === 'string' && partition.target.trim())) {
       this.partitionCountError = partitionCountErrorMsg;
     } else {
       this.partitionCountError = null;
