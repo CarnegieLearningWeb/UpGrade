@@ -4,7 +4,7 @@
       <span class="title">{{ 'home.new-experiment.metrics.text' | translate }}</span>
       <br>
       <br>
-      <ng-container *ngIf="options?.length; else noAvailableMetricsMessage">
+      <ng-container *ngIf="allMetrics?.length; else noAvailableMetricsMessage">
         <!-- Metric Table -->
         <ng-container>
           <mat-table
