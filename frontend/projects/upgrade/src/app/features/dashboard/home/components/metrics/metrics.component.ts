@@ -550,7 +550,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.queries.clear();
-      this.queries.push(this.addMetric());
       this.metricsDataSource.next(this.queries.controls);
     }
   }
