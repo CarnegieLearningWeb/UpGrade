@@ -174,10 +174,10 @@ export class ExperimentService {
       experiment.conditions[index] = newCondition;
     });
 
-    // order for partition
-    experiment.partitions.forEach((partition, index) => {
-      const newPartition = { ...partition, order: index + 1 };
-      experiment.partitions[index] = newPartition;
+    // order for decisionPoint
+    experiment.partitions.forEach((decisionPoint, index) => {
+      const newDecisionPoint = { ...decisionPoint, order: index + 1 };
+      experiment.partitions[index] = newDecisionPoint;
     });
     experiment.backendVersion = env.app.version;
     return this.addExperimentInDB(experiment, currentUser, logger);
@@ -270,9 +270,9 @@ export class ExperimentService {
   public async getAllUniqueIdentifiers(logger: UpgradeLogger): Promise<string[]> {
     logger.info({ message: 'getAllUniqueIdentifiers' });
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
-    const partitionsUniqueIdentifier = this.decisionPointRepository.getAllUniqueIdentifier();
-    const [conditionIds, partitionsIds] = await Promise.all([conditionsUniqueIdentifier, partitionsUniqueIdentifier]);
-    return [...conditionIds, ...partitionsIds];
+    const decisionPointsUniqueIdentifier = this.decisionPointRepository.getAllUniqueIdentifier();
+    const [conditionIds, decisionPointsIds] = await Promise.all([conditionsUniqueIdentifier, decisionPointsUniqueIdentifier]);
+    return [...conditionIds, ...decisionPointsIds];
   }
 
   public async updateState(
@@ -347,20 +347,20 @@ export class ExperimentService {
       logger.error(error);
       throw error;
     }
-    let experimentPartitions = experiment.partitions;
+    let experimentDecisionPoints = experiment.partitions;
 
-    // Remove the partitions which already exist
-    for (const partition of experimentPartitions) {
-      const partitionExist = await this.decisionPointRepository.findOne(partition.id);
-      if (partitionExist) {
-        if (experimentPartitions.indexOf(partition) >= 0) {
-          experimentPartitions.splice(experimentPartitions.indexOf(partition), 1);
+    // Remove the decision points which already exist
+    for (const decisionPoint of experimentDecisionPoints) {
+      const decisionPointExists = await this.decisionPointRepository.findOne(decisionPoint.id);
+      if (decisionPointExists) {
+        if (experimentDecisionPoints.indexOf(decisionPoint) >= 0) {
+          experimentDecisionPoints.splice(experimentDecisionPoints.indexOf(decisionPoint), 1);
         }
       }
     }
 
-    if (experimentPartitions.length === 0) {
-      const error = new Error('Duplicate partition');
+    if (experimentDecisionPoints.length === 0) {
+      const error = new Error('Duplicate Decision Point');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
       logger.error(error);
       throw error;
@@ -378,19 +378,19 @@ export class ExperimentService {
       return condition;
     });
 
-    // Generate new twoCharacterId if it is already exist for partitions
-    experimentPartitions = experimentPartitions.map((partition) => {
-      let twoCharacterId = partition.twoCharacterId;
+    // Generate new twoCharacterId if it is already exist for decision points
+    experimentDecisionPoints = experimentDecisionPoints.map((decisionPoint) => {
+      let twoCharacterId = decisionPoint.twoCharacterId;
       if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
         twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-        logger.info({ message: `Generate new twoCharacterId for partition =>`, details: twoCharacterId });
-        partition.twoCharacterId = twoCharacterId;
+        logger.info({ message: `Generate new twoCharacterId for Decision Point =>`, details: twoCharacterId });
+        decisionPoint.twoCharacterId = twoCharacterId;
       }
       uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-      return partition;
+      return decisionPoint;
     });
 
-    experiment.partitions = experimentPartitions;
+    experiment.partitions = experimentDecisionPoints;
     experiment.endOn = null;
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
@@ -544,7 +544,7 @@ export class ExperimentService {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
-    const oldPartitions = oldExperiment.partitions;
+    const oldDecisionPoints = oldExperiment.partitions;
     const oldQueries = oldExperiment.queries;
 
     // create schedules to start experiment and end experiment
@@ -566,7 +566,7 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        let { conditions, partitions, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
+        let { conditions, partitions: decisionPoints, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -662,13 +662,13 @@ export class ExperimentService {
             })) ||
           [];
 
-        // creating partition docs
-        const partitionDocToSave =
-          (partitions &&
-            partitions.length > 0 &&
-            partitions.map((partition) => {
+        // creating decision point docs
+        const decisionPointDocToSave =
+          (decisionPoints &&
+            decisionPoints.length > 0 &&
+            decisionPoints.map((decisionPoint) => {
               // tslint:disable-next-line:no-shadowed-variable
-              const { createdAt, updatedAt, versionNumber, ...rest } = partition;
+              const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
               const joinedForId = getExperimentPartitionID(rest.site, rest.target);
               if (rest.id && rest.id === joinedForId) {
                 rest.id = rest.id;
@@ -715,15 +715,15 @@ export class ExperimentService {
           }
         });
 
-        // delete partitions which don't exist in new experiment document
-        const toDeletePartitions = [];
-        oldPartitions.forEach(({ id, site, target }) => {
+        // delete decision points which don't exist in new experiment document
+        const toDeleteDecisionPoints = [];
+        oldDecisionPoints.forEach(({ id, site, target }) => {
           if (
-            !partitionDocToSave.find((doc) => {
+            !decisionPointDocToSave.find((doc) => {
               return doc.id === id && doc.site === site && doc.target === target;
             })
           ) {
-            toDeletePartitions.push(this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager));
+            toDeleteDecisionPoints.push(this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager));
           }
         });
 
@@ -741,15 +741,15 @@ export class ExperimentService {
           }
         });
 
-        // delete old partitions, conditions and queries
-        await Promise.all([...toDeleteConditions, ...toDeletePartitions, ...toDeleteQueries]);
+        // delete old decision points, conditions and queries
+        await Promise.all([...toDeleteConditions, ...toDeleteDecisionPoints, ...toDeleteQueries]);
 
-        // saving conditions, saving partitions and saving queries
+        // saving conditions, saving decision points and saving queries
         let conditionDocs: ExperimentCondition[];
-        let partitionDocs: DecisionPoint[];
+        let decisionPointDocs: DecisionPoint[];
         let queryDocs: Query[];
         try {
-          [conditionDocs, partitionDocs, queryDocs] = await Promise.all([
+          [conditionDocs, decisionPointDocs, queryDocs] = await Promise.all([
             Promise.all(
               conditionDocToSave.map(async (conditionDoc) => {
                 return this.experimentConditionRepository.upsertExperimentCondition(
@@ -759,8 +759,8 @@ export class ExperimentService {
               })
             ) as any,
             Promise.all(
-              partitionDocToSave.map(async (partitionDoc) => {
-                return this.decisionPointRepository.upsertDecisionPoint(partitionDoc, transactionalEntityManager);
+              decisionPointDocToSave.map(async (decisionPointDoc) => {
+                return this.decisionPointRepository.upsertDecisionPoint(decisionPointDoc, transactionalEntityManager);
               })
             ) as any,
             Promise.all(
@@ -771,7 +771,7 @@ export class ExperimentService {
           ]);
         } catch (err) {
           const error = err as Error;
-          error.message = `Error in creating conditions, partitions, queries "updateExperimentInDB"`;
+          error.message = `Error in creating conditions, decision points, queries "updateExperimentInDB"`;
           logger.error(error);
           throw error;
         }
@@ -780,8 +780,8 @@ export class ExperimentService {
           return { ...conditionDoc, experiment: conditionDoc.experiment };
         });
 
-        const partitionDocToReturn = partitionDocs.map((partitionDoc) => {
-          return { ...partitionDoc, experiment: partitionDoc.experiment };
+        const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+          return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
         const queryDocToReturn =
@@ -794,7 +794,7 @@ export class ExperimentService {
         const newExperiment = {
           ...experimentDoc,
           conditions: conditionDocToReturn as any,
-          partitions: partitionDocToReturn as any,
+          partitions: decisionPointDocToReturn as any,
           queries: (queryDocToReturn as any) || []
         };
 
@@ -809,11 +809,11 @@ export class ExperimentService {
         oldExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         oldExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-        oldExperimentClone.partitions.map((partition) => {
-          delete partition.versionNumber;
-          delete partition.updatedAt;
-          delete partition.createdAt;
-          delete (partition as any).experimentId;
+        oldExperimentClone.partitions.map((decisionPoint) => {
+          delete decisionPoint.versionNumber;
+          delete decisionPoint.updatedAt;
+          delete decisionPoint.createdAt;
+          delete (decisionPoint as any).experimentId;
         });
         oldExperimentClone.conditions.map((condition) => {
           delete condition.versionNumber;
@@ -833,11 +833,11 @@ export class ExperimentService {
         newExperimentClone.partitions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         newExperimentClone.conditions.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-        newExperimentClone.partitions.map((partition) => {
-          delete partition.versionNumber;
-          delete partition.updatedAt;
-          delete partition.createdAt;
-          delete (partition as any).experimentId;
+        newExperimentClone.partitions.map((decisionPoint) => {
+          delete decisionPoint.versionNumber;
+          delete decisionPoint.updatedAt;
+          delete decisionPoint.createdAt;
+          delete (decisionPoint as any).experimentId;
         });
         newExperimentClone.conditions.map((condition) => {
           delete condition.versionNumber;
@@ -884,7 +884,7 @@ export class ExperimentService {
   //   }
   // }
 
-  // Used to generate twoCharacterId for condition and partition
+  // Used to generate twoCharacterId for condition and decision point
   private getUniqueIdentifier(uniqueIdentifiers: string[]): string {
     let identifier;
     while (true) {
@@ -900,16 +900,16 @@ export class ExperimentService {
     data: ExperimentCondition[] | DecisionPoint[],
     uniqueIdentifiers: string[]
   ): any[] {
-    const updatedData = (data as any).map((conditionOrPartition) => {
-      if (!conditionOrPartition.twoCharacterId) {
+    const updatedData = (data as any).map((conditionOrDecisionPoint) => {
+      if (!conditionOrDecisionPoint.twoCharacterId) {
         const twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
         uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
         return {
-          ...conditionOrPartition,
+          ...conditionOrDecisionPoint,
           twoCharacterId,
         };
       }
-      return conditionOrPartition;
+      return conditionOrDecisionPoint;
     });
     return [updatedData, uniqueIdentifiers];
   }
@@ -991,14 +991,14 @@ export class ExperimentService {
           return condition;
         });
 
-      // creating partition docs
-      const partitionDocsToSave =
+      // creating decision point docs
+      const decisionPointDocsToSave =
         partitions &&
         partitions.length > 0 &&
-        partitions.map((partition) => {
-          partition.id = getExperimentPartitionID(partition.site, partition.target);
-          partition.experiment = experimentDoc;
-          return partition;
+        partitions.map((decisionPoint) => {
+          decisionPoint.id = getExperimentPartitionID(decisionPoint.site, decisionPoint.target);
+          decisionPoint.experiment = experimentDoc;
+          return decisionPoint;
         });
 
       // creating segmentInclude doc
@@ -1038,16 +1038,16 @@ export class ExperimentService {
         queryDocsToSave = queryDocsToSave.filter((doc) => doc.metric);
       }
 
-      // saving conditions, partitions, queries, segmentInclude, segmentExclude
+      // saving conditions, decision points, queries, segmentInclude, segmentExclude
       let conditionDocs: ExperimentCondition[];
       let experimentSegmentInclusionDoc: ExperimentSegmentInclusion;
       let experimentSegmentExclusionDoc: ExperimentSegmentExclusion;
-      let partitionDocs: DecisionPoint[];
+      let decisionPointDocs: DecisionPoint[];
       let queryDocs: any;
       try {
-        [conditionDocs, partitionDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, queryDocs] = await Promise.all([
+        [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.decisionPointRepository.insertDecisionPoint(partitionDocsToSave, transactionalEntityManager),
+          this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
           this.experimentSegmentInclusionRepository.insertData(segmentIncludeDocToSave, logger, transactionalEntityManager),
           this.experimentSegmentExclusionRepository.insertData(segmentExcludeDocToSave, logger, transactionalEntityManager),
           queryDocsToSave.length > 0
@@ -1056,7 +1056,7 @@ export class ExperimentService {
         ]);
       } catch (err) {
         const error = err as Error;
-        error.message = `Error in creating conditions, partitions and queries "addExperimentInDB"`;
+        error.message = `Error in creating conditions, decision points and queries "addExperimentInDB"`;
         logger.error(error);
         throw error;
       }
@@ -1064,8 +1064,8 @@ export class ExperimentService {
         const { experimentId, ...restDoc } = conditionDoc as any;
         return restDoc;
       });
-      const partitionDocToReturn = partitionDocs.map((partitionDoc) => {
-        const { experimentId, ...restDoc } = partitionDoc as any;
+      const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+        const { experimentId, ...restDoc } = decisionPointDoc as any;
         return restDoc;
       });
 
@@ -1077,7 +1077,7 @@ export class ExperimentService {
       const newExperiment = {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
-        partitions: partitionDocToReturn as any,
+        partitions: decisionPointDocToReturn as any,
         experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
         experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
         queries: (queryDocToReturn as any) || [],
@@ -1154,14 +1154,14 @@ export class ExperimentService {
           return condition;
         });
 
-      // adding a experiment id to experiment partitions
+      // adding a experiment id to experiment decision points
       experiment.partitions =
         experiment.partitions &&
         experiment.partitions.length > 0 &&
-        experiment.partitions.map((partition) => {
-          partition.id = getExperimentPartitionID(partition.site, partition.target);
-          partition.experiment = experiment as any;
-          return partition;
+        experiment.partitions.map((decisionPoint) => {
+          decisionPoint.id = getExperimentPartitionID(decisionPoint.site, decisionPoint.target);
+          decisionPoint.experiment = experiment as any;
+          return decisionPoint;
         });
 
       return experiment;
@@ -1173,26 +1173,26 @@ export class ExperimentService {
     });
     let conditionDocsToSave = [].concat(...allConditionDocs);
 
-    // Fetch all the partitions from array of experiments and flatten it to get new partitions
-    const allPartitionDocs = expDocs.map((experiment) => {
+    // Fetch all the decision points from array of experiments and flatten it to get new decision points
+    const allDecisionPointDocs = expDocs.map((experiment) => {
       return experiment.partitions;
     });
-    let partitionDocsToSave = [].concat(...allPartitionDocs);
+    let decisionPointDocsToSave = [].concat(...allDecisionPointDocs);
 
-    // add unique twoCharacterIds to experiment conditions and partitions
+    // add unique twoCharacterIds to experiment conditions and decision points
     let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
     if (conditionDocsToSave.length) {
       const response = this.setConditionOrPartitionIdentifiers(conditionDocsToSave, uniqueIdentifiers);
       conditionDocsToSave = response[0];
       uniqueIdentifiers = response[1];
     }
-    if (partitionDocsToSave.length) {
-      const response = this.setConditionOrPartitionIdentifiers(partitionDocsToSave, uniqueIdentifiers);
-      partitionDocsToSave = response[0];
+    if (decisionPointDocsToSave.length) {
+      const response = this.setConditionOrPartitionIdentifiers(decisionPointDocsToSave, uniqueIdentifiers);
+      decisionPointDocsToSave = response[0];
       uniqueIdentifiers = response[1];
     }
 
-    // create a transaction and add experiments, conditions & partitions
+    // create a transaction and add experiments, conditions & decision points
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       let experimentDoc: Experiment[];
       try {
@@ -1204,33 +1204,33 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-      // saving conditions and saving partitions
+      // saving conditions and saving decision points
       let conditionDocs: ExperimentCondition[];
-      let partitionDocs: DecisionPoint[];
+      let decisionPointDocs: DecisionPoint[];
       try {
-        [conditionDocs, partitionDocs] = await Promise.all([
+        [conditionDocs, decisionPointDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.decisionPointRepository.insertDecisionPoint(partitionDocsToSave, transactionalEntityManager),
+          this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
         ]);
 
         const conditionDocToReturn = this.arrayGroupBy(conditionDocs, 'experimentId');
-        const partitionDocToReturn = this.arrayGroupBy(partitionDocs, 'experimentId');
+        const decisionPointDocToReturn = this.arrayGroupBy(decisionPointDocs, 'experimentId');
 
         const experimentsToReturn = experimentDoc.map((experiment) => {
           const conditions = conditionDocToReturn[experiment.id].map((conditionDoc) => {
             const { experimentId, ...rest } = conditionDoc as any;
             return rest;
           });
-          const partitions = partitionDocToReturn[experiment.id].map((partitionDoc) => {
-            const { experimentId, ...rest } = partitionDoc as any;
+          const decisionPoints = decisionPointDocToReturn[experiment.id].map((decisionPointDoc) => {
+            const { experimentId, ...rest } = decisionPointDoc as any;
             return rest;
           });
-          return { ...experiment, conditions, partitions };
+          return { ...experiment, conditions, partitions: decisionPoints };
         });
         return experimentsToReturn;
       } catch (err) {
         const error = err as Error;
-        error.message = `Error in creating conditions and partitions "addBulkExperiments"`;
+        error.message = `Error in creating conditions and decision points "addBulkExperiments"`;
         logger.error(error);
         throw error;
       }

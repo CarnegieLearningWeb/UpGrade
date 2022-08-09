@@ -90,10 +90,10 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
   }
 
   public async getAllUniqueIdentifier(): Promise<string[]> {
-    const experimentPartitions = await this.createQueryBuilder('experimentPartition')
+    const experimentDecisionPoints = await this.createQueryBuilder('experimentPartition')
       .select('experimentPartition.twoCharacterId')
       .getMany();
-    const uniqueIdentifier = experimentPartitions.map((experimentPartition) => experimentPartition.twoCharacterId);
+    const uniqueIdentifier = experimentDecisionPoints.map((decisionPoint: DecisionPoint) => decisionPoint.twoCharacterId);
     return uniqueIdentifier;
   }
 }
