@@ -34,6 +34,6 @@ export class DecisionPoint extends BaseModel {
   public experiment: Experiment;
 }
 
-export function getExperimentPartitionID(partitionPoint: string, partitionId: string): string {
-  return partitionId ? `${partitionId}_${partitionPoint}` : `${partitionPoint}`;
+export function getExperimentPartitionID(site: string, target: string): string {
+  return target ? `${target}_${site}` : `${site}`;
 }

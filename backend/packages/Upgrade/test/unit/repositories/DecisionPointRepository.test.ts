@@ -221,7 +221,7 @@ describe('DecisionPointRepository Testing', () => {
 
     });
 
-    it('should get partition point and name', async () => {
+    it('should get decision point and name', async () => {
         createQueryBuilderStub = sandbox.stub(DecisionPointRepository.prototype, 
             'createQueryBuilder').returns(selectQueryBuilder);
 
@@ -236,7 +236,7 @@ describe('DecisionPointRepository Testing', () => {
         expect(res).toEqual([decisionPoint, decisionPoint])
     });
 
-    it('should throw an error when get partition point and name fails', async () => {
+    it('should throw an error when get decision point and name fails', async () => {
         createQueryBuilderStub = sandbox.stub(DecisionPointRepository.prototype, 
             'createQueryBuilder').returns(selectQueryBuilder);
 
