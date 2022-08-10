@@ -6,7 +6,7 @@ import {
 
 export class ExperimentFormValidators {
 
-  static validateExperimentDesignForm(controls: AbstractControl): { [key: string]: any } | null {
+  static validateExperimentDesignForm(controls: AbstractControl, equalWeightFlag: boolean): { [key: string]: any } | null {
     const conditions = controls.get('conditions').value;
     if (conditions.length >= 0) {
       if(conditions.length == 0) {
@@ -15,10 +15,12 @@ export class ExperimentFormValidators {
         const conditionWeight = conditions.map(condition => condition.assignmentWeight);
         if(!conditionWeight[0]) {
           return { assignmentWeightsSumError: false };
+        } else if(equalWeightFlag) {
+          return { assignmentWeightsSumError: false };
         } else {
           // handling sum of decimal values for assignment weights:
           let sumOfAssignmentWeights = 0.0;
-          conditions.forEach(condition => (sumOfAssignmentWeights += parseFloat(condition.assignmentWeight)));
+          conditions.forEach(condition => (sumOfAssignmentWeights += parseFloat(Number(condition.assignmentWeight).toFixed(1))));
           // checking if sum is not equal to 100
           return Math.round(sumOfAssignmentWeights) !== 100.0 ? { assignmentWeightsSumError: true } : null;
         }
