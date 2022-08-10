@@ -23,7 +23,7 @@ export default async function NoPartitionPoint(): Promise<void> {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
 
-  // sort partitions
+  // sort decision points
   experiments[0].partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
@@ -53,20 +53,20 @@ export default async function NoPartitionPoint(): Promise<void> {
   // delete one condition
   editedConditions.pop();
 
-  // edit partitions
-  const editedPartitions = experiments[0].partitions.map((partition, index) => {
+  // edit decision points
+  const editedDecisionPoints = experiments[0].partitions.map((decisionPoint, index) => {
     return {
-      ...partition,
-      description: `Partition on Workspace ${index}`,
+      ...decisionPoint,
+      description: `Decision Point on Workspace ${index}`,
     };
   });
 
-  // delete one partition
-  editedPartitions.pop();
+  // delete one decision point
+  editedDecisionPoints.pop();
 
-  editedPartitions[0].target = 'T1';
-  editedPartitions[0].site = 'Test';
-  editedPartitions[0].id = 'T1_Test';
+  editedDecisionPoints[0].target = 'T1';
+  editedDecisionPoints[0].site = 'Test';
+  editedDecisionPoints[0].id = 'T1_Test';
 
   // adding new condition
   const newExperimentDoc = {
@@ -82,11 +82,11 @@ export default async function NoPartitionPoint(): Promise<void> {
       },
     ],
     partitions: [
-      ...editedPartitions,
+      ...editedDecisionPoints,
       {
         site: 'CurriculumSequence ',
         target: 'W3',
-        description: 'Partition on Workspace 3',
+        description: 'Decision Point on Workspace 3',
         twoCharacterId: 'W3',
       },
     ],
@@ -98,10 +98,10 @@ export default async function NoPartitionPoint(): Promise<void> {
     newExperimentDoc.conditions[index] = newCondition;
   });
 
-  // order for partition
-  newExperimentDoc.partitions.forEach((partition,index) => {
-    const newPartition = {...partition, order: index + 1};
-    newExperimentDoc.partitions[index] = newPartition;
+  // order for decision point
+  newExperimentDoc.partitions.forEach((decisionPoint,index) => {
+    const newDecisionPoint = {...decisionPoint, order: index + 1};
+    newExperimentDoc.partitions[index] = newDecisionPoint;
   });
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
 
@@ -131,37 +131,37 @@ export default async function NoPartitionPoint(): Promise<void> {
   const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id, new UpgradeLogger());
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
 
-  // check the partitions
+  // check the decision point
   expect(updatedExperimentDoc.partitions).toEqual(
     expect.arrayContaining([
-      ...editedPartitions.map((partition) => {
+      ...editedDecisionPoints.map((decisionPoint) => {
         return expect.objectContaining({
-          id: partition.id,
-          site: partition.site,
-          target: partition.target,
-          description: partition.description,
-          order: partition.order,
+          id: decisionPoint.id,
+          site: decisionPoint.site,
+          target: decisionPoint.target,
+          description: decisionPoint.description,
+          order: decisionPoint.order,
         });
       }),
       expect.objectContaining({
         site: 'CurriculumSequence ',
         target: 'W3',
-        description: 'Partition on Workspace 3',
+        description: 'Decision Point on Workspace 3',
         twoCharacterId: 'W3',
         order: 3,
       }),
     ])
   );
 
-  // get all experimental partitions
-  const experimentPartition = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
-  expect(experimentPartition.length).toEqual(updatedExperimentDoc.partitions.length);
+  // get all experimental decision points
+  const experimentDecisionPoint = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
+  expect(experimentDecisionPoint.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // delete the experiment
   await experimentService.delete(updatedExperimentDoc.id, user, new UpgradeLogger());
   const allExperiments = await experimentService.find(new UpgradeLogger());
   expect(allExperiments.length).toEqual(0);
 
-  const experimentPartitions = await experimentService.getAllExperimentPartitions(new UpgradeLogger());
-  expect(experimentPartitions.length).toEqual(0);
+  const experimentDecisionPoints = await experimentService.getAllExperimentPartitions(new UpgradeLogger());
+  expect(experimentDecisionPoints.length).toEqual(0);
 }

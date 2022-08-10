@@ -46,7 +46,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   ];
   
   // Used for metrics auto complete dropdown
-  filteredMetrics$: Observable<any[]>[] = [];
+  filteredMetrics1$: Observable<any[]>[] = [];
+  filteredMetrics2$: Observable<any[]>[] = [];
+  filteredMetrics3$: Observable<any[]>[] = [];
   filteredStatistic$ = [];
 
   options: any[] = [];
@@ -124,16 +126,15 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
         // push first key in query form:
         if (query.query.compareFn && !!query.query.compareValue) {
-          this.queries.push(this.addMetric(rootKey[0], query.name, query.query.operationType, query.query.compareFn, query.query.compareValue, query.repeatedMeasure));
+          this.queries.push(this.addMetric(metricObj, query.name, query.query.operationType, query.query.compareFn, query.query.compareValue, query.repeatedMeasure));
         } else {
-          this.queries.push(this.addMetric(rootKey[0], query.name, query.query.operationType, null, null, query.repeatedMeasure));
+          this.queries.push(this.addMetric(metricObj, query.name, query.query.operationType, null, null, query.repeatedMeasure));
         }
-
         // push remaining keys in query form in case of repeated metrics
         let childKey;
         if (rootKey.length > 1) {
           rootKey.map( (key, keyindex) => {
-            if (keyindex != 0) {
+            if (keyindex !== 0) {
               this.selectedNode[this.queryIndex] = metricObj
               // call select option for first key of grouped metrics:
               this.selectedOption(null, metricObj, key, queryIndex, keyindex);
@@ -143,9 +144,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
               childKey = key;
             }
           });
-          this.selectedOption(null, metricObj, childKey, queryIndex, rootKey.length-1);
         }
-        this.selectedOption(null, metricObj, null, queryIndex, rootKey.length - 1);
         this.setQueryIndex(this.queryIndex+1);
         this.ManageKeysControl(queryIndex, 0);
       });
@@ -254,9 +253,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     return this.queryOperations;
   }
 
-  addMoreSelectKey(key = null, queryIndex: number, keyIndex: number) {
+  addMoreSelectKey(key = null, queryIndex: number) {
     this.getKeys(queryIndex).push(this.addKey(key));
-    this.ManageKeysControl(queryIndex, keyIndex);
   }
 
   addMetric(key = null, queryName = null, operationType = null, compareFn = null, compareValue = null, repeatedMeasure = REPEATED_MEASURE.mostRecent) {
@@ -278,7 +276,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     const index = this.queries.length;
     this.setQueryIndex(index-1);
     const metricFormControl = this.queries.at(index-1).get('keys') as FormArray;
-    this.ManageKeysControl(this.queryIndex, metricFormControl.controls.length - 1);
+    this.ManageKeysControl(this.queryIndex, 0);
   }
 
   removeMetric(queryIndex: number) {
@@ -347,89 +345,146 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  ManageKeysControl(queryIndex: number, keyIndex: number) {
-    if(keyIndex === 0) {
-      this.optionsSub();
-    }
+  filteredMetricKeys(queryIndex: number, keyIndex: number) {
     // Prepare filteredMetrics for each query and its keys for new experiment and for experimentInfo while in edit Mode
     let keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
-    this.filteredMetrics$[keyIndex] = keysArray.at(keyIndex).get('metricKey').valueChanges
+    let filteredMetric = keysArray.at(keyIndex).get('metricKey').valueChanges
     .pipe(
       startWith<string>(''),
       map(key => {
         if (keyIndex - 1 >= 0) {
           const { metricKey } = keysArray.at(keyIndex - 1).value;
-          this.options = metricKey.children;
+          if (metricKey) {
+            this.options = metricKey.children;
+          }
+        }
+        if (keyIndex === 0) {
+          this.optionsSub();
         }
         return key ? this._filter(key) : this.options ? this.options.slice() : [];
       })
     );
+    return filteredMetric;
   }
 
-  selectedOption(event = null, metric = null, key = null,  queryIndex: number = null, keyIndex: number = null) {
-    // for setting up the metric key in the form from experimentInfo
-    if (event === null) {
-      if (metric) {
-        if (metric.children.length) {
-          this.addMoreSelectKey(key, queryIndex, keyIndex);
-        } else {
-          this.selectedNode[queryIndex] = metric;
-          // reset options for metric keys:
-          this.optionsSub();
-          this.filteredMetrics$ = [];
-        }
+  ManageKeysControl(queryIndex: number, keyIndex: number) {
+    if (keyIndex === 0) {
+      this.optionsSub();
+      let filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
+      this.filteredMetrics1$[queryIndex] = filteredMetric;
+    } else if (keyIndex === 1) {
+      let filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
+      this.filteredMetrics2$[queryIndex] = filteredMetric;
+    } else {
+      let filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
+      this.filteredMetrics3$[queryIndex] = filteredMetric;
+    }
+  }
+
+  selectExistingMetricNode(prevMetricObj = null, nextKey = null, queryIndex: number, keyIndex: number) {
+    if (prevMetricObj) {
+      let nextMetricObj;
+      if (keyIndex === 0) {
+        nextMetricObj = this.allMetrics.find(metric => metric.key === nextKey);
+      } else {
+        nextMetricObj = prevMetricObj.children.find(metric => metric.key === nextKey);
       }
-    } else { // for selectedOption event fired from UI
-      // If the selected option is a repeated metric, add two new nodes
-      if (event.option.value.children.length) {
-
-        // set selectedNode for first key of repeated metrics:
-        if (event.option.value.metricKey !== undefined ) {
-          this.firstSelectedNode[queryIndex] = event.option.value.metricKey;
-        } else {
-          this.firstSelectedNode[queryIndex] = event.option.value;
-        }
-        
-        // set fileredStats for the repeated metrics:
-        const { metadata: { type } } = this.firstSelectedNode[queryIndex];
-        this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
-
-        // if it is the first Node of the repeated metric, add two new nodes
-        if (keyIndex === 0) {
-          // push middle node from addMoreSelectKey
-          this.addMoreSelectKey(null, queryIndex, keyIndex+1);
-          // push leaf node of the repeated metric
-          this.getKeys(queryIndex).push(this.addKey(null));
-        } else {
-          // if its middle node just prepare filtered list of metrics for leaf node
-          this.ManageKeysControl(queryIndex, keyIndex+1);
-        }
-      } else { // if the selected option is not a repeated metric or it is the leaf node of repeated metric, set selectedNode
-        
-        // if the selected option is a simple metric and it was earlier a repeated metrics, we will clear the keys and set selectedNode
-        if (keyIndex === 0 && this.getKeys(queryIndex).length > 1) {
-          this.getKeys(queryIndex).clear();
-          this.addMoreSelectKey(event.option.value.key, queryIndex, keyIndex);
-          let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
-          this.firstSelectedNode[queryIndex] = metric;
-          this.selectedNode[queryIndex] = metric;
-          const { metadata: { type } } = this.selectedNode[queryIndex];
-          this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
-          // set editMode to true to avoid isMetricRepeated() function to take experimentInfo instead of current form changes
-          this.editMode = true;
-        } else {
-          // if the selected option is a simple metric and it was earlier not a repeated metrics, set selectedNode
-          const keys = this.getKeys(queryIndex).getRawValue();
-          this.selectedNode[queryIndex] = keys[keys.length - 1].metricKey;
-          const { metadata: { type } } = this.selectedNode[queryIndex];
-          this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
-        }
-        // handling leaf node of repeated metrics
-        let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
-        this.selectedNode[queryIndex] = metric;
+      if (prevMetricObj.children.length) {
+        this.addMoreSelectKey(nextMetricObj, queryIndex);
+        this.ManageKeysControl(queryIndex, keyIndex);
+      } else {
+        this.selectedNode[queryIndex] = nextMetricObj;
         // reset options for metric keys:
         this.optionsSub();
       }
+    }
+  }
+
+  handleFirstRepeatMetricNode(queryIndex: number, keyIndex: number) {
+    this.ManageKeysControl(queryIndex, 0);
+    // if we don't have repeat metrics
+    if (this.getKeys(queryIndex).length !== 3) {
+      // push middle node from addMoreSelectKey
+      this.addMoreSelectKey(null, queryIndex);
+      this.ManageKeysControl(queryIndex, keyIndex+1);
+      // push leaf node of the repeated metric
+      this.getKeys(queryIndex).push(this.addKey(null));
+    } else {
+      // if its already repeat metric earlier just prepare filtered list of metrics for leaf node
+      this.ManageKeysControl(queryIndex, keyIndex+1);
+    }
+  }
+
+  selectRepeatMetricNode(event = null, queryIndex: number, keyIndex: number) {
+    // if it is the first Node of the repeated metric, add two new nodes for the first time selection
+    if (keyIndex === 0) {
+      this.handleFirstRepeatMetricNode(queryIndex, keyIndex);
+    } else if (keyIndex === 1) { 
+      // if it's the middle node of repeated metric, prepare filtered list of metrics for leaf node
+      this.ManageKeysControl(queryIndex, keyIndex+1);
+    } else if (keyIndex === 2) {
+      // if it's the leaf node of repeated metric, prepare filtered list of metrics for the first node
+      this.ManageKeysControl(queryIndex, 0);
+    }
+    // set selectedNode for first key of repeated metrics:
+    if (event.option.value.metricKey !== undefined) {
+      this.firstSelectedNode[queryIndex] = event.option.value.metricKey;
+    } else {
+      this.firstSelectedNode[queryIndex] = event.option.value;
+      this.selectedNode[queryIndex] = event.option.value;
+    }
+    // set fileredStats for the repeated metrics:
+    const { metadata: { type } } = this.selectedNode[queryIndex];
+    this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+  }
+
+  switchRepeatToSimpleMetric(event = null, queryIndex: number, keyIndex: number) {
+    this.getKeys(queryIndex).clear();
+    this.addMoreSelectKey(event.option.value.key, queryIndex);
+    this.ManageKeysControl(queryIndex, keyIndex);
+    let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+    this.firstSelectedNode[queryIndex] = metric;
+    this.selectedNode[queryIndex] = metric;
+    const { metadata: { type } } = this.selectedNode[queryIndex];
+    this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+    // set editMode to true to avoid isMetricRepeated() function to take experimentInfo instead of current form changes
+    this.editMode = true;
+  }
+
+  selectSimpleMetricNode(queryIndex: number, keyIndex: number) {
+    this.ManageKeysControl(queryIndex, keyIndex);
+    // if the selected option is a simple metric and it was earlier not a repeated metrics, set selectedNode
+    const keys = this.getKeys(queryIndex).getRawValue();
+    this.selectedNode[queryIndex] = keys[keys.length - 1].metricKey;
+    const { metadata: { type } } = this.selectedNode[queryIndex];
+    this.filteredStatistic$[queryIndex] = this.setFilteredStatistic(type);
+  }
+
+  selectNewMetricNode(event = null, queryIndex: number, keyIndex: number) {
+    // If the selected option is a repeated metric, add two new nodes for first time selection
+    if (event.option.value.children.length) {
+      this.selectRepeatMetricNode(event, queryIndex, keyIndex);
+    } else { // if the selected option is not a repeated metric or it is the leaf node of repeated metric, set selectedNode
+      // if the selected option is a simple metric and it was earlier a repeated metrics, we will clear the keys and set selectedNode
+      if (keyIndex === 0 && this.getKeys(queryIndex).length > 1) {
+        this.switchRepeatToSimpleMetric(event, queryIndex, keyIndex);
+      } else {
+        this.selectSimpleMetricNode(queryIndex, keyIndex);
+      }
+      // handling leaf node of repeated metrics
+      let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+      this.selectedNode[queryIndex] = metric;
+      // reset options for metric keys:
+      this.optionsSub();
+    }
+  }
+
+  selectedOption(event = null, prevMetricObj = null, nextKey = null, queryIndex: number = null, keyIndex: number = null) {
+    // for setting up the metric key in the form from experimentInfo
+    if (event === null) {
+      this.selectExistingMetricNode(prevMetricObj, nextKey, queryIndex, keyIndex);
+    } else { // for selectedOption event fired from UI
+      this.selectNewMetricNode(event, queryIndex, keyIndex);
     }
   }
 
@@ -519,7 +574,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.queries.clear();
-      this.queries.push(this.addMetric());
       this.metricsDataSource.next(this.queries.controls);
     }
   }

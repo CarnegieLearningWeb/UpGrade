@@ -69,7 +69,7 @@ export class AnalyticsRepository {
     // find experiment data
     const experiment = await experimentRepository.findOne(experimentId, { relations: ['partitions', 'conditions'] });
     if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
-      const [includedUser, usersPerCondition, perConditionPartition, excludedUser]: [
+      const [includedUser, usersPerCondition, perConditionDecisionPoint, excludedUser]: [
         [{ count: number }],
         Array<{ id: string; conditionId: string; count: number }>,
         Array<{ id: string; partitionId: string; conditionId: string; count: number }>,
@@ -126,15 +126,15 @@ export class AnalyticsRepository {
             id: conditionId,
             users: conditionData?.count || 0,
             groups: 0,
-            partitions: experiment.partitions.map(({ id: partitionId }) => {
-              const partitionData: { id: string; partitionId: string; conditionId: string; count: number } | undefined =
-                perConditionPartition.find((perPartition) => {
-                  return perPartition.conditionId === conditionId && perPartition.partitionId === partitionId;
+            partitions: experiment.partitions.map(({ id: decisionPointId }) => {
+              const decisionPointData: { id: string; partitionId: string; conditionId: string; count: number } | undefined =
+                perConditionDecisionPoint.find((perDecisionPoint) => {
+                  return perDecisionPoint.conditionId === conditionId && perDecisionPoint.partitionId === decisionPointId;
                 });
 
               return {
-                id: partitionId,
-                users: partitionData?.count || 0,
+                id: decisionPointId,
+                users: decisionPointData?.count || 0,
                 groups: 0,
               };
             }),
@@ -142,7 +142,7 @@ export class AnalyticsRepository {
         }),
       };
     } else {
-      const [includedUser, perCondition, perConditionPartition, excludedUser, excludedGroup]: [
+      const [includedUser, perCondition, perConditionDecisionPoint, excludedUser, excludedGroup]: [
         [{ userCount: number; groupCount: number }],
         Array<{ id: string; conditionId: string; userCount: number; groupCount: number }>,
         Array<{ id: string; conditionId: string; partitionId: string; userCount: number; groupCount: number }>,
@@ -223,17 +223,17 @@ export class AnalyticsRepository {
             id: conditionId,
             users: conditionData?.userCount || 0,
             groups: conditionData?.groupCount || 0,
-            partitions: experiment.partitions.map(({ id: partitionId }) => {
-              const partitionData:
+            partitions: experiment.partitions.map(({ id: decisionPointId }) => {
+              const decisionPointData:
                 | { id: string; conditionId: string; partitionId: string; userCount: number; groupCount: number }
-                | undefined = perConditionPartition.find((perPartition) => {
-                return perPartition.conditionId === conditionId && perPartition.partitionId === partitionId;
+                | undefined = perConditionDecisionPoint.find((perDecisionPoint) => {
+                return perDecisionPoint.conditionId === conditionId && perDecisionPoint.partitionId === decisionPointId;
               });
 
               return {
-                id: partitionId,
-                users: partitionData?.userCount || 0,
-                groups: partitionData?.groupCount || 0,
+                id: decisionPointId,
+                users: decisionPointData?.userCount || 0,
+                groups: decisionPointData?.groupCount || 0,
               };
             }),
           };
@@ -303,7 +303,7 @@ export class AnalyticsRepository {
       clientOffset,
       'individualEnrollment'
     );
-    const individualEnrollmentConditionAndPartition = individualEnrollmentRepository
+    const individualEnrollmentConditionAndDecisionPoint = individualEnrollmentRepository
       .createQueryBuilder('individualEnrollment')
       .select([
         'count(distinct("individualEnrollment"."userId"))::int',
@@ -327,7 +327,7 @@ export class AnalyticsRepository {
       clientOffset,
       'groupEnrollment'
     );
-    const groupEnrollmentConditionAndPartition = groupEnrollmentRepository
+    const groupEnrollmentConditionAndDecisionPoint = groupEnrollmentRepository
       .createQueryBuilder('groupEnrollment')
       .select([
         'count(distinct("groupEnrollment"."groupId"))::int',
@@ -342,7 +342,7 @@ export class AnalyticsRepository {
       .addGroupBy(groupByRange)
       .execute();
 
-    return Promise.all([individualEnrollmentConditionAndPartition, groupEnrollmentConditionAndPartition]);
+    return Promise.all([individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint]);
   }
 
   private getDateVariables(

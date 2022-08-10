@@ -6,7 +6,7 @@ import { IndividualEnrollmentRepository } from "../../../src/api/repositories/In
 import { IndividualExclusionRepository } from "../../../src/api/repositories/IndividualExclusionRepository";
 import { ExperimentRepository } from "../../../src/api/repositories/ExperimentRepository";
 import { GroupExclusionRepository } from "../../../src/api/repositories/GroupExclusionRepository";
-import { ASSIGNMENT_UNIT } from "../../../types/src";
+import { ASSIGNMENT_UNIT } from "../../../../../../types/src";
 import { User } from "../../../src/api/models/User";
 import { ExperimentCondition } from "../../../src/api/models/ExperimentCondition";
 import { DecisionPoint } from "../../../src/api/models/DecisionPoint";
@@ -127,7 +127,7 @@ describe('AnalyticsRepository Testing', () => {
         selectMock.verify();
     });
 
-    it('should get enrollment count per partition for individual assignment', async () => {
+    it('should get enrollment count per decision point for individual assignment', async () => {
         let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository')
         let individualEnrollmentRepoStub = getCustomRepositoryStub.withArgs(IndividualEnrollmentRepository).returns(IndividualEnrollmentRepository.prototype);
         let individualExclusionRepoStub = getCustomRepositoryStub.withArgs(IndividualExclusionRepository).returns(IndividualExclusionRepository.prototype);
@@ -140,7 +140,7 @@ describe('AnalyticsRepository Testing', () => {
         sandbox.stub(IndividualExclusionRepository.prototype, 
                 'createQueryBuilder').returns(selectQueryBuilder);
 
-        const partitionResult = {
+        const decisionPointResult = {
             id: experiment.id,
             users: userResult[0].count,
             groups: 0,
@@ -180,11 +180,11 @@ describe('AnalyticsRepository Testing', () => {
         sinon.assert.calledOnce(findOneStub);
         selectMock.verify();
 
-        expect(res).toEqual(partitionResult)
+        expect(res).toEqual(decisionPointResult)
 
     });
 
-    it('should get enrollment count per partition for individual assignment with none enrolled', async () => {
+    it('should get enrollment count per decision point for individual assignment with none enrolled', async () => {
         let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository')
         let individualEnrollmentRepoStub = getCustomRepositoryStub.withArgs(IndividualEnrollmentRepository).returns(IndividualEnrollmentRepository.prototype);
         let individualExclusionRepoStub = getCustomRepositoryStub.withArgs(IndividualExclusionRepository).returns(IndividualExclusionRepository.prototype);
@@ -197,7 +197,7 @@ describe('AnalyticsRepository Testing', () => {
         sandbox.stub(IndividualExclusionRepository.prototype, 
                 'createQueryBuilder').returns(selectQueryBuilder);
 
-        const partitionResult = {
+        const decisionPointResult = {
             id: experiment.id,
             users: 0,
             groups: 0,
@@ -238,11 +238,11 @@ describe('AnalyticsRepository Testing', () => {
         sinon.assert.calledOnce(findOneStub);
         selectMock.verify();
 
-        expect(res).toEqual(partitionResult)
+        expect(res).toEqual(decisionPointResult)
 
     });
 
-    it('should get enrollment count per partition for group assignment', async () => {
+    it('should get enrollment count per decision point for group assignment', async () => {
         experiment.assignmentUnit = ASSIGNMENT_UNIT.GROUP
         let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository')
         let individualEnrollmentRepoStub = getCustomRepositoryStub.withArgs(IndividualEnrollmentRepository).returns(IndividualEnrollmentRepository.prototype);
@@ -258,7 +258,7 @@ describe('AnalyticsRepository Testing', () => {
         sandbox.stub(GroupExclusionRepository.prototype, 
                 'createQueryBuilder').returns(selectQueryBuilder);
 
-        const partitionResult = {
+        const decisionPointResult = {
             id: experiment.id,
             users: userResult[0].count,
             groups: userResult[0].groupCount,
@@ -299,11 +299,11 @@ describe('AnalyticsRepository Testing', () => {
         sinon.assert.calledOnce(findOneStub);
         selectMock.verify();
 
-        expect(res).toEqual(partitionResult)
+        expect(res).toEqual(decisionPointResult)
 
     });    
 
-    it('should get enrollment count per partition for group assignment with none enrolled', async () => {
+    it('should get enrollment count per decision point for group assignment with none enrolled', async () => {
         experiment.assignmentUnit = ASSIGNMENT_UNIT.GROUP
         let getCustomRepositoryStub = sandbox.stub(manager, 'getCustomRepository')
         let individualEnrollmentRepoStub = getCustomRepositoryStub.withArgs(IndividualEnrollmentRepository).returns(IndividualEnrollmentRepository.prototype);
@@ -319,7 +319,7 @@ describe('AnalyticsRepository Testing', () => {
         sandbox.stub(GroupExclusionRepository.prototype, 
                 'createQueryBuilder').returns(selectQueryBuilder);
 
-        const partitionResult = {
+        const decisionPointResult = {
             id: experiment.id,
             users: 0,
             groups: 0,
@@ -363,7 +363,7 @@ describe('AnalyticsRepository Testing', () => {
         sinon.assert.calledOnce(findOneStub);
         selectMock.verify();
 
-        expect(res).toEqual(partitionResult)
+        expect(res).toEqual(decisionPointResult)
 
     });    
 

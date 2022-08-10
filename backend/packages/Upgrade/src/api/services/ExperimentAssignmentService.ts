@@ -128,7 +128,7 @@ export class ExperimentAssignmentService {
     const { workingGroup } = userDoc;
 
     const decisionPoint = getExperimentPartitionID(experimentPoint, experimentId);
-    const experimentPartition = await this.decisionPointRepository.findOne({
+    const experimentDecisionPoint = await this.decisionPointRepository.findOne({
       where: {
         id: decisionPoint,
       },
@@ -152,8 +152,8 @@ export class ExperimentAssignmentService {
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
       id: getMonitoredDecisionPointId(decisionPoint, userDoc.id),
     });
-    if (experimentPartition) {
-      const { experiment } = experimentPartition;
+    if (experimentDecisionPoint) {
+      const { experiment } = experimentDecisionPoint;
       const { conditions } = experiment;
 
       const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
@@ -212,8 +212,8 @@ export class ExperimentAssignmentService {
       ) {
         await this.updateEnrollmentExclusion(
           userDoc,
-          experimentPartition.experiment,
-          experimentPartition,
+          experimentDecisionPoint.experiment,
+          experimentDecisionPoint,
           {
             individualEnrollment: individualEnrollments,
             individualExclusion: individualExclusions,
@@ -359,13 +359,13 @@ export class ExperimentAssignmentService {
             user: experimentUser,
             condition: assignment.experimentCondition,
             ...assignment,
-          } as any; // any is used because we don't have partition in the preview assignment
+          } as any; // any is used because we don't have decisionPoint in the preview assignment
         });
         mergedIndividualAssignment = [...previewAssignment, ...mergedIndividualAssignment];
       }
 
       // experiment level inclusion and exclusion
-      const [filteredExperiments,] = await this.experimentLevelExclusionInclusion(
+      const [filteredExperiments] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
         experimentUser,
         logger
@@ -414,8 +414,8 @@ export class ExperimentAssignmentService {
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
           const { state, logging, name } = experiment;
-          const partitions = experiment.partitions.map((partition) => {
-            const { target, site, twoCharacterId } = partition;
+          const decisionPoints = experiment.partitions.map((decisionPoint) => {
+            const { target, site, twoCharacterId } = decisionPoint;
             const conditionAssigned = assignment;
             // adding info based on experiment state or logging flag
             if (logging || state === EXPERIMENT_STATE.PREVIEW) {
@@ -435,7 +435,7 @@ export class ExperimentAssignmentService {
               },
             };
           });
-          return assignment ? [...accumulator, ...partitions] : accumulator;
+          return assignment ? [...accumulator, ...decisionPoints] : accumulator;
         }, [])
         .map(mapForAlternateCondition); // TODO delete map after x-prize competition
     } catch (err) {
@@ -800,23 +800,23 @@ export class ExperimentAssignmentService {
 
   private async getMonitoredDocumentOfExperiment(experimentDoc: Experiment): Promise<MonitoredDecisionPoint[]> {
     // get groupAssignment and individual assignment details
-    const partitions = experimentDoc.partitions;
+    const decisionPoints = experimentDoc.partitions;
     const individualAssignments = await this.individualEnrollmentRepository.find({
       where: { experiment: experimentDoc },
       relations: ['user'],
     });
 
-    // get the monitored document for all the partitions in the experiment
-    const experimentPartitionIds = partitions.map((partition) => {
-      const experimentId = partition.target;
-      const experimentPoint = partition.site;
+    // get the monitored document for all the decisionPoints in the experiment
+    const experimentDecisionPointIds = decisionPoints.map((decisionPoint) => {
+      const experimentId = decisionPoint.target;
+      const experimentPoint = decisionPoint.site;
       return getExperimentPartitionID(experimentPoint, experimentId);
     });
 
     const monitoredDocumentIds = [];
     individualAssignments.forEach((individualAssignment) => {
-      experimentPartitionIds.forEach((experimentPartitionId) => {
-        monitoredDocumentIds.push(getMonitoredDecisionPointId(experimentPartitionId, individualAssignment.user.id));
+      experimentDecisionPointIds.forEach((experimentDecisionPointId) => {
+        monitoredDocumentIds.push(getMonitoredDecisionPointId(experimentDecisionPointId, individualAssignment.user.id));
       });
     });
 
@@ -987,7 +987,7 @@ export class ExperimentAssignmentService {
   private async updateEnrollmentExclusion(
     user: ExperimentUser,
     experiment: Experiment,
-    partition: DecisionPoint,
+    decisionPoint: DecisionPoint,
     {
       individualEnrollment,
       individualExclusion,
@@ -1127,7 +1127,7 @@ export class ExperimentAssignmentService {
           const groupEnrollmentDocument: Omit<GroupEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
             id: uuid(),
             experiment,
-            partition: partition as DecisionPoint,
+            partition: decisionPoint as DecisionPoint, 
             groupId: user.workingGroup[experiment.group],
             condition: conditionAssigned,
           };
@@ -1153,7 +1153,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: partition as DecisionPoint,
+              partition: decisionPoint as DecisionPoint, 
               user,
               condition: conditionAssigned,
               groupId: user?.workingGroup[experiment.group],
@@ -1195,7 +1195,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: partition as DecisionPoint,
+              partition: decisionPoint as DecisionPoint, 
               user,
               condition: conditionAssigned,
               enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
@@ -1309,10 +1309,10 @@ export class ExperimentAssignmentService {
     const segmentsToFetchArray = Object.keys(segmentObj).map((expId) => segmentObj[expId].segmentIdsQueue);
     const segmentsToFetch = segmentsToFetchArray.flat();
 
-    if(depth === 5 || segmentsToFetch.length === 0) {
+    if (depth === 5 || segmentsToFetch.length === 0) {
       return [segmentObj, segmentDetails];
     }
-    
+
     const segmentDetailsFetched = await this.segmentService.getSegmentByIds(segmentsToFetch);
     segmentDetails.push(...segmentDetailsFetched);
 

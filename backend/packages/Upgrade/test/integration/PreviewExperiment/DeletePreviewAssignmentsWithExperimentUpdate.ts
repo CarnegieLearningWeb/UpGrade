@@ -27,7 +27,7 @@ export default async function testCase(): Promise<void> {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
 
-  // sort partitions
+  // sort decision points
   experiments[0].partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
