@@ -68,6 +68,17 @@
     tr.mat-footer-row,
     tr.mat-row {
       height: 55px;
+      
+      &:hover {
+        opacity: 0.8;
+        cursor: pointer;
+
+        .segment-name {
+          opacity: 1.0;
+          font-weight: 900;
+          color: var(--blue);
+        }
+      }
     }
 
     .mat-cell,
@@ -88,14 +99,14 @@
       width: 15%;
     }
 
+    .cdk-column-name {
+      padding-left: 15px;
+    }
+
     .cdk-column-description {
       width: 20;
     }
     .segment {
-      &-name {
-        text-decoration: underline;
-      }
-
       &-status {
         display: flex;
         align-items: center;

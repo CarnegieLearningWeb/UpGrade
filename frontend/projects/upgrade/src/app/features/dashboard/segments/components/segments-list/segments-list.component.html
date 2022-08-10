@@ -74,13 +74,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let segment">
-          <a [routerLink]="['/segments', 'detail', segment.id]" *ngIf="segment.name?.length < 30; else segmentNameEllipsis" class="segment-name">
+          <span *ngIf="segment.name?.length < 30; else segmentNameEllipsis" class="segment-name">
             {{ segment.name }}
-          </a>
+          </span>
           <ng-template #segmentNameEllipsis>
-            <a [routerLink]="['/segments', 'detail', segment.id]" [matTooltip]="segment.name" class="segment-name" matTooltipPosition="above">
+            <span [matTooltip]="segment.name" class="segment-name" matTooltipPosition="above">
               {{ segment.name | truncate: 30 }}
-            </a>
+            </span>
           </ng-template>
           <br/>
         </td>
@@ -153,7 +153,7 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" [routerLink]="['/segments', 'detail', row.id]"></tr>
     </table>
   </div>
 </mat-card>
