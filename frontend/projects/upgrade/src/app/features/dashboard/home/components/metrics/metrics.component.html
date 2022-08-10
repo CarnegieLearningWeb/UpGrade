@@ -2,8 +2,6 @@
   <section class="shared-modal--form-container">
     <form class="metric-design" [formGroup]="queryForm">
       <span class="title">{{ 'home.new-experiment.metrics.text' | translate }}</span>
-      <br>
-      <br>
       <ng-container *ngIf="allMetrics?.length; else noAvailableMetricsMessage">
         <!-- Metric Table -->
         <ng-container>
@@ -15,7 +13,7 @@
           >
             <!-- Metric Column -->
             <ng-container matColumnDef="keys">
-              <mat-header-cell class="ft-13-700" *matHeaderCellDef>
+              <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                 {{ 'query.metric.text' | translate }}
               </mat-header-cell>
               <mat-cell
@@ -24,10 +22,10 @@
               >
               <ng-container formArrayName="keys">
                 <div class="metric-keys">
-                <mat-form-field *ngFor="let key of getKeys(queryIndex).controls; let keyIndex = index" class="ft-12-600 form-control auto-complete" floatLabel="never">
+                <mat-form-field *ngFor="let key of getKeys(queryIndex).controls; let keyIndex = index" class="ft-14-400 form-control auto-complete" floatLabel="never">
                   <ng-container [formGroupName]="keyIndex">
                     <input
-                      class = "ft-12-400"
+                      class = "ft-14-400"
                       type="text"
                       matInput
                       [placeholder]="getMetricPlaceHolder(keyIndex)"
@@ -35,24 +33,24 @@
                       [matAutocomplete]="auto"
                       >
                     <mat-autocomplete
-                      class = "ft-12-400"
+                      class = "ft-14-400"
                       (optionSelected)="selectedOption($event, null, null, queryIndex, keyIndex)"
                       #auto="matAutocomplete"
                       [displayWith]="displayFn"
                       panelWidth="fit-content"
                       >
                       <div *ngIf="keyIndex == 0">
-                        <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics1$[queryIndex] | async" [value]="option">
+                        <mat-option class = "ft-14-400" *ngFor="let option of filteredMetrics1$[queryIndex] | async" [value]="option">
                           {{ option.key }}
                         </mat-option>
                       </div>
                       <div *ngIf="keyIndex == 1">
-                        <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics2$[queryIndex] | async" [value]="option">
+                        <mat-option class = "ft-14-400" *ngFor="let option of filteredMetrics2$[queryIndex] | async" [value]="option">
                           {{ option.key }}
                         </mat-option>
                       </div>
                       <div *ngIf="keyIndex == 2">
-                        <mat-option class = "ft-12-400" *ngFor="let option of filteredMetrics3$[queryIndex] | async" [value]="option">
+                        <mat-option class = "ft-14-400" *ngFor="let option of filteredMetrics3$[queryIndex] | async" [value]="option">
                           {{ option.key }}
                         </mat-option>
                       </div>
@@ -65,7 +63,7 @@
             </ng-container>
             <!-- Statistic Column -->
             <ng-container matColumnDef="operationType">
-              <mat-header-cell class="ft-13-700" *matHeaderCellDef>
+              <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                 {{ 'monitor.statistic.text' | translate }}
               </mat-header-cell>
               <mat-cell
@@ -74,9 +72,9 @@
               >
               <div class="secondary-form">
                 <!-- statistic -->
-                <mat-form-field class="ft-12-600 form-control" floatLabel="never">
+                <mat-form-field class="ft-14-400 form-control" floatLabel="never">
                   <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
-                  <mat-select class="ft-12-400" formControlName="operationType">
+                  <mat-select class="ft-14-400" formControlName="operationType">
                     <mat-option
                       *ngFor="let operation of filteredStatistic$[queryIndex]"
                       [value]="operation.value"
@@ -86,9 +84,9 @@
                   </mat-select>
                 </mat-form-field>
                 <!-- repeated measure -->
-                <mat-form-field class="ft-12-600 form-control" *ngIf="firstSelectedNode[queryIndex] && isMetricRepeated(firstSelectedNode[queryIndex], queryIndex, editMode)" floatLabel="never">
+                <mat-form-field class="ft-14-400 form-control" *ngIf="firstSelectedNode[queryIndex] && isMetricRepeated(firstSelectedNode[queryIndex], queryIndex, editMode)" floatLabel="never">
                   <mat-label>{{ 'home.new-experiment.metrics.repeatedmeasure.placeholder.text' | translate | titlecase }}</mat-label>
-                  <mat-select class="ft-12-400" formControlName="repeatedMeasure">
+                  <mat-select class="ft-14-400" formControlName="repeatedMeasure">
                     <mat-option
                       *ngFor="let measure of RepeatedMeasure"
                       [value]="measure"
@@ -98,9 +96,9 @@
                   </mat-select>
                 </mat-form-field>
                 <!-- comparison function -->
-                <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[queryIndex] && selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS" floatLabel="never">
+                <mat-form-field class="ft-14-400 form-control" *ngIf="selectedNode[queryIndex] && selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS" floatLabel="never">
                   <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
-                  <mat-select class="ft-12-400" formControlName="compareFn">
+                  <mat-select class="ft-14-400" formControlName="compareFn">
                     <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
                     <mat-option
                       *ngFor="let fn of comparisonFns"
@@ -111,9 +109,9 @@
                   </mat-select>
                 </mat-form-field>
                 <!-- compare value -->
-                <mat-form-field class="ft-12-600 form-control" *ngIf="selectedNode[queryIndex] && selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS" floatLabel="never">
+                <mat-form-field class="ft-14-400 form-control" *ngIf="selectedNode[queryIndex] && selectedNode[queryIndex]?.metadata?.type !== IMetricMetadata.CONTINUOUS" floatLabel="never">
                   <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
-                  <mat-select class="ft-12-400" formControlName="compareValue">
+                  <mat-select class="ft-14-400" formControlName="compareValue">
                     <mat-option
                       *ngFor="let value of selectedNode[queryIndex]?.allowedData"
                       [value]="value"
@@ -127,16 +125,16 @@
             </ng-container>
             <!-- Description Column -->
             <ng-container matColumnDef="queryName">
-              <mat-header-cell class="ft-13-700" *matHeaderCellDef>
+              <mat-header-cell class="ft-14-700" *matHeaderCellDef>
                 {{ 'home.new-experiment.metrics.description-header.placeholder.text' | translate }}
               </mat-header-cell>
               <mat-cell
                 *matCellDef="let element; let queryIndex = index"
                 [formGroupName]="queryIndex"
               >
-                <mat-form-field  class="ft-12-600" floatLabel="never">
+                <mat-form-field  class="ft-14-400" floatLabel="never">
                     <input
-                      class = "ft-12-400"
+                      class = "ft-14-400"
                       matInput
                       [placeholder]="'home.new-experiment.metrics.description.placeholder.text'| translate"
                       formControlName="queryName"
@@ -147,10 +145,11 @@
             </ng-container>
   
             <ng-container matColumnDef="removeMetric">
-              <mat-header-cell class="ft-12-700" *matHeaderCellDef></mat-header-cell>
+              <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
               <mat-cell
                 *matCellDef="let element; let queryIndex = index"
                 [formGroupName]="queryIndex"
+                style="justify-content: flex-start;"
               >
                 <mat-icon
                   class="remove-icon"
