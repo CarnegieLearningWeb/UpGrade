@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ErrorRepository } from '../../../src/api/repositories/ErrorRepository';
 import { ExperimentError } from '../../../src/api/models/ExperimentError';
-import { SERVER_ERROR } from '../../../../../../types/src';
+import { SERVER_ERROR } from 'upgrade_types';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 

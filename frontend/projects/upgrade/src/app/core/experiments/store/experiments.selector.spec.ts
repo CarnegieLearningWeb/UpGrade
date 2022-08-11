@@ -1,4 +1,4 @@
-import { FILTER_MODE, SEGMENT_TYPE } from "../../../../../../../../types/src";
+import { FILTER_MODE, SEGMENT_TYPE } from "upgrade_types";
 import { ExperimentState, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, DATE_RANGE, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, ASSIGNMENT_UNIT, CONSISTENCY_RULE } from "./experiments.model";
 import { initialState } from "./experiments.reducer"
 import { selectAllExperiment, selectAllExperimentNames, selectAllPartitions, selectContextMetaData, selectExperimentById, selectExperimentGraphInfo, selectExperimentGraphRange, selectExperimentStatById, selectExperimentState, selectExperimentStats, selectIsGraphLoading, selectIsLoadingExperiment, selectIsLoadingExperimentDetailStats, selectIsPollingExperimentDetailStats, selectSearchKey, selectSearchString, selectSelectedExperiment, selectSkipExperiment, selectSortAs, selectSortKey, selectTotalExperiment } from "./experiments.selectors";

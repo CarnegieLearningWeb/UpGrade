@@ -6,7 +6,7 @@ import { UserRepository } from '../../../src/api/repositories/UserRepository';
 import { User } from '../../../src/api/models/User';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { USER_SEARCH_SORT_KEY } from '../../../src/api/controllers/validators/UserPaginatedParamsValidator';
-import { EXPERIMENT_SORT_AS, UserRole } from '../../../../../../types/src';
+import { EXPERIMENT_SORT_AS, UserRole } from 'upgrade_types';
 import { AWSService } from '../../../src/api/services/AWSService';
 import { Emails } from '../../../src/templates/email';
 import UserServiceMock from '../controllers/mocks/UserServiceMock';
