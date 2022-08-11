@@ -172,6 +172,7 @@ export class AnalyticsService {
         }),
         userRepository.findOne({ email }),
       ]);
+      const { localTimeZone } = user;
 
       // make new query here
       let toLoop = true;
@@ -179,7 +180,11 @@ export class AnalyticsService {
       const take = 50;
       do {
         const data = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
-        const userIds = data.map(({userId}) => userId);
+        const userIds = data.map(({ userId }) => userId);
+        // don't query if no data
+        if (!experimentId || (userIds && userIds.length === 0)) {
+          break;
+        }
         const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId, userIds);
 
         // query name id mapping
@@ -196,7 +201,8 @@ export class AnalyticsService {
         // group data according to user and query id
         queryData.forEach((individualData) => {
           groupedUser[individualData.userId] = groupedUser[individualData.userId] || {};
-          groupedUser[individualData.userId][individualData.id] = groupedUser[individualData.userId][individualData.id] || [];
+          groupedUser[individualData.userId][individualData.id] =
+            groupedUser[individualData.userId][individualData.id] || [];
           groupedUser[individualData.userId][individualData.id].push(individualData);
         });
 
@@ -262,11 +268,13 @@ export class AnalyticsService {
                   }
                   break;
                 }
-                default:{
+                default: {
                   const totalSum = groupedUser[userId][queryId].reduce((accumulator: number, doc: queryDataType) => {
-                    return accumulator + (+keySplitArray.reduce((total, attribute: string) => total[attribute], doc.data));
-                    }, 0);
-                    logsUser[userId][queryId] = totalSum / groupedUser[userId][queryId].length;
+                    return (
+                      accumulator + +keySplitArray.reduce((total, attribute: string) => total[attribute], doc.data)
+                    );
+                  }, 0);
+                  logsUser[userId][queryId] = totalSum / groupedUser[userId][queryId].length;
                   break;
                 }
               }
@@ -291,7 +299,10 @@ export class AnalyticsService {
             UserId: row.userId,
             GroupId: row.groupId,
             ConditionName: row.conditionName,
-            FirstDecisionPointReachedOn: row.firstDecisionPointReachedOn,
+            FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toUTCString(),
+            FirstDecisionPointReachedOn_LocalTime: new Date(row.firstDecisionPointReachedOn).toLocaleString('en-US', {
+              timeZone: localTimeZone,
+            }),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
@@ -319,8 +330,26 @@ export class AnalyticsService {
       let monitorFileBuffer;
       let signedURLMonitored;
 
+      const fileName = `${folderPath}${simpleExportCSV}`;
+      if (!fs.existsSync(fileName)) {
+        // if file doesn't exist create a empty file
+        const csvRows = [
+          {
+            ExperimentId: '',
+            ExperimentName: '',
+            UserId: '',
+            GroupId: '',
+            ConditionName: '',
+            FirstDecisionPointReachedOn: '',
+            FirstDecisionPointReachedOn_LocalTime: '',
+          },
+        ];
+        const csv = new ObjectsToCsv(csvRows);
+        await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
+      }
+
       let emailText;
-      monitorFileBuffer = fs.readFileSync(`${folderPath}${simpleExportCSV}`);
+      monitorFileBuffer = fs.readFileSync(fileName);
       // delete local file copy:
       fs.unlinkSync(`${folderPath}${simpleExportCSV}`);
 
@@ -330,7 +359,7 @@ export class AnalyticsService {
         this.awsService.generateSignedURL(email_export, simpleExportCSV, email_expiry_time),
       ]);
 
-      emailText = `Hey, 
+      emailText = `Hey,
       <br>
       Here is the exported experiment data:
       <br>

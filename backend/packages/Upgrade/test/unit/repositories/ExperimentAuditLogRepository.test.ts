@@ -2,7 +2,7 @@ import { Connection, ConnectionManager, DeleteQueryBuilder, EntityManager, Inser
 import * as sinon from 'sinon';
 import { ExperimentAuditLogRepository } from "../../../src/api/repositories/ExperimentAuditLogRepository";
 import { ExperimentAuditLog } from "../../../src/api/models/ExperimentAuditLog";
-import { EXPERIMENT_LOG_TYPE } from "../../../types/src";
+import { EXPERIMENT_LOG_TYPE } from "upgrade_types";
 import { User } from "../../../src/api/models/User";
 
 let sandbox;
