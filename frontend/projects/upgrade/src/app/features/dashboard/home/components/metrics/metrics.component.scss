@@ -26,10 +26,10 @@
     }
 
     .metric-keys {
-      display: grid;
-      flex-direction: row;
-      flex-wrap: wrap;
+      display: flex;
+      flex-direction: column;
       padding: 10px 0;
+      width: 250px;
 
       .dropdown {
         position: absolute;
@@ -39,7 +39,10 @@
     }
 
     .secondary-form {
-      flex-wrap: wrap;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0;
+      width: 160px;
 
       .form-control {
         margin-top: -13px;
@@ -54,20 +57,19 @@
     }
 
     .cdk-column-keys {
-      flex: 0 0 35%;
-      width: 35%;
+      flex: 0 0 250px;
+      width: 250px;
     }
 
     .cdk-column-operationType {
-      margin-left: -30px;
+      margin-left: 30px;
       flex: 0 0 160px;
       width: 160px;
     }
 
     .cdk-column-queryName {
-      margin-left: 30px;
-      width: 43%;
-      max-width: 280px;
+      width: 100%;
+      max-width: 350px;
     }
 
     .remove-icon {
