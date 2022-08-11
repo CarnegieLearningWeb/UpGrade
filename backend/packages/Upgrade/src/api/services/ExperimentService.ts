@@ -46,6 +46,8 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
+import { DecisionPointCondition } from '../models/DecisionPointCondition';
+import { DecisionPointConditionRepository } from '../repositories/DecisionPointConditionRepository';
 
 @Service()
 export class ExperimentService {
@@ -63,6 +65,7 @@ export class ExperimentService {
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
+    @OrmRepository() private decisionPointConditionRepository: DecisionPointConditionRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -929,7 +932,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, queries, segmentInclude, segmentExclude, ...expDoc } = experiment;
+      const { conditions, partitions, queries, segmentInclude, segmentExclude, decisionPointConditions, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -1043,13 +1046,15 @@ export class ExperimentService {
       let experimentSegmentInclusionDoc: ExperimentSegmentInclusion;
       let experimentSegmentExclusionDoc: ExperimentSegmentExclusion;
       let decisionPointDocs: DecisionPoint[];
+      let decisionPointConditionDoc: DecisionPointCondition[];
       let queryDocs: any;
       try {
-        [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, queryDocs] = await Promise.all([
+        [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, decisionPointConditionDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
           this.experimentSegmentInclusionRepository.insertData(segmentIncludeDocToSave, logger, transactionalEntityManager),
           this.experimentSegmentExclusionRepository.insertData(segmentExcludeDocToSave, logger, transactionalEntityManager),
+          this.decisionPointConditionRepository.insertDecisionPointCondition(decisionPointConditions, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
@@ -1080,6 +1085,7 @@ export class ExperimentService {
         partitions: decisionPointDocToReturn as any,
         experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
         experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
+        decisionPointCondition: decisionPointConditionDoc as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;

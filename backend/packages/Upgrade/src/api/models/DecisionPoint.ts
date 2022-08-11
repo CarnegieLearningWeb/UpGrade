@@ -1,7 +1,8 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsAlphanumeric, IsNumber } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
+import { DecisionPointCondition } from './DecisionPointCondition';
 
 @Entity()
 export class DecisionPoint extends BaseModel {
@@ -32,6 +33,9 @@ export class DecisionPoint extends BaseModel {
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
+
+  @OneToMany((type) => DecisionPointCondition, (decisionPoint) => decisionPoint.decisionPointId)
+  public decisionPointId: DecisionPointCondition;
 }
 
 export function getExperimentPartitionID(site: string, target: string): string {
