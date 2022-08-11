@@ -471,7 +471,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             control.get('assignmentWeight').enable();
           });
         }
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length) {
+        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
