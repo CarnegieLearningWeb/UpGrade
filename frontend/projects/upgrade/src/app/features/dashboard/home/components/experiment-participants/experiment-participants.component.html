@@ -20,7 +20,7 @@
           class="member-table"
           [dataSource]="members1DataSource"
           formArrayName="members1"
-          #membersTable
+          #members1Table
         >
           <!-- Members Type Column -->
           <ng-container matColumnDef="type">
@@ -63,8 +63,9 @@
               <mat-form-field floatLabel="never" class="form-control">
                 <input
                   matInput
-                  [placeholder]="'segments.global-members-id/name.text' | translate"
+                  [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                   formControlName="id"
+                  autocomplete="off"
                 />
               </mat-form-field>
             </ng-template>
@@ -74,7 +75,7 @@
           <ng-container matColumnDef="removeMember">
             <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
             <mat-cell
-              style="justify-content: flex-end;"
+              style="justify-content: flex-start;"
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
             >
@@ -114,7 +115,7 @@
           class="member-table"
           [dataSource]="members2DataSource"
           formArrayName="members2"
-          #membersExceptTable
+          #members2Table
         >
           <!-- Members NUMBER Column -->
           <ng-container matColumnDef="memberNumber">
@@ -167,8 +168,9 @@
               <mat-form-field floatLabel="never" class="form-control">
                 <input
                   matInput
-                  [placeholder]="'segments.global-members-id/name.text' | translate"
+                  [placeholder]="'segments.members-placeholder-id/name.text' | translate"
                   formControlName="id"
+                  autocomplete="off"
                 />
               </mat-form-field>
             </ng-template>
@@ -178,7 +180,7 @@
           <ng-container matColumnDef="removeMember">
             <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
             <mat-cell
-              style="justify-content: flex-end;"
+              style="justify-content: flex-start;"
               *matCellDef="let element; let groupIndex = index"
               [formGroupName]="groupIndex"
             >

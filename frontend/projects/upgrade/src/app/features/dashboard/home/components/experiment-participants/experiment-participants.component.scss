@@ -7,50 +7,59 @@
   flex-direction: column;
 
   .title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
   }
 
   .member-table {
-    max-height: 140px;
+    margin-top: 5px;
+    max-height: 135px;
     overflow: auto;
 
     mat-header-row {
       min-height: 35px;
+      justify-content: space-between;
     }
 
     mat-row {
-      min-height: 66px;
-      max-height: 66px;
+      min-height: 46px;
+      max-height: 46px;
+      justify-content: space-between;
     }
 
     mat-header-cell {
       justify-content: left;
-      margin-right: 15px;
       color: var(--grey-6);
     }
 
     mat-cell {
       justify-content: left;
-      margin-right: 15px;
+      margin-bottom: -5px;
     }
 
     .cdk-column-removeMember {
-      flex: 0 0 15%;
-
+      flex: 0 0 60px;
+      width: 60px;
     }
 
-    .mat-column-id,
     .mat-column-type {
-      flex: 0 0 40%;
+      flex: 0 0 180px;
+      width: 180px;
+    }
+
+    .mat-column-id {
+      margin-left: 30px;
+      width: 100%;
+      max-width: 400px;
     }
 
     .remove-icon {
-      position: right;
-      top: -3px;
-      width: 18px;
-      height: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: -3px;
+      min-width: 60px;
+      height: 16px;
       font-size: var(--text-size-x-large);
       color: gray;
 
@@ -66,7 +75,7 @@
   }
 
   .add-member {
-    // margin-top: 10px;
+    margin-top: 10px;
     outline: 0;
     border: 0;
     background-color: transparent;
@@ -84,13 +93,18 @@
       width: 25%;
     }
   }
-  
-  .member-table {
-    margin-top: 30px;
-  }
 
 
   ::ng-deep .mat-form-field-label {
     color: var(--grey-6);
+  }
+  
+  ::ng-deep .form-control .mat-form-field-underline {
+    bottom: unset;
+    background-color: unset !important;
+  }
+
+  ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
+    display: none;
   }
 }

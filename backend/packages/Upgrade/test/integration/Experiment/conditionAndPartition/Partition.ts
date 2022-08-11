@@ -18,7 +18,7 @@ export default async function NoPartitionPoint(): Promise<void> {
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
   const experiments = await experimentService.find(new UpgradeLogger());
 
-  // sort partitions
+  // sort decision points
   experiments[0].partitions.sort((a, b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
@@ -28,27 +28,27 @@ export default async function NoPartitionPoint(): Promise<void> {
       expect.objectContaining({
         site: 'CurriculumSequence',
         target: 'W1',
-        description: 'Partition on Workspace 1',
+        description: 'Decision Point on Workspace 1',
         twoCharacterId: 'W1',
         order: 1,
       }),
       expect.objectContaining({
         site: 'CurriculumSequence',
         target: 'W2',
-        description: 'Partition on Workspace 2',
+        description: 'Decision Point on Workspace 2',
         twoCharacterId: 'W2',
         order: 2,
       }),
       expect.objectContaining({
         site: 'CurriculumSequence',
-        description: 'No Partition',
+        description: 'No Decision Point',
         twoCharacterId: 'NP',
         order: 3,
       }),
     ])
   );
 
-  // adding new partition
+  // adding new decision point
   const newExperimentDoc = {
     ...experiments[0],
     partitions: [
@@ -56,19 +56,19 @@ export default async function NoPartitionPoint(): Promise<void> {
       {
         site: 'CurriculumSequence ',
         target: 'W3',
-        description: 'Partition on Workspace 3',
+        description: 'Decision Point on Workspace 3',
         twoCharacterId: 'W3',
       },
     ],
   };
 
-  // delete first partition
+  // delete first decision point
   newExperimentDoc.partitions.shift();
 
   // order for condition
-  newExperimentDoc.partitions.forEach((partition, index) => {
-    const newPartition = { ...partition, order: index + 1 };
-    newExperimentDoc.partitions[index] = newPartition;
+  newExperimentDoc.partitions.forEach((decisionPoint, index) => {
+    const newDecisionPoints = { ...decisionPoint, order: index + 1 };
+    newExperimentDoc.partitions[index] = newDecisionPoints;
   });
 
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
@@ -78,20 +78,20 @@ export default async function NoPartitionPoint(): Promise<void> {
       expect.objectContaining({
         site: 'CurriculumSequence',
         target: 'W2',
-        description: 'Partition on Workspace 2',
+        description: 'Decision Point on Workspace 2',
         twoCharacterId: 'W2',
         order: 1,
       }),
       expect.objectContaining({
         site: 'CurriculumSequence',
-        description: 'No Partition',
+        description: 'No Decision Point',
         twoCharacterId: 'NP',
         order: 2,
       }),
       expect.objectContaining({
         site: 'CurriculumSequence ',
         target: 'W3',
-        description: 'Partition on Workspace 3',
+        description: 'Decision Point on Workspace 3',
         twoCharacterId: 'W3',
         order: 3,
       }),

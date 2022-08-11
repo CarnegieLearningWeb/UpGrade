@@ -29,10 +29,10 @@ export class CreateExperiments implements Seeder {
         experiment.revertTo = createdConditions[Math.floor(createdConditions.length * Math.random())].id;
       }
 
-      const numberOfPartitions = Math.floor(2 * Math.random()) + 2;
+      const numberOfDecisionPoints = Math.floor(2 * Math.random()) + 2;
       await factory(DecisionPoint)({
         experimentId: experiment.id,
-      }).seedMany(numberOfPartitions);
+      }).seedMany(numberOfDecisionPoints);
 
       await em.save(experiment);
     });

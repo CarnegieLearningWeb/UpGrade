@@ -111,7 +111,7 @@ export class AnalyticsService {
     ]);
 
     const experiment: Experiment = promiseArray[0];
-    const [individualEnrollmentConditionAndPartition, groupEnrollmentConditionAndPartition] = promiseArray[1];
+    const [individualEnrollmentConditionAndDecisionPoint, groupEnrollmentConditionAndDecisionPoint] = promiseArray[1];
 
     return Object.keys(keyToReturn).map((date) => {
       const stats: IExperimentEnrollmentDetailDateStats = {
@@ -119,29 +119,29 @@ export class AnalyticsService {
         conditions: experiment.conditions.map(({ id }) => {
           return {
             id,
-            partitions: experiment.partitions.map((partitionDoc) => {
-              const userInConditionPartition = individualEnrollmentConditionAndPartition.find(
+            partitions: experiment.partitions.map((decisionPointDoc) => {
+              const userInConditionDecisionPoint = individualEnrollmentConditionAndDecisionPoint.find(
                 ({ conditionId, partitionId, date_range }) => {
                   return (
-                    partitionId === partitionDoc.id &&
+                    partitionId === decisionPointDoc.id &&
                     conditionId === id &&
                     new Date(date).getTime() === (date_range as any).getTime()
                   );
                 }
               );
-              const groupInConditionPartition = groupEnrollmentConditionAndPartition.find(
+              const groupInConditionDecisionPoint = groupEnrollmentConditionAndDecisionPoint.find(
                 ({ conditionId, partitionId, date_range }) => {
                   return (
-                    partitionId === partitionDoc.id &&
+                    partitionId === decisionPointDoc.id &&
                     conditionId === id &&
                     new Date(date).getTime() === (date_range as any).getTime()
                   );
                 }
               );
               return {
-                id: partitionDoc.id,
-                users: (userInConditionPartition && userInConditionPartition.count) || 0,
-                groups: (groupInConditionPartition && groupInConditionPartition.count) || 0,
+                id: decisionPointDoc.id,
+                users: (userInConditionDecisionPoint && userInConditionDecisionPoint.count) || 0,
+                groups: (groupInConditionDecisionPoint && groupInConditionDecisionPoint.count) || 0,
               };
             }),
           };
@@ -171,6 +171,7 @@ export class AnalyticsService {
           where: { id: experimentId },
         }),
         userRepository.findOne({ email }),
+
       ]);
       const { localTimeZone } = user;
 
