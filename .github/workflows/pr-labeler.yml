@@ -4,7 +4,7 @@ jobs:
   label:
     runs-on: ubuntu-latest
     steps:
-      - uses: srvaroa/labeler@v0.8
+      - uses: srvaroa/labeler@v0.9
         with:
           config_path: .github/pr-labeler-config.yml
         env:
