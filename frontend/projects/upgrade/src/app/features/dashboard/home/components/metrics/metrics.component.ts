@@ -492,7 +492,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.metricsDataSource.next(this.queries.controls);
     if (type) {
       this[type].nativeElement.scroll({
-        top: this[type].nativeElement.scrollHeight,
+        top: this[type].nativeElement.scrollHeight - 96,
         behavior: 'smooth'
       });
     }
