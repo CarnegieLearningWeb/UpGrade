@@ -7,7 +7,7 @@
   }
 
   .name {
-    width: 30%;
+    width: 230px;
   }
   .description {
     width: 100%;
@@ -15,30 +15,30 @@
 
   .property-container {
     .unit-of-assignment {
-      width: 30%;
+      width: 230px;
     }
 
     .group-type {
-      margin-left: 10%;
-      width: 25%;
+      margin-left: 50px;
+      width: 230px;
     }
   }
 
   .consistency-rule,
   .context {
-    width: 30%;
+    width: 230px;
   }
 
   .chips {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    width: 30%;
+    width: 230px;
   }
 
   .tags {
-    margin-top: 5px;
-    margin-bottom: 5px;
     width: 100%;
+  }
+
+  .logging {
+    margin-top: 5px;
   }
 
   ::ng-deep .mat-chip-list-wrapper {
