@@ -24,6 +24,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { getCustomRepository } from 'typeorm';
+import moment from "moment-timezone";
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -300,10 +301,8 @@ export class AnalyticsService {
             UserId: row.userId,
             GroupId: row.groupId,
             ConditionName: row.conditionName,
-            FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toUTCString(),
-            FirstDecisionPointReachedOn_LocalTime: new Date(row.firstDecisionPointReachedOn).toLocaleString('en-US', {
-              timeZone: localTimeZone,
-            }),
+            FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
+            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn).tz(localTimeZone).toISOString(true),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
