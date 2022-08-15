@@ -1,7 +1,7 @@
 import { segmentsReducer, initialState } from "./segments.reducer";
 import * as SegmentsActions from "./segments.actions";
 import { Segment } from "./segments.model";
-import { SEGMENT_TYPE } from "../../../../../../../../types/src";
+import { SEGMENT_TYPE } from "upgrade_types";
 
 describe("SegmentsReducer", () => {
     describe("actions to kick off requests w/ isLoadingSegments ", () => {

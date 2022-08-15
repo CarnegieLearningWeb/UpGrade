@@ -6,12 +6,11 @@ import { IndividualEnrollmentRepository } from "../../../src/api/repositories/In
 import { IndividualExclusionRepository } from "../../../src/api/repositories/IndividualExclusionRepository";
 import { ExperimentRepository } from "../../../src/api/repositories/ExperimentRepository";
 import { GroupExclusionRepository } from "../../../src/api/repositories/GroupExclusionRepository";
-import { ASSIGNMENT_UNIT } from "../../../../../../types/src";
+import { ASSIGNMENT_UNIT, DATE_RANGE } from "upgrade_types";
 import { User } from "../../../src/api/models/User";
 import { ExperimentCondition } from "../../../src/api/models/ExperimentCondition";
 import { DecisionPoint } from "../../../src/api/models/DecisionPoint";
 import { GroupEnrollmentRepository } from "../../../src/api/repositories/GroupEnrollmentRepository";
-import { DATE_RANGE } from "../../../../../../types/src";
 
 let sandbox;
 let connection = sinon.createStubInstance(Connection)
