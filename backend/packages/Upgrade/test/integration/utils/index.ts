@@ -2,7 +2,7 @@ import { MonitoredDecisionPoint } from '../../../src/api/models/MonitoredDecisio
 import { Container } from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { CheckService } from '../../../src/api/services/CheckService';
-import { INewExperimentAssignment, ENROLLMENT_CODE } from 'upgrade_types';
+import { INewExperimentAssignment, ENROLLMENT_CODE, MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { User } from '../../../src/api/models/User';
 import { getRepository } from 'typeorm';
@@ -114,6 +114,7 @@ export async function markExperimentPoint(
   await experimentAssignmentService.markExperimentPoint(
     userId,
     experimentPoint,
+    MARKED_DECISION_POINT_STATUS.APPLIED,
     condition,
     { logger, userDoc: experimentUserDoc },
     experimentName

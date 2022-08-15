@@ -5,7 +5,7 @@ import getAllExperimentConditions from './functions/getAllExperimentConditions';
 import { IExperimentAssignment, IFeatureFlag, ISingleMetric, IGroupMetric, ILogInput } from 'upgrade_types';
 import getExperimentCondition from './functions/getExperimentCondition';
 import markExperimentPoint from './functions/markExperimentPoint';
-import failedExperimentPoint from './functions/failedExperimentPoint';
+import { MARKED_DECISION_POINT_STATUS } from "upgrade_types";
 import getAllFeatureFlags from './functions/getAllfeatureFlags';
 import log from './functions/log';
 import setAltUserIds from './functions/setAltUserIds';
@@ -117,14 +117,23 @@ export default class UpgradeClient {
         return getExperimentCondition(this.experimentConditionData, experimentPoint, partitionId);
     }
 
-    async markExperimentPoint(experimentPoint: string, condition = null, partitionId?: string): Promise<Interfaces.IMarkExperimentPoint> {
-        this.validateClient();
-        return await markExperimentPoint(this.api.markExperimentPoint, this.userId, this.token, this.clientSessionId, experimentPoint, condition, partitionId);
-    }
-
-    async failedExperimentPoint(experimentPoint: string, reason: string, experimentId?: string): Promise<Interfaces.IFailedExperimentPoint> {
-        this.validateClient();
-        return await failedExperimentPoint(this.api.failedExperimentPoint, this.token, this.clientSessionId, experimentPoint, reason, this.userId, experimentId);
+    async markExperimentPoint(
+      experimentPoint: string,
+      condition = null,
+      status: MARKED_DECISION_POINT_STATUS,
+      partitionId?: string
+    ): Promise<Interfaces.IMarkExperimentPoint> {
+      this.validateClient();
+      return await markExperimentPoint(
+        this.api.markExperimentPoint,
+        this.userId,
+        this.token,
+        this.clientSessionId,
+        experimentPoint,
+        condition,
+        status,
+        partitionId,
+      );
     }
 
     async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
