@@ -6,7 +6,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
-import { INCLUSION_CRITERIA } from '../../../../../../../../../../types/src/Experiment/enums';
+import { INCLUSION_CRITERIA } from 'upgrade_types';
 
 type ParticipantMember = {
   id: string;

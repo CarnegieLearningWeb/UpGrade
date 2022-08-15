@@ -9,7 +9,7 @@ import { ExperimentAuditLogRepository } from '../../../src/api/repositories/Expe
 import { AWSService } from '../../../src/api/services/AWSService';
 import { SCHEDULE_TYPE } from '../../../src/api/models/ScheduledJob';
 import { Experiment } from '../../../src/api/models/Experiment';
-import { EXPERIMENT_STATE } from '../../../../../../types/src';
+import { EXPERIMENT_STATE } from 'upgrade_types';
 import { ScheduledJob } from '../../../src/api/models/ScheduledJob'
 
 describe('Scheduled Job Service Testing', () => {

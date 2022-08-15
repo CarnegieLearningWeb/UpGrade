@@ -1,4 +1,4 @@
-import { FILTER_MODE } from "../../../../../../../types/src/index";
+import { FILTER_MODE } from "upgrade_types";
 
 export const experiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',

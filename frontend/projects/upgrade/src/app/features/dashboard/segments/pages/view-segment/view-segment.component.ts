@@ -12,7 +12,7 @@ import { MemberTypes, Segment } from '../../../../../core/segments/store/segment
 import { SEGMENT_TYPE } from 'upgrade_types';
 import { DeleteComponent } from '../../../../../shared/components/delete/delete.component';
 import { SegmentExperimentListComponent } from '../../components/modal/segment-experiment-list/segment-experiment-list.component';
-import { SEGMENT_STATUS } from '../../../../../../../../../../types/src/Experiment/enums';
+import { SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-status.pipe';
 @Component({
   selector: 'view-segment',
