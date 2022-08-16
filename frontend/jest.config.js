@@ -27,6 +27,7 @@ module.exports = {
         "<rootDir>/src/app/features/",
         "<rootDir>/src/app/shared/"
     ],
+    "testEnvironment": "node", // until there DOM tests, this can be added to disable DOM and run much faster
     "globals": {
       "ts-jest": {
           "tsconfig": "<rootDir>/tsconfig.spec.json",
