@@ -11,9 +11,6 @@ module.exports = {
     "setupFilesAfterEnv": [
         "<rootDir>/setup-jest.ts"
     ],
-    // "transformIgnorePatterns": [
-    //     "node_modules/(?!@ngrx|rxjs|@angular)"
-    // ],
     "transform": {
         "^.+\\.(ts)$": "ts-jest"
     },
@@ -27,7 +24,6 @@ module.exports = {
         "<rootDir>/src/app/features/",
         "<rootDir>/src/app/shared/"
     ],
-    "testEnvironment": "node", // until there DOM tests, this can be added to disable DOM and run much faster
     "globals": {
       "ts-jest": {
           "tsconfig": "<rootDir>/tsconfig.spec.json",

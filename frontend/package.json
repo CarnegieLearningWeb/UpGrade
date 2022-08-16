@@ -15,7 +15,7 @@
     "build:prod": "ng build --configuration production",
     "build:dev": "ng build -c=development",
     "lint": "ng lint",
-    "test": "jest --runInBand",
+    "test": "jest --maxWorkers=4",
     "test:coverage": "open ./coverage/lcov-report/index.html",
     "test:once": "jest --maxWorkers=50% --coverage",
     "test:watch": " jest --maxWorkers=25% --watchAll --coverage",
