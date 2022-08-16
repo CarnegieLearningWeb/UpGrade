@@ -7,7 +7,7 @@
     "start": "ng serve --open",
     "docker:local": "ng serve --open --host 0.0.0.0",
     "cl:build": "npm run build:prod && npm run cl:copy-package-json",
-    "cl:copy-package-json": "cp projects/abtesting/package.json dist/abtesting/",
+    "cl:copy-package-json": "cp projects/upgrade/package.json dist/upgrade/",
     "start:prod": "npm run build:prod && npm run server",
     "prebuild": "npm run test",
     "build": "ng build",
@@ -24,7 +24,7 @@
     "format:write": "prettier projects/**/*.{ts,json,md,scss} --write",
     "format:test": "prettier projects/**/*.{ts,json,md,scss} --list-different",
     "release": "standard-version && git push --follow-tags origin master",
-    "analyze": "npm run build:prod -- --stats-json && webpack-bundle-analyzer ./dist/abtesting/stats-es2015.json",
+    "analyze": "npm run build:prod -- --stats-json && webpack-bundle-analyzer ./dist/upgrade/stats-es2015.json",
     "server": "node ./projects/server/server.js",
     "build:development": "npm run build:dev",
     "build:production": "npm run build:prod"
