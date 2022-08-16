@@ -21,7 +21,11 @@ module.exports = {
         "<rootDir>/node_modules/",
         "<rootDir>/dist/",
         "<rootDir>/e2e/",
-        "<rootDir>/src/environments/"
+        "<rootDir>/src/environments/",
+        // NOTE! undeveloped component specs are skipped, but they still adversely affect test runtime.
+        // /features and /shared will need to be updated later
+        "<rootDir>/src/app/features/",
+        "<rootDir>/src/app/shared/"
     ],
     "globals": {
       "ts-jest": {
