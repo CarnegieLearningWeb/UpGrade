@@ -120,7 +120,7 @@ export default class UpgradeClient {
     async markExperimentPoint(
       experimentPoint: string,
       condition = null,
-      status: MARKED_DECISION_POINT_STATUS,
+      status: MARKED_DECISION_POINT_STATUS = MARKED_DECISION_POINT_STATUS.MARKED,
       partitionId?: string
     ): Promise<Interfaces.IMarkExperimentPoint> {
       this.validateClient();
