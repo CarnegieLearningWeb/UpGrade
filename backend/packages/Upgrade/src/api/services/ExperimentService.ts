@@ -339,7 +339,7 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<any> {
+  public async importExperiment(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<any> {
     const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
     if (duplicateExperiment && experiment.id !== undefined) {
       const error = new Error('Duplicate experiment');
@@ -395,14 +395,63 @@ export class ExperimentService {
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
     experiment.stateTimeLogs = [];
-    return this.create(experiment, user, logger);
+
+    let segmentExcludeData: Omit<SegmentInputValidator, "id" | "name" | "description" | "context"> = {
+      type: experiment.experimentSegmentExclusion.segment.type,
+      userIds: experiment.experimentSegmentExclusion.segment.individualForSegment.map(user => {
+        return user.userId;
+      }),
+      groups: experiment.experimentSegmentExclusion.segment.groupForSegment.map(group => {
+        return {type: group.type, groupId: group.groupId};
+      }),
+      subSegmentIds: experiment.experimentSegmentExclusion.segment.subSegments.map(subSegment => {
+        return subSegment.id;
+      })
+    }
+
+    let segmentIncludeData: Omit<SegmentInputValidator, "id" | "name" | "description" | "context"> = {
+      type: experiment.experimentSegmentInclusion.segment.type,
+      userIds: experiment.experimentSegmentInclusion.segment.individualForSegment.map(user => {
+        return user.userId;
+      }),
+      groups: experiment.experimentSegmentInclusion.segment.groupForSegment.map(group => {
+        return {type: group.type, groupId: group.groupId};
+      }),
+      subSegmentIds: experiment.experimentSegmentInclusion.segment.subSegments.map(subSegment => {
+        return subSegment.id;
+      })
+    }
+
+    let formatedExperiment: ExperimentInput = {
+      ...experiment,
+      segmentInclude: segmentIncludeData,
+      segmentExclude: segmentExcludeData
+    }
+    
+    return this.create(formatedExperiment, user, logger);
   }
 
   public async exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<Experiment> {
     logger.info({ message: `Inside export Experiment JSON ${experimentId}` });
     const experimentDetails = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
+      relations: [
+        'partitions', 
+        'conditions', 
+        'stateTimeLogs', 
+        'queries', 
+        'queries.metric',
+        'experimentSegmentInclusion',
+        'experimentSegmentInclusion.segment',
+        'experimentSegmentInclusion.segment.individualForSegment',
+        'experimentSegmentInclusion.segment.groupForSegment',
+        'experimentSegmentInclusion.segment.subSegments',
+        'experimentSegmentExclusion',
+        'experimentSegmentExclusion.segment',
+        'experimentSegmentExclusion.segment.individualForSegment',
+        'experimentSegmentExclusion.segment.groupForSegment',
+        'experimentSegmentExclusion.segment.subSegments'
+      ],
     });
     experimentDetails.backendVersion = env.app.version;
     this.experimentAuditLogRepository.saveRawJson(
