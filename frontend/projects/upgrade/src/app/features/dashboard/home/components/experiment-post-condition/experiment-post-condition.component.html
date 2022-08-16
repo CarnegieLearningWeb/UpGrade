@@ -6,7 +6,7 @@
     >
       <mat-form-field class="ft-14-600">
         <mat-label>{{ 'home-global.post-experiment-rule.text' | translate }}</mat-label>
-        <mat-select class="ft-14-600" formControlName="postExperimentRule">
+        <mat-select class="ft-14-400" formControlName="postExperimentRule">
           <mat-option
             *ngFor="let rule of postExperimentRules"
             [value]="rule.value"
@@ -18,7 +18,7 @@
     
       <mat-form-field class="ft-14-600">
         <mat-label>{{ 'global.condition.text' | translate }}</mat-label>
-        <mat-select class="ft-14-600" formControlName="revertTo">
+        <mat-select class="ft-14-400" formControlName="revertTo">
           <mat-option
             *ngFor="let condition of experimentConditions"
             [value]="condition.id"
