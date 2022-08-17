@@ -1,6 +1,8 @@
+import { MonitoredDecisionPoint } from './../models/MonitoredDecisionPoint';
+import { Experiment } from '../models/Experiment';
 import { IndividualExclusionRepository } from './IndividualExclusionRepository';
 import { IndividualEnrollmentRepository } from './IndividualEnrollmentRepository';
-import { EntityRepository, EntityManager } from 'typeorm';
+import { EntityRepository, EntityManager, getCustomRepository } from 'typeorm';
 import { ExperimentRepository } from './ExperimentRepository';
 import { PreviewUser } from '../models/PreviewUser';
 import {
@@ -287,6 +289,53 @@ export class AnalyticsRepository {
     });
 
     return result;
+  }
+
+  public async getCSVDataForSimpleExport(
+    experimentId: string,
+    skip: number,
+    take: number
+  ): Promise<
+    Array<{
+      experimentId: string;
+      experimentName: string;
+      userId: string;
+      groupId: string;
+      conditionName: string;
+      firstDecisionPointReachedOn: string;
+      decisionPointReachedCount: number;
+    }>
+  > {
+    const individualEnrollmentRepository = getCustomRepository(IndividualEnrollmentRepository, 'export');
+    return individualEnrollmentRepository
+      .createQueryBuilder('individualEnrollment')
+      .select([
+        'experiment.id as "experimentId"',
+        'experiment.name as "experimentName"',
+        '"individualEnrollment"."userId" as "userId"',
+        '"individualEnrollment"."groupId" as "groupId"',
+        'condition."conditionCode" as "conditionName"',
+        'MIN("monitoredPointLogs"."createdAt") as "firstDecisionPointReachedOn"',
+        'CAST(COUNT("monitoredPointLogs"."id") as int) as "decisionPointReachedCount"',
+      ])
+      .leftJoin('individualEnrollment.condition', 'condition')
+      .innerJoin(Experiment, 'experiment', 'experiment.id = "individualEnrollment"."experimentId"')
+      .innerJoin(
+        MonitoredDecisionPoint,
+        'monitored',
+        'monitored."userId" = "individualEnrollment"."userId" AND monitored."decisionPoint" = "individualEnrollment"."partitionId"'
+      )
+      .leftJoin('monitored.monitoredPointLogs', 'monitoredPointLogs')
+      .groupBy('experiment.id')
+      .addGroupBy('experiment.name')
+      .addGroupBy('"individualEnrollment"."userId"')
+      .addGroupBy('"individualEnrollment"."groupId"')
+      .addGroupBy('condition."conditionCode"')
+      .orderBy('"individualEnrollment"."userId"', 'ASC')
+      .skip(skip)
+      .take(take)
+      .where('"individualEnrollment"."experimentId" = :experimentId', { experimentId })
+      .execute();
   }
 
   public async getEnrollmentByDateRange(
