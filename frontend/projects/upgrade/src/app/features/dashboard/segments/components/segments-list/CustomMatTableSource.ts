@@ -1,6 +1,6 @@
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
+import { SEGMENT_TYPE } from 'upgrade_types';
 import { Segment } from '../../../../../core/segments/store/segments.model';
 
 class CustomMatTableSource extends MatTableDataSource<Segment> {

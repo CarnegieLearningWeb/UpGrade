@@ -1,4 +1,4 @@
-import { SEGMENT_TYPE } from '../../../../../../../../types/src';
+import { SEGMENT_TYPE } from 'upgrade_types';
 import { Segment } from './segments.model';
 import { initialState } from './segments.reducer';
 import * as SegmentSelectors from './segments.selectors';

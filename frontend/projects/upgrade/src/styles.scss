@@ -242,3 +242,8 @@
   word-break: break-all;
   white-space: normal;
 }
+
+// Added to globally prevent tooltips from blocking click-events
+.mat-tooltip-panel {
+  pointer-events: none;
+}

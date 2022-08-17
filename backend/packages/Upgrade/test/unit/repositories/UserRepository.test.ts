@@ -2,7 +2,7 @@ import { DeleteQueryBuilder, InsertQueryBuilder, UpdateQueryBuilder } from "type
 import * as sinon from 'sinon';
 import { UserRepository } from "../../../src/api/repositories/UserRepository";
 import { User } from "../../../src/api/models/User";
-import { UserRole } from "../../../../../../types/src";
+import { UserRole } from "upgrade_types";
 
 let sandbox;
 let createQueryBuilderStub;

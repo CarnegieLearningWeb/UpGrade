@@ -4,7 +4,7 @@ import {  Segment,  NewSegmentDialogEvents ,NewSegmentDialogData, NewSegmentPath
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { SEGMENT_TYPE } from '../../../../../../../../../../types/src';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
 @Component({
   selector: 'segment-overview',

@@ -2,7 +2,7 @@ import { Connection, ConnectionManager, DeleteQueryBuilder, EntityManager, Inser
 import * as sinon from 'sinon';
 import { ExperimentRepository } from "../../../src/api/repositories/ExperimentRepository";
 import { Experiment } from "../../../src/api/models/Experiment";
-import { EXPERIMENT_STATE } from "../../../../../../types/src";
+import { EXPERIMENT_STATE } from "upgrade_types";
 import { UpgradeLogger } from "../../../src/lib/logger/UpgradeLogger";
 
 let sandbox;

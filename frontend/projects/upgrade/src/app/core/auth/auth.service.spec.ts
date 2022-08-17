@@ -1,5 +1,5 @@
 import { BehaviorSubject } from "rxjs";
-import { UserRole } from "../../../../../../../types/src/Experiment/enums";
+import { UserRole } from "upgrade_types";
 import { AuthService } from "./auth.service";
 import { actionBindAttachHandlerWithButton, actionInitializeGapi, actionLoginStart, actionLogoutStart, actionSetRedirectUrl } from "./store/auth.actions";
 

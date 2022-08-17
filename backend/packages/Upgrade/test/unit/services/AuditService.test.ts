@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ExperimentAuditLogRepository } from '../../../src/api/repositories/ExperimentAuditLogRepository';
-import { EXPERIMENT_LOG_TYPE } from '../../../../../../types/src';
+import { EXPERIMENT_LOG_TYPE } from 'upgrade_types';
 
 
 let auditArr = [1, 2, 3];
