@@ -37,6 +37,7 @@ export interface User {
   email: string;
   token?: string;
   role: UserRole;
+  localTimeZone?: string;
 }
 
 export interface UserState extends EntityState<User> {
