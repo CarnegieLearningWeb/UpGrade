@@ -74,10 +74,10 @@ export class ImportSegmentComponent {
       type: 'enum'
     };
 
-    const groupSchema: Record<keyof any, string> = {
-      groupId: 'string',
-      type: 'string',
-    }
+    // const groupSchema: Record<keyof any, string> = {
+    //   groupId: 'string',
+    //   type: 'string',
+    // }
 
     let missingProperties = this.checkForMissingProperties({ schema: segmentSchema, data: segment });
     if (missingProperties.length > 0) {

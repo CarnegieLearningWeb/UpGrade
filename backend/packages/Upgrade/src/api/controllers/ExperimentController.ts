@@ -924,7 +924,7 @@ export class ExperimentController {
   */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput,
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment,
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment> {

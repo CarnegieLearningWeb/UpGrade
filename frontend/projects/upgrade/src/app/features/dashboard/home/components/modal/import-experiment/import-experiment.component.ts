@@ -7,6 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface ImportExperimentJSON {
   schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
@@ -32,7 +33,8 @@ export class ImportExperimentComponent implements OnInit {
     public dialogRef: MatDialogRef<ImportExperimentComponent>,
     private versionService: VersionService,
     private translate: TranslateService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private _snackBar: MatSnackBar
   ) {}
 
 
@@ -44,6 +46,9 @@ export class ImportExperimentComponent implements OnInit {
         partition.target ? partition.site + partition.target : partition.site
       );
     });
+  }
+  openSnackBar() {
+    this._snackBar.open(this.translate.instant('global.import-segments.message.text') , null, { duration: 4000 });
   }
 
   onCancelClick(): void {
@@ -59,6 +64,7 @@ export class ImportExperimentComponent implements OnInit {
       });
       this.experimentService.importExperiment({ ...this.experimentInfo });
       this.onCancelClick();
+      this.openSnackBar();
     }
   }
   async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
@@ -75,7 +81,7 @@ export class ImportExperimentComponent implements OnInit {
       const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
       if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
         alreadyExistedPartitions.indexOf(partition.target ? partition.site + ' and ' + partition.target : partition.site) === -1) {
-        // if we want to  show the duplicate partition details:
+        // if we want to show the duplicate partition details:
         alreadyExistedPartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
       }
     });
