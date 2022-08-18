@@ -133,6 +133,7 @@ export class AuthEffects {
       lastName: profile.getFamilyName(),
       email: profile.getEmail(),
       imageUrl: profile.getImageUrl(),
+      localTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
     const token = googleUser.getAuthResponse().id_token;
     // Store the token in the ngrx store as this is being passed in every request via http interceptor
