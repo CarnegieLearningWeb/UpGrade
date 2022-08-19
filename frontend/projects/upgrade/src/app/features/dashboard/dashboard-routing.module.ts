@@ -33,13 +33,13 @@ const routes: Routes = [
           title: 'app-header.title.logs'
         }
       },
-      {
-        path: 'featureFlags',
-        loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule),
-        data: {
-          title: 'app-header.title.feature-flag'
-        }
-      },
+      // {
+      //   path: 'featureFlags',
+      //   loadChildren: () => import('./feature-flags/feature-flags.module').then(m => m.FeatureFlagsModule),
+      //   data: {
+      //     title: 'app-header.title.feature-flag'
+      //   }
+      // },
       {
         path: 'segments',
         loadChildren: () => import('./segments/segments.module').then(m => m.SegmentsModule),
