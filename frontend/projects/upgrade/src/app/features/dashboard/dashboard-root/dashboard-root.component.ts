@@ -21,11 +21,11 @@ export class DashboardRootComponent implements OnInit {
       text: 'global.experiment.title',
       iconType: 'assignment'
     },
-    {
-      path: ['/featureFlags'],
-      text: 'feature-flags.title.text',
-      iconType: 'toggle_on'
-    },
+    // {
+    //   path: ['/featureFlags'],
+    //   text: 'feature-flags.title.text',
+    //   iconType: 'toggle_on'
+    // },
     {
       path: ['/participants'],
       text: 'global.experiment-user.title',
