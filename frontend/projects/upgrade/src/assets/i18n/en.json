@@ -100,6 +100,8 @@
   "home.new-experiment.overview.custom-group-name.error.text": "Please enter custom group name",
   "home.new-experiment.overview.consistency-rule.error.text": "Please choose consistency rule",
   "home.new-experiment.overview.context.error.text": "Please enter at least one context",
+  "home.new-experiment.design.design-type.label": "Design Type",
+  "home.new-experiment.design.toggle-actions.aliases": "ALIASES",
   "home.new-experiment.design.decision-point.text": "Decision Points",
   "home.new-experiment.design.condition.text": "Conditions",
   "home.new-experiment.design.description.text": "DESCRIPTION",

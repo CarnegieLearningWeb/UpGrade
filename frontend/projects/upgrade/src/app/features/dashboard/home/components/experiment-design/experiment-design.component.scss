@@ -1,4 +1,22 @@
-.experiment-design {
+.design-type-select-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+}
+
+.simple-experiment-form {
+
+  .top-level-actions {
+    display: flex;
+    justify-content: flex-end;
+    height: 75px;
+
+    .icon-bump-left {
+      margin-left: -5px;
+    }
+  }
+
   .condition-table,
   .partition-table {
     margin-top: 5px;

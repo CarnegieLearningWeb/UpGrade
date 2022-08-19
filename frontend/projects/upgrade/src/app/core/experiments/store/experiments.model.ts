@@ -54,6 +54,10 @@ export enum NewExperimentPaths {
   POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
 
+export enum DesignTypes {
+  SIMPLE = "Simple Experiment"
+}
+
 export interface NewExperimentDialogData {
   type: NewExperimentDialogEvents;
   formData?: any;

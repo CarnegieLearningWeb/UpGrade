@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, DesignTypes } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -37,6 +37,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('conditionCode') conditionCode: ElementRef;
 
+  designTypeSelectOptions: string[] = [
+    DesignTypes.SIMPLE
+  ]
+
+  designTypeForm: FormGroup;
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -125,6 +130,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         conditions: this._formBuilder.array([this.addConditions()]),
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
+    this.designTypeForm = this._formBuilder.group({
+      designTypeSelect: DesignTypes.SIMPLE
+    })
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
