@@ -56,6 +56,7 @@
   "home-global.status.text": "STATUS",
   "home-global.unit-of-assignment.text": "Unit of Assignment",
   "home-global.consistency-rule.text": "Consistency Rule",
+  "home-global.design-type.text": "Design Type",
   "home-global.inclusion-criteria.text": "Inclusion Criteria",
   "home-global.post-experiment-rule.text": "Post Rule",
   "home-global.post-experiment-rule.default.text": "default",

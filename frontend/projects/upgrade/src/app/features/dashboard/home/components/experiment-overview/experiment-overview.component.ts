@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, DESIGN_TYPE } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -36,6 +36,9 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: CONSISTENCY_RULE.GROUP },
     { value: CONSISTENCY_RULE.EXPERIMENT }
   ];
+  designTypes = [
+    { value: DESIGN_TYPE.SIMPLE }
+  ]
 
   // Used to control chips
   isChipSelectable = true;
@@ -75,6 +78,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         groupType: [null],
         consistencyRule: [null, Validators.required],
         context: [null, Validators.required],
+        designType: [DESIGN_TYPE.SIMPLE, Validators.required],
         tags: [[]],
         logging: [false]
       }

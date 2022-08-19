@@ -4,6 +4,10 @@ export enum CONSISTENCY_RULE {
   GROUP = 'group',
 }
 
+export enum DESIGN_TYPE {
+  SIMPLE = 'simple experiment'
+}
+
 export enum ASSIGNMENT_UNIT {
   INDIVIDUAL = 'individual',
   GROUP = 'group',
