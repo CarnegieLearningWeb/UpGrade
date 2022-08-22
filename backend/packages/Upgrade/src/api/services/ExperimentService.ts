@@ -46,7 +46,6 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
-import { SegmentRepository } from '../repositories/SegmentRepository';
 @Service()
 export class ExperimentService {
   constructor(
@@ -63,7 +62,7 @@ export class ExperimentService {
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository() private segmentRepository: SegmentRepository,
+
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -418,25 +417,10 @@ export class ExperimentService {
       groups: experiment.experimentSegmentInclusion.segment.groupForSegment.map(group => {
         return {type: group.type, groupId: group.groupId};
       }),
-      subSegmentIds: experiment.experimentSegmentInclusion.segment.subSegments.filter(async subSegment => {
-
-        const filteredSubSegment = await this.segmentRepository.findOne(subSegment.id);  
-        console.log("subSegment: ", filteredSubSegment)
-        if (!filteredSubSegment) {
-          console.log('subSegment not found');
-          const error = new Error('SubSegment: ' + subSegment.id + ' not found. Please import subSegment and link in experiment.');
-          (error as any).type = SERVER_ERROR.QUERY_FAILED;
-          logger.error(error);
-          return false;
-        } else {
-          console.log('subSegment: ' + subSegment + ' found.');
-          return true;
-        }  
-      }).map(subSegment => {
+      subSegmentIds: experiment.experimentSegmentInclusion.segment.subSegments.map(subSegment => {
         return subSegment.id;
       })
     }
-    console.log("segmentIncludeData: ", segmentIncludeData)
     let formatedExperiment: ExperimentInput = {
       ...experiment,
       segmentInclude: segmentIncludeData,
