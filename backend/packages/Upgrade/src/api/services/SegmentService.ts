@@ -226,7 +226,21 @@ export class SegmentService {
       // create/update segment document
       segment.id = segment.id || uuid();
       const { id, name, description, context, type } = segment;
-      const subSegmentData = segment.subSegmentIds.map((subSegmentId) => ({ id: subSegmentId }));
+      const allSegments = await this.segmentRepository.getAllSegments(logger);
+      const subSegmentData = segment.subSegmentIds
+        .filter((subSegmentId) => {
+          // check if segment exists:
+          const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
+          if (subSegment) {
+            return true;
+          } else {
+            const error = new Error('SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.');
+            (error as any).type = SERVER_ERROR.QUERY_FAILED;
+            logger.error(error);
+            return false;
+          }
+        }).map((subSegmentId) => ({ id: subSegmentId }));
+      
       try {
         segmentDoc = await transactionalEntityManager
           .getRepository(Segment)
