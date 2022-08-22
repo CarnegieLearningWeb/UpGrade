@@ -1,0 +1,19 @@
+.aliases-table {
+  height: 500px;
+  border: blue 1px solid;
+
+  .aliases-header-container {
+    display: flex;  
+    justify-content: space-between;
+
+    .icon-bump-left {
+      margin-left: -5px;
+    }
+  }
+
+  .alias-table {
+    width: 100%;
+
+    
+  }
+}

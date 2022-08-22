@@ -34,6 +34,7 @@ import { ImportExperimentComponent } from './components/modal/import-experiment/
 import { StateTimeLogsComponent } from './components/modal/state-time-logs/state-time-logs.component';
 import { ExperimentParticipantsComponent } from './components/experiment-participants/experiment-participants.component';
 import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
+import { AliasesTableComponent } from './components/experiment-design/aliases-table/aliases-table.component';
 @NgModule({
     declarations: [
         HomeComponent,
@@ -59,7 +60,8 @@ import { ExportModalComponent } from './components/modal/export-experiment/expor
         RepeatedMeasurePipe,
         StateTimeLogsComponent,
         ExperimentParticipantsComponent,
-        ExportModalComponent
+        ExportModalComponent,
+        AliasesTableComponent,
     ],
     imports: [
         CommonModule,

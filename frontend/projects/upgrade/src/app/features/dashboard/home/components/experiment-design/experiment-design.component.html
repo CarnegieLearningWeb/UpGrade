@@ -4,7 +4,7 @@
     <!--NOTE: this form content may need to be broken out into separate component when factorial design-type introduced-->
     <section class="simple-experiment-form">
       <form class="experiment-design" [formGroup]="experimentDesignForm">
-        <section *ngIf="!aliasViewToggle" class="simple-experiment-decision-point-conditions-view">
+        <section *ngIf="!isAliasTableDisplayed" class="simple-experiment-decision-point-conditions-view">
           <div class="decision-point-header-container">
             <span class="ft-18-700">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
             <button
@@ -12,7 +12,7 @@
               mat-flat-button
               color="primary"
               class="ft-14-600"
-              (click)="toggleAliasView()"
+              (click)="showAliasTable()"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span>{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
@@ -334,24 +334,15 @@
           </div>
         </section>
 
-        <section *ngIf="aliasViewToggle" class="simple-experiment-aliases-view">
-          <div class="aliases-header-container">
-            <span class="ft-18-700">{{ 'home.new-experiment.design.aliases.header.text' | translate }}</span>
-            <button
-              type="button"
-              mat-flat-button
-              color="primary"
-              class="ft-14-600"
-              (click)="toggleAliasView()"
-            >
-              <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
-              <span>{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
-            </button>
-          </div>
-        </section>
-        
+        <ng-container *ngIf="isAliasTableDisplayed">
+          <app-aliases-table
+            [aliasTableData] = aliasTableData
+            (hideAliasTable) = hideAliasTable()
+          ></app-aliases-table>
+        </ng-container>
       </form>
     </section>
+  
   </section>
 
   <section class="shared-modal--buttons-container">

@@ -20,6 +20,39 @@ import { TranslateService } from '@ngx-translate/core';
 import { filter, map, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
+export interface RowData {
+  site: string;
+  target: string;
+  condition: string;
+  alias: string;
+}
+
+const DUMMY_ROW_DATA: RowData[] = [
+  {
+    site: 'SelectSection',
+    target: 'workspace_1',
+    condition: 'control',
+    alias: 'control',
+  },
+  {
+    site: 'SelectSection',
+    target: 'workspace_1',
+    condition: 'variant',
+    alias: 'variant',
+  },
+  {
+    site: 'SelectSection',
+    target: 'workspace_2',
+    condition: 'control',
+    alias: 'control',
+  },
+  {
+    site: 'SelectSection',
+    target: 'workspace_2',
+    condition: 'variant',
+    alias: 'variant',
+  },
+];
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -72,8 +105,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
   equalWeightFlag: boolean = true;
-  aliasViewToggle: boolean = false;
-  aliasBtnDisabled: boolean = true;
+
+  // Alias details
+  isAliasTableDisplayed: boolean = false;
+  isAliasBtnDisabled: boolean = true;
+  aliasTableData = DUMMY_ROW_DATA;
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -545,9 +581,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  toggleAliasView(): void {
-    this.aliasViewToggle = !this.aliasViewToggle;
-    console.log('toggle:', this.aliasViewToggle)
+  showAliasTable(): void {
+    this.isAliasTableDisplayed = true;
+  }
+
+  hideAliasTable(): void {
+    this.isAliasTableDisplayed = false;
   }
 
   get condition(): FormArray {
