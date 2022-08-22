@@ -72,6 +72,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
   equalWeightFlag: boolean = true;
+  aliasViewToggle: boolean = false;
+  aliasBtnDisabled: boolean = true;
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -541,6 +543,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   changeEqualWeightFlag(event) {
     event.checked ? this.equalWeightFlag = true : this.equalWeightFlag = false
     this.applyEqualWeight();
+  }
+
+  toggleAliasView(): void {
+    this.aliasViewToggle = !this.aliasViewToggle;
+    console.log('toggle:', this.aliasViewToggle)
   }
 
   get condition(): FormArray {
