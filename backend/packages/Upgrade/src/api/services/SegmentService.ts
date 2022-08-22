@@ -162,10 +162,11 @@ export class SegmentService {
     }
 
     // check for each subSegment to exists
+    const allSegments = await this.segmentRepository.getAllSegments(logger);
     segment.subSegmentIds.forEach((subSegmentId) => {
-      const subSegment = this.segmentRepository.findOne(subSegmentId);
+      const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
       if (!subSegment) {
-        const error = new Error('SubSegment not found');
+        const error = new Error('SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
