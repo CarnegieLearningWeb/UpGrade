@@ -1,22 +1,20 @@
+import { LogRepository } from './../repositories/LogRepository';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
 import { AWSService } from './AWSService';
 import {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
-  POST_EXPERIMENT_RULE,
   EXPERIMENT_LOG_TYPE,
-  EXPERIMENT_STATE,
+  REPEATED_MEASURE,
+  IMetricMetaData,
 } from 'upgrade_types';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Experiment } from '../models/Experiment';
-import { ExperimentCondition } from '../models/ExperimentCondition';
-// import ObjectsToCsv from 'objects-to-csv';
-import { getCustomRepository } from 'typeorm';
+import ObjectsToCsv from 'objects-to-csv';
 import fs from 'fs';
 import { SERVER_ERROR, IExperimentEnrollmentStats } from 'upgrade_types';
 import { env } from '../../env';
@@ -24,8 +22,9 @@ import { ErrorService } from './ErrorService';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { IndividualEnrollmentRepository } from '../repositories/IndividualEnrollmentRepository';
-import { GroupEnrollmentRepository } from '../repositories/GroupEnrollmentRepository';
+import { METRICS_JOIN_TEXT } from './MetricService';
+import { getCustomRepository } from 'typeorm';
+import moment from "moment-timezone";
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -41,6 +40,8 @@ export class AnalyticsService {
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
     private experimentAuditLogRepository: ExperimentAuditLogRepository,
+    @OrmRepository()
+    private logRepository: LogRepository,
     public awsService: AWSService,
     public errorService: ErrorService
   ) {}
@@ -54,71 +55,6 @@ export class AnalyticsService {
     logger: UpgradeLogger
   ): Promise<IExperimentEnrollmentDetailStats> {
     return this.analyticsRepository.getEnrollmentPerPartitionCondition(experimentId);
-
-    // const promiseArray = await Promise.all([
-    //   this.experimentRepository.findOne(experimentId, { relations: ['conditions', 'partitions'] }),
-    //   this.analyticsRepository.getDetailEnrollment(experimentId),
-    // ]);
-    // const experiment: Experiment = promiseArray[0];
-    // const [
-    //   individualEnrollmentByCondition,
-    //   individualEnrollmentConditionAndPartition,
-    //   groupEnrollmentByCondition,
-    //   groupEnrollmentConditionAndPartition,
-    //   individualExclusion,
-    //   groupExclusion,
-    // ] = promiseArray[1];
-
-    // logger.info({ message : 'individualEnrollmentByCondition', data: individualEnrollmentByCondition });
-    // logger.info({ message : 'individualEnrollmentConditionAndPartition', data: individualEnrollmentConditionAndPartition });
-    // logger.info({ message : 'groupEnrollmentByCondition', data: groupEnrollmentByCondition });
-    // logger.info({ message : 'groupEnrollmentConditionAndPartition', data: groupEnrollmentConditionAndPartition });
-    // logger.info({ message : 'individualExclusion', data: individualExclusion });
-    // logger.info({ message : 'groupExclusion', data: groupExclusion });
-
-    // return {
-    //   id: experimentId,
-    //   users:
-    //     individualEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
-    //       return accumulator + parseInt(count, 10);
-    //     }, 0) || 0,
-    //   groups:
-    //     groupEnrollmentByCondition.reduce((accumulator: number, { count }): number => {
-    //       return accumulator + parseInt(count, 10);
-    //     }, 0) || 0,
-    //   usersExcluded: parseInt(individualExclusion[0].count, 10) || 0,
-    //   groupsExcluded: parseInt(groupExclusion[0].count, 10) || 0,
-    //   conditions: experiment.conditions.map(({ id }) => {
-    //     const userInCondition = individualEnrollmentByCondition.find(({ conditions_id }) => {
-    //       return conditions_id === id;
-    //     });
-    //     const groupInCondition = groupEnrollmentByCondition.find(({ conditions_id }) => {
-    //       return conditions_id === id;
-    //     });
-    //     return {
-    //       id,
-    //       users: (userInCondition && parseInt(userInCondition.count, 10)) || 0,
-    //       groups: (groupInCondition && parseInt(groupInCondition.count, 10)) || 0,
-    //       partitions: experiment.partitions.map((partitionDoc) => {
-    //         const userInConditionPartition = individualEnrollmentConditionAndPartition.find(
-    //           ({ conditions_id, partitions_id }) => {
-    //             return partitions_id === partitionDoc.id && conditions_id === id;
-    //           }
-    //         );
-    //         const groupInConditionPartition = groupEnrollmentConditionAndPartition.find(
-    //           ({ conditions_id, partitions_id }) => {
-    //             return partitions_id === partitionDoc.id && conditions_id === id;
-    //           }
-    //         );
-    //         return {
-    //           id: partitionDoc.id,
-    //           users: (userInConditionPartition && parseInt(userInConditionPartition.count, 10)) || 0,
-    //           groups: (groupInConditionPartition && parseInt(groupInConditionPartition.count, 10)) || 0,
-    //         };
-    //       }),
-    //     };
-    //   }),
-    // };
   }
 
   public async getEnrollmentStatsByDate(
@@ -228,240 +164,165 @@ export class AnalyticsService {
       if (!fs.existsSync(folderPath)) {
         fs.mkdirSync(folderPath, { recursive: true });
       }
-      const monitoredPointCSV = `${email}_monitoredPoints${timeStamp}.csv`;
-      // get experiment definition
-      const experiment = await this.experimentRepository.findOne({
-        where: { id: experimentId },
-        relations: ['partitions', 'conditions', 'stateTimeLogs'],
-      });
-      if (!experiment) {
-        return '';
-      }
-      const userRepository: UserRepository = await getCustomRepository(UserRepository, 'export');
-      const user = await userRepository.findOne({ email });
-      await this.experimentAuditLogRepository.saveRawJson(
-        EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED,
-        { experimentName: experiment.name },
-        user
-      );
-      const { conditions, partitions, stateTimeLogs, ...experimentInfo } = experiment;
-      const experimentIdAndPoint = [];
-      partitions.forEach((decisionPoint) => {
-        const decisionPointId = decisionPoint.id;
-        experimentIdAndPoint.push(decisionPointId);
-      });
-      const individualEnrollmentRepository = await getCustomRepository(IndividualEnrollmentRepository, 'export');
-      const groupEnrollmentRepository = await getCustomRepository(GroupEnrollmentRepository, 'export');
-      const monitoredDecisionPointRepository: MonitoredDecisionPointRepository = await getCustomRepository(
-        MonitoredDecisionPointRepository,
-        'export'
-      );
-      const promiseData = await Promise.all([
-        individualEnrollmentRepository.getEnrollmentCountByCondition(experimentId),
-        groupEnrollmentRepository.getEnrollmentCountByCondition(experimentId),
-        monitoredDecisionPointRepository.getMonitoredExperimentPointCount(experimentIdAndPoint),
+      const simpleExportCSV = `${email}_simpleExport${timeStamp}.csv`;
+
+      const userRepository: UserRepository = getCustomRepository(UserRepository, 'export');
+      const [experiment, user] = await Promise.all([
+        this.experimentRepository.findOne({
+          where: { id: experimentId },
+        }),
+        userRepository.findOne({ email }),
+
       ]);
+      const { localTimeZone } = user;
 
-      let csvRows: any = [
-        {
-          'Created At': experimentInfo.createdAt.toISOString(),
-          'Updated At': experimentInfo.updatedAt.toISOString(),
-          'version Number': experimentInfo.versionNumber,
-          'Experiment ID': experimentInfo.id,
-          'Experiment Name': experimentInfo.name,
-          'Experiment Description': experimentInfo.description,
-          'Enrollment Start Date': stateTimeLogs
-            .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLING)
-            .map((timelogs) => timelogs.timeLog)
-            .join(','),
-          'Enrollment End Date': stateTimeLogs
-            .filter((state) => state.fromState === EXPERIMENT_STATE.ENROLLING)
-            .map((timelogs) => timelogs.timeLog)
-            .join(','),
-          'Unit of Assignment': experimentInfo.assignmentUnit,
-          'Consistency Rule': experimentInfo.consistencyRule,
-          // tslint:disable-next-line:object-literal-key-quotes
-          Group: experimentInfo.group,
-          // tslint:disable-next-line: object-literal-key-quotes
-          Tags: experimentInfo.tags.join(','),
-          // tslint:disable-next-line: object-literal-key-quotes
-          Context: experimentInfo.context.join(','),
-          'Condition Names': conditions.map((condition) => condition.conditionCode).join(','),
-          'Condition Weights': conditions.map((condition) => condition.assignmentWeight).join(','),
-          'Condition UserNs': this.getConditionByCount(conditions, promiseData[0]),
-          'Condition GroupNs': this.getConditionByCount(conditions, promiseData[1]),
-          'Ending Criteria':
-            experimentInfo.enrollmentCompleteCondition && JSON.stringify(experimentInfo.enrollmentCompleteCondition),
-          'Post-Experiment Rule':
-            experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
-              ? experimentInfo.postExperimentRule
-              : experimentInfo.revertTo
-              ? 'revert ( ' + this.getConditionCode(conditions, experimentInfo.revertTo) + ' )'
-              : 'revert (to default)',
-          // tslint:disable-next-line: object-literal-key-quotes
-          ExperimentPoints: partitions.map((decisionPoint) => decisionPoint.site).join(','),
-          // tslint:disable-next-line: object-literal-key-quotes
-          ExperimentIDs: partitions.map((decisionPoint) => decisionPoint.target).join(','),
-        },
-      ];
+      // make new query here
+      let toLoop = true;
+      let skip = 0;
+      const take = 50;
+      do {
+        const data = await this.analyticsRepository.getCSVDataForSimpleExport(experimentId, skip, take);
+        const userIds = data.map(({ userId }) => userId);
+        // don't query if no data
+        if (!experimentId || (userIds && userIds.length === 0)) {
+          break;
+        }
+        const queryData = await this.logRepository.getLogPerExperimentQueryForUser(experimentId, userIds);
 
+        // query name id mapping
+        const queryNameIdMapping: Record<string, string> = {};
+        queryData.forEach((singleRecord) => {
+          queryNameIdMapping[singleRecord.id] = singleRecord.name;
+        });
 
-      logger.info({ message: 'Exporting Experiment Data', csvRows });
-      // let csv = new ObjectsToCsv(csvRows);
-      // const take = 50;
-      // for (let i = 1; i <= promiseData[2]; i = i + take) {
-      //   csvRows = [];
-      //   // const monitoredExperimentPoints = await monitoredExperimentPointRepository.getMonitorExperimentPointForExport(
-      //   //   i - 1,
-      //   //   take,
-      //   //   experimentIdAndPoint,
-      //   //   experimentId,
-      //   //   'export'
-      //   // );
+        type queryDataArrayType = typeof queryData;
+        type queryDataType = queryDataArrayType[0];
 
-      //   // merge all the data log
-      //   const mergedMonitoredExperimentPoint = {};
-      //   monitoredExperimentPoints.forEach(({ metric_key, logs_uniquifier, ...monitoredPoint }) => {
-      //     const key = monitoredPoint.partition_expId
-      //       ? `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
-      //       : `${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`;
-      //     // filter logs only which are tracked
-      //     const metricToTrack = metric_key || ' ';
-      //     const metricArray = metricToTrack.split(METRICS_JOIN_TEXT);
-      //     let filteredLogs = monitoredPoint.logs_data;
-      //     // tslint:disable-next-line:prefer-for-of
-      //     for (let j = 0; j < metricArray.length; j++) {
-      //       const metric = metricArray[j];
-      //       if (filteredLogs && filteredLogs[metric]) {
-      //         filteredLogs = filteredLogs[metric];
-      //       } else {
-      //         filteredLogs = null;
-      //         break;
-      //       }
-      //     }
-      //     const metricToTrackWithUniquifier =
-      //       metricArray.length > 1 ? `${metricToTrack}${METRICS_JOIN_TEXT}${logs_uniquifier}` : metricToTrack;
+        // filter and group data according to repeated measure
+        const groupedUser: Record<string, Record<string, queryDataType[]>> = {};
+        // group data according to user and query id
+        queryData.forEach((individualData) => {
+          groupedUser[individualData.userId] = groupedUser[individualData.userId] || {};
+          groupedUser[individualData.userId][individualData.id] =
+            groupedUser[individualData.userId][individualData.id] || [];
+          groupedUser[individualData.userId][individualData.id].push(individualData);
+        });
 
-      //     mergedMonitoredExperimentPoint[key] = mergedMonitoredExperimentPoint[key]
-      //       ? {
-      //           ...mergedMonitoredExperimentPoint[key],
-      //           logs_data: filteredLogs
-      //             ? {
-      //                 ...mergedMonitoredExperimentPoint[key].logs_data,
-      //                 [metricToTrackWithUniquifier]: filteredLogs,
-      //               }
-      //             : { ...mergedMonitoredExperimentPoint[key].logs_data },
-      //         }
-      //       : {
-      //           ...monitoredPoint,
-      //           logs_data: filteredLogs ? { [metricToTrackWithUniquifier]: filteredLogs } : filteredLogs,
-      //         };
-      //   });
+        const logsUser: Record<string, Record<string, any>> = {};
+        // fix repeated measure
+        for (const userId in groupedUser) {
+          if (!groupedUser[userId]) {
+            continue;
+          }
+          for (const queryId in groupedUser[userId]) {
+            if (groupedUser[userId][queryId].length > 0) {
+              const repeatedMeasure = groupedUser[userId][queryId][0].repeatedMeasure;
+              const key = groupedUser[userId][queryId][0].key;
+              const type = groupedUser[userId][queryId][0].type;
 
-      //   // get all monitored experiment points ids
-      //   const monitoredPointIds = monitoredExperimentPoints.map((monitoredPoint) =>
-      //     monitoredPoint.partition_expId
-      //       ? `${monitoredPoint.partition_expId}_${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
-      //       : `${monitoredPoint.partition_expPoint}_${monitoredPoint.user_id}`
-      //   );
-      //   // query experiment user
-      //   const experimentUsers = monitoredExperimentPoints.map((monitoredPoint) => monitoredPoint.user_id);
-      //   const experimentUserSet = new Set(experimentUsers);
-      //   const experimentUsersArray = Array.from(experimentUserSet);
-      //   const experimentUserRepository: ExperimentUserRepository = await getCustomRepository(
-      //     ExperimentUserRepository,
-      //     'export'
-      //   );
-      //   const monitoredExperimentPointLogRepository: MonitoredExperimentPointLogRepository = await getCustomRepository(
-      //     MonitoredExperimentPointLogRepository,
-      //     'export'
-      //   );
-      //   const [monitoredLogDocuments, experimentUserDocuments] = await Promise.all([
-      //     monitoredExperimentPointLogRepository
-      //       .find({
-      //         where: { monitoredExperimentPoint: { id: In(monitoredPointIds) } },
-      //         relations: ['monitoredExperimentPoint'],
-      //       })
-      //       .catch((error) => {
-      //         error.message = `Error while finding monitored experiment point logs document for export: ${error.message}`;
-      //         error.type = SERVER_ERROR.QUERY_FAILED;
-      //         logger.error(error);
-      //         throw error;
-      //       }),
-      //     experimentUserRepository
-      //       .find({
-      //         where: { id: In(experimentUsersArray) },
-      //       })
-      //       .catch((error) => {
-      //         error.message = `Error while finding experiment user document for export in experimentUserRepository: ${error.message}`;
-      //         error.type = SERVER_ERROR.QUERY_FAILED;
-      //         logger.error(error);
-      //         throw error;
-      //       }),
-      //     ,
-      //   ]);
+              const keySplitArray = key.split(METRICS_JOIN_TEXT);
+              logsUser[userId] = logsUser[userId] || {};
+              logsUser[userId][queryId] = logsUser[userId][queryId] || {};
+              switch (repeatedMeasure) {
+                case REPEATED_MEASURE.earliest: {
+                  const jsonLog = groupedUser[userId][queryId].reduce(
+                    (accumulator: queryDataType | undefined, doc: queryDataType) => {
+                      if (accumulator) {
+                        return new Date(accumulator.createdAt) > new Date(doc.createdAt) ? doc : accumulator;
+                      }
+                      return doc;
+                    },
+                    undefined
+                  ).data;
+                  if (type === IMetricMetaData.CONTINUOUS) {
+                    logsUser[userId][queryId] = +keySplitArray.reduce(
+                      (accumulator, attribute: string) => accumulator[attribute],
+                      jsonLog
+                    );
+                  } else {
+                    logsUser[userId][queryId] = keySplitArray.reduce(
+                      (accumulator, attribute: string) => accumulator[attribute],
+                      jsonLog
+                    );
+                  }
+                  break;
+                }
+                case REPEATED_MEASURE.mostRecent: {
+                  const jsonLog = groupedUser[userId][queryId].reduce(
+                    (accumulator: queryDataType | undefined, doc: queryDataType) => {
+                      if (accumulator) {
+                        return new Date(accumulator.createdAt) < new Date(doc.createdAt) ? doc : accumulator;
+                      }
+                      return doc;
+                    },
+                    undefined
+                  ).data;
+                  if (type === IMetricMetaData.CONTINUOUS) {
+                    logsUser[userId][queryId] = +keySplitArray.reduce(
+                      (accumulator, attribute: string) => accumulator[attribute],
+                      jsonLog
+                    );
+                  } else {
+                    logsUser[userId][queryId] = keySplitArray.reduce(
+                      (accumulator, attribute: string) => accumulator[attribute],
+                      jsonLog
+                    );
+                  }
+                  break;
+                }
+                default: {
+                  const totalSum = groupedUser[userId][queryId].reduce((accumulator: number, doc: queryDataType) => {
+                    return (
+                      accumulator + +keySplitArray.reduce((total, attribute: string) => total[attribute], doc.data)
+                    );
+                  }, 0);
+                  logsUser[userId][queryId] = totalSum / groupedUser[userId][queryId].length;
+                  break;
+                }
+              }
+            }
+          }
+        }
 
-      //   // mapping user to their id
-      //   const experimentUserMap = {};
-      //   experimentUserDocuments.forEach((document) => {
-      //     experimentUserMap[document.id] = document;
-      //   });
+        // merge with data
+        const csvRows = data.map((row) => {
+          const queryObject = logsUser[row.userId];
+          const queryDataToAdd = {};
 
-      //   // monitored Log Document
-      //   const toLogDocument = monitoredLogDocuments.map((monitoredLogDocument) => {
-      //     const {
-      //       createdAt,
-      //       updatedAt,
-      //       monitoredExperimentPoint: { id },
-      //     } = monitoredLogDocument;
-      //     return { ...mergedMonitoredExperimentPoint[id], createdAt, updatedAt };
-      //   });
+          for (const queryId in queryObject) {
+            if (queryObject[queryId]) {
+              queryDataToAdd[queryNameIdMapping[queryId]] = queryObject[queryId];
+            }
+          }
 
-      //   toLogDocument.forEach((data) => {
-      //     let enrollmentCodeNum = 3;
-      //     switch (data.enrollmentCode) {
-      //       case ENROLLMENT_CODE.INCLUDED:
-      //         enrollmentCodeNum = 0;
-      //         break;
-      //       case ENROLLMENT_CODE.PRIOR_EXPERIMENT_ENROLLING:
-      //         enrollmentCodeNum = 1;
-      //         break;
-      //       case ENROLLMENT_CODE.STUDENT_EXCLUDED:
-      //         enrollmentCodeNum = 2;
-      //         break;
-      //       case ENROLLMENT_CODE.GROUP_EXCLUDED:
-      //         enrollmentCodeNum = 3;
-      //         break;
-      //       default:
-      //         enrollmentCodeNum = 0;
-      //         break;
-      //     }
-      //     csvRows.push({
-      //       'Main Experiment Id': experimentId,
-      //       // tslint:disable-next-line: object-literal-key-quotes
-      //       UserId: data.user_id || '',
-      //       // tslint:disable-next-line: object-literal-key-quotes
-      //       markExperimentPointTime: data.createdAt.toISOString(),
-      //       'Enrollment code': data.enrollmentCode,
-      //       'Enrollment code number': enrollmentCodeNum,
-      //       'Condition Name': data.conditions_conditionCode || 'default',
-      //       // tslint:disable-next-line: object-literal-key-quotes
-      //       GroupId:
-      //         (experiment.group &&
-      //           experimentUserMap[data.user_id] &&
-      //           experimentUserMap[data.user_id].workingGroup &&
-      //           experimentUserMap[data.user_id].workingGroup[experiment.group]) ||
-      //         '',
-      //       // tslint:disable-next-line: object-literal-key-quotes
-      //       ExperimentPoint: data.partition_expPoint,
-      //       // tslint:disable-next-line: object-literal-key-quotes
-      //       ExperimentId: data.partition_expId,
-      //       'Metrics monitored': data.logs_data == null ? '' : JSON.stringify(data.logs_data),
-      //     });
-      //   });
-      //   csv = new ObjectsToCsv(csvRows);
-      //   await csv.toDisk(`${folderPath}${monitoredPointCSV}`, { append: true });
-      // }
+          return {
+            ExperimentId: row.experimentId,
+            ExperimentName: row.experimentName,
+            UserId: row.userId,
+            GroupId: row.groupId,
+            ConditionName: row.conditionName,
+            FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
+            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn).tz(localTimeZone).toISOString(true),
+            UniqueDecisionPointsMarked: row.decisionPointReachedCount,
+            ...queryDataToAdd,
+          };
+        });
+
+        // write in the file
+        const csv = new ObjectsToCsv(csvRows);
+        try {
+          await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
+        } catch (err) {
+          console.log(err);
+        }
+
+        if (data.length === take) {
+          skip += take;
+        } else {
+          toLoop = false;
+        }
+      } while (toLoop);
+
       const email_export = env.email.emailBucket;
       const email_expiry_time = env.email.expireAfterSeconds;
       const email_from = env.email.from;
@@ -469,18 +330,36 @@ export class AnalyticsService {
       let monitorFileBuffer;
       let signedURLMonitored;
 
-      let emailText;
-      monitorFileBuffer = fs.readFileSync(`${folderPath}${monitoredPointCSV}`);
-      // delete local file copy:
-      fs.unlinkSync(`${folderPath}${monitoredPointCSV}`);
+      const fileName = `${folderPath}${simpleExportCSV}`;
+      if (!fs.existsSync(fileName)) {
+        // if file doesn't exist create a empty file
+        const csvRows = [
+          {
+            ExperimentId: '',
+            ExperimentName: '',
+            UserId: '',
+            GroupId: '',
+            ConditionName: '',
+            FirstDecisionPointReachedOn: '',
+            FirstDecisionPointReachedOn_LocalTime: '',
+          },
+        ];
+        const csv = new ObjectsToCsv(csvRows);
+        await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
+      }
 
-      await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, monitoredPointCSV)]);
+      let emailText;
+      monitorFileBuffer = fs.readFileSync(fileName);
+      // delete local file copy:
+      fs.unlinkSync(`${folderPath}${simpleExportCSV}`);
+
+      await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, simpleExportCSV)]);
 
       signedURLMonitored = await Promise.all([
-        this.awsService.generateSignedURL(email_export, monitoredPointCSV, email_expiry_time),
+        this.awsService.generateSignedURL(email_export, simpleExportCSV, email_expiry_time),
       ]);
 
-      emailText = `Hey, 
+      emailText = `Hey,
       <br>
       Here is the exported experiment data:
       <br>
@@ -490,9 +369,9 @@ export class AnalyticsService {
       // send email to the user
       logger.info({ message: `Sending export data email to ${email}` });
       await this.awsService.sendEmail(email_from, email, emailText, emailSubject);
-      this.experimentAuditLogRepository.saveRawJson(
+      await this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED,
-        { experimentName: experimentInfo.name },
+        { experimentName: experiment.name },
         user
       );
       logger.info({ message: `Exported Data emailed successfully to ${email}` });
@@ -506,18 +385,5 @@ export class AnalyticsService {
     logger.info({ message: 'Completing experiment data export' });
 
     return '';
-  }
-
-  private getConditionCode(conditions: ExperimentCondition[], id: string): string {
-    return conditions.filter((condition) => condition.id === id)[0].conditionCode || '';
-  }
-
-  private getConditionByCount(conditions: ExperimentCondition[], data: any): string {
-    return conditions
-      .map((condition) => {
-        const conditionFound = data.find((con) => (con as any).conditionId === condition.id);
-        return conditionFound ? (conditionFound as any).count : 0;
-      })
-      .join(',');
   }
 }

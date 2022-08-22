@@ -274,7 +274,7 @@ describe('AuthEffects', () => {
             }
 
             expect(store$.dispatch).toHaveBeenCalledWith(setUserAction);
-            expect(service.doLogin).toHaveBeenCalledWith(expectedUserObject, 'abc123');
+            expect(service.doLogin).toHaveBeenCalledWith(expect.objectContaining(expectedUserObject), 'abc123');
         })
     })
 

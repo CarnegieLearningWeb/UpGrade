@@ -10,10 +10,13 @@ export class UserRepository extends Repository<User> {
       .insert()
       .into(User)
       .values(user)
-      .onConflict(`("email") DO UPDATE SET "firstName" = :firstName, "lastName" = :lastName, "imageUrl" = :imageUrl`)
+      .onConflict(
+        `("email") DO UPDATE SET "firstName" = :firstName, "lastName" = :lastName, "imageUrl" = :imageUrl, "localTimeZone" = :localTimeZone`
+      )
       .setParameter('firstName', user.firstName)
       .setParameter('lastName', user.lastName)
       .setParameter('imageUrl', user.imageUrl)
+      .setParameter('localTimeZone', user.localTimeZone)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
@@ -31,7 +34,12 @@ export class UserRepository extends Repository<User> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError('UserRepository', 'updateUserDetails', { firstName, lastName, email, role }, errorMsg);
+        const errorMsgString = repositoryError(
+          'UserRepository',
+          'updateUserDetails',
+          { firstName, lastName, email, role },
+          errorMsg
+        );
         throw errorMsgString;
       });
 
