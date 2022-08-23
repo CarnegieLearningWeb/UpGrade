@@ -42,6 +42,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allPartitions = [];
   allPartitionsSub: Subscription;
+  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[], []]);
+  aliasTableData: ExperimentAliasTableRow[] = [];
+  isInAliasesEditMode: boolean = false;
 
   // Condition Errors
   conditionCountError: string;
@@ -71,7 +74,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Alias details
   isAliasTableDisplayed: boolean = false;
   isAliasBtnDisabled: boolean = true;
-  aliasTableData$ = new BehaviorSubject([]);
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -131,7 +133,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
     
-    this.subToAliasTableData();
+    this.createDesignDataValueChangesObservable();
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -201,55 +203,16 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     //   );
   }
 
-  subToAliasTableData(): void {
+  createDesignDataValueChangesObservable(): void {
     combineLatest([
       this.experimentDesignForm.get('partitions').valueChanges,
       this.experimentDesignForm.get('conditions').valueChanges,
-    ]).pipe(
-      filter((designData) => this.validDesignDataFilter(designData))
-    )
-    .subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
-      const aliasTableData = this.createAliasTableData(designData);
-      this.aliasTableData$.next(aliasTableData)
-    })
-
-    this.aliasTableData$.subscribe(val => {
-      console.log('aliasTable:', val)
-    })
+    ]).subscribe(this.designData$);
   }
 
-  isValidString(value: any) {
-    return typeof value === 'string' && value.trim()
-  }
-
-  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]) {
-    const [ partitions, conditions ] = designData;
-    const hasValidDecisionPointStrings = partitions.every(({ site, target }) => {
-      return this.isValidString(site) && this.isValidString(target)
-    })
-    const hasValidConditionStrings = conditions.every(({ conditionCode }) => {
-      return this.isValidString(conditionCode)
-    })
-    return hasValidDecisionPointStrings && hasValidConditionStrings;
-  }
-
-  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): ExperimentAliasTableRow[] {
-    const [ decisionPoints, conditions ] = designData;
-    const aliasTableData: ExperimentAliasTableRow[] = []; 
-
-    decisionPoints.forEach(({ site, target }) => {
-      conditions.forEach(({ conditionCode }) => {
-        aliasTableData.push({
-          site,
-          target,
-          condition: conditionCode,
-          alias: conditionCode,
-          isEditing: false
-        })
-      })
-    })
-
-    return aliasTableData;
+  handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
+    this.aliasTableData = [...aliasTableData];
+    this.isInAliasesEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
   }
 
   private filterConditionCodes(value: string): string[] {
@@ -553,6 +516,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 );
             }
           );
+          experimentDesignFormData.decisionPointConditions = this.createExperimentAliasData(this.aliasTableData);
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: experimentDesignFormData,
@@ -561,6 +525,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
     }
+  }
+
+  // TODO: need to check on the data request shape for integration
+  createExperimentAliasData(aliasTableData: ExperimentAliasTableRow[]) {
+    const experimentAliasData = aliasTableData.map(row => {
+      return {
+        id: uuidv4(),
+        aliasName: row.alias,
+        parentCondition: '',
+        decisionPoint: ''
+      }
+    })
+    return experimentAliasData;
   }
   
   applyEqualWeight() {

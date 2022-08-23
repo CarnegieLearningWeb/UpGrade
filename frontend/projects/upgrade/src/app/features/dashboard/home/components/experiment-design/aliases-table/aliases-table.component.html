@@ -1,4 +1,4 @@
-<section class="aliases-table">
+<section class="aliases-table-component">
   <div class="aliases-header-container">
     <span class="ft-18-700">{{ 'home.new-experiment.design.aliases.header.text' | translate }}</span>
     <button
@@ -14,7 +14,7 @@
   </div>
 
   <mat-table
-    [dataSource]="aliasTableData"
+    [dataSource]="aliasTableData$"
     class="alias-table"
   >
   

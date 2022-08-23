@@ -4,7 +4,7 @@
     <!--NOTE: this form content may need to be broken out into separate component when factorial design-type introduced-->
     <section class="simple-experiment-form">
       <form class="experiment-design" [formGroup]="experimentDesignForm">
-        <section *ngIf="!isAliasTableDisplayed" class="simple-experiment-decision-point-conditions-view">
+        <section [hidden]="isAliasTableDisplayed" class="simple-experiment-decision-point-conditions-view">
           <div class="decision-point-header-container">
             <span class="ft-18-700">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
             <button
@@ -13,7 +13,7 @@
               color="primary"
               class="ft-14-600"
               (click)="toggleAliasTable()"
-              [disabled]="(aliasTableData$ | async).length === 0"
+              [disabled]="aliasTableData.length === 0"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span>{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
@@ -335,12 +335,13 @@
           </div>
         </section>
 
-        <ng-container *ngIf="isAliasTableDisplayed">
+        <div [hidden]="!isAliasTableDisplayed">
           <app-aliases-table
-            [aliasTableData] = aliasTableData$
+            [designData$] = designData$
+            (aliasTableData$) = handleAliasTableDataChange($event)
             (hideAliasTable) = toggleAliasTable()
           ></app-aliases-table>
-        </ng-container>
+        </div>
       </form>
     </section>
   
@@ -370,6 +371,7 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+        [disabled]="isInAliasesEditMode"
       >
         {{ 'global.next.text' | translate }}
       </button>
@@ -379,7 +381,7 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         [ngClass]="{ 'default-button--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-        [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+        [disabled]="isInAliasesEditMode || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}
