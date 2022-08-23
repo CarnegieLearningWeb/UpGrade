@@ -13,56 +13,75 @@
     </button>
   </div>
 
-  <table
-    mat-table 
+  <mat-table
     [dataSource]="aliasTableData"
     class="alias-table"
   >
   
     <!-- Site Column -->
     <ng-container matColumnDef="site">
-      <th mat-header-cell *matHeaderCellDef class="ft-14-700">
+      <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.site.text" | translate }}
-      </th>
-      <td mat-cell *matCellDef="let rowData"> {{rowData.site}} </td>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let rowData"> {{rowData.site}} </mat-cell>
     </ng-container>
   
     <!-- Target Column -->
     <ng-container matColumnDef="target">
-      <th mat-header-cell *matHeaderCellDef class="ft-14-700">
+      <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.target.text" | translate }}
-      </th>
-      <td mat-cell *matCellDef="let rowData"> {{rowData.target}} </td>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let rowData"> {{rowData.target}} </mat-cell>
     </ng-container>
   
     <!-- Condition Column -->
     <ng-container matColumnDef="condition">
-      <th mat-header-cell *matHeaderCellDef class="ft-14-700">
+      <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.condition.text" | translate }}
-      </th>
-      <td mat-cell *matCellDef="let rowData"> {{rowData.condition}} </td>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let rowData"> {{rowData.condition}} </mat-cell>
     </ng-container>
   
     <!-- Alias Column -->
     <ng-container matColumnDef="alias">
-      <th mat-header-cell *matHeaderCellDef class="ft-14-700">
+      <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.alias.text" | translate }}
-      </th>
-      <td mat-cell *matCellDef="let rowData">
-        {{rowData.alias}}
-      </td>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let rowData">
+        <ng-container *ngIf="!rowData.isEditing">
+          {{ rowData.alias }}
+        </ng-container>
+        <ng-container *ngIf="rowData.isEditing">
+          <mat-form-field>
+            <input
+              [type]="text" 
+              matInput
+              [(ngModel)]="rowData.alias"
+            >
+          </mat-form-field>
+        </ng-container>
+      </mat-cell>
     </ng-container>
 
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef class="ft-14-700"></th>
-      <td mat-cell *matCellDef="let rowData; ">
-        <mat-icon class="icon">create</mat-icon>
-        <mat-icon class="icon">done</mat-icon>
-      </td>
+      <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+      <mat-cell *matCellDef="let rowData">
+          <button
+            class="row-action-btn"
+            (click)="handleEditClick(rowData)"
+          >
+            <ng-container *ngIf="!rowData.isEditing">
+              <mat-icon class="icon">create</mat-icon>
+            </ng-container>
+            <ng-container *ngIf="rowData.isEditing">
+              <mat-icon class="icon">done</mat-icon>
+            </ng-container>
+          </button>
+      </mat-cell>
     </ng-container>
   
-    <tr mat-header-row *matHeaderRowDef="aliasesDisplayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: aliasesDisplayedColumns;"></tr>
-  </table>
+    <mat-header-row *matHeaderRowDef="aliasesDisplayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: aliasesDisplayedColumns;"></mat-row> 
+  </mat-table>
 </section>

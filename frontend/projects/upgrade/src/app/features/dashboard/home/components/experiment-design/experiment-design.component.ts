@@ -13,19 +13,12 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, DesignTypes } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, DesignTypes, ExperimentAliasTableRow } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
 import { filter, map, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-
-export interface AliasTableRow {
-  site: string;
-  target: string;
-  condition: string;
-  alias: string;
-}
 
 @Component({
   selector: 'home-experiment-design',
@@ -44,11 +37,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('conditionCode') conditionCode: ElementRef;
 
-  designTypeSelectOptions: string[] = [
-    DesignTypes.SIMPLE
-  ]
-
-  designTypeForm: FormGroup;
   experimentDesignForm: FormGroup;
   conditionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
@@ -213,7 +201,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     //   );
   }
 
-  subToAliasTableData(): any {
+  subToAliasTableData(): void {
     combineLatest([
       this.experimentDesignForm.get('partitions').valueChanges,
       this.experimentDesignForm.get('conditions').valueChanges,
@@ -223,6 +211,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     .subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
       const aliasTableData = this.createAliasTableData(designData);
       this.aliasTableData$.next(aliasTableData)
+    })
+
+    this.aliasTableData$.subscribe(val => {
+      console.log('aliasTable:', val)
     })
   }
 
@@ -241,9 +233,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return hasValidDecisionPointStrings && hasValidConditionStrings;
   }
 
-  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): AliasTableRow[] {
+  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): ExperimentAliasTableRow[] {
     const [ decisionPoints, conditions ] = designData;
-    const aliasTableData: AliasTableRow[] = []; 
+    const aliasTableData: ExperimentAliasTableRow[] = []; 
 
     decisionPoints.forEach(({ site, target }) => {
       conditions.forEach(({ conditionCode }) => {
@@ -251,7 +243,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           site,
           target,
           condition: conditionCode,
-          alias: conditionCode // how to keep the changed val
+          alias: conditionCode,
+          isEditing: false
         })
       })
     })

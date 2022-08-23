@@ -183,6 +183,14 @@ export interface Experiment {
   backendVersion: string;
 }
 
+export interface ExperimentAliasTableRow {
+  site: string;
+  target: string;
+  condition: string;
+  alias: string;
+  isEditing: boolean;
+}
+
 export const NUMBER_OF_EXPERIMENTS = 20;
 
 export interface ExperimentPaginationParams {
