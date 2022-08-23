@@ -12,7 +12,8 @@
               mat-flat-button
               color="primary"
               class="ft-14-600"
-              (click)="showAliasTable()"
+              (click)="toggleAliasTable()"
+              [disabled]="(aliasTableData$ | async).length === 0"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span>{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
@@ -336,8 +337,8 @@
 
         <ng-container *ngIf="isAliasTableDisplayed">
           <app-aliases-table
-            [aliasTableData] = aliasTableData
-            (hideAliasTable) = hideAliasTable()
+            [aliasTableData] = aliasTableData$
+            (hideAliasTable) = toggleAliasTable()
           ></app-aliases-table>
         </ng-container>
       </form>

@@ -12,7 +12,7 @@ import {
   OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, DesignTypes } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -20,39 +20,13 @@ import { TranslateService } from '@ngx-translate/core';
 import { filter, map, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface RowData {
+export interface AliasTableRow {
   site: string;
   target: string;
   condition: string;
   alias: string;
 }
 
-const DUMMY_ROW_DATA: RowData[] = [
-  {
-    site: 'SelectSection',
-    target: 'workspace_1',
-    condition: 'control',
-    alias: 'control',
-  },
-  {
-    site: 'SelectSection',
-    target: 'workspace_1',
-    condition: 'variant',
-    alias: 'variant',
-  },
-  {
-    site: 'SelectSection',
-    target: 'workspace_2',
-    condition: 'control',
-    alias: 'control',
-  },
-  {
-    site: 'SelectSection',
-    target: 'workspace_2',
-    condition: 'variant',
-    alias: 'variant',
-  },
-];
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -63,7 +37,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
-  @Input() animationCompleteStepperIndex: Number;
+  @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
@@ -109,7 +83,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Alias details
   isAliasTableDisplayed: boolean = false;
   isAliasBtnDisabled: boolean = true;
-  aliasTableData = DUMMY_ROW_DATA;
+  aliasTableData$ = new BehaviorSubject([]);
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -168,9 +142,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         conditions: this._formBuilder.array([this.addConditions()]),
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
-    this.designTypeForm = this._formBuilder.group({
-      designTypeSelect: DesignTypes.SIMPLE
-    })
+    
+    this.subToAliasTableData();
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -238,6 +211,52 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     //     startWith<string>(''),
     //     map(expId => this.filterExpPointsAndIds(expId, 'requiredIds'))
     //   );
+  }
+
+  subToAliasTableData(): any {
+    combineLatest([
+      this.experimentDesignForm.get('partitions').valueChanges,
+      this.experimentDesignForm.get('conditions').valueChanges,
+    ]).pipe(
+      filter((designData) => this.validDesignDataFilter(designData))
+    )
+    .subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
+      const aliasTableData = this.createAliasTableData(designData);
+      this.aliasTableData$.next(aliasTableData)
+    })
+  }
+
+  isValidString(value: any) {
+    return typeof value === 'string' && value.trim()
+  }
+
+  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]) {
+    const [ partitions, conditions ] = designData;
+    const hasValidDecisionPointStrings = partitions.every(({ site, target }) => {
+      return this.isValidString(site) && this.isValidString(target)
+    })
+    const hasValidConditionStrings = conditions.every(({ conditionCode }) => {
+      return this.isValidString(conditionCode)
+    })
+    return hasValidDecisionPointStrings && hasValidConditionStrings;
+  }
+
+  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): AliasTableRow[] {
+    const [ decisionPoints, conditions ] = designData;
+    const aliasTableData: AliasTableRow[] = []; 
+
+    decisionPoints.forEach(({ site, target }) => {
+      conditions.forEach(({ conditionCode }) => {
+        aliasTableData.push({
+          site,
+          target,
+          condition: conditionCode,
+          alias: conditionCode // how to keep the changed val
+        })
+      })
+    })
+
+    return aliasTableData;
   }
 
   private filterConditionCodes(value: string): string[] {
@@ -581,12 +600,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  showAliasTable(): void {
-    this.isAliasTableDisplayed = true;
-  }
-
-  hideAliasTable(): void {
-    this.isAliasTableDisplayed = false;
+  toggleAliasTable(): void {
+    this.isAliasTableDisplayed = !this.isAliasTableDisplayed;
   }
 
   get condition(): FormArray {
