@@ -542,7 +542,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     const conditionAliases: ExperimentConditionAlias[] = [];
 
     aliases.forEach((aliasRowData: ExperimentAliasTableRow ) => {
-      debugger;
       // if no custom alias, return early, do not add to array to send to backend
       if (aliasRowData.alias === aliasRowData.condition) {
         return;
