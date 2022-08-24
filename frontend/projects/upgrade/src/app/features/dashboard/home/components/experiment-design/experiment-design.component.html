@@ -120,6 +120,7 @@
                   style="justify-content: flex-start;"
                 >
                 <button mat-icon-button
+                  type="button"
                   [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
                   (click)="removeConditionOrPartition('partition', groupIndex)">
                   <mat-icon
@@ -283,6 +284,7 @@
                   style="justify-content: flex-start;"
                 >
                 <button mat-icon-button
+                  type="button"
                   [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
                   (click)="removeConditionOrPartition('condition', groupIndex)">
                   <mat-icon
