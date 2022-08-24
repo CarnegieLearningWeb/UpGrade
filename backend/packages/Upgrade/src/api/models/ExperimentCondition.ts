@@ -43,5 +43,5 @@ export class ExperimentCondition extends BaseModel {
   public experiment: Experiment;
 
   @OneToMany((type) => DecisionPointCondition, (decisionPointCondition) => decisionPointCondition.aliasName)
-  public parentCondition: DecisionPointCondition;
+  public parentCondition: DecisionPointCondition[];
 }

@@ -14,6 +14,6 @@ export class DecisionPointCondition extends BaseModel {
   @ManyToOne((type) => ExperimentCondition, (condition) => condition.parentCondition, { onDelete: 'CASCADE' })
   public parentCondition: ExperimentCondition;
 
-  @ManyToOne((type) => DecisionPoint, (decisionPoint) => decisionPoint.decisionPointId, { onDelete: 'CASCADE' })
-  public decisionPointId: DecisionPoint;
+  @ManyToOne((type) => DecisionPoint, (decisionPoint) => decisionPoint.decisionPointConditions, { onDelete: 'CASCADE' })
+  public decisionPoint: DecisionPoint;
 }

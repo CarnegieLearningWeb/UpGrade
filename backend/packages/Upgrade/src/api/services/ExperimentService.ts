@@ -76,7 +76,8 @@ export class ExperimentService {
     if (logger) {
       logger.info({ message: `Find all experiments` });
     }
-    return this.experimentRepository.findAllExperiments();
+    const experiments = await this.experimentRepository.findAllExperiments();
+    return experiments.map(x => this.convert(x));
   }
 
   public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
@@ -1004,6 +1005,14 @@ export class ExperimentService {
           return decisionPoint;
         });
 
+      const decisionPointConditionDocsToSave = 
+        decisionPointConditions &&
+        decisionPointConditions.length > 0 &&
+        decisionPointConditions.map((decisionPointCondition: DecisionPointCondition) => {
+          decisionPointCondition.id = decisionPointCondition.id || uuid();
+          return decisionPointCondition;
+        });
+
       // creating segmentInclude doc
       let includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
@@ -1054,7 +1063,7 @@ export class ExperimentService {
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
           this.experimentSegmentInclusionRepository.insertData(segmentIncludeDocToSave, logger, transactionalEntityManager),
           this.experimentSegmentExclusionRepository.insertData(segmentExcludeDocToSave, logger, transactionalEntityManager),
-          this.decisionPointConditionRepository.insertDecisionPointCondition(decisionPointConditions, transactionalEntityManager),
+          this.decisionPointConditionRepository.insertDecisionPointCondition(decisionPointConditionDocsToSave, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
@@ -1244,4 +1253,20 @@ export class ExperimentService {
 
     return createdExperiment;
   }
+
+  private convert(experiment: Experiment): any {
+    const { conditions, partitions } = experiment;
+  
+    let dpc: DecisionPointCondition[] = [];
+    partitions.forEach(partition => {
+      const decisionPointConditionData = partition.decisionPointConditions;
+      delete partition.decisionPointConditions;
+      decisionPointConditionData.forEach(x => {
+        if (x && conditions.filter(con => con.id === x.parentCondition.id).length > 0) {
+          dpc.push({...x, decisionPoint: partition});
+        }
+      })
+    });
+    return {...experiment, decisionPointConditions: dpc};
+  } 
 }

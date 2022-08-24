@@ -39,6 +39,18 @@ export class DecisionPointConditionRepository extends Repository<DecisionPointCo
     return result.raw;
   }
 
+  public async findAliasName(conditionId: string, partitionId: string): Promise<Pick<DecisionPointCondition, 'aliasName'> | null> {
+    return this.createQueryBuilder('decisionPointCondition')
+      .select(['decisionPointCondition.aliasName'])
+      .where('"decisionPointCondition"."parentConditionId" =:conditionId AND decisionPointCondition.decisionPointId =:partitionId',
+        { conditionId, partitionId })
+      .getOne()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
   public async deleteDecisionPointCondition(id: string, logger: UpgradeLogger): Promise<DecisionPointCondition> {
     const result = await this.createQueryBuilder()
       .delete()

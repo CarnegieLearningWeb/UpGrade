@@ -34,8 +34,8 @@ export class DecisionPoint extends BaseModel {
   @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @OneToMany((type) => DecisionPointCondition, (decisionPoint) => decisionPoint.decisionPointId)
-  public decisionPointId: DecisionPointCondition;
+  @OneToMany((type) => DecisionPointCondition, (decisionPointCondition) => decisionPointCondition.decisionPoint)
+  public decisionPointConditions: DecisionPointCondition[];
 }
 
 export function getExperimentPartitionID(site: string, target: string): string {
