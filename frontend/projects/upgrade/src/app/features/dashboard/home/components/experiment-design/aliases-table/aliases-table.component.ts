@@ -42,7 +42,13 @@ export class AliasesTableComponent implements OnInit {
   }
 
   handleEditClick(rowData: ExperimentAliasTableRow) {
+    // if user clears out alias field or just leaves spaces and they click OK, revert alias to default
+    if (rowData.isEditing && !this.isValidString(rowData.alias)) {
+      rowData.alias = rowData.condition;
+    }
+
     rowData.isEditing = !rowData.isEditing;
+
     this.aliasTableData$.emit(this.aliasTableData);
   }
 
