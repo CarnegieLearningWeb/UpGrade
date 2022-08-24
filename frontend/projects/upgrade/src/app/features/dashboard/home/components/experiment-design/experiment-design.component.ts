@@ -12,12 +12,12 @@ import {
   OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow } from '../../../../../core/experiments/store/experiments.model';
+import { BehaviorSubject, combineLatest, Observable, partition, Subscription } from 'rxjs';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, map, startWith } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -207,11 +207,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     combineLatest([
       this.experimentDesignForm.get('partitions').valueChanges,
       this.experimentDesignForm.get('conditions').valueChanges,
-    ]).subscribe(this.designData$);
+    ]).pipe(
+      distinctUntilChanged()
+    ).subscribe(this.designData$);
   }
 
   handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
     this.aliasTableData = [...aliasTableData];
+    console.log('alias table data:', this.aliasTableData)
     this.isInAliasesEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
   }
 
@@ -489,7 +492,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         // enabling Assignment weight for form to validate
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && !this.conditionCodeErrors.length && !this.partitionCountError) {
           (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach(control => {
-            control.get('assignmentWeight').enable();
+            control.get('assignmentWeight').enable({ emitEvent: false });
           });
         }
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null) {
@@ -516,7 +519,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 );
             }
           );
-          experimentDesignFormData.decisionPointConditions = this.createExperimentAliasData(this.aliasTableData);
+          experimentDesignFormData.decisionPointConditions = this.createExperimentAliasData(
+            this.aliasTableData, 
+            experimentDesignFormData.conditions, 
+            experimentDesignFormData.partitions
+          );
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: experimentDesignFormData,
@@ -527,17 +534,47 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  // TODO: need to check on the data request shape for integration
-  createExperimentAliasData(aliasTableData: ExperimentAliasTableRow[]) {
-    const experimentAliasData = aliasTableData.map(row => {
-      return {
-        id: uuidv4(),
-        aliasName: row.alias,
-        parentCondition: '',
-        decisionPoint: ''
+  createExperimentAliasData(
+    aliases: ExperimentAliasTableRow[],
+    conditions: ExperimentCondition[],
+    decisionPoints: ExperimentPartition[]
+  ): ExperimentConditionAlias[] {
+    const conditionAliases: ExperimentConditionAlias[] = [];
+
+    aliases.forEach((aliasRowData: ExperimentAliasTableRow ) => {
+      debugger;
+      // if no custom alias, return early, do not add to array to send to backend
+      if (aliasRowData.alias === aliasRowData.condition) {
+        return;
       }
+
+      // if alias data already exists (aka it already has an id, then don't recreate??)
+      // if (aliasRowData.id) {
+      //   return
+      // }
+
+      const parentCondition = conditions.find((condition) => {
+        return condition.conditionCode === aliasRowData.condition;
+      })
+
+      const decisionPoint = decisionPoints.find((decisionPoint) => {
+        return decisionPoint.site + decisionPoint.target === aliasRowData.site + aliasRowData.target;
+      })
+
+      // need some error-handling in UI to prevent creation if aliases can't be created...
+      if (!parentCondition || !decisionPoint) {
+        console.log('cannot create alias data, cannot find id of parent condition/decisionpoint')
+        return;
+      }
+
+      conditionAliases.push({
+        aliasName: aliasRowData.alias,
+        parentCondition: parentCondition.id,
+        decisionPoint: decisionPoint.site + decisionPoint.target
+      });
     })
-    return experimentAliasData;
+
+    return conditionAliases;
   }
   
   applyEqualWeight() {
