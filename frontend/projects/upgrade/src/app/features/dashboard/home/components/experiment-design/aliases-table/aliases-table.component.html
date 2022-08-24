@@ -23,7 +23,11 @@
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.site.text" | translate }}
       </mat-header-cell>
-      <mat-cell *matCellDef="let rowData"> {{rowData.site}} </mat-cell>
+      <mat-cell *matCellDef="let rowData">
+        <span [matTooltip]="rowData.site" matTooltipPosition="above">
+          {{rowData.site | truncate: 15 }}
+        </span>
+      </mat-cell>
     </ng-container>
   
     <!-- Target Column -->
@@ -31,7 +35,11 @@
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.target.text" | translate }}
       </mat-header-cell>
-      <mat-cell *matCellDef="let rowData"> {{rowData.target}} </mat-cell>
+      <mat-cell *matCellDef="let rowData">
+        <span [matTooltip]="rowData.target" matTooltipPosition="above">
+          {{rowData.target | truncate: 15 }}
+        </span>
+      </mat-cell>
     </ng-container>
   
     <!-- Condition Column -->
@@ -39,7 +47,11 @@
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
         {{ "home.new-experiment.design.aliases.column-header.condition.text" | translate }}
       </mat-header-cell>
-      <mat-cell *matCellDef="let rowData"> {{rowData.condition}} </mat-cell>
+      <mat-cell *matCellDef="let rowData">
+        <span [matTooltip]="rowData.condition" matTooltipPosition="above">
+          {{rowData.condition | truncate: 15 }}
+        </span>
+      </mat-cell>
     </ng-container>
   
     <!-- Alias Column -->
@@ -49,7 +61,9 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <ng-container *ngIf="!rowData.isEditing">
-          {{ rowData.alias }}
+          <span [matTooltip]="rowData.alias" matTooltipPosition="above">
+            {{ rowData.alias | truncate: 15 }}
+          </span>
         </ng-container>
         <ng-container *ngIf="rowData.isEditing">
           <mat-form-field>
@@ -66,7 +80,7 @@
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-      <mat-cell *matCellDef="let rowData">
+      <mat-cell *matCellDef="let rowData" class="actions-cell">
           <button
             class="row-action-btn"
             (click)="handleEditClick(rowData)"

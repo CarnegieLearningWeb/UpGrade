@@ -13,5 +13,18 @@
   .alias-table {
     width: 100%;
 
+    .mat-cell:last-of-type {
+      justify-content: center;
+
+      .row-action-btn {
+        border: none;
+        background-color: transparent;
+
+        &:hover {
+          border-radius: 5px;
+          background-color: rgba(224, 224, 224);
+        }
+      }
+    }
   }
 }
