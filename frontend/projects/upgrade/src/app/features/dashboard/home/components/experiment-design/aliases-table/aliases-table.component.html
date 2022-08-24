@@ -66,11 +66,13 @@
           </span>
         </ng-container>
         <ng-container *ngIf="rowData.isEditing">
-          <mat-form-field>
+          <mat-form-field floatLabel="never">
             <input
               [type]="text" 
               matInput
               [(ngModel)]="rowData.alias"
+              [placeholder]="rowData.condition"
+              required
             >
           </mat-form-field>
         </ng-container>
