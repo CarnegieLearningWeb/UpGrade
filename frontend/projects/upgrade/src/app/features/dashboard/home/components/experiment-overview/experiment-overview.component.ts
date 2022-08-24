@@ -5,7 +5,8 @@ import {
   NewExperimentDialogData,
   ExperimentVM,
   NewExperimentPaths,
-  IContextMetaData
+  IContextMetaData,
+  ExperimentDesignTypes
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
@@ -36,6 +37,11 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     { value: CONSISTENCY_RULE.GROUP },
     { value: CONSISTENCY_RULE.EXPERIMENT }
   ];
+  designTypes = [
+    {
+      value: ExperimentDesignTypes.SIMPLE
+    }
+  ]
 
   // Used to control chips
   isChipSelectable = true;
@@ -74,6 +80,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         unitOfAssignment: [null, Validators.required],
         groupType: [null],
         consistencyRule: [null, Validators.required],
+        designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
         context: [null, Validators.required],
         tags: [[]],
         logging: [false]

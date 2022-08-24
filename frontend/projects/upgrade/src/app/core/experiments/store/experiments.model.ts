@@ -54,7 +54,7 @@ export enum NewExperimentPaths {
   POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
 
-export enum DesignTypes {
+export enum ExperimentDesignTypes {
   SIMPLE = "Simple Experiment"
 }
 
@@ -174,6 +174,7 @@ export interface Experiment {
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
+  decisionPointConditions: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE,
@@ -181,6 +182,13 @@ export interface Experiment {
   experimentSegmentExclusion: segmentNew,
   groupSatisfied?: number;
   backendVersion: string;
+}
+
+export interface ExperimentConditionAlias {
+  id?: string;
+  aliasName: string;
+  parentCondition: string;
+  decisionPoint: string;
 }
 
 export interface ExperimentAliasTableRow {
