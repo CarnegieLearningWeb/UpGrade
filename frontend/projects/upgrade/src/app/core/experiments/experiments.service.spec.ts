@@ -85,6 +85,7 @@ describe('ExperimentService', () => {
         logging: true,
         conditions: [],
         partitions: [],
+        decisionPointConditions: [],
         queries: [],
         stateTimeLogs: [],
         filterMode: FILTER_MODE.INCLUDE_ALL,
