@@ -53,7 +53,7 @@ export const experiment = {
       twoCharacterId: 'NP',
     },
   ],
-  decisionPointConditions: [],
+  ConditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -106,7 +106,7 @@ export const experimentSecond = {
       twoCharacterId: 'X2',
     },
   ],
-  decisionPointConditions: [],
+  ConditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -159,7 +159,7 @@ export const experimentThird = {
       twoCharacterId: 'Y2',
     },
   ],
-  decisionPointConditions: [],
+  ConditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -212,7 +212,7 @@ export const experimentFourth = {
       twoCharacterId: 'Y2',
     },
   ],
-  decisionPointConditions: [],
+  ConditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };

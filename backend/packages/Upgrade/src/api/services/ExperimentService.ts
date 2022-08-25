@@ -46,8 +46,8 @@ import { ExperimentSegmentInclusion } from '../models/ExperimentSegmentInclusion
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
 import { ExperimentSegmentExclusion } from '../models/ExperimentSegmentExclusion';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
-import { DecisionPointCondition } from '../models/DecisionPointCondition';
-import { DecisionPointConditionRepository } from '../repositories/DecisionPointConditionRepository';
+import { ConditionAlias } from '../models/ConditionAlias';
+import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
 
 @Service()
 export class ExperimentService {
@@ -65,7 +65,7 @@ export class ExperimentService {
     @OrmRepository() private stateTimeLogsRepository: StateTimeLogsRepository,
     @OrmRepository() private experimentSegmentInclusionRepository: ExperimentSegmentInclusionRepository,
     @OrmRepository() private experimentSegmentExclusionRepository: ExperimentSegmentExclusionRepository,
-    @OrmRepository() private decisionPointConditionRepository: DecisionPointConditionRepository,
+    @OrmRepository() private conditionAliasRepository: ConditionAliasRepository,
     public previewUserService: PreviewUserService,
     public segmentService: SegmentService,
     public scheduledJobService: ScheduledJobService,
@@ -933,7 +933,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, queries, segmentInclude, segmentExclude, decisionPointConditions, ...expDoc } = experiment;
+      const { conditions, partitions, queries, segmentInclude, segmentExclude, conditionAliases, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -1005,12 +1005,12 @@ export class ExperimentService {
           return decisionPoint;
         });
 
-      const decisionPointConditionDocsToSave = 
-        decisionPointConditions &&
-        decisionPointConditions.length > 0 &&
-        decisionPointConditions.map((decisionPointCondition: DecisionPointCondition) => {
-          decisionPointCondition.id = decisionPointCondition.id || uuid();
-          return decisionPointCondition;
+      const conditionAliasDocsToSave = 
+        conditionAliases &&
+        conditionAliases.length > 0 &&
+        conditionAliases.map((conditionAlias: ConditionAlias) => {
+          conditionAlias.id = conditionAlias.id || uuid();
+          return conditionAlias;
         });
 
       // creating segmentInclude doc
@@ -1055,15 +1055,15 @@ export class ExperimentService {
       let experimentSegmentInclusionDoc: ExperimentSegmentInclusion;
       let experimentSegmentExclusionDoc: ExperimentSegmentExclusion;
       let decisionPointDocs: DecisionPoint[];
-      let decisionPointConditionDoc: DecisionPointCondition[];
+      let conditionAliasDoc: ConditionAlias[];
       let queryDocs: any;
       try {
-        [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, decisionPointConditionDoc, queryDocs] = await Promise.all([
+        [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, conditionAliasDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
           this.experimentSegmentInclusionRepository.insertData(segmentIncludeDocToSave, logger, transactionalEntityManager),
           this.experimentSegmentExclusionRepository.insertData(segmentExcludeDocToSave, logger, transactionalEntityManager),
-          this.decisionPointConditionRepository.insertDecisionPointCondition(decisionPointConditionDocsToSave, transactionalEntityManager),
+          this.conditionAliasRepository.insertConditionAlias(conditionAliasDocsToSave, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
             : (Promise.resolve([]) as any),
@@ -1094,7 +1094,7 @@ export class ExperimentService {
         partitions: decisionPointDocToReturn as any,
         experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
         experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
-        decisionPointCondition: decisionPointConditionDoc as any,
+        conditionAliases: conditionAliasDoc as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;
@@ -1257,16 +1257,16 @@ export class ExperimentService {
   private convert(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
   
-    let dpc: DecisionPointCondition[] = [];
+    let dpc: ConditionAlias[] = [];
     partitions.forEach(partition => {
-      const decisionPointConditionData = partition.decisionPointConditions;
-      delete partition.decisionPointConditions;
-      decisionPointConditionData.forEach(x => {
+      const conditionAliasData = partition.ConditionAliases;
+      delete partition.ConditionAliases;
+      conditionAliasData.forEach(x => {
         if (x && conditions.filter(con => con.id === x.parentCondition.id).length > 0) {
           dpc.push({...x, decisionPoint: partition});
         }
       })
     });
-    return {...experiment, decisionPointConditions: dpc};
+    return {...experiment, ConditionAliases: dpc};
   } 
 }

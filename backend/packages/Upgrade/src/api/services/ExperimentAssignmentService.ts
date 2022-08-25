@@ -61,7 +61,7 @@ import {
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
-import { DecisionPointConditionRepository } from '../repositories/DecisionPointConditionRepository';
+import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
 import { In } from 'typeorm'
 @Service()
 export class ExperimentAssignmentService {
@@ -95,7 +95,7 @@ export class ExperimentAssignmentService {
     @OrmRepository()
     private analyticsRepository: AnalyticsRepository,
     @OrmRepository()
-    private decisionPointConditionRepository: DecisionPointConditionRepository,
+    private conditionAliasRepository: ConditionAliasRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -160,7 +160,7 @@ export class ExperimentAssignmentService {
       const { experiment } = experimentDecisionPoint;
       const { conditions, partitions } = experiment;
 
-      const aliasConditions = await this.decisionPointConditionRepository.find({
+      const aliasConditions = await this.conditionAliasRepository.find({
         relations: ['parentCondition', 'decisionPoint'],
         where: { parentCondition: In(conditions.map(x => x.id)) , decisionPoint: In(partitions.map(x => x.id))},
       });
@@ -434,7 +434,7 @@ export class ExperimentAssignmentService {
         })
       });
 
-      const allAliasConditions = await this.decisionPointConditionRepository.find({
+      const allAliasConditions = await this.conditionAliasRepository.find({
         relations: ['parentCondition', 'decisionPoint'],
         where: { parentCondition: In(conditionsToAssign) , decisionPoint: In(decisionsToAssign)},
       });

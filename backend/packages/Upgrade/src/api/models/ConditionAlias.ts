@@ -4,7 +4,7 @@ import { ExperimentCondition } from './ExperimentCondition';
 import { DecisionPoint } from './DecisionPoint';
 
 @Entity()
-export class DecisionPointCondition extends BaseModel {
+export class ConditionAlias extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 
@@ -14,6 +14,6 @@ export class DecisionPointCondition extends BaseModel {
   @ManyToOne((type) => ExperimentCondition, (condition) => condition.parentCondition, { onDelete: 'CASCADE' })
   public parentCondition: ExperimentCondition;
 
-  @ManyToOne((type) => DecisionPoint, (decisionPoint) => decisionPoint.decisionPointConditions, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => DecisionPoint, (decisionPoint) => decisionPoint.ConditionAliases, { onDelete: 'CASCADE' })
   public decisionPoint: DecisionPoint;
 }
