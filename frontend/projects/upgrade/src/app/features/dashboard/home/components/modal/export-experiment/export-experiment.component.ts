@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, Inject } from '@angular/cor
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { first } from 'rxjs/operators';
-import { EXPORT_METHOD } from '../../../../../../../../../../../types/src/Experiment/enums';
+import { EXPORT_METHOD } from 'upgrade_types';
 import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';

@@ -1,7 +1,7 @@
 import { fakeAsync, tick } from "@angular/core/testing";
 import { ActionsSubject } from "@ngrx/store";
 import { BehaviorSubject, of, throwError } from "rxjs";
-import { SEGMENT_TYPE } from "../../../../../../../../types/src";
+import { SEGMENT_TYPE } from "upgrade_types";
 import { SegmentsEffects } from "./segments.effects";
 import { Segment, SegmentInput, UpsertSegmentType } from "./segments.model";
 import { selectAllSegments } from './segments.selectors';
