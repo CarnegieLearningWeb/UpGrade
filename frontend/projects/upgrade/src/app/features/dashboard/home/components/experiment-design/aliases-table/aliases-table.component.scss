@@ -12,6 +12,8 @@
 
   .alias-table {
     width: 100%;
+    height: 475px;
+    overflow: auto;
 
     .mat-cell:last-of-type {
       justify-content: center;
