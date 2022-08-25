@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class clientExclusionCode1660559362899 implements MigrationInterface {
-    name = 'clientExclusionCode1660559362899'
+export class clientExclusionCode1661429767642 implements MigrationInterface {
+    name = 'clientExclusionCode1661429767642'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TYPE "public"."group_exclusion_exclusioncode_enum" RENAME TO "group_exclusion_exclusioncode_enum_old"`);

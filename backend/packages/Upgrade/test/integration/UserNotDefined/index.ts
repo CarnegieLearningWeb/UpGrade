@@ -39,7 +39,7 @@ export const UserNotDefined = async () => {
     experimentAssignmentService.markExperimentPoint(
       experimentUsers[0].id,
       null,
-      MARKED_DECISION_POINT_STATUS.APPLIED,
+      MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       null,
       { logger: new UpgradeLogger(), userDoc: experimentUserDoc },
       null

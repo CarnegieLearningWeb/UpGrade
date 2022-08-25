@@ -105,7 +105,7 @@ export class ExperimentAssignmentService {
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
-    status: MARKED_DECISION_POINT_STATUS,
+    status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     experimentId?: string
@@ -1017,7 +1017,7 @@ export class ExperimentAssignmentService {
       experimentExcluded = true;
     }
 
-    if(status === MARKED_DECISION_POINT_STATUS.NOT_APPLIED) {
+    if (status === MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY) {
       const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
         user,
         experiment,

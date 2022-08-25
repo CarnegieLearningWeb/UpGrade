@@ -45,9 +45,9 @@ export enum SERVER_ERROR {
 }
 
 export enum MARKED_DECISION_POINT_STATUS {
-  APPLIED = 'applied',
-  NOT_APPLIED = 'not-applied',
-  MARKED = 'marked',
+  CONDITION_APPLIED = 'condition applied',
+  CONDITION_FAILED_TO_APPLY = 'condition not applied',
+  NO_CONDITION_ASSIGNED = 'no condition assigned',
 }
 
 export enum ENROLLMENT_CODE {

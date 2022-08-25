@@ -16,7 +16,5 @@ export class MarkExperimentValidator {
   @IsDefined()
   public condition: string | null;
 
-  @IsNotEmpty()
-  @IsDefined()
-  public status: MARKED_DECISION_POINT_STATUS;
+  public status?: MARKED_DECISION_POINT_STATUS;
 }

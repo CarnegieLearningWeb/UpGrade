@@ -114,7 +114,7 @@ export async function markExperimentPoint(
   await experimentAssignmentService.markExperimentPoint(
     userId,
     experimentPoint,
-    MARKED_DECISION_POINT_STATUS.APPLIED,
+    MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
     condition,
     { logger, userDoc: experimentUserDoc },
     experimentName
