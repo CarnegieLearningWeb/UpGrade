@@ -345,7 +345,7 @@ describe('Integration Tests', () => {
   });
 
   test('Experiment without decision point', async (done) => {
-    await NoPartitionPoint(); 
+    await NoPartitionPoint();
     done();
   });
 

@@ -31,10 +31,10 @@ export default async function SubSegmentEnrollment(): Promise<void> {
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
-	experimentObject.filterMode = FILTER_MODE.EXCLUDE_ALL;
-  experimentObject.segmentInclude = { ...experimentObject.segmentInclude, subSegmentIds: [segmentObject2.id] };
+	experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
+  experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
-
+  console.log("context: ", context);
   // create experiment
   await experimentService.create(individualAssignmentExperiment as any, userIn, logger);
   let experiments = await experimentService.find(logger);
@@ -78,5 +78,5 @@ export default async function SubSegmentEnrollment(): Promise<void> {
 
   // get all experiment condition
   experimentCondition = await getAllExperimentCondition(user2.id, new UpgradeLogger(), context);
-  expect(experimentCondition.length).toEqual(0);
+  expect(experimentCondition.length).toEqual(3);
 }
