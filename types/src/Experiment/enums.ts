@@ -44,6 +44,12 @@ export enum SERVER_ERROR {
   CONDITION_NOT_FOUND = 'Condition not found',
 }
 
+export enum MARKED_DECISION_POINT_STATUS {
+  CONDITION_APPLIED = 'condition applied',
+  CONDITION_FAILED_TO_APPLY = 'condition not applied',
+  NO_CONDITION_ASSIGNED = 'no condition assigned',
+}
+
 export enum ENROLLMENT_CODE {
   ALGORITHMIC = 'participant enrolled via algorithm',
   GROUP_LOGIC = 'participant enrolled due to group enrollment',
@@ -58,6 +64,7 @@ export enum EXCLUSION_CODE {
   EXCLUDED_DUE_TO_GROUP_LOGIC = 'participant excluded due to group assignment logic',
   NO_GROUP_SPECIFIED = 'participant excluded due to incomplete group information',
   INVALID_GROUP_OR_WORKING_GROUP = "participant's group or working group is incorrect",
+  EXCLUDED_BY_CLIENT = 'participant is excluded by client'
 }
 
 export enum EXPERIMENT_LOG_TYPE {
