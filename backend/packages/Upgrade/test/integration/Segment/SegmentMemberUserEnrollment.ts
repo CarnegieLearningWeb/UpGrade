@@ -25,7 +25,7 @@ export default async function SegmentMemberUserEnrollment(): Promise<void> {
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
-	experimentObject.filterMode = FILTER_MODE.EXCLUDE_ALL;
+	experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
 
@@ -72,5 +72,5 @@ export default async function SegmentMemberUserEnrollment(): Promise<void> {
 
   // get all experiment condition
   experimentCondition = await getAllExperimentCondition(user2.id, new UpgradeLogger(), context);
-  expect(experimentCondition.length).toEqual(0);
+  expect(experimentCondition.length).toEqual(3);
 }
