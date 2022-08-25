@@ -1023,11 +1023,10 @@ export class ExperimentService {
 
       // creating Include Segment
       experimentDoc.experimentSegmentInclusion = experimentSegmentInclusion;
-      experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
       let segmentInclude;
       if ( experimentDoc.experimentSegmentInclusion.segment) {
         const oldIncludeSegment = experimentDoc.experimentSegmentInclusion.segment;
-        segmentInclude = {
+        segmentInclude = { ...experimentSegmentInclusion,
           type : oldIncludeSegment.type,
           userIds : oldIncludeSegment.individualForSegment.map(x => x.userId),
           groups : oldIncludeSegment.groupForSegment.map(x => {
@@ -1055,10 +1054,11 @@ export class ExperimentService {
       }
 
       // creating Exclude Segment
+      experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
       let segmentExclude;
       if (experimentDoc.experimentSegmentExclusion.segment) {
         const oldExcludeSegment = experimentDoc.experimentSegmentExclusion.segment; 
-        segmentExclude = {
+        segmentExclude = { ...experimentSegmentExclusion,
           type : oldExcludeSegment.type,
           userIds : oldExcludeSegment.individualForSegment.map(x => x.userId),
           groups : oldExcludeSegment.groupForSegment.map(x => {

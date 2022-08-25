@@ -14,8 +14,8 @@ export const experiment = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  segmentInclude: { userIds: [], groups: [], subSegmentIds: [] },
-  segmentExclude: { userIds: [], groups: [], subSegmentIds: [] },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -71,8 +71,8 @@ export const experimentSecond = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  segmentInclude: { userIds: [], groups: [], subSegmentIds: [] },
-  segmentExclude: { userIds: [], groups: [], subSegmentIds: [] },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
   conditions: [
     {
       id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',
@@ -123,8 +123,8 @@ export const experimentThird = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  segmentInclude: { userIds: [], groups: [], subSegmentIds: [] },
-  segmentExclude: { userIds: [], groups: [], subSegmentIds: [] },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
   conditions: [
     {
       id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e1',
@@ -175,8 +175,8 @@ export const experimentFourth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  segmentInclude: { userIds: [], groups: [], subSegmentIds: [] },
-  segmentExclude: { userIds: [], groups: [], subSegmentIds: [] },
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
   conditions: [
     {
       id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e2',

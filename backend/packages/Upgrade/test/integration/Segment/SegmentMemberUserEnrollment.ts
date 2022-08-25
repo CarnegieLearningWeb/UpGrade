@@ -26,7 +26,7 @@ export default async function SegmentMemberUserEnrollment(): Promise<void> {
   // experiment object
   const experimentObject = individualAssignmentExperiment;
 	experimentObject.filterMode = FILTER_MODE.EXCLUDE_ALL;
-  experimentObject.segmentInclude = { ...experimentObject.segmentInclude, subSegmentIds: [segmentObject.id] };
+  experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
 
   // create experiment
