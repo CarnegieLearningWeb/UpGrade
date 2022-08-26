@@ -3,7 +3,7 @@ phases:
   install:
     runtime-versions:
       docker: 18
-      nodejs: 10
+      nodejs: 16
     commands:
       - docker pull postgres:latest
   pre_build:

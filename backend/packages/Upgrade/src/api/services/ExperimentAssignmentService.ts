@@ -14,6 +14,7 @@ import {
   INewExperimentAssignment,
   FILTER_MODE,
   EXCLUSION_CODE,
+  MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
 import { getExperimentPartitionID } from '../models/DecisionPoint';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
@@ -104,6 +105,7 @@ export class ExperimentAssignmentService {
   public async markExperimentPoint(
     userId: string,
     experimentPoint: string,
+    status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     experimentId?: string
@@ -220,6 +222,7 @@ export class ExperimentAssignmentService {
             groupEnrollment: groupEnrollments,
             groupExclusion: groupExclusions,
           },
+          status,
           logger
         );
         if (experiment.enrollmentCompleteCondition) {
@@ -999,6 +1002,7 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
+    status: MARKED_DECISION_POINT_STATUS,
     logger: UpgradeLogger
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
@@ -1011,6 +1015,16 @@ export class ExperimentAssignmentService {
     let experimentExcluded = false;
     if (includedExperiments.length === 0) {
       experimentExcluded = true;
+    }
+
+    if (status === MARKED_DECISION_POINT_STATUS.CONDITION_FAILED_TO_APPLY) {
+      const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
+        user,
+        experiment,
+        exclusionCode: EXCLUSION_CODE.EXCLUDED_BY_CLIENT,
+      };
+      await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
+      return;
     }
 
     // Don't mark the experiment if user or group are in exclusion list

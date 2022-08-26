@@ -1,5 +1,6 @@
 import { Interfaces, Types } from '../identifiers';
 import fetchDataService from '../common/fetchDataService';
+import { MARKED_DECISION_POINT_STATUS } from "upgrade_types";
 
 export default async function markExperimentPoint(
   url: string,
@@ -8,13 +9,16 @@ export default async function markExperimentPoint(
   clientSessionId: string,
   experimentPoint: string,
   condition: string|null,
-  partitionId?: string
+  status: MARKED_DECISION_POINT_STATUS,
+  partitionId?: string,
+
 ): Promise<Interfaces.IMarkExperimentPoint> {
   try {
     let data: any = {
       experimentPoint,
       userId,
-      condition
+      condition,
+      status
     }
     if (partitionId) {
       data = {

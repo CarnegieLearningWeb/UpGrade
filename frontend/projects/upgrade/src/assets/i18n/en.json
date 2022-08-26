@@ -18,6 +18,7 @@
   "global.delete-confirmation.message.text": "Type 'delete' to confirm deletion:",
   "global.duplicate.text": "DUPLICATE",
   "global.save-confirmation.message.text": "Experiment changes are updated successfully!",
+  "global.import-segments.message.text": "Import Segments and add them in the imported experiment if required!",
   "global.delete-input-comparison.text": "delete",
   "global.delete.input-placeholder.text": "Type delete",
   "global.update.text": "UPDATE",

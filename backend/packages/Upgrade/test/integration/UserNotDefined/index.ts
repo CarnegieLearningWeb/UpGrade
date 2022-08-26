@@ -1,3 +1,4 @@
+import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 import Container from 'typedi';
 import { ExperimentAssignmentService } from '../../../src/api/services/ExperimentAssignmentService';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
@@ -38,6 +39,7 @@ export const UserNotDefined = async () => {
     experimentAssignmentService.markExperimentPoint(
       experimentUsers[0].id,
       null,
+      MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
       null,
       { logger: new UpgradeLogger(), userDoc: experimentUserDoc },
       null
