@@ -125,6 +125,7 @@ export interface ExperimentPartition {
   createdAt: string;
   updatedAt: string;
   versionNumber: number;
+  excludeIfReached: boolean;
 }
 
 export interface ExperimentNameVM {
