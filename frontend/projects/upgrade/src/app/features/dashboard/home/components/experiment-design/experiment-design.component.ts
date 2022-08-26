@@ -469,6 +469,18 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return partition;
   }
 
+  isFormValid() {
+    return !this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null;
+  }
+
+  validateForm() {
+    this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
+    this.validateConditionCount((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
+    this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
+    this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
+    this.validateHasAssignmentWeightsNegative((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
+  }
+ 
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -484,11 +496,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           });
           break;
         }
-        this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
-        this.validateConditionCount((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
-        this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
-        this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
-        this.validateHasAssignmentWeightsNegative((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
+        this.validateForm()
         
         // TODO: Uncomment to validate partitions with predefined site and target
         // this.validatePartitions();
@@ -499,7 +507,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             control.get('assignmentWeight').enable({ emitEvent: false });
           });
         }
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null) {
+        if (this.isFormValid()) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(

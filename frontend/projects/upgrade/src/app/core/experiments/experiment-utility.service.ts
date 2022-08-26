@@ -9,10 +9,11 @@ export class ExperimentUtilityService {
   constructor() { }
 
   isValidString(value: any) {
-    return typeof value === 'string' && value.trim()
+    return typeof value === 'string' && value.trim();
   }
 
-  filterForUnchangedDesignData([previous, current ]): boolean {
+  filterForUnchangedDesignData(designData: [ExperimentPartition[], ExperimentCondition[] ][] ): boolean {
+    const [ previous, current ] = designData;
     const prevSiteTargets: string[] = previous[0].map(dp => dp.site?.trim() + dp.target?.trim())
     const prevConditions: string[] = previous[1].map(c => c.conditionCode?.trim())
     const currentSiteTargets: string[] = current[0].map(dp => dp.site?.trim() + dp.target?.trim())
@@ -26,7 +27,7 @@ export class ExperimentUtilityService {
     return !same;
   }
 
-  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]) {
+  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]): boolean {
     const [ partitions, conditions ] = designData;
 
     if (!partitions.length || !conditions.length) {
