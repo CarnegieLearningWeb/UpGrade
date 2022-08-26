@@ -174,7 +174,7 @@ export interface Experiment {
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
-  decisionPointConditions: ExperimentConditionAlias[];
+  conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE,

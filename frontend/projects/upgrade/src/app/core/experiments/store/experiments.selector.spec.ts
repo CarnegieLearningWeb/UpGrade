@@ -111,7 +111,7 @@ describe('Experiments Selectors', () => {
                         "order": 1
                     }
                 ],
-                "decisionPointConditions": [],
+                "conditionAliases": [],
                 "queries": [],
                 "stateTimeLogs": [
                     {

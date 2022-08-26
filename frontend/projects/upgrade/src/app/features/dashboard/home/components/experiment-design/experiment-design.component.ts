@@ -519,7 +519,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 );
             }
           );
-          experimentDesignFormData.decisionPointConditions = this.createExperimentAliasData(
+          experimentDesignFormData.conditionAliases = this.createExperimentAliasData(
             this.aliasTableData, 
             experimentDesignFormData.conditions, 
             experimentDesignFormData.partitions
