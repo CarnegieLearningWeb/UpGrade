@@ -12,13 +12,14 @@ import {
   OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
 import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { distinctUntilChanged, filter, map, startWith } from 'rxjs/operators';
+import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
+import { ExperimentValidationService } from '../../../../../core/experiments/experiment-validation.service';
 
 @Component({
   selector: 'home-experiment-design',
@@ -42,7 +43,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allPartitions = [];
   allPartitionsSub: Subscription;
-  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[], []]);
+  designData$: Subject<[ExperimentPartition[], ExperimentCondition[]]> = new Subject();
   aliasTableData: ExperimentAliasTableRow[] = [];
   isInAliasesEditMode: boolean = false;
 
@@ -78,6 +79,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
+    private experimentValidationService: ExperimentValidationService,
     private translate: TranslateService
   ) {
     this.partitionErrorMessagesSub = this.translate.get([
@@ -133,7 +135,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
     
-    this.createDesignDataValueChangesObservable();
+    this.createDesignDataSubject();
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -203,18 +205,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     //   );
   }
 
-  createDesignDataValueChangesObservable(): void {
+  createDesignDataSubject(): void {
     combineLatest([
       this.experimentDesignForm.get('partitions').valueChanges,
       this.experimentDesignForm.get('conditions').valueChanges,
     ]).pipe(
-      distinctUntilChanged()
+      pairwise(),
+      filter(designData => this.experimentValidationService.filterForUnchangedDesignData(designData)),
+      map(([_, current ]) => current),
+      filter((designData) => this.experimentValidationService.validDesignDataFilter(designData))
     ).subscribe(this.designData$);
   }
 
   handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
     this.aliasTableData = [...aliasTableData];
-    console.log('alias table data:', this.aliasTableData)
     this.isInAliasesEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
   }
 
@@ -546,11 +550,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       if (aliasRowData.alias === aliasRowData.condition) {
         return;
       }
-
-      // if alias data already exists (aka it already has an id, then don't recreate??)
-      // if (aliasRowData.id) {
-      //   return
-      // }
 
       const parentCondition = conditions.find((condition) => {
         return condition.conditionCode === aliasRowData.condition;

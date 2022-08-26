@@ -1,5 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
-import { filter, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
+import { ExperimentValidationService } from '../../../../../../core/experiments/experiment-validation.service';
+import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
 
 
@@ -24,14 +26,12 @@ export class AliasesTableComponent implements OnInit {
     'actions'
   ]
 
-  constructor() { }
+  constructor(
+    private experimentValidationService: ExperimentValidationService
+  ) { }
 
   ngOnInit(): void {
-    this.designData$.pipe(
-      filter((designData) => this.validDesignDataFilter(designData))
-    )
-    .subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
-      // TODO: will this work with edit?
+    this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
       this.aliasTableData = this.createAliasTableData(designData);
       this.aliasTableData$.emit(this.aliasTableData)
     })
@@ -42,8 +42,7 @@ export class AliasesTableComponent implements OnInit {
   }
 
   handleEditClick(rowData: ExperimentAliasTableRow) {
-    // if user clears out alias field or just leaves spaces and they click OK, revert alias to default
-    if (rowData.isEditing && !this.isValidString(rowData.alias)) {
+    if (rowData.isEditing && !this.experimentValidationService.isValidString(rowData.alias)) {
       rowData.alias = rowData.condition;
     }
 
@@ -52,24 +51,9 @@ export class AliasesTableComponent implements OnInit {
     this.aliasTableData$.emit(this.aliasTableData);
   }
 
-  isValidString(value: any) {
-    return typeof value === 'string' && value.trim()
-  }
-
-  validDesignDataFilter(designData: [ExperimentPartition[], ExperimentCondition[]]) {
-    const [ partitions, conditions ] = designData;
-    const hasValidDecisionPointStrings = partitions.every(({ site, target }) => {
-      return this.isValidString(site) && this.isValidString(target)
-    })
-    const hasValidConditionStrings = conditions.every(({ conditionCode }) => {
-      return this.isValidString(conditionCode)
-    })
-    return hasValidDecisionPointStrings && hasValidConditionStrings;
-  }
-
   createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): ExperimentAliasTableRow[] {
     const [ decisionPoints, conditions ] = designData;
-    const aliasTableData: ExperimentAliasTableRow[] = []; 
+    const aliasTableData: ExperimentAliasTableRow[] = [];
 
     decisionPoints.forEach(({ site, target }) => {
       conditions.forEach(({ conditionCode }) => {
