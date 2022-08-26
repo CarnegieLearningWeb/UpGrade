@@ -19,7 +19,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { TranslateService } from '@ngx-translate/core';
 import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { ExperimentValidationService } from '../../../../../core/experiments/experiment-validation.service';
+import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 
 @Component({
   selector: 'home-experiment-design',
@@ -79,7 +79,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
-    private experimentValidationService: ExperimentValidationService,
+    private experimentUtilityService: ExperimentUtilityService,
     private translate: TranslateService
   ) {
     this.partitionErrorMessagesSub = this.translate.get([
@@ -211,9 +211,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.experimentDesignForm.get('conditions').valueChanges,
     ]).pipe(
       pairwise(),
-      filter(designData => this.experimentValidationService.filterForUnchangedDesignData(designData)),
+      filter(designData => this.experimentUtilityService.filterForUnchangedDesignData(designData)),
       map(([_, current ]) => current),
-      filter((designData) => this.experimentValidationService.validDesignDataFilter(designData))
+      filter((designData) => this.experimentUtilityService.validDesignDataFilter(designData))
     ).subscribe(this.designData$);
   }
 

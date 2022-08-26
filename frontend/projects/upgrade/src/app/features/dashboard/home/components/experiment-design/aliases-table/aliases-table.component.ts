@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ExperimentValidationService } from '../../../../../../core/experiments/experiment-validation.service';
+import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
 
@@ -27,7 +27,7 @@ export class AliasesTableComponent implements OnInit {
   ]
 
   constructor(
-    private experimentValidationService: ExperimentValidationService
+    private experimentUtilityService: ExperimentUtilityService
   ) { }
 
   ngOnInit(): void {
@@ -42,7 +42,7 @@ export class AliasesTableComponent implements OnInit {
   }
 
   handleEditClick(rowData: ExperimentAliasTableRow) {
-    if (rowData.isEditing && !this.experimentValidationService.isValidString(rowData.alias)) {
+    if (rowData.isEditing && !this.experimentUtilityService.isValidString(rowData.alias)) {
       rowData.alias = rowData.condition;
     }
 

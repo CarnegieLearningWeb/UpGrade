@@ -4,7 +4,7 @@ import { ExperimentPartition, ExperimentCondition } from './store/experiments.mo
 @Injectable({
   providedIn: 'root'
 })
-export class ExperimentValidationService {
+export class ExperimentUtilityService {
 
   constructor() { }
 
