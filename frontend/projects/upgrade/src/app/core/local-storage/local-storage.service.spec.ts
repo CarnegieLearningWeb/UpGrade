@@ -34,7 +34,8 @@ describe('LocalStorageService', () => {
             isGraphInfoLoading: false,
             allPartitions: null,
             allExperimentNames: null,
-            contextMetaData: {}
+            contextMetaData: {},
+            isAliasTableEditMode: false,
         }
         const expectedStateWithDefaults: ExperimentState = {
             ids: [],
@@ -54,7 +55,8 @@ describe('LocalStorageService', () => {
             isGraphInfoLoading: false,
             allPartitions: null,
             allExperimentNames: null,
-            contextMetaData: {}
+            contextMetaData: {},
+            isAliasTableEditMode: false
         }
 
         const testCases = [
