@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
 
 
 @Component({
@@ -43,23 +43,29 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
-    this.experimentService.setIsAliasTableEditMode(false);
+    this.experimentService.setUpdateAliasTableEditMode({
+      isEditMode: true,
+      rowIndex: null
+    });
   }
 
   handleHideClick() {
     this.hideAliasTable.emit(true);
   }
 
-  handleEditClick(rowData: ExperimentAliasTableRow) {
+  handleEditClick(rowData: ExperimentAliasTableRow, rowIndex: number) {
     if (rowData.isEditing && !this.experimentUtilityService.isValidString(rowData.alias)) {
       rowData.alias = rowData.condition;
     }
 
     rowData.isEditing = !rowData.isEditing;
 
-    // this.aliasTableData$.emit(this.aliasTableData);
-    const isAliasTableEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
-    this.experimentService.setIsAliasTableEditMode(isAliasTableEditMode)
+    const isEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
+    const editModeDetails: TableEditModeDetails = {
+      isEditMode,
+      rowIndex: isEditMode ? rowIndex : null 
+    }
+    this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
   }
 
   createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): ExperimentAliasTableRow[] {

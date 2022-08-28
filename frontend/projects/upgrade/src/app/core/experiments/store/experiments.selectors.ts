@@ -142,3 +142,8 @@ export const selectIsAliasTableEditMode = createSelector(
   selectExperimentState,
   (state) => state.isAliasTableEditMode
 )
+
+export const selectAliasTableEditIndex = createSelector(
+  selectExperimentState,
+  (state) => state.aliasTableEditIndex
+)

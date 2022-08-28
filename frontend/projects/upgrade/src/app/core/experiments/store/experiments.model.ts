@@ -249,8 +249,14 @@ export interface ExperimentState extends EntityState<Experiment> {
   contextMetaData: {};
   updatedStat?: IExperimentEnrollmentDetailStats;
   isAliasTableEditMode: boolean;
+  aliasTableEditIndex: number | null;
 }
 
 export interface State extends AppState {
   experiments: ExperimentState;
+}
+
+export interface TableEditModeDetails {
+  isEditMode: boolean,
+  rowIndex: number | null,
 }

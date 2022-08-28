@@ -11,8 +11,7 @@ import {
   DATE_RANGE,
   ExperimentLocalStorageKeys,
   EXPERIMENT_STATE,
-  ExperimentCondition,
-  ExperimentPartition,
+  TableEditModeDetails,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -35,7 +34,8 @@ import {
   selectContextMetaData,
   selectGroupAssignmentStatus,
   selectIsPollingExperimentDetailStats,
-  selectIsAliasTableEditMode
+  selectIsAliasTableEditMode,
+  selectAliasTableEditIndex
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -78,6 +78,7 @@ export class ExperimentService {
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
+  aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex))
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -218,7 +219,10 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling())
   }
 
-  setIsAliasTableEditMode(isAliasTableEditMode: boolean): void {
-    this.store$.dispatch(experimentAction.actionIsAliasTableEditMode({ isAliasTableEditMode }));
+  setUpdateAliasTableEditMode(details: TableEditModeDetails): void {
+    this.store$.dispatch(experimentAction.actionUpdateAliasTableEditMode({
+      isAliasTableEditMode: details.isEditMode,
+      aliasTableEditIndex: details.rowIndex
+    }));
   }
 }

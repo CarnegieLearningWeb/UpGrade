@@ -40,7 +40,8 @@ export class LocalStorageService {
       allPartitions: null,
       allExperimentNames: null,
       contextMetaData: {},
-      isAliasTableEditMode: false
+      isAliasTableEditMode: false,
+      aliasTableEditIndex: null
     };
 
     const state = {

@@ -31,7 +31,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   allPartitions: null,
   allExperimentNames: null,
   contextMetaData: {},
-  isAliasTableEditMode: false
+  isAliasTableEditMode: false,
+  aliasTableEditIndex: null
 });
 
 const reducer = createReducer(
@@ -227,11 +228,12 @@ const reducer = createReducer(
     }
   ),
   on(
-    experimentsAction.actionIsAliasTableEditMode,
-    (state, { isAliasTableEditMode }) => {
+    experimentsAction.actionUpdateAliasTableEditMode,
+    (state, { isAliasTableEditMode, aliasTableEditIndex }) => {
       return {
         ...state,
-        isAliasTableEditMode
+        isAliasTableEditMode,
+        aliasTableEditIndex
       }
     }
   )
