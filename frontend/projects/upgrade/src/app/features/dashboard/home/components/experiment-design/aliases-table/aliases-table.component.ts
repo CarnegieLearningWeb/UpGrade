@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
@@ -11,13 +11,15 @@ import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition } fro
   styleUrls: ['./aliases-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AliasesTableComponent implements OnInit {
+export class AliasesTableComponent implements OnInit, OnDestroy {
   @Output() aliasTableData$: EventEmitter<ExperimentAliasTableRow[]> = new EventEmitter();
   @Output() hideAliasTable: EventEmitter<boolean> = new EventEmitter();
   @Input() designData$: Observable<[ExperimentPartition[], ExperimentCondition[]]>;
 
-  aliasTableData: ExperimentAliasTableRow[] = [];
+  subscriptions: Subscription;
+  isAliasTableEditMode$: Observable<boolean>;
 
+  aliasTableData: ExperimentAliasTableRow[] = [];
   aliasesDisplayedColumns = [
     'site',
     'target',
@@ -27,14 +29,21 @@ export class AliasesTableComponent implements OnInit {
   ]
 
   constructor(
-    private experimentUtilityService: ExperimentUtilityService
-  ) { }
+    private experimentService: ExperimentService,
+    private experimentUtilityService: ExperimentUtilityService,
+  ) {}
 
   ngOnInit(): void {
-    this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
+    this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
       this.aliasTableData = this.createAliasTableData(designData);
       this.aliasTableData$.emit(this.aliasTableData)
     })
+    this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+    this.experimentService.setIsAliasTableEditMode(false);
   }
 
   handleHideClick() {
@@ -48,7 +57,9 @@ export class AliasesTableComponent implements OnInit {
 
     rowData.isEditing = !rowData.isEditing;
 
-    this.aliasTableData$.emit(this.aliasTableData);
+    // this.aliasTableData$.emit(this.aliasTableData);
+    const isAliasTableEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
+    this.experimentService.setIsAliasTableEditMode(isAliasTableEditMode)
   }
 
   createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): ExperimentAliasTableRow[] {

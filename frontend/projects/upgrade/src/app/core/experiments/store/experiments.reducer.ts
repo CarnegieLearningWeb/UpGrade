@@ -30,7 +30,8 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isGraphInfoLoading: false,
   allPartitions: null,
   allExperimentNames: null,
-  contextMetaData: {}
+  contextMetaData: {},
+  isAliasTableEditMode: false
 });
 
 const reducer = createReducer(
@@ -225,6 +226,15 @@ const reducer = createReducer(
       }
     }
   ),
+  on(
+    experimentsAction.actionIsAliasTableEditMode,
+    (state, { isAliasTableEditMode }) => {
+      return {
+        ...state,
+        isAliasTableEditMode
+      }
+    }
+  )
 );
 
 export function experimentsReducer(

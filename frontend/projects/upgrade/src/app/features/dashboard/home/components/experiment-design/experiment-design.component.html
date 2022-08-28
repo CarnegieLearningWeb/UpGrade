@@ -355,6 +355,8 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
+        [class.default-button--disabled]="(isAliasTableEditMode$ | async)"
+        [disabled]="(isAliasTableEditMode$ | async)"
       >
         {{ 'global.back.text' | translate }}
       </button>
@@ -373,7 +375,8 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
-        [disabled]="isInAliasesEditMode"
+        [class.default-button--disabled]="(isAliasTableEditMode$ | async)"
+        [disabled]="(isAliasTableEditMode$ | async)"
       >
         {{ 'global.next.text' | translate }}
       </button>
@@ -382,8 +385,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-        [disabled]="isInAliasesEditMode || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+        [ngClass]="{ 'default-button--disabled': (isAliasTableEditMode$ | async) || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+        [disabled]="(isAliasTableEditMode$ | async) || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}

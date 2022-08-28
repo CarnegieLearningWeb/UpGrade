@@ -237,3 +237,8 @@ export const actionBeginExperimentDetailStatsPolling = createAction(
 export const actionEndExperimentDetailStatsPolling = createAction(
   '[Experiment] End polling for detail stats'
 )
+
+export const actionIsAliasTableEditMode = createAction(
+  '[Experiment] Begin polling every n seconds for details stats',
+  props<{ isAliasTableEditMode: boolean }>()
+)

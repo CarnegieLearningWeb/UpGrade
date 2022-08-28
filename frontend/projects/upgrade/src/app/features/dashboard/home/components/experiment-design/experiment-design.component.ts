@@ -43,9 +43,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   partitionDataSource = new BehaviorSubject<AbstractControl[]>([]);
   allPartitions = [];
   allPartitionsSub: Subscription;
-  designData$: Subject<[ExperimentPartition[], ExperimentCondition[]]> = new Subject();
-  aliasTableData: ExperimentAliasTableRow[] = [];
-  isInAliasesEditMode: boolean = false;
 
   // Condition Errors
   conditionCountError: string;
@@ -72,7 +69,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   conditionCodeErrors: string[] = [];
   equalWeightFlag: boolean = true;
 
-  // Alias details
+  // Alias Table details
+  designData$: Subject<[ExperimentPartition[], ExperimentCondition[]]> = new Subject();
+  aliasTableData: ExperimentAliasTableRow[] = [];
+  isAliasTableEditMode$: Observable<boolean>;
   isAliasTableDisplayed: boolean = false;
   isAliasBtnDisabled: boolean = true;
   
@@ -136,6 +136,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
     
     this.createDesignDataSubject();
+    this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -219,7 +220,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
     this.aliasTableData = [...aliasTableData];
-    this.isInAliasesEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
   }
 
   private filterConditionCodes(value: string): string[] {

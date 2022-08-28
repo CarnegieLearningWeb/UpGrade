@@ -7,6 +7,7 @@
       color="primary"
       class="ft-14-600"
       (click)="handleHideClick()"
+      [disabled]="(isAliasTableEditMode$ | async)"
     >
       <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
       <span>{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
