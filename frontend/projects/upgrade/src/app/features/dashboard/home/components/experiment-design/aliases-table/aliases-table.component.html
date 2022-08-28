@@ -83,11 +83,12 @@
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-      <mat-cell *matCellDef="let rowData; let i = index" class="actions-cell">
+      <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
           <button
             type="button"
             class="row-action-btn"
-            (click)="handleEditClick(rowData, i)"
+            (click)="handleEditClick(rowData, rowIndex)"
+            [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
           >
             <ng-container *ngIf="!rowData.isEditing">
               <mat-icon class="icon">create</mat-icon>

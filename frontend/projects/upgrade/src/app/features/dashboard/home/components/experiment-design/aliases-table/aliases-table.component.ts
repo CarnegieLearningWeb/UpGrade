@@ -18,6 +18,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   subscriptions: Subscription;
   isAliasTableEditMode$: Observable<boolean>;
+  aliasTableEditIndex$: Observable<number>;
 
   aliasTableData: ExperimentAliasTableRow[] = [];
   aliasesDisplayedColumns = [
@@ -39,14 +40,15 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       this.aliasTableData$.emit(this.aliasTableData)
     })
     this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
+    this.aliasTableEditIndex$ = this.experimentService.aliasTableEditIndex$;
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
     this.experimentService.setUpdateAliasTableEditMode({
       isEditMode: true,
       rowIndex: null
     });
+    this.subscriptions.unsubscribe();
   }
 
   handleHideClick() {
