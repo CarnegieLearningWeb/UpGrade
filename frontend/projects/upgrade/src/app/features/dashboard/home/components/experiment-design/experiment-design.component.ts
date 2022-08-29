@@ -484,6 +484,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
+        this.experimentService.setUpdateAliasTableEditMode({ isEditMode: false, rowIndex: null })
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
@@ -564,7 +565,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       })
 
       const decisionPoint = decisionPoints.find((decisionPoint) => {
-        return decisionPoint.site + decisionPoint.target === aliasRowData.site + aliasRowData.target;
+        return decisionPoint.target + '_' + decisionPoint.site === aliasRowData.target + '_' + aliasRowData.site;
       })
 
       // need some error-handling in UI to prevent creation if aliases can't be created...
@@ -574,9 +575,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       }
 
       conditionAliases.push({
+        id: uuidv4(),
         aliasName: aliasRowData.alias,
         parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.site + decisionPoint.target
+        decisionPoint: decisionPoint.target + '_' + decisionPoint.site
       });
     })
 
