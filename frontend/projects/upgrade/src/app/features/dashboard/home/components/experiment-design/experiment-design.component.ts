@@ -485,7 +485,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        this.experimentService.setUpdateAliasTableEditMode({ isEditMode: false, rowIndex: null })
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:

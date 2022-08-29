@@ -37,7 +37,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
       this.aliasTableData = this.createAliasTableData(designData);
-      this.aliasTableData$.emit(this.aliasTableData)
+      this.aliasTableData$.emit(this.aliasTableData);
     })
     this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
     this.aliasTableEditIndex$ = this.experimentService.aliasTableEditIndex$;
@@ -45,7 +45,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.experimentService.setUpdateAliasTableEditMode({
-      isEditMode: true,
+      isEditMode: false,
       rowIndex: null
     });
     this.subscriptions.unsubscribe();
