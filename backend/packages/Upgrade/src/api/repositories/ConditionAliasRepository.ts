@@ -21,19 +21,19 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
   }
 
   public async insertConditionAlias(
-    conditionAliastDoc: ConditionAlias[],
+    conditionAliasDoc: ConditionAlias[],
     entityManager: EntityManager
   ): Promise<ConditionAlias[]> {
     const result = await entityManager
       .createQueryBuilder()
       .insert()
       .into(ConditionAlias)
-      .values(conditionAliastDoc)
+      .values(conditionAliasDoc)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'insertConditionAliases',
-        { conditionAliastDoc: conditionAliastDoc }, errorMsg);
+        { conditionAliasDoc: conditionAliasDoc }, errorMsg);
         throw errorMsgString;
       });
     return result.raw;

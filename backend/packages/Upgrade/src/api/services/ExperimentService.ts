@@ -169,7 +169,7 @@ export class ExperimentService {
     };
   }
 
-  public create(experiment: ExperimentInput, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
+  public create(experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
@@ -343,7 +343,7 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<any> {
+  public async importExperiment(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<any> {
     const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
     if (duplicateExperiment && experiment.id !== undefined) {
       const error = new Error('Duplicate experiment');
@@ -399,6 +399,66 @@ export class ExperimentService {
     experiment.createdAt = new Date();
     experiment.state = EXPERIMENT_STATE.INACTIVE;
     experiment.stateTimeLogs = [];
+
+    let segmentExcludeData = {
+      type: experiment.experimentSegmentExclusion.segment.type,
+      userIds: experiment.experimentSegmentExclusion.segment.individualForSegment.map(user => {
+        return user.userId;
+      }),
+      groups: experiment.experimentSegmentExclusion.segment.groupForSegment.map(group => {
+        return {type: group.type, groupId: group.groupId};
+      }),
+      subSegmentIds: experiment.experimentSegmentExclusion.segment.subSegments.map(subSegment => {
+        return subSegment.id;
+      }),
+      id: experiment.experimentSegmentExclusion.segment.id,
+      name: experiment.experimentSegmentExclusion.segment.name,
+      description: experiment.experimentSegmentExclusion.segment.description,
+      context: experiment.context[0],
+    }
+
+    let segmentIncludeData = {
+      type: experiment.experimentSegmentInclusion.segment.type,
+      userIds: experiment.experimentSegmentInclusion.segment.individualForSegment.map(user => {
+        return user.userId;
+      }),
+      groups: experiment.experimentSegmentInclusion.segment.groupForSegment.map(group => {
+        return {type: group.type, groupId: group.groupId};
+      }),
+      subSegmentIds: experiment.experimentSegmentInclusion.segment.subSegments.map(subSegment => {
+        return subSegment.id;
+      }),
+      id: experiment.experimentSegmentInclusion.segment.id,
+      name: experiment.experimentSegmentInclusion.segment.name,
+      description: experiment.experimentSegmentInclusion.segment.description,
+      context: experiment.context[0]
+    }
+
+    let segmentIncludeDoc: Segment;
+      let segmentExcludeDoc: Segment;
+      try {
+        segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in updating IncludeSegment in DB';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      try {
+        segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
+      } catch (err) {
+        const error = err as ErrorWithType;
+        error.details = 'Error in updating ExcludeSegment in DB';
+        error.type = SERVER_ERROR.QUERY_FAILED;
+        logger.error(error);
+        throw error;
+      }
+
+      experiment.experimentSegmentInclusion.segment = segmentIncludeDoc;
+      experiment.experimentSegmentExclusion.segment = segmentExcludeDoc;
+    
     return this.create(experiment, user, logger);
   }
 
@@ -406,7 +466,23 @@ export class ExperimentService {
     logger.info({ message: `Inside export Experiment JSON ${experimentId}` });
     const experimentDetails = await this.experimentRepository.findOne({
       where: { id: experimentId },
-      relations: ['partitions', 'conditions', 'stateTimeLogs', 'queries', 'queries.metric'],
+      relations: [
+        'partitions', 
+        'conditions', 
+        'stateTimeLogs', 
+        'queries', 
+        'queries.metric',
+        'experimentSegmentInclusion',
+        'experimentSegmentInclusion.segment',
+        'experimentSegmentInclusion.segment.individualForSegment',
+        'experimentSegmentInclusion.segment.groupForSegment',
+        'experimentSegmentInclusion.segment.subSegments',
+        'experimentSegmentExclusion',
+        'experimentSegmentExclusion.segment',
+        'experimentSegmentExclusion.segment.individualForSegment',
+        'experimentSegmentExclusion.segment.groupForSegment',
+        'experimentSegmentExclusion.segment.subSegments'
+      ],
     });
     experimentDetails.backendVersion = env.app.version;
     this.experimentAuditLogRepository.saveRawJson(
@@ -541,7 +617,7 @@ export class ExperimentService {
   }
 
   private async updateExperimentInDB(
-    experiment: ExperimentInput,
+    experiment: Experiment,
     user: User,
     logger: UpgradeLogger
   ): Promise<Experiment> {
@@ -570,7 +646,7 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        let { conditions, partitions: decisionPoints, queries, versionNumber, createdAt, updatedAt, segmentInclude, segmentExclude, ...expDoc } = experiment;
+        let { conditions, partitions: decisionPoints, queries, versionNumber, createdAt, updatedAt, experimentSegmentInclusion, experimentSegmentExclusion, ...expDoc } = experiment;
         let experimentDoc: Experiment;
         try {
           experimentDoc = await transactionalEntityManager.getRepository(Experiment).save(expDoc);
@@ -584,49 +660,52 @@ export class ExperimentService {
 
         experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
         experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
-
-        if (!segmentInclude && experimentDoc.experimentSegmentInclusion.segment) {
-          const oldIncludeSegment = experimentDoc.experimentSegmentInclusion.segment;
-          segmentInclude = {
-            type : oldIncludeSegment.type,
-            userIds : oldIncludeSegment.individualForSegment.map(x => x.userId),
-            groups : oldIncludeSegment.groupForSegment.map(x => {
-              return {type: x.type, groupId: x.groupId}
-            }),
-            subSegmentIds : oldIncludeSegment.subSegments.map(x => x.id)
+        let segmentInclude;
+        let segmentIncludeData;
+        if (experimentDoc.experimentSegmentInclusion.segment) {
+          segmentIncludeData = { ...experimentSegmentInclusion,
+            id: experimentDoc.experimentSegmentInclusion.segment.id,
+            name: experimentDoc.experimentSegmentInclusion.segment.name,
+            description: experimentDoc.experimentSegmentInclusion.segment.description,
+            context: experiment.context[0],
           }
+        } else {
+          segmentInclude = experimentDoc.experimentSegmentInclusion;
+          segmentIncludeData = { ...segmentInclude,
+            id: uuid(),
+            name: experiment.id + ' Inclusion Segment',
+            description: experiment.id + ' Inclusion Segment',
+            context: experiment.context[0]
+          };
         }
 
-        if (!segmentExclude && experimentDoc.experimentSegmentExclusion.segment) {
-          const oldExcludeSegment = experimentDoc.experimentSegmentExclusion.segment; 
-          segmentExclude = {
-            type : oldExcludeSegment.type,
-            userIds : oldExcludeSegment.individualForSegment.map(x => x.userId),
-            groups : oldExcludeSegment.groupForSegment.map(x => {
-              return {type: x.type, groupId: x.groupId}
-            }),
-            subSegmentIds : oldExcludeSegment.subSegments.map(x => x.id)
+        let segmentExclude;
+        let segmentExcludeData;
+        if (experimentDoc.experimentSegmentExclusion.segment) {
+          segmentExcludeData = {
+            ...experimentSegmentExclusion,
+            id: experimentDoc.experimentSegmentExclusion.segment.id,
+            name: experimentDoc.experimentSegmentExclusion.segment.name,
+            description: experimentDoc.experimentSegmentExclusion.segment.description,
+            context: experiment.context[0],
           }
+        } else {
+          segmentExclude = experimentDoc.experimentSegmentExclusion;
+          segmentExcludeData = { ...segmentExclude,
+            id: uuid(),
+            name: experiment.id + ' Exclusion Segment',
+            description: experiment.id + ' Exclusion Segment',
+            context: experiment.context[0]
+          };
         }
-
-        const segmentIncludeData: SegmentInputValidator = {
-          ...segmentInclude,
-          id: experimentDoc.experimentSegmentInclusion.segment.id,
-          name: experimentDoc.experimentSegmentInclusion.segment.name,
-          description: experimentDoc.experimentSegmentInclusion.segment.description,
-          context: experiment.context[0],
-        }
-
-        const segmentExcludeData: SegmentInputValidator = {
-          ...segmentExclude,
-          id: experimentDoc.experimentSegmentExclusion.segment.id,
-          name: experimentDoc.experimentSegmentExclusion.segment.name,
-          description: experimentDoc.experimentSegmentExclusion.segment.description,
-          context: experiment.context[0],
+        // for test cases:
+        if (segmentIncludeData['subSegmentIds'] === undefined) {
+          segmentIncludeData.subSegmentIds = [];
+          segmentIncludeData.userIds = [];
+          segmentIncludeData.groups = [];
         }
 
         let segmentIncludeDoc: Segment;
-        let segmentExcludeDoc: Segment;
         try {
           segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
         } catch (err) {
@@ -636,7 +715,14 @@ export class ExperimentService {
           logger.error(error);
           throw error;
         }
+        // for test cases:
+        if (segmentExcludeData['subSegmentIds'] === undefined) {
+          segmentExcludeData.subSegmentIds = [];
+          segmentExcludeData.userIds = [];
+          segmentExcludeData.groups = [];
+        }
 
+        let segmentExcludeDoc: Segment;
         try {
           segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
         } catch (err) {
@@ -918,7 +1004,7 @@ export class ExperimentService {
     return [updatedData, uniqueIdentifiers];
   }
 
-  private async addExperimentInDB(experiment: ExperimentInput, user: User, logger: UpgradeLogger): Promise<Experiment> {
+  private async addExperimentInDB(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<Experiment> {
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -933,7 +1019,7 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, queries, segmentInclude, segmentExclude, conditionAliases, ...expDoc } = experiment;
+      const { conditions, partitions, queries, experimentSegmentInclusion, experimentSegmentExclusion, conditionAliases, ...expDoc } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -950,6 +1036,22 @@ export class ExperimentService {
       }
 
       // creating Include Segment
+      experimentDoc.experimentSegmentInclusion = experimentSegmentInclusion;
+      let segmentInclude;
+      if (experimentDoc.experimentSegmentInclusion.segment) {
+        const includeSegment = experimentDoc.experimentSegmentInclusion.segment;
+        segmentInclude = { ...experimentSegmentInclusion,
+          type : includeSegment.type,
+          userIds : includeSegment.individualForSegment.map(x => x.userId),
+          groups : includeSegment.groupForSegment.map(x => {
+            return {type: x.type, groupId: x.groupId}
+          }),
+          subSegmentIds : includeSegment.subSegments.map(x => x.id)
+        }
+      } else {
+        segmentInclude = experimentDoc.experimentSegmentInclusion;
+      }
+
       const segmentIncludeData: SegmentInputValidator = { ...segmentInclude,
         id: uuid(),
         name: experiment.id + ' Inclusion Segment',
@@ -968,6 +1070,22 @@ export class ExperimentService {
       }
 
       // creating Exclude Segment
+      experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
+      let segmentExclude;
+      if (experimentDoc.experimentSegmentExclusion.segment) {
+        const excludeSegment = experimentDoc.experimentSegmentExclusion.segment; 
+        segmentExclude = { ...experimentSegmentExclusion,
+          type : excludeSegment.type,
+          userIds : excludeSegment.individualForSegment.map(x => x.userId),
+          groups : excludeSegment.groupForSegment.map(x => {
+            return {type: x.type, groupId: x.groupId}
+          }),
+          subSegmentIds : excludeSegment.subSegments.map(x => x.id)
+        }
+      } else {
+        segmentExclude = experimentDoc.experimentSegmentExclusion;
+      }
+      
       const segmentExcludeData: SegmentInputValidator = { ...segmentExclude,
         id: uuid(),
         name: experiment.id + ' Exclusion Segment',

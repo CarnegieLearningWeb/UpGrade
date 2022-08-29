@@ -71,13 +71,13 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          <span *ngIf="experiment.name?.length < 30; else experimentNameEllipsis" class="experiment-name">
+          <a [routerLink]="['/home', 'detail', experiment.id]" *ngIf="experiment.name?.length < 30; else experimentNameEllipsis" class="experiment-name">
             {{ experiment.name }}
-          </span>
+          </a>
           <ng-template #experimentNameEllipsis>
-            <span [matTooltip]="experiment.name" class="experiment-name" matTooltipPosition="above">
+            <a [routerLink]="['/home', 'detail', experiment.id]" [matTooltip]="experiment.name" class="experiment-name" matTooltipPosition="above">
               {{ experiment.name | truncate: 30 }}
-            </span>
+            </a>
           </ng-template>
           <br />
           <span
@@ -296,7 +296,7 @@
 
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns" [routerLink]="['/home', 'detail', row.id]"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </div>
 </mat-card>

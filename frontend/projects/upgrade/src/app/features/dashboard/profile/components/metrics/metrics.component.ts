@@ -8,7 +8,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
-import { AddMetricsComponent } from '../modals/add-metrics/add-metrics.component';
 import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.component';
 
 @Component({
@@ -100,17 +99,6 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       // Add code of further actions after deleting metric
-    });
-  }
-
-  openAddMetricDialog() {
-    this.selectedMetricIndex = null;
-    const dialogRef = this.dialog.open(AddMetricsComponent, {
-      panelClass: 'add-metric-modal'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
     });
   }
 

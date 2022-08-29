@@ -1,16 +1,18 @@
 
 .metric-design {
   .metric-table {
+    margin-top: 5px;
     max-height: 400px;
     overflow: auto;
-    overflow-x: hidden;
 
     mat-header-row {
       min-height: 35px;
+      justify-content: space-between;
     }
 
     mat-row {
-      min-height: 40px;
+      min-height: 46px;
+      justify-content: space-between;
     }
 
     mat-header-cell {
@@ -20,13 +22,14 @@
 
     mat-cell {
       justify-content: left;
-      width: 100%;
+      margin-bottom: -5px;
     }
 
     .metric-keys {
-      display: grid;
-      flex-direction: row;
-      flex-wrap: wrap;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0;
+      width: 250px;
 
       .dropdown {
         position: absolute;
@@ -36,40 +39,46 @@
     }
 
     .secondary-form {
-      flex-wrap: wrap;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0;
+      width: 160px;
 
       .form-control {
-        margin-top: -10px;
-        margin-bottom: -10px;
+        margin-top: -13px;
+        margin-bottom: -13px;
         width: 80%;
       }
     }
 
     .cdk-column-removeMetric {
-      flex: 0 0 10%;
-      width: 10%;
+      flex: 0 0 60px;
+      width: 60px;
     }
 
     .cdk-column-keys {
-      flex: 0 0 35%;
-      width: 35%;
+      flex: 0 0 250px;
+      width: 250px;
     }
 
     .cdk-column-operationType {
-      flex: 0 0 21%;
-      width: 20%;
+      margin-left: 30px;
+      flex: 0 0 160px;
+      width: 160px;
     }
 
     .cdk-column-queryName {
-      flex: 0 0 35%;
-      width: 35%;
+      width: 100%;
+      max-width: 350px;
     }
 
     .remove-icon {
-      position: center;
-      top: -7px;
-      width: 18px;
-      height: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: -3px;
+      min-width: 60px;
+      height: 16px;
       font-size: var(--text-size-x-large);
       color: gray;
 
@@ -79,12 +88,12 @@
     }
 
     .auto-complete {
-      margin-top: -10px;
-      margin-bottom: -10px;
+      margin-top: -13px;
+      margin-bottom: -13px;
     }
 
     mat-form-field {
-      width: 130%;
+      width: 100%;
       text-align: left;
     }
   }
@@ -97,14 +106,9 @@
     color: var(--blue);
   }
 
-  .metrics-table {
-    margin-top: 30px;
-  }
-
   .title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
   }
 
   ::ng-deep .mat-form-field-appearance-legacy .mat-form-field-underline {
@@ -115,10 +119,4 @@
   ::ng-deep .mat-form-field-appearance-legacy.mat-form-field-invalid:not(.mat-focused) .mat-form-field-ripple {
     display: none;
   }
-}
-
-.header-group {
-  display: grid;
-  margin-left: -80px;
-  justify-content: center;
 }

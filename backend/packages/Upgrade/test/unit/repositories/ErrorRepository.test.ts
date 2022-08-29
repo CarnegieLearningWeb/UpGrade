@@ -2,7 +2,7 @@ import { Connection, ConnectionManager, DeleteQueryBuilder, InsertQueryBuilder, 
 import * as sinon from 'sinon';
 import { ErrorRepository } from "../../../src/api/repositories/ErrorRepository";
 import { ExperimentError } from "../../../src/api/models/ExperimentError";
-import { SERVER_ERROR } from "../../../../../../types/src";
+import { SERVER_ERROR } from "upgrade_types";
 
 let sandbox;
 let createQueryBuilderStub;

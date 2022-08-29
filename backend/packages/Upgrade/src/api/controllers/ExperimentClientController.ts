@@ -342,6 +342,7 @@ export class ExperimentClientController {
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
       experiment.experimentPoint,
+      experiment.status,
       experiment.condition,
       {
         logger: request.logger,

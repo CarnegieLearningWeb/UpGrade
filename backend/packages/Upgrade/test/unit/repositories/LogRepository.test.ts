@@ -9,7 +9,7 @@ import { Query } from "../../../src/api/models/Query";
 import { Metric } from "../../../src/api/models/Metric";
 import { Experiment } from "../../../src/api/models/Experiment";
 import { ExperimentRepository } from "../../../src/api/repositories/ExperimentRepository";
-import { IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from "../../../../../../types/src";
+import { IMetricMetaData, OPERATION_TYPES, REPEATED_MEASURE } from "upgrade_types";
 
 let sandbox;
 let connection;

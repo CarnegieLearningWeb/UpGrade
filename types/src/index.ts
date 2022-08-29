@@ -18,6 +18,9 @@ export {
   FILTER_MODE,
   SEGMENT_TYPE,
   SEGMENT_STATUS,
+  MARKED_DECISION_POINT_STATUS,
+  INCLUSION_CRITERIA,
+  EXPORT_METHOD,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,

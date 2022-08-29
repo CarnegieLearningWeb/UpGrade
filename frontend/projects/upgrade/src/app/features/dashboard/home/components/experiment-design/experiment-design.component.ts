@@ -237,7 +237,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   addPartitions(site = null, target = null, description = '', order = null) {
     return this._formBuilder.group({
       site: [site, Validators.required],
-      target: [target],
+      target: [target, Validators.required],
       description: [description],
       order: [order]
     });
@@ -386,25 +386,19 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateConditionCount(conditions: ExperimentCondition[]) {
     const conditionCountErrorMsg = this.translate.instant('home.new-experiment.design.condition-count-new-exp-error.text');
-    if (conditions.length >= 0) {
-      if(conditions.length == 0) {
-        this.conditionCountError = conditionCountErrorMsg;
-      } else if (conditions.length >= 1) {
-        const conditionWeight = conditions.map(condition => condition.assignmentWeight);
-        !conditionWeight[0] ? this.conditionCountError = conditionCountErrorMsg : this.conditionCountError = null;
-      }
+    if (conditions.length === 0 || !conditions.every(condition => typeof condition.conditionCode === 'string' && condition.conditionCode.trim() && condition.assignmentWeight !== null)) {
+      this.conditionCountError = conditionCountErrorMsg;
+    } else {
+      this.conditionCountError = null;
     }
   }
 
   validatePartitionCount(partitions: ExperimentPartition[]) {
-    const partitionExpPoints = partitions.map(partition => partition.site);
     const partitionCountErrorMsg = this.translate.instant('home.new-experiment.design.partition-count-new-exp-error.text');
-    if (partitionExpPoints.length <= 1) {
-      if(partitionExpPoints.length == 0) {
-        this.partitionCountError = partitionCountErrorMsg;
-      } else {
-        !partitionExpPoints[0] ? this.partitionCountError = partitionCountErrorMsg : this.partitionCountError = null;
-      }
+    if (partitions.length === 0 || !partitions.every(partition => typeof partition.site === 'string' && partition.site.trim() && typeof partition.target === 'string' && partition.target.trim())) {
+      this.partitionCountError = partitionCountErrorMsg;
+    } else {
+      this.partitionCountError = null;
     }
   }
   
@@ -477,7 +471,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             control.get('assignmentWeight').enable();
           });
         }
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length) {
+        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(

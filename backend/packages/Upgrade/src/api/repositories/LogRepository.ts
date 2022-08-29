@@ -1,5 +1,6 @@
+import { ExperimentRepository } from './ExperimentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
-import { EntityRepository, Repository, EntityManager, getRepository, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, Repository, EntityManager, getRepository, SelectQueryBuilder, getCustomRepository } from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';
@@ -126,6 +127,43 @@ export class LogRepository extends Repository<Log> {
         );
         throw errorMsgString;
       });
+  }
+
+  // TODO check if subQuery is better way of doing it
+  public async getLogPerExperimentQueryForUser(
+    experimentId: string,
+    userIds: string[]
+  ): Promise<
+    Array<{
+      data: Record<string, any>;
+      id: string;
+      name: string;
+      repeatedMeasure: REPEATED_MEASURE;
+      userId: string;
+      createdAt: string;
+      key: string;
+      type: IMetricMetaData;
+    }>
+  > {
+    const experimentRepo = getCustomRepository(ExperimentRepository, 'export');
+    return experimentRepo
+      .createQueryBuilder('experiment')
+      .select([
+        'logs.data as data',
+        'queries.id as id',
+        'queries.name as name',
+        'queries."repeatedMeasure" as "repeatedMeasure"',
+        'logs."userId" as "userId"',
+        'logs."createdAt" as "createdAt"',
+        'metric.key as key',
+        'metric.type as type',
+      ])
+      .innerJoin('experiment.queries', 'queries')
+      .innerJoin('queries.metric', 'metric')
+      .innerJoin('metric.logs', 'logs')
+      .where('experiment.id=:experimentId', { experimentId })
+      .andWhere('logs."userId" IN (:...userIds)', { userIds })
+      .execute();
   }
 
   public async analysis(query: Query): Promise<any> {
@@ -295,49 +333,43 @@ export class LogRepository extends Repository<Log> {
     const experimentRepo = getRepository(Experiment);
 
     let analyticsQuery = experimentRepo
-    .createQueryBuilder('experiment')
-    .innerJoin('experiment.queries', 'queries')
-    .innerJoin('queries.metric', 'metric')
-    .innerJoinAndSelect('metric.logs', 'logs')
-    .innerJoinAndSelect(
-      (qb) => {
-        return qb
-          .subQuery()
-          .select([
-            `"individualEnrollment"."userId" as "userId"`,
-            `"individualEnrollment"."experimentId" as "experimentId"`,
-            `"individualEnrollment"."conditionId" as "conditionId"`,
-          ])
-          .distinct()
-          .from(IndividualEnrollment, 'individualEnrollment');
-      },
-      'individualEnrollment',
-      'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
-    )
-    .innerJoinAndSelect(
-      (qb) => {
-        return qb
-          .subQuery()
-          .select([`${metricString} as value`, 'logs.id as id'])
-          .from(Log, 'logs');
-      },
-      'extracted',
-      'extracted.id = logs.id'
-    )
-    .where('metric.key = :metric', { metric })
-    .andWhere('experiment.id = :experimentId', { experimentId })
-    .andWhere('queries.id = :queryId', { queryId });
+      .createQueryBuilder('experiment')
+      .innerJoin('experiment.queries', 'queries')
+      .innerJoin('queries.metric', 'metric')
+      .innerJoinAndSelect('metric.logs', 'logs')
+      .innerJoinAndSelect(
+        (qb) => {
+          return qb
+            .subQuery()
+            .select([
+              `"individualEnrollment"."userId" as "userId"`,
+              `"individualEnrollment"."experimentId" as "experimentId"`,
+              `"individualEnrollment"."conditionId" as "conditionId"`,
+            ])
+            .distinct()
+            .from(IndividualEnrollment, 'individualEnrollment');
+        },
+        'individualEnrollment',
+        'experiment.id = "individualEnrollment"."experimentId" AND logs."userId" = "individualEnrollment"."userId"'
+      )
+      .innerJoinAndSelect(
+        (qb) => {
+          return qb
+            .subQuery()
+            .select([`${metricString} as value`, 'logs.id as id'])
+            .from(Log, 'logs');
+        },
+        'extracted',
+        'extracted.id = logs.id'
+      )
+      .where('metric.key = :metric', { metric })
+      .andWhere('experiment.id = :experimentId', { experimentId })
+      .andWhere('queries.id = :queryId', { queryId });
 
     if (metricType == 'continuous') {
-      return (
-        analyticsQuery
-          .andWhere(`jsonb_typeof(${metricString}) = 'number'`)
-      );
+      return analyticsQuery.andWhere(`jsonb_typeof(${metricString}) = 'number'`);
     } else {
-      return (
-        analyticsQuery
-          .andWhere(`${metricString} IS NOT NULL`)
-      );
+      return analyticsQuery.andWhere(`${metricString} IS NOT NULL`);
     }
   }
 }

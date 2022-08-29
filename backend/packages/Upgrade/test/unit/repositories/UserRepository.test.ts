@@ -2,7 +2,7 @@ import { DeleteQueryBuilder, InsertQueryBuilder, UpdateQueryBuilder } from "type
 import * as sinon from 'sinon';
 import { UserRepository } from "../../../src/api/repositories/UserRepository";
 import { User } from "../../../src/api/models/User";
-import { UserRole } from "../../../../../../types/src";
+import { UserRole } from "upgrade_types";
 
 let sandbox;
 let createQueryBuilderStub;
@@ -18,7 +18,8 @@ let individual = new User();
 individual.email = 'email@test.com';
 individual.firstName = 'first';
 individual.lastName = 'last';
-individual.role = UserRole.ADMIN
+individual.role = UserRole.ADMIN;
+individual.localTimeZone = 'Asia/Kolkata';
 
 beforeEach(() => {
     sandbox = sinon.createSandbox();
@@ -50,7 +51,7 @@ describe('UserRepository Testing', () => {
         insertMock.expects('insert').once().returns(insertQueryBuilder);
         insertMock.expects('into').once().returns(insertQueryBuilder);
         insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
+        insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
         insertMock.expects('returning').once().returns(insertQueryBuilder);
         insertMock.expects('execute').once().returns(Promise.resolve(result));
 
@@ -70,7 +71,7 @@ describe('UserRepository Testing', () => {
         insertMock.expects('insert').once().returns(insertQueryBuilder);
         insertMock.expects('into').once().returns(insertQueryBuilder);
         insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
+        insertMock.expects('setParameter').exactly(4).returns(insertQueryBuilder);
         insertMock.expects('returning').once().returns(insertQueryBuilder);
         insertMock.expects('execute').once().returns(Promise.reject(err));
 

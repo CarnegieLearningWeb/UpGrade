@@ -6,7 +6,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
-import { INCLUSION_CRITERIA } from '../../../../../../../../../../types/src/Experiment/enums';
+import { INCLUSION_CRITERIA } from 'upgrade_types';
 
 type ParticipantMember = {
   id: string;
@@ -291,8 +291,8 @@ export class ExperimentParticipantsComponent implements OnInit {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
-              ? { segmentInclude: segmentMembers1FormData, segmentExclude: segmentMembers2FormData, filterMode: filterMode }
-              : { segmentInclude: segmentMembers2FormData, segmentExclude: segmentMembers1FormData, filterMode: filterMode },
+              ? { experimentSegmentInclusion: segmentMembers1FormData, experimentSegmentExclusion: segmentMembers2FormData, filterMode: filterMode }
+              : { experimentSegmentInclusion: segmentMembers2FormData, experimentSegmentExclusion: segmentMembers1FormData, filterMode: filterMode },
             path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS
           });
         }
