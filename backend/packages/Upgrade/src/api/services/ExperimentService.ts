@@ -1122,14 +1122,14 @@ export class ExperimentService {
           decisionPoint.experiment = experimentDoc;
           return decisionPoint;
         });
-
       const conditionAliasDocsToSave = 
-        conditionAliases &&
+        (conditionAliases &&
         conditionAliases.length > 0 &&
         conditionAliases.map((conditionAlias: ConditionAlias) => {
           conditionAlias.id = conditionAlias.id || uuid();
           return conditionAlias;
-        });
+        })) ||
+        [];
 
       // creating segmentInclude doc
       let includeTempDoc = new ExperimentSegmentInclusion();
@@ -1375,16 +1375,18 @@ export class ExperimentService {
   private convert(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
   
-    let dpc: ConditionAlias[] = [];
+    let conditionAlias: ConditionAlias[] = [];
     partitions.forEach(partition => {
       const conditionAliasData = partition.ConditionAliases;
       delete partition.ConditionAliases;
-      conditionAliasData.forEach(x => {
-        if (x && conditions.filter(con => con.id === x.parentCondition.id).length > 0) {
-          dpc.push({...x, decisionPoint: partition});
-        }
-      })
+      if (conditionAliasData) {
+        conditionAliasData.forEach(x => {
+          if (x && conditions.filter(con => con.id === x.parentCondition.id).length > 0) {
+            conditionAlias.push({...x, decisionPoint: partition});
+          }
+        })
+      }
     });
-    return {...experiment, ConditionAliases: dpc};
+    return {...experiment, ConditionAliases: conditionAlias};
   } 
 }

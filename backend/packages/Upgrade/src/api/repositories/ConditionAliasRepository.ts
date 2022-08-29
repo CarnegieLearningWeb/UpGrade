@@ -32,7 +32,7 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'insertConditionAliases',
+        const errorMsgString = repositoryError(this.constructor.name, 'insertConditionAlias',
         { conditionAliasDoc: conditionAliasDoc }, errorMsg);
         throw errorMsgString;
       });
