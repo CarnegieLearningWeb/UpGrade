@@ -1,5 +1,5 @@
 package org.upgradeplatform.requestbeans;
-
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class MarkExperimentRequest {
 
@@ -8,6 +8,7 @@ public class MarkExperimentRequest {
 	private String experimentPoint;
 	private String partitionId;
 	private String condition;
+	private MarkedDecisionPointStatus status;
 	
 	public MarkExperimentRequest() {}
 
@@ -17,6 +18,15 @@ public class MarkExperimentRequest {
 		this.experimentPoint = experimentPoint;
 		this.partitionId = partitionId;
 		this.condition = condition;
+	}
+
+	public MarkExperimentRequest(String userId, String experimentPoint, String partitionId, String condition, MarkedDecisionPointStatus status) {
+		super();
+		this.userId = userId;
+		this.experimentPoint = experimentPoint;
+		this.partitionId = partitionId;
+		this.condition = condition;
+		this.status = status;
 	}
 
 	public String getUserId() {
@@ -49,5 +59,13 @@ public class MarkExperimentRequest {
 
 	public void setCondition(String condition) {
 		this.condition = condition;
+	}
+
+	public MarkedDecisionPointStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(MarkedDecisionPointStatus status){
+		this.status = status;
 	}
 }

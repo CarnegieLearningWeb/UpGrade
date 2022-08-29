@@ -1,5 +1,7 @@
 package org.upgradeplatform.responsebeans;
 
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
+
 public class MarkExperimentPoint {
 	
 
@@ -12,6 +14,8 @@ public class MarkExperimentPoint {
 	private String enrollmentCode;
 	private String condition;
 	private String id;
+	private MarkedDecisionPointStatus status;
+	private String decisionPoint;
 	
 	public String getCreatedAt() {
 		return createdAt;
@@ -45,6 +49,14 @@ public class MarkExperimentPoint {
 		this.id = id;
 	}
 
+	public MarkedDecisionPointStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(MarkedDecisionPointStatus status){
+		this.status = status;
+	}
+
 	public MarkExperimentPoint() {}
 	
 	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint) {
@@ -52,6 +64,14 @@ public class MarkExperimentPoint {
 		this.userId = userId;
 		this.experimentId = experimentId;
 		this.experimentPoint = experimentPoint;
+	}
+
+	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint, MarkedDecisionPointStatus status) {
+		super();
+		this.userId = userId;
+		this.experimentId = experimentId;
+		this.experimentPoint = experimentPoint;
+		this.status = status;
 	}
 
 
@@ -100,11 +120,20 @@ public class MarkExperimentPoint {
 	    this.condition = condition;
 	}
 
+	public String getDecisionPoint() {
+		return decisionPoint;
+	}
+
+	public void setDecisionPoint(String decisionPoint) {
+		this.decisionPoint = decisionPoint;
+	}
+
     @Override
     public String toString(){
         return "MarkExperimentPoint [createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", versionNumber="
                + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", experimentPoint="
-               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", condition=" + condition + ", id=" + id + "]";
+               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", condition=" + condition + ", decisionPoint="
+			    + decisionPoint + ", status=" + status + ", id=" + id + "]";
     }
 
 	

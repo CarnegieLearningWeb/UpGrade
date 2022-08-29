@@ -45,6 +45,12 @@ public class Utils
 		categorical
 	}
 
+	public static enum MarkedDecisionPointStatus {
+		CONDITION_APPLIED,
+  		CONDITION_FAILED_TO_APPLY,
+  		NO_CONDITION_ASSIGNED
+	}
+
 	public static boolean isValidMetricMetaDataString(final String metadataType) {
 		return Arrays.stream(MetricMetaData.values())
 				.map(MetricMetaData::name)

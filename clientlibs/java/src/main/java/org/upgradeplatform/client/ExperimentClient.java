@@ -274,8 +274,13 @@ public class ExperimentClient implements AutoCloseable {
 
 	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
+		markExperimentPoint(experimentPoint, "", condition, MarkedDecisionPointStatus.CONDITION_APPLIED, callbacks);
+	}
+
+	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition, MarkedDecisionPointStatus status,
+			final ResponseCallback<MarkExperimentPoint> callbacks) {
 		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
-				experimentId, condition);
+				experimentId, condition, status);
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
@@ -288,7 +293,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), experimentId, experimentPoint));
+				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), experimentId, experimentPoint, status));
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );
