@@ -71,6 +71,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   // Alias Table details
   designData$: Subject<[ExperimentPartition[], ExperimentCondition[]]> = new Subject();
+  designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isAliasTableDisplayed: boolean = false;
@@ -207,7 +208,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   createDesignDataSubject(): void {
-    combineLatest([
+    this.designDataSub = combineLatest([
       this.experimentDesignForm.get('partitions').valueChanges,
       this.experimentDesignForm.get('conditions').valueChanges,
     ]).pipe(
@@ -639,5 +640,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.allPartitionsSub.unsubscribe();
     this.partitionErrorMessagesSub.unsubscribe();
     this.contextMetaDataSub.unsubscribe();
+    this.designDataSub.unsubscribe();
   }
 }
