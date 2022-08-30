@@ -340,6 +340,7 @@
         <div [hidden]="!isAliasTableDisplayed">
           <app-aliases-table
             [designData$] = designData$
+            [experimentInfo] = experimentInfo
             (aliasTableData$) = handleAliasTableDataChange($event)
             (hideAliasTable) = toggleAliasTable()
           ></app-aliases-table>

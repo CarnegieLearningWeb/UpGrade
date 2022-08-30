@@ -192,6 +192,7 @@ export interface ExperimentConditionAlias {
 }
 
 export interface ExperimentAliasTableRow {
+  id?: string;
   site: string;
   target: string;
   condition: string;

@@ -70,7 +70,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   equalWeightFlag: boolean = true;
 
   // Alias Table details
-  designData$: Subject<[ExperimentPartition[], ExperimentCondition[]]> = new Subject();
+  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[],[]]);
   designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
@@ -135,7 +135,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         conditions: this._formBuilder.array([this.addConditions()]),
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
-    
     this.createDesignDataSubject();
     this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
@@ -575,7 +574,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       }
 
       conditionAliases.push({
-        id: uuidv4(),
+        id: aliasRowData.id || uuidv4(),
         aliasName: aliasRowData.alias,
         parentCondition: parentCondition.id,
         decisionPoint: decisionPoint.target + '_' + decisionPoint.site

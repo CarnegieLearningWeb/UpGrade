@@ -2,8 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { ExperimentAliasTableRow, ExperimentCondition, ExperimentPartition, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
-
+import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-aliases-table',
@@ -15,6 +14,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   @Output() aliasTableData$: EventEmitter<ExperimentAliasTableRow[]> = new EventEmitter();
   @Output() hideAliasTable: EventEmitter<boolean> = new EventEmitter();
   @Input() designData$: Observable<[ExperimentPartition[], ExperimentCondition[]]>;
+  @Input() experimentInfo: ExperimentVM;
 
   subscriptions: Subscription;
   isAliasTableEditMode$: Observable<boolean>;
@@ -27,7 +27,9 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     'condition',
     'alias',
     'actions'
-  ]
+  ];
+
+  initialLoad: boolean = true;
 
   constructor(
     private experimentService: ExperimentService,
@@ -35,12 +37,16 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
-      this.aliasTableData = this.createAliasTableData(designData);
-      this.aliasTableData$.emit(this.aliasTableData);
-    })
     this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
     this.aliasTableEditIndex$ = this.experimentService.aliasTableEditIndex$;
+  }
+
+  ngAfterViewInit(): void {
+    // must sub after view init to ensure table reference is loaded before emitting table data
+    this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
+      this.aliasTableData = this.createAliasTableData(designData, this.experimentInfo?.conditionAliases);
+      this.aliasTableData$.emit(this.aliasTableData);
+    })
   }
 
   ngOnDestroy(): void {
@@ -70,21 +76,32 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
   }
 
-  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]]): ExperimentAliasTableRow[] {
+  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]], conditionAliases: ExperimentConditionAlias[]): ExperimentAliasTableRow[] {
     const [ decisionPoints, conditions ] = designData;
     const aliasTableData: ExperimentAliasTableRow[] = [];
+    const useExistingAliasData: boolean = !!(conditionAliases && this.initialLoad);
 
-    decisionPoints.forEach(({ site, target }) => {
-      conditions.forEach(({ conditionCode }) => {
+    decisionPoints.forEach((decisionPoint) => {
+      conditions.forEach((condition) => {
+        // check the list of condtionAliases, if exist, to see if this parentCondition has an alias match
+        let existingAlias: ExperimentConditionAlias = null;
+
+        if (useExistingAliasData) {
+          existingAlias = conditionAliases.find(alias => (alias as any).decisionPointId === decisionPoint.target + '_' + decisionPoint.site);
+        }
+
         aliasTableData.push({
-          site,
-          target,
-          condition: conditionCode,
-          alias: conditionCode,
+          id: existingAlias?.id,
+          site: decisionPoint.site,
+          target: decisionPoint.target,
+          condition: condition.conditionCode,
+          alias: existingAlias?.aliasName || condition.conditionCode,
           isEditing: false
         })
       })
     })
+
+    this.initialLoad = false;
 
     return aliasTableData;
   }
