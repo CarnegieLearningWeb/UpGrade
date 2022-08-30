@@ -46,9 +46,19 @@ public class Utils
 	}
 
 	public static enum MarkedDecisionPointStatus {
-		CONDITION_APPLIED,
-  		CONDITION_FAILED_TO_APPLY,
-  		NO_CONDITION_ASSIGNED
+		CONDITION_APPLIED("condition applied"),
+  		CONDITION_FAILED_TO_APPLY("condition not applied"),
+  		NO_CONDITION_ASSIGNED("no condition assigned");
+
+		private final String toString;
+
+		private MarkedDecisionPointStatus(String toString) {
+			this.toString = toString;
+	   	}
+   
+	   	public String toString(){
+			return toString;
+	   	}
 	}
 
 	public static boolean isValidMetricMetaDataString(final String metadataType) {

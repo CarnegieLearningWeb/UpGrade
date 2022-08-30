@@ -12,15 +12,16 @@ import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class Main {
 	public static void main(String[] args) throws InterruptedException, ExecutionException
 	{
-		final String baseUrl = "http://upgradeapi.qa-cli.com";
+		final String baseUrl = "http://localhost:3030";
 		final String userId = UUID.randomUUID().toString();
-		final String experimentPoint = "SelectSection";
+		final String decisionSite = "add-point1";
 
-		String sectionId = args.length > 0 ? args[0] : "test_dummy_variants_nonmastery";
+		String target = args.length > 0 ? args[0] : "add-id1";
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
 		    CompletableFuture<String> result = new CompletableFuture<>();
@@ -29,12 +30,13 @@ public class Main {
             experimentClient.init(new ResponseCallback<InitializeUser>() {
                 @Override
                 public void onSuccess(InitializeUser t){
-                    experimentClient.getExperimentCondition("assign-prog", experimentPoint, sectionId, new ResponseCallback<ExperimentsResponse>(){
+                    experimentClient.getExperimentCondition("add", decisionSite, target, new ResponseCallback<ExperimentsResponse>(){
                         @Override
                         public void onSuccess(ExperimentsResponse expResult){
                             AssignedCondition condition = expResult.getAssignedCondition();
                             String code = condition == null ? null : condition.getConditionCode();
-                            experimentClient.markExperimentPoint(experimentPoint, sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
+                            System.out.println(expResult);
+                            experimentClient.markExperimentPoint(decisionSite, target, code, MarkedDecisionPointStatus.NO_CONDITION_ASSIGNED, new ResponseCallback<MarkExperimentPoint>(){
                                 @Override
                                 public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                     result.complete("marked " + code + ": " + markResult.toString());
