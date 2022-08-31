@@ -2,11 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, IContextMetaData, ISingleContextMetadata, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
-
-interface HTMLInputEvent extends Event {
-  target: HTMLInputElement & EventTarget;
-}
+import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
 @Component({
   selector: 'app-aliases-table',
   templateUrl: './aliases-table.component.html',
@@ -94,7 +90,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     this.currentAliasInput$.next(rowData.alias);
   }
 
-  handleFilterContextMetaDataConditions(value: string, event: HTMLInputEvent) {
+  handleFilterContextMetaDataConditions(value: string) {
     this.currentAliasInput$.next(value);
   }
 
