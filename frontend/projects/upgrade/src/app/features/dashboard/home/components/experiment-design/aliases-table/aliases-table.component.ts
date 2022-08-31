@@ -1,9 +1,12 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, IContextMetaData, ISingleContextMetadata, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
 
+interface HTMLInputEvent extends Event {
+  target: HTMLInputElement & EventTarget;
+}
 @Component({
   selector: 'app-aliases-table',
   templateUrl: './aliases-table.component.html',
@@ -20,6 +23,8 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   isAliasTableEditMode$: Observable<boolean>;
   aliasTableEditIndex$: Observable<number>;
   currentContextMetaDataConditions$: Observable<string[]>;
+  filteredContextMetaDataConditions$: BehaviorSubject<string[]> = new BehaviorSubject(['']);
+  currentAliasInput$: BehaviorSubject<string> = new BehaviorSubject('');
 
   aliasTableData: ExperimentAliasTableRow[] = [];
   aliasesDisplayedColumns = [
@@ -50,9 +55,15 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       this.aliasTableData$.emit(this.aliasTableData);
     })
 
-    this.subscriptions = this.currentContextMetaDataConditions$.subscribe((conditions => {
-      console.log({ conditions })
-    }))
+    this.subscriptions = combineLatest([
+      this.currentContextMetaDataConditions$,
+      this.currentAliasInput$
+    ]).pipe(
+      filter(([ conditions, input ]) => !!conditions && !!this.experimentUtilityService.isValidString(input)),
+      map(([ conditions, input ]) => {
+        return conditions.filter(condition => condition.toLowerCase().includes(input.toLowerCase()));
+      })
+    ).subscribe(this.filteredContextMetaDataConditions$);
   }
 
   ngOnDestroy(): void {
@@ -80,6 +91,11 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       rowIndex: isEditMode ? rowIndex : null 
     }
     this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
+    this.currentAliasInput$.next(rowData.alias);
+  }
+
+  handleFilterContextMetaDataConditions(value: string, event: HTMLInputEvent) {
+    this.currentAliasInput$.next(value);
   }
 
   createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]], conditionAliases: ExperimentConditionAlias[]): ExperimentAliasTableRow[] {

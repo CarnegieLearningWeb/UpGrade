@@ -122,7 +122,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
-      console.log({ contextMetaData })
       this.contextMetaData = contextMetaData;
     });
 

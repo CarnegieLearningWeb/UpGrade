@@ -75,9 +75,10 @@
               [placeholder]="'home.new-experiment.design.aliases.column-header.alias.text' | translate"
               required
               [matAutocomplete]="aliasRowAutoCompleteConditionCodes"
+              (keyup)="handleFilterContextMetaDataConditions(rowData.alias, $event)"
             >
             <mat-autocomplete #aliasRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
-              <mat-option *ngFor="let conditionCode of currentContextMetaDataConditions$ | async" [value]="conditionCode">
+              <mat-option *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async" [value]="conditionCode">
                 {{ conditionCode }}
               </mat-option>
             </mat-autocomplete>
