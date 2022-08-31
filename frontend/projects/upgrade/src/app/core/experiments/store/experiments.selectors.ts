@@ -124,6 +124,16 @@ export const selectContextMetaData = createSelector(
   (state) => state.contextMetaData
 );
 
+export const selectCurrentContextMetaData = createSelector(
+  selectExperimentState,
+  (state) => state.currentUserSelectedContext
+)
+
+export const selectCurrentContextMetaDataConditions = createSelector(
+  selectExperimentState,
+  (state) => state.currentUserSelectedContext?.CONDITIONS || []
+)
+
 export const selectGroupAssignmentStatus = createSelector(
   selectExperimentState,
   (state, { experimentId }) => {

@@ -34,7 +34,10 @@ describe('LocalStorageService', () => {
             isGraphInfoLoading: false,
             allPartitions: null,
             allExperimentNames: null,
-            contextMetaData: {},
+            contextMetaData: {
+                contextMetadata: {}
+            },
+            currentUserSelectedContext: null,
             isAliasTableEditMode: false,
             aliasTableEditIndex: null
         }
@@ -56,7 +59,10 @@ describe('LocalStorageService', () => {
             isGraphInfoLoading: false,
             allPartitions: null,
             allExperimentNames: null,
-            contextMetaData: {},
+            contextMetaData: {
+                contextMetadata: {}
+            },
+            currentUserSelectedContext: null,
             isAliasTableEditMode: false,
             aliasTableEditIndex: null
         }

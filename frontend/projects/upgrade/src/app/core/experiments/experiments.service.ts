@@ -35,7 +35,8 @@ import {
   selectGroupAssignmentStatus,
   selectIsPollingExperimentDetailStats,
   selectIsAliasTableEditMode,
-  selectAliasTableEditIndex
+  selectAliasTableEditIndex,
+  selectCurrentContextMetaDataConditions
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -78,7 +79,8 @@ export class ExperimentService {
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
-  aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex))
+  aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
+  currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -153,6 +155,10 @@ export class ExperimentService {
 
   fetchContextMetaData() {
     this.store$.dispatch(experimentAction.actionFetchContextMetaData());
+  }
+
+  setCurrentContext(context: string) {
+    this.store$.dispatch(experimentAction.actionSetCurrentContext({ context }))
   }
 
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {

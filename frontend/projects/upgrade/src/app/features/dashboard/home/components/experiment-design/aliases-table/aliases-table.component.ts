@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
+import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, IContextMetaData, ISingleContextMetadata, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
 
 @Component({
   selector: 'app-aliases-table',
@@ -19,6 +19,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   subscriptions: Subscription;
   isAliasTableEditMode$: Observable<boolean>;
   aliasTableEditIndex$: Observable<number>;
+  currentContextMetaDataConditions$: Observable<string[]>;
 
   aliasTableData: ExperimentAliasTableRow[] = [];
   aliasesDisplayedColumns = [
@@ -39,6 +40,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
     this.aliasTableEditIndex$ = this.experimentService.aliasTableEditIndex$;
+    this.currentContextMetaDataConditions$ = this.experimentService.currentContextMetaDataConditions$;
   }
 
   ngAfterViewInit(): void {
@@ -47,6 +49,10 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       this.aliasTableData = this.createAliasTableData(designData, this.experimentInfo?.conditionAliases);
       this.aliasTableData$.emit(this.aliasTableData);
     })
+
+    this.subscriptions = this.currentContextMetaDataConditions$.subscribe((conditions => {
+      console.log({ conditions })
+    }))
   }
 
   ngOnDestroy(): void {

@@ -115,6 +115,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     this.overviewForm.get('context').valueChanges.subscribe(context => {
       this.currentContext = context;
+      this.experimentService.setCurrentContext(context);
       this.setGroupTypes();
     });
 

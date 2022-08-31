@@ -212,10 +212,13 @@ export interface ExperimentPaginationParams {
 export interface ISingleContextMetadata {
   EXP_IDS: string[],
   EXP_POINTS: string[],
-  GROUP_TYPES: string[]
+  GROUP_TYPES: string[],
+  CONDITIONS: string[]
 }
 export interface IContextMetaData {
-  [key: string]: ISingleContextMetadata[];
+  contextMetadata: {
+    [key: string]: ISingleContextMetadata;
+  }
 }
 
 export interface IExperimentGraphInfo {
@@ -247,7 +250,8 @@ export interface ExperimentState extends EntityState<Experiment> {
   isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
-  contextMetaData: {};
+  contextMetaData: IContextMetaData;
+  currentUserSelectedContext: ISingleContextMetadata;
   updatedStat?: IExperimentEnrollmentDetailStats;
   isAliasTableEditMode: boolean;
   aliasTableEditIndex: number | null;
