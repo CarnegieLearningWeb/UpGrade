@@ -81,7 +81,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
   }
 
   public async partitionPointAndName(): Promise<Array<Pick<DecisionPoint, 'target' | 'site'>>> {
-    return this.createQueryBuilder('experimentPartition')
+    return await this.createQueryBuilder('experimentPartition')
       .select(['experimentPartition.site', 'experimentPartition.target'])
       .getMany()
       .catch((errorMsg: any) => {
