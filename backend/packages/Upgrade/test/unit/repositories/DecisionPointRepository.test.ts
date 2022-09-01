@@ -16,7 +16,7 @@ const err =  new Error("test error")
 
 let decisionPoint = new DecisionPoint();
 decisionPoint.id = 'id1';
-decisionPoint.twoCharacterId = 'ab'
+decisionPoint.excludeIfReached = true;
 
 const result =  {
     identifiers: [ { id: decisionPoint.id } ],
