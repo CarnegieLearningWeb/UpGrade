@@ -498,14 +498,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         break;
     }
   }
-
-  setExcludeIfReachedFlag(event, groupIndex) {
-    if(event.checked && this.partition) {
-      this.partition.at(groupIndex).get('excludeIfReached').setValue(true);
-    } else {
-      this.partition.at(groupIndex).get('excludeIfReached').setValue(false);
-    }
-  }
   
   applyEqualWeight() {
     if (this.experimentDesignForm){
