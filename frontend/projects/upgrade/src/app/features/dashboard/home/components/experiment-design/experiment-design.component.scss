@@ -59,6 +59,10 @@
         max-width: 530px;
       }
 
+      .cdk-column-excludeIfReached {
+        justify-content: center;
+      }
+
       .cdk-column-conditionCode {
         flex: 0 0 220px;
         width: 220px;
