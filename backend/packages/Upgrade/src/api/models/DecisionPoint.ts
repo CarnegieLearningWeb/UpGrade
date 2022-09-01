@@ -30,6 +30,11 @@ export class DecisionPoint extends BaseModel {
   })
   public order: number;
 
+  @Column({
+    default: false,
+  })
+  public excludeIfReached: boolean;
+
   @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 }

@@ -25,7 +25,7 @@ export default async function GroupUserCount(): Promise<void> {
   // experiment object
   const experimentObject: any = groupAssignmentWithGroupConsistencyExperiment;
   experimentObject.enrollmentCompleteCondition = {
-    groupCount: 2,
+    groupCount: 3,
     userCount: 2,
   };
 
@@ -41,7 +41,7 @@ export default async function GroupUserCount(): Promise<void> {
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
         enrollmentCompleteCondition: {
-          groupCount: 2,
+          groupCount: 3,
           userCount: 2,
         },
       }),
@@ -116,9 +116,9 @@ export default async function GroupUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 0
+  // get the number of group satisfied as 1
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(experiments[0].id, new UpgradeLogger());
-  expect(testingNumberOfGroupSatisfied).toEqual(0);
+  expect(testingNumberOfGroupSatisfied).toEqual(1);
 
   // get all experiment condition for user 3
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[2].id, new UpgradeLogger());
@@ -128,9 +128,9 @@ export default async function GroupUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 0
+  // get the number of group satisfied as 1
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(experiments[0].id, new UpgradeLogger());
-  expect(testingNumberOfGroupSatisfied).toEqual(0);
+  expect(testingNumberOfGroupSatisfied).toEqual(1);
 
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -153,9 +153,9 @@ export default async function GroupUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 1
+  // get the number of group satisfied as 2
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(experiments[0].id, new UpgradeLogger());
-  expect(testingNumberOfGroupSatisfied).toEqual(1);
+  expect(testingNumberOfGroupSatisfied).toEqual(2);
 
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -178,9 +178,9 @@ export default async function GroupUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[4].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[4].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 1
+  // get the number of group satisfied as 2
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(experiments[0].id, new UpgradeLogger());
-  expect(testingNumberOfGroupSatisfied).toEqual(1);
+  expect(testingNumberOfGroupSatisfied).toEqual(2);
 
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(
@@ -203,9 +203,9 @@ export default async function GroupUserCount(): Promise<void> {
   markedExperimentPoint = await markExperimentPoint(experimentUsers[5].id, experimentName, experimentPoint, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[5].id, experimentName, experimentPoint);
 
-  // get the number of group satisfied as 2
+  // get the number of group satisfied as 3
   testingNumberOfGroupSatisfied = await assignmentService.getGroupAssignmentStatus(experiments[0].id, new UpgradeLogger());
-  expect(testingNumberOfGroupSatisfied).toEqual(2);
+  expect(testingNumberOfGroupSatisfied).toEqual(3);
 
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(

@@ -144,7 +144,7 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
-          [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
         >
         {{ 'global.update.text' | translate }}

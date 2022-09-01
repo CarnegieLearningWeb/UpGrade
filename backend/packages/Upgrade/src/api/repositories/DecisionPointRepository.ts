@@ -13,9 +13,10 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .insert()
       .into(DecisionPoint)
       .values(decisionPointDoc)
-      .onConflict(`("id") DO UPDATE SET "target" = :target, "description" = :description, "order" = :order`)
+      .onConflict(`("id") DO UPDATE SET "target" = :target, "description" = :description, "excludeIfReached" = :excludeIfReached, "order" = :order`)
       .setParameter('target', decisionPointDoc.target)
       .setParameter('description', decisionPointDoc.description)
+      .setParameter('excludeIfReached', decisionPointDoc.excludeIfReached)
       .setParameter('order', decisionPointDoc.order)
       .returning('*')
       .execute()
@@ -80,7 +81,7 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
   }
 
   public async partitionPointAndName(): Promise<Array<Pick<DecisionPoint, 'target' | 'site'>>> {
-    return this.createQueryBuilder('experimentPartition')
+    return await this.createQueryBuilder('experimentPartition')
       .select(['experimentPartition.site', 'experimentPartition.target'])
       .getMany()
       .catch((errorMsg: any) => {
