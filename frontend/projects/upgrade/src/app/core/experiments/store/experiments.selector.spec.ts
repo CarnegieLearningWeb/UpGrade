@@ -108,7 +108,8 @@ describe('Experiments Selectors', () => {
                         "site": "SelectSection",
                         "target": "is-it-cake",
                         "description": "",
-                        "order": 1
+                        "order": 1,
+                        "excludeIfReached": false,
                     }
                 ],
                 "conditionAliases": [],
