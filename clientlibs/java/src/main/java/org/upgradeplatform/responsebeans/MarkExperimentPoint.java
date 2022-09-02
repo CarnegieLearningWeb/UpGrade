@@ -10,7 +10,6 @@ public class MarkExperimentPoint {
 	private Integer versionNumber;
 	private String userId;
 	private String experimentId;
-	private String experimentPoint;
 	private String enrollmentCode;
 	private String condition;
 	private String id;
@@ -59,18 +58,18 @@ public class MarkExperimentPoint {
 
 	public MarkExperimentPoint() {}
 	
-	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint) {
+	public MarkExperimentPoint(String userId, String experimentId, String decisionPoint) {
 		super();
 		this.userId = userId;
 		this.experimentId = experimentId;
-		this.experimentPoint = experimentPoint;
+		this.decisionPoint = decisionPoint;
 	}
 
-	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint, MarkedDecisionPointStatus status) {
+	public MarkExperimentPoint(String userId, String experimentId, String decisionPoint, MarkedDecisionPointStatus status) {
 		super();
 		this.userId = userId;
 		this.experimentId = experimentId;
-		this.experimentPoint = experimentPoint;
+		this.decisionPoint = decisionPoint;
 		this.status = status;
 	}
 
@@ -92,16 +91,6 @@ public class MarkExperimentPoint {
 
 	public void setExperimentId(String experimentId) {
 		this.experimentId = experimentId;
-	}
-
-
-	public String getExperimentPoint() {
-		return experimentPoint;
-	}
-
-
-	public void setExperimentPoint(String experimentPoint) {
-		this.experimentPoint = experimentPoint;
 	}
 
 	public String getEnrollmentCode() {
@@ -131,9 +120,9 @@ public class MarkExperimentPoint {
     @Override
     public String toString(){
         return "MarkExperimentPoint [createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", versionNumber="
-               + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", experimentPoint="
-               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", condition=" + condition + ", decisionPoint="
-			    + decisionPoint + ", status=" + status + ", id=" + id + "]";
+               + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", enrollmentCode=" 
+			   + enrollmentCode + ", condition=" + condition + ", decisionPoint="
+			   + decisionPoint + ", status=" + status + ", id=" + id + "]";
     }
 
 	
