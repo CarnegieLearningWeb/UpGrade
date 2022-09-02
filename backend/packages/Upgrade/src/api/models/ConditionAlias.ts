@@ -14,6 +14,6 @@ export class ConditionAlias extends BaseModel {
   @ManyToOne((type) => ExperimentCondition, (condition) => condition.parentCondition, { onDelete: 'CASCADE' })
   public parentCondition: ExperimentCondition;
 
-  @ManyToOne((type) => DecisionPoint, (decisionPoint) => decisionPoint.ConditionAliases, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => DecisionPoint, (decisionPoint) => decisionPoint.conditionAliases, { onDelete: 'CASCADE' })
   public decisionPoint: DecisionPoint;
 }

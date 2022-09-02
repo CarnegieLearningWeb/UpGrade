@@ -39,6 +39,34 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
     return result.raw;
   }
 
+  public async upsertConditionAlias(
+    conditionAliasDoc: Partial<ConditionAlias>,
+    entityManager: EntityManager
+  ): Promise<ConditionAlias> {
+    const result = await entityManager
+      .createQueryBuilder()
+      .insert()
+      .into(ConditionAlias)
+      .values(conditionAliasDoc)
+      .onConflict(
+        `("id") DO UPDATE SET "aliasName" = :aliasName`
+      )
+      .setParameter('aliasName', conditionAliasDoc.aliasName)
+      .returning('*')
+      .execute()
+      .catch((error: any) => {
+        const errorMsgString = repositoryError(
+          'ConditionAliasRepository',
+          'upsertConditionAlias',
+          { conditionAliasDoc },
+          error
+        );
+        throw errorMsgString;
+      });
+
+    return result.raw[0];
+  }
+
   public async findAliasName(conditionId: string, partitionId: string): Promise<Pick<ConditionAlias, 'aliasName'> | null> {
     return this.createQueryBuilder('conditionAlias')
       .select(['conditionAlias.aliasName'])

@@ -35,7 +35,7 @@ export class DecisionPoint extends BaseModel {
   public experiment: Experiment;
 
   @OneToMany((type) => ConditionAlias, (conditionAlias) => conditionAlias.decisionPoint)
-  public ConditionAliases: ConditionAlias[];
+  public conditionAliases: ConditionAlias[];
 }
 
 export function getExperimentPartitionID(site: string, target: string): string {
