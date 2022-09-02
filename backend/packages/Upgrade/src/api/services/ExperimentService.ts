@@ -524,7 +524,9 @@ export class ExperimentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.partitions.map(({ id }) => {
+    const subExperiments = experiment.partitions.filter((partition) => {
+      return partition.excludeIfReached;
+    }).map(({ id }) => {
       return id;
     });
 
