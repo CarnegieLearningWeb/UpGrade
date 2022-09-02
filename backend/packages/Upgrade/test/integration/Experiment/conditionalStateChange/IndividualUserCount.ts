@@ -23,7 +23,7 @@ export default async function IndividualUserCount(): Promise<void> {
   // experiment object
   const experimentObject: any = individualAssignmentExperiment;
   experimentObject.enrollmentCompleteCondition = {
-    userCount: 3,
+    userCount: 4,
   };
 
   // create experiment 1
@@ -37,7 +37,7 @@ export default async function IndividualUserCount(): Promise<void> {
         postExperimentRule: experimentObject.postExperimentRule,
         assignmentUnit: experimentObject.assignmentUnit,
         consistencyRule: experimentObject.consistencyRule,
-        enrollmentCompleteCondition: { userCount: 3 },
+        enrollmentCompleteCondition: { userCount: 4 },
       }),
     ])
   );
@@ -130,6 +130,7 @@ export default async function IndividualUserCount(): Promise<void> {
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   experiments = await experimentService.find(new UpgradeLogger());
+  // enrollment complete as 4 users enrolled which is the enrollment completion criteria
   expect(experiments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

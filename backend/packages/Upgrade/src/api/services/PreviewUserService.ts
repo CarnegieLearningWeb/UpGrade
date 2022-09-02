@@ -61,14 +61,14 @@ export class PreviewUserService {
   }
 
   public create(user: Partial<PreviewUser>,logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message : `Create a new user => ${user}` });
+    logger.info({ message : `Create a new preview user => ${user}` });
     user.id = user.id || uuid();
 
     return this.userRepository.save(user);
   }
 
   public update(id: string, user: PreviewUser, logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message : `Update a user => ${user.toString()}` });
+    logger.info({ message : `Update a preview user => ${user.toString()}` });
     user.id = id;
     return this.userRepository.save(user);
   }

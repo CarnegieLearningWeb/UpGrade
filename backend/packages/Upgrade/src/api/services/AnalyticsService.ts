@@ -117,7 +117,7 @@ export class AnalyticsService {
     return Object.keys(keyToReturn).map((date) => {
       const stats: IExperimentEnrollmentDetailDateStats = {
         id: experimentId,
-        conditions: experiment.conditions.map(({ id }) => {
+        conditions: experiment ? experiment.conditions.map(({ id }) => {
           return {
             id,
             partitions: experiment.partitions.map((decisionPointDoc) => {
@@ -146,7 +146,7 @@ export class AnalyticsService {
               };
             }),
           };
-        }),
+        }) : [],
       };
       return {
         date,

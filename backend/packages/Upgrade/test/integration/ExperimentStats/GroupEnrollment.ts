@@ -99,8 +99,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: 0,
-        groups: 0,
+        users: 1,
+        groups: 1,
         id: experimentId,
       }),
     ])
@@ -120,8 +120,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: 1,
-        groups: 1,
+        users: 2,
+        groups: 2,
         id: experimentId,
       }),
     ])
@@ -141,8 +141,8 @@ export default async function testCase(): Promise<void> {
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        users: 2,
-        groups: 1,
+        users: 3,
+        groups: 2,
         id: experimentId,
       }),
     ])
