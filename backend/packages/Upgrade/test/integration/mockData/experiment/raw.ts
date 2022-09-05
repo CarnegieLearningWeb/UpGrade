@@ -56,7 +56,20 @@ export const experiment = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionAliases: [
+    {
+      id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
+      aliasName: "ConditionA_W1",
+      parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
+      decisionPoint: "W1_CurriculumSequence"
+    },
+    {
+      id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
+      aliasName: "ConditionA_W2",
+      parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
+      decisionPoint: "W2_CurriculumSequence"
+    }
+  ],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -111,7 +124,14 @@ export const experimentSecond = {
       excludedIfReached: true,
     },
   ],
-  conditionAliases: [],
+  conditionAliases: [
+    {
+      id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
+      aliasName: "numberline_control",
+      parentCondition: "9c20b2d5-fea9-47e4-83b7-0d60fc972d96",
+      decisionPoint: "numberline_SelectSection"
+    }
+  ],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
