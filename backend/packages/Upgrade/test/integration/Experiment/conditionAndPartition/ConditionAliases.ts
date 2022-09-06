@@ -1,4 +1,4 @@
-import { individualAssignmentExperiment } from '../../mockData/experiment/index';
+import { aliasConditionExperiment } from '../../mockData/experiment/index';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
@@ -8,7 +8,7 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 export default async function ConditionAlias(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
   // experiment object
-  const experimentObject = individualAssignmentExperiment;
+  const experimentObject = aliasConditionExperiment;
   const userService = Container.get<UserService>(UserService);
 
   // creating new user

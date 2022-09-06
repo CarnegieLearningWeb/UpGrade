@@ -2,7 +2,7 @@ import Container from 'typedi';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
-import { individualAssignmentExperiment } from '../../mockData/experiment/index';
+import { aliasConditionExperiment } from '../../mockData/experiment/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import {
   checkMarkExperimentPointForUser,
@@ -20,7 +20,7 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject: any = individualAssignmentExperiment;
+  const experimentObject: any = aliasConditionExperiment;
 
   // remove 1 condition
   experimentObject.conditions.sort((a,b) => {
