@@ -1,5 +1,5 @@
 import { Container } from 'typedi';
-import { individualAssignmentExperimentConsistencyRuleExperiemnt } from '../mockData/experiment';
+import { individualAssignmentExperimentConsistencyRuleExperiment } from '../mockData/experiment';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../utils';
@@ -17,7 +17,7 @@ export default async function testCase(): Promise<void> {
   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
   // experiment object
-  const experimentObject = individualAssignmentExperimentConsistencyRuleExperiemnt;
+  const experimentObject = individualAssignmentExperimentConsistencyRuleExperiment;
 
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
