@@ -267,14 +267,9 @@ public class ExperimentClient implements AutoCloseable {
 		return resultCondition;
 	}
 
-	public void markExperimentPoint(final String experimentPoint, String condition,
+	public void markExperimentPoint(final String experimentPoint, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(experimentPoint, "", condition, callbacks);
-	}
-
-	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition,
-			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(experimentPoint, "", condition, MarkedDecisionPointStatus.CONDITION_APPLIED, callbacks);
+		markExperimentPoint(experimentPoint, "", condition, status, callbacks);
 	}
 
 	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition, MarkedDecisionPointStatus status,
