@@ -158,7 +158,8 @@ export class ImportExperimentComponent implements OnInit {
       order: 'number',
       createdAt: 'string',
       updatedAt: 'string',
-      versionNumber: 'number'
+      versionNumber: 'number',
+      excludeIfReached: 'boolean'
     }
 
     let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });

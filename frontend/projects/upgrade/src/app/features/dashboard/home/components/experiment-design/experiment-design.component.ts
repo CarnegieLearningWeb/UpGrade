@@ -55,13 +55,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   previousAssignmentWeightValues =  [];
 
   conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['site', 'target', 'removePartition'];
+  partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'removePartition'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
   filteredConditionCodes$: Observable<string[]>[] = [];
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
-  // filteredRequiredIds$: Observable<string[]>[] = [];
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
@@ -136,7 +135,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.condition.push(this.addConditions(condition.conditionCode, condition.assignmentWeight, condition.description, condition.order));
       });
       this.experimentInfo.partitions.forEach(partition => {
-        this.partition.push(this.addPartitions(partition.site, partition.target, partition.description, partition.order));
+        this.partition.push(this.addPartitions(partition.site, partition.target, partition.description, partition.order, partition.excludeIfReached));
       });
 
       // disable control on edit:
@@ -186,12 +185,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         startWith<string>(''),
         map(target => this.filterExpPointsAndIds(target, 'expIds'))
       );
-
-    // this.filteredRequiredIds$[index] = partitionFormControl.at(index).get('requiredId').valueChanges
-    //   .pipe(
-    //     startWith<string>(''),
-    //     map(expId => this.filterExpPointsAndIds(expId, 'requiredIds'))
-    //   );
   }
 
   private filterConditionCodes(value: string): string[] {
@@ -234,12 +227,13 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  addPartitions(site = null, target = null, description = '', order = null) {
+  addPartitions(site = null, target = null, description = '', order = null, excludeIfReached = false) {
     return this._formBuilder.group({
       site: [site, Validators.required],
       target: [target, Validators.required],
       description: [description],
-      order: [order]
+      order: [order],
+      excludeIfReached: [excludeIfReached]
     });
   }
 
@@ -490,7 +484,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.partitions[index], ...partition, order: order++ })
                 : (partition.target 
-                  ? ({...partition, order: order++ }) 
+                  ? ({...partition, order: order++}) 
                   : ({...this.removePartitionName(partition), order: order++ })
                 );
             }
