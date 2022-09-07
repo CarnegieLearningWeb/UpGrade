@@ -902,7 +902,7 @@ export class ExperimentService {
           ...experimentDoc,
           conditions: conditionDocToReturn as any,
           partitions: decisionPointDocToReturn as any,
-          conditionAlias: conditionAliasDocs as any,
+          conditionAliases: conditionAliasDocs as any,
           queries: (queryDocToReturn as any) || []
         };
 

@@ -4,9 +4,14 @@ import { Container } from 'typedi';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
+import { getManager } from "typeorm"; 
+import { ExperimentCondition } from '../../../../src/api/models/ExperimentCondition';
+import { DecisionPoint } from '../../../../src/api/models/DecisionPoint';
 
 export default async function ConditionAlias(): Promise<void> {
   const experimentService = Container.get<ExperimentService>(ExperimentService);
+  const entityManager = getManager();
+
   // experiment object
   const experimentObject = aliasConditionExperiment;
   const userService = Container.get<UserService>(UserService);
@@ -23,19 +28,16 @@ export default async function ConditionAlias(): Promise<void> {
     return a.id > b.id ? 1 : a.id < b.id ? -1 : 0
   });
 
+  expect(experiments[0].conditionAliases.length).toEqual(2);
   expect(experiments[0].conditionAliases).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
         aliasName: "ConditionA_W1",
-        parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-        decisionPoint: "W1_CurriculumSequence"
       }),
       expect.objectContaining({
         id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
         aliasName: "ConditionA_W2",
-        parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-        decisionPoint: "W2_CurriculumSequence"
       }),
     ])
   );
@@ -63,49 +65,45 @@ export default async function ConditionAlias(): Promise<void> {
 
   let updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
 
-  expect(updatedExperimentDoc[0].conditionAliases).toEqual(
+  expect(updatedExperimentDoc.conditionAliases).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         id: "9d753b90-1111-44b5-8acc-2483c0507ea2",
         aliasName: "ConditionB_W2",
-        parentCondition: "d2702d3c-5e04-41a7-8766-1da8a95b72ce",
-        decisionPoint: "W2_CurriculumSequence"
       }),
       expect.objectContaining({
         id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
         aliasName: "ConditionA_W2_updated",
-        parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-        decisionPoint: "W2_CurriculumSequence"
       }),
     ])
   );
 
   // delete first condition
-  updatedExperimentDoc[0].conditions.sort((a,b) => {
+  updatedExperimentDoc.conditions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
-  updatedExperimentDoc.conditions.shift()
+  await entityManager.delete(ExperimentCondition, updatedExperimentDoc.conditions[0].id)
 
-  updatedExperimentDoc = await experimentService.update(updatedExperimentDoc as any, user, new UpgradeLogger());
+  // conditionAlias related to condition should also gets deleted
+  updatedExperimentDoc = await experimentService.findOne(updatedExperimentDoc.id as any, new UpgradeLogger());
 
-  expect(updatedExperimentDoc[0].conditionAliases).toEqual(
+  expect(updatedExperimentDoc.conditionAliases.length).toEqual(1);
+  expect(updatedExperimentDoc.conditionAliases).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         id: "9d753b90-1111-44b5-8acc-2483c0507ea2",
         aliasName: "ConditionB_W2",
-        parentCondition: "d2702d3c-5e04-41a7-8766-1da8a95b72ce",
-        decisionPoint: "W2_CurriculumSequence"
       })
     ])
   );
 
   // delete second partition
-  updatedExperimentDoc[0].partitions.sort((a,b) => {
+  updatedExperimentDoc.partitions.sort((a,b) => {
     return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
   });
-  updatedExperimentDoc.partitions.pop()
+  await entityManager.delete(DecisionPoint, updatedExperimentDoc.partitions[1].id)
 
-  updatedExperimentDoc = await experimentService.update(updatedExperimentDoc as any, user, new UpgradeLogger());
-
-  expect(updatedExperimentDoc[0].conditionAliases.length).toEqual(0);
+  // conditionAlias related to decitionPoint should also gets deleted
+  updatedExperimentDoc = await experimentService.findOne(updatedExperimentDoc.id as any, new UpgradeLogger());
+  expect(updatedExperimentDoc.conditionAliases.length).toEqual(0);
 }

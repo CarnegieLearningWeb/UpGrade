@@ -72,13 +72,13 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        conditionCode: "ConditionA_W1"
+        assignedCondition: expect.objectContaining({conditionCode: "ConditionA_W1"})
       }),
       expect.objectContaining({
-        conditionCode: "ConditionA_W2"
+        assignedCondition: expect.objectContaining({conditionCode: "ConditionA_W2"})
       }),
       expect.objectContaining({
-        conditionCode: "ConditionA"
+        assignedCondition: expect.objectContaining({conditionCode: "ConditionA"})
       }),
     ])
   );
