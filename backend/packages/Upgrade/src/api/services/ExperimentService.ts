@@ -173,14 +173,19 @@ export class ExperimentService {
     };
   }
 
-  public create(experiment: Experiment, currentUser: User, logger: UpgradeLogger): Promise<Experiment> {
+  public create(experiment: Experiment, currentUser: User, logger: UpgradeLogger, createType?: string): Promise<Experiment> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
     let newConditionId;
     let newCondition;
     experiment.conditions.forEach((condition, index) => {
-      newConditionId = uuid();
+      if ( createType && createType === 'import') {
+        newConditionId = uuid();
+      } else {
+        newConditionId = condition.id || uuid();
+      }
+      
       // proper reference for post experiment rule condition:
       if (experiment.postExperimentRule === 'assign') {
         if (experiment.revertTo === condition.id) {
@@ -472,7 +477,7 @@ export class ExperimentService {
       experiment.experimentSegmentInclusion.segment = segmentIncludeDoc;
       experiment.experimentSegmentExclusion.segment = segmentExcludeDoc;
     
-    return this.create(experiment, user, logger);
+    return this.create(experiment, user, logger, 'import');
   }
 
   public async exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<Experiment> {

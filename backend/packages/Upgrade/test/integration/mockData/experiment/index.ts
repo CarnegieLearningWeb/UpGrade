@@ -1,4 +1,4 @@
-import { getExperiment, getRevertToExperiment, getSecondExperiment, getThirdExperiment, getFourthExperiment, experimentFifth} from './raw';
+import { getExperiment, getRevertToExperiment, getSecondExperiment, getThirdExperiment, getFourthExperiment, getFifthExperiment} from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
@@ -149,7 +149,7 @@ export const groupAssignmentWithIndividualConsistencyExperimentSecond = {
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-}
+};
 
 export const groupAndParticipantsExperiment = {
   ...groupAssignmentWithGroupConsistencyExperiment,
@@ -178,16 +178,12 @@ export const groupAssignmentWithIndividualConsistencyExperimentThird = {
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-}
+};
 
 export const decimalWeightExperiment = {
   ...getFourthExperiment(),
-}
+};
 
 export const aliasConditionExperiment = {
-  ...experimentFifth,
-  consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
-  assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
-  postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
-  state: EXPERIMENT_STATE.INACTIVE,
+  ...getFifthExperiment(),
 };

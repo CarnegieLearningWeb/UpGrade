@@ -291,7 +291,7 @@ export const experimentFifth = {
   consistencyRule: 'individual',
   assignmentUnit: 'individual',
   postExperimentRule: 'continue',
-  state: 'scheduled',
+  state: 'inactive',
   startOn: new Date().toISOString(),
   group: 'teacher',
   context: ['home'],
@@ -375,4 +375,8 @@ export function getThirdExperiment() {
 
 export function getFourthExperiment() {
   return JSON.parse(JSON.stringify(experimentFourth));
+}
+
+export function getFifthExperiment() {
+  return JSON.parse(JSON.stringify(experimentFifth));
 }

@@ -21,15 +21,15 @@ export default async function ConditionAlias(): Promise<void> {
 
   // create experiment
   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
-  const experiments = await experimentService.find(new UpgradeLogger());
+  const experiments = await experimentService.findOne(experimentObject.id, new UpgradeLogger());
 
   // sort conditionAliases
-  experiments[0].conditionAliases.sort((a,b) => {
+  experiments.conditionAliases.sort((a,b) => {
     return a.id > b.id ? 1 : a.id < b.id ? -1 : 0
   });
 
-  expect(experiments[0].conditionAliases.length).toEqual(2);
-  expect(experiments[0].conditionAliases).toEqual(
+  expect(experiments.conditionAliases.length).toEqual(2);
+  expect(experiments.conditionAliases).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
@@ -44,16 +44,16 @@ export default async function ConditionAlias(): Promise<void> {
 
   
   // delete first conditionAlias
-  experiments[0].conditionAliases.shift()
+  experiments.conditionAliases.shift()
 
   // updating conditionAlias name
-  experiments[0].conditionAliases[0].aliasName = "ConditionA_W2_updated"
+  experiments.conditionAliases[0].aliasName = "ConditionA_W2_updated"
 
   // adding new conditionAlias
   const newExperimentDoc = {
-    ...experiments[0],
+    ...experiments,
     conditionAliases: [
-      ...experiments[0].conditionAliases,
+      ...experiments.conditionAliases,
       {
         id: "9d753b90-1111-44b5-8acc-2483c0507ea2",
         aliasName: "ConditionB_W2",
