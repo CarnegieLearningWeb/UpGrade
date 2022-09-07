@@ -44,7 +44,9 @@ export class ExperimentParticipantsComponent implements OnInit {
   segmentNameId = new Map();
   subSegmentTypes: any[];
   subSegmentIdsToSend = [];
-  membersCountError: string = null;
+  IncludeEmptyRowError = false;
+  ExcludeEmptyRowError = false;
+  EmptyRowErrorMsg = "Please fill or remove empty row fields before moving forward"
   userIdsToSend = [];
   groupsToSend = [];
   groupString: string = ' ( group )';
@@ -197,29 +199,30 @@ export class ExperimentParticipantsComponent implements OnInit {
   }
 
   checkForEmptyRows(includedMembers: ParticipantMember[], excludedMembers: ParticipantMember[]) {
-    const includedMembersFiltered = this.removeEmptyRows(includedMembers);
-    const excludedMembersFiltered = this.removeEmptyRows(excludedMembers);
+    const includedMembersFiltered = this.returnEmptyRowsCount(includedMembers);
+    const excludedMembersFiltered = this.returnEmptyRowsCount(excludedMembers);
 
-    if (includedMembersFiltered.length === 0) {
-      this.members1.clear();
-      this.updateView1();
+    if (includedMembersFiltered.length > 0) {
+      this.IncludeEmptyRowError = true;
+    }else{
+      this.IncludeEmptyRowError = false;
     }
 
-    if (excludedMembersFiltered.length === 0) {
-      this.members2.clear();
-      this.updateView2();
+    if (excludedMembersFiltered.length > 0) {
+      this.ExcludeEmptyRowError = true;
+    }else{
+      this.ExcludeEmptyRowError = false;
     }
   }
 
-  removeEmptyRows(members: ParticipantMember[]): ParticipantMember[] {
+  returnEmptyRowsCount(members: ParticipantMember[]): ParticipantMember[] {
     if (!members) {
       return; // form will be invalid
     }
 
     return members.filter((memberRow) => {
-      // only return false if both type and id are falsey, which indicates empty/unneeded row
-      // otherwise, if one is false and other is truthy, don't remove row, handle as invalid form
-      return !(!memberRow.type && !memberRow.id)
+      // only return if any of type and id are falsey, which indicates empty/unneeded row
+      return (!memberRow.type || !memberRow.id)
     })
   }
 

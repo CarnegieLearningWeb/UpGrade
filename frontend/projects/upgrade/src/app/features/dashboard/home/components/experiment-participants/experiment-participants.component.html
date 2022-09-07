@@ -92,8 +92,8 @@
         </mat-table>
         <span
           class="ft-14-600 validation-message"
-          *ngIf="membersCountError"
-          [innerHTML]="membersCountError"
+          *ngIf="IncludeEmptyRowError"
+          [innerHTML]="EmptyRowErrorMsg"
         ></span>
         <button
           type="button"
@@ -197,8 +197,8 @@
         </mat-table>
         <span
           class="ft-14-600 validation-message"
-          *ngIf="membersCountError"
-          [innerHTML]="membersCountError"
+          *ngIf="ExcludeEmptyRowError"
+          [innerHTML]="EmptyRowErrorMsg"
         ></span>
         <button
           type="button"
