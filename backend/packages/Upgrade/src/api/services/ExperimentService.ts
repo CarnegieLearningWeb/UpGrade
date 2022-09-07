@@ -13,7 +13,7 @@ import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { DecisionPoint, getExperimentPartitionID } from '../models/DecisionPoint';
+import { DecisionPoint } from '../models/DecisionPoint';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
@@ -301,6 +301,7 @@ export class ExperimentService {
       previousState: oldExperiment.state,
       newState: state,
     };
+    console.log("komal: ", data)
     if (scheduleDate) {
       data = { ...data, startOn: scheduleDate };
     }
@@ -754,14 +755,19 @@ export class ExperimentService {
         const decisionPointDocToSave =
           (decisionPoints &&
             decisionPoints.length > 0 &&
-            decisionPoints.map((decisionPoint) => {
+            decisionPoints.map(async (decisionPoint) => {
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
-              const joinedForId = getExperimentPartitionID(rest.site, rest.target);
-              if (rest.id && rest.id === joinedForId) {
+              const joinedForId = await this.decisionPointRepository.findOne({
+                where: {
+                  site: rest.site,
+                  target: rest.target,
+                }
+              });
+              if (rest.id && rest.id === joinedForId.id) {
                 rest.id = rest.id;
               } else {
-                rest.id = getExperimentPartitionID(rest.site, rest.target);
+                rest.id = joinedForId.id;
               }
               rest.experiment = experimentDoc;
               return rest;
@@ -807,8 +813,8 @@ export class ExperimentService {
         const toDeleteDecisionPoints = [];
         oldDecisionPoints.forEach(({ id, site, target }) => {
           if (
-            !decisionPointDocToSave.find((doc) => {
-              return doc.id === id && doc.site === site && doc.target === target;
+            !decisionPointDocToSave.find(async (doc) => {
+              return (await doc).id === id && (await doc).site === site && (await doc).target === target;
             })
           ) {
             toDeleteDecisionPoints.push(this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager));
@@ -848,7 +854,7 @@ export class ExperimentService {
             ) as any,
             Promise.all(
               decisionPointDocToSave.map(async (decisionPointDoc) => {
-                return this.decisionPointRepository.upsertDecisionPoint(decisionPointDoc, transactionalEntityManager);
+                return this.decisionPointRepository.upsertDecisionPoint(await decisionPointDoc, transactionalEntityManager);
               })
             ) as any,
             Promise.all(
@@ -1003,6 +1009,7 @@ export class ExperimentService {
   }
 
   private async addExperimentInDB(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<Experiment> {
+    console.log("pratik")
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1116,11 +1123,11 @@ export class ExperimentService {
         partitions &&
         partitions.length > 0 &&
         partitions.map((decisionPoint) => {
-          decisionPoint.id = getExperimentPartitionID(decisionPoint.site, decisionPoint.target);
+          decisionPoint.id = decisionPoint.id || uuid();
           decisionPoint.experiment = experimentDoc;
           return decisionPoint;
         });
-
+      console.log("nirav1: ", decisionPointDocsToSave);
       // creating segmentInclude doc
       let includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
@@ -1165,6 +1172,8 @@ export class ExperimentService {
       let decisionPointDocs: DecisionPoint[];
       let queryDocs: any;
       try {
+
+        console.log("nirav2: ", decisionPointDocsToSave);
         [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
@@ -1279,7 +1288,6 @@ export class ExperimentService {
         experiment.partitions &&
         experiment.partitions.length > 0 &&
         experiment.partitions.map((decisionPoint) => {
-          decisionPoint.id = getExperimentPartitionID(decisionPoint.site, decisionPoint.target);
           decisionPoint.experiment = experiment as any;
           return decisionPoint;
         });

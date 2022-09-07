@@ -16,7 +16,6 @@ import {
   EXCLUSION_CODE,
   MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
-import { getExperimentPartitionID } from '../models/DecisionPoint';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -33,7 +32,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentService } from './ExperimentService';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
-import { MonitoredDecisionPoint, getMonitoredDecisionPointId } from '../models/MonitoredDecisionPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from './ErrorService';
@@ -104,11 +103,12 @@ export class ExperimentAssignmentService {
   ) {}
   public async markExperimentPoint(
     userId: string,
-    experimentPoint: string,
+    site: string,
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
-    experimentId?: string
+    target?: string,
+    experimentID?: string
   ): Promise<MonitoredDecisionPoint> {
     // find working group for user
     const { logger, userDoc } = requestContext;
@@ -125,14 +125,27 @@ export class ExperimentAssignmentService {
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
     // TODO delete this after x-prize competitionTODO
-    condition = replaceAlternateConditionWithValidCondition(experimentPoint, experimentId, condition, userDoc);
+    condition = replaceAlternateConditionWithValidCondition(site, target, condition, userDoc);
+
+    // TODO: search decision point in experiment ID:
+
+
+    // TODO: return error when its a shared DP and experiment ID is not there in params
+
 
     const { workingGroup } = userDoc;
 
-    const decisionPoint = getExperimentPartitionID(experimentPoint, experimentId);
-    const experimentDecisionPoint = await this.decisionPointRepository.findOne({
+    const decisionPointId = await this.decisionPointRepository.findOne({
       where: {
-        id: decisionPoint,
+        site: site,
+        target: target,
+      }
+    });
+    console.log("decisionPointId: ", decisionPointId)
+    
+    const experimentDecisionPoint = await this.decisionPointRepository.find({
+      where: {
+        id: decisionPointId.id,
       },
       relations: [
         'experiment',
@@ -146,16 +159,21 @@ export class ExperimentAssignmentService {
         'experiment.experimentSegmentExclusion.segment.subSegments'
       ],
     });
-
+    console.log("experimentDecisionPoint: ", experimentDecisionPoint);
     logger.info({
-      message: `markExperimentPoint: Experiment Name: ${experimentId}, Experiment Point: ${experimentPoint} for User: ${userId}`,
+      message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
 
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
-      id: getMonitoredDecisionPointId(decisionPoint, userDoc.id),
+      where: {
+        site: site,
+        target: target,
+        user: userId,
+      }
     });
+
     if (experimentDecisionPoint) {
-      const { experiment } = experimentDecisionPoint;
+      const { experiment } = experimentDecisionPoint[0];
       const { conditions } = experiment;
 
       const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
@@ -177,7 +195,7 @@ export class ExperimentAssignmentService {
             where: {
               user: { id: userDoc.id },
               experiment: { id: experiment.id },
-              partition: { id: decisionPoint },
+              partition: { id: decisionPointId.id },
             },
           }),
           // query individual exclusion for user
@@ -203,6 +221,7 @@ export class ExperimentAssignmentService {
         ]);
       } catch (error) {
         const err: any = error;
+        console.log("komal1")
         logger.error(err);
         throw err;
       }
@@ -214,8 +233,8 @@ export class ExperimentAssignmentService {
       ) {
         await this.updateEnrollmentExclusion(
           userDoc,
-          experimentDecisionPoint.experiment,
-          experimentDecisionPoint,
+          experimentDecisionPoint[0].experiment,
+          experimentDecisionPoint[0],
           {
             individualEnrollment: individualEnrollments,
             individualExclusion: individualExclusions,
@@ -231,12 +250,16 @@ export class ExperimentAssignmentService {
       }
     }
 
+    // TODO: uncomment below
     // adding in monitored experiment point table
     if (!monitoredDocument) {
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
+        id: uuid(),
+        experimentId: experimentID,
+        condition: condition,
         user: userDoc,
-        condition,
-        decisionPoint,
+        site: site,
+        target: target,
       });
     }
 
@@ -538,9 +561,9 @@ export class ExperimentAssignmentService {
 
   public async clientFailedExperimentPoint(
     reason: string,
-    experimentPoint: string,
+    site: string,
     userId: string,
-    experimentId: string,
+    target: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
@@ -563,8 +586,8 @@ export class ExperimentAssignmentService {
 
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({
-      experimentPoint,
-      experimentId,
+      site,
+      target,
       userId: userDoc.id,
       reason,
     });
@@ -810,16 +833,30 @@ export class ExperimentAssignmentService {
     });
 
     // get the monitored document for all the decisionPoints in the experiment
-    const experimentDecisionPointIds = decisionPoints.map((decisionPoint) => {
-      const experimentId = decisionPoint.target;
-      const experimentPoint = decisionPoint.site;
-      return getExperimentPartitionID(experimentPoint, experimentId);
+    const experimentDecisionPointIds = decisionPoints.map(async (decisionPoint) => {
+      const target = decisionPoint.target;
+      const site = decisionPoint.site;
+      const decisionPointId = await this.decisionPointRepository.findOne({
+        where: {
+          site: site,
+          target: target,
+        }
+      });
+      return decisionPointId;
     });
+
+    console.log("experimentDecisionPointIds: ", experimentDecisionPointIds);
 
     const monitoredDocumentIds = [];
     individualAssignments.forEach((individualAssignment) => {
-      experimentDecisionPointIds.forEach((experimentDecisionPointId) => {
-        monitoredDocumentIds.push(getMonitoredDecisionPointId(experimentDecisionPointId, individualAssignment.user.id));
+      experimentDecisionPointIds.forEach(async (experimentDecisionPointId) => {
+        monitoredDocumentIds.push(await this.monitoredDecisionPointRepository.findOne({
+          where: {
+            site: (await experimentDecisionPointId).site,
+            target: (await experimentDecisionPointId).target,
+            user: individualAssignment.user.id
+          }
+        }));
       });
     });
 

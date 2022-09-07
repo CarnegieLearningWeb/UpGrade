@@ -1,3 +1,4 @@
+import { IsNotEmpty } from 'class-validator';
 import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany, Index } from 'typeorm';
 import { BaseModel } from './base/BaseModel';
 import { ExperimentUser } from './ExperimentUser';
@@ -5,12 +6,22 @@ import { MonitoredDecisionPointLog } from './MonitoredDecisionPointLog';
 
 @Entity()
 export class MonitoredDecisionPoint extends BaseModel {
-  @PrimaryColumn()
+  @PrimaryColumn('uuid')
   public id: string;
 
-  @Index()
+  // @Index()
   @Column()
-  public decisionPoint: string;
+  @IsNotEmpty()
+  public site: string;
+
+  // @Index()
+  @Column({ nullable: true })
+  public target: string;
+
+  @Column({
+    nullable: true,
+  })
+  public experimentId: string;
 
   @Column({
     nullable: true,
@@ -25,6 +36,3 @@ export class MonitoredDecisionPoint extends BaseModel {
   public monitoredPointLogs: MonitoredDecisionPointLog[];
 }
 
-export function getMonitoredDecisionPointId(decisionPoint: string, userId: string): string {
-  return `${decisionPoint}_${userId}`;
-}

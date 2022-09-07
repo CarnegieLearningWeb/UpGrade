@@ -8,7 +8,7 @@ export class ExperimentCondition extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 
-  @Column('char', { length: '2', unique: true })
+  @Column('char', { length: '2', unique: false })
   @IsAlphanumeric()
   @IsNotEmpty()
   public twoCharacterId: string;

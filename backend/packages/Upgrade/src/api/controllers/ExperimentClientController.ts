@@ -348,7 +348,8 @@ export class ExperimentClientController {
         logger: request.logger,
         userDoc: experimentUserDoc,
       },
-      experiment.partitionId
+      experiment.partitionId,
+      experiment.experimentId,
     );
   }
 
