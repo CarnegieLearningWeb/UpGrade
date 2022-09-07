@@ -169,8 +169,17 @@ export class ExperimentService {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
+    let newConditionId;
+    let newCondition;
     experiment.conditions.forEach((condition, index) => {
-      const newCondition = { ...condition, order: index + 1 };
+      newConditionId = uuid();
+      // proper reference for post experiment rule condition:
+      if (experiment.postExperimentRule === 'assign') {
+        if (experiment.revertTo === condition.id) {
+          experiment.revertTo = newConditionId;
+        }
+      }
+      newCondition = { ...condition, id: newConditionId, order: index + 1 };
       experiment.conditions[index] = newCondition;
     });
 
