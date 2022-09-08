@@ -141,7 +141,6 @@ export class ExperimentAssignmentService {
         target: target,
       }
     });
-    console.log("decisionPointId: ", decisionPointId)
     
     const experimentDecisionPoint = await this.decisionPointRepository.find({
       where: {
@@ -159,7 +158,6 @@ export class ExperimentAssignmentService {
         'experiment.experimentSegmentExclusion.segment.subSegments'
       ],
     });
-    console.log("experimentDecisionPoint: ", experimentDecisionPoint);
     logger.info({
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
@@ -221,7 +219,6 @@ export class ExperimentAssignmentService {
         ]);
       } catch (error) {
         const err: any = error;
-        console.log("komal1")
         logger.error(err);
         throw err;
       }
@@ -844,8 +841,6 @@ export class ExperimentAssignmentService {
       });
       return decisionPointId;
     });
-
-    console.log("experimentDecisionPointIds: ", experimentDecisionPointIds);
 
     const monitoredDocumentIds = [];
     individualAssignments.forEach((individualAssignment) => {

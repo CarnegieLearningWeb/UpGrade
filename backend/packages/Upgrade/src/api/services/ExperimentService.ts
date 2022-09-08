@@ -301,7 +301,6 @@ export class ExperimentService {
       previousState: oldExperiment.state,
       newState: state,
     };
-    console.log("komal: ", data)
     if (scheduleDate) {
       data = { ...data, startOn: scheduleDate };
     }
@@ -1009,7 +1008,6 @@ export class ExperimentService {
   }
 
   private async addExperimentInDB(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<Experiment> {
-    console.log("pratik")
     const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
       experiment.id = experiment.id || uuid();
       experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
@@ -1127,7 +1125,6 @@ export class ExperimentService {
           decisionPoint.experiment = experimentDoc;
           return decisionPoint;
         });
-      console.log("nirav1: ", decisionPointDocsToSave);
       // creating segmentInclude doc
       let includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
@@ -1172,8 +1169,6 @@ export class ExperimentService {
       let decisionPointDocs: DecisionPoint[];
       let queryDocs: any;
       try {
-
-        console.log("nirav2: ", decisionPointDocsToSave);
         [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, queryDocs] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
