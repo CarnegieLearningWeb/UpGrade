@@ -36,7 +36,7 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
         { conditionAliasDoc: conditionAliasDoc }, errorMsg);
         throw errorMsgString;
       });
-    return result.raw;
+    return result.raw || [];
   }
 
   public async upsertConditionAlias(
@@ -64,19 +64,7 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
         throw errorMsgString;
       });
 
-    return result.raw[0];
-  }
-
-  public async findAliasName(conditionId: string, partitionId: string): Promise<Pick<ConditionAlias, 'aliasName'> | null> {
-    return this.createQueryBuilder('conditionAlias')
-      .select(['conditionAlias.aliasName'])
-      .where('"conditionAlias"."parentConditionId" =:conditionId AND conditionAlias.decisionPointId =:partitionId',
-        { conditionId, partitionId })
-      .getOne()
-      .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);
-        throw errorMsgString;
-      });
+    return result.raw[0] || [];
   }
 
   public async deleteConditionAlias(id: string, logger: UpgradeLogger): Promise<ConditionAlias> {

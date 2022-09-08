@@ -905,6 +905,11 @@ export class ExperimentService {
           return { ...decisionPointDoc, experiment: decisionPointDoc.experiment };
         });
 
+        const conditionAliasDocToReturn = await transactionalEntityManager.getRepository(ConditionAlias).find({
+          relations: ['parentCondition', 'decisionPoint'],
+          where: { id :In(conditionAliasDocs.map(conditionAlias => conditionAlias.id)) }
+        });
+
         const queryDocToReturn =
           !!queryDocs &&
           queryDocs.map((queryDoc, index) => {
@@ -916,7 +921,7 @@ export class ExperimentService {
           ...experimentDoc,
           conditions: conditionDocToReturn as any,
           partitions: decisionPointDocToReturn as any,
-          conditionAliases: conditionAliasDocs as any,
+          conditionAliases: conditionAliasDocToReturn as any,
           queries: (queryDocToReturn as any) || []
         };
 
@@ -1235,6 +1240,11 @@ export class ExperimentService {
         return restDoc;
       });
 
+      const conditionAliasDocToReturn = await transactionalEntityManager.getRepository(ConditionAlias).find({
+        relations: ['parentCondition', 'decisionPoint'],
+        where: { id :In(conditionAliasDoc.map(conditionAlias => conditionAlias.id)) }
+      });
+
       let queryDocToReturn = [];
       if (queryDocs.length > 0) {
         queryDocToReturn = queryDocsToSave;
@@ -1246,7 +1256,7 @@ export class ExperimentService {
         partitions: decisionPointDocToReturn as any,
         experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
         experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
-        conditionAliases: conditionAliasDoc as any,
+        conditionAliases: conditionAliasDocToReturn as any,
         queries: (queryDocToReturn as any) || [],
       };
       return newExperiment;
