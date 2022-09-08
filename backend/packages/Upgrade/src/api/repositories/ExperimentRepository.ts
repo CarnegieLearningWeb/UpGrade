@@ -23,6 +23,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
+      .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
@@ -56,6 +58,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
+      .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
       .where(
         new Brackets((qb) => {
           qb.where(
@@ -91,6 +95,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('queries.metric', 'metric')
+      .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
+      .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
       .where(
         new Brackets((qb) => {
           qb.where(

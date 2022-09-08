@@ -12,6 +12,7 @@ import org.upgradeplatform.responsebeans.ErrorResponse;
 import org.upgradeplatform.responsebeans.ExperimentsResponse;
 import org.upgradeplatform.responsebeans.InitializeUser;
 import org.upgradeplatform.responsebeans.MarkExperimentPoint;
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 
 public class Main {
 	public static void main(String[] args) throws InterruptedException, ExecutionException
@@ -20,7 +21,7 @@ public class Main {
 		final String userId = UUID.randomUUID().toString();
 		final String experimentPoint = "SelectSection";
 
-		String sectionId = args.length > 0 ? args[0] : "test_dummy_variants_nonmastery";
+		String sectionId = args.length > 0 ? args[0] : "absolute_value_plot_equality";
 
 		try(ExperimentClient experimentClient = new ExperimentClient(userId, "BearerToken", baseUrl, Collections.emptyMap())){
 		    CompletableFuture<String> result = new CompletableFuture<>();
@@ -34,7 +35,7 @@ public class Main {
                         public void onSuccess(ExperimentsResponse expResult){
                             AssignedCondition condition = expResult.getAssignedCondition();
                             String code = condition == null ? null : condition.getConditionCode();
-                            experimentClient.markExperimentPoint(experimentPoint, sectionId, code, new ResponseCallback<MarkExperimentPoint>(){
+                            experimentClient.markExperimentPoint(experimentPoint, sectionId, code, MarkedDecisionPointStatus.CONDITION_APPLIED, new ResponseCallback<MarkExperimentPoint>(){
                                 @Override
                                 public void onSuccess(@NonNull MarkExperimentPoint markResult){
                                     result.complete("marked " + code + ": " + markResult.toString());
