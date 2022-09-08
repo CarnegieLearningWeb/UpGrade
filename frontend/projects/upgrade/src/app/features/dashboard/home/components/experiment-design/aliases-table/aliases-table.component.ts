@@ -57,7 +57,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     ]).pipe(
       filter(([ conditions, input ]) => !!conditions && !!this.experimentUtilityService.isValidString(input)),
       map(([ conditions, input ]) => {
-        return conditions.filter(condition => condition.toLowerCase().includes(input.toLowerCase()));
+        return conditions.filter((condition: string) => condition.toLowerCase().includes(input.toLowerCase()));
       })
     ).subscribe(this.filteredContextMetaDataConditions$);
   }
@@ -105,7 +105,10 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
         let existingAlias: ExperimentConditionAlias = null;
 
         if (useExistingAliasData) {
-          existingAlias = conditionAliases.find(alias => (alias as any).decisionPointId === decisionPoint.target + '_' + decisionPoint.site);
+          existingAlias = conditionAliases.find(alias => {
+            return ((alias.decisionPoint as ExperimentPartition)?.id === decisionPoint.target + '_' + decisionPoint.site) && 
+              (alias.parentCondition as ExperimentCondition).conditionCode === condition.conditionCode;
+          })
         }
 
         aliasTableData.push({

@@ -188,6 +188,14 @@ export interface Experiment {
 export interface ExperimentConditionAlias {
   id?: string;
   aliasName: string;
+  parentCondition: ExperimentCondition;
+  decisionPoint: ExperimentPartition;
+}
+
+// in PUT/POST request, parentCondition and decisionPoint are id strings
+export interface ExperimentConditionAliasRequestObject {
+  id?: string;
+  aliasName: string;
   parentCondition: string;
   decisionPoint: string;
 }

@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -527,7 +527,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 );
             }
           );
-          experimentDesignFormData.conditionAliases = this.createExperimentAliasData(
+          experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
             this.aliasTableData, 
             experimentDesignFormData.conditions, 
             experimentDesignFormData.partitions
@@ -542,12 +542,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  createExperimentAliasData(
+  createExperimentConditionAliasRequestObject(
     aliases: ExperimentAliasTableRow[],
     conditions: ExperimentCondition[],
     decisionPoints: ExperimentPartition[]
-  ): ExperimentConditionAlias[] {
-    const conditionAliases: ExperimentConditionAlias[] = [];
+  ): ExperimentConditionAliasRequestObject[] {
+    const conditionAliases: ExperimentConditionAliasRequestObject[] = [];
 
     aliases.forEach((aliasRowData: ExperimentAliasTableRow ) => {
       // if no custom alias, return early, do not add to array to send to backend
