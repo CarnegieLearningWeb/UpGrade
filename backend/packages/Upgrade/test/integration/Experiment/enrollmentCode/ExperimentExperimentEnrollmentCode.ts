@@ -2,7 +2,7 @@
 // import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 // import { UserService } from '../../../../src/api/services/UserService';
 // import { systemUser } from '../../mockData/user/index';
-// import { individualAssignmentExperimentConsistencyRuleExperiemnt } from '../../mockData/experiment/index';
+// import { individualAssignmentExperimentConsistencyRuleExperiment } from '../../mockData/experiment/index';
 // import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 // import {
 //   checkMarkExperimentPointForUser,
@@ -20,7 +20,7 @@
 //   const user = await userService.upsertUser(systemUser as any, new UpgradeLogger());
 
 //   // experiment object
-//   const experimentObject = individualAssignmentExperimentConsistencyRuleExperiemnt;
+//   const experimentObject = individualAssignmentExperimentConsistencyRuleExperiment;
 
 //   // create experiment
 //   await experimentService.create(experimentObject as any, user, new UpgradeLogger());
