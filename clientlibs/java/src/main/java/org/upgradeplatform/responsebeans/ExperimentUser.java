@@ -12,15 +12,15 @@ public class ExperimentUser
 	private String id;
 	private Map<String, List<String>> group;
 	private Map<String, String> workingGroup;
-	private String originalUser;
+	private String requestedUserId;
 	public ExperimentUser() {}
 	
-	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup, String originalUser) {
+	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup, String requestedUserId) {
 		super();
 		this.id = id;
 		this.group = group;
 		this.workingGroup = workingGroup;
-		this.originalUser = originalUser;
+		this.requestedUserId = requestedUserId;
 	}
 	
 	public ExperimentUser(String id, Map<String, List<String>> group, Map<String, String> workingGroup ) {
@@ -67,12 +67,12 @@ public class ExperimentUser
 		this.workingGroup = workingGroup;
 	}
 
-	public String getOriginalUser() {
-		return originalUser;
+	public String getRequestedUserId() {
+		return requestedUserId;
 	}
 
-	public void setOriginalUser(String originalUser) {
-		this.originalUser = originalUser;
+	public void setOriginalUser(String requestedUserId) {
+		this.requestedUserId = requestedUserId;
 	}
 	
 
