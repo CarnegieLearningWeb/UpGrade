@@ -61,7 +61,7 @@ import { QueryCRUD } from './Experiment/query';
 import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssigmentWeight';
-import { ConditionOrder, PartitionOrder } from './Experiment/conditionAndPartition';
+import { ConditionOrder, PartitionOrder, ConditionAlias, EnrollmentWithConditionAlias } from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
 import {
   SegmentCreate,
@@ -476,6 +476,16 @@ describe('Integration Tests', () => {
 
   test('Enrollment of User of subSegment', async (done) => {
     await SubSegmentEnrollment();
+    done();
+  });
+
+  test('ConditionAliases', async (done) => {
+    await ConditionAlias();
+    done();
+  });
+
+  test('Enrollment With ConditionAliases', async (done) => {
+    await EnrollmentWithConditionAlias();
     done();
   });
   // test('Monitored Point for Export', async (done) => {

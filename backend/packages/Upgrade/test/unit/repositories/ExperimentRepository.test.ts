@@ -191,7 +191,7 @@ describe('ExperimentRepository Testing', () => {
                 ]
               }
 
-        selectMock.expects('leftJoinAndSelect').exactly(15).returns(selectQueryBuilder);
+        selectMock.expects('leftJoinAndSelect').exactly(17).returns(selectQueryBuilder);
         selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
         let res = await repo.findAllExperiments();
@@ -206,7 +206,7 @@ describe('ExperimentRepository Testing', () => {
         createQueryBuilderStub = sandbox.stub(ExperimentRepository.prototype, 
             'createQueryBuilder').returns(selectQueryBuilder);
 
-        selectMock.expects('leftJoinAndSelect').exactly(15).returns(selectQueryBuilder);
+        selectMock.expects('leftJoinAndSelect').exactly(17).returns(selectQueryBuilder);
         selectMock.expects('getMany').once().returns(Promise.reject(err));
 
         expect(async() => {await repo.findAllExperiments()}).rejects.toThrow(err);
@@ -266,7 +266,7 @@ describe('ExperimentRepository Testing', () => {
                 ]
               }
 
-        selectMock.expects('leftJoinAndSelect').exactly(14).returns(selectQueryBuilder);
+        selectMock.expects('leftJoinAndSelect').exactly(16).returns(selectQueryBuilder);
         selectMock.expects('where').once().returns(selectQueryBuilder);
         selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
@@ -283,7 +283,7 @@ describe('ExperimentRepository Testing', () => {
         createQueryBuilderStub = sandbox.stub(ExperimentRepository.prototype, 
             'createQueryBuilder').returns(selectQueryBuilder);
 
-        selectMock.expects('leftJoinAndSelect').exactly(14).returns(selectQueryBuilder);
+        selectMock.expects('leftJoinAndSelect').exactly(16).returns(selectQueryBuilder);
         selectMock.expects('where').once().returns(selectQueryBuilder);
         selectMock.expects('getMany').once().returns(Promise.reject(err));
 
@@ -306,7 +306,7 @@ describe('ExperimentRepository Testing', () => {
                 ]
               }
 
-        selectMock.expects('leftJoinAndSelect').exactly(14).returns(selectQueryBuilder);
+        selectMock.expects('leftJoinAndSelect').exactly(16).returns(selectQueryBuilder);
         selectMock.expects('where').once().returns(selectQueryBuilder);
         selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
@@ -323,7 +323,7 @@ describe('ExperimentRepository Testing', () => {
         createQueryBuilderStub = sandbox.stub(ExperimentRepository.prototype, 
             'createQueryBuilder').returns(selectQueryBuilder);
 
-        selectMock.expects('leftJoinAndSelect').exactly(14).returns(selectQueryBuilder);
+        selectMock.expects('leftJoinAndSelect').exactly(16).returns(selectQueryBuilder);
         selectMock.expects('where').once().returns(selectQueryBuilder);
         selectMock.expects('getMany').once().returns(Promise.reject(err));
 
