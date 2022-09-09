@@ -12,6 +12,11 @@
           autocomplete="off"
           cdkFocusInitial
         />
+        <mat-error class = "margin-top-5-px"
+            *ngIf="overviewForm.controls.experimentName.hasError('required')"
+          >
+            {{ 'home.new-experiment.overview.name.error.text' | translate }}
+          </mat-error>
       </mat-form-field>
 
       <mat-form-field class="ft-14-600 description">
@@ -33,7 +38,7 @@
             {{ context }}
           </mat-option>
         </mat-select>
-        <mat-error
+        <mat-error class = "margin-top-5-px"
           *ngIf="overviewForm.controls.context.hasError('required')"
         >
           {{ 'home.new-experiment.overview.context.error.text' | translate }}
@@ -51,7 +56,7 @@
               {{ unitOfAssignment.value | titlecase }}
             </mat-option>
           </mat-select>
-          <mat-error
+          <mat-error class = "margin-top-5-px"
             *ngIf="overviewForm.controls.unitOfAssignment.hasError('required')"
           >
             {{ 'home.new-experiment.overview.unit-of-assignment.error.text' | translate }}
@@ -79,7 +84,7 @@
             {{ consistencyRule.value | titlecase }}
           </mat-option>
         </mat-select>
-        <mat-error
+        <mat-error class = "margin-top-5-px"
           *ngIf="overviewForm.controls.consistencyRule.hasError('required')"
         >
           {{ 'home.new-experiment.overview.consistency-rule.error.text' | translate }}
