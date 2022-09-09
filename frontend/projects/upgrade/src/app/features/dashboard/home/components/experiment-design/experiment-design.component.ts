@@ -299,11 +299,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     partitions.forEach((partition, index) => {
-      const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
-      if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
-        alreadyExistedPartitions.indexOf(partition.target ? partition.site + ' and ' + partition.target : partition.site) === -1) {
-        alreadyExistedPartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
-      }
       if (partitions.find((value, partitionIndex) =>
         value.site === partition.site &&
         (value.target || '') === (partition.target || '') && // To match null and empty string, add '' as default value. target as optional and hence it's value can be null.
@@ -314,11 +309,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     // Partition Points error messages
-    if (alreadyExistedPartitions.length === 1) {
-      this.partitionPointErrors.push(alreadyExistedPartitions[0] + this.partitionErrorMessages[0]);
-    } else if (alreadyExistedPartitions.length > 1) {
-      this.partitionPointErrors.push(alreadyExistedPartitions.join(', ') + this.partitionErrorMessages[1]);
-    }
     if (duplicatePartitions.length === 1) {
       this.partitionPointErrors.push(duplicatePartitions[0] + this.partitionErrorMessages[2]);
     } else if (duplicatePartitions.length > 1) {

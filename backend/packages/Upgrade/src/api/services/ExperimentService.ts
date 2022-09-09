@@ -528,7 +528,7 @@ export class ExperimentService {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
         relations: ['user'],
-        where: { decisionPoint: In(subExperiments) },
+        where: { id: In(subExperiments) },
       });
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       const previewUsersIds = previewUsers.map((user) => user.id);
