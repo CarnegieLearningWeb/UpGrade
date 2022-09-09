@@ -176,6 +176,7 @@ const reducer = createReducer(
   on(
     experimentsAction.actionFetchContextMetaData,
     experimentsAction.actionFetchContextMetaDataFailure,
+    experimentsAction.actionSetIsLoadingContextMetaData,
     (state, { isLoadingContextMetaData }) => ({ ...state, isLoadingContextMetaData })
   ),
   on(

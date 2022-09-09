@@ -209,6 +209,11 @@ export const actionFetchContextMetaData = createAction(
   props<{ isLoadingContextMetaData: boolean }>()
 );
 
+export const actionSetIsLoadingContextMetaData = createAction(
+  '[Experiment] Set IsLoadingContextMetaData',
+  props<{ isLoadingContextMetaData: boolean }>()
+)
+
 export const actionFetchContextMetaDataSuccess = createAction(
   '[Experiment] Fetch contextMetaData Success',
   props<{ contextMetaData: IContextMetaData, isLoadingContextMetaData: boolean }>()

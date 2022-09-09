@@ -122,7 +122,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
       // populate values in form to update experiment if experiment data is available
       if (this.experimentInfo) {
-        // debugger;
         if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
           this.overviewForm.disable();
         }
