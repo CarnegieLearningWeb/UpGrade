@@ -124,6 +124,16 @@ export const selectContextMetaData = createSelector(
   (state) => state.contextMetaData
 );
 
+export const selectCurrentContextMetaData = createSelector(
+  selectExperimentState,
+  (state) => state.currentUserSelectedContext
+)
+
+export const selectCurrentContextMetaDataConditions = createSelector(
+  selectExperimentState,
+  (state) => state.currentUserSelectedContext?.CONDITIONS || []
+)
+
 export const selectGroupAssignmentStatus = createSelector(
   selectExperimentState,
   (state, { experimentId }) => {
@@ -136,4 +146,14 @@ export const selectGroupAssignmentStatus = createSelector(
 export const selectIsPollingExperimentDetailStats = createSelector(
   selectExperimentState,
   (state) => state.isPollingExperimentDetailStats
+)
+
+export const selectIsAliasTableEditMode = createSelector(
+  selectExperimentState,
+  (state) => state.isAliasTableEditMode
+)
+
+export const selectAliasTableEditIndex = createSelector(
+  selectExperimentState,
+  (state) => state.aliasTableEditIndex
 )

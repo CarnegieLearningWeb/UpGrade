@@ -12,13 +12,14 @@ import {
   OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE } from '../../../../../core/experiments/store/experiments.model';
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
-import { filter, map, startWith } from 'rxjs/operators';
+import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
+import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 
 @Component({
   selector: 'home-experiment-design',
@@ -30,7 +31,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
-  @Input() animationCompleteStepperIndex: Number;
+  @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
@@ -61,15 +62,26 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   filteredConditionCodes$: Observable<string[]>[] = [];
   filteredExpPoints$: Observable<string[]>[] = [];
   filteredExpIds$: Observable<string[]>[] = [];
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData = {
+    contextMetadata: {}
+  };
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
   equalWeightFlag: boolean = true;
+
+  // Alias Table details
+  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[],[]]);
+  designDataSub: Subscription;
+  aliasTableData: ExperimentAliasTableRow[] = [];
+  isAliasTableEditMode$: Observable<boolean>;
+  isAliasTableDisplayed: boolean = false;
+  isAliasBtnDisabled: boolean = true;
   
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
+    private experimentUtilityService: ExperimentUtilityService,
     private translate: TranslateService
   ) {
     this.partitionErrorMessagesSub = this.translate.get([
@@ -124,6 +136,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         conditions: this._formBuilder.array([this.addConditions()]),
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
+    this.createDesignDataSubject();
+    this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -185,6 +199,22 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         startWith<string>(''),
         map(target => this.filterExpPointsAndIds(target, 'expIds'))
       );
+  }
+
+  createDesignDataSubject(): void {
+    this.designDataSub = combineLatest([
+      this.experimentDesignForm.get('partitions').valueChanges,
+      this.experimentDesignForm.get('conditions').valueChanges,
+    ]).pipe(
+      pairwise(),
+      filter(designData => this.experimentUtilityService.filterForUnchangedDesignData(designData)),
+      map(([_, current ]) => current),
+      filter((designData) => this.experimentUtilityService.validDesignDataFilter(designData))
+    ).subscribe(this.designData$);
+  }
+
+  handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
+    this.aliasTableData = [...aliasTableData];
   }
 
   private filterConditionCodes(value: string): string[] {
@@ -435,6 +465,18 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return partition;
   }
 
+  isFormValid() {
+    return !this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null;
+  }
+
+  validateForm() {
+    this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
+    this.validateConditionCount((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
+    this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
+    this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
+    this.validateHasAssignmentWeightsNegative((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
+  }
+ 
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
@@ -450,11 +492,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           });
           break;
         }
-        this.validateConditionCodes(this.experimentDesignForm.get('conditions').value);
-        this.validateConditionCount((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
-        this.validatePartitionCount(this.experimentDesignForm.get('partitions').value);
-        this.validateHasConditionCodeDefault(this.experimentDesignForm.get('conditions').value);
-        this.validateHasAssignmentWeightsNegative((this.experimentDesignForm.get('conditions') as FormArray).getRawValue());
+        this.validateForm()
         
         // TODO: Uncomment to validate partitions with predefined site and target
         // this.validatePartitions();
@@ -462,10 +500,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         // enabling Assignment weight for form to validate
         if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && !this.conditionCodeErrors.length && !this.partitionCountError) {
           (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach(control => {
-            control.get('assignmentWeight').enable();
+            control.get('assignmentWeight').enable({ emitEvent: false });
           });
         }
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && this.experimentDesignForm.valid && !this.conditionCodeErrors.length && this.partitionCountError === null && this.conditionCountError === null) {
+        if (this.isFormValid()) {
           const experimentDesignFormData = this.experimentDesignForm.value;
           let order = 1;
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
@@ -489,6 +527,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
                 );
             }
           );
+          experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
+            this.aliasTableData, 
+            experimentDesignFormData.conditions, 
+            experimentDesignFormData.partitions
+          );
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: experimentDesignFormData,
@@ -497,6 +540,44 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
     }
+  }
+
+  createExperimentConditionAliasRequestObject(
+    aliases: ExperimentAliasTableRow[],
+    conditions: ExperimentCondition[],
+    decisionPoints: ExperimentPartition[]
+  ): ExperimentConditionAliasRequestObject[] {
+    const conditionAliases: ExperimentConditionAliasRequestObject[] = [];
+
+    aliases.forEach((aliasRowData: ExperimentAliasTableRow ) => {
+      // if no custom alias, return early, do not add to array to send to backend
+      if (aliasRowData.alias === aliasRowData.condition) {
+        return;
+      }
+
+      const parentCondition = conditions.find((condition) => {
+        return condition.conditionCode === aliasRowData.condition;
+      })
+
+      const decisionPoint = decisionPoints.find((decisionPoint) => {
+        return decisionPoint.target + '_' + decisionPoint.site === aliasRowData.target + '_' + aliasRowData.site;
+      })
+
+      // need some error-handling in UI to prevent creation if aliases can't be created...
+      if (!parentCondition || !decisionPoint) {
+        console.log('cannot create alias data, cannot find id of parent condition/decisionpoint')
+        return;
+      }
+
+      conditionAliases.push({
+        id: aliasRowData.id || uuidv4(),
+        aliasName: aliasRowData.alias,
+        parentCondition: parentCondition.id,
+        decisionPoint: decisionPoint.target + '_' + decisionPoint.site
+      });
+    })
+
+    return conditionAliases;
   }
   
   applyEqualWeight() {
@@ -529,6 +610,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
+  toggleAliasTable(): void {
+    this.isAliasTableDisplayed = !this.isAliasTableDisplayed;
+  }
+
   get condition(): FormArray {
     return this.experimentDesignForm.get('conditions') as FormArray;
   }
@@ -549,5 +634,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.allPartitionsSub.unsubscribe();
     this.partitionErrorMessagesSub.unsubscribe();
     this.contextMetaDataSub.unsubscribe();
+    this.designDataSub.unsubscribe();
   }
 }
