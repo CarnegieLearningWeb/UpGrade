@@ -124,14 +124,24 @@ export class ExperimentAssignmentService {
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
-    // TODO delete this after x-prize competitionTODO
+    // TODO delete this after x-prize competition
     condition = replaceAlternateConditionWithValidCondition(site, target, condition, userDoc);
 
-    // TODO: search decision point in experiment ID:
-
-
-    // TODO: return error when its a shared DP and experiment ID is not there in params
-
+    // search decision points:
+    const experiments = await this.decisionPointRepository.find({
+      where: {
+        site: site,
+        target: target,
+      }
+    });
+    // return error when its a shared DP and experiment ID is not there in params
+    if (!experimentID && experiments.length > 1) {
+      const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
+      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).httpCode = 404;
+      logger.error(error);
+      throw error;
+    }
 
     const { workingGroup } = userDoc;
 
@@ -246,8 +256,6 @@ export class ExperimentAssignmentService {
         }
       }
     }
-
-    // TODO: uncomment below
     // adding in monitored experiment point table
     if (!monitoredDocument) {
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
@@ -432,11 +440,12 @@ export class ExperimentAssignmentService {
 
       // TODO delete map after x-prize competition
       const mapForAlternateCondition = assignAlternateCondition(userDoc);
-
-      return filteredExperiments
+      // select Random Experiment for assignment in case shared decision points:
+      const randomExperimentAssignment = [filteredExperiments[Math.floor(Math.random()*filteredExperiments.length)]];
+      return randomExperimentAssignment
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
-          const { state, logging, name } = experiment;
+          const { state, logging, name, id } = experiment;
           const decisionPoints = experiment.partitions.map((decisionPoint) => {
             const { target, site, twoCharacterId } = decisionPoint;
             const conditionAssigned = assignment;
@@ -444,7 +453,7 @@ export class ExperimentAssignmentService {
             if (logging || state === EXPERIMENT_STATE.PREVIEW) {
               // TODO add enrollment code here
               logger.info({
-                message: `getAllExperimentConditions: experiment: ${name}, user: ${userId}, condition: ${
+                message: `getAllExperimentConditions: Experiment: ${name}, User: ${userId}, Condition: ${
                   conditionAssigned ? conditionAssigned.conditionCode : null
                 }`,
               });
@@ -452,6 +461,7 @@ export class ExperimentAssignmentService {
             return {
               target,
               site,
+              experimentId: id,
               twoCharacterId,
               assignedCondition: conditionAssigned || {
                 conditionCode: null,
