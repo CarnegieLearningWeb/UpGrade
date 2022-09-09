@@ -409,8 +409,8 @@ export class ExperimentEffects {
       }),
       switchMap(() =>
         this.experimentDataService.fetchContextMetaData().pipe(
-          map((contextMetaData: IContextMetaData) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData })),
-          catchError(() => [experimentAction.actionFetchContextMetaDataFailure()])
+          map((contextMetaData: IContextMetaData) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData, isLoadingContextMetaData: false })),
+          catchError(() => [experimentAction.actionFetchContextMetaDataFailure({ isLoadingContextMetaData: false })])
         )
       )
     )

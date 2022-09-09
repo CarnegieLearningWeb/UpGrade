@@ -33,6 +33,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   contextMetaData: {
     contextMetadata: {}
   },
+  isLoadingContextMetaData: false,
   currentUserSelectedContext: null,
   isAliasTableEditMode: false,
   aliasTableEditIndex: null
@@ -173,8 +174,13 @@ const reducer = createReducer(
     (state, { allExperimentNames }) => ({ ...state, allExperimentNames })
   ),
   on(
-    experimentsAction.actionFetchContextMetaDataSuccess,
-    (state, { contextMetaData }) => ({ ...state, contextMetaData })
+    experimentsAction.actionFetchContextMetaData,
+    experimentsAction.actionFetchContextMetaDataFailure,
+    (state, { isLoadingContextMetaData }) => ({ ...state, isLoadingContextMetaData })
+  ),
+  on(
+    experimentsAction.actionFetchContextMetaDataSuccess, 
+    (state, { contextMetaData, isLoadingContextMetaData }) => ({ ...state, contextMetaData, isLoadingContextMetaData })
   ),
   on(
     experimentsAction.actionSetCurrentContext,
