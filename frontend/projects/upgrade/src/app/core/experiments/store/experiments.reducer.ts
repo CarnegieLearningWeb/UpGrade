@@ -1,4 +1,4 @@
-import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY } from './experiments.model';
+import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, IContextMetaData } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';
@@ -30,7 +30,12 @@ export const initialState: ExperimentState = adapter.getInitialState({
   isGraphInfoLoading: false,
   allPartitions: null,
   allExperimentNames: null,
-  contextMetaData: {}
+  contextMetaData: {
+    contextMetadata: {}
+  },
+  currentUserSelectedContext: null,
+  isAliasTableEditMode: false,
+  aliasTableEditIndex: null
 });
 
 const reducer = createReducer(
@@ -172,6 +177,15 @@ const reducer = createReducer(
     (state, { contextMetaData }) => ({ ...state, contextMetaData })
   ),
   on(
+    experimentsAction.actionSetCurrentContext,
+    (state, { context }) => {
+      return {
+        ...state,
+        currentUserSelectedContext: state.contextMetaData.contextMetadata[context]
+      }
+    }
+  ),
+  on(
     experimentsAction.actionFetchGroupAssignmentStatusSuccess,
     (state, { experiment }) => {
       return adapter.upsertOne(experiment, state);
@@ -225,6 +239,16 @@ const reducer = createReducer(
       }
     }
   ),
+  on(
+    experimentsAction.actionUpdateAliasTableEditMode,
+    (state, { isAliasTableEditMode, aliasTableEditIndex }) => {
+      return {
+        ...state,
+        isAliasTableEditMode,
+        aliasTableEditIndex
+      }
+    }
+  )
 );
 
 export function experimentsReducer(

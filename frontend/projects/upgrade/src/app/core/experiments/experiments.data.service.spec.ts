@@ -90,6 +90,7 @@ describe('ExperimentDataService', () => {
             logging: true,
             conditions: [],
             partitions: [],
+            conditionAliases: [],
             queries: [],
             stateTimeLogs: [],
             backendVersion: '1.0.0',

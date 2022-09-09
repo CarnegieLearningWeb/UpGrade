@@ -565,13 +565,17 @@ describe('ExperimentsReducer', () => {
         previousState.contextMetaData = null;
 
         const testAction: Action = actionFetchContextMetaDataSuccess({
-            contextMetaData: {}
+            contextMetaData: {
+                contextMetadata: null
+            }
         })
 
         const newState = experimentsReducer(previousState, testAction);
 
         expect(newState).not.toBe(previousState);
-        expect(newState.contextMetaData).toEqual({});
+        expect(newState.contextMetaData).toEqual({
+            contextMetadata: null
+        });
     })
 
     it('action "actionFetchExperimentDetailStat" should set loading to true', () => {

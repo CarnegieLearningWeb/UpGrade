@@ -54,6 +54,10 @@ export enum NewExperimentPaths {
   POST_EXPERIMENT_RULE = 'Post Experiment Rule'
 }
 
+export enum ExperimentDesignTypes {
+  SIMPLE = "Simple Experiment"
+}
+
 export interface NewExperimentDialogData {
   type: NewExperimentDialogEvents;
   formData?: any;
@@ -171,6 +175,7 @@ export interface Experiment {
   logging: boolean;
   conditions: ExperimentCondition[];
   partitions: ExperimentPartition[];
+  conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
   filterMode: FILTER_MODE,
@@ -178,6 +183,30 @@ export interface Experiment {
   experimentSegmentExclusion: segmentNew,
   groupSatisfied?: number;
   backendVersion: string;
+}
+
+export interface ExperimentConditionAlias {
+  id?: string;
+  aliasName: string;
+  parentCondition: ExperimentCondition;
+  decisionPoint: ExperimentPartition;
+}
+
+// in PUT/POST request, parentCondition and decisionPoint are id strings
+export interface ExperimentConditionAliasRequestObject {
+  id?: string;
+  aliasName: string;
+  parentCondition: string;
+  decisionPoint: string;
+}
+
+export interface ExperimentAliasTableRow {
+  id?: string;
+  site: string;
+  target: string;
+  condition: string;
+  alias: string;
+  isEditing: boolean;
 }
 
 export const NUMBER_OF_EXPERIMENTS = 20;
@@ -192,10 +221,13 @@ export interface ExperimentPaginationParams {
 export interface ISingleContextMetadata {
   EXP_IDS: string[],
   EXP_POINTS: string[],
-  GROUP_TYPES: string[]
+  GROUP_TYPES: string[],
+  CONDITIONS: string[]
 }
 export interface IContextMetaData {
-  [key: string]: ISingleContextMetadata[];
+  contextMetadata: {
+    [key: string]: ISingleContextMetadata;
+  }
 }
 
 export interface IExperimentGraphInfo {
@@ -227,10 +259,18 @@ export interface ExperimentState extends EntityState<Experiment> {
   isGraphInfoLoading: boolean;
   allPartitions: {};
   allExperimentNames: {};
-  contextMetaData: {};
+  contextMetaData: IContextMetaData;
+  currentUserSelectedContext: ISingleContextMetadata;
   updatedStat?: IExperimentEnrollmentDetailStats;
+  isAliasTableEditMode: boolean;
+  aliasTableEditIndex: number | null;
 }
 
 export interface State extends AppState {
   experiments: ExperimentState;
+}
+
+export interface TableEditModeDetails {
+  isEditMode: boolean,
+  rowIndex: number | null,
 }
