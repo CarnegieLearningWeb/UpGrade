@@ -42,6 +42,7 @@ export class LocalStorageService {
       contextMetaData: {
         contextMetadata: {}
       },
+      isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
       isAliasTableEditMode: false,
       aliasTableEditIndex: null

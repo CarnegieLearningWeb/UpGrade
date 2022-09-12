@@ -129,6 +129,11 @@ export const selectCurrentContextMetaData = createSelector(
   (state) => state.currentUserSelectedContext
 )
 
+export const selectIsLoadingContextMetaData = createSelector(
+  selectExperimentState,
+  (state) => state.isLoadingContextMetaData
+)
+
 export const selectCurrentContextMetaDataConditions = createSelector(
   selectExperimentState,
   (state) => state.currentUserSelectedContext?.CONDITIONS || []

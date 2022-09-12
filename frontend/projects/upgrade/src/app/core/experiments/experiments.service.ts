@@ -36,7 +36,8 @@ import {
   selectIsPollingExperimentDetailStats,
   selectIsAliasTableEditMode,
   selectAliasTableEditIndex,
-  selectCurrentContextMetaDataConditions
+  selectCurrentContextMetaDataConditions,
+  selectIsLoadingContextMetaData
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -76,6 +77,7 @@ export class ExperimentService {
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
+  isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData))
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
@@ -154,7 +156,7 @@ export class ExperimentService {
   }
 
   fetchContextMetaData() {
-    this.store$.dispatch(experimentAction.actionFetchContextMetaData());
+    this.store$.dispatch(experimentAction.actionFetchContextMetaData({ isLoadingContextMetaData: true }));
   }
 
   setCurrentContext(context: string) {
