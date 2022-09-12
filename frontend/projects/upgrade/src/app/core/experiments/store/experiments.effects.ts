@@ -405,12 +405,17 @@ export class ExperimentEffects {
         this.store$.pipe(select(selectContextMetaData))
       ),
       filter(([, contextMetaData]) => {
-        return !Object.keys(contextMetaData.contextMetadata).length
+        // check if contextmetadata is already fetched. cancel if so.
+        const metaDataExists = Object.keys(contextMetaData.contextMetadata).length;
+        if (metaDataExists) {
+          this.store$.dispatch(experimentAction.actionSetIsLoadingContextMetaData({ isLoadingContextMetaData: false }))
+        }
+        return !metaDataExists;
       }),
       switchMap(() =>
         this.experimentDataService.fetchContextMetaData().pipe(
-          map((contextMetaData: IContextMetaData) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData })),
-          catchError(() => [experimentAction.actionFetchContextMetaDataFailure()])
+          map((contextMetaData: IContextMetaData) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData, isLoadingContextMetaData: false })),
+          catchError(() => [experimentAction.actionFetchContextMetaDataFailure({ isLoadingContextMetaData: false })])
         )
       )
     )

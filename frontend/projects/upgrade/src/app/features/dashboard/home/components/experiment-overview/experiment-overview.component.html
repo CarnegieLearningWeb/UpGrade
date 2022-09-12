@@ -1,4 +1,4 @@
-<div class="shared-modal--step-container">
+<div *ngIf="!(isLoadingContextMetaData$ | async); else loadingExperimentOverview;" class="shared-modal--step-container">
   <section class="shared-modal--form-container">
     <form class="experiment-overview" [formGroup]="overviewForm">
       <mat-form-field class="ft-14-600 name">
@@ -146,3 +146,9 @@
     </span>
   </section>
 </div>
+
+<ng-template #loadingExperimentOverview>
+  <div class="loading-container">
+    <mat-spinner diameter="60"></mat-spinner>
+  </div>
+</ng-template>

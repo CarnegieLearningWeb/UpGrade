@@ -12,7 +12,7 @@ import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import * as find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 
 @Component({
@@ -51,6 +51,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   // Used for autocomplete context input
   contextMetaData: IContextMetaData | {} = {};
   contextMetaDataSub: Subscription;
+  isLoadingContextMetaData$: Observable<boolean>;
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
@@ -60,9 +61,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData;
-      
+
       if (this.overviewForm && this.contextMetaData && this.experimentInfo) {
         this.checkExperiment();
         this.overviewForm.patchValue(this.setGroupTypeControlValue());
@@ -71,74 +73,74 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
       if (this.contextMetaData && this.contextMetaData['contextMetadata']) {
         this.allContexts = Object.keys(this.contextMetaData['contextMetadata']);
       }
-    });
 
-    this.overviewForm = this._formBuilder.group(
-      {
-        experimentName: [null, Validators.required],
-        description: [null],
-        unitOfAssignment: [null, Validators.required],
-        groupType: [null],
-        consistencyRule: [null, Validators.required],
-        designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
-        context: [null, Validators.required],
-        tags: [[]],
-        logging: [false]
-      }
-    );
+      this.overviewForm = this._formBuilder.group(
+        {
+          experimentName: [null, Validators.required],
+          description: [null],
+          unitOfAssignment: [null, Validators.required],
+          groupType: [null],
+          consistencyRule: [null, Validators.required],
+          designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
+          context: [null, Validators.required],
+          tags: [[]],
+          logging: [false]
+        }
+      );
 
-    this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
-      this.overviewForm.get('consistencyRule').reset();
-      switch (assignmentUnit) {
-        case ASSIGNMENT_UNIT.INDIVIDUAL:
-          this.overviewForm.get('groupType').disable();
-          this.overviewForm.get('groupType').reset();
-          this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
-          break;
-        case ASSIGNMENT_UNIT.GROUP:
-          if (this.overviewForm.get('context')) {
-            this.overviewForm.get('groupType').enable();
-            this.overviewForm.get('groupType').setValidators(Validators.required);
-            this.setGroupTypes();
-            this.consistencyRules = [
-              { value: CONSISTENCY_RULE.INDIVIDUAL },
-              { value: CONSISTENCY_RULE.GROUP },
-              { value: CONSISTENCY_RULE.EXPERIMENT }
-            ];
-          } else {
-            this.overviewForm.get('groupType').reset();
+      this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
+        this.overviewForm.get('consistencyRule').reset();
+        switch (assignmentUnit) {
+          case ASSIGNMENT_UNIT.INDIVIDUAL:
             this.overviewForm.get('groupType').disable();
-          }
-          break;
-      }
-    });
-
-    this.overviewForm.get('context').valueChanges.subscribe(context => {
-      this.currentContext = context;
-      this.experimentService.setCurrentContext(context);
-      this.setGroupTypes();
-    });
-
-    // populate values in form to update experiment if experiment data is available
-    if (this.experimentInfo) {
-      if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
-        this.overviewForm.disable();
-      }
-      this.currentContext = this.experimentInfo.context[0];
-      const { groupType } = this.setGroupTypeControlValue();
-      this.overviewForm.setValue({
-        experimentName: this.experimentInfo.name,
-        description: this.experimentInfo.description,
-        unitOfAssignment: this.experimentInfo.assignmentUnit,
-        groupType,
-        consistencyRule: this.experimentInfo.consistencyRule,
-        designType: ExperimentDesignTypes.SIMPLE,
-        context: this.currentContext,
-        tags: this.experimentInfo.tags,
-        logging: this.experimentInfo.logging
+            this.overviewForm.get('groupType').reset();
+            this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
+            break;
+          case ASSIGNMENT_UNIT.GROUP:
+            if (this.overviewForm.get('context')) {
+              this.overviewForm.get('groupType').enable();
+              this.overviewForm.get('groupType').setValidators(Validators.required);
+              this.setGroupTypes();
+              this.consistencyRules = [
+                { value: CONSISTENCY_RULE.INDIVIDUAL },
+                { value: CONSISTENCY_RULE.GROUP },
+                { value: CONSISTENCY_RULE.EXPERIMENT }
+              ];
+            } else {
+              this.overviewForm.get('groupType').reset();
+              this.overviewForm.get('groupType').disable();
+            }
+            break;
+        }
       });
-      this.checkExperiment();
-    }
+
+      this.overviewForm.get('context').valueChanges.subscribe(context => {
+        this.currentContext = context;
+        this.experimentService.setCurrentContext(context);
+        this.setGroupTypes();
+      });
+
+      // populate values in form to update experiment if experiment data is available
+      if (this.experimentInfo) {
+        if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+          this.overviewForm.disable();
+        }
+        this.currentContext = this.experimentInfo.context[0];
+        const { groupType } = this.setGroupTypeControlValue();
+        this.overviewForm.setValue({
+          experimentName: this.experimentInfo.name,
+          description: this.experimentInfo.description,
+          unitOfAssignment: this.experimentInfo.assignmentUnit,
+          groupType,
+          consistencyRule: this.experimentInfo.consistencyRule,
+          designType: ExperimentDesignTypes.SIMPLE,
+          context: this.currentContext,
+          tags: this.experimentInfo.tags,
+          logging: this.experimentInfo.logging
+        });
+        this.checkExperiment();
+      }
+    });
   }
 
   setGroupTypeControlValue() {
