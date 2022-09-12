@@ -73,7 +73,7 @@
         "express": "^4.17.1",
         "express-request-id": "^1.4.1",
         "figlet": "^1.2.4",
-        "google-auth-library": "^5.9.2",
+        "google-auth-library": "^8.5.1",
         "helmet": "^3.21.2",
         "jest": "^26.6.3",
         "json-diff": "^0.5.4",
