@@ -208,6 +208,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         this.emitExperimentDialogEvent.emit({ type: eventType });
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.overviewForm.markAllAsTouched();
       case NewExperimentDialogEvents.SAVE_DATA:
         if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
           this.emitExperimentDialogEvent.emit({
