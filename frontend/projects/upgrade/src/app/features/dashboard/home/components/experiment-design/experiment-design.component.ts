@@ -141,7 +141,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      this.equalWeightFlag = false;
+      debugger;
+      this.equalWeightFlag = this.experimentInfo.conditions.every(condition => {
+        return condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight;
+      });
       // Remove previously added group of conditions and partitions
       this.condition.removeAt(0);
       this.partition.removeAt(0);
