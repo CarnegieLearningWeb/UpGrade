@@ -1,25 +1,29 @@
-import { experiment, experimentSecond, experimentThird, experimentFourth } from './raw';
+import { getExperiment, getRevertToExperiment, getSecondExperiment, getThirdExperiment, getFourthExperiment, getFifthExperiment} from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
-export const individualAssignmentExperimentConsistencyRuleExperiemnt = {
-  ...experiment,
+export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = {
+  ...getRevertToExperiment()
+};
+
+export const individualAssignmentExperimentConsistencyRuleExperiment = {
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
   postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
-  revertTo: experiment.conditions[0].id,
+  revertTo: getExperiment().conditions[0].id,
   state: EXPERIMENT_STATE.INACTIVE,
 };
 
 export const groupAssignmentWithGroupConsistencyExperiment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -27,7 +31,7 @@ export const groupAssignmentWithGroupConsistencyExperiment = {
 };
 
 export const groupAssignmentWithIndividulaConsistencyExperiment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -35,7 +39,7 @@ export const groupAssignmentWithIndividulaConsistencyExperiment = {
 };
 
 export const groupAssignmentWithExperimentConsistencyExperiment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -43,7 +47,7 @@ export const groupAssignmentWithExperimentConsistencyExperiment = {
 };
 
 export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -51,7 +55,7 @@ export const groupAssignmentWithGroupConsistencyExperimentSwitchBeforeAssignment
 };
 
 export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.GROUP,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -59,7 +63,7 @@ export const groupAssignmentWithGroupConsistencyExperimentSwitchAfterAssignment 
 };
 
 export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssignment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -67,7 +71,7 @@ export const groupAssignmentWithIndividualConsistencyExperimentSwitchAfterAssign
 };
 
 export const groupAssignmentWithExperimentConsistencyExperimentSwitchAfterAssignment = {
-  ...experiment,
+  ...getExperiment(),
   consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
@@ -97,22 +101,22 @@ export const individualExperimentWithMetric = {
   ],
 };
 
-export const scheduleJobStartExperiment = { ...experiment, state: EXPERIMENT_STATE.SCHEDULED };
+export const scheduleJobStartExperiment = { ...getExperiment(), state: EXPERIMENT_STATE.SCHEDULED };
 
 export const scheduleJobEndExperiment = {
-  ...experiment,
+  ...getExperiment(),
   endOn: new Date().toISOString(),
 };
 
 export const scheduleJobUpdateExperiment = scheduleJobEndExperiment;
 
 export const revertToDefault = {
-  ...individualAssignmentExperimentConsistencyRuleExperiemnt,
+  ...individualAssignmentExperimentConsistencyRuleExperiment,
   revertTo: undefined,
 };
 
 export const revertToCondition = {
-  ...individualAssignmentExperimentConsistencyRuleExperiemnt,
+  ...individualAssignmentExperimentConsistencyRuleRevertToExperiment,
 };
 
 export const individualExperimentStats = {
@@ -136,7 +140,7 @@ export const previewGroupExperiment = {
 };
 
 export const secondExperiment = {
-  ...experimentSecond,
+  ...getSecondExperiment(),
 };
 
 export const groupAssignmentWithIndividualConsistencyExperimentSecond = {
@@ -145,7 +149,7 @@ export const groupAssignmentWithIndividualConsistencyExperimentSecond = {
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-}
+};
 
 export const groupAndParticipantsExperiment = {
   ...groupAssignmentWithGroupConsistencyExperiment,
@@ -165,7 +169,7 @@ export const participantsOnlyExperiment = {
 };
 
 export const thirdExperiment = {
-  ...experimentThird,
+  ...getThirdExperiment(),
 };
 
 export const groupAssignmentWithIndividualConsistencyExperimentThird = {
@@ -174,8 +178,12 @@ export const groupAssignmentWithIndividualConsistencyExperimentThird = {
   assignmentUnit: ASSIGNMENT_UNIT.GROUP,
   postExperimentRule: POST_EXPERIMENT_RULE.CONTINUE,
   state: EXPERIMENT_STATE.INACTIVE,
-}
+};
 
 export const decimalWeightExperiment = {
-  ...experimentFourth,
-}
+  ...getFourthExperiment(),
+};
+
+export const aliasConditionExperiment = {
+  ...getFifthExperiment(),
+};

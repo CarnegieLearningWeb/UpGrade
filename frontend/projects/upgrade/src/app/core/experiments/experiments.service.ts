@@ -11,6 +11,7 @@ import {
   DATE_RANGE,
   ExperimentLocalStorageKeys,
   EXPERIMENT_STATE,
+  TableEditModeDetails,
 } from './store/experiments.model';
 import { Store, select } from '@ngrx/store';
 import {
@@ -32,7 +33,10 @@ import {
   selectSortAs,
   selectContextMetaData,
   selectGroupAssignmentStatus,
-  selectIsPollingExperimentDetailStats
+  selectIsPollingExperimentDetailStats,
+  selectIsAliasTableEditMode,
+  selectAliasTableEditIndex,
+  selectCurrentContextMetaDataConditions
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -74,6 +78,9 @@ export class ExperimentService {
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
+  isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
+  aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
+  currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
 
   selectSearchExperimentParams(): Observable<Object> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
@@ -150,6 +157,10 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionFetchContextMetaData());
   }
 
+  setCurrentContext(context: string) {
+    this.store$.dispatch(experimentAction.actionSetCurrentContext({ context }))
+  }
+
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
     this.localStorageService.setItem(ExperimentLocalStorageKeys.EXPERIMENT_SEARCH_KEY, searchKey);
     this.store$.dispatch(experimentAction.actionSetSearchKey({ searchKey }));
@@ -212,5 +223,12 @@ export class ExperimentService {
 
   endDetailStatsPolling() {
     this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling())
+  }
+
+  setUpdateAliasTableEditMode(details: TableEditModeDetails): void {
+    this.store$.dispatch(experimentAction.actionUpdateAliasTableEditMode({
+      isAliasTableEditMode: details.isEditMode,
+      aliasTableEditIndex: details.rowIndex
+    }));
   }
 }

@@ -56,7 +56,7 @@ export default async function testCase(): Promise<void> {
   let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(0);
 
-  // mark experiment point
+  // mark experiment point for exp1
   let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
@@ -126,8 +126,8 @@ export default async function testCase(): Promise<void> {
       id: experimentId,
       users: 0,
       groups: 0,
-      usersExcluded: 1,
-      groupsExcluded: 1,
+      usersExcluded: 0,
+      groupsExcluded: 0,
       conditions: expect.arrayContaining([
         expect.objectContaining({
           id: experiments[0].conditions[0].id,
@@ -177,23 +177,23 @@ export default async function testCase(): Promise<void> {
     })
   );
 
-  // user 3 logs in experiment
-  // get all experiment condition for user 3
+  // user 2 logs in experiment
+  // get all experiment condition for user 2
   experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[1].id, new UpgradeLogger());
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName2, experimentPoint2);
 
-  // mark experiment point
+  // mark experiment point for exp2
   markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName2, experimentPoint2, condition2, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
-
+  // for exp1
   checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 0,
-      groups: 0,
-      usersExcluded: 2,
-      groupsExcluded: 1,
+      users: 1,
+      groups: 1,
+      usersExcluded: 0,
+      groupsExcluded: 0,
     })
   );
 
@@ -201,17 +201,17 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
-  // mark experiment point
+  // user 3: mark experiment point for exp1
   markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
-
+  // for exp1
   checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 1,
-      groups: 1,
-      usersExcluded: 2,
-      groupsExcluded: 1,
+      users: 2,
+      groups: 2,
+      usersExcluded: 0,
+      groupsExcluded: 0,
     })
   );
 
@@ -222,17 +222,17 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName1, experimentPoint1);
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
-  // mark experiment point
+  // user 4: mark experiment point for exp1
   markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
-
+  // for exp1
   checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
   expect(checkData).toEqual(
     expect.objectContaining({
-      users: 1,
-      groups: 1,
-      usersExcluded: 2,
-      groupsExcluded: 1,
+      users: 2,
+      groups: 2,
+      usersExcluded: 0,
+      groupsExcluded: 0,
     })
   );
 }

@@ -70,7 +70,8 @@ export class AnalyticsRepository {
 
     // find experiment data
     const experiment = await experimentRepository.findOne(experimentId, { relations: ['partitions', 'conditions'] });
-    if (experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
+
+    if (experiment && experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
       const [includedUser, usersPerCondition, perConditionDecisionPoint, excludedUser]: [
         [{ count: number }],
         Array<{ id: string; conditionId: string; count: number }>,

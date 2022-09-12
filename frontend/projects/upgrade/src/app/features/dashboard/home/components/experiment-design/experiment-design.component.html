@@ -1,322 +1,352 @@
-<div class="shared-modal--step-container"> 
+<div class="shared-modal--step-container">
   <section class="shared-modal--form-container">
-    <form class="experiment-design" [formGroup]="experimentDesignForm">
-      <!-- Partition Table -->
-      <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
-      <ng-container>
-        <mat-table
-          class="partition-table"
-          [dataSource]="partitionDataSource"
-          formArrayName="partitions"
-          #partitionTable
-        >
-          <!-- Site Column -->
-          <ng-container matColumnDef="site">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'home.new-experiment.design.partition-point.text' | translate }}
-            </mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-            >
-              <mat-form-field floatLabel="never">
-                <span
-                  [matTooltip]="experimentDesignForm.getRawValue('site')?.partitions[groupIndex]?.site"
-                  matTooltipPosition="above"
-                  >
-                  <input
-                    matInput
-                    [placeholder]="
-                      'home.new-experiment.design.partition-point.placeholder.text'
-                        | translate
-                    "
-                    formControlName="site"
-                    [matAutocomplete]="autoCompleteExperimentPoints"
-                  />
-                  <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
-                    <mat-option *ngFor="let site of filteredExpPoints$[groupIndex] | async" [value]="site">
-                      {{ site }}
-                    </mat-option>
-                  </mat-autocomplete>
-                </span>
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
 
-          <!-- Target Column -->
-          <ng-container matColumnDef="target">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'home.new-experiment.design.partition-id.text' | translate }}
-            </mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
+    <!--NOTE: this form content may need to be broken out into separate component when factorial design-type introduced-->
+    <section class="simple-experiment-form">
+      <form class="experiment-design" [formGroup]="experimentDesignForm">
+        <section [hidden]="isAliasTableDisplayed" class="simple-experiment-decision-point-conditions-view">
+          <div class="decision-point-header-container">
+            <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
+            <button
+              type="button"
+              mat-flat-button
+              color="primary"
+              class="ft-14-600 toggle-button"
+              (click)="toggleAliasTable()"
+              [disabled]="aliasTableData.length === 0 || partition.length === 0 || condition.length === 0"
             >
-              <mat-form-field floatLabel="never">
-                <span
-                  [matTooltip]="experimentDesignForm.getRawValue('target')?.partitions[groupIndex]?.target"
-                  matTooltipPosition="above">
-                  <input
-                    matInput
-                    [placeholder]="
-                      'home.new-experiment.design.partition-id.placeholder.text'
-                        | translate
-                    "
-                    formControlName="target"
-                    [matAutocomplete]="autoCompleteExperimentIds"
-                  />
-                  <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
-                    <mat-option *ngFor="let target of filteredExpIds$[groupIndex] | async" [value]="target">
-                      {{ target }}
-                    </mat-option>
-                  </mat-autocomplete>
-                </span>
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
+              <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
+              <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
+            </button>
+          </div>
 
-          <!-- Required Column -->
-          <!-- <ng-container matColumnDef="requiredId">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'home.new-experiment.design.required.text' | translate }}
-            </mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-              style="margin-left: 25px;"
+          <!-- Decision Point Table -->
+          <ng-container>
+            <mat-table
+              class="partition-table"
+              [dataSource]="partitionDataSource"
+              formArrayName="partitions"
+              #partitionTable
             >
-              <mat-checkbox
-                      class="ft-8-100"
-                      color="primary"
-                      [disabled]="true"
+              <!-- Site Column -->
+              <ng-container matColumnDef="site">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.partition-point.text' | translate }}
+                </mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <mat-form-field floatLabel="never">
+                    <span
+                      [matTooltip]="experimentDesignForm.getRawValue('site')?.partitions[groupIndex]?.site"
+                      matTooltipPosition="above"
                       >
-              </mat-checkbox>
-            </mat-cell>
-          </ng-container> -->
+                      <input
+                        matInput
+                        [placeholder]="
+                          'home.new-experiment.design.partition-point.placeholder.text'
+                            | translate
+                        "
+                        formControlName="site"
+                        [matAutocomplete]="autoCompleteExperimentPoints"
+                      />
+                      <mat-autocomplete #autoCompleteExperimentPoints="matAutocomplete" panelWidth="fit-content">
+                        <mat-option *ngFor="let site of filteredExpPoints$[groupIndex] | async" [value]="site">
+                          {{ site }}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </span>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
 
-          <ng-container matColumnDef="removePartition">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-              style="justify-content: flex-start;"
-            >
-            <button mat-icon-button
-              [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
-              (click)="removeConditionOrPartition('partition', groupIndex)">
-              <mat-icon
-                class="remove-icon"
-              >
-                delete_outline
-              </mat-icon>
-            </button>
-            </mat-cell>
-          </ng-container>
+              <!-- Target Column -->
+              <ng-container matColumnDef="target">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.partition-id.text' | translate }}
+                </mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <mat-form-field floatLabel="never">
+                    <span
+                      [matTooltip]="experimentDesignForm.getRawValue('target')?.partitions[groupIndex]?.target"
+                      matTooltipPosition="above">
+                      <input
+                        matInput
+                        [placeholder]="
+                          'home.new-experiment.design.partition-id.placeholder.text'
+                            | translate
+                        "
+                        formControlName="target"
+                        [matAutocomplete]="autoCompleteExperimentIds"
+                      />
+                      <mat-autocomplete #autoCompleteExperimentIds="matAutocomplete" panelWidth="fit-content">
+                        <mat-option *ngFor="let target of filteredExpIds$[groupIndex] | async" [value]="target">
+                          {{ target }}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </span>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
 
-          <mat-header-row
-            *matHeaderRowDef="partitionDisplayedColumns; sticky: true"
-          ></mat-header-row>
-          <mat-row *matRowDef="let row; columns: partitionDisplayedColumns"></mat-row>
-        </mat-table>
-        <button
-          type="button"
-          class="ft-12-700 add-partition"
-          *ngIf="!experimentInfo"
-          (click)="addConditionOrPartition('partition')"
-        >
-          +
-          {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
-        </button>
-        <button
-          type="button"
-          class="ft-12-700 add-partition"
-          *ngIf="experimentInfo"
-          [ngClass]="{ 'add-partition--disabled': this.experimentInfo && (this.experimentInfo.state == ExperimentState.ENROLLING || this.experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-          [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
-          (click)="addConditionOrPartition('partition')"
-        >
-          +
-          {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
-        </button>
-      </ng-container>
-      <div class="validation-container">
-        <span
-          class="ft-14-600 validation-message"
-          *ngFor="let error of partitionPointErrors"
-        >{{ error }}</span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="partitionCountError"
-          [innerHTML]="partitionCountError"
-        ></span>
-        <!-- If experiment point and id are not from predefined value -->
-        <span
-          class="ft-14-600 validation-message"
-          *ngFor="let error of expPointAndIdErrors"
-        >{{ error }}</span>
-      </div>
-
-      <!-- Condition table -->
-      <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
-      <!-- apply equal condition weights -->
-      <div class="header-group">
-        <mat-checkbox
-        class="ft-13-700"
-        color="primary"
-        [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
-        [checked]="equalWeightFlag"
-        (change)="changeEqualWeightFlag($event)">
-        {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
-        </mat-checkbox>
-      </div>
-      <ng-container>
-        <mat-table
-          class="condition-table"
-          [dataSource]="conditionDataSource"
-          formArrayName="conditions"
-          #conditionTable
-        >
-          <!-- CONDITION NAME Column -->
-          <ng-container matColumnDef="conditionCode">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'home.new-experiment.design.name.text' | translate }}
-            </mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-            >
-              <mat-form-field floatLabel="never">
-                <span 
-                  [matTooltip]="experimentDesignForm.getRawValue('conditionCode')?.conditions[groupIndex]?.conditionCode"
-                  matTooltipPosition="above"
+              <!-- ExcludeIfReached Column -->
+              <ng-container matColumnDef="excludeIfReached">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
+                </mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <mat-checkbox
+                  class="ft-8-100"
+                  color="primary"
+                  formControlName = "excludeIfReached"
                   >
-                  <input
-                    matInput
-                    [placeholder]="
-                      'home.new-experiment.design.condition.placeholder.text'
-                        | translate
-                    "
-                    formControlName="conditionCode"
-                    [matAutocomplete]="autoCompleteConditionCodes"
-                  />
-                  <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
-                    <mat-option *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async" [value]="conditionCode">
-                      {{ conditionCode }}
-                    </mat-option>
-                  </mat-autocomplete>
-                </span>
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
+                  </mat-checkbox>
+                </mat-cell>
+              </ng-container>
 
-          <!-- ASSIGNMENT WEIGHT Column -->
-          <ng-container matColumnDef="assignmentWeight">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: right;">
-              {{ 'home-global.assignment-weight.text' | translate }}
-            </mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-              style="justify-content: center;"
-            >
-              <mat-form-field floatLabel="never" style="text-align: right;">
-                <input
-                  type="number"
-                  matInput
-                  [placeholder]="
-                    'home.new-experiment.design.assignment-weight.placeholder.text'
-                      | translate
-                  "
-                  formControlName="assignmentWeight"
-                  autocomplete="off"
-                />
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
+              <ng-container matColumnDef="removePartition">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                  style="justify-content: flex-start;"
+                >
+                <button mat-icon-button
+                  type="button"
+                  [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+                  (click)="removeConditionOrPartition('partition', groupIndex)">
+                  <mat-icon
+                    class="remove-icon"
+                  >
+                    delete_outline
+                  </mat-icon>
+                </button>
+                </mat-cell>
+              </ng-container>
 
-          <!-- DESCRIPTION Column -->
-          <ng-container matColumnDef="description">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-              {{ 'home.new-experiment.design.description.text' | translate }}
-            </mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
+              <mat-header-row
+                *matHeaderRowDef="partitionDisplayedColumns; sticky: true"
+              ></mat-header-row>
+              <mat-row *matRowDef="let row; columns: partitionDisplayedColumns"></mat-row>
+            </mat-table>
+            <button
+              type="button"
+              class="ft-12-700 add-partition"
+              *ngIf="!experimentInfo"
+              (click)="addConditionOrPartition('partition')"
             >
-              <mat-form-field floatLabel="never">
-                <input
-                  matInput
-                  [placeholder]="
-                    'home.new-experiment.design.description.placeholder.text'
-                      | translate
-                  "
-                  formControlName="description"
-                  autocomplete="off"
-                />
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
-
-          <ng-container matColumnDef="removeCondition">
-            <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-            <mat-cell
-              *matCellDef="let element; let groupIndex = index"
-              [formGroupName]="groupIndex"
-              style="justify-content: flex-start;"
-            >
-            <button mat-icon-button
-              [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
-              (click)="removeConditionOrPartition('condition', groupIndex)">
-              <mat-icon
-                class="remove-icon"
-              >
-                delete_outline
-              </mat-icon>
+              +
+              {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
             </button>
-            </mat-cell>
+            <button
+              type="button"
+              class="ft-12-700 add-partition"
+              *ngIf="experimentInfo"
+              [ngClass]="{ 'add-partition--disabled': this.experimentInfo && (this.experimentInfo.state == ExperimentState.ENROLLING || this.experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+              [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+              (click)="addConditionOrPartition('partition')"
+            >
+              +
+              {{ 'home.new-experiment.design.add-experiment-partition.text' | translate }}
+            </button>
           </ng-container>
-          <mat-header-row *matHeaderRowDef="conditionDisplayedColumns; sticky: true"></mat-header-row>
-          <mat-row
-            *matRowDef="let row; columns: conditionDisplayedColumns"
-          ></mat-row>
-        </mat-table>
-        <button
-        type="button"
-        class="ft-12-700 add-condition"
-        *ngIf="!experimentInfo"
-        (click)="addConditionOrPartition('condition')"
-      >
-        + {{ 'home.new-experiment.design.add-condition.text' | translate }}
-      </button>
-        <button
-          type="button"
-          class="ft-12-700 add-condition"
-          *ngIf="experimentInfo"
-          [ngClass]="{ 'add-condition--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-          [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
-          (click)="addConditionOrPartition('condition')"
-        >
-          + {{ 'home.new-experiment.design.add-condition.text' | translate }}
-        </button>
-      </ng-container>
-      <div class="validation-container">
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="experimentDesignForm.errors?.assignmentWeightsSumError"
-          [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
-        ></span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngFor="let error of conditionCodeErrors"
-        >{{ error }} </span>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="conditionCountError"
-          [innerHTML]="conditionCountError"
-        ></span>
-      </div>
-      
-    </form>
+          <div class="validation-container">
+            <span
+              class="ft-14-600 validation-message"
+              *ngFor="let error of partitionPointErrors"
+            >{{ error }}</span>
+            <span
+              class="ft-14-600 validation-message"
+              *ngIf="partitionCountError"
+              [innerHTML]="partitionCountError"
+            ></span>
+            <!-- If experiment point and id are not from predefined value -->
+            <span
+              class="ft-14-600 validation-message"
+              *ngFor="let error of expPointAndIdErrors"
+            >{{ error }}</span>
+          </div>
+
+          <!-- Condition table -->
+          <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
+          <!-- apply equal condition weights -->
+          <div class="conditions-header-container">
+            <mat-checkbox
+            class="ft-13-700"
+            color="primary"
+            [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+            [checked]="equalWeightFlag"
+            (change)="changeEqualWeightFlag($event)">
+            {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
+            </mat-checkbox>
+          </div>
+          <ng-container>
+            <mat-table
+              class="condition-table"
+              [dataSource]="conditionDataSource"
+              formArrayName="conditions"
+              #conditionTable
+            >
+              <!-- CONDITION NAME Column -->
+              <ng-container matColumnDef="conditionCode">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.name.text' | translate }}
+                </mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <mat-form-field floatLabel="never">
+                    <span 
+                      [matTooltip]="experimentDesignForm.getRawValue('conditionCode')?.conditions[groupIndex]?.conditionCode"
+                      matTooltipPosition="above"
+                      >
+                      <input
+                        matInput
+                        [placeholder]="
+                          'home.new-experiment.design.condition.placeholder.text'
+                            | translate
+                        "
+                        formControlName="conditionCode"
+                        [matAutocomplete]="autoCompleteConditionCodes"
+                      />
+                      <mat-autocomplete #autoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
+                        <mat-option *ngFor="let conditionCode of filteredConditionCodes$[groupIndex] | async" [value]="conditionCode">
+                          {{ conditionCode }}
+                        </mat-option>
+                      </mat-autocomplete>
+                    </span>
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+
+              <!-- ASSIGNMENT WEIGHT Column -->
+              <ng-container matColumnDef="assignmentWeight">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef style="justify-content: right;">
+                  {{ 'home-global.assignment-weight.text' | translate }}
+                </mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                  style="justify-content: center;"
+                >
+                  <mat-form-field floatLabel="never" style="text-align: right;">
+                    <input
+                      type="number"
+                      matInput
+                      [placeholder]="
+                        'home.new-experiment.design.assignment-weight.placeholder.text'
+                          | translate
+                      "
+                      formControlName="assignmentWeight"
+                      autocomplete="off"
+                    />
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+
+              <!-- DESCRIPTION Column -->
+              <ng-container matColumnDef="description">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+                  {{ 'home.new-experiment.design.description.text' | translate }}
+                </mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                >
+                  <mat-form-field floatLabel="never">
+                    <input
+                      matInput
+                      [placeholder]="
+                        'home.new-experiment.design.description.placeholder.text'
+                          | translate
+                      "
+                      formControlName="description"
+                      autocomplete="off"
+                    />
+                  </mat-form-field>
+                </mat-cell>
+              </ng-container>
+
+              <ng-container matColumnDef="removeCondition">
+                <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+                <mat-cell
+                  *matCellDef="let element; let groupIndex = index"
+                  [formGroupName]="groupIndex"
+                  style="justify-content: flex-start;"
+                >
+                <button mat-icon-button
+                  type="button"
+                  [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+                  (click)="removeConditionOrPartition('condition', groupIndex)">
+                  <mat-icon
+                    class="remove-icon"
+                  >
+                    delete_outline
+                  </mat-icon>
+                </button>
+                </mat-cell>
+              </ng-container>
+              <mat-header-row *matHeaderRowDef="conditionDisplayedColumns; sticky: true"></mat-header-row>
+              <mat-row
+                *matRowDef="let row; columns: conditionDisplayedColumns"
+              ></mat-row>
+            </mat-table>
+            <button
+            type="button"
+            class="ft-12-700 add-condition"
+            *ngIf="!experimentInfo"
+            (click)="addConditionOrPartition('condition')"
+          >
+            + {{ 'home.new-experiment.design.add-condition.text' | translate }}
+          </button>
+            <button
+              type="button"
+              class="ft-12-700 add-condition"
+              *ngIf="experimentInfo"
+              [ngClass]="{ 'add-condition--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+              [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+              (click)="addConditionOrPartition('condition')"
+            >
+              + {{ 'home.new-experiment.design.add-condition.text' | translate }}
+            </button>
+          </ng-container>
+          <div class="validation-container">
+            <span
+              class="ft-14-600 validation-message"
+              *ngIf="experimentDesignForm.errors?.assignmentWeightsSumError"
+              [innerHTML]="'home.new-experiment.design.assignment-weight-validation.text' | translate"
+            ></span>
+            <span
+              class="ft-14-600 validation-message"
+              *ngFor="let error of conditionCodeErrors"
+            >{{ error }} </span>
+            <span
+              class="ft-14-600 validation-message"
+              *ngIf="conditionCountError"
+              [innerHTML]="conditionCountError"
+            ></span>
+          </div>
+        </section>
+
+        <div [hidden]="!isAliasTableDisplayed">
+          <app-aliases-table
+            [designData$] = designData$
+            [experimentInfo] = experimentInfo
+            (aliasTableData$) = handleAliasTableDataChange($event)
+            (hideAliasTable) = toggleAliasTable()
+          ></app-aliases-table>
+        </div>
+      </form>
+    </section>
+  
   </section>
 
   <section class="shared-modal--buttons-container">
@@ -325,6 +355,8 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
+        [class.default-button--disabled]="(isAliasTableEditMode$ | async)"
+        [disabled]="(isAliasTableEditMode$ | async)"
       >
         {{ 'global.back.text' | translate }}
       </button>
@@ -343,6 +375,8 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewExperimentDialogEvents.SEND_FORM_DATA)"
+        [class.default-button--disabled]="(isAliasTableEditMode$ | async)"
+        [disabled]="(isAliasTableEditMode$ | async)"
       >
         {{ 'global.next.text' | translate }}
       </button>
@@ -351,8 +385,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-        [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+        [ngClass]="{ 'default-button--disabled': (isAliasTableEditMode$ | async) || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
+        [disabled]="(isAliasTableEditMode$ | async) || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}

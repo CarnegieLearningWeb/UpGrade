@@ -60,7 +60,7 @@ export class ImportExperimentComponent implements OnInit {
     if (this.isExperimentJSONValid) {
       this.experimentInfo.id = uuidv4();
       this.experimentInfo.conditions.map(condition => {
-        condition.id = uuidv4();
+        condition.id = condition.id || uuidv4();
       });
       this.experimentService.importExperiment({ ...this.experimentInfo });
       this.onCancelClick();
@@ -158,7 +158,8 @@ export class ImportExperimentComponent implements OnInit {
       order: 'number',
       createdAt: 'string',
       updatedAt: 'string',
-      versionNumber: 'number'
+      versionNumber: 'number',
+      excludeIfReached: 'boolean'
     }
 
     let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });

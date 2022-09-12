@@ -10,7 +10,8 @@ import {
   Experiment,
   NUMBER_OF_EXPERIMENTS,
   ExperimentPaginationParams,
-  IExperimentEnrollmentDetailStats
+  IExperimentEnrollmentDetailStats,
+  IContextMetaData
 } from './experiments.model';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -403,10 +404,12 @@ export class ExperimentEffects {
       withLatestFrom(
         this.store$.pipe(select(selectContextMetaData))
       ),
-      filter(([, contextMetaData]) => !Object.keys(contextMetaData).length),
+      filter(([, contextMetaData]) => {
+        return !Object.keys(contextMetaData.contextMetadata).length
+      }),
       switchMap(() =>
         this.experimentDataService.fetchContextMetaData().pipe(
-          map((contextMetaData: object) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData })),
+          map((contextMetaData: IContextMetaData) => experimentAction.actionFetchContextMetaDataSuccess({ contextMetaData })),
           catchError(() => [experimentAction.actionFetchContextMetaDataFailure()])
         )
       )

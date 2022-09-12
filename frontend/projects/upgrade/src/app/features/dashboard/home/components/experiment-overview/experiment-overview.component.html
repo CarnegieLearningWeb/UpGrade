@@ -86,6 +86,18 @@
         </mat-error>
       </mat-form-field>
 
+      <mat-form-field class="ft-14-600 design-type">
+        <mat-label>{{ 'home-global.design-type.text' | translate }}</mat-label>
+        <mat-select class="ft-14-400" formControlName="designType">
+          <mat-option
+            *ngFor="let designType of designTypes"
+            [value]="designType.value"
+          >
+            {{ designType.value | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
       <mat-form-field class="ft-14-600 tags">
         <mat-chip-list #tagsList aria-label="Tags" formControlName="tags">
           <mat-chip
@@ -144,7 +156,7 @@
         mat-raised-button
         class="shared-modal--modal-btn default-button"
         [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
-          [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
         >
         {{ 'global.update.text' | translate }}

@@ -1081,9 +1081,16 @@ describe('ExperimentEffects', () => {
         it('should not do anything if contextMetaData object already exists', fakeAsync(() => {
             let neverEmitted = true;
             Selectors.selectContextMetaData.setResult({
-                'label': {}
+                contextMetadata: {
+                    someContext: {
+                        EXP_IDS: [],
+                        EXP_POINTS: [],
+                        CONDITIONS: [],
+                        GROUP_TYPES: []
+                    }
+                }
             });
-            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of({}))
+            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of({contextMetadata: {}}))
 
             service.fetchContextMetaData$.subscribe(resultingActions => {
                 neverEmitted = false;
@@ -1098,11 +1105,13 @@ describe('ExperimentEffects', () => {
 
         it('should fetch contextMetaData if it does not already exist', fakeAsync(() => {
             const contextMetaData = {
-                'contextMetaDataName': {}
+                contextMetadata: {}
             };
 
-            Selectors.selectContextMetaData.setResult({});
-            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of(contextMetaData))
+            Selectors.selectContextMetaData.setResult({ contextMetadata: {} });
+            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of({
+                contextMetadata: {}
+            }))
 
             const expectedAction = actionFetchContextMetaDataSuccess({ contextMetaData })
 
@@ -1116,8 +1125,10 @@ describe('ExperimentEffects', () => {
         }))
 
         it('should dispatch actionFetchContextMetaDataFailure error is caught fetching data', fakeAsync(() => {
-            Selectors.selectContextMetaData.setResult({});
-            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(throwError('test'));
+            Selectors.selectContextMetaData.setResult({
+                contextMetadata: {}
+            });
+            experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const expectedAction = actionFetchContextMetaDataFailure();
 

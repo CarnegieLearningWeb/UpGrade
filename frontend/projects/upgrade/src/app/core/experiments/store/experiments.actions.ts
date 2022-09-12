@@ -10,7 +10,8 @@ import {
   EXPERIMENT_SORT_AS,
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
-  IEnrollmentStatByDate
+  IEnrollmentStatByDate,
+  IContextMetaData
 } from './experiments.model';
 
 export const actionGetExperiments = createAction(
@@ -209,12 +210,18 @@ export const actionFetchContextMetaData = createAction(
 
 export const actionFetchContextMetaDataSuccess = createAction(
   '[Experiment] Fetch contextMetaData Success',
-  props<{ contextMetaData: object }>()
+  props<{ contextMetaData: IContextMetaData }>()
 );
 
 export const actionFetchContextMetaDataFailure = createAction(
   '[Experiment] Fetch contextMetaData Failure',
 );
+
+export const actionSetCurrentContext = createAction(
+  '[Experiment] Set User-Selected Context',
+  props<{ context: string }>()
+);
+
 
 export const actionFetchGroupAssignmentStatus = createAction(
   '[Experiment] Fetch group counts having met ending criteria',
@@ -236,4 +243,9 @@ export const actionBeginExperimentDetailStatsPolling = createAction(
 
 export const actionEndExperimentDetailStatsPolling = createAction(
   '[Experiment] End polling for detail stats'
+)
+
+export const actionUpdateAliasTableEditMode = createAction(
+  '[Experiment] Update Alias Table Edit Mode Details',
+  props<{ isAliasTableEditMode: boolean, aliasTableEditIndex: number | null }>()
 )

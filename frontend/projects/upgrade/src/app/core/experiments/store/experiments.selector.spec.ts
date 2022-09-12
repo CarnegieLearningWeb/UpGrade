@@ -108,9 +108,11 @@ describe('Experiments Selectors', () => {
                         "site": "SelectSection",
                         "target": "is-it-cake",
                         "description": "",
-                        "order": 1
+                        "order": 1,
+                        "excludeIfReached": false,
                     }
                 ],
+                "conditionAliases": [],
                 "queries": [],
                 "stateTimeLogs": [
                     {
@@ -438,7 +440,9 @@ describe('Experiments Selectors', () => {
             }
         ],
         "allExperimentNames": null,
-        "contextMetaData": {},
+        "contextMetaData": {
+            contextMetadata: null
+        },
         "updatedStat": {
             "id": "1f12cd8f-7ff9-4731-a4eb-7104918ed252",
             "users": 7,
