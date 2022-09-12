@@ -1,16 +1,16 @@
 <section class="aliases-table-component">
   <div class="aliases-header-container">
-    <span class="ft-18-700">{{ 'home.new-experiment.design.aliases.header.text' | translate }}</span>
+    <span class="title">{{ 'home.new-experiment.design.aliases.header.text' | translate }}</span>
     <button
       type="button"
       mat-flat-button
       color="primary"
-      class="ft-14-600"
+      class="ft-14-600 toggle-button"
       (click)="handleHideClick()"
       [disabled]="(isAliasTableEditMode$ | async)"
     >
       <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
-      <span>{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
+      <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
     </button>
   </div>
 
@@ -90,7 +90,7 @@
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-      <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell">
+      <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-start;">
           <button
             type="button"
             class="row-action-btn"

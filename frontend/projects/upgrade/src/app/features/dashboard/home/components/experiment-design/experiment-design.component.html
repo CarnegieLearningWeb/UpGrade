@@ -6,17 +6,17 @@
       <form class="experiment-design" [formGroup]="experimentDesignForm">
         <section [hidden]="isAliasTableDisplayed" class="simple-experiment-decision-point-conditions-view">
           <div class="decision-point-header-container">
-            <span class="ft-18-700">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
+            <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
             <button
               type="button"
               mat-flat-button
               color="primary"
-              class="ft-14-600"
+              class="ft-14-600 toggle-button"
               (click)="toggleAliasTable()"
               [disabled]="aliasTableData.length === 0 || partition.length === 0 || condition.length === 0"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
-              <span>{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
+              <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
             </button>
           </div>
 
@@ -175,7 +175,7 @@
           </div>
 
           <!-- Condition table -->
-          <span class="ft-18-700">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
+          <span class="title">{{ 'home.new-experiment.design.condition.text' | translate }}</span>
           <!-- apply equal condition weights -->
           <div class="conditions-header-container">
             <mat-checkbox
