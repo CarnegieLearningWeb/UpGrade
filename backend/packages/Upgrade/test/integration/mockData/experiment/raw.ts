@@ -1,5 +1,63 @@
 import { FILTER_MODE } from "upgrade_types";
 
+export const revertToExperiment = {
+  id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
+  name: 'Test Experiment',
+  description: 'Test Experiment Description',
+  consistencyRule: 'experiment',
+  assignmentUnit: 'individual',
+  postExperimentRule: 'assign',
+  revertTo: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+  state: 'inactive',
+  startOn: new Date().toISOString(),
+  group: 'teacher',
+  context: ['home'],
+  tags: [],
+  queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  conditions: [
+    {
+      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      name: 'Condition A',
+      description: 'Condition A',
+      assignmentWeight: 40,
+      conditionCode: 'ConditionA',
+      twoCharacterId: 'CA',
+    },
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
+      name: 'Condition B',
+      description: 'Condition B',
+      assignmentWeight: 60,
+      conditionCode: 'ConditionB',
+      twoCharacterId: 'CB',
+    },
+  ],
+  partitions: [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+    },
+  ],
+  backendVersion: "1.0.0",
+  groupSatisfied: 0,
+};
+
 export const experiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
   name: 'Test Experiment',
@@ -56,6 +114,7 @@ export const experiment = {
       excludedIfReached: true,
     },
   ],
+  conditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -110,6 +169,7 @@ export const experimentSecond = {
       excludedIfReached: true,
     },
   ],
+  conditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -164,6 +224,7 @@ export const experimentThird = {
       excludedIfReached: true,
     },
   ],
+  conditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -218,6 +279,104 @@ export const experimentFourth = {
       excludedIfReached: true,
     },
   ],
+  conditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
+
+export const experimentFifth = {
+  id: 'be3ae74f-370a-4015-93f3-7761d16f8b18',
+  name: 'Test Experiment',
+  description: 'Test Experiment Description',
+  consistencyRule: 'individual',
+  assignmentUnit: 'individual',
+  postExperimentRule: 'continue',
+  state: 'inactive',
+  startOn: new Date().toISOString(),
+  group: 'teacher',
+  context: ['home'],
+  tags: [],
+  queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  conditions: [
+    {
+      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      name: 'Condition A',
+      description: 'Condition A',
+      assignmentWeight: 40,
+      conditionCode: 'ConditionA',
+      twoCharacterId: 'CA',
+    },
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
+      name: 'Condition B',
+      description: 'Condition B',
+      assignmentWeight: 60,
+      conditionCode: 'ConditionB',
+      twoCharacterId: 'CB',
+    },
+  ],
+  partitions: [
+    {
+      site: 'CurriculumSequence',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludedIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludedIfReached: true,
+    },
+    {
+      site: 'CurriculumSequence',
+      description: 'No Decision Point',
+      twoCharacterId: 'NP',
+      excludedIfReached: true,
+    },
+  ],
+  conditionAliases: [
+    {
+      id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
+      aliasName: "ConditionA_W1",
+      parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
+      decisionPoint: "W1_CurriculumSequence"
+    },
+    {
+      id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
+      aliasName: "ConditionA_W2",
+      parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
+      decisionPoint: "W2_CurriculumSequence"
+    }
+  ],
+  backendVersion: "1.0.0",
+  groupSatisfied: 0,
+};
+
+export function getRevertToExperiment() {
+  return JSON.parse(JSON.stringify(revertToExperiment));
+}
+export function getExperiment() {
+  return JSON.parse(JSON.stringify(experiment));
+}
+
+export function getSecondExperiment() {
+  return JSON.parse(JSON.stringify(experimentSecond));
+}
+
+export function getThirdExperiment() {
+  return JSON.parse(JSON.stringify(experimentThird));
+}
+
+export function getFourthExperiment() {
+  return JSON.parse(JSON.stringify(experimentFourth));
+}
+
+export function getFifthExperiment() {
+  return JSON.parse(JSON.stringify(experimentFifth));
+}

@@ -61,6 +61,8 @@ import {
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
+import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
+import { In } from 'typeorm'
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -92,6 +94,8 @@ export class ExperimentAssignmentService {
     private stateTimeLogsRepository: StateTimeLogsRepository,
     @OrmRepository()
     private analyticsRepository: AnalyticsRepository,
+    @OrmRepository()
+    private conditionAliasRepository: ConditionAliasRepository,
 
     public previewUserService: PreviewUserService,
     public experimentUserService: ExperimentUserService,
@@ -182,10 +186,16 @@ export class ExperimentAssignmentService {
 
     if (experimentDecisionPoint) {
       const { experiment } = experimentDecisionPoint[0];
-      const { conditions } = experiment;
+      const { conditions, partitions } = experiment;
+
+      const aliasConditions = await this.conditionAliasRepository.find({
+        relations: ['parentCondition', 'decisionPoint'],
+        where: { parentCondition: In(conditions.map(x => x.id)) , decisionPoint: In(partitions.map(x => x.id))},
+      });
 
       const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
-      if (matchedCondition.length === 0 && condition !== null) {
+      const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
+      if (matchedCondition.length === 0 && matchedAliasCondition.length === 0 && condition !== null) {
         const error = new Error(`Condition not found: ${condition}`);
         (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
         logger.error(error);
@@ -442,6 +452,26 @@ export class ExperimentAssignmentService {
       const mapForAlternateCondition = assignAlternateCondition(userDoc);
       // select Random Experiment for assignment in case shared decision points:
       const randomExperimentAssignment = [filteredExperiments[Math.floor(Math.random()*filteredExperiments.length)]];
+
+      let conditionsToAssign = [];
+      let decisionsToAssign = [];
+      experimentAssignment.forEach(assignment => {
+        if (assignment) {
+          conditionsToAssign.push(assignment.id);
+        }
+      });
+
+      randomExperimentAssignment.forEach(experiment => {
+        experiment.partitions.forEach(decisionPoint => {
+          decisionsToAssign.push(`${decisionPoint.target}_${decisionPoint.site}`);
+        })
+      });
+
+      const allAliasConditions = await this.conditionAliasRepository.find({
+        relations: ['parentCondition', 'decisionPoint'],
+        where: { parentCondition: In(conditionsToAssign) , decisionPoint: In(decisionsToAssign)},
+      });
+
       return randomExperimentAssignment
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
@@ -449,6 +479,18 @@ export class ExperimentAssignmentService {
           const decisionPoints = experiment.partitions.map((decisionPoint) => {
             const { target, site, twoCharacterId } = decisionPoint;
             const conditionAssigned = assignment;
+
+            let aliasCondition: ExperimentCondition = null;
+            if (conditionAssigned) {
+              const aliasFound = allAliasConditions.find(x => x.parentCondition.id === conditionAssigned.id 
+                && x.decisionPoint.id === `${decisionPoint.target}_${decisionPoint.site}`
+              );
+
+              if (aliasFound) {
+                aliasCondition = {...conditionAssigned, conditionCode: aliasFound.aliasName};
+              }
+            }
+            
             // adding info based on experiment state or logging flag
             if (logging || state === EXPERIMENT_STATE.PREVIEW) {
               // TODO add enrollment code here
@@ -463,7 +505,7 @@ export class ExperimentAssignmentService {
               site,
               experimentId: id,
               twoCharacterId,
-              assignedCondition: conditionAssigned || {
+              assignedCondition: aliasCondition || conditionAssigned || {
                 conditionCode: null,
               },
             };

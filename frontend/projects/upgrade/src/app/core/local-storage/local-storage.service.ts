@@ -39,7 +39,12 @@ export class LocalStorageService {
       isGraphInfoLoading: false,
       allPartitions: null,
       allExperimentNames: null,
-      contextMetaData: {},
+      contextMetaData: {
+        contextMetadata: {}
+      },
+      currentUserSelectedContext: null,
+      isAliasTableEditMode: false,
+      aliasTableEditIndex: null
     };
 
     const state = {

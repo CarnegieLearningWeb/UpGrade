@@ -1,7 +1,8 @@
-import { Entity, PrimaryColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { IsNotEmpty, IsNumber, IsAlphanumeric } from 'class-validator';
 import { Experiment } from './Experiment';
 import { BaseModel } from './base/BaseModel';
+import { ConditionAlias } from './ConditionAlias';
 
 @Entity()
 export class ExperimentCondition extends BaseModel {
@@ -40,4 +41,7 @@ export class ExperimentCondition extends BaseModel {
 
   @ManyToOne((type) => Experiment, (experiment) => experiment.conditions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
+
+  @OneToMany((type) => ConditionAlias, (conditionAlias) => conditionAlias.aliasName)
+  public parentCondition: ConditionAlias[];
 }

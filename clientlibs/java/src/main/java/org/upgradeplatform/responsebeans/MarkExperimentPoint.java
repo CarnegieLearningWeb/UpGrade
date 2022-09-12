@@ -1,5 +1,7 @@
 package org.upgradeplatform.responsebeans;
 
+import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
+
 public class MarkExperimentPoint {
 	
 
@@ -8,10 +10,11 @@ public class MarkExperimentPoint {
 	private Integer versionNumber;
 	private String userId;
 	private String experimentId;
-	private String experimentPoint;
 	private String enrollmentCode;
 	private String condition;
 	private String id;
+	private MarkedDecisionPointStatus status;
+	private String decisionPoint;
 	
 	public String getCreatedAt() {
 		return createdAt;
@@ -45,13 +48,29 @@ public class MarkExperimentPoint {
 		this.id = id;
 	}
 
+	public MarkedDecisionPointStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(MarkedDecisionPointStatus status){
+		this.status = status;
+	}
+
 	public MarkExperimentPoint() {}
 	
-	public MarkExperimentPoint(String userId, String experimentId, String experimentPoint) {
+	public MarkExperimentPoint(String userId, String experimentId, String decisionPoint) {
 		super();
 		this.userId = userId;
 		this.experimentId = experimentId;
-		this.experimentPoint = experimentPoint;
+		this.decisionPoint = decisionPoint;
+	}
+
+	public MarkExperimentPoint(String userId, String experimentId, String decisionPoint, MarkedDecisionPointStatus status) {
+		super();
+		this.userId = userId;
+		this.experimentId = experimentId;
+		this.decisionPoint = decisionPoint;
+		this.status = status;
 	}
 
 
@@ -74,16 +93,6 @@ public class MarkExperimentPoint {
 		this.experimentId = experimentId;
 	}
 
-
-	public String getExperimentPoint() {
-		return experimentPoint;
-	}
-
-
-	public void setExperimentPoint(String experimentPoint) {
-		this.experimentPoint = experimentPoint;
-	}
-
 	public String getEnrollmentCode() {
 	    return enrollmentCode;
 	}
@@ -100,11 +109,20 @@ public class MarkExperimentPoint {
 	    this.condition = condition;
 	}
 
+	public String getDecisionPoint() {
+		return decisionPoint;
+	}
+
+	public void setDecisionPoint(String decisionPoint) {
+		this.decisionPoint = decisionPoint;
+	}
+
     @Override
     public String toString(){
         return "MarkExperimentPoint [createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", versionNumber="
-               + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", experimentPoint="
-               + experimentPoint + ", enrollmentCode=" + enrollmentCode + ", condition=" + condition + ", id=" + id + "]";
+               + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", enrollmentCode=" 
+			   + enrollmentCode + ", condition=" + condition + ", decisionPoint="
+			   + decisionPoint + ", status=" + status + ", id=" + id + "]";
     }
 
 	
