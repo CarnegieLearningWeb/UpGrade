@@ -23,7 +23,6 @@ export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
   isExperimentJSONValid = true;
   isExperimentJSONVersionValid = true;
-  isDuplicateExperiment = false;
   missingAllProperties: string;
   allPartitions = [];
   allPartitionsSub: Subscription;
@@ -99,7 +98,6 @@ export class ImportExperimentComponent implements OnInit {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
         this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
-        this.isDuplicateExperiment = await this.validateDuplicateExperiment(this.experimentInfo.partitions);
       }.bind(this)
     );
     reader.readAsText(event.target.files[0]);

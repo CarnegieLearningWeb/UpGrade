@@ -9,12 +9,12 @@ export class MonitoredDecisionPoint extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 
-  // @Index()
+  @Index()
   @Column()
   @IsNotEmpty()
   public site: string;
 
-  // @Index()
+  @Index()
   @Column({ nullable: true })
   public target: string;
 

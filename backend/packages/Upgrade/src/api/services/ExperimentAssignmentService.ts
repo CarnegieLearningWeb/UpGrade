@@ -137,7 +137,7 @@ export class ExperimentAssignmentService {
     // return error when its a shared DP and experiment ID is not there in params
     if (!experimentID && experiments.length > 1) {
       const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
-      (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
+      (error as any).type = SERVER_ERROR.EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT;
       (error as any).httpCode = 404;
       logger.error(error);
       throw error;
@@ -1251,7 +1251,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: decisionPoint as DecisionPoint, 
+              partition: decisionPoint, 
               user,
               condition: conditionAssigned,
               enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,

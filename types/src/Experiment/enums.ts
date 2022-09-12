@@ -42,6 +42,7 @@ export enum SERVER_ERROR {
   MIGRATION_ERROR = 'Error in migration',
   EMAIL_SEND_ERROR = 'Email send error',
   CONDITION_NOT_FOUND = 'Condition not found',
+  EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT = 'Experiment ID not provided for shared Decision Point',
 }
 
 export enum MARKED_DECISION_POINT_STATUS {

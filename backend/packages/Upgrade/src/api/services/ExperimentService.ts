@@ -348,22 +348,13 @@ export class ExperimentService {
       throw error;
     }
     let experimentDecisionPoints = experiment.partitions;
-
     // Remove the decision points which already exist
     for (const decisionPoint of experimentDecisionPoints) {
       const decisionPointExists = await this.decisionPointRepository.findOne(decisionPoint.id);
       if (decisionPointExists) {
-        if (experimentDecisionPoints.indexOf(decisionPoint) >= 0) {
-          experimentDecisionPoints.splice(experimentDecisionPoints.indexOf(decisionPoint), 1);
-        }
+        // provide new uuid:
+        experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
       }
-    }
-
-    if (experimentDecisionPoints.length === 0) {
-      const error = new Error('Duplicate Decision Point');
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
     }
 
     // Generate new twoCharacterId if it is already exist for conditions
