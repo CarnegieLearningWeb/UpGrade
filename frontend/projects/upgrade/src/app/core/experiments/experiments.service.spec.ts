@@ -448,7 +448,7 @@ describe('ExperimentService', () => {
         it('should dispatch actionUpdateExperimentState with the given input', () => {
             service.fetchContextMetaData();
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(actionFetchContextMetaData());
+            expect(mockStore.dispatch).toHaveBeenCalledWith(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
         })
     })
 

@@ -2,22 +2,32 @@
   .simple-experiment-decision-point-conditions-view {
     height: 515px;
 
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
     .decision-point-header-container {
       display: flex;
       justify-content: space-between;
   
-      .icon-bump-left {
-        margin-left: -5px;
+      .toggle-button {
+        margin-top: -5px;
+        .icon-bump-left {
+          margin-left: -5px;
+        }
+        .toggle-text {
+          margin-left: 5px;
+        }
       }
     }
 
     .conditions-header-container {
-      margin-top: 5px;
+      margin-top: 10px;
     }
 
     .condition-table,
     .partition-table {
-      margin-top: 5px;
       max-height: 135px;
       overflow: auto;
 
@@ -61,6 +71,10 @@
 
       .cdk-column-excludeIfReached {
         justify-content: center;
+
+        mat-checkbox {
+          margin-top: -5px;
+        }
       }
 
       .cdk-column-conditionCode {
@@ -110,26 +124,6 @@
       &--disabled {
         color: var(--grey-6);
       }
-    }
-  }
-
-  .simple-experiment-aliases-view {
-    height: 500px;
-    border: blue 1px solid;
-
-    .aliases-header-container {
-      display: flex;  
-      justify-content: space-between;
-  
-      .icon-bump-left {
-        margin-left: -5px;
-      }
-    }
-
-    .alias-table {
-      width: 100%;
-
-      
     }
   }
 

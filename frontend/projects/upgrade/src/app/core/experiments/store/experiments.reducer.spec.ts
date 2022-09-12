@@ -567,7 +567,8 @@ describe('ExperimentsReducer', () => {
         const testAction: Action = actionFetchContextMetaDataSuccess({
             contextMetaData: {
                 contextMetadata: null
-            }
+            },
+            isLoadingContextMetaData: false
         })
 
         const newState = experimentsReducer(previousState, testAction);
