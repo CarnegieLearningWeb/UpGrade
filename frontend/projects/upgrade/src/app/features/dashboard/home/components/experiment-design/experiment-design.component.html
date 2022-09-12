@@ -13,7 +13,7 @@
               color="primary"
               class="ft-14-600 toggle-button"
               (click)="toggleAliasTable()"
-              [disabled]="aliasTableData.length === 0 || partition.length === 0 || condition.length === 0"
+              [disabled]="aliasTableData.length === 0 || partition.length === 0 || condition.length === 0 || !isExperimentEditable"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
               <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.aliases' | translate }}</span>
@@ -120,7 +120,7 @@
                 >
                 <button mat-icon-button
                   type="button"
-                  [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+                  [disabled]="!isExperimentEditable"
                   (click)="removeConditionOrPartition('partition', groupIndex)">
                   <mat-icon
                     class="remove-icon"
@@ -149,8 +149,8 @@
               type="button"
               class="ft-12-700 add-partition"
               *ngIf="experimentInfo"
-              [ngClass]="{ 'add-partition--disabled': this.experimentInfo && (this.experimentInfo.state == ExperimentState.ENROLLING || this.experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-              [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+              [ngClass]="{ 'add-partition--disabled': !isExperimentEditable}"
+              [disabled]="!isExperimentEditable"
               (click)="addConditionOrPartition('partition')"
             >
               +
@@ -181,7 +181,7 @@
             <mat-checkbox
             class="ft-13-700"
             color="primary"
-            [disabled]= "experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+            [disabled]= "!isExperimentEditable"
             [checked]="equalWeightFlag"
             (change)="changeEqualWeightFlag($event)">
             {{ 'home.new-experiment.design.equal-assignment-weights.text' | translate }}
@@ -284,7 +284,7 @@
                 >
                 <button mat-icon-button
                   type="button"
-                  [disabled]="experimentInfo && (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+                  [disabled]="!isExperimentEditable"
                   (click)="removeConditionOrPartition('condition', groupIndex)">
                   <mat-icon
                     class="remove-icon"
@@ -311,8 +311,8 @@
               type="button"
               class="ft-12-700 add-condition"
               *ngIf="experimentInfo"
-              [ngClass]="{ 'add-condition--disabled': (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-              [disabled]="(experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+              [ngClass]="{ 'add-condition--disabled': !isExperimentEditable }"
+              [disabled]="!isExperimentEditable"
               (click)="addConditionOrPartition('condition')"
             >
               + {{ 'home.new-experiment.design.add-condition.text' | translate }}
@@ -385,8 +385,8 @@
         *ngIf="experimentInfo"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': (isAliasTableEditMode$ | async) || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE) }"
-        [disabled]="(isAliasTableEditMode$ | async) || (experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE)"
+        [ngClass]="{ 'default-button--disabled': (isAliasTableEditMode$ | async) || !isExperimentEditable }"
+        [disabled]="(isAliasTableEditMode$ | async) || !isExperimentEditable"
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
       >
         {{ 'global.update.text' | translate }}
