@@ -4,7 +4,7 @@
     <!--NOTE: this form content may need to be broken out into separate component when factorial design-type introduced-->
     <section class="simple-experiment-form">
       <form class="experiment-design" [formGroup]="experimentDesignForm">
-        <section [hidden]="isAliasTableDisplayed" class="simple-experiment-decision-point-conditions-view">
+        <section class="simple-experiment-decision-point-conditions-view">
           <div class="decision-point-header-container">
             <span class="title">{{ 'home.new-experiment.design.decision-point.text' | translate }}</span>
             <button
@@ -336,7 +336,7 @@
           </div>
         </section>
 
-        <div [hidden]="!isAliasTableDisplayed">
+        <div>
           <app-aliases-table
             [designData$] = designData$
             [experimentInfo] = experimentInfo

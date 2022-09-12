@@ -1,3 +1,27 @@
+/* Hide scrollbar for Chrome, Safari and Opera */
+.shared-modal--step-container::-webkit-scrollbar {
+  display: none;
+}
+
+.shared-modal--step-container {
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  overflow-y: scroll;
+  margin-top: -5px;
+  padding-top: 5px;
+  width: 850px;
+
+  .shared-modal--buttons-container {
+    position: fixed;
+    margin-top: calc(575px - 36px - 5px);
+    width: inherit;
+    background-color: white;
+  }
+}
+
+
+
 .simple-experiment-form {
   .simple-experiment-decision-point-conditions-view {
     height: 515px;
