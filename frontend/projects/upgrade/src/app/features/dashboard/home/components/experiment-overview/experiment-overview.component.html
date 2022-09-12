@@ -12,11 +12,6 @@
           autocomplete="off"
           cdkFocusInitial
         />
-        <mat-error class = "margin-top-5-px"
-            *ngIf="overviewForm.controls.experimentName.hasError('required')"
-          >
-            {{ 'home.new-experiment.overview.name.error.text' | translate }}
-          </mat-error>
       </mat-form-field>
 
       <mat-form-field class="ft-14-600 description">
@@ -38,11 +33,6 @@
             {{ context }}
           </mat-option>
         </mat-select>
-        <mat-error class = "margin-top-5-px"
-          *ngIf="overviewForm.controls.context.hasError('required')"
-        >
-          {{ 'home.new-experiment.overview.context.error.text' | translate }}
-        </mat-error>
       </mat-form-field>
 
       <div class="property-container">
@@ -56,11 +46,6 @@
               {{ unitOfAssignment.value | titlecase }}
             </mat-option>
           </mat-select>
-          <mat-error class = "margin-top-5-px"
-            *ngIf="overviewForm.controls.unitOfAssignment.hasError('required')"
-          >
-            {{ 'home.new-experiment.overview.unit-of-assignment.error.text' | translate }}
-          </mat-error>
         </mat-form-field>
 
         <mat-form-field class="ft-14-600 group-type" *ngIf="unitOfAssignmentValue">
@@ -68,9 +53,6 @@
           <mat-select class="ft-14-400" formControlName="groupType">
             <mat-option *ngFor="let group of groupTypes" [value]="group.value">{{ group.value }}</mat-option>
           </mat-select>
-          <mat-error *ngIf="overviewForm.controls.groupType.hasError('required')">
-            {{ 'home.new-experiment.overview.group-type.error.text' | translate }}
-          </mat-error>
         </mat-form-field>
       </div>
 
@@ -84,11 +66,6 @@
             {{ consistencyRule.value | titlecase }}
           </mat-option>
         </mat-select>
-        <mat-error class = "margin-top-5-px"
-          *ngIf="overviewForm.controls.consistencyRule.hasError('required')"
-        >
-          {{ 'home.new-experiment.overview.consistency-rule.error.text' | translate }}
-        </mat-error>
       </mat-form-field>
 
       <mat-form-field class="ft-14-600 design-type">
