@@ -34,6 +34,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
+  @ViewChild('stepContainer', { read: ElementRef }) stepContainer: ElementRef;
   @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('conditionCode') conditionCode: ElementRef;
@@ -614,6 +615,18 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   toggleAliasTable(): void {
+    if (!this.isAliasTableDisplayed) {
+      this.stepContainer.nativeElement.scroll({
+        top: this.stepContainer.nativeElement.scrollHeight / 2,
+        behavior: 'smooth'
+      });
+    }
+    else {
+      this.stepContainer.nativeElement.scroll({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
     this.isAliasTableDisplayed = !this.isAliasTableDisplayed;
   }
 

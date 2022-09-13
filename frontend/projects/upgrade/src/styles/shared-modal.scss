@@ -15,18 +15,6 @@
     justify-content: space-between;
     height: 575px;
     position: relative;
-
-    &.scrollable {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-        overflow-y: scroll;
-        margin-top: -5px;
-        padding-top: 5px;
-    }
-
-    &.scrollable::-webkit-scrollbar {
-        display: none;
-    }
 }
 
 .shared-modal--buttons-container {
