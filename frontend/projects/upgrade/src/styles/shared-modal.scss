@@ -15,6 +15,13 @@
     justify-content: space-between;
     height: 575px;
     position: relative;
+
+    &.scrollable {
+        height: 585px;
+        margin-top: -5px;
+        padding-top: 5px;
+        overflow: hidden;
+    }
 }
 
 .shared-modal--buttons-container {
