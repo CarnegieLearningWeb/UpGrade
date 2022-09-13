@@ -158,7 +158,7 @@ export class ExperimentAssignmentService {
     
     const experimentDecisionPoint = await this.decisionPointRepository.find({
       where: {
-        id: decisionPointId.id,
+        id: decisionPointId?.id,
       },
       relations: [
         'experiment',
@@ -184,7 +184,7 @@ export class ExperimentAssignmentService {
       }
     });
 
-    if (experimentDecisionPoint) {
+    if (experimentDecisionPoint.length) {
       const { experiment } = experimentDecisionPoint[0];
       const { conditions, partitions } = experiment;
 
@@ -463,7 +463,7 @@ export class ExperimentAssignmentService {
 
       randomExperimentAssignment.forEach(experiment => {
         experiment.partitions.forEach(decisionPoint => {
-          decisionsToAssign.push(`${decisionPoint.target}_${decisionPoint.site}`);
+          decisionsToAssign.push(decisionPoint.id);
         })
       });
 
