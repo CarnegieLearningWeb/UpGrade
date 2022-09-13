@@ -15,6 +15,18 @@
     justify-content: space-between;
     height: 575px;
     position: relative;
+
+    &.scrollable {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+        overflow-y: scroll;
+        margin-top: -5px;
+        padding-top: 5px;
+    }
+
+    &.scrollable::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 .shared-modal--buttons-container {
@@ -26,6 +38,14 @@
             // TODO use parent container to position buttons
             margin-left: 0 !important;
         }
+    }
+
+    &.sticky {
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        padding-bottom: 5px;
     }
 
     // .shared-modal--buttons-right {
