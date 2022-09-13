@@ -118,10 +118,11 @@ export default class UpgradeClient {
     }
 
     async markExperimentPoint(
-      experimentPoint: string,
+      site: string,
       condition = null,
       status: MARKED_DECISION_POINT_STATUS,
-      partitionId?: string
+      target?: string,
+      experimentId?: string
     ): Promise<Interfaces.IMarkExperimentPoint> {
       this.validateClient();
       return await markExperimentPoint(
@@ -129,10 +130,11 @@ export default class UpgradeClient {
         this.userId,
         this.token,
         this.clientSessionId,
-        experimentPoint,
+        site,
         condition,
         status,
-        partitionId,
+        target,
+        experimentId
       );
     }
 
