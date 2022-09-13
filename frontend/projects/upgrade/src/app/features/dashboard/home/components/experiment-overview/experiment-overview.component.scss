@@ -50,3 +50,11 @@
     color: var(--grey-6);
   }
 }
+
+.loading-container {
+  display: flex;
+  height: 500px;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+}
