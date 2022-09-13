@@ -78,6 +78,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isAliasTableEditMode$: Observable<boolean>;
   isAliasTableDisplayed: boolean = false;
   isAliasBtnDisabled: boolean = true;
+
+  isExperimentEditable: boolean = true;
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -142,7 +144,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      debugger;
       this.equalWeightFlag = this.experimentInfo.conditions.every(condition => {
         return condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight;
       });
@@ -156,8 +157,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.partition.push(this.addPartitions(partition.site, partition.target, partition.description, partition.order, partition.excludeIfReached));
       });
 
+      this.isExperimentEditable = this.experimentInfo.state !== this.ExperimentState.ENROLLING && this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
+
       // disable control on edit:
-      if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+      if (!this.isExperimentEditable) {
         this.experimentDesignForm.disable();
       }
     }
@@ -488,7 +491,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
+        if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: this.experimentInfo,
@@ -601,7 +604,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           ? control.value.assignmentWeight
           : this.previousAssignmentWeightValues[index]
         );
-        if (this.experimentInfo?.state !== this.ExperimentState.ENROLLING && this.experimentInfo?.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
+        if (this.isExperimentEditable) {
           control.get('assignmentWeight').enable();
         }
         });
