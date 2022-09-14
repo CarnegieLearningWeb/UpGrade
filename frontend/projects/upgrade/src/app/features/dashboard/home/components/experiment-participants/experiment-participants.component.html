@@ -90,11 +90,6 @@
           <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
           <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
         </mat-table>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="IncludeEmptyRowError"
-          [innerHTML]="EmptyRowErrorMsg"
-        ></span>
         <button
           type="button"
           class="ft-12-700 add-member"
@@ -195,11 +190,6 @@
           <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
           <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
         </mat-table>
-        <span
-          class="ft-14-600 validation-message"
-          *ngIf="ExcludeEmptyRowError"
-          [innerHTML]="EmptyRowErrorMsg"
-        ></span>
         <button
           type="button"
           class="ft-12-700 add-member"

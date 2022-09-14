@@ -44,9 +44,6 @@ export class ExperimentParticipantsComponent implements OnInit {
   segmentNameId = new Map();
   subSegmentTypes: any[];
   subSegmentIdsToSend = [];
-  IncludeEmptyRowError = false;
-  ExcludeEmptyRowError = false;
-  EmptyRowErrorMsg = "Please fill or remove empty row fields before moving forward"
   userIdsToSend = [];
   groupsToSend = [];
   groupString: string = ' ( group )';
@@ -198,34 +195,6 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
-  checkForEmptyRows(includedMembers: ParticipantMember[], excludedMembers: ParticipantMember[]) {
-    const includedMembersFiltered = this.returnEmptyRowsCount(includedMembers);
-    const excludedMembersFiltered = this.returnEmptyRowsCount(excludedMembers);
-
-    if (includedMembersFiltered.length > 0) {
-      this.IncludeEmptyRowError = true;
-    }else{
-      this.IncludeEmptyRowError = false;
-    }
-
-    if (excludedMembersFiltered.length > 0) {
-      this.ExcludeEmptyRowError = true;
-    }else{
-      this.ExcludeEmptyRowError = false;
-    }
-  }
-
-  returnEmptyRowsCount(members: ParticipantMember[]): ParticipantMember[] {
-    if (!members) {
-      return; // form will be invalid
-    }
-
-    return members.filter((memberRow) => {
-      // only return if any of type and id are falsey, which indicates empty/unneeded row
-      return (!memberRow.type || !memberRow.id)
-    })
-  }
-
   setMemberTypes() {
     this.subSegmentTypes = [];
     this.subSegmentTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
@@ -260,6 +229,9 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
+        this.participantsForm.markAllAsTouched();
+        this.participantsForm2.markAllAsTouched();
+
         const filterMode = this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
           ? FILTER_MODE.EXCLUDE_ALL
           : FILTER_MODE.INCLUDE_ALL;
@@ -270,8 +242,6 @@ export class ExperimentParticipantsComponent implements OnInit {
 
         const { members1 } = this.participantsForm.value;
         const { members2 } = this.participantsForm2.value;
-
-        this.checkForEmptyRows(members1, members2);
 
         // TODO: Handle member2:
         if (this.participantsForm.valid && this.participantsForm2.valid) {
