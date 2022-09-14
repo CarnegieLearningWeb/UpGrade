@@ -76,9 +76,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
-  isAliasTableDisplayed: boolean = false;
-  isAliasBtnDisabled: boolean = true;
-
   isExperimentEditable: boolean = true;
   
   constructor(
@@ -617,20 +614,22 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  toggleAliasTable(): void {
-    if (!this.isAliasTableDisplayed) {
-      this.stepContainer.nativeElement.scroll({
-        top: this.stepContainer.nativeElement.scrollHeight / 2,
-        behavior: 'smooth'
-      });
-    }
-    else {
-      this.stepContainer.nativeElement.scroll({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-    this.isAliasTableDisplayed = !this.isAliasTableDisplayed;
+  scrollToAliasesTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: this.stepContainer.nativeElement.scrollHeight / 2,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
+  }
+
+  scrollToConditionsTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: 0,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
   }
 
   get condition(): FormArray {

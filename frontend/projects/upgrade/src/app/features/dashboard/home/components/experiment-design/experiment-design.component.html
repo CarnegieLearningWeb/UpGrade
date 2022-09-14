@@ -12,7 +12,7 @@
               mat-flat-button
               color="primary"
               class="ft-14-600 toggle-button"
-              (click)="toggleAliasTable()"
+              (click)="scrollToAliasesTable()"
               [disabled]="aliasTableData.length === 0 || partition.length === 0 || condition.length === 0 || !isExperimentEditable"
             >
               <mat-icon class="icon icon-bump-left">expand_more</mat-icon>
@@ -343,7 +343,7 @@
             [designData$] = designData$
             [experimentInfo] = experimentInfo
             (aliasTableData$) = handleAliasTableDataChange($event)
-            (hideAliasTable) = toggleAliasTable()
+            (hideAliasTable) = scrollToConditionsTable()
           ></app-aliases-table>
           <br>
         </div>
