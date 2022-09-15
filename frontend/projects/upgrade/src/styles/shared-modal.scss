@@ -15,6 +15,13 @@
     justify-content: space-between;
     height: 575px;
     position: relative;
+
+    &.scrollable {
+        height: 585px;
+        margin-top: -5px;
+        padding-top: 5px;
+        overflow: hidden;
+    }
 }
 
 .shared-modal--buttons-container {
@@ -26,6 +33,14 @@
             // TODO use parent container to position buttons
             margin-left: 0 !important;
         }
+    }
+
+    &.sticky {
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        padding-bottom: 5px;
     }
 
     // .shared-modal--buttons-right {

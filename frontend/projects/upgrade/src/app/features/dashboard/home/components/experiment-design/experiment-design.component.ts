@@ -34,6 +34,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
+  @ViewChild('stepContainer', { read: ElementRef }) stepContainer: ElementRef;
   @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('conditionCode') conditionCode: ElementRef;
@@ -75,9 +76,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
-  isAliasTableDisplayed: boolean = false;
-  isAliasBtnDisabled: boolean = true;
-
   isExperimentEditable: boolean = true;
   
   constructor(
@@ -543,6 +541,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             formData: experimentDesignFormData,
             path: NewExperimentPaths.EXPERIMENT_DESIGN
           });
+          // scroll back to the conditions table
+          this.scrollToConditionsTable();
         }
         break;
     }
@@ -616,8 +616,22 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  toggleAliasTable(): void {
-    this.isAliasTableDisplayed = !this.isAliasTableDisplayed;
+  scrollToAliasesTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: this.stepContainer.nativeElement.scrollHeight / 2,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
+  }
+
+  scrollToConditionsTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: 0,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
   }
 
   get condition(): FormArray {
