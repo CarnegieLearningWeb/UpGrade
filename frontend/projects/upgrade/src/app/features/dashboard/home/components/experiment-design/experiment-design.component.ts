@@ -541,6 +541,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             formData: experimentDesignFormData,
             path: NewExperimentPaths.EXPERIMENT_DESIGN
           });
+          // scroll back to the conditions table
+          this.scrollToConditionsTable();
         }
         break;
     }

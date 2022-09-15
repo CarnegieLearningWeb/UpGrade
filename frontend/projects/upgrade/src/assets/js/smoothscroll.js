@@ -6,13 +6,8 @@ function polyfill() {
   var w = window;
   var d = document;
 
-  // return if scroll behavior is supported and polyfill is not forced
-//   if (
-//     'scrollBehavior' in d.documentElement.style &&
-//     w.__forceSmoothScrollPolyfill__ !== true
-//   ) {
-//     return;
-//   }
+  // check if the scroll-behavior is supported by the browser 
+  var isScrollBehaviorSupported = 'scrollBehavior' in d.documentElement.style;
 
   // globals
   var Element = w.HTMLElement || w.Element;
@@ -22,7 +17,7 @@ function polyfill() {
   // object gathering original scroll methods
   var original = {
     scroll: w.scroll || w.scrollTo,
-    elementScroll: Element.prototype.scroll || scrollElement,
+    elementScroll: Element.prototype.scroll || scrollElement
   };
 
   // define timing method
@@ -182,6 +177,16 @@ function polyfill() {
     if (arguments[0] === undefined) {
       return;
     }
+    // if the scroll-behavior is supported, and the duration and easing are not given
+    if (isScrollBehaviorSupported && 
+        arguments[0] !== null &&
+        typeof arguments[0] === 'object' && 
+        arguments[0].duration === undefined && 
+        arguments[0].easing === undefined) {
+      // use the original function
+      original.elementScroll.apply(this, arguments);
+      return;
+    }
 
     // avoid smooth behavior if not required
     if (shouldBailOut(arguments[0]) === true) {
@@ -220,7 +225,7 @@ function polyfill() {
         ? EASING_FUNCTIONS[arguments[0].easing]
         : DEFAULT_EASING_FUNCTION
     );
-  };
+  }
 }
 
 if (typeof exports === 'object' && typeof module !== 'undefined') {
