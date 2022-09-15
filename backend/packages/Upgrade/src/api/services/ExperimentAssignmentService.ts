@@ -175,6 +175,9 @@ export class ExperimentAssignmentService {
     logger.info({
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
+    if (!experimentID) {
+      experimentID = experimentDecisionPoint[0].experiment.id;
+    }
 
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
       where: {
