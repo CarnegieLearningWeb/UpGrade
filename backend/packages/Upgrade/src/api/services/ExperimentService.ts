@@ -769,32 +769,27 @@ export class ExperimentService {
           [];
 
         // creating decision point docs
+        let promiseArray = []
         const decisionPointDocToSave =
           (decisionPoints &&
             decisionPoints.length > 0 &&
-            decisionPoints.map(async (decisionPoint) => {
+            decisionPoints.map((decisionPoint: any) => {
+              promiseArray.push(this.decisionPointRepository.findOne({
+                where: {
+                  site: decisionPoint.site,
+                  target: decisionPoint.target,
+                }
+              }));
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
-              const joinedForId = await this.decisionPointRepository.findOne({
-                where: {
-                  site: rest.site,
-                  target: rest.target,
-                }
-              });
-              if (rest.id && rest.id === joinedForId.id) {
-                rest.id = rest.id;
-              } else if (joinedForId) {
-                rest.id = joinedForId.id;
-              } else {
-                rest.id = uuid();
-              }
               rest.experiment = experimentDoc;
+              rest.id = rest.id || uuid();
               return rest;
             })) ||
           [];
 
         // creating queries docs
-        const promiseArray = [];
+        promiseArray = [];
         let queriesDocToSave =
           (queries[0] &&
             queries.length > 0 &&
@@ -832,8 +827,8 @@ export class ExperimentService {
         const toDeleteDecisionPoints = [];
         oldDecisionPoints.forEach(({ id, site, target }) => {
           if (
-            !decisionPointDocToSave.find(async (doc) => {
-              return (await doc).id === id && (await doc).site === site && (await doc).target === target;
+            !decisionPointDocToSave.find((doc) => {
+              return doc.id === id && doc.site === site && doc.target === target;
             })
           ) {
             toDeleteDecisionPoints.push(this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager));
