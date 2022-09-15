@@ -320,6 +320,7 @@ export const experimentFifth = {
   ],
   partitions: [
     {
+      id: 'd22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
       target: 'W1',
       description: 'Decision Point on Workspace 1',
@@ -327,6 +328,7 @@ export const experimentFifth = {
       excludedIfReached: true,
     },
     {
+      id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
       target: 'W2',
       description: 'Decision Point on Workspace 2',
@@ -334,6 +336,7 @@ export const experimentFifth = {
       excludedIfReached: true,
     },
     {
+      id: 'f22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
@@ -345,13 +348,13 @@ export const experimentFifth = {
       id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
       aliasName: "ConditionA_W1",
       parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-      decisionPoint: "W1_CurriculumSequence"
+      decisionPoint: "d22467b1-f0e9-4444-9517-cc03037bc079"
     },
     {
       id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
       aliasName: "ConditionA_W2",
       parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-      decisionPoint: "W2_CurriculumSequence"
+      decisionPoint: "e22467b1-f0e9-4444-9517-cc03037bc079"
     }
   ],
   backendVersion: "1.0.0",
