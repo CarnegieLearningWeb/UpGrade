@@ -783,8 +783,10 @@ export class ExperimentService {
               });
               if (rest.id && rest.id === joinedForId.id) {
                 rest.id = rest.id;
-              } else {
+              } else if (joinedForId) {
                 rest.id = joinedForId.id;
+              } else {
+                rest.id = uuid();
               }
               rest.experiment = experimentDoc;
               return rest;

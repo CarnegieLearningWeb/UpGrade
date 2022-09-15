@@ -450,9 +450,7 @@ export class ExperimentAssignmentService {
 
       // TODO delete map after x-prize competition
       const mapForAlternateCondition = assignAlternateCondition(userDoc);
-      // select Random Experiment for assignment in case shared decision points:
-      const randomExperimentAssignment = [filteredExperiments[Math.floor(Math.random()*filteredExperiments.length)]];
-
+      const alldecisionPoints = await this.decisionPointRepository.partitionPointAndName();
       let conditionsToAssign = [];
       let decisionsToAssign = [];
       experimentAssignment.forEach(assignment => {
@@ -461,7 +459,7 @@ export class ExperimentAssignmentService {
         }
       });
 
-      randomExperimentAssignment.forEach(experiment => {
+      filteredExperiments.forEach(experiment => {
         experiment.partitions.forEach(decisionPoint => {
           decisionsToAssign.push(decisionPoint.id);
         })
@@ -471,48 +469,66 @@ export class ExperimentAssignmentService {
         relations: ['parentCondition', 'decisionPoint'],
         where: { parentCondition: In(conditionsToAssign) , decisionPoint: In(decisionsToAssign)},
       });
-
-      return randomExperimentAssignment
-        .reduce((accumulator, experiment, index) => {
-          const assignment = experimentAssignment[index];
-          const { state, logging, name, id } = experiment;
-          const decisionPoints = experiment.partitions.map((decisionPoint) => {
-            const { target, site, twoCharacterId } = decisionPoint;
-            const conditionAssigned = assignment;
-
-            let aliasCondition: ExperimentCondition = null;
-            if (conditionAssigned) {
-              const aliasFound = allAliasConditions.find(x => x.parentCondition.id === conditionAssigned.id 
-                && x.decisionPoint.id === `${decisionPoint.target}_${decisionPoint.site}`
-              );
-
-              if (aliasFound) {
-                aliasCondition = {...conditionAssigned, conditionCode: aliasFound.aliasName};
-              }
+      const decisionPointDoc: any = [];
+      let filteredDecisionPointDoc;
+      let sharedDecisionPoints;
+      const assignedConditionDPExperiment = filteredExperiments
+      .reduce((accumulator, experiment, index) => {
+        const assignment = experimentAssignment[index];
+        let { state, logging, name, id } = experiment;
+        const decisionPoints = experiment.partitions.map((decisionPoint) => {
+          const { target, site, twoCharacterId } = decisionPoint;
+          sharedDecisionPoints = alldecisionPoints.filter((dp) => dp.site === site && dp.target === target);
+          filteredDecisionPointDoc = decisionPointDoc.filter((dp) => dp.site === site && dp.target === target);
+          if (filteredDecisionPointDoc.length == 1) {
+            return {};
+          }
+          const conditionAssigned = assignment;
+          let aliasCondition: ExperimentCondition = null;
+          if (conditionAssigned) {
+            const aliasFound = allAliasConditions.find(x => x.parentCondition.id === conditionAssigned.id 
+              && x.decisionPoint.id === decisionPoint.id
+            );
+            if (aliasFound) {
+              aliasCondition = {...conditionAssigned, conditionCode: aliasFound.aliasName};
             }
-            
-            // adding info based on experiment state or logging flag
-            if (logging || state === EXPERIMENT_STATE.PREVIEW) {
-              // TODO add enrollment code here
-              logger.info({
-                message: `getAllExperimentConditions: Experiment: ${name}, User: ${userId}, Condition: ${
-                  conditionAssigned ? conditionAssigned.conditionCode : null
-                }`,
-              });
-            }
-            return {
-              target,
-              site,
-              experimentId: id,
-              twoCharacterId,
-              assignedCondition: aliasCondition || conditionAssigned || {
-                conditionCode: null,
-              },
-            };
-          });
-          return assignment ? [...accumulator, ...decisionPoints] : accumulator;
-        }, [])
-        .map(mapForAlternateCondition); // TODO delete map after x-prize competition
+          }
+          
+          // adding info based on experiment state or logging flag
+          if (logging || state === EXPERIMENT_STATE.PREVIEW) {
+            // TODO add enrollment code here
+            logger.info({
+              message: `getAllExperimentConditions: Experiment: ${name}, User: ${userId}, Condition: ${
+                conditionAssigned ? conditionAssigned.conditionCode : null
+              }`,
+            });
+          }
+          decisionPointDoc.push({site:site, target:target});
+
+          if (sharedDecisionPoints.length > 1 && decisionPointDoc && filteredDecisionPointDoc.length === 0) {
+            // select Random Experiment for assignment in case shared decision points:
+            id = filteredExperiments[Math.floor(Math.random()*filteredExperiments.length)].id;
+          }
+          return {
+            target,
+            site,
+            experimentId: id,
+            twoCharacterId,
+            assignedCondition: aliasCondition || conditionAssigned || {
+              conditionCode: null,
+            },
+          };
+        });
+        return assignment ? [...accumulator, ...decisionPoints] : accumulator;
+      }, [])
+      .map(mapForAlternateCondition); // TODO delete map after x-prize competition
+
+      return assignedConditionDPExperiment.filter(element => {
+        if (Object.keys(element).length !== 0) {
+          return true;
+        }
+        return false;
+      });
     } catch (err) {
       const error = err as ErrorWithType;
       error.details = 'Error in assignment';
