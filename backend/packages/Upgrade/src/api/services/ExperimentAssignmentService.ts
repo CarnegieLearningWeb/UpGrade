@@ -251,9 +251,10 @@ export class ExperimentAssignmentService {
           experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
         !previewUser
       ) {
+        const experiment = await this.experimentService.findOne(experimentID)
         await this.updateEnrollmentExclusion(
           userDoc,
-          experimentDecisionPoint[0].experiment,
+          experiment,
           experimentDecisionPoint[0],
           {
             individualEnrollment: individualEnrollments,
