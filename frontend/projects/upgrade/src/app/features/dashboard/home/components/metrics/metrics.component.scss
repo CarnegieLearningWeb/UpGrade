@@ -23,7 +23,7 @@
 
     mat-cell {
       justify-content: left;
-      margin-bottom: -5px;
+      margin-bottom: -11px;
     }
 
     .metric-keys {
@@ -71,6 +71,9 @@
     .cdk-column-queryName {
       width: 100%;
       max-width: 350px;
+      &.mat-cell {
+        margin-top: -3px;
+      }
     }
 
     .remove-icon {
