@@ -1,3 +1,5 @@
+// export type SpecSummary = {
+// }
 export const ExcludeIfReachedSpecDetails = [
     {
         id: "SINGLE_IND_IND",

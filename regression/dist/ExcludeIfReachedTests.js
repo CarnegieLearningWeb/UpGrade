@@ -6,7 +6,6 @@ import { excludeIfReachedUsers } from "./mocks/Users";
 export class ExcludeIfReachedTests {
     host;
     authToken;
-    specExperiment;
     constructor(envHost) {
         this.host = envHost;
         this.authToken = env.authToken;
@@ -15,14 +14,17 @@ export class ExcludeIfReachedTests {
     }
     async run() {
         console.log(">>> Begin ExcludeIfReachedTests");
-        // await this.initializeUsers(excludeIfReachedUsers);
+        // Perform global setup steps
+        await this.initializeUsers(excludeIfReachedUsers);
+        // Execute tests
         ExcludeIfReachedSpecDetails.forEach(async (details) => {
             await this.executeSpec(details);
         });
+        // Clean up after all finished
     }
     async initializeUsers(users) {
         console.log(">>> Initialize users");
-        users.forEach(async (user) => {
+        return await Promise.all(users.map(async (user) => {
             const newUser = {
                 id: user.id,
                 group: {
@@ -40,10 +42,10 @@ export class ExcludeIfReachedTests {
             catch (error) {
                 console.log(error);
             }
-        });
+        }));
     }
     async executeSpec(details) {
-        console.log(">>> Execute test");
+        console.log(`>>> Execute test for: ${details.id}`);
         let specExperiment = undefined;
         // 1. create experiment
         specExperiment = await this.doCreateExperiment(details);
@@ -116,6 +118,7 @@ export class ExcludeIfReachedTests {
             };
             try {
                 const response = await this.assignUser(assignRequestBody);
+                // log this for summary
                 const assignResponse = response?.data;
                 console.log(`>>> ${user.id} successfully assigned:`);
                 console.log(assignResponse);

@@ -20,7 +20,6 @@ import {
 export class ExcludeIfReachedTests {
   private host: string;
   private authToken: string;
-  private specExperiment!: ExperimentRequestBody;
 
   constructor(envHost: string) {
     this.host = envHost;
@@ -31,36 +30,43 @@ export class ExcludeIfReachedTests {
 
   public async run() {
     console.log(">>> Begin ExcludeIfReachedTests");
-    // await this.initializeUsers(excludeIfReachedUsers);
+    // Perform global setup steps
+    await this.initializeUsers(excludeIfReachedUsers);
+
+    // Execute tests
     ExcludeIfReachedSpecDetails.forEach(async (details: SpecDetails) => {
       await this.executeSpec(details);
     });
+
+    // Clean up after all finished
   }
 
   public async initializeUsers(users: BasicUser[]) {
     console.log(">>> Initialize users");
-    users.forEach(async (user: BasicUser) => {
-      const newUser: InitUserRequestBody = {
-        id: user.id,
-        group: {
-          schoolId: [user.workingGroupId],
-        },
-        workingGroup: {
-          schoolId: user.workingGroupId,
-        },
-      };
-      try {
-        const response = await this.postUser(newUser);
-        console.log("Response:");
-        console.log(response?.data);
-      } catch (error) {
-        console.log(error);
-      }
-    });
+    return await Promise.all(
+      users.map(async (user: BasicUser) => {
+        const newUser: InitUserRequestBody = {
+          id: user.id,
+          group: {
+            schoolId: [user.workingGroupId],
+          },
+          workingGroup: {
+            schoolId: user.workingGroupId,
+          },
+        };
+        try {
+          const response = await this.postUser(newUser);
+          console.log("Response:");
+          console.log(response?.data);
+        } catch (error) {
+          console.log(error);
+        }
+      })
+    );
   }
 
   public async executeSpec(details: SpecDetails) {
-    console.log(">>> Execute test");
+    console.log(`>>> Execute test for: ${details.id}`);
     let specExperiment: ExperimentRequestBody | undefined = undefined;
 
     // 1. create experiment
@@ -149,6 +155,7 @@ export class ExcludeIfReachedTests {
 
         try {
           const response = await this.assignUser(assignRequestBody);
+          // log this for summary
           const assignResponse = response?.data;
           console.log(`>>> ${user.id} successfully assigned:`);
           console.log(assignResponse);

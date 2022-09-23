@@ -21,6 +21,10 @@ export type MockDecisionPoint = {
   excludeIfReached: boolean;
 };
 
+// export type SpecSummary = {
+
+// }
+
 export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
   {
     id: "SINGLE_IND_IND",
