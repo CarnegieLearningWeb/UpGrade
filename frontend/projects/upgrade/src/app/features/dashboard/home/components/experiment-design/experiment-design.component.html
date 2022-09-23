@@ -282,24 +282,17 @@
                   *matCellDef="let element; let groupIndex = index"
                   [formGroupName]="groupIndex"
                 >
-                  <ng-container *ngIf="!rowData.isEditing">
-                    <span [matTooltip]="rowData.alias" matTooltipPosition="above">
-                      {{ rowData.alias | truncate: 15 }}
-                    </span>
-                  </ng-container>
-                  <ng-container *ngIf="rowData.isEditing">
-                    <mat-form-field floatLabel="never">
-                      <input
-                        matInput
-                        [placeholder]="
-                          'home.new-experiment.design.description.placeholder.text'
-                            | translate
-                        "
-                        formControlName="description"
-                        autocomplete="off"
-                      />
-                    </mat-form-field>
-                  </ng-container>
+                  <mat-form-field floatLabel="never">
+                    <input
+                      matInput
+                      [placeholder]="
+                        'home.new-experiment.design.description.placeholder.text'
+                          | translate
+                      "
+                      formControlName="description"
+                      autocomplete="off"
+                    />
+                  </mat-form-field>
                 </mat-cell>
               </ng-container>
 

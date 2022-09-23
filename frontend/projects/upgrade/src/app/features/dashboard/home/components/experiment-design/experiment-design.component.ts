@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentConditionsTableRow, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -74,6 +74,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   // Alias Table details
   designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[],[]]);
   designDataSub: Subscription;
+  conditionsTableData: ExperimentConditionsTableRow[] = [];
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable: boolean = true;
@@ -217,6 +218,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     ).subscribe(this.designData$);
   }
 
+  handleConditionsTableDataChange(conditionsTableData: ExperimentConditionsTableRow[]) {
+    this.conditionsTableData = [...conditionsTableData];
+  }
+
   handleAliasTableDataChange(aliasTableData: ExperimentAliasTableRow[]) {
     this.aliasTableData = [...aliasTableData];
   }
@@ -252,11 +257,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     return [];
   }
 
-  handleEditClick(rowData: ExperimentAliasTableRow, rowIndex: number) {
-    if (rowData.isEditing && !this.experimentUtilityService.isValidString(rowData.alias)) {
-      rowData.alias = rowData.condition;
-    }
-
+  handleEditClick(rowData: ExperimentConditionsTableRow, rowIndex: number) {
     rowData.isEditing = !rowData.isEditing;
 
     // const isEditMode = this.aliasTableData.some(rowData => rowData.isEditing);

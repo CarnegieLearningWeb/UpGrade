@@ -200,6 +200,14 @@ export interface ExperimentConditionAliasRequestObject {
   decisionPoint: string;
 }
 
+export interface ExperimentConditionsTableRow {
+  id?: string;
+  condition: string;
+  weight: number;
+  description?: string;
+  isEditing: boolean;
+}
+
 export interface ExperimentAliasTableRow {
   id?: string;
   site: string;
