@@ -111,6 +111,26 @@
                 </mat-cell>
               </ng-container>
 
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+                <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-start;">
+                    <button
+                      type="button"
+                      class="row-action-btn"
+                      (click)="handleEditClick(rowData, rowIndex)"
+                      [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
+                    >
+                      <ng-container *ngIf="!rowData.isEditing">
+                        <mat-icon class="icon">create</mat-icon>
+                      </ng-container>
+                      <ng-container *ngIf="rowData.isEditing">
+                        <mat-icon class="icon">done</mat-icon>
+                      </ng-container>
+                    </button>
+                </mat-cell>
+              </ng-container>
+
               <ng-container matColumnDef="removePartition">
                 <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
                 <mat-cell
@@ -121,6 +141,7 @@
                 <button mat-icon-button
                   type="button"
                   [disabled]="!isExperimentEditable"
+                  [disableRipple]="true"
                   (click)="removeConditionOrPartition('partition', groupIndex)">
                   <mat-icon
                     class="remove-icon"
@@ -261,17 +282,44 @@
                   *matCellDef="let element; let groupIndex = index"
                   [formGroupName]="groupIndex"
                 >
-                  <mat-form-field floatLabel="never">
-                    <input
-                      matInput
-                      [placeholder]="
-                        'home.new-experiment.design.description.placeholder.text'
-                          | translate
-                      "
-                      formControlName="description"
-                      autocomplete="off"
-                    />
-                  </mat-form-field>
+                  <ng-container *ngIf="!rowData.isEditing">
+                    <span [matTooltip]="rowData.alias" matTooltipPosition="above">
+                      {{ rowData.alias | truncate: 15 }}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="rowData.isEditing">
+                    <mat-form-field floatLabel="never">
+                      <input
+                        matInput
+                        [placeholder]="
+                          'home.new-experiment.design.description.placeholder.text'
+                            | translate
+                        "
+                        formControlName="description"
+                        autocomplete="off"
+                      />
+                    </mat-form-field>
+                  </ng-container>
+                </mat-cell>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
+                <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-start;">
+                    <button
+                      type="button"
+                      class="row-action-btn"
+                      (click)="handleEditClick(rowData, rowIndex)"
+                      [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
+                    >
+                      <ng-container *ngIf="!rowData.isEditing">
+                        <mat-icon class="icon">create</mat-icon>
+                      </ng-container>
+                      <ng-container *ngIf="rowData.isEditing">
+                        <mat-icon class="icon">done</mat-icon>
+                      </ng-container>
+                    </button>
                 </mat-cell>
               </ng-container>
 
@@ -285,6 +333,7 @@
                 <button mat-icon-button
                   type="button"
                   [disabled]="!isExperimentEditable"
+                  [disableRipple]="true"
                   (click)="removeConditionOrPartition('condition', groupIndex)">
                   <mat-icon
                     class="remove-icon"

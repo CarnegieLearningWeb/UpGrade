@@ -56,8 +56,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   previousAssignmentWeightValues =  [];
 
-  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'removeCondition'];
-  partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'removePartition'];
+  conditionDisplayedColumns = ['conditionCode', 'assignmentWeight', 'description', 'actions', 'removeCondition'];
+  partitionDisplayedColumns = ['site', 'target', 'excludeIfReached', 'actions', 'removePartition'];
 
   // Used for condition code, experiment point and ids auto complete dropdown
   filteredConditionCodes$: Observable<string[]>[] = [];
@@ -250,6 +250,22 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       return currentContextExpIds.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
     }
     return [];
+  }
+
+  handleEditClick(rowData: ExperimentAliasTableRow, rowIndex: number) {
+    if (rowData.isEditing && !this.experimentUtilityService.isValidString(rowData.alias)) {
+      rowData.alias = rowData.condition;
+    }
+
+    rowData.isEditing = !rowData.isEditing;
+
+    // const isEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
+    // const editModeDetails: TableEditModeDetails = {
+    //   isEditMode,
+    //   rowIndex: isEditMode ? rowIndex : null 
+    // }
+    // this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
+    // this.currentAliasInput$.next(rowData.alias);
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {
