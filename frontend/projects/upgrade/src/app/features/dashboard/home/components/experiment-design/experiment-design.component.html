@@ -279,20 +279,27 @@
                   {{ 'home.new-experiment.design.description.text' | translate }}
                 </mat-header-cell>
                 <mat-cell
-                  *matCellDef="let element; let groupIndex = index"
+                  *matCellDef="let rowData; let groupIndex = index"
                   [formGroupName]="groupIndex"
                 >
-                  <mat-form-field floatLabel="never">
-                    <input
-                      matInput
-                      [placeholder]="
-                        'home.new-experiment.design.description.placeholder.text'
-                          | translate
-                      "
-                      formControlName="description"
-                      autocomplete="off"
-                    />
-                  </mat-form-field>
+                  <ng-container *ngIf="!rowData.isEditing">
+                    <span [matTooltip]="rowData.description" matTooltipPosition="above">
+                      {{ rowData.description | truncate: 15 }}
+                    </span>
+                  </ng-container>
+                  <ng-container *ngIf="rowData.isEditing">
+                    <mat-form-field floatLabel="never">
+                      <input
+                        matInput
+                        [placeholder]="
+                          'home.new-experiment.design.description.placeholder.text'
+                            | translate
+                        "
+                        formControlName="description"
+                        autocomplete="off"
+                      />
+                    </mat-form-field>
+                  </ng-container>
                 </mat-cell>
               </ng-container>
 
