@@ -1,15 +1,6 @@
-import axios from "axios";
+import { ExcludeIfReachedTests } from "./ExcludeIfReachedTests";
+import { env } from "./env";
 
-// console.log("hi");
+const excludeIfReachedSuite = new ExcludeIfReachedTests(env.local);
 
-// const getBreeds = async () => {
-//   try {
-//     return await axios.get("https://dog.ceo/api/breeds/list/all");
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-// const result = await getBreeds();
-
-// console.log(result?.data);
+excludeIfReachedSuite.run();
