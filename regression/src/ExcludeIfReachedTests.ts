@@ -2,24 +2,35 @@ import axios from "axios";
 import { env } from "./env";
 import { v4 as uuidv4 } from "uuid";
 import {
+  AssignmentResponseSummary,
   ExcludeIfReachedSpecDetails,
   MockDecisionPoint,
   MockExperimentCondition,
   MockExperimentDetails,
   SpecDetails,
-} from "./mocks/Experiments";
-import { BasicUser, excludeIfReachedUsers } from "./mocks/Users";
+  SpecResult,
+  SpecResultsSummary,
+} from "./mocks/SpecsDetails";
+import { BasicUser, excludeIfReachedUsers, UserNameType } from "./mocks/Users";
 import {
   AssignRequestBody,
-  ExperimentRequestBody,
+  AssignResponse,
+  ExperimentRequestResponseBody,
   InitUserRequestBody,
   MarkRequestBody,
   StatusRequestBody,
-} from "./mocks/RequestBody";
+} from "./mocks/RequestResponse";
+import {
+  ConditionAssertion,
+  ConditionCode,
+  SpecOverallPassFail,
+} from "./constants";
 
 export class ExcludeIfReachedTests {
   private host: string;
   private authToken: string;
+  private summary: SpecResultsSummary[] = [];
+  private simpleSummary: any = [];
 
   constructor(envHost: string) {
     this.host = envHost;
@@ -34,9 +45,33 @@ export class ExcludeIfReachedTests {
     await this.initializeUsers(excludeIfReachedUsers);
 
     // Execute tests
-    ExcludeIfReachedSpecDetails.forEach(async (details: SpecDetails) => {
-      await this.executeSpec(details);
-    });
+    await Promise.all(
+      ExcludeIfReachedSpecDetails.map(async (details: SpecDetails) => {
+        const results = await this.executeSpec(details);
+        this.summary.push(results);
+        this.simpleSummary.push({
+          testName: details.id,
+          result: results.assignResponseSummary.every(
+            (summary: AssignmentResponseSummary) => {
+              return summary.result?.overall === SpecOverallPassFail.FAIL;
+            }
+          )
+            ? SpecOverallPassFail.PASS
+            : SpecOverallPassFail.FAIL,
+        });
+      })
+    );
+
+    console.log(">>> Tests finished.");
+    console.log(">>> Detailed summary:");
+
+    console.log(JSON.stringify(this.summary, null, 2));
+
+    console.log(">>> Overall Spec results:");
+
+    console.log(JSON.stringify(this.simpleSummary, null, 2));
+
+    // write summary to file
 
     // Clean up after all finished
   }
@@ -65,9 +100,17 @@ export class ExcludeIfReachedTests {
     );
   }
 
-  public async executeSpec(details: SpecDetails) {
+  public async executeSpec(details: SpecDetails): Promise<SpecResultsSummary> {
     console.log(`>>> Execute test for: ${details.id}`);
-    let specExperiment: ExperimentRequestBody | undefined = undefined;
+
+    // start the summary details
+    let summary: SpecResultsSummary = {
+      id: details.id,
+      description: details.description,
+      assignResponseSummary: [],
+    };
+
+    let specExperiment: ExperimentRequestResponseBody | undefined = undefined;
 
     // 1. create experiment
 
@@ -75,7 +118,8 @@ export class ExcludeIfReachedTests {
 
     if (!specExperiment) {
       console.log(">>> spec experiment failed to get created, bail out");
-      return;
+      summary.description = "something went wrong creating the experiment!";
+      return summary;
     }
 
     // 2. Mark the user to test "excludeIfReached" against
@@ -86,15 +130,86 @@ export class ExcludeIfReachedTests {
     await this.doStartEnrollment(specExperiment);
 
     // 4. assign all users and log responses
-    await this.doAssignAllUsers();
+    await this.doAssignAllUsers(summary, details);
 
     // 5. delete the experiment
     await this.doDeleteExperiment(specExperiment);
+
+    // 6. analyze the results
+    summary = this.analyzeResults(summary);
+
+    // console.log(">>> The results are in:");
+    // console.log(JSON.stringify(summary, null, 2));
+    return summary;
+  }
+
+  public analyzeResults(
+    summary: SpecResultsSummary
+    // details: SpecDetails
+  ): SpecResultsSummary {
+    // for each user, compare
+    summary.assignResponseSummary.forEach(
+      (assignmentSummary: AssignmentResponseSummary) => {
+        const result: SpecResult = {
+          conditionPasses: false,
+          userMatchPasses: false,
+          overall: SpecOverallPassFail.FAIL,
+        };
+
+        const isDefaultMatch =
+          assignmentSummary.assignedCondition === ConditionCode.DEFAULT &&
+          assignmentSummary.expected.conditionShouldBe ===
+            ConditionAssertion.DEFAULT;
+
+        const isControlOrVariantMatch =
+          assignmentSummary.assignedCondition !== ConditionCode.DEFAULT &&
+          assignmentSummary.expected.conditionShouldBe ===
+            ConditionAssertion.CONTROL_OR_VARIANT;
+
+        const isConditionMatchWithUserInGroup =
+          this.findIsConditionMatchWithUserInGroup(summary, assignmentSummary);
+
+        if (isDefaultMatch || isControlOrVariantMatch) {
+          result.conditionPasses = true;
+        }
+
+        result.userMatchPasses = isConditionMatchWithUserInGroup;
+
+        if (result.userMatchPasses && result.conditionPasses) {
+          result.overall = SpecOverallPassFail.PASS;
+        }
+
+        assignmentSummary.result = result;
+      }
+    );
+
+    return summary;
+  }
+
+  public findIsConditionMatchWithUserInGroup(
+    summary: SpecResultsSummary,
+    thisUserSummary: AssignmentResponseSummary
+  ): boolean {
+    if (thisUserSummary.expected.conditionShouldMatchUser === null) {
+      return true;
+    }
+
+    const userToMatch = summary.assignResponseSummary.find(
+      (summary: AssignmentResponseSummary) => {
+        return (
+          summary.userId === thisUserSummary.expected.conditionShouldMatchUser
+        );
+      }
+    );
+
+    return !!(
+      userToMatch?.assignedCondition === thisUserSummary.assignedCondition
+    );
   }
 
   public async doCreateExperiment(
     details: SpecDetails
-  ): Promise<ExperimentRequestBody | undefined> {
+  ): Promise<ExperimentRequestResponseBody | undefined> {
     const experimentRequestBody = this.createNewExperiment(details.experiment);
 
     try {
@@ -127,7 +242,7 @@ export class ExcludeIfReachedTests {
     }
   }
 
-  public async doStartEnrollment(experiment: ExperimentRequestBody) {
+  public async doStartEnrollment(experiment: ExperimentRequestResponseBody) {
     if (experiment?.id) {
       const statusRequestBody: StatusRequestBody = {
         experimentId: experiment.id,
@@ -145,7 +260,10 @@ export class ExcludeIfReachedTests {
     }
   }
 
-  public async doAssignAllUsers() {
+  public async doAssignAllUsers(
+    summary: SpecResultsSummary,
+    details: SpecDetails
+  ) {
     await Promise.all(
       excludeIfReachedUsers.map(async (user: BasicUser) => {
         const assignRequestBody: AssignRequestBody = {
@@ -158,7 +276,14 @@ export class ExcludeIfReachedTests {
           // log this for summary
           const assignResponse = response?.data;
           console.log(`>>> ${user.id} successfully assigned:`);
-          console.log(assignResponse);
+          // console.log(assignResponse);
+          summary = this.updateSummary(
+            assignResponse,
+            summary,
+            details.experiment.decisionPoints[0].target,
+            user.id,
+            details
+          );
         } catch (error) {
           console.log(`${user.id} failed to assign`);
           // console.log(error);
@@ -167,7 +292,34 @@ export class ExcludeIfReachedTests {
     );
   }
 
-  public async doDeleteExperiment(experiment: ExperimentRequestBody) {
+  public updateSummary(
+    assignResponse: AssignResponse[],
+    summary: SpecResultsSummary,
+    target: string,
+    userId: UserNameType,
+    details: SpecDetails
+  ): SpecResultsSummary {
+    const specExperimentAssignment: AssignResponse | undefined =
+      assignResponse.find((assignResponse: AssignResponse) => {
+        return assignResponse.expId === target;
+      });
+
+    // console.log({ specExperimentAssignment });
+
+    const assignedCondition = specExperimentAssignment
+      ? specExperimentAssignment.assignedCondition.conditionCode
+      : ConditionCode.DEFAULT;
+
+    summary.assignResponseSummary.push({
+      userId,
+      assignedCondition,
+      expected: details.assertions[userId],
+    });
+
+    return summary;
+  }
+
+  public async doDeleteExperiment(experiment: ExperimentRequestResponseBody) {
     if (experiment?.id) {
       try {
         const response = await this.deleteExperiment(experiment);
@@ -189,7 +341,7 @@ export class ExcludeIfReachedTests {
     });
   }
 
-  public async deleteExperiment(data: ExperimentRequestBody) {
+  public async deleteExperiment(data: ExperimentRequestResponseBody) {
     console.log(
       `request: DELETE ${this.host}${env.endpoints.experiment}/${data.id}`
     );
@@ -218,7 +370,7 @@ export class ExcludeIfReachedTests {
     });
   }
 
-  public async postExperiment(data: ExperimentRequestBody) {
+  public async postExperiment(data: ExperimentRequestResponseBody) {
     console.log(`request: POST ${this.host}${env.endpoints.experiment}`);
     // console.log("Body:");
     // console.log(data);
@@ -238,8 +390,8 @@ export class ExcludeIfReachedTests {
 
   public createNewExperiment(
     details: MockExperimentDetails
-  ): ExperimentRequestBody {
-    const newExperiment: ExperimentRequestBody = {
+  ): ExperimentRequestResponseBody {
+    const newExperiment: ExperimentRequestResponseBody = {
       name: details.id,
       description: "",
       consistencyRule: details.consistencyRule,

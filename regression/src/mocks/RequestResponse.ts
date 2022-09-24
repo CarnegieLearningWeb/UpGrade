@@ -25,12 +25,30 @@ export type AssignRequestBody = {
   context: "test";
 };
 
-export type ExperimentRequestBody = {
+export type AssignResponse = {
+  expPoint: string;
+  expId: string;
+  twoCharacterId: string;
+  assignedCondition: {
+    createdAt: string;
+    updatedAt: string;
+    versionNumber: number;
+    id: string;
+    twoCharacterId: string;
+    name: string;
+    description: string;
+    conditionCode: string;
+    assignmentWeight: number;
+    order: number;
+  };
+};
+
+export type ExperimentRequestResponseBody = {
   id?: string;
   name: string;
   description: string;
-  consistencyRule: "group" | "individual" | "experiment";
-  assignmentUnit: "group" | "individual";
+  consistencyRule: string;
+  assignmentUnit: string;
   context: ["test"];
   tags: string[];
   logging: boolean;
