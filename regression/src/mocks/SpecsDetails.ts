@@ -4,7 +4,7 @@ import {
   ConditionCode,
   DecisionPointSite,
 } from "../constants";
-import { UserName, UserNameType } from "./Users";
+import { UserNameType } from "./Users";
 
 export type SpecDetails = {
   id: string;
@@ -35,6 +35,11 @@ export type SpecResultsSummary = {
   id: string;
   description: string;
   assignResponseSummary: AssignmentResponseSummary[];
+};
+
+export type SimpleSummary = {
+  testName: string;
+  result: string;
 };
 
 export type AssignmentResponseSummary = {
@@ -82,7 +87,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
       DALE: {
         conditionShouldBe: ConditionAssertion.CONTROL_OR_VARIANT,
-        conditionShouldMatchUser: "ABE",
+        conditionShouldMatchUser: null,
       },
     },
     experiment: {

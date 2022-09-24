@@ -7,6 +7,7 @@ import {
   MockDecisionPoint,
   MockExperimentCondition,
   MockExperimentDetails,
+  SimpleSummary,
   SpecDetails,
   SpecResult,
   SpecResultsSummary,
@@ -30,7 +31,7 @@ export class ExcludeIfReachedTests {
   private host: string;
   private authToken: string;
   private summary: SpecResultsSummary[] = [];
-  private simpleSummary: any = [];
+  private simpleSummary: SimpleSummary[] = [];
 
   constructor(envHost: string) {
     this.host = envHost;
