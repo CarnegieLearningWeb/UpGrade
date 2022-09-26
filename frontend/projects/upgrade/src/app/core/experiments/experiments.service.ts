@@ -34,7 +34,9 @@ import {
   selectContextMetaData,
   selectGroupAssignmentStatus,
   selectIsPollingExperimentDetailStats,
+  selectIsConditionsTableEditMode,
   selectIsAliasTableEditMode,
+  selectConditionsTableEditIndex,
   selectAliasTableEditIndex,
   selectCurrentContextMetaDataConditions,
   selectIsLoadingContextMetaData
@@ -80,7 +82,9 @@ export class ExperimentService {
   isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData))
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
+  isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
   isAliasTableEditMode$ = this.store$.pipe(select(selectIsAliasTableEditMode));
+  conditionsTableEditIndex$ = this.store$.pipe(select(selectConditionsTableEditIndex));
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
 
@@ -225,6 +229,13 @@ export class ExperimentService {
 
   endDetailStatsPolling() {
     this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling())
+  }
+
+  setUpdateConditionsTableEditMode(details: TableEditModeDetails): void {
+    this.store$.dispatch(experimentAction.actionUpdateConditionsTableEditMode({
+      isConditionsTableEditMode: details.isEditMode,
+      conditionsTableEditIndex: details.rowIndex
+    }));
   }
 
   setUpdateAliasTableEditMode(details: TableEditModeDetails): void {

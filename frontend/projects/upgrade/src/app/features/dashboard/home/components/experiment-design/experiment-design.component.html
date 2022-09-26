@@ -284,7 +284,7 @@
                 >
                   <ng-container *ngIf="!rowData.isEditing">
                     <span [matTooltip]="rowData.description" matTooltipPosition="above">
-                      {{ rowData.description | truncate: 15 }}
+                      {{ rowData.description | truncate: 35 }}
                     </span>
                   </ng-container>
                   <ng-container *ngIf="rowData.isEditing">
@@ -311,7 +311,7 @@
                       type="button"
                       class="row-action-btn"
                       (click)="handleEditClick(rowData, rowIndex)"
-                      [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
+                      [disabled]="(isConditionsTableEditMode$ | async) && (conditionsTableEditIndex$ | async) != rowIndex"
                     >
                       <ng-container *ngIf="!rowData.isEditing">
                         <mat-icon class="icon">create</mat-icon>

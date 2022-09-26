@@ -44,7 +44,9 @@ export class LocalStorageService {
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
+      isConditionsTableEditMode: false,
       isAliasTableEditMode: false,
+      conditionsTableEditIndex: null,
       aliasTableEditIndex: null
     };
 

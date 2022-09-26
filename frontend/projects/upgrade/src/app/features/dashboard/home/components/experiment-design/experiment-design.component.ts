@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentConditionsTableRow, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentConditionsTableRow, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject, TableEditModeDetails } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -70,12 +70,15 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
   equalWeightFlag: boolean = true;
+  currentConditionInput$: BehaviorSubject<string> = new BehaviorSubject('');
 
   // Alias Table details
   designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[],[]]);
   designDataSub: Subscription;
   conditionsTableData: ExperimentConditionsTableRow[] = [];
   aliasTableData: ExperimentAliasTableRow[] = [];
+  isConditionsTableEditMode$: Observable<boolean>;
+  conditionsTableEditIndex$: Observable<number>;
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable: boolean = true;
   
@@ -138,6 +141,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         partitions: this._formBuilder.array([this.addPartitions()])
       }, { validators: ExperimentFormValidators.validateExperimentDesignForm });
     this.createDesignDataSubject();
+    this.isConditionsTableEditMode$ = this.experimentService.isConditionsTableEditMode$;
+    this.conditionsTableEditIndex$ = this.experimentService.conditionsTableEditIndex$;
     this.isAliasTableEditMode$ = this.experimentService.isAliasTableEditMode$;
 
     // populate values in form to update experiment if experiment data is available
@@ -162,6 +167,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentDesignForm.disable();
       }
     }
+
+    this.conditionsTableData = this.createConditionsTableData();
     this.updateView();
 
     // Bind predefined values of experiment conditionCode from backend
@@ -259,14 +266,28 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   handleEditClick(rowData: ExperimentConditionsTableRow, rowIndex: number) {
     rowData.isEditing = !rowData.isEditing;
+    const isEditMode = this.conditionsTableData.some(rowData => rowData.isEditing);
+    const editModeDetails: TableEditModeDetails = {
+      isEditMode,
+      rowIndex: isEditMode ? rowIndex : null
+    }
+    this.experimentService.setUpdateConditionsTableEditMode(editModeDetails);
+    this.currentConditionInput$.next(rowData.description);
 
-    // const isEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
-    // const editModeDetails: TableEditModeDetails = {
-    //   isEditMode,
-    //   rowIndex: isEditMode ? rowIndex : null 
-    // }
-    // this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
-    // this.currentAliasInput$.next(rowData.alias);
+    rowData.description = this.condition.value[rowIndex].description;
+  }
+
+  createConditionsTableData(): ExperimentConditionsTableRow[] {
+    const conditionsTableData: ExperimentConditionsTableRow[] = [];
+    this.condition.value.forEach((condition) => {
+      conditionsTableData.push({
+        condition: condition.conditionCode,
+        weight: condition.assignmentWeight,
+        description: condition.description,
+        isEditing: false
+      });
+    });
+    return conditionsTableData;
   }
 
   addConditions(conditionCode = null, assignmentWeight = null, description = null, order = null) {

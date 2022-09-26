@@ -271,7 +271,9 @@ export interface ExperimentState extends EntityState<Experiment> {
   isLoadingContextMetaData: boolean;
   currentUserSelectedContext: ISingleContextMetadata;
   updatedStat?: IExperimentEnrollmentDetailStats;
+  isConditionsTableEditMode: boolean;
   isAliasTableEditMode: boolean;
+  conditionsTableEditIndex: number | null;
   aliasTableEditIndex: number | null;
 }
 

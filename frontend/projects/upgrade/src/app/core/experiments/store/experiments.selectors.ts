@@ -153,9 +153,19 @@ export const selectIsPollingExperimentDetailStats = createSelector(
   (state) => state.isPollingExperimentDetailStats
 )
 
+export const selectIsConditionsTableEditMode = createSelector(
+  selectExperimentState,
+  (state) => state.isConditionsTableEditMode
+)
+
 export const selectIsAliasTableEditMode = createSelector(
   selectExperimentState,
   (state) => state.isAliasTableEditMode
+)
+
+export const selectConditionsTableEditIndex = createSelector(
+  selectExperimentState,
+  (state) => state.conditionsTableEditIndex
 )
 
 export const selectAliasTableEditIndex = createSelector(

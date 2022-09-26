@@ -35,7 +35,9 @@ export const initialState: ExperimentState = adapter.getInitialState({
   },
   isLoadingContextMetaData: false,
   currentUserSelectedContext: null,
+  isConditionsTableEditMode: false,
   isAliasTableEditMode: false,
+  conditionsTableEditIndex: null,
   aliasTableEditIndex: null
 });
 
@@ -243,6 +245,16 @@ const reducer = createReducer(
       return {
         ...state,
         isPollingExperimentDetailStats: false
+      }
+    }
+  ),
+  on(
+    experimentsAction.actionUpdateConditionsTableEditMode,
+    (state, { isConditionsTableEditMode, conditionsTableEditIndex }) => {
+      return {
+        ...state,
+        isConditionsTableEditMode,
+        conditionsTableEditIndex
       }
     }
   ),
