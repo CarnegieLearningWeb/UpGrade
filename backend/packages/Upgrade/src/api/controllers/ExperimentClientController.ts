@@ -341,14 +341,14 @@ export class ExperimentClientController {
     }
     return this.experimentAssignmentService.markExperimentPoint(
       experiment.userId,
-      experiment.experimentPoint,
+      experiment.site,
       experiment.status,
       experiment.condition,
       {
         logger: request.logger,
         userDoc: experimentUserDoc,
       },
-      experiment.partitionId,
+      experiment.target,
       experiment.experimentId,
     );
   }
