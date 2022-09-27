@@ -1,10 +1,10 @@
 export type InitUserRequestBody = {
   id: string;
   group: {
-    schoolId: string[];
+    [key: string]: string[];
   };
   workingGroup: {
-    schoolId: string;
+    [key: string]: string;
   };
 };
 
@@ -22,7 +22,7 @@ export type StatusRequestBody = {
 
 export type AssignRequestBody = {
   userId: string;
-  context: "test";
+  context: string;
 };
 
 export type AssignResponse = {
@@ -49,7 +49,8 @@ export type ExperimentRequestResponseBody = {
   description: string;
   consistencyRule: string;
   assignmentUnit: string;
-  context: ["test"];
+  context: string[];
+  group?: string;
   tags: string[];
   logging: boolean;
   conditions: {

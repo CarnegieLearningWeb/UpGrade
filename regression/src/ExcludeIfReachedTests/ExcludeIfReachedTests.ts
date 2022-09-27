@@ -1,9 +1,8 @@
 import axios from "axios";
-import { env } from "./env";
+import { env } from "../env";
 import { v4 as uuidv4 } from "uuid";
 import {
   AssignmentResponseSummary,
-  ExcludeIfReachedSpecDetails,
   MockDecisionPoint,
   MockExperimentCondition,
   MockExperimentDetails,
@@ -11,8 +10,8 @@ import {
   SpecDetails,
   SpecResult,
   SpecResultsSummary,
-} from "./mocks/SpecsDetails";
-import { BasicUser, excludeIfReachedUsers, UserNameType } from "./mocks/Users";
+} from "../mocks/SpecsDetails";
+import { BasicUser, excludeIfReachedUsers, UserNameType } from "../mocks/Users";
 import {
   AssignRequestBody,
   AssignResponse,
@@ -20,41 +19,64 @@ import {
   InitUserRequestBody,
   MarkRequestBody,
   StatusRequestBody,
-} from "./mocks/RequestResponse";
+} from "../mocks/RequestResponse";
 import {
   ConditionAssertion,
   ConditionCode,
   SpecOverallPassFail,
-} from "./constants";
+} from "../constants";
+import { ExcludeIfReachedSpecDetails } from "./ExcludeIfReachedTestDetails";
 
 export class ExcludeIfReachedTests {
   private host: string;
   private authToken: string;
+  private context: string;
   private summary: SpecResultsSummary[] = [];
   private simpleSummary: SimpleSummary[] = [];
 
-  constructor(envHost: string) {
+  constructor(envHost: string, envContext: string) {
     this.host = envHost;
     this.authToken = env.authToken;
+    this.context = envContext;
     console.log(">>> Initializing tests for this host", this.host);
     console.log(">>> Using this bearer token:", this.authToken);
+    console.log(">>> Using this context:", this.context);
   }
 
-  public async run() {
+  /**
+   * run all tests, or provide a partial list
+   */
+
+  public async run(partialList?: string[]) {
+    let testList: SpecDetails[] = [];
     console.log(">>> Begin ExcludeIfReachedTests");
     // Perform global setup steps
+
+    if (partialList) {
+      partialList.forEach((testName: string) => {
+        const foundTest = ExcludeIfReachedSpecDetails.find(
+          (details: SpecDetails) => {
+            return details.id === testName;
+          }
+        );
+        if (foundTest) testList.push(foundTest);
+      });
+    } else {
+      testList = ExcludeIfReachedSpecDetails;
+    }
+
     await this.initializeUsers(excludeIfReachedUsers);
 
-    // Execute tests
+    // Execute tests, how to ensure these are done synchronously...
     await Promise.all(
-      ExcludeIfReachedSpecDetails.map(async (details: SpecDetails) => {
+      testList.map(async (details: SpecDetails) => {
         const results = await this.executeSpec(details);
         this.summary.push(results);
         this.simpleSummary.push({
           testName: details.id,
           result: results.assignResponseSummary.every(
             (summary: AssignmentResponseSummary) => {
-              return summary.result?.overall === SpecOverallPassFail.FAIL;
+              return summary.result?.overall === SpecOverallPassFail.PASS;
             }
           )
             ? SpecOverallPassFail.PASS
@@ -84,10 +106,12 @@ export class ExcludeIfReachedTests {
         const newUser: InitUserRequestBody = {
           id: user.id,
           group: {
-            schoolId: [user.workingGroupId],
+            // schoolId: [user.workingGroupId],
+            "add-group1": [user.workingGroupId],
           },
           workingGroup: {
-            schoolId: user.workingGroupId,
+            // schoolId: user.workingGroupId,
+            "add-group1": user.workingGroupId,
           },
         };
         try {
@@ -114,7 +138,6 @@ export class ExcludeIfReachedTests {
     let specExperiment: ExperimentRequestResponseBody | undefined = undefined;
 
     // 1. create experiment
-
     specExperiment = await this.doCreateExperiment(details);
 
     if (!specExperiment) {
@@ -124,7 +147,6 @@ export class ExcludeIfReachedTests {
     }
 
     // 2. Mark the user to test "excludeIfReached" against
-
     await this.doMarkUser(details);
 
     // 3. start enrolling
@@ -139,8 +161,6 @@ export class ExcludeIfReachedTests {
     // 6. analyze the results
     summary = this.analyzeResults(summary);
 
-    // console.log(">>> The results are in:");
-    // console.log(JSON.stringify(summary, null, 2));
     return summary;
   }
 
@@ -220,7 +240,6 @@ export class ExcludeIfReachedTests {
       // console.log(experiment);
     } catch (error) {
       console.log(error);
-      return;
     }
   }
 
@@ -269,7 +288,7 @@ export class ExcludeIfReachedTests {
       excludeIfReachedUsers.map(async (user: BasicUser) => {
         const assignRequestBody: AssignRequestBody = {
           userId: user.id,
-          context: "test",
+          context: this.context,
         };
 
         try {
@@ -277,7 +296,7 @@ export class ExcludeIfReachedTests {
           // log this for summary
           const assignResponse = response?.data;
           console.log(`>>> ${user.id} successfully assigned:`);
-          // console.log(assignResponse);
+          console.log(assignResponse);
           summary = this.updateSummary(
             assignResponse,
             summary,
@@ -304,8 +323,6 @@ export class ExcludeIfReachedTests {
       assignResponse.find((assignResponse: AssignResponse) => {
         return assignResponse.expId === target;
       });
-
-    // console.log({ specExperimentAssignment });
 
     const assignedCondition = specExperimentAssignment
       ? specExperimentAssignment.assignedCondition.conditionCode
@@ -397,7 +414,7 @@ export class ExcludeIfReachedTests {
       description: "",
       consistencyRule: details.consistencyRule,
       assignmentUnit: details.assignmentUnit,
-      context: ["test"],
+      context: [this.context],
       tags: [],
       logging: false,
       conditions: details.conditions.map(
@@ -437,6 +454,7 @@ export class ExcludeIfReachedTests {
         type: "private",
       },
       filterMode: "includeAll",
+      group: "add-group1",
       queries: [],
       endOn: null,
       enrollmentCompleteCondition: null,
