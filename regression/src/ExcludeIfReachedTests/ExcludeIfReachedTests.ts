@@ -67,36 +67,39 @@ export class ExcludeIfReachedTests {
 
     await this.initializeUsers(excludeIfReachedUsers);
 
-    // Execute tests, how to ensure these are done synchronously...
-    await Promise.all(
-      testList.map(async (details: SpecDetails) => {
-        const results = await this.executeSpec(details);
-        this.summary.push(results);
-        this.simpleSummary.push({
-          testName: details.id,
-          result: results.assignResponseSummary.every(
-            (summary: AssignmentResponseSummary) => {
-              return summary.result?.overall === SpecOverallPassFail.PASS;
-            }
-          )
-            ? SpecOverallPassFail.PASS
-            : SpecOverallPassFail.FAIL,
-        });
-      })
-    );
+    // Execute tests (synchronously, async breaks the db, maybe there's a way...)
+    await this.executeAllSpecsSynchronously(testList);
 
+    this.logTheResults();
+  }
+
+  public logTheResults(): void {
     console.log(">>> Tests finished.");
     console.log(">>> Detailed summary:");
-
     console.log(JSON.stringify(this.summary, null, 2));
-
     console.log(">>> Overall Spec results:");
-
     console.log(JSON.stringify(this.simpleSummary, null, 2));
+  }
 
-    // write summary to file
+  public async executeAllSpecsSynchronously(testList: SpecDetails[]) {
+    for (const details of testList) {
+      const results = await this.executeSpec(details);
+      this.publishSummaries(results, details.id);
+    }
+  }
 
-    // Clean up after all finished
+  public publishSummaries(results: SpecResultsSummary, testName: string) {
+    this.summary.push(results);
+    this.simpleSummary.push({
+      testName,
+      result: results.assignResponseSummary.every(
+        (summary: AssignmentResponseSummary) => {
+          return summary.result?.overall === SpecOverallPassFail.PASS;
+        }
+      )
+        ? SpecOverallPassFail.PASS
+        : SpecOverallPassFail.FAIL,
+    });
   }
 
   public async initializeUsers(users: BasicUser[]) {
