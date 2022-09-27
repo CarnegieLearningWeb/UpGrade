@@ -67,7 +67,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -80,8 +79,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
       ],
@@ -113,7 +111,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -126,8 +123,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
       ],
@@ -159,7 +155,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -172,8 +167,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
       ],
@@ -205,7 +199,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -218,8 +211,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
       ],
@@ -251,7 +243,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.GROUP,
       conditions: [
@@ -264,8 +255,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
       ],
@@ -297,7 +287,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_GRP_GRP_FALSE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.GROUP,
       conditions: [
@@ -310,8 +299,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_GRP_GRP_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
       ],
@@ -343,7 +331,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.EXPERIMENT,
       conditions: [
@@ -356,8 +343,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
       ],
@@ -389,7 +375,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_IND_EXP_FALSE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.EXPERIMENT,
       conditions: [
@@ -402,8 +387,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_IND_EXP_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
       ],
@@ -435,7 +419,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_GRP_EXP_TRUE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.EXPERIMENT,
       conditions: [
@@ -448,8 +431,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_GRP_EXP_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
       ],
@@ -481,7 +463,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.SINGLE_GRP_EXP_FALSE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.EXPERIMENT,
       conditions: [
@@ -494,8 +475,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.SINGLE_GRP_EXP_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
       ],
@@ -527,7 +507,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -540,13 +519,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: true,
         },
       ],
@@ -578,7 +555,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -591,13 +567,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: false,
         },
       ],
@@ -629,7 +603,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -642,13 +615,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: false,
         },
       ],
@@ -680,7 +651,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE,
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -693,13 +663,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: true,
         },
       ],
@@ -731,7 +699,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_TRUE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -744,13 +711,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: true,
         },
       ],
@@ -782,7 +747,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -795,13 +759,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: false,
         },
       ],
@@ -833,7 +795,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -846,13 +807,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: true,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: false,
         },
       ],
@@ -884,7 +843,6 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       },
     },
     experiment: {
-      id: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETB_TRUE,
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
@@ -897,13 +855,11 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
       decisionPoints: [
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETB_TRUE + "_A",
+          targetSuffix: "_A",
           excludeIfReached: false,
         },
         {
-          site: DecisionPointSite.SELECT_SECTION,
-          target: ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE + "_B",
+          targetSuffix: "_B",
           excludeIfReached: true,
         },
       ],

@@ -8,7 +8,6 @@ export type SpecDetails = {
 };
 
 export type MockExperimentDetails = {
-  id: string;
   assignmentUnit: string;
   consistencyRule: string;
   conditions: MockExperimentCondition[];
@@ -20,8 +19,7 @@ export type MockExperimentCondition = {
 };
 
 export type MockDecisionPoint = {
-  site: string;
-  target: string;
+  targetSuffix: string;
   excludeIfReached: boolean;
 };
 

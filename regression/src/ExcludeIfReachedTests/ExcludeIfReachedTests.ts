@@ -1,6 +1,7 @@
 import axios from "axios";
 import { env } from "../env";
 import { v4 as uuidv4 } from "uuid";
+import chalk from "chalk";
 import {
   AssignmentResponseSummary,
   MockDecisionPoint,
@@ -23,6 +24,7 @@ import {
 import {
   ConditionAssertion,
   ConditionCode,
+  DecisionPointSite,
   SpecOverallPassFail,
 } from "../constants";
 import { ExcludeIfReachedSpecDetails } from "./ExcludeIfReachedTestDetails";
@@ -33,14 +35,17 @@ export class ExcludeIfReachedTests {
   private context: string;
   private summary: SpecResultsSummary[] = [];
   private simpleSummary: SimpleSummary[] = [];
+  private PASS = chalk.bold.greenBright;
+  private FAIL = chalk.bold.red;
+  private BANNER = chalk.bold.yellow;
 
   constructor(envHost: string, envContext: string) {
     this.host = envHost;
     this.authToken = env.authToken;
     this.context = envContext;
-    console.log(">>> Initializing tests for this host", this.host);
-    console.log(">>> Using this bearer token:", this.authToken);
-    console.log(">>> Using this context:", this.context);
+    console.log(this.BANNER(">>> Initializing tests for this host", this.host));
+    console.log(this.BANNER(">>> Using this bearer token:", this.authToken));
+    console.log(this.BANNER(">>> Using this context:", this.context));
   }
 
   /**
@@ -49,7 +54,7 @@ export class ExcludeIfReachedTests {
 
   public async run(partialList?: string[]) {
     let testList: SpecDetails[] = [];
-    console.log(">>> Begin ExcludeIfReachedTests");
+    console.log(this.BANNER(">>> Begin ExcludeIfReachedTests"));
     // Perform global setup steps
 
     if (partialList) {
@@ -74,10 +79,10 @@ export class ExcludeIfReachedTests {
   }
 
   public logTheResults(): void {
-    console.log(">>> Tests finished.");
-    console.log(">>> Detailed summary:");
+    console.log(this.BANNER(">>> Tests finished."));
+    console.log(this.BANNER(">>> Detailed summary:"));
     console.log(JSON.stringify(this.summary, null, 2));
-    console.log(">>> Overall Spec results:");
+    console.log(this.BANNER(">>> Overall Spec results:"));
     console.log(JSON.stringify(this.simpleSummary, null, 2));
   }
 
@@ -234,7 +239,7 @@ export class ExcludeIfReachedTests {
   public async doCreateExperiment(
     details: SpecDetails
   ): Promise<ExperimentRequestResponseBody | undefined> {
-    const experimentRequestBody = this.createNewExperiment(details.experiment);
+    const experimentRequestBody = this.createNewExperiment(details);
 
     try {
       const response = await this.postExperiment(experimentRequestBody);
@@ -250,7 +255,7 @@ export class ExcludeIfReachedTests {
     const markRequestBody: MarkRequestBody = {
       userId: "ABE",
       experimentPoint: "SelectSection",
-      partitionId: details.experiment.decisionPoints[0].target,
+      partitionId: `${details.id}${details.experiment.decisionPoints[0].targetSuffix}`,
       condition: "control",
     };
 
@@ -303,7 +308,7 @@ export class ExcludeIfReachedTests {
           summary = this.updateSummary(
             assignResponse,
             summary,
-            details.experiment.decisionPoints[0].target,
+            `${details.id}${details.experiment.decisionPoints[0].targetSuffix}`,
             user.id,
             details
           );
@@ -410,33 +415,35 @@ export class ExcludeIfReachedTests {
   }
 
   public createNewExperiment(
-    details: MockExperimentDetails
+    details: SpecDetails
   ): ExperimentRequestResponseBody {
     const newExperiment: ExperimentRequestResponseBody = {
       name: details.id,
       description: "",
-      consistencyRule: details.consistencyRule,
-      assignmentUnit: details.assignmentUnit,
+      consistencyRule: details.experiment.consistencyRule,
+      assignmentUnit: details.experiment.assignmentUnit,
       context: [this.context],
       tags: [],
       logging: false,
-      conditions: details.conditions.map(
+      conditions: details.experiment.conditions.map(
         (condition: MockExperimentCondition, index: number) => {
           return {
             id: uuidv4(),
             conditionCode: condition.conditionCode,
-            assignmentWeight: (100 / details.conditions.length).toString(),
+            assignmentWeight: (
+              100 / details.experiment.conditions.length
+            ).toString(),
             description: "",
             order: index + 1,
             name: "",
           };
         }
       ),
-      partitions: details.decisionPoints.map(
+      partitions: details.experiment.decisionPoints.map(
         (decisionPoint: MockDecisionPoint, index: number) => {
           return {
-            site: "SelectSection",
-            target: `${decisionPoint.target}`,
+            site: DecisionPointSite.SELECT_SECTION,
+            target: `${details.id}${decisionPoint.targetSuffix}`,
             description: "",
             order: index + 1,
             excludeIfReached: decisionPoint.excludeIfReached,
