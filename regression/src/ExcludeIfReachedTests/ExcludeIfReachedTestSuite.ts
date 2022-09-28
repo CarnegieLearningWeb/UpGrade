@@ -1,12 +1,13 @@
 import axios from "axios";
 import { env } from "../env";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs";
 import chalk from "chalk";
 import {
   AssignmentResponseSummary,
+  ExcludeIfReachedSuiteOptions,
   MockDecisionPoint,
   MockExperimentCondition,
-  MockExperimentDetails,
   SimpleSummary,
   SpecDetails,
   SpecResult,
@@ -29,20 +30,29 @@ import {
 } from "../constants";
 import { ExcludeIfReachedSpecDetails } from "./ExcludeIfReachedTestDetails";
 
-export class ExcludeIfReachedTests {
+export class ExcludeIfReachedTestSuite {
   private host: string;
   private authToken: string;
   private context: string;
-  private summary: SpecResultsSummary[] = [];
+  private detailedSummary: SpecResultsSummary[] = [];
   private simpleSummary: SimpleSummary[] = [];
-  private PASS = chalk.bold.greenBright;
-  private FAIL = chalk.bold.red;
-  private BANNER = chalk.bold.yellow;
+  private writePath = "";
+  private writeSimpleSummaryToFile: boolean;
+  private writeDetailedSummaryToFile: boolean;
+  private BANNER = chalk.bold.green;
 
-  constructor(envHost: string, envContext: string) {
+  constructor(
+    envHost: string,
+    envContext: string,
+    options: ExcludeIfReachedSuiteOptions
+  ) {
     this.host = envHost;
     this.authToken = env.authToken;
     this.context = envContext;
+    this.writeSimpleSummaryToFile = !!options.writeSimpleSummaryToFile;
+    this.writeDetailedSummaryToFile = !!options.writeDetailedSummaryToFile;
+    this.writePath = options.writePath || "";
+
     console.log(this.BANNER(">>> Initializing tests for this host", this.host));
     console.log(this.BANNER(">>> Using this bearer token:", this.authToken));
     console.log(this.BANNER(">>> Using this context:", this.context));
@@ -79,24 +89,48 @@ export class ExcludeIfReachedTests {
   }
 
   public logTheResults(): void {
+    const JSONdetailedSummary = JSON.stringify(this.detailedSummary, null, 2);
+    const JSONsimpleSummary = JSON.stringify(this.simpleSummary, null, 2);
     console.log(this.BANNER(">>> Tests finished."));
     console.log(this.BANNER(">>> Detailed summary:"));
-    console.log(JSON.stringify(this.summary, null, 2));
+    console.log(JSON.stringify(this.detailedSummary, null, 2));
     console.log(this.BANNER(">>> Overall Spec results:"));
     console.log(JSON.stringify(this.simpleSummary, null, 2));
+
+    this.writeToFile(JSONdetailedSummary, JSONsimpleSummary);
+  }
+
+  public writeToFile(
+    JSONdetailedSummary: string,
+    JSONsimpleSummary: string
+  ): void {
+    if (this.writeDetailedSummaryToFile) {
+      fs.writeFileSync(
+        `${this.writePath}DetailedSummary-${new Date().toISOString()}`,
+        JSONdetailedSummary
+      );
+    }
+
+    if (this.writeSimpleSummaryToFile) {
+      fs.writeFileSync(
+        `${this.writePath}SimpleSummary-${new Date().toISOString()}`,
+        JSONsimpleSummary
+      );
+    }
   }
 
   public async executeAllSpecsSynchronously(testList: SpecDetails[]) {
     for (const details of testList) {
       const results = await this.executeSpec(details);
-      this.publishSummaries(results, details.id);
+      this.publishSummaries(results, details);
     }
   }
 
-  public publishSummaries(results: SpecResultsSummary, testName: string) {
-    this.summary.push(results);
+  public publishSummaries(results: SpecResultsSummary, details: SpecDetails) {
+    this.detailedSummary.push(results);
     this.simpleSummary.push({
-      testName,
+      testName: details.id,
+      description: details.description,
       result: results.assignResponseSummary.every(
         (summary: AssignmentResponseSummary) => {
           return summary.result?.overall === SpecOverallPassFail.PASS;

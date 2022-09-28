@@ -1,9 +1,17 @@
 /* eslint-disable prettier/prettier */
-import { ExcludeIfReachedTests } from "./ExcludeIfReachedTests/ExcludeIfReachedTests";
+import { ExcludeIfReachedTestSuite } from "./ExcludeIfReachedTests/ExcludeIfReachedTestSuite";
 import { env } from "./env";
 import { ExcludeIfReachedTestNames } from "./ExcludeIfReachedTests/ExcludeIfReachedTestDetails";
 
-const excludeIfReachedSuite = new ExcludeIfReachedTests(env.local, env.context);
+const excludeIfReachedTestSuite = new ExcludeIfReachedTestSuite(
+  env.local, 
+  env.context, 
+  {
+    writeSimpleSummaryToFile: true,
+    writeDetailedSummaryToFile: true,
+    writePath: "./src/results/"
+  }
+);
 
 /**
  * Exclude If Reached Tests
@@ -31,29 +39,40 @@ const excludeIfReachedSuite = new ExcludeIfReachedTests(env.local, env.context);
  * 8. (After all) Summaries published
  */
 
-excludeIfReachedSuite.run([
-  /* Single Decision Point, two condtions */
+excludeIfReachedTestSuite.run([
+  // ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
+  // ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
+  // ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE,
+  // ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE,
+  // ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE,
+  // ExcludeIfReachedTestNames.SINGLE_GRP_GRP_FALSE,
+  // ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE,
+  // ExcludeIfReachedTestNames.SINGLE_IND_EXP_FALSE,
+  // ExcludeIfReachedTestNames.SINGLE_GRP_EXP_TRUE,
+  // ExcludeIfReachedTestNames.SINGLE_GRP_EXP_FALSE,
 
-  ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
-  ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
-  ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE,
-  ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE,
-  ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE,
-  ExcludeIfReachedTestNames.SINGLE_GRP_GRP_FALSE,
-  ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE,
-  ExcludeIfReachedTestNames.SINGLE_IND_EXP_FALSE,
-  ExcludeIfReachedTestNames.SINGLE_GRP_EXP_TRUE,
-  ExcludeIfReachedTestNames.SINGLE_GRP_EXP_FALSE,
-
-  /* Coordinated Decision Points, two decision points, two conditions */
-
-  ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE,
-  ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE,
-  ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE,
-  ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE,
+  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE,
+  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE,
+  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE,
+  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE,
 
   ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_TRUE,
-  ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE,
-  ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE,
-  ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETB_TRUE,
+  // ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE,
+  // ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE,
+  // ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETB_TRUE,
+
+  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_BOTH_TRUE,
+  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_BOTH_FALSE,
+  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETA_TRUE,
+  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETB_TRUE,
+
+  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_TRUE,
+  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_FALSE,
+  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETA_TRUE,
+  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETB_TRUE,
+
+  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_TRUE,
+  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_FALSE,
+  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETA_TRUE,
+  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETB_TRUE,
 ]);
