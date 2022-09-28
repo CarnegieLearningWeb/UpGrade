@@ -574,7 +574,7 @@ export class ExperimentAssignmentService {
       });
       console.log("pooldecisionPointDoc: ", pooldecisionPointDoc);
       console.log("poolsDoc: ", poolsDoc);
-      
+      console.log("Number of pools: ", poolsDoc.length);
       // 3. assign an experiment randomly from each pool:
       // select Random Experiment for assignment in case shared decision points from each pool:
       // we will use root userid to get which expid was selected from the pool. 
@@ -588,13 +588,26 @@ export class ExperimentAssignmentService {
       });
       console.log("filteredPoolExperiments: ", filteredPoolExperiments);
       
-      // TODO: if excluded exp then exclude the experiment from the pool and assign from the rest exps in the pool.
-      
-      // 4. return decisionPoints with assignedCondition of randomly selected experiments:
+      // get experiment objects from selected experiment ids
       filteredExperiments = filteredPoolExperiments.map( id => {
-        return filteredExperiments.filter(exp => exp.id === id)[0];
+        const experiment = filteredExperiments.filter(exp => exp.id === id)[0];
+        return experiment;
       });
+
+      // If excluded exp then exclude the experiment from the pool and assign from the rest exps in the pool.
+      const [includedExperiments, _] = await this.experimentLevelExclusionInclusion(filteredExperiments, userDoc, logger);
+      
+      // experiment level exclusion
+      let experimentExcluded = false;
+      if (includedExperiments.length === 0) {
+        console.log("experiment is excluded");
+        experimentExcluded = true;
+      }
+
+      // TODO: If experimentExcluded = true then reselect another experiment from the pool:
+
       console.log("filteredExperiments after pool filter: ", filteredExperiments);
+      // 4. return decisionPoints with assignedCondition of randomly selected experiments:
       const assignedConditionDPExperiment = filteredExperiments
       .reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
