@@ -86,7 +86,7 @@
     "pretty-quick": "^1.11.1",
     "rimraf": "^3.0.2",
     "standard-version": "^8.0.1",
-    "stylelint": "^12.0.0",
+    "stylelint": "^14.13.0",
     "stylelint-config-concentric-order": "^3.5.0",
     "stylelint-scss": "^3.13.0",
     "ts-jest": "^27.0.0",
