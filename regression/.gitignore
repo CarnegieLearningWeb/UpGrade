@@ -3,4 +3,5 @@
 node_modules
 .vscode
 
-dist
+/dist
+/src/results
