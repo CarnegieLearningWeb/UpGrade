@@ -28,7 +28,7 @@ import {
   DecisionPointSite,
   SpecOverallPassFail,
 } from "../constants";
-import { ExcludeIfReachedSpecDetails } from "./ExcludeIfReachedTestDetails";
+import { ExcludeIfReachedSpecDetails } from "./ExcludeIfReachedTestScenarios";
 
 export class ExcludeIfReachedTestSuite {
   private host: string;

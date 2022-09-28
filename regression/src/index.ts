@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { ExcludeIfReachedTestSuite } from "./ExcludeIfReachedTests/ExcludeIfReachedTestSuite";
 import { env } from "./env";
-import { ExcludeIfReachedTestNames } from "./ExcludeIfReachedTests/ExcludeIfReachedTestDetails";
+import { ExcludeIfReachedTestNames } from "./ExcludeIfReachedTests/ExcludeIfReachedTestScenarios";
 
 const excludeIfReachedTestSuite = new ExcludeIfReachedTestSuite(
   env.local, 
@@ -40,39 +40,39 @@ const excludeIfReachedTestSuite = new ExcludeIfReachedTestSuite(
  */
 
 excludeIfReachedTestSuite.run([
-  // ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
-  // ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
-  // ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE,
-  // ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE,
-  // ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE,
-  // ExcludeIfReachedTestNames.SINGLE_GRP_GRP_FALSE,
-  // ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE,
-  // ExcludeIfReachedTestNames.SINGLE_IND_EXP_FALSE,
-  // ExcludeIfReachedTestNames.SINGLE_GRP_EXP_TRUE,
-  // ExcludeIfReachedTestNames.SINGLE_GRP_EXP_FALSE,
+  ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
+  ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
+  ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE,
+  ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE,
+  ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE,
+  ExcludeIfReachedTestNames.SINGLE_GRP_GRP_FALSE,
+  ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE,
+  ExcludeIfReachedTestNames.SINGLE_IND_EXP_FALSE,
+  ExcludeIfReachedTestNames.SINGLE_GRP_EXP_TRUE,
+  ExcludeIfReachedTestNames.SINGLE_GRP_EXP_FALSE,
 
-  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE,
-  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE,
-  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE,
-  // ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE,
+  ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_TRUE,
+  ExcludeIfReachedTestNames.IND_IND_TWO_DP_BOTH_FALSE,
+  ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETA_TRUE,
+  ExcludeIfReachedTestNames.IND_IND_TWO_DP_TARGETB_TRUE,
 
   ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_TRUE,
-  // ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE,
-  // ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE,
-  // ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETB_TRUE,
+  ExcludeIfReachedTestNames.GRP_IND_TWO_DP_BOTH_FALSE,
+  ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETA_TRUE,
+  ExcludeIfReachedTestNames.GRP_IND_TWO_DP_TARGETB_TRUE,
 
-  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_BOTH_TRUE,
-  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_BOTH_FALSE,
-  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETA_TRUE,
-  // ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETB_TRUE,
+  ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_BOTH_TRUE,
+  ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_BOTH_FALSE,
+  ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETA_TRUE,
+  ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETB_TRUE,
 
-  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_TRUE,
-  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_FALSE,
-  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETA_TRUE,
-  // ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETB_TRUE,
+  ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_TRUE,
+  ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_FALSE,
+  ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETA_TRUE,
+  ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETB_TRUE,
 
-  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_TRUE,
-  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_FALSE,
-  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETA_TRUE,
-  // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETB_TRUE,
+  ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_TRUE,
+  ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_FALSE,
+  ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETA_TRUE,
+  ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETB_TRUE,
 ]);
