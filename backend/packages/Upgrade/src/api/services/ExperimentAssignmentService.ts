@@ -474,6 +474,7 @@ export class ExperimentAssignmentService {
         where: { parentCondition: In(conditionsToAssign) , decisionPoint: In(decisionsToAssign)},
       });
 
+      // create pool of experiments:
       const decisionPointDoc: any = [];
       let filteredDecisionPointDoc;
       let sharedDecisionPoints;
@@ -483,51 +484,21 @@ export class ExperimentAssignmentService {
       let poolsDoc: any[] = [[]];
       let sharedDPExits = false;
 
-      // ["Competing-exp1": [{
-      //   'site': 'add-point1',
-      //   'target': 'add-id1'
-      //   }, {
-      //     'site': 'add-point2',
-      //     'target': 'add-id2'
-      //   }],
-      // "Competing-exp2": [{
-      //   'site': 'add-point1',
-      //   'target': 'add-id1'
-      //   }, {
-      //     'site': 'add-point2',
-      //     'target': 'add-id2'
-      //   }, {
-      //     'site': 'add-point3',
-      //     'target': 'add-id3'
-      //   }],
-      // "Competing-exp3": [{
-      //   'site': 'add-point4',
-      //   'target': 'add-id4'
-      //   }]
-      // ];
-
-      // create pool of experiments:
       // 1. iterate over filteredExperiments:
-      console.log("filt: ", filteredExperiments);
       filteredExperiments.map((experiment, index) => {
         // 2. Check if the decision point in the experiment is present in any pools' decisionPoints
-        console.log("Exp: ", experiment.name);
         if (index === 0) {
-          console.log("pushing first exp");
-          // poolsDoc[poolCounter].push(experiment.name);
           poolsDoc[poolCounter].push(experiment.id);
         }
 
         experiment.partitions.map((decisionPoint) => {
           const { site, target } = decisionPoint;
-          // for first exp:
+          // First pool for initial experiment:
           if (index === 0) {
             pooldecisionPointDoc[poolCounter].push({site:site, target:target});
-          } else { // for every other exp then first exp
-            // new exp comes in, check is it has shared dp with pools
+          } else { // for every other experiments except initial experiment
+            // new experiment comes in, check if it has shared dp with pools:
             sharedPoolDecisionPoint = pooldecisionPointDoc.map((dpPool, poolIndex) => {
-              console.log("dp: ", dpPool);
-              console.log("incoming dp: ", site);
               const matchedIndex = dpPool.map((dp) => {
                 if (dp.site === site && dp.target === target) {
                   return poolIndex;
@@ -535,14 +506,10 @@ export class ExperimentAssignmentService {
                   return null;
                 }
               }).filter( function (element) { return element !== null});
-              console.log("matchedIndex: ", matchedIndex);
               return matchedIndex;
             });
-            console.log("sharedPoolDecisionPoint in each pool: ", sharedPoolDecisionPoint);
             sharedPoolDecisionPoint.map((poolDp) => {
-              console.log("poolDp: ", poolDp);
               if (poolDp.length) {
-                console.log("shared dp");
                 sharedDPExits = true;
               }
             }) 
@@ -553,40 +520,31 @@ export class ExperimentAssignmentService {
           poolCounter += 1;
           pooldecisionPointDoc.push([]);
           poolsDoc.push([]);
-          console.log("pool added: ", poolCounter);
         }
-        // inserting dps and expid/expname in pool docs:
+        // 3. inserting dps and expid/expname in pool docs:
         experiment.partitions.map((decisionPoint, dpIndex) => {
           if (index !== 0) {
             const { site, target } = decisionPoint;
             const dpExists = pooldecisionPointDoc[poolCounter].filter((dp) => dp.site === site && dp.target === target);
-            if(!dpExists.length) {
+            if (!dpExists.length) {
               pooldecisionPointDoc[poolCounter].push({site:site, target:target});
             }
             if (dpIndex === 0) {
               poolsDoc[poolCounter].push(experiment.id);
-              console.log("pushing exp: ", experiment.name);
-              // poolsDoc[poolCounter].push(experiment.name);
             }
           }
         });
         sharedDPExits = false;
       });
-      console.log("pooldecisionPointDoc: ", pooldecisionPointDoc);
-      console.log("poolsDoc: ", poolsDoc);
-      console.log("Number of pools: ", poolsDoc.length);
-      // 3. assign an experiment randomly from each pool:
+
+      // 4. assign an experiment randomly from each pool:
       // select Random Experiment for assignment in case shared decision points from each pool:
-      // we will use root userid to get which expid was selected from the pool. 
-      // We will assign/exclude as per this.
+      // we will use root userid to select expid from the pool. We will assign/exclude as per this.
 
       let r = seedrandom(userId)();
-      console.log("r: ", r);
       let filteredPoolExperiments = poolsDoc.map(poolExp => {
-        console.log("index for exp: ", Math.floor(r*poolExp.length));
         return poolExp[Math.floor(r*poolExp.length)];
       });
-      console.log("filteredPoolExperiments: ", filteredPoolExperiments);
       
       // get experiment objects from selected experiment ids
       filteredExperiments = filteredPoolExperiments.map( id => {
@@ -594,20 +552,7 @@ export class ExperimentAssignmentService {
         return experiment;
       });
 
-      // If excluded exp then exclude the experiment from the pool and assign from the rest exps in the pool.
-      const [includedExperiments, _] = await this.experimentLevelExclusionInclusion(filteredExperiments, userDoc, logger);
-      
-      // experiment level exclusion
-      let experimentExcluded = false;
-      if (includedExperiments.length === 0) {
-        console.log("experiment is excluded");
-        experimentExcluded = true;
-      }
-
-      // TODO: If experimentExcluded = true then reselect another experiment from the pool:
-
-      console.log("filteredExperiments after pool filter: ", filteredExperiments);
-      // 4. return decisionPoints with assignedCondition of randomly selected experiments:
+      // 5. return decisionPoints with assignedCondition of randomly selected experiments:
       const assignedConditionDPExperiment = filteredExperiments
       .reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
@@ -1691,7 +1636,6 @@ export class ExperimentAssignmentService {
 
     let includedExperiments: Experiment[] = [];
     let excludedExperiments = [];
-
 
     experiments.forEach((experiment) => {
       let inclusionFlag = false;
