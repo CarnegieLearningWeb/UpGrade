@@ -12,6 +12,7 @@ import {
   SpecDetails,
   SpecResult,
   SpecResultsSummary,
+  SpectSummaryMetadata,
 } from "../mocks/SpecsDetails";
 import { BasicUser, excludeIfReachedUsers, UserNameType } from "../mocks/Users";
 import {
@@ -104,17 +105,24 @@ export class ExcludeIfReachedTestSuite {
     JSONdetailedSummary: string,
     JSONsimpleSummary: string
   ): void {
+    const metaData: SpectSummaryMetadata = {
+      date: new Date().toISOString(),
+      environment: this.host,
+      context: this.context,
+      appVersion: "",
+    };
+
     if (this.writeDetailedSummaryToFile) {
       fs.writeFileSync(
         `${this.writePath}DetailedSummary-${new Date().toISOString()}`,
-        JSONdetailedSummary
+        JSON.stringify(metaData, null, 2) + ",\n" + JSONdetailedSummary
       );
     }
 
     if (this.writeSimpleSummaryToFile) {
       fs.writeFileSync(
         `${this.writePath}SimpleSummary-${new Date().toISOString()}`,
-        JSONsimpleSummary
+        JSON.stringify(metaData, null, 2) + ",\n" + JSONsimpleSummary
       );
     }
   }
@@ -174,6 +182,10 @@ export class ExcludeIfReachedTestSuite {
     let summary: SpecResultsSummary = {
       id: details.id,
       description: details.description,
+      // date: new Date().toISOString(),
+      // environment: this.host,
+      // context: this.context,
+      // version: "",
       assignResponseSummary: [],
     };
 
@@ -206,10 +218,7 @@ export class ExcludeIfReachedTestSuite {
     return summary;
   }
 
-  public analyzeResults(
-    summary: SpecResultsSummary
-    // details: SpecDetails
-  ): SpecResultsSummary {
+  public analyzeResults(summary: SpecResultsSummary): SpecResultsSummary {
     // for each user, compare
     summary.assignResponseSummary.forEach(
       (assignmentSummary: AssignmentResponseSummary) => {

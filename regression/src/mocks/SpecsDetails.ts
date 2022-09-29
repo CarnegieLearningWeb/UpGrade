@@ -27,6 +27,13 @@ export type MockDecisionPoint = {
   excludeIfReached: boolean;
 };
 
+export type SpectSummaryMetadata = {
+  date: string;
+  environment: string;
+  context: string;
+  appVersion: string;
+};
+
 export type SpecResultsSummary = {
   id: string;
   description: string;

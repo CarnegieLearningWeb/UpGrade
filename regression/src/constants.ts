@@ -28,8 +28,3 @@ export const SpecOverallPassFail = {
   PASS: "PASS",
   FAIL: "FAIL",
 };
-
-export const ContextMetadataName = {
-  ASSIGN_PROG: "assign-prog",
-  ADD: "add",
-};

@@ -1,5 +1,3 @@
-import { ContextMetadataName } from "./constants";
-
 export const env = {
   local: "http://localhost:3030/api",
   dev_cl: "https://upgradeapi.qa-cli.net/api",
@@ -13,5 +11,8 @@ export const env = {
     status: "/experiments/state",
   },
   authToken: "",
-  context: ContextMetadataName.ADD,
+  context: {
+    ADD: "add",
+    ASSIGN_PROG: "assign-prog",
+  },
 };
