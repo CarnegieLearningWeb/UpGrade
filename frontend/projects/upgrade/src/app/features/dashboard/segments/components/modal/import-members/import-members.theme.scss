@@ -1,0 +1,11 @@
+@import '~@angular/material/theming';
+
+@mixin import-members-component-theme($theme) {
+  $background: map-get($theme, background);
+
+  .import-members-container {
+    .title {
+      box-shadow: 0 0 8px 0 mat-color($background, shadow-color);
+    }
+  }
+}

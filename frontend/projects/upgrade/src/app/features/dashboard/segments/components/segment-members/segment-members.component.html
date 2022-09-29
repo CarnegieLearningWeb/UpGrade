@@ -1,5 +1,17 @@
 <form class="segment-members" [formGroup]="segmentMembersForm">
   <!-- Members TABLE -->
+  <div>
+    <button
+        (click)="openImportSegmentsDialog()"
+        mat-flat-button
+        color="primary"
+        class="ft-14-700 import-segments"
+        *ngIf="true"
+      >
+        <mat-icon>add</mat-icon>
+        <span>{{ 'segments.import-segments.text' | translate }}</span>
+      </button>
+  </div>
   <mat-table
     class="members-table"
     [dataSource]="membersDataSource"

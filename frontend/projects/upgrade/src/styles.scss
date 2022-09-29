@@ -44,6 +44,7 @@
 @import './app/features/dashboard/home/components/modal/import-experiment/import-experiment.theme.scss';
 @import './app/features/dashboard/home/components/modal/state-time-logs/state-time-logs.theme.scss';
 @import './app/features/dashboard/segments/components/modal/import-segment/import-segment.theme.scss';
+@import './app/features/dashboard/segments/components/modal/import-members/import-members.theme.scss';
 @import './app/features/dashboard/segments/components/modal/segment-experiment-list/segment-experiment-list.theme.scss';
 
 @mixin custom-components-theme($theme) {
@@ -81,6 +82,7 @@
   @include import-experiment-component-theme($theme);
   @include state-time-logs-modal-component-theme($theme);
   @include import-segment-component-theme($theme);
+  @include import-members-component-theme($theme);
   @include segment-experiment-list-modal-component-theme($theme);
 }
 
@@ -117,6 +119,7 @@
 .delete-modal,
 .import-experiment-modal,
 .import-segment-modal,
+.import-members-modal,
 .experiment-general-modal,
 .new-experiment-modal,
 .new-flag-modal,
@@ -163,6 +166,7 @@
 }
 
 .import-segment-modal,
+.import-members-modal,
 .import-experiment-modal {
   width: 500px;
 }

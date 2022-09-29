@@ -7,6 +7,8 @@ import { IContextMetaData } from '../../../../../core/experiments/store/experime
 import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { TranslateService } from '@ngx-translate/core';
+import { MatDialog } from '@angular/material/dialog';
+import { ImportMembersComponent } from '../modal/import-members/import-members.component';
 
 @Component({
   selector: 'segment-members',
@@ -36,13 +38,15 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   segmentNameId = new Map();
   membersCountError: string = null;
   groupString: string = ' ( group )';
+  importedData: string[][];
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
     private _formBuilder: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private dialog: MatDialog
   ) {}
 
   ngOnChanges() {
@@ -53,6 +57,19 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.members.clear();
+      this.membersDataSource.next(this.members.controls);
+    }
+
+    if (this.importedData) {
+      this.importedData.forEach(memberData => {
+        if(memberData[0] === MemberTypes.INDIVIDUAL) {
+          this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
+        } else if(memberData[0] === MemberTypes.SEGMENT){
+          this.members.push(this.addMembers(MemberTypes.SEGMENT, memberData[1]));
+        } else {
+          this.members.push(this.addMembers(memberData[0], memberData[1]));
+        }
+      });
       this.membersDataSource.next(this.members.controls);
     }
   }
@@ -98,8 +115,32 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
       });
     }
+
+    if (this.importedData) {
+      this.importedData.forEach(memberData => {
+        if(memberData[0] === MemberTypes.INDIVIDUAL) {
+          this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
+        } else if(memberData[0] === MemberTypes.SEGMENT){
+          this.members.push(this.addMembers(MemberTypes.SEGMENT, memberData[1]));
+        } else {
+          this.members.push(this.addMembers(memberData[0], memberData[1]));
+        }
+      });
+      this.membersDataSource.next(this.members.controls);
+    }
   
     this.updateView();
+  }
+
+  openImportSegmentsDialog() {
+    const dialogRef = this.dialog.open(ImportMembersComponent, {
+      panelClass: 'import-segment-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('=====',this.members);
+      // Code will be executed after closing dialog
+    });
   }
 
   addMembers(type = null, id = null) {
@@ -167,6 +208,21 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
     });
+  }
+
+  public addImportMembersData(allMembersData: string[][]) {
+    //this.ngOnInitCall();
+    this.importedData = allMembersData;
+    allMembersData.forEach(memberData => {
+      if(memberData[0] === MemberTypes.INDIVIDUAL) {
+        this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
+      } else if(memberData[0] === MemberTypes.SEGMENT){
+        this.members.push(this.addMembers(MemberTypes.SEGMENT, memberData[1]));
+      } else {
+        this.members.push(this.addMembers(memberData[0], memberData[1]));
+      }
+    });
+    this.updateView();
   }
 
   emitEvent(eventType: NewSegmentDialogEvents) {
