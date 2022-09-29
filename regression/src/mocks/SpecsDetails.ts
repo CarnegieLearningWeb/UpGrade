@@ -48,9 +48,15 @@ export type SimpleSummary = {
 
 export type AssignmentResponseSummary = {
   userId: string;
-  assignedCondition: string;
+  actualAssignedConditions: ActualAssignedCondition[];
+  assignedConditionForAll: string | null;
   expected: SpecAssertion;
   result?: SpecResult;
+};
+
+export type ActualAssignedCondition = {
+  decisionPointTarget: string;
+  condition: string;
 };
 
 export type SpecResult = {

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import chalk from "chalk";
 import {
+  ActualAssignedCondition,
   AssignmentResponseSummary,
   ExcludeIfReachedSuiteOptions,
   MockDecisionPoint,
@@ -213,13 +214,15 @@ export class ExcludeIfReachedTestSuite {
     await this.doDeleteExperiment(specExperiment);
 
     // 6. analyze the results
-    summary = this.analyzeResults(summary);
+    summary = this.analyzeResults(summary, details);
 
     return summary;
   }
 
-  public analyzeResults(summary: SpecResultsSummary): SpecResultsSummary {
-    // for each user, compare
+  public analyzeResults(
+    summary: SpecResultsSummary,
+    details: SpecDetails
+  ): SpecResultsSummary {
     summary.assignResponseSummary.forEach(
       (assignmentSummary: AssignmentResponseSummary) => {
         const result: SpecResult = {
@@ -228,13 +231,37 @@ export class ExcludeIfReachedTestSuite {
           overall: SpecOverallPassFail.FAIL,
         };
 
+        const isCorrectNumberOfAssignedDecisionPoints =
+          assignmentSummary.actualAssignedConditions.length ===
+          details.experiment.decisionPoints.length;
+
+        if (!isCorrectNumberOfAssignedDecisionPoints) {
+          throw new Error(
+            `Unexpected mismatch in actual assignments length (${assignmentSummary.actualAssignedConditions.length}) vs expected (${details.experiment.decisionPoints.length})`
+          );
+        }
+
+        const hasSameConditionForAll =
+          assignmentSummary.actualAssignedConditions.every(
+            (actualAssignedCondition: ActualAssignedCondition) => {
+              return (
+                actualAssignedCondition.condition ===
+                assignmentSummary.actualAssignedConditions[0].condition
+              );
+            }
+          );
+
+        assignmentSummary.assignedConditionForAll = hasSameConditionForAll
+          ? assignmentSummary.actualAssignedConditions[0].condition
+          : null;
+
         const isDefaultMatch =
-          assignmentSummary.assignedCondition === ConditionCode.DEFAULT &&
+          assignmentSummary.assignedConditionForAll === ConditionCode.DEFAULT &&
           assignmentSummary.expected.conditionShouldBe ===
             ConditionAssertion.DEFAULT;
 
         const isControlOrVariantMatch =
-          assignmentSummary.assignedCondition !== ConditionCode.DEFAULT &&
+          assignmentSummary.assignedConditionForAll !== ConditionCode.DEFAULT &&
           assignmentSummary.expected.conditionShouldBe ===
             ConditionAssertion.CONTROL_OR_VARIANT;
 
@@ -275,7 +302,8 @@ export class ExcludeIfReachedTestSuite {
     );
 
     return !!(
-      userToMatch?.assignedCondition === thisUserSummary.assignedCondition
+      userToMatch?.assignedConditionForAll ===
+      thisUserSummary.assignedConditionForAll
     );
   }
 
@@ -346,7 +374,9 @@ export class ExcludeIfReachedTestSuite {
           const response = await this.assignUser(assignRequestBody);
           // log this for summary
           const assignResponse = response?.data;
-          console.log(`>>> ${user.id} successfully assigned:`);
+          console.log(
+            `>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ${user.id} successfully assigned:`
+          );
           console.log(assignResponse);
           summary = this.updateSummary(
             assignResponse,
@@ -370,18 +400,46 @@ export class ExcludeIfReachedTestSuite {
     userId: UserNameType,
     details: SpecDetails
   ): SpecResultsSummary {
-    const specExperimentAssignment: AssignResponse | undefined =
-      assignResponse.find((assignResponse: AssignResponse) => {
-        return assignResponse.expId === target;
-      });
+    let actualAssignedConditions: ActualAssignedCondition[] = [];
+    // we need every target in the experiment, and every condition should match
+    // so we need all the decision points filtered
+    // assignResponse to be filtered
 
-    const assignedCondition = specExperimentAssignment
-      ? specExperimentAssignment.assignedCondition.conditionCode
-      : ConditionCode.DEFAULT;
+    // need a filtered list of responses, then we need to see if the assignne
+    const specExperimentAssignments = assignResponse.filter(
+      (assignResponse: AssignResponse) => {
+        return assignResponse.expId.startsWith(details.id);
+      }
+    );
+
+    // length should equal mock experiment dp length
+    // all responses should be assigned condition
+    // if not, then show that it failed
+
+    if (!specExperimentAssignments.length) {
+      actualAssignedConditions = details.experiment.decisionPoints.map(
+        (decisionPoint: MockDecisionPoint) => {
+          return {
+            decisionPointTarget: details.id + decisionPoint.targetSuffix,
+            condition: ConditionCode.DEFAULT,
+          };
+        }
+      );
+    } else {
+      actualAssignedConditions = specExperimentAssignments.map(
+        (assignResponse: AssignResponse) => {
+          return {
+            decisionPointTarget: assignResponse.expId,
+            condition: assignResponse.assignedCondition.conditionCode,
+          };
+        }
+      );
+    }
 
     summary.assignResponseSummary.push({
       userId,
-      assignedCondition,
+      assignedConditionForAll: null,
+      actualAssignedConditions,
       expected: details.assertions[userId],
     });
 
