@@ -2,6 +2,7 @@ export type ExcludeIfReachedSuiteOptions = {
   writeSimpleSummaryToFile: boolean;
   writeDetailedSummaryToFile: boolean;
   writePath: string;
+  runThisManyTimes?: number;
 };
 
 export type SpecDetails = {
@@ -9,6 +10,20 @@ export type SpecDetails = {
   description: string;
   experiment: MockExperimentDetails;
   assertions: SpecAssertionList;
+  options?: SpecOptions;
+};
+
+export type SpecOptions = {
+  useParentConditionAliasMap?: null | ParentConditionAliasMap;
+  useCustomAssertion?: null | string;
+};
+
+export type ParentConditionAliasMap = { [key: string]: string };
+
+export type MockConditionAlias = {
+  aliasName: string;
+  decisionPointTargetSuffix: string;
+  conditionCode: string;
 };
 
 export type MockExperimentDetails = {
@@ -16,6 +31,7 @@ export type MockExperimentDetails = {
   consistencyRule: string;
   conditions: MockExperimentCondition[];
   decisionPoints: MockDecisionPoint[];
+  conditionAliases?: MockConditionAlias[];
 };
 
 export type MockExperimentCondition = {

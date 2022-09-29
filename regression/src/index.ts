@@ -1,11 +1,12 @@
 /* eslint-disable prettier/prettier */
 import { ExcludeIfReachedTestSuite } from "./ExcludeIfReachedTests/ExcludeIfReachedTestSuite";
 import { env } from "./env";
-import { ExcludeIfReachedTestNames } from "./ExcludeIfReachedTests/ExcludeIfReachedTestScenarios";
+import { ExcludeIfReachedSpecDetails, ExcludeIfReachedTestNames } from "./ExcludeIfReachedTests/ExcludeIfReachedTestScenarios";
+import { XPRIZE_TestNames, XPRIZE_TestScenarios } from "./XPRIZE/XPRIZE_TestScenarios";
 
 const excludeIfReachedTestSuite = new ExcludeIfReachedTestSuite(
-  env.dev_cl, 
-  env.context.ASSIGN_PROG, 
+  env.local, 
+  env.context.ADD, 
   {
     writeSimpleSummaryToFile: true,
     writeDetailedSummaryToFile: true,
@@ -39,9 +40,9 @@ const excludeIfReachedTestSuite = new ExcludeIfReachedTestSuite(
  * 8. (After all) Summaries published
  */
 
-excludeIfReachedTestSuite.run([
-  ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
-  ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
+excludeIfReachedTestSuite.run([ExcludeIfReachedSpecDetails, XPRIZE_TestScenarios],[
+  // ExcludeIfReachedTestNames.SINGLE_IND_IND_TRUE,
+  // ExcludeIfReachedTestNames.SINGLE_IND_IND_FALSE,
   // ExcludeIfReachedTestNames.SINGLE_GRP_IND_TRUE,
   // ExcludeIfReachedTestNames.SINGLE_GRP_IND_FALSE,
   // ExcludeIfReachedTestNames.SINGLE_GRP_GRP_TRUE,
@@ -75,4 +76,7 @@ excludeIfReachedTestSuite.run([
   // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_FALSE,
   // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETA_TRUE,
   // ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETB_TRUE,
+
+  XPRIZE_TestNames.XPRIZE_INDIAN_RIVER,
+  XPRIZE_TestNames.XPRIZE_INDIAN_RIVER_NO_ALIASES
 ]);

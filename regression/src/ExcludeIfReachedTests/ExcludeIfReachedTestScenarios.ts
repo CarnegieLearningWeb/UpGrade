@@ -805,35 +805,4 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
       ],
     },
   },
-  /*******************************************************************************************************************************
-   * IND_EXP_TWO_DP_TARGETB_TRUE
-   */
-  {
-    id: ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETB_TRUE,
-    description:
-      "Individual Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for target B)",
-    assertions: AssertionProfile.NO_EXCLUSIONS_ALL_GET_INDEPENDENT_CONDITION,
-    experiment: {
-      assignmentUnit: AssignmentUnit.INDIVIDUAL,
-      consistencyRule: ConsistencyRule.EXPERIMENT,
-      conditions: [
-        {
-          conditionCode: ConditionCode.CONTROL,
-        },
-        {
-          conditionCode: ConditionCode.VARIANT,
-        },
-      ],
-      decisionPoints: [
-        {
-          targetSuffix: "_A",
-          excludeIfReached: false,
-        },
-        {
-          targetSuffix: "_B",
-          excludeIfReached: true,
-        },
-      ],
-    },
-  },
 ];

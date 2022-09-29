@@ -7,6 +7,7 @@ import {
   ActualAssignedCondition,
   AssignmentResponseSummary,
   ExcludeIfReachedSuiteOptions,
+  MockConditionAlias,
   MockDecisionPoint,
   MockExperimentCondition,
   SimpleSummary,
@@ -41,6 +42,7 @@ export class ExcludeIfReachedTestSuite {
   private writePath = "";
   private writeSimpleSummaryToFile: boolean;
   private writeDetailedSummaryToFile: boolean;
+  private runThisManyTimes: number;
   private BANNER = chalk.bold.green;
 
   constructor(
@@ -54,6 +56,7 @@ export class ExcludeIfReachedTestSuite {
     this.writeSimpleSummaryToFile = !!options.writeSimpleSummaryToFile;
     this.writeDetailedSummaryToFile = !!options.writeDetailedSummaryToFile;
     this.writePath = options.writePath || "";
+    this.runThisManyTimes = options.runThisManyTimes || 1;
 
     console.log(this.BANNER(">>> Initializing tests for this host", this.host));
     console.log(this.BANNER(">>> Using this bearer token:", this.authToken));
@@ -64,18 +67,17 @@ export class ExcludeIfReachedTestSuite {
    * run all tests, or provide a partial list
    */
 
-  public async run(partialList?: string[]) {
+  public async run(scenarioLists: SpecDetails[][], partialList?: string[]) {
+    const allTestScenarios = scenarioLists.flat();
     let testList: SpecDetails[] = [];
     console.log(this.BANNER(">>> Begin ExcludeIfReachedTests"));
     // Perform global setup steps
 
     if (partialList) {
       partialList.forEach((testName: string) => {
-        const foundTest = ExcludeIfReachedSpecDetails.find(
-          (details: SpecDetails) => {
-            return details.id === testName;
-          }
-        );
+        const foundTest = allTestScenarios.find((details: SpecDetails) => {
+          return details.id === testName;
+        });
         if (foundTest) testList.push(foundTest);
       });
     } else {
@@ -241,19 +243,39 @@ export class ExcludeIfReachedTestSuite {
           );
         }
 
+        const parentConditionAliasMap =
+          details.options?.useParentConditionAliasMap;
+
         const hasSameConditionForAll =
           assignmentSummary.actualAssignedConditions.every(
             (actualAssignedCondition: ActualAssignedCondition) => {
-              return (
-                actualAssignedCondition.condition ===
-                assignmentSummary.actualAssignedConditions[0].condition
-              );
+              if (parentConditionAliasMap) {
+                return (
+                  parentConditionAliasMap[actualAssignedCondition.condition] ===
+                  parentConditionAliasMap[
+                    assignmentSummary.actualAssignedConditions[0].condition
+                  ]
+                );
+              } else {
+                return (
+                  actualAssignedCondition.condition ===
+                  assignmentSummary.actualAssignedConditions[0].condition
+                );
+              }
             }
           );
 
-        assignmentSummary.assignedConditionForAll = hasSameConditionForAll
-          ? assignmentSummary.actualAssignedConditions[0].condition
-          : null;
+        if (parentConditionAliasMap) {
+          assignmentSummary.assignedConditionForAll = hasSameConditionForAll
+            ? parentConditionAliasMap[
+                assignmentSummary.actualAssignedConditions[0].condition
+              ]
+            : "mixed";
+        } else {
+          assignmentSummary.assignedConditionForAll = hasSameConditionForAll
+            ? assignmentSummary.actualAssignedConditions[0].condition
+            : "mixed";
+        }
 
         const isDefaultMatch =
           assignmentSummary.assignedConditionForAll === ConditionCode.DEFAULT &&
@@ -263,7 +285,8 @@ export class ExcludeIfReachedTestSuite {
         const isControlOrVariantMatch =
           assignmentSummary.assignedConditionForAll !== ConditionCode.DEFAULT &&
           assignmentSummary.expected.conditionShouldBe ===
-            ConditionAssertion.CONTROL_OR_VARIANT;
+            (details?.options?.useCustomAssertion ||
+              ConditionAssertion.CONTROL_OR_VARIANT);
 
         const isConditionMatchWithUserInGroup =
           this.findIsConditionMatchWithUserInGroup(summary, assignmentSummary);
@@ -401,20 +424,12 @@ export class ExcludeIfReachedTestSuite {
     details: SpecDetails
   ): SpecResultsSummary {
     let actualAssignedConditions: ActualAssignedCondition[] = [];
-    // we need every target in the experiment, and every condition should match
-    // so we need all the decision points filtered
-    // assignResponse to be filtered
 
-    // need a filtered list of responses, then we need to see if the assignne
     const specExperimentAssignments = assignResponse.filter(
       (assignResponse: AssignResponse) => {
         return assignResponse.expId.startsWith(details.id);
       }
     );
-
-    // length should equal mock experiment dp length
-    // all responses should be assigned condition
-    // if not, then show that it failed
 
     if (!specExperimentAssignments.length) {
       actualAssignedConditions = details.experiment.decisionPoints.map(
@@ -438,7 +453,7 @@ export class ExcludeIfReachedTestSuite {
 
     summary.assignResponseSummary.push({
       userId,
-      assignedConditionForAll: null,
+      assignedConditionForAll: "mixed",
       actualAssignedConditions,
       expected: details.assertions[userId],
     });
@@ -515,9 +530,70 @@ export class ExcludeIfReachedTestSuite {
     });
   }
 
+  public generateDecisionPointsConditionsAndAliases(details: SpecDetails): any {
+    const conditions = details.experiment.conditions.map(
+      (condition: MockExperimentCondition, index: number) => {
+        return {
+          id: uuidv4(),
+          conditionCode: condition.conditionCode,
+          assignmentWeight: (
+            100 / details.experiment.conditions.length
+          ).toString(),
+          description: "",
+          order: index + 1,
+          name: "",
+        };
+      }
+    );
+
+    const decisionPoints = details.experiment.decisionPoints.map(
+      (decisionPoint: MockDecisionPoint, index: number) => {
+        return {
+          site: DecisionPointSite.SELECT_SECTION,
+          target: `${details.id}${decisionPoint.targetSuffix}`,
+          description: "",
+          order: index + 1,
+          excludeIfReached: decisionPoint.excludeIfReached,
+        };
+      }
+    );
+
+    const conditionAliases = details.experiment.conditionAliases
+      ? details.experiment.conditionAliases.map(
+          (conditionAlias: MockConditionAlias) => {
+            const parentCondition = conditions.find((condition) => {
+              return condition.conditionCode === conditionAlias.conditionCode;
+            });
+
+            const decisionPoint = decisionPoints.find((decisionPoint) => {
+              return (
+                decisionPoint.target ===
+                details.id + conditionAlias.decisionPointTargetSuffix
+              );
+            });
+
+            return {
+              id: uuidv4(),
+              aliasName: conditionAlias.aliasName,
+              parentCondition: parentCondition?.id,
+              decisionPoint: `${details.id}${conditionAlias.decisionPointTargetSuffix}_${decisionPoint?.site}`,
+            };
+          }
+        )
+      : [];
+
+    return {
+      conditionAliases,
+      conditions,
+      decisionPoints,
+    };
+  }
+
   public createNewExperiment(
     details: SpecDetails
   ): ExperimentRequestResponseBody {
+    const { conditions, decisionPoints, conditionAliases } =
+      this.generateDecisionPointsConditionsAndAliases(details);
     const newExperiment: ExperimentRequestResponseBody = {
       name: details.id,
       description: "",
@@ -526,32 +602,9 @@ export class ExcludeIfReachedTestSuite {
       context: [this.context],
       tags: [],
       logging: false,
-      conditions: details.experiment.conditions.map(
-        (condition: MockExperimentCondition, index: number) => {
-          return {
-            id: uuidv4(),
-            conditionCode: condition.conditionCode,
-            assignmentWeight: (
-              100 / details.experiment.conditions.length
-            ).toString(),
-            description: "",
-            order: index + 1,
-            name: "",
-          };
-        }
-      ),
-      partitions: details.experiment.decisionPoints.map(
-        (decisionPoint: MockDecisionPoint, index: number) => {
-          return {
-            site: DecisionPointSite.SELECT_SECTION,
-            target: `${details.id}${decisionPoint.targetSuffix}`,
-            description: "",
-            order: index + 1,
-            excludeIfReached: decisionPoint.excludeIfReached,
-          };
-        }
-      ),
-      conditionAliases: [],
+      conditions,
+      partitions: decisionPoints,
+      conditionAliases,
       experimentSegmentInclusion: {
         userIds: [],
         groups: [],

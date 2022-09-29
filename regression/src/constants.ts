@@ -7,7 +7,6 @@ export const ConditionCode = {
   DEFAULT: "default",
   CONTROL: "control",
   VARIANT: "variant",
-  VARIANT2: "variant2",
 };
 
 export const DecisionPointSite = {
