@@ -81,7 +81,7 @@
 
           <!-- Experiment post experiment rule -->
           <div class="section-data">
-            <span class="ft-16-600 section-data-title">{{ 'home-global.post-experiment-rule.text' | translate }}</span>
+            <span class="ft-16-600 section-data-title">{{ 'home-global.post-experiment-rule.text' | translate | uppercase }}</span>
             <div class="experiment-state-container post-experiment-rule-container">
               <ng-container
                 *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED; else readOnlyRule"
@@ -322,7 +322,7 @@
 
         <!-- ExcludeIfReached Column -->
         <ng-container matColumnDef="excludeIfReached">
-          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
             {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
           </mat-header-cell>
           <mat-cell

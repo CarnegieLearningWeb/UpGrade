@@ -280,6 +280,7 @@ describe('AuthEffects', () => {
 
     describe('#doLogin', () => {
         it('should dispatch success and setUser actions on success', fakeAsync(() => {
+            service.deferSetUserInfoAfterNavigateEnd = jest.fn();
             service.hasUserClickedLogin = true;
             const userResponse = {
                 createdAt: '1234',
@@ -302,9 +303,6 @@ describe('AuthEffects', () => {
             const token = 'abc123';
 
             const expectedSuccessAction = AuthActions.actionLoginSuccess();
-            const expectedSetUserAction = AuthActions.actionSetUserInfo({
-                user: { ...userResponse, token }
-            })
 
             service.doLogin(user, token);
 
@@ -312,7 +310,7 @@ describe('AuthEffects', () => {
 
             expect(service.hasUserClickedLogin).toEqual(false);
             expect(store$.dispatch).toHaveBeenCalledWith(expectedSuccessAction);
-            expect(store$.dispatch).toHaveBeenCalledWith(expectedSetUserAction);
+            expect(service.deferSetUserInfoAfterNavigateEnd).toHaveBeenCalledWith(userResponse, token);
         }))
 
         it('should dispatch error on login fail', fakeAsync(() => {
