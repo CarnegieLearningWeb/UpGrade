@@ -44,7 +44,6 @@ export class ExperimentParticipantsComponent implements OnInit {
   segmentNameId = new Map();
   subSegmentTypes: any[];
   subSegmentIdsToSend = [];
-  membersCountError: string = null;
   userIdsToSend = [];
   groupsToSend = [];
   groupString: string = ' ( group )';
@@ -196,33 +195,6 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
-  checkForEmptyRows(includedMembers: ParticipantMember[], excludedMembers: ParticipantMember[]) {
-    const includedMembersFiltered = this.removeEmptyRows(includedMembers);
-    const excludedMembersFiltered = this.removeEmptyRows(excludedMembers);
-
-    if (includedMembersFiltered.length === 0) {
-      this.members1.clear();
-      this.updateView1();
-    }
-
-    if (excludedMembersFiltered.length === 0) {
-      this.members2.clear();
-      this.updateView2();
-    }
-  }
-
-  removeEmptyRows(members: ParticipantMember[]): ParticipantMember[] {
-    if (!members) {
-      return; // form will be invalid
-    }
-
-    return members.filter((memberRow) => {
-      // only return false if both type and id are falsey, which indicates empty/unneeded row
-      // otherwise, if one is false and other is truthy, don't remove row, handle as invalid form
-      return !(!memberRow.type && !memberRow.id)
-    })
-  }
-
   setMemberTypes() {
     this.subSegmentTypes = [];
     this.subSegmentTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
@@ -257,6 +229,9 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
+        this.participantsForm.markAllAsTouched();
+        this.participantsForm2.markAllAsTouched();
+
         const filterMode = this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
           ? FILTER_MODE.EXCLUDE_ALL
           : FILTER_MODE.INCLUDE_ALL;
@@ -267,8 +242,6 @@ export class ExperimentParticipantsComponent implements OnInit {
 
         const { members1 } = this.participantsForm.value;
         const { members2 } = this.participantsForm2.value;
-
-        this.checkForEmptyRows(members1, members2);
 
         // TODO: Handle member2:
         if (this.participantsForm.valid && this.participantsForm2.valid) {

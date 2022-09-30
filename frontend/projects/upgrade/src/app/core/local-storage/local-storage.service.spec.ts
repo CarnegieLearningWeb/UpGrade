@@ -37,6 +37,7 @@ describe('LocalStorageService', () => {
             contextMetaData: {
                 contextMetadata: {}
             },
+            isLoadingContextMetaData: false,
             currentUserSelectedContext: null,
             isAliasTableEditMode: false,
             aliasTableEditIndex: null
@@ -62,6 +63,7 @@ describe('LocalStorageService', () => {
             contextMetaData: {
                 contextMetadata: {}
             },
+            isLoadingContextMetaData: false,
             currentUserSelectedContext: null,
             isAliasTableEditMode: false,
             aliasTableEditIndex: null
