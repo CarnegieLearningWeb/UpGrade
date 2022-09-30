@@ -9,7 +9,7 @@ const excludeIfReachedTestSuite = new ExcludeIfReachedTestSuite(
   env.context.ADD, 
   {
     writeSimpleSummaryToFile: false,
-    writeDetailedSummaryToFile: true,
+    writeDetailedSummaryToFile: false,
     writePath: "./src/results/"
   }
 );

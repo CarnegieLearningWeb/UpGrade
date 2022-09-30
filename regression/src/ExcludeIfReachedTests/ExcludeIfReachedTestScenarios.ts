@@ -213,7 +213,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
     id: ExcludeIfReachedTestNames.SINGLE_IND_EXP_TRUE,
     description:
       "Individual Assignment, Experiment Consistency, Single Decision Point Experiment (One DP, exclude_if_reached is true)",
-    assertions: AssertionProfile.ABE_EXCLUDED_OTHERS_GET_INDEPENDENT_CONDITION,
+    assertions: AssertionProfile.NO_EXCLUSIONS_ALL_GET_INDEPENDENT_CONDITION,
     experiment: {
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.EXPERIMENT,
@@ -268,7 +268,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
     description:
       "Group Assignment, Experiment Consistency, Single Decision Point Experiment (One DP, exclude_if_reached is true)",
     assertions:
-      AssertionProfile.ABE_EXCLUDED_BORT_INDEPENDENT_CONDITION_CHAZ_AND_DALE_CONDITIONS_MATCH,
+      AssertionProfile.NO_EXCLUSIONS_ABE_AND_BORT_CONDITTIONS_MATCH_CHAZ_AND_DALE_CONDITIONS_MATCH,
     experiment: {
       assignmentUnit: AssignmentUnit.GROUP,
       consistencyRule: ConsistencyRule.EXPERIMENT,
@@ -751,7 +751,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
     id: ExcludeIfReachedTestNames.IND_EXP_TWO_DP_BOTH_TRUE,
     description:
       "Individual Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for both)",
-    assertions: AssertionProfile.ABE_EXCLUDED_OTHERS_GET_INDEPENDENT_CONDITION,
+    assertions: AssertionProfile.NO_EXCLUSIONS_ALL_GET_INDEPENDENT_CONDITION,
     experiment: {
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.EXPERIMENT,
@@ -813,7 +813,7 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
     id: ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETA_TRUE,
     description:
       "Individual Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for target A)",
-    assertions: AssertionProfile.ABE_EXCLUDED_OTHERS_GET_INDEPENDENT_CONDITION,
+    assertions: AssertionProfile.NO_EXCLUSIONS_ALL_GET_INDEPENDENT_CONDITION,
     experiment: {
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
       consistencyRule: ConsistencyRule.EXPERIMENT,
@@ -833,6 +833,165 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
         {
           targetSuffix: "_B",
           excludeIfReached: false,
+        },
+      ],
+    },
+  },
+  /*******************************************************************************************************************************
+   * IND_EXP_TWO_DP_TARGETB_TRUE
+   */
+  {
+    id: ExcludeIfReachedTestNames.IND_EXP_TWO_DP_TARGETB_TRUE,
+    description:
+      "Individual Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for target B)",
+    assertions: AssertionProfile.NO_EXCLUSIONS_ALL_GET_INDEPENDENT_CONDITION,
+    experiment: {
+      assignmentUnit: AssignmentUnit.INDIVIDUAL,
+      consistencyRule: ConsistencyRule.EXPERIMENT,
+      conditions: [
+        {
+          conditionCode: ConditionCode.CONTROL,
+        },
+        {
+          conditionCode: ConditionCode.VARIANT,
+        },
+      ],
+      decisionPoints: [
+        {
+          targetSuffix: "_A",
+          excludeIfReached: false,
+        },
+        {
+          targetSuffix: "_B",
+          excludeIfReached: true,
+        },
+      ],
+    },
+  },
+  /*******************************************************************************************************************************
+   * GRP_EXP_TWO_DP_BOTH_TRUE
+   */
+  {
+    id: ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_TRUE,
+    description:
+      "Group Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for both)",
+    assertions:
+      AssertionProfile.NO_EXCLUSIONS_ABE_AND_BORT_CONDITTIONS_MATCH_CHAZ_AND_DALE_CONDITIONS_MATCH,
+    experiment: {
+      assignmentUnit: AssignmentUnit.GROUP,
+      consistencyRule: ConsistencyRule.EXPERIMENT,
+      conditions: [
+        {
+          conditionCode: ConditionCode.CONTROL,
+        },
+        {
+          conditionCode: ConditionCode.VARIANT,
+        },
+      ],
+      decisionPoints: [
+        {
+          targetSuffix: "_A",
+          excludeIfReached: true,
+        },
+        {
+          targetSuffix: "_B",
+          excludeIfReached: true,
+        },
+      ],
+    },
+  },
+  /*******************************************************************************************************************************
+   * GRP_EXP_TWO_DP_BOTH_FALSE
+   */
+  {
+    id: ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_BOTH_FALSE,
+    description:
+      "Group Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is false for both)",
+    assertions:
+      AssertionProfile.NO_EXCLUSIONS_ABE_AND_BORT_CONDITTIONS_MATCH_CHAZ_AND_DALE_CONDITIONS_MATCH,
+    experiment: {
+      assignmentUnit: AssignmentUnit.GROUP,
+      consistencyRule: ConsistencyRule.EXPERIMENT,
+      conditions: [
+        {
+          conditionCode: ConditionCode.CONTROL,
+        },
+        {
+          conditionCode: ConditionCode.VARIANT,
+        },
+      ],
+      decisionPoints: [
+        {
+          targetSuffix: "_A",
+          excludeIfReached: false,
+        },
+        {
+          targetSuffix: "_B",
+          excludeIfReached: false,
+        },
+      ],
+    },
+  },
+  /*******************************************************************************************************************************
+   * GRP_EXP_TWO_DP_TARGETA_TRUE
+   */
+  {
+    id: ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETA_TRUE,
+    description:
+      "Group Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for target A)",
+    assertions:
+      AssertionProfile.NO_EXCLUSIONS_ABE_AND_BORT_CONDITTIONS_MATCH_CHAZ_AND_DALE_CONDITIONS_MATCH,
+    experiment: {
+      assignmentUnit: AssignmentUnit.GROUP,
+      consistencyRule: ConsistencyRule.EXPERIMENT,
+      conditions: [
+        {
+          conditionCode: ConditionCode.CONTROL,
+        },
+        {
+          conditionCode: ConditionCode.VARIANT,
+        },
+      ],
+      decisionPoints: [
+        {
+          targetSuffix: "_A",
+          excludeIfReached: true,
+        },
+        {
+          targetSuffix: "_B",
+          excludeIfReached: false,
+        },
+      ],
+    },
+  },
+  /*******************************************************************************************************************************
+   * GRP_EXP_TWO_DP_TARGETB_TRUE
+   */
+  {
+    id: ExcludeIfReachedTestNames.GRP_EXP_TWO_DP_TARGETB_TRUE,
+    description:
+      "Group Assignment, Experiment Consistency, Two Decision Point Experiment (exclude_if_reached is true for target B)",
+    assertions:
+      AssertionProfile.NO_EXCLUSIONS_ABE_AND_BORT_CONDITTIONS_MATCH_CHAZ_AND_DALE_CONDITIONS_MATCH,
+    experiment: {
+      assignmentUnit: AssignmentUnit.GROUP,
+      consistencyRule: ConsistencyRule.EXPERIMENT,
+      conditions: [
+        {
+          conditionCode: ConditionCode.CONTROL,
+        },
+        {
+          conditionCode: ConditionCode.VARIANT,
+        },
+      ],
+      decisionPoints: [
+        {
+          targetSuffix: "_A",
+          excludeIfReached: false,
+        },
+        {
+          targetSuffix: "_B",
+          excludeIfReached: true,
         },
       ],
     },
