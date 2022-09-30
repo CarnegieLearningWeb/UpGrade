@@ -291,7 +291,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (type === 'condition' && this.experimentInfo) {
       const deletedCondition = this.experimentInfo.conditions.find(condition => condition.order === groupIndex + 1);
       if (deletedCondition) {
-        delete this.experimentInfo.conditions[groupIndex];
+        this.experimentInfo.conditions = this.experimentInfo.conditions.filter(condition => condition == deletedCondition)
         if (this.experimentInfo.revertTo === deletedCondition.id) {
           this.experimentInfo.revertTo = null;
         }
