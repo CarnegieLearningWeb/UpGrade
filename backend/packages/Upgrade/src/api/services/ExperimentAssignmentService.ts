@@ -112,7 +112,7 @@ export class ExperimentAssignmentService {
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
-    experimentID?: string
+    experimentId?: string
   ): Promise<MonitoredDecisionPoint> {
     // find working group for user
     const { logger, userDoc } = requestContext;
@@ -139,12 +139,21 @@ export class ExperimentAssignmentService {
       }
     });
     // return error when its a shared DP and experiment ID is not there in params
-    if (!experimentID && experiments.length > 1) {
+    if (!experimentId && experiments.length > 1) {
       const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
       (error as any).type = SERVER_ERROR.EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT;
       (error as any).httpCode = 404;
       logger.error(error);
       throw error;
+    } else if (experimentId && experiments.length) {
+      const dpExpExists = experiments.filter(experiment => experiment.id === experimentId);
+      if (!dpExpExists.length) {
+        const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
+        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+        (error as any).httpCode = 404;
+        logger.error(error);
+        throw error;
+      }
     }
 
     const { workingGroup } = userDoc;
@@ -175,8 +184,8 @@ export class ExperimentAssignmentService {
     logger.info({
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
-    if (!experimentID) {
-      experimentID = experimentDecisionPoint[0].experiment.id;
+    if (!experimentId) {
+      experimentId = experimentDecisionPoint[0].experiment.id;
     }
 
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
@@ -251,7 +260,7 @@ export class ExperimentAssignmentService {
           experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
         !previewUser
       ) {
-        const experiment = await this.experimentService.findOne(experimentID)
+        const experiment = await this.experimentService.findOne(experimentId)
         await this.updateEnrollmentExclusion(
           userDoc,
           experiment,
@@ -274,7 +283,7 @@ export class ExperimentAssignmentService {
     if (!monitoredDocument) {
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
-        experimentId: experimentID,
+        experimentId: experimentId,
         condition: condition,
         user: userDoc,
         site: site,
@@ -480,10 +489,12 @@ export class ExperimentAssignmentService {
       .reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         let { state, logging, name, id } = experiment;
+        let expId;
         const decisionPoints = experiment.partitions.map((decisionPoint) => {
           const { target, site, twoCharacterId } = decisionPoint;
           sharedDecisionPoints = alldecisionPoints.filter((dp) => dp.site === site && dp.target === target);
           filteredDecisionPointDoc = decisionPointDoc.filter((dp) => dp.site === site && dp.target === target);
+
           if (filteredDecisionPointDoc.length == 1) {
             return {};
           }
@@ -507,16 +518,25 @@ export class ExperimentAssignmentService {
               }`,
             });
           }
-          decisionPointDoc.push({site:site, target:target});
+          decisionPointDoc.push({ site:site, target:target });
 
-          if (sharedDecisionPoints.length > 1 && decisionPointDoc && filteredDecisionPointDoc.length === 0) {
+          if (sharedDecisionPoints.length > 1 && filteredDecisionPointDoc.length === 0) {
             // select Random Experiment for assignment in case shared decision points:
-            id = filteredExperiments[Math.floor(Math.random()*filteredExperiments.length)].id;
+            let r = seedrandom(userId)();
+            // find shared experiments:
+            let sharedExperiments = filteredExperiments.filter(experiment => {
+              const sharedExp = experiment.partitions.filter(dp => dp.site === site && dp.target === target);
+              return sharedExp.length ? experiment : false;
+            });
+            expId = sharedExperiments[Math.floor(r*sharedExperiments.length)].id;
+          } else {
+            expId = id;
           }
+
           return {
             target,
             site,
-            experimentId: id,
+            experimentId: expId,
             twoCharacterId,
             assignedCondition: aliasCondition || conditionAssigned || {
               conditionCode: null,
