@@ -1,3 +1,4 @@
+import { ConditionCode } from "../constants";
 import { ParentConditionAliasMap } from "../mocks/SpecsDetails";
 
 export const XPRIZE_Condition = {
@@ -81,6 +82,7 @@ export const XPRIZE_ParentCondition_Alias_Map: ParentConditionAliasMap = {
   [XPRIZE_Condition_Aliases.NO_PROMPT_PARTS_OF_GROUPS_3]:
     XPRIZE_Condition.NON_NOTIFICATION,
   [XPRIZE_Condition.CONTROL]: XPRIZE_Condition.CONTROL,
+  [ConditionCode.DEFAULT]: ConditionCode.DEFAULT,
 };
 
 export const XPRIZE_ASSERTION = {

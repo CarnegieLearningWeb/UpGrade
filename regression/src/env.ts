@@ -10,7 +10,9 @@ export const env = {
     experiment: "/experiments",
     status: "/experiments/state",
   },
-  authToken: "",
+  // eslint-disable-next-line prettier/prettier
+  authToken: 
+    "",
   context: {
     ADD: "add",
     ASSIGN_PROG: "assign-prog",

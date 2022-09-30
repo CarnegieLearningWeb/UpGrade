@@ -185,10 +185,6 @@ export class ExcludeIfReachedTestSuite {
     let summary: SpecResultsSummary = {
       id: details.id,
       description: details.description,
-      // date: new Date().toISOString(),
-      // environment: this.host,
-      // context: this.context,
-      // version: "",
       assignResponseSummary: [],
     };
 
@@ -221,87 +217,107 @@ export class ExcludeIfReachedTestSuite {
     return summary;
   }
 
+  public getAssignedConditionForAllValue(
+    assignmentSummary: AssignmentResponseSummary,
+    details: SpecDetails
+  ) {
+    const isCorrectNumberOfAssignedDecisionPoints =
+      assignmentSummary.actualAssignedConditions.length ===
+      details.experiment.decisionPoints.length;
+
+    if (!isCorrectNumberOfAssignedDecisionPoints) {
+      throw new Error(
+        `Unexpected mismatch in actual assignments length (${assignmentSummary.actualAssignedConditions.length}) vs expected (${details.experiment.decisionPoints.length})`
+      );
+    }
+
+    const parentConditionAliasMap = details.options?.useParentConditionAliasMap;
+
+    const hasSameConditionForAll =
+      assignmentSummary.actualAssignedConditions.every(
+        (actualAssignedCondition: ActualAssignedCondition) => {
+          if (parentConditionAliasMap) {
+            return (
+              parentConditionAliasMap[actualAssignedCondition.condition] ===
+              parentConditionAliasMap[
+                assignmentSummary.actualAssignedConditions[0].condition
+              ]
+            );
+          } else {
+            return (
+              actualAssignedCondition.condition ===
+              assignmentSummary.actualAssignedConditions[0].condition
+            );
+          }
+        }
+      );
+
+    if (parentConditionAliasMap) {
+      assignmentSummary.assignedConditionForAll = hasSameConditionForAll
+        ? parentConditionAliasMap[
+            assignmentSummary.actualAssignedConditions[0].condition
+          ]
+        : "mixed";
+    } else {
+      assignmentSummary.assignedConditionForAll = hasSameConditionForAll
+        ? assignmentSummary.actualAssignedConditions[0].condition
+        : "mixed";
+    }
+  }
+
+  public getConditionAnalysisResult(
+    assignmentSummary: AssignmentResponseSummary,
+    details: SpecDetails,
+    summary: SpecResultsSummary
+  ) {
+    const result: SpecResult = {
+      conditionPasses: false,
+      userMatchPasses: false,
+      overall: SpecOverallPassFail.FAIL,
+    };
+
+    const isDefaultMatch =
+      assignmentSummary.assignedConditionForAll === ConditionCode.DEFAULT &&
+      assignmentSummary.expected.conditionShouldBe ===
+        ConditionAssertion.DEFAULT;
+
+    const isControlOrVariantMatch =
+      assignmentSummary.assignedConditionForAll !== ConditionCode.DEFAULT &&
+      assignmentSummary.expected.conditionShouldBe ===
+        (details?.options?.useCustomAssertion ||
+          ConditionAssertion.CONTROL_OR_VARIANT);
+
+    const isConditionMatchWithUserInGroup =
+      this.findIsConditionMatchWithUserInGroup(summary, assignmentSummary);
+
+    if (isDefaultMatch || isControlOrVariantMatch) {
+      result.conditionPasses = true;
+    }
+
+    result.userMatchPasses = isConditionMatchWithUserInGroup;
+
+    if (result.userMatchPasses && result.conditionPasses) {
+      result.overall = SpecOverallPassFail.PASS;
+    }
+
+    assignmentSummary.result = result;
+  }
+
   public analyzeResults(
     summary: SpecResultsSummary,
     details: SpecDetails
   ): SpecResultsSummary {
+    // first loop over each user summary to assign the "AssignedConditionForAll" value for each user
     summary.assignResponseSummary.forEach(
-      (assignmentSummary: AssignmentResponseSummary) => {
-        const result: SpecResult = {
-          conditionPasses: false,
-          userMatchPasses: false,
-          overall: SpecOverallPassFail.FAIL,
-        };
+      (assignSummary: AssignmentResponseSummary) => {
+        this.getAssignedConditionForAllValue(assignSummary, details);
+      }
+    );
 
-        const isCorrectNumberOfAssignedDecisionPoints =
-          assignmentSummary.actualAssignedConditions.length ===
-          details.experiment.decisionPoints.length;
-
-        if (!isCorrectNumberOfAssignedDecisionPoints) {
-          throw new Error(
-            `Unexpected mismatch in actual assignments length (${assignmentSummary.actualAssignedConditions.length}) vs expected (${details.experiment.decisionPoints.length})`
-          );
-        }
-
-        const parentConditionAliasMap =
-          details.options?.useParentConditionAliasMap;
-
-        const hasSameConditionForAll =
-          assignmentSummary.actualAssignedConditions.every(
-            (actualAssignedCondition: ActualAssignedCondition) => {
-              if (parentConditionAliasMap) {
-                return (
-                  parentConditionAliasMap[actualAssignedCondition.condition] ===
-                  parentConditionAliasMap[
-                    assignmentSummary.actualAssignedConditions[0].condition
-                  ]
-                );
-              } else {
-                return (
-                  actualAssignedCondition.condition ===
-                  assignmentSummary.actualAssignedConditions[0].condition
-                );
-              }
-            }
-          );
-
-        if (parentConditionAliasMap) {
-          assignmentSummary.assignedConditionForAll = hasSameConditionForAll
-            ? parentConditionAliasMap[
-                assignmentSummary.actualAssignedConditions[0].condition
-              ]
-            : "mixed";
-        } else {
-          assignmentSummary.assignedConditionForAll = hasSameConditionForAll
-            ? assignmentSummary.actualAssignedConditions[0].condition
-            : "mixed";
-        }
-
-        const isDefaultMatch =
-          assignmentSummary.assignedConditionForAll === ConditionCode.DEFAULT &&
-          assignmentSummary.expected.conditionShouldBe ===
-            ConditionAssertion.DEFAULT;
-
-        const isControlOrVariantMatch =
-          assignmentSummary.assignedConditionForAll !== ConditionCode.DEFAULT &&
-          assignmentSummary.expected.conditionShouldBe ===
-            (details?.options?.useCustomAssertion ||
-              ConditionAssertion.CONTROL_OR_VARIANT);
-
-        const isConditionMatchWithUserInGroup =
-          this.findIsConditionMatchWithUserInGroup(summary, assignmentSummary);
-
-        if (isDefaultMatch || isControlOrVariantMatch) {
-          result.conditionPasses = true;
-        }
-
-        result.userMatchPasses = isConditionMatchWithUserInGroup;
-
-        if (result.userMatchPasses && result.conditionPasses) {
-          result.overall = SpecOverallPassFail.PASS;
-        }
-
-        assignmentSummary.result = result;
+    // then loop over again to analyze pass/fail
+    summary.assignResponseSummary.forEach(
+      (assignSummary: AssignmentResponseSummary) => {
+        this.getConditionAnalysisResult(assignSummary, details, summary);
       }
     );
 
@@ -338,8 +354,8 @@ export class ExcludeIfReachedTestSuite {
     try {
       const response = await this.postExperiment(experimentRequestBody);
       console.log(">>> Experiment successfully created:");
+      // console.log(JSON.stringify(response?.data, null, 2));
       return response?.data;
-      // console.log(experiment);
     } catch (error) {
       console.log(error);
     }
@@ -357,7 +373,7 @@ export class ExcludeIfReachedTestSuite {
       const response = await this.postMark(markRequestBody);
       const markedResponse = response?.data;
       console.log(">>> Abe successfully marked:");
-      console.log(markRequestBody);
+      // console.log(markRequestBody);
       // console.log(markedResponse);
     } catch (error) {
       console.log(error);
@@ -400,7 +416,7 @@ export class ExcludeIfReachedTestSuite {
           console.log(
             `>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ${user.id} successfully assigned:`
           );
-          console.log(assignResponse);
+          // console.log(assignResponse);
           summary = this.updateSummary(
             assignResponse,
             summary,

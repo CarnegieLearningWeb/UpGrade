@@ -681,6 +681,38 @@ export const ExcludeIfReachedSpecDetails: SpecDetails[] = [
     },
   },
   /*******************************************************************************************************************************
+   * GRP_GRP_TWO_DP_TARGETB_TRUE
+   */
+  {
+    id: ExcludeIfReachedTestNames.GRP_GRP_TWO_DP_TARGETB_TRUE,
+    description:
+      "Group Assignment, Group Consistency, Two Decision Point Experiment (exclude_if_reached is true for target B)",
+    assertions:
+      AssertionProfile.NO_EXCLUSIONS_ABE_AND_BORT_CONDITTIONS_MATCH_CHAZ_AND_DALE_CONDITIONS_MATCH,
+    experiment: {
+      assignmentUnit: AssignmentUnit.GROUP,
+      consistencyRule: ConsistencyRule.GROUP,
+      conditions: [
+        {
+          conditionCode: ConditionCode.CONTROL,
+        },
+        {
+          conditionCode: ConditionCode.VARIANT,
+        },
+      ],
+      decisionPoints: [
+        {
+          targetSuffix: "_A",
+          excludeIfReached: false,
+        },
+        {
+          targetSuffix: "_B",
+          excludeIfReached: true,
+        },
+      ],
+    },
+  },
+  /*******************************************************************************************************************************
    * GRP_IND_TWO_DP_TARGETB_TRUE
    */
   {

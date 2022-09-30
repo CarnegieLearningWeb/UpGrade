@@ -1,5 +1,4 @@
 import { AssignmentUnit, ConsistencyRule } from "../constants";
-import { ExcludeIfReachedTestNames } from "../ExcludeIfReachedTests/ExcludeIfReachedTestScenarios";
 import {
   XPRIZE_ASSERTION,
   XPRIZE_ParentCondition_Alias_Map,
@@ -45,7 +44,7 @@ export const XPRIZE_TestScenarios = [
     },
     experiment: {
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
-      consistencyRule: ConsistencyRule.EXPERIMENT,
+      consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
         {
           conditionCode: XPRIZE_Condition.CONTROL,
@@ -232,7 +231,7 @@ export const XPRIZE_TestScenarios = [
     },
     experiment: {
       assignmentUnit: AssignmentUnit.INDIVIDUAL,
-      consistencyRule: ConsistencyRule.EXPERIMENT,
+      consistencyRule: ConsistencyRule.INDIVIDUAL,
       conditions: [
         {
           conditionCode: XPRIZE_Condition.CONTROL,
