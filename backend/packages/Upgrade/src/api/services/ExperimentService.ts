@@ -1161,7 +1161,9 @@ export class ExperimentService {
           let condition = conditions.find((doc) => {
             return doc.conditionCode === conditionAlias.parentCondition.conditionCode;
           });
-          conditionAlias.parentCondition.id = condition.id;
+          if (condition) {
+            conditionAlias.parentCondition.id = condition.id;
+          }
         })
       }
       
