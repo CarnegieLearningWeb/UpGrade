@@ -512,7 +512,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.partitions[index], ...partition, order: order++ })
                 : (partition.target 
-                  ? ({...partition, order: order++}) 
+                  ? ({...partition, order: order++, id: uuidv4()}) 
                   : ({...this.removePartitionName(partition), order: order++ })
                 );
             }
@@ -550,7 +550,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       })
 
       const decisionPoint = decisionPoints.find((decisionPoint) => {
-        return decisionPoint.target + '_' + decisionPoint.site === aliasRowData.target + '_' + aliasRowData.site;
+        return decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site;
       })
 
       // need some error-handling in UI to prevent creation if aliases can't be created...
@@ -563,7 +563,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         id: aliasRowData.id || uuidv4(),
         aliasName: aliasRowData.alias,
         parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.target + '_' + decisionPoint.site
+        decisionPoint: decisionPoint.id
       });
     })
 
