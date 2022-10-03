@@ -61,8 +61,35 @@
           </button>
         </div> -->
       </div>
-
-    </div>
+      
+          <!-- Experiment post experiment rule -->
+          <div class="section-data">
+            <span class="ft-16-600 section-data-title">{{ 'home-global.post-experiment-rule.text' | translate | uppercase }}</span>
+            <div class="experiment-state-container post-experiment-rule-container">
+              <ng-container
+                *ngIf="permissions?.experiments.update && experiment.state !== ExperimentState.CANCELLED; else readOnlyRule"
+              >
+              <div class="section-data-value section-data-value--editablediv">
+                <span
+                  class="ft-18-700 section-data-value section-data-value--editable"
+                  (click)="openDialog(DialogType.CHANGE_POST_EXPERIMENT_RULE)"
+                >{{ experiment.postExperimentRule | titlecase }}</span>
+                <mat-icon class="edit-icon" *ngIf="permissions?.experiments.update">create</mat-icon>
+              </div>
+                <span class="ft-14-400 experiment-assign" *ngIf="experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
+                  {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
+                </span>
+              </ng-container>
+              <ng-template #readOnlyRule>
+                <span class="ft-18-700 section-data-value">{{ experiment.postExperimentRule | titlecase }}</span>
+                <br />
+                <span class="ft-14-400 experiment-assign" *ngIf= "experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
+                  {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
+                </span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
 
     <mat-tab-group>
       <mat-tab label = "{{ 'home.view-experiment.mattab.data.text' | translate }}"> 
@@ -262,12 +289,30 @@
                     <mat-icon class="edit-icon">create</mat-icon>
                   </span>
                 </ng-template>
-
                 <ng-template #noCriteriaTemplateReadOnly>
                   <span class="ft-18-700 end-criteria">{{ 'home.view-experiment.ending-criteria.no-criteria.text' |
                     translate }}</span>
                 </ng-template>
               </div>
+            
+        <!-- ExcludeIfReached Column -->
+        <ng-container matColumnDef="excludeIfReached">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef>
+            {{ 'home.new-experiment.design.exclude-if-reached.text' | translate }}
+          </mat-header-cell>
+          <mat-cell
+            *matCellDef="let data; let groupIndex = index"
+            style="margin-left: 25px;"
+          >
+            <mat-checkbox
+                    class="ft-8-100"
+                    color="primary"
+                    [checked]="data.excludeIfReached"
+                    [disabled]="true"
+                    >
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
 
               <!-- Enrollment Time Logs -->
               <div class="section-data section-data">
