@@ -83,6 +83,9 @@
     {
       "email": "kweldon@carnegielearning.com",
       "role": "admin"
+    },{
+      "email": "yagnik.patel@playpowerlabs.com",
+      "role": "admin"
     }
   ],
   "context": [

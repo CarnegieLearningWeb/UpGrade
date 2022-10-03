@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ExperimentStatusComponent } from '../../components/modal/experiment-status/experiment-status.component';
@@ -22,19 +22,27 @@ import { ExperimentEndCriteriaComponent } from '../../components/modal/experimen
 import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/state-time-logs.component';
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
-
+import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
+import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
+import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 // Used in view-experiment component only
 enum DialogType {
   CHANGE_STATUS = 'Change status',
   CHANGE_POST_EXPERIMENT_RULE = 'Change post experiment rule',
   EDIT_EXPERIMENT = 'Edit Experiment',
-  STATE_TIME_LOGS = 'State Time Logs'
+  STATE_TIME_LOGS = 'State Time Logs',
+  VIEW_PARTICIPANTS_DATA = 'View Participants Data'
 }
+
+type Participants = { participant_Type: string; participant_id: string };
+type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name:string };
 
 @Component({
   selector: 'home-view-experiment',
   templateUrl: './view-experiment.component.html',
-  styleUrls: ['./view-experiment.component.scss']
+  styleUrls: ['./view-experiment.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
@@ -47,6 +55,12 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   displayedConditionColumns: string[] = ['conditionCode', 'assignmentWeight', 'description'];
   displayedPartitionColumns: string[] = ['partitionPoint', 'partitionId', 'excludeIfReached'];
+  displayedParticipantsColumns: string[] = ['participantsType', 'participantsId'];
+  displayedMetricsColumns: string[] = ['metricsKey', 'metricsOperation', 'metricsName'];
+
+  includeParticipants: Participants[] = [];
+  excludeParticipants: Participants[] = [];
+  displayMetrics: Metrics[]=[];
 
   constructor(
     private experimentService: ExperimentService,
@@ -81,20 +95,85 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         filter(({ isLoadingDetails }) => !isLoadingDetails),
       ).subscribe(({ experiment, isPolling }) => {
         this.onExperimentChange(experiment, isPolling);
+        this.loadParticipants(experiment);
+        this.loadMetrics(experiment);
       })
 
       if (this.experiment) {
         this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
         this.experimentService.groupSatisfied$(this.experiment.id).subscribe(data => this.experiment.groupSatisfied = data);
       }
+        
   }
-
+  
   onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
     if (experiment.stat && experiment.stat.conditions) {
       this.experiment = experiment;
       this.experimentService.toggleDetailsPolling(experiment, isPolling);
     } else {
       this.experimentService.fetchExperimentDetailStat(experiment.id);
+    }
+  }
+
+  loadParticipants(experiment: ExperimentVM){
+    if (this.experiment) {
+      this.includeParticipants=[];
+      this.excludeParticipants=[];
+      if(this.experiment.filterMode === FILTER_MODE.EXCLUDE_ALL) {
+        this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id:id.userId});
+        });
+        this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
+          this.includeParticipants.push({ participant_Type: group.type, participant_id:group.groupId});
+        });
+        this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id:id.name});
+        });
+        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+          this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id:id.userId});
+        });
+        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+          this.excludeParticipants.push({ participant_Type: group.type, participant_id:group.groupId});
+        });
+        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+          this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id:id.name});
+        });
+      } else {
+        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id:id.userId});
+        });
+        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+          this.includeParticipants.push({ participant_Type: group.type, participant_id:group.groupId});
+        });
+        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id:id.name});
+        });
+      }
+    }
+  }
+
+  loadMetrics(experiment: ExperimentVM){ 
+    if (this.experiment) {
+      this.displayMetrics=[];
+      console.log(this.experiment.queries);
+      this.experiment.queries.forEach((query, queryIndex) => {
+        let key;
+        if (query.metric.key) {
+          key = query.metric.key;
+        } else {
+          key = query.metric;
+        }
+
+        // separating keys from metric
+        const rootKey:string[]= key.split(METRICS_JOIN_TEXT);
+        //console.log(rootKey);
+
+        const statisticOperation:string[]=[query.query.operationType];
+        if(rootKey.length>1){
+          statisticOperation.push(query.repeatedMeasure)
+        }
+        this.displayMetrics.push({ metric_Key: rootKey, metric_Operation: statisticOperation, metric_Name:query.name});
+      });
     }
   }
 
@@ -162,6 +241,17 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   updateEndingCriteria() {
     const dialogRef = this.dialog.open(ExperimentEndCriteriaComponent, {
       panelClass: 'experiment-ending-criteria',
+      data: { experiment: clonedeep(this.experiment) }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after opening query modal
+    });
+  }
+
+  viewParticipantsData() {
+    const dialogRef = this.dialog.open(EnrollmentOverTimeComponent, {
+      panelClass: 'enrollment-over-time',
       data: { experiment: clonedeep(this.experiment) }
     });
 
