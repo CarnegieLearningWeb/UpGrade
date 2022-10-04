@@ -1,9 +1,9 @@
 <div class="import-members-container">
-  <span class="ft-24-700 title">{{ 'segments.import-segment.text' | translate | titlecase }}</span>
+  <span class="ft-24-700 title">{{ 'segments.import-members.text' | translate | titlecase }}</span>
 
   <div class="import-members-body">
     <p class="ft-16-400">
-      {{ 'segments.import-segmemt.message.text' | translate }}
+      {{ 'segments.import-members.message.text' | translate }}
     </p>
     <input
         accept=".csv"
@@ -11,8 +11,8 @@
         class="ft-14-400 file-input"
         (change)="uploadFile($event)"
       />
-      <span class="error-msg" *ngIf="!true"> <!-- TODO ngif should return csv checks-->
-        {{ 'segments.import-segment.error.message.text' | translate }}
+      <span class="error-msg" *ngIf="!isMembersCSVValid">
+        {{ 'segments.import-members.error.message.text' | translate }}
       </span>
   </div>
 
@@ -23,6 +23,8 @@
     <button
       mat-raised-button
       class="shared-modal--modal-btn default-button"
+      [ngClass]="{ 'default-button--disabled': !isMembersCSVValid }"
+      [disabled]="!isMembersCSVValid"
       (click)="importSegment()"
     >
       {{ 'global.import.text' | translate }}

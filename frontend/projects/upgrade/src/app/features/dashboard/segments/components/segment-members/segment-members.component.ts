@@ -37,8 +37,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
+  memberImportWarning: string = null;
   groupString: string = ' ( group )';
-  importedData: string[][];
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -57,19 +57,6 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     if (this.isContextChanged) {
       this.isContextChanged = false;
       this.members.clear();
-      this.membersDataSource.next(this.members.controls);
-    }
-
-    if (this.importedData) {
-      this.importedData.forEach(memberData => {
-        if(memberData[0] === MemberTypes.INDIVIDUAL) {
-          this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
-        } else if(memberData[0] === MemberTypes.SEGMENT){
-          this.members.push(this.addMembers(MemberTypes.SEGMENT, memberData[1]));
-        } else {
-          this.members.push(this.addMembers(memberData[0], memberData[1]));
-        }
-      });
       this.membersDataSource.next(this.members.controls);
     }
   }
@@ -100,11 +87,10 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     }
 
     this.segmentMembersForm = this._formBuilder.group({
-      members: this._formBuilder.array([this.addMembers()]),
+      members: this._formBuilder.array([]),
     });
 
     if (this.segmentInfo) {
-      this.members.removeAt(0);
       this.segmentInfo.individualForSegment.forEach((id) => {
         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
       });
@@ -115,30 +101,20 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
       });
     }
-
-    if (this.importedData) {
-      this.importedData.forEach(memberData => {
-        if(memberData[0] === MemberTypes.INDIVIDUAL) {
-          this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
-        } else if(memberData[0] === MemberTypes.SEGMENT){
-          this.members.push(this.addMembers(MemberTypes.SEGMENT, memberData[1]));
-        } else {
-          this.members.push(this.addMembers(memberData[0], memberData[1]));
-        }
-      });
-      this.membersDataSource.next(this.members.controls);
-    }
   
     this.updateView();
   }
 
-  openImportSegmentsDialog() {
+  openImportMembersDialog() {
     const dialogRef = this.dialog.open(ImportMembersComponent, {
-      panelClass: 'import-segment-modal'
+      panelClass: 'import-members-modal'
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log('=====',this.members);
+      if (result) {
+        this.addImportMembersData(result);
+        this.membersDataSource.next(this.members.controls);
+      }
       // Code will be executed after closing dialog
     });
   }
@@ -210,9 +186,9 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     });
   }
 
-  public addImportMembersData(allMembersData: string[][]) {
-    //this.ngOnInitCall();
-    this.importedData = allMembersData;
+  addImportMembersData(allMembersData: string[][]) {
+    allMembersData = this.validateImportMembers(allMembersData);
+
     allMembersData.forEach(memberData => {
       if(memberData[0] === MemberTypes.INDIVIDUAL) {
         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
@@ -223,6 +199,23 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       }
     });
     this.updateView();
+  }
+
+  validateImportMembers(allMembersData: string[][]) {
+    const memberImportWarnigMsg = this.translate.instant("segments.members-import-warmning.text");
+    this.memberImportWarning = null;
+
+    const filtedData = allMembersData.filter(memberData => {
+      return this.segmentMemberTypes.some(x => x.value === memberData[0]);
+    });
+    if (allMembersData.length !== filtedData.length) {
+      this.memberImportWarning = memberImportWarnigMsg;
+    }
+    return filtedData;
+  }
+
+  showTable() { //TODO: remove this after solving ngIf error
+    return this.members.length;
   }
 
   emitEvent(eventType: NewSegmentDialogEvents) {
