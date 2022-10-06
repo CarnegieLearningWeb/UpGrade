@@ -181,12 +181,13 @@ export class ExperimentAssignmentService {
         throw error;
       }
     }
-
-    if (experiments.length > 1) {
-      const random = seedrandom(userId)();
-      experimentId = experiments[Math.floor(random * experiments.length)].experiment.id;
-    } else {
-      experimentId = experimentDecisionPoint[0] ? experimentDecisionPoint[0].experiment.id : '';
+    if (!experimentId) {
+      if (experiments.length > 1) {
+        const random = seedrandom(userId)();
+        experimentId = experiments[Math.floor(random * experiments.length)].experiment.id;
+      } else {
+        experimentId = experimentDecisionPoint[0] ? experimentDecisionPoint[0].experiment.id : '';
+      }
     }
 
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
