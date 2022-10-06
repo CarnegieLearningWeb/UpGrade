@@ -1096,7 +1096,7 @@ describe('ExperimentEffects', () => {
                 neverEmitted = false;
             })
 
-            actions$.next(actionFetchContextMetaData());
+            actions$.next(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
 
             tick(0);
 
@@ -1113,13 +1113,13 @@ describe('ExperimentEffects', () => {
                 contextMetadata: {}
             }))
 
-            const expectedAction = actionFetchContextMetaDataSuccess({ contextMetaData })
+            const expectedAction = actionFetchContextMetaDataSuccess({ contextMetaData, isLoadingContextMetaData: false })
 
             service.fetchContextMetaData$.subscribe(resultingActions => {
                 expect(resultingActions).toEqual(expectedAction);
             })
 
-            actions$.next(actionFetchContextMetaData());
+            actions$.next(actionFetchContextMetaData({ isLoadingContextMetaData: false }));
 
             tick(0);
         }))
@@ -1130,13 +1130,13 @@ describe('ExperimentEffects', () => {
             });
             experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
-            const expectedAction = actionFetchContextMetaDataFailure();
+            const expectedAction = actionFetchContextMetaDataFailure({ isLoadingContextMetaData: false });
 
             service.fetchContextMetaData$.subscribe(resultingActions => {
                 expect(resultingActions).toEqual(expectedAction);
             })
 
-            actions$.next(actionFetchContextMetaData());
+            actions$.next(actionFetchContextMetaData({ isLoadingContextMetaData: true }));
 
             tick(0);
         }))

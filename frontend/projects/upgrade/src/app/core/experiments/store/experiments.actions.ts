@@ -206,15 +206,22 @@ export const actionFetchExperimentDetailStatFailure = createAction(
 
 export const actionFetchContextMetaData = createAction(
   '[Experiment] Fetch contextMetaData',
+  props<{ isLoadingContextMetaData: boolean }>()
 );
+
+export const actionSetIsLoadingContextMetaData = createAction(
+  '[Experiment] Set IsLoadingContextMetaData',
+  props<{ isLoadingContextMetaData: boolean }>()
+)
 
 export const actionFetchContextMetaDataSuccess = createAction(
   '[Experiment] Fetch contextMetaData Success',
-  props<{ contextMetaData: IContextMetaData }>()
+  props<{ contextMetaData: IContextMetaData, isLoadingContextMetaData: boolean }>()
 );
 
 export const actionFetchContextMetaDataFailure = createAction(
   '[Experiment] Fetch contextMetaData Failure',
+  props<{ isLoadingContextMetaData: boolean }>()
 );
 
 export const actionSetCurrentContext = createAction(

@@ -34,6 +34,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
+  @ViewChild('stepContainer', { read: ElementRef }) stepContainer: ElementRef;
   @ViewChild('conditionTable', { read: ElementRef }) conditionTable: ElementRef;
   @ViewChild('partitionTable', { read: ElementRef }) partitionTable: ElementRef;
   @ViewChild('conditionCode') conditionCode: ElementRef;
@@ -75,8 +76,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
-  isAliasTableDisplayed: boolean = false;
-  isAliasBtnDisabled: boolean = true;
+  isExperimentEditable: boolean = true;
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -141,7 +141,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      this.equalWeightFlag = false;
+      this.equalWeightFlag = this.experimentInfo.conditions.every(condition => {
+        return condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight;
+      });
       // Remove previously added group of conditions and partitions
       this.condition.removeAt(0);
       this.partition.removeAt(0);
@@ -152,8 +154,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         this.partition.push(this.addPartitions(partition.site, partition.target, partition.description, partition.order, partition.excludeIfReached));
       });
 
+      this.isExperimentEditable = this.experimentInfo.state !== this.ExperimentState.ENROLLING && this.experimentInfo.state !== this.ExperimentState.ENROLLMENT_COMPLETE;
+
       // disable control on edit:
-      if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+      if (!this.isExperimentEditable) {
         this.experimentDesignForm.disable();
       }
     }
@@ -287,7 +291,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (type === 'condition' && this.experimentInfo) {
       const deletedCondition = this.experimentInfo.conditions.find(condition => condition.order === groupIndex + 1);
       if (deletedCondition) {
-        delete this.experimentInfo.conditions[groupIndex];
+        this.experimentInfo.conditions = this.experimentInfo.conditions.filter(condition => condition == deletedCondition)
         if (this.experimentInfo.revertTo === deletedCondition.id) {
           this.experimentInfo.revertTo = null;
         }
@@ -474,7 +478,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
+        if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: this.experimentInfo,
@@ -527,6 +531,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
             formData: experimentDesignFormData,
             path: NewExperimentPaths.EXPERIMENT_DESIGN
           });
+          // scroll back to the conditions table
+          this.scrollToConditionsTable();
         }
         break;
     }
@@ -587,7 +593,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           ? control.value.assignmentWeight
           : this.previousAssignmentWeightValues[index]
         );
-        if (this.experimentInfo?.state !== this.ExperimentState.ENROLLING && this.experimentInfo?.state !== this.ExperimentState.ENROLLMENT_COMPLETE) {
+        if (this.isExperimentEditable) {
           control.get('assignmentWeight').enable();
         }
         });
@@ -600,8 +606,22 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.applyEqualWeight();
   }
 
-  toggleAliasTable(): void {
-    this.isAliasTableDisplayed = !this.isAliasTableDisplayed;
+  scrollToAliasesTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: this.stepContainer.nativeElement.scrollHeight / 2,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
+  }
+
+  scrollToConditionsTable(): void {
+    this.stepContainer.nativeElement.scroll({
+      top: 0,
+      behavior: 'smooth',
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
   }
 
   get condition(): FormArray {
