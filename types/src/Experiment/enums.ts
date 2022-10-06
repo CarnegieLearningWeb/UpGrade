@@ -162,3 +162,8 @@ export enum EXPORT_METHOD {
   DESIGN = 'Download Experiment Design (JSON)',
   DATA = 'Email Experiment Data (CSV)',
 }
+
+export enum EXPERIMENT_TYPE {
+  SIMPLE = 'Simple',
+  FACTORIAL = 'Factorial',
+}
