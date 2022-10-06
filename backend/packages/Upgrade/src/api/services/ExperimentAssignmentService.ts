@@ -172,7 +172,7 @@ export class ExperimentAssignmentService {
     });
 
     if (experimentId && experiments.length) {
-      const dpExpExists = experiments.filter(experiment => experiment.id === experimentId);
+      const dpExpExists = experiments.filter(dp => dp.experiment.id === experimentId);
       if (!dpExpExists.length) {
         const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
         (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
