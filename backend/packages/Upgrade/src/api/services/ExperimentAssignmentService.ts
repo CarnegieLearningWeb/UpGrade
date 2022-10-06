@@ -112,7 +112,7 @@ export class ExperimentAssignmentService {
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
-    experimentID?: string
+    experimentId?: string
   ): Promise<MonitoredDecisionPoint> {
     // find working group for user
     const { logger, userDoc } = requestContext;
@@ -131,21 +131,16 @@ export class ExperimentAssignmentService {
     // TODO delete this after x-prize competition
     condition = replaceAlternateConditionWithValidCondition(site, target, condition, userDoc);
 
-    // search decision points:
+    // search decision points in experiments:
     const experiments = await this.decisionPointRepository.find({
       where: {
         site: site,
         target: target,
       },
+      relations: [
+        'experiment'
+      ]
     });
-    // return error when its a shared DP and experiment ID is not there in params
-    if (!experimentID && experiments.length > 1) {
-      const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
-      (error as any).type = SERVER_ERROR.EXPERIMENT_ID_MISSING_FOR_SHARED_DECISIONPOINT;
-      (error as any).httpCode = 404;
-      logger.error(error);
-      throw error;
-    }
 
     const { workingGroup } = userDoc;
 
@@ -175,8 +170,12 @@ export class ExperimentAssignmentService {
     logger.info({
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
-    if (!experimentID) {
-      experimentID = experimentDecisionPoint[0].experiment.id;
+
+    if (experiments.length > 1) {
+      const random = seedrandom(userId)();
+      experimentId = experiments[Math.floor(random * experiments.length)].experiment.id;
+    } else {
+      experimentId = experimentDecisionPoint[0] ? experimentDecisionPoint[0].experiment.id : '';
     }
 
     let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
@@ -251,7 +250,7 @@ export class ExperimentAssignmentService {
           experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
         !previewUser
       ) {
-        const experiment = await this.experimentService.findOne(experimentID);
+        const experiment = await this.experimentService.findOne(experimentId);
         await this.updateEnrollmentExclusion(
           userDoc,
           experiment,
@@ -274,7 +273,7 @@ export class ExperimentAssignmentService {
     if (!monitoredDocument) {
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
-        experimentId: experimentID,
+        experimentId: experimentId,
         condition: condition,
         user: userDoc,
         site: site,
@@ -525,7 +524,7 @@ export class ExperimentAssignmentService {
       return filteredExperiments
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
-          const { state, logging, name } = experiment;
+          const { state, logging, name, id } = experiment;
           const decisionPoints = experiment.partitions.map((decisionPoint) => {
             const { target, site, twoCharacterId } = decisionPoint;
             const conditionAssigned = assignment;
@@ -557,6 +556,7 @@ export class ExperimentAssignmentService {
               target,
               site,
               twoCharacterId,
+              experimentId: id,
               assignedCondition: aliasCondition ||
                 conditionAssigned || {
                   conditionCode: null,

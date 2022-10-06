@@ -72,6 +72,7 @@ import {
   SubSegmentEnrollment
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
+import { CompetingExperiment } from './Experiment/competingExperiment';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -488,6 +489,12 @@ describe('Integration Tests', () => {
     await EnrollmentWithConditionAlias();
     done();
   });
+
+  test('Competing Experiment', async (done) => {
+    await CompetingExperiment();
+    done();
+  });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();
