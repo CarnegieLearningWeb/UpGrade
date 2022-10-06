@@ -171,6 +171,17 @@ export class ExperimentAssignmentService {
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
 
+    if (experimentId && experiments.length) {
+      const dpExpExists = experiments.filter(experiment => experiment.id === experimentId);
+      if (!dpExpExists.length) {
+        const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
+        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+        (error as any).httpCode = 404;
+        logger.error(error);
+        throw error;
+      }
+    }
+
     if (experiments.length > 1) {
       const random = seedrandom(userId)();
       experimentId = experiments[Math.floor(random * experiments.length)].experiment.id;

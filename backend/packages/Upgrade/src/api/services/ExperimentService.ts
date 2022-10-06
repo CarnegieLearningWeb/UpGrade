@@ -1154,6 +1154,18 @@ export class ExperimentService {
           decisionPoint.experiment = experimentDoc;
           return decisionPoint;
         });
+      
+      // update conditionAliases condition uuids:
+      if (conditionAliases) {
+        conditionAliases.map(conditionAlias => {
+          let condition = conditions.find((doc) => {
+            return doc.conditionCode === conditionAlias.parentCondition.conditionCode;
+          });
+          if (condition) {
+            conditionAlias.parentCondition.id = condition.id;
+          }
+        })
+      }
         
       const conditionAliasDocsToSave = 
         (conditionAliases &&
