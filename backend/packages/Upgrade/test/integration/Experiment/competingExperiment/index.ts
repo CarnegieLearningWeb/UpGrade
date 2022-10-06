@@ -2,7 +2,7 @@ import { Container } from 'typedi';
 import { ExperimentUserService } from '../../../../src/api/services/ExperimentUserService';
 import { CheckService } from '../../../../src/api/services/CheckService';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import TestCase1 from './competingExperimentPools';
+import TestCase1 from './CompetingExperimentPools';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 const initialChecks = async () => {
