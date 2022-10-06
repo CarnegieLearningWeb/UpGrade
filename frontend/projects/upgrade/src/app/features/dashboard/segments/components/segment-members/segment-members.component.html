@@ -1,6 +1,29 @@
 <form class="segment-members" [formGroup]="segmentMembersForm">
   <!-- Members TABLE -->
-  <mat-table
+  <div class="header">
+    <div class="segment-members-header">
+      <span class="ft-16-700 segment-members-header-title">
+        {{ 'segment.members-header-title.text' | translate }}
+        <span class="ft-14-400 segment-members-header-subtitle">
+          {{ 'segment.members-header-subtitle.text' | translate }}
+        </span>
+      </span>
+    </div>
+    <div>
+      <button
+          (click)="openImportMembersDialog()"
+          mat-flat-button
+          color="primary"
+          class="ft-14-700 import-segments"
+          *ngIf="true"
+        >
+          <mat-icon>add</mat-icon>
+          <span>{{ 'global.import.text' | translate }}</span>
+        </button>
+    </div>
+  </div>
+
+  <mat-table *ngIf="showTable()"
     class="members-table"
     [dataSource]="membersDataSource"
     formArrayName="members"
@@ -78,6 +101,11 @@
     *ngIf="membersCountError"
     [innerHTML]="membersCountError"
   ></span>
+  <span
+    class="ft-14-600 warning-message"
+    *ngIf="memberImportWarning"
+    [innerHTML]="memberImportWarning"
+  ></span>
   <button
     type="button"
     class="ft-12-700 add-member"
@@ -86,14 +114,16 @@
     + {{ 'segments.members-add-members.text' | translate }}
   </button>
 
-  <div class="button-container">
-    <button
-      matStepperPrevious
-      mat-raised-button
-      class="shared-modal--modal-btn default-button btn-back"
-    >
-      {{ 'global.back.text' | translate }}
-    </button>
+  <div class="buttons-container sticky">
+    <span class="buttons-left">
+      <button
+        matStepperPrevious
+        mat-raised-button
+        class="shared-modal--modal-btn default-button btn-back"
+      >
+        {{ 'global.back.text' | translate }}
+      </button>
+    </span>
     <div>
       <button
         mat-raised-button

@@ -11,6 +11,7 @@ import { ViewSegmentComponent } from './pages/view-segment/view-segment.componen
 import { DeleteSegmentComponent } from './components/modal/delete-segment/delete-segment.component';
 import { DuplicateSegmentComponent } from './components/modal/duplicate-segment/duplicate-segment.component';
 import { ImportSegmentComponent } from './components/modal/import-segment/import-segment.component';
+import { ImportMembersComponent } from './components/modal/import-members/import-members.component';
 import { SegmentExperimentListComponent } from './components/modal/segment-experiment-list/segment-experiment-list.component';
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { SegmentExperimentListComponent } from './components/modal/segment-exper
     DeleteSegmentComponent,
     DuplicateSegmentComponent,
     ImportSegmentComponent,
+    ImportMembersComponent,
     SegmentExperimentListComponent,
   ],
   imports: [
@@ -30,6 +32,15 @@ import { SegmentExperimentListComponent } from './components/modal/segment-exper
     SegmentsRoutingModule,
     SharedModule
   ],
-  entryComponents: [NewSegmentComponent, DeleteSegmentComponent, ImportSegmentComponent, DuplicateSegmentComponent, SegmentExperimentListComponent]
+  providers: [SegmentMembersComponent],
+  entryComponents: [
+    NewSegmentComponent,
+    DeleteSegmentComponent,
+    ImportSegmentComponent,
+    ImportMembersComponent,
+    DuplicateSegmentComponent,
+    SegmentExperimentListComponent,
+    SegmentMembersComponent
+  ]
 })
 export class SegmentsModule { }

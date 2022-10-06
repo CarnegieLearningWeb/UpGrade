@@ -7,6 +7,8 @@ import { IContextMetaData } from '../../../../../core/experiments/store/experime
 import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { TranslateService } from '@ngx-translate/core';
+import { MatDialog } from '@angular/material/dialog';
+import { ImportMembersComponent } from '../modal/import-members/import-members.component';
 
 @Component({
   selector: 'segment-members',
@@ -35,6 +37,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
+  memberImportWarning: string = null;
   groupString: string = ' ( group )';
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
@@ -42,7 +45,8 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     private _formBuilder: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private dialog: MatDialog
   ) {}
 
   ngOnChanges() {
@@ -83,11 +87,10 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     }
 
     this.segmentMembersForm = this._formBuilder.group({
-      members: this._formBuilder.array([this.addMembers()]),
+      members: this._formBuilder.array([]),
     });
 
     if (this.segmentInfo) {
-      this.members.removeAt(0);
       this.segmentInfo.individualForSegment.forEach((id) => {
         this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, id.userId));
       });
@@ -100,6 +103,20 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     }
   
     this.updateView();
+  }
+
+  openImportMembersDialog() {
+    const dialogRef = this.dialog.open(ImportMembersComponent, {
+      panelClass: 'import-members-modal'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.addImportMembersData(result);
+        this.membersDataSource.next(this.members.controls);
+      }
+      // Code will be executed after closing dialog
+    });
   }
 
   addMembers(type = null, id = null) {
@@ -167,6 +184,38 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
       }
     });
+  }
+
+  addImportMembersData(allMembersData: string[][]) {
+    allMembersData = this.validateImportMembers(allMembersData);
+
+    allMembersData.forEach(memberData => {
+      if(memberData[0] === MemberTypes.INDIVIDUAL) {
+        this.members.push(this.addMembers(MemberTypes.INDIVIDUAL, memberData[1]));
+      } else if(memberData[0] === MemberTypes.SEGMENT){
+        this.members.push(this.addMembers(MemberTypes.SEGMENT, memberData[1]));
+      } else {
+        this.members.push(this.addMembers(memberData[0], memberData[1]));
+      }
+    });
+    this.updateView();
+  }
+
+  validateImportMembers(allMembersData: string[][]) {
+    const memberImportWarnigMsg = this.translate.instant("segments.members-import-warmning.text");
+    this.memberImportWarning = null;
+
+    const filtedData = allMembersData.filter(memberData => {
+      return this.segmentMemberTypes.some(x => x.value === memberData[0]);
+    });
+    if (allMembersData.length !== filtedData.length) {
+      this.memberImportWarning = memberImportWarnigMsg;
+    }
+    return filtedData;
+  }
+
+  showTable() { //TODO: remove this after solving ngIf error
+    return this.members.length;
   }
 
   emitEvent(eventType: NewSegmentDialogEvents) {
