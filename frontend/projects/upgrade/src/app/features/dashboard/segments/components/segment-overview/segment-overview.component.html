@@ -1,51 +1,58 @@
-<form class="segment-overview" [formGroup]="overviewForm">
-  <mat-form-field class="ft-14-600 name">
-    <input
-      matInput
-      class="ft-14-400"
-      [placeholder]="'segments.global-name.text' | translate"
-      formControlName="name"
-      cdkFocusInitial
-    />
-  </mat-form-field>
-
-  <mat-form-field class="ft-14-600 description">
-    <input
-      class="ft-14-400"
-      matInput
-      [placeholder]="'segments.overview.segment-description.text' | translate"
-      formControlName="description"
-    />
-  </mat-form-field>
-
-  <mat-form-field class="ft-14-600 chips">
-    <mat-label>{{ 'segments.overview.segment-app-context.text' | translate }}</mat-label>
-    <mat-select class="ft-14-400" formControlName="context">
-      <mat-option *ngFor="let context of allContexts" [value]="context">
-        {{ context }}
-      </mat-option>
-    </mat-select>
-    <mat-error
-      *ngIf="overviewForm.controls.context.hasError('required')"
-    >
-      {{ 'home.new-experiment.overview.context.error.text' | translate }}
-    </mat-error>
-  </mat-form-field>
-
-  <div class="button-container">
-    <button
-      class="shared-modal--modal-btn"
-      mat-raised-button
-      (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
-    >
-      {{ 'global.cancel.text' | translate }}
-    </button>
-    <button
-      mat-raised-button
-      class="shared-modal--modal-btn default-button"
-      (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
-    >
-      {{ 'global.next.text' | translate }}
-    </button>
-  </div>
-</form>
+<div class="segment-members-container">
+  <section class="shared-modal--form-container">
+    <form class="segment-overview" [formGroup]="overviewForm">
+      <mat-form-field class="ft-14-600 name">
+        <input
+          matInput
+          class="ft-14-400"
+          [placeholder]="'segments.global-name.text' | translate"
+          formControlName="name"
+          cdkFocusInitial
+        />
+      </mat-form-field>
+    
+      <mat-form-field class="ft-14-600 description">
+        <input
+          class="ft-14-400"
+          matInput
+          [placeholder]="'segments.overview.segment-description.text' | translate"
+          formControlName="description"
+        />
+      </mat-form-field>
+    
+      <mat-form-field class="ft-14-600 chips">
+        <mat-label>{{ 'segments.overview.segment-app-context.text' | translate }}</mat-label>
+        <mat-select class="ft-14-400" formControlName="context">
+          <mat-option *ngFor="let context of allContexts" [value]="context">
+            {{ context }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="overviewForm.controls.context.hasError('required')"
+        >
+          {{ 'home.new-experiment.overview.context.error.text' | translate }}
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </section>
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
+    </span>
+    <span class="shared-modal--buttons-right">
+      <button
+        class="shared-modal--modal-btn"
+        mat-raised-button
+        (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
+      >
+        {{ 'global.cancel.text' | translate }}
+      </button>
+      <button
+        mat-raised-button
+        class="shared-modal--modal-btn default-button"
+        (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
+      >
+        {{ 'global.next.text' | translate }}
+      </button>
+    </span>
+  </section>
+</div>

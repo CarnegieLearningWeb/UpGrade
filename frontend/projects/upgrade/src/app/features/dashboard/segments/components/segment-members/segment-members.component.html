@@ -1,121 +1,124 @@
-<form class="segment-members" [formGroup]="segmentMembersForm">
-  <!-- Members TABLE -->
-  <div class="header">
-    <div class="segment-members-header">
-      <span class="ft-16-700 segment-members-header-title">
-        {{ 'segment.members-header-title.text' | translate }}
-        <span class="ft-14-400 segment-members-header-subtitle">
-          {{ 'segment.members-header-subtitle.text' | translate }}
-        </span>
-      </span>
-    </div>
-    <div>
+<div class="segment-members-container">
+  <section class="shared-modal--form-container">
+    <form class="segment-members" [formGroup]="segmentMembersForm">
+      <!-- Members TABLE -->
+      <div class="header">
+        <div class="segment-members-header">
+          <span class="ft-16-700 segment-members-header-title">
+            {{ 'segment.members-header-title.text' | translate }}
+            <span class="ft-14-400 segment-members-header-subtitle">
+              {{ 'segment.members-header-subtitle.text' | translate }}
+            </span>
+          </span>
+        </div>
+        <div>
+          <button
+              (click)="openImportMembersDialog()"
+              mat-flat-button
+              color="primary"
+              class="ft-14-700 import-segments"
+              *ngIf="true"
+            >
+              <mat-icon>add</mat-icon>
+              <span>{{ 'global.import.text' | translate }}</span>
+            </button>
+        </div>
+      </div>
+    
+      <mat-table *ngIf="members.length>0"
+        class="members-table"
+        [dataSource]="membersDataSource"
+        formArrayName="members"
+        #membersTable
+      >
+        <!-- Members Type Column -->
+        <ng-container matColumnDef="type">
+          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+            {{ 'segments.global-members-type.text' | translate }}
+          </mat-header-cell>
+          <mat-cell 
+            *matCellDef="let element; let groupIndex = index"
+            [formGroupName]="groupIndex"
+          >
+            <mat-select formControlName="type" 
+              [placeholder]="'segments.members-placeholder-type.text' | translate"
+            >
+              <mat-option *ngFor="let val of segmentMemberTypes" [value]="val.value">
+                {{ val.name }}
+              </mat-option>
+            </mat-select>
+          </mat-cell>
+        </ng-container>
+    
+        <!-- Members Id Column -->
+        <ng-container matColumnDef="id">
+          <mat-header-cell class="ft-14-700" *matHeaderCellDef>
+            {{ 'segments.global-members-id/name.text' | translate }}
+          </mat-header-cell>
+          <mat-cell
+            *matCellDef="let element; let groupIndex = index"
+            [formGroupName]="groupIndex"
+          >
+          <ng-container *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect">
+            <mat-form-field floatLabel="never" class="form-control">
+              <mat-select formControlName="id">
+                <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                  {{ subSegmentId }}
+                </mat-option>
+            </mat-select>
+            </mat-form-field>
+          </ng-container>
+          <ng-template #noSelect>
+            <mat-form-field floatLabel="never" class="form-control">
+              <input
+                matInput
+                [placeholder]="'segments.global-members-id/name.text' | translate"
+                formControlName="id"
+              />
+            </mat-form-field>
+          </ng-template>
+          </mat-cell>
+        </ng-container>
+    
+        <ng-container matColumnDef="removeMember">
+          <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
+          <mat-cell
+            *matCellDef="let element; let groupIndex = index"
+            [formGroupName]="groupIndex"
+          >
+            <mat-icon
+              class="remove-icon"
+              (click)="removeMember(groupIndex)"
+            >
+              delete_outline
+            </mat-icon>
+          </mat-cell>
+        </ng-container>
+    
+        <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
+      </mat-table>
+      <span
+        class="ft-14-600 validation-message"
+        *ngIf="membersCountError"
+        [innerHTML]="membersCountError"
+      ></span>
+      <span
+        class="ft-14-600 warning-message"
+        *ngIf="memberImportWarning"
+        [innerHTML]="memberImportWarning"
+      ></span>
       <button
-          (click)="openImportMembersDialog()"
-          mat-flat-button
-          color="primary"
-          class="ft-14-700 import-segments"
-          *ngIf="true"
-        >
-          <mat-icon>add</mat-icon>
-          <span>{{ 'global.import.text' | translate }}</span>
-        </button>
-    </div>
-  </div>
-
-  <mat-table *ngIf="showTable()"
-    class="members-table"
-    [dataSource]="membersDataSource"
-    formArrayName="members"
-    #membersTable
-  >
-    <!-- Members Type Column -->
-    <ng-container matColumnDef="type">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-        {{ 'segments.global-members-type.text' | translate }}
-      </mat-header-cell>
-      <mat-cell 
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
+        type="button"
+        class="ft-12-700 add-member"
+        (click)="addMember()"
       >
-        <mat-select formControlName="type" 
-          [placeholder]="'segments.members-placeholder-type.text' | translate"
-        >
-          <mat-option *ngFor="let val of segmentMemberTypes" [value]="val.value">
-            {{ val.name }}
-          </mat-option>
-        </mat-select>
-      </mat-cell>
-    </ng-container>
-
-    <!-- Members Id Column -->
-    <ng-container matColumnDef="id">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef>
-        {{ 'segments.global-members-id/name.text' | translate }}
-      </mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
-      <ng-container *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect">
-        <mat-form-field floatLabel="never" class="form-control">
-          <mat-select formControlName="id">
-            <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-              {{ subSegmentId }}
-            </mat-option>
-        </mat-select>
-        </mat-form-field>
-      </ng-container>
-      <ng-template #noSelect>
-        <mat-form-field floatLabel="never" class="form-control">
-          <input
-            matInput
-            [placeholder]="'segments.global-members-id/name.text' | translate"
-            formControlName="id"
-          />
-        </mat-form-field>
-      </ng-template>
-      </mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="removeMember">
-      <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
-        <mat-icon
-          class="remove-icon"
-          (click)="removeMember(groupIndex)"
-        >
-          delete_outline
-        </mat-icon>
-      </mat-cell>
-    </ng-container>
-
-    <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
-  </mat-table>
-  <span
-    class="ft-14-600 validation-message"
-    *ngIf="membersCountError"
-    [innerHTML]="membersCountError"
-  ></span>
-  <span
-    class="ft-14-600 warning-message"
-    *ngIf="memberImportWarning"
-    [innerHTML]="memberImportWarning"
-  ></span>
-  <button
-    type="button"
-    class="ft-12-700 add-member"
-    (click)="addMember()"
-  >
-    + {{ 'segments.members-add-members.text' | translate }}
-  </button>
-
-  <div class="buttons-container sticky">
-    <span class="buttons-left">
+        + {{ 'segments.members-add-members.text' | translate }}
+      </button>
+    </form>
+  </section>
+  <section class="shared-modal--buttons-container">
+    <span class="shared-modal--buttons-left">
       <button
         matStepperPrevious
         mat-raised-button
@@ -124,7 +127,7 @@
         {{ 'global.back.text' | translate }}
       </button>
     </span>
-    <div>
+    <span class="shared-modal--buttons-right">
       <button
         mat-raised-button
         class="shared-modal--modal-btn"
@@ -140,6 +143,8 @@
       >
       {{ segmentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
       </button>
-    </div>
-  </div>
-</form>
+    </span>
+  </section>
+</div>
+
+

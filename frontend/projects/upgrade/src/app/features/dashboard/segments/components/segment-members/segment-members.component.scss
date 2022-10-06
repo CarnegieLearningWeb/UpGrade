@@ -2,6 +2,21 @@
   display: none;
 }
 
+.segment-members-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 415px;
+  position: relative;
+
+  &.scrollable {
+      height: 425px;
+      margin-top: -5px;
+      padding-top: 5px;
+      overflow: hidden;
+  }
+}
+
 .segment-members {
   .header {
     display: flex;
@@ -23,16 +38,16 @@
 
   .members-table {
     margin-top: 25px;
-    height: 190px;
     overflow: auto;
-
+    min-height: 88px;
+    max-height: 190px;
+  
     mat-header-row {
       min-height: 35px;
     }
 
     mat-row {
-      min-height: 46px;
-      max-height: 46px;
+      height: 45px;
     }
 
     mat-header-cell {

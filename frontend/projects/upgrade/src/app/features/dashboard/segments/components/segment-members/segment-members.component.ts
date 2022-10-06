@@ -39,6 +39,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   membersCountError: string = null;
   memberImportWarning: string = null;
   groupString: string = ' ( group )';
+  totalMembers = 0;
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -114,6 +115,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
       if (result) {
         this.addImportMembersData(result);
         this.membersDataSource.next(this.members.controls);
+        console.log("members array length:"+this.members.length);
       }
       // Code will be executed after closing dialog
     });
@@ -214,9 +216,9 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     return filtedData;
   }
 
-  showTable() { //TODO: remove this after solving ngIf error
-    return this.members.length;
-  }
+  // showTable() { //TODO: remove this after solving ngIf error
+  //   return this.members.length;
+  // }
 
   emitEvent(eventType: NewSegmentDialogEvents) {
     switch (eventType) {

@@ -1,3 +1,18 @@
+.segment-members-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 415px;
+  position: relative;
+
+  &.scrollable {
+      height: 425px;
+      margin-top: -5px;
+      padding-top: 5px;
+      overflow: hidden;
+  }
+}
+
 .segment-overview {
   display: flex;
   flex-direction: column;
