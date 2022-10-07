@@ -2,11 +2,11 @@ import { IsNotEmpty, IsDefined } from 'class-validator';
 import { MARKED_DECISION_POINT_STATUS } from 'upgrade_types';
 
 export class MarkExperimentValidator {
-  public target: string | undefined;
+  public partitionId: string | undefined;
 
   @IsNotEmpty()
   @IsDefined()
-  public site: string;
+  public experimentPoint: string;
 
   @IsNotEmpty()
   @IsDefined()

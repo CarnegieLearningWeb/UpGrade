@@ -7,41 +7,31 @@ export default async function markExperimentPoint(
   userId: string,
   token: string,
   clientSessionId: string,
-  site: string,
+  experimentPoint: string,
   condition: string|null,
   status: MARKED_DECISION_POINT_STATUS,
-  target?: string,
-  experimentId?: string
-
+  partitionId?: string
 ): Promise<Interfaces.IMarkExperimentPoint> {
   try {
     let data: any = {
-      site,
+      experimentPoint,
       userId,
       condition,
       status
     }
-    if (target) {
+    if (partitionId) {
       data = {
         ...data,
-        target
-      }
-    }
-    if (experimentId) {
-      data = {
-        ...data,
-        experimentId
+        partitionId
       }
     }
     const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);
     if (response.status) {
       return {
-        site,
-        target,
+        experimentPoint,
+        experimentId: partitionId,
         userId,
-        experimentId,
-        condition,
-        id: response.data.id
+        condition
       }
     } else {
       throw new Error(JSON.stringify(response.message));

@@ -33,10 +33,8 @@ export namespace Interfaces {
   }
 
   export interface IMarkExperimentPoint {
-    site: string,
-    target: string,
-    experimentId: string | null;
-    id: string,
+    experimentPoint: string;
+    experimentId: string;
     userId: string;
     condition: string | null;
   }
