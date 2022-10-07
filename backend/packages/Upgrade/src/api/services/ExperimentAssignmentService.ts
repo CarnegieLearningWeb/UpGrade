@@ -235,14 +235,14 @@ export class ExperimentAssignmentService {
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
     if (userExcluded || groupExcluded.length > 0) {
-      // return null if the user or group is excluded from the experiment
+      // no experiments if the user or group is excluded from the experiment
       experiments = [];
     }
 
     let globalFilteredExperiments: Experiment[] = [...experiments];
     const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
 
-    // return if no experiment
+    // no experiment
     if (experimentIds.length === 0) {
       experiments = [];
     }
