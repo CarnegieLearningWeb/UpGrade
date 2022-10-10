@@ -52,12 +52,6 @@ import { SegmentService } from './SegmentService';
 import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
 import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
-
-// TODO delete this after x-prize competition
-import {
-  assignAlternateCondition,
-  replaceAlternateConditionWithValidCondition,
-} from '../../../patch/AlternateConditionFunctions';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
@@ -127,9 +121,6 @@ export class ExperimentAssignmentService {
     }
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
-
-    // TODO delete this after x-prize competition
-    condition = replaceAlternateConditionWithValidCondition(site, target, condition, userDoc);
 
     // search decision points in experiments:
     let dpExperiments = await this.decisionPointRepository.find({
@@ -607,9 +598,6 @@ export class ExperimentAssignmentService {
         })
       );
 
-      // TODO delete map after x-prize competition
-      const mapForAlternateCondition = assignAlternateCondition(userDoc);
-
       const conditionsToAssign = [];
       const decisionsToAssign = [];
       experimentAssignment.forEach((assignment) => {
@@ -674,7 +662,6 @@ export class ExperimentAssignmentService {
           });
           return assignment ? [...accumulator, ...decisionPoints] : accumulator;
         }, [])
-        .map(mapForAlternateCondition); // TODO delete map after x-prize competition
     } catch (err) {
       const error = err as ErrorWithType;
       error.details = 'Error in assignment';
