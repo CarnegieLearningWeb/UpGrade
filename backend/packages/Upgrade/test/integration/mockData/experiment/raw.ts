@@ -1,7 +1,7 @@
 import { FILTER_MODE } from "upgrade_types";
 
 export const revertToExperiment = {
-  id: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
+  id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
   name: 'Test Experiment',
   description: 'Test Experiment Description',
   consistencyRule: 'experiment',
@@ -320,6 +320,7 @@ export const experimentFifth = {
   ],
   partitions: [
     {
+      id: 'd22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
       target: 'W1',
       description: 'Decision Point on Workspace 1',
@@ -327,6 +328,7 @@ export const experimentFifth = {
       excludedIfReached: true,
     },
     {
+      id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
       target: 'W2',
       description: 'Decision Point on Workspace 2',
@@ -334,6 +336,7 @@ export const experimentFifth = {
       excludedIfReached: true,
     },
     {
+      id: 'f22467b1-f0e9-4444-9517-cc03037bc079',
       site: 'CurriculumSequence',
       description: 'No Decision Point',
       twoCharacterId: 'NP',
@@ -345,15 +348,72 @@ export const experimentFifth = {
       id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
       aliasName: "ConditionA_W1",
       parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-      decisionPoint: "W1_CurriculumSequence"
+      decisionPoint: "d22467b1-f0e9-4444-9517-cc03037bc079"
     },
     {
       id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
       aliasName: "ConditionA_W2",
       parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-      decisionPoint: "W2_CurriculumSequence"
+      decisionPoint: "e22467b1-f0e9-4444-9517-cc03037bc079"
     }
   ],
+  backendVersion: "1.0.0",
+  groupSatisfied: 0,
+};
+
+export const experimentSixth = {
+  id: 'be3ae74f-370a-4015-93f3-7761d16f8b15',
+  name: 'Competing Test Experiment',
+  description: 'Overlapping Experiments with Shared DPs',
+  consistencyRule: 'individual',
+  assignmentUnit: 'individual',
+  postExperimentRule: 'continue',
+  state: 'inactive',
+  startOn: new Date().toISOString(),
+  group: 'teacher',
+  context: ['home'],
+  tags: [],
+  queries: [],
+  filterMode: FILTER_MODE.INCLUDE_ALL,
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  conditions: [
+    {
+      id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      name: 'Condition A',
+      description: 'Condition A',
+      assignmentWeight: 40,
+      conditionCode: 'ConditionA',
+      twoCharacterId: 'CA',
+    },
+    {
+      id: 'd2702d3c-5e04-41a7-8766-1da8a95b72ce',
+      name: 'Condition B',
+      description: 'Condition B',
+      assignmentWeight: 60,
+      conditionCode: 'ConditionB',
+      twoCharacterId: 'CB',
+    },
+  ],
+  partitions: [
+    {
+      id: 'd22467b1-f0e9-4444-9517-cc03037bc079',
+      site: 'CurriculumSequence2',
+      target: 'W1',
+      description: 'Decision Point on Workspace 1',
+      twoCharacterId: 'W1',
+      excludedIfReached: true,
+    },
+    {
+      id: 'e22467b1-f0e9-4444-9517-cc03037bc079',
+      site: 'CurriculumSequence3',
+      target: 'W2',
+      description: 'Decision Point on Workspace 2',
+      twoCharacterId: 'W2',
+      excludedIfReached: true,
+    },
+  ],
+  conditionAliases: [],
   backendVersion: "1.0.0",
   groupSatisfied: 0,
 };
@@ -379,4 +439,8 @@ export function getFourthExperiment() {
 
 export function getFifthExperiment() {
   return JSON.parse(JSON.stringify(experimentFifth));
+}
+
+export function getSixthExperiment() {
+  return JSON.parse(JSON.stringify(experimentSixth));
 }

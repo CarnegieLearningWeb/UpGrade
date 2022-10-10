@@ -72,6 +72,7 @@ import {
   SubSegmentEnrollment
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
+import { CompetingExperiment } from './Experiment/competingExperiment';
 
 describe('Integration Tests', () => {
   // -------------------------------------------------------------------------
@@ -162,6 +163,11 @@ describe('Integration Tests', () => {
 
   test('System User is created', async (done) => {
     await SystemUserCreated();
+    done();
+  });
+
+  test('Competing Experiment', async (done) => {
+    await CompetingExperiment();
     done();
   });
 
@@ -488,6 +494,7 @@ describe('Integration Tests', () => {
     await EnrollmentWithConditionAlias();
     done();
   });
+
   // test('Monitored Point for Export', async (done) => {
   //   await MonitoredPointForExport();
   //   done();

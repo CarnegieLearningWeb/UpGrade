@@ -66,7 +66,6 @@ export default async function NoPartitionPoint(): Promise<void> {
 
   editedDecisionPoints[0].target = 'T1';
   editedDecisionPoints[0].site = 'Test';
-  editedDecisionPoints[0].id = 'T1_Test';
 
   // adding new condition
   const newExperimentDoc = {

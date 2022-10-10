@@ -118,22 +118,22 @@ export default class UpgradeClient {
     }
 
     async markExperimentPoint(
-      experimentPoint: string,
-      condition = null,
-      status: MARKED_DECISION_POINT_STATUS,
-      partitionId?: string
+        experimentPoint: string,
+        condition = null,
+        status: MARKED_DECISION_POINT_STATUS,
+        partitionId?: string
     ): Promise<Interfaces.IMarkExperimentPoint> {
-      this.validateClient();
-      return await markExperimentPoint(
-        this.api.markExperimentPoint,
-        this.userId,
-        this.token,
-        this.clientSessionId,
-        experimentPoint,
-        condition,
-        status,
-        partitionId,
-      );
+        this.validateClient();
+        return await markExperimentPoint(
+            this.api.markExperimentPoint,
+            this.userId,
+            this.token,
+            this.clientSessionId,
+            experimentPoint,
+            condition,
+            status,
+            partitionId
+        );
     }
 
     async getAllFeatureFlags(): Promise<IFeatureFlag[]> {
