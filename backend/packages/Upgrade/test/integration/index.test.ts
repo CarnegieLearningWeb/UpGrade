@@ -166,6 +166,11 @@ describe('Integration Tests', () => {
     done();
   });
 
+  test('Competing Experiment', async (done) => {
+    await CompetingExperiment();
+    done();
+  });
+
   test('Experiment Scenario 1 - Individual Assignment With Individual Consistency', async (done) => {
     await Scenario1();
     done();
@@ -487,11 +492,6 @@ describe('Integration Tests', () => {
 
   test('Enrollment With ConditionAliases', async (done) => {
     await EnrollmentWithConditionAlias();
-    done();
-  });
-
-  test('Competing Experiment', async (done) => {
-    await CompetingExperiment();
     done();
   });
 

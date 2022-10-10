@@ -2,7 +2,7 @@ import { Container } from 'typedi';
 import { competingExperimentAssignmentExperiment1, competingExperimentAssignmentExperiment2, competingExperimentAssignmentExperiment3 } from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
-import { getAllExperimentCondition, markExperimentPoint, checkDeletedExperiment } from '../../utils';
+import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
@@ -115,6 +115,4 @@ export default async function CompetingExperiment(): Promise<void> {
   // mark experiment point for user 4
   let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, target, site, condition, new UpgradeLogger());
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, target, site, 1);
-  
-  await checkDeletedExperiment(experimentId, user);
 }

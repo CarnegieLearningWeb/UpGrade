@@ -375,9 +375,10 @@ export class ExperimentAssignmentService {
 
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
+      monitoredDocument = modifiedMarkResponse(monitoredDocument);
       return monitoredDocument;
     } else {
-      const monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
+      let monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
         experimentId: experimentId,
         condition: condition,
@@ -388,6 +389,7 @@ export class ExperimentAssignmentService {
 
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
+      monitoredDocument = modifiedMarkResponse(monitoredDocument);
       return monitoredDocument;
     }
   }
@@ -630,7 +632,8 @@ export class ExperimentAssignmentService {
       return filteredExperiments
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
-          const { state, logging, name, id } = experiment;
+          // const { state, logging, name, id } = experiment;
+          const { state, logging, name } = experiment;
           const decisionPoints = experiment.partitions.map((decisionPoint) => {
             const { target, site, twoCharacterId } = decisionPoint;
             const conditionAssigned = assignment;
@@ -662,7 +665,7 @@ export class ExperimentAssignmentService {
               target,
               site,
               twoCharacterId,
-              experimentId: id,
+              // experimentId: id,
               assignedCondition: aliasCondition ||
                 conditionAssigned || {
                   conditionCode: null,
@@ -1846,3 +1849,11 @@ export class ExperimentAssignmentService {
     return [includedExperiments, excludedExperiments];
   }
 }
+function modifiedMarkResponse(monitoredDocument: MonitoredDecisionPoint): MonitoredDecisionPoint {
+  monitoredDocument['experimentId'] = monitoredDocument['site'];
+  monitoredDocument['decisionPoint'] = monitoredDocument['target'];
+  delete monitoredDocument['site'];
+  delete monitoredDocument['target'];
+  return monitoredDocument;
+}
+
