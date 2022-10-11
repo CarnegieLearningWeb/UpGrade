@@ -1838,7 +1838,7 @@ export class ExperimentAssignmentService {
 }
 function modifiedMarkResponse(monitoredDocument: MonitoredDecisionPoint): MonitoredDecisionPoint {
   monitoredDocument['experimentId'] = monitoredDocument['site'];
-  monitoredDocument['decisionPoint'] = monitoredDocument['target'];
+  monitoredDocument['experimentPoint'] = monitoredDocument['target'];
   delete monitoredDocument['site'];
   delete monitoredDocument['target'];
   return monitoredDocument;
