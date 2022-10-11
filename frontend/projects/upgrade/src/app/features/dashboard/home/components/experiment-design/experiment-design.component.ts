@@ -329,7 +329,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     if (type === 'condition' && this.experimentInfo) {
       const deletedCondition = this.experimentInfo.conditions.find(condition => condition.order === groupIndex + 1);
       if (deletedCondition) {
-        delete this.experimentInfo.conditions[groupIndex];
+        this.experimentInfo.conditions = this.experimentInfo.conditions.filter(condition => condition == deletedCondition)
         if (this.experimentInfo.revertTo === deletedCondition.id) {
           this.experimentInfo.revertTo = null;
         }
@@ -371,11 +371,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     partitions.forEach((partition, index) => {
-      const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
-      if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
-        alreadyExistedPartitions.indexOf(partition.target ? partition.site + ' and ' + partition.target : partition.site) === -1) {
-        alreadyExistedPartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
-      }
       if (partitions.find((value, partitionIndex) =>
         value.site === partition.site &&
         (value.target || '') === (partition.target || '') && // To match null and empty string, add '' as default value. target as optional and hence it's value can be null.
@@ -386,11 +381,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     // Partition Points error messages
-    if (alreadyExistedPartitions.length === 1) {
-      this.partitionPointErrors.push(alreadyExistedPartitions[0] + this.partitionErrorMessages[0]);
-    } else if (alreadyExistedPartitions.length > 1) {
-      this.partitionPointErrors.push(alreadyExistedPartitions.join(', ') + this.partitionErrorMessages[1]);
-    }
     if (duplicatePartitions.length === 1) {
       this.partitionPointErrors.push(duplicatePartitions[0] + this.partitionErrorMessages[2]);
     } else if (duplicatePartitions.length > 1) {
@@ -564,7 +554,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.partitions[index], ...partition, order: order++ })
                 : (partition.target 
-                  ? ({...partition, order: order++}) 
+                  ? ({...partition, order: order++, id: uuidv4()}) 
                   : ({...this.removePartitionName(partition), order: order++ })
                 );
             }
@@ -604,7 +594,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       })
 
       const decisionPoint = decisionPoints.find((decisionPoint) => {
-        return decisionPoint.target + '_' + decisionPoint.site === aliasRowData.target + '_' + aliasRowData.site;
+        return decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site;
       })
 
       // need some error-handling in UI to prevent creation if aliases can't be created...
@@ -617,7 +607,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         id: aliasRowData.id || uuidv4(),
         aliasName: aliasRowData.alias,
         parentCondition: parentCondition.id,
-        decisionPoint: decisionPoint.target + '_' + decisionPoint.site
+        decisionPoint: decisionPoint.id
       });
     })
 

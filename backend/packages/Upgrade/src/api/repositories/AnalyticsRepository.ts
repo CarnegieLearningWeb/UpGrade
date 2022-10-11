@@ -302,6 +302,7 @@ export class AnalyticsRepository {
       experimentName: string;
       userId: string;
       groupId: string;
+      partition: string;
       conditionName: string;
       firstDecisionPointReachedOn: string;
       decisionPointReachedCount: number;
@@ -314,6 +315,7 @@ export class AnalyticsRepository {
         'experiment.id as "experimentId"',
         'experiment.name as "experimentName"',
         '"individualEnrollment"."userId" as "userId"',
+        '"individualEnrollment"."partitionId" as "decisionPointId"',
         '"individualEnrollment"."groupId" as "groupId"',
         'condition."conditionCode" as "conditionName"',
         'MIN("monitoredPointLogs"."createdAt") as "firstDecisionPointReachedOn"',
@@ -321,15 +323,17 @@ export class AnalyticsRepository {
       ])
       .leftJoin('individualEnrollment.condition', 'condition')
       .innerJoin(Experiment, 'experiment', 'experiment.id = "individualEnrollment"."experimentId"')
+      .leftJoin('individualEnrollment.partition', 'decisionPoint')
       .innerJoin(
         MonitoredDecisionPoint,
         'monitored',
-        'monitored."userId" = "individualEnrollment"."userId" AND monitored."decisionPoint" = "individualEnrollment"."partitionId"'
+        'monitored.userId = individualEnrollment.userId AND monitored.site = decisionPoint.site AND monitored.target = decisionPoint.target'
       )
       .leftJoin('monitored.monitoredPointLogs', 'monitoredPointLogs')
       .groupBy('experiment.id')
       .addGroupBy('experiment.name')
       .addGroupBy('"individualEnrollment"."userId"')
+      .addGroupBy('"individualEnrollment"."partitionId"')
       .addGroupBy('"individualEnrollment"."groupId"')
       .addGroupBy('condition."conditionCode"')
       .orderBy('"individualEnrollment"."userId"', 'ASC')

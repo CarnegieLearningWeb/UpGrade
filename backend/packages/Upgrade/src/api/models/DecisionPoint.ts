@@ -6,10 +6,10 @@ import { ConditionAlias } from './ConditionAlias';
 
 @Entity()
 export class DecisionPoint extends BaseModel {
-  @PrimaryColumn()
+  @PrimaryColumn('uuid')
   public id: string;
 
-  @Column('char', { length: '2', unique: true })
+  @Column('char', { length: '2', unique: false })
   @IsAlphanumeric()
   @IsNotEmpty()
   public twoCharacterId: string;
@@ -41,8 +41,4 @@ export class DecisionPoint extends BaseModel {
 
   @OneToMany((type) => ConditionAlias, (conditionAlias) => conditionAlias.decisionPoint)
   public conditionAliases: ConditionAlias[];
-}
-
-export function getExperimentPartitionID(site: string, target: string): string {
-  return target ? `${target}_${site}` : `${site}`;
 }

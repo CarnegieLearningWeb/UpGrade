@@ -6,7 +6,7 @@ export class IndividualEnrollmentRepository extends Repository<IndividualEnrollm
   public findEnrollments(userId: string, experimentIds: string[]): Promise<IndividualEnrollment[]> {
     return this.find({
       where: { experiment: { id: In(experimentIds) }, user: { id: userId } },
-      relations: ['experiment', 'condition'],
+      relations: ['experiment', 'condition', 'partition'],
     });
   }
 

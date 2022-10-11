@@ -42,8 +42,8 @@ async function fetchData(
     }
 
     typeof window !== 'undefined'
-      ? headers = {...headers, 'Client source': 'Browser'} 
-      : headers = {...headers, 'Client source': 'Node'};
+      ? headers = {...headers, 'Client-source': 'Browser'} 
+      : headers = {...headers, 'Client-source': 'Node'};
 
     let options: Interfaces.IRequestOptions = {
       headers,

@@ -58,7 +58,7 @@ export default async function ConditionAlias(): Promise<void> {
         id: "9d753b90-1111-44b5-8acc-2483c0507ea2",
         aliasName: "ConditionB_W2",
         parentCondition: "d2702d3c-5e04-41a7-8766-1da8a95b72ce",
-        decisionPoint: "W2_CurriculumSequence"
+        decisionPoint: "e22467b1-f0e9-4444-9517-cc03037bc079"
       },
     ],
   }

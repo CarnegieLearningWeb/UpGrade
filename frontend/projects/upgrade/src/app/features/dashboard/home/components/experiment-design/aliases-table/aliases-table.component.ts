@@ -106,7 +106,8 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
         if (useExistingAliasData) {
           existingAlias = conditionAliases.find(alias => {
-            return ((alias.decisionPoint as ExperimentPartition)?.id === decisionPoint.target + '_' + decisionPoint.site) && 
+            return ((alias.decisionPoint as ExperimentPartition)?.target === decisionPoint.target &&
+            (alias.decisionPoint as ExperimentPartition)?.site === decisionPoint.site) && 
               (alias.parentCondition as ExperimentCondition).conditionCode === condition.conditionCode;
           })
         }
