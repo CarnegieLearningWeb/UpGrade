@@ -215,7 +215,6 @@
   "home.view-experiment.mattab.metrics.tabletitle.text":"Defined Metrics",
   "home.import-experiment.message.text": "Select the JSON to import experiment:",
   "home.import-experiment.error.message.text": "Invalid Experiment JSON data",
-  "home.import-experiment.duplicate-error.message.text": "ERROR: This experiment design already exists.",
   "home.import-experiment.version-error.message.text": "Imported experiment version is older/newer than current version. Some parts may not function as intended. (Still you can import it)",
   "home.import-experiment.missing-properties.message.text": "The document is missing the following properties: ",
   "home.change-experiment-status.title.text": "Change Experiment Status",

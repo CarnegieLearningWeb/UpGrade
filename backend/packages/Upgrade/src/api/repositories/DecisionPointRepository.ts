@@ -80,12 +80,22 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       });
   }
 
-  public async partitionPointAndName(): Promise<Array<Pick<DecisionPoint, 'target' | 'site'>>> {
+  public async partitionPointAndName(): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
     return await this.createQueryBuilder('experimentPartition')
       .select(['experimentPartition.site', 'experimentPartition.target'])
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndName', undefined, errorMsg);
+        throw errorMsgString;
+      });
+  }
+
+  public async partitionPointAndNameId(): Promise<Array<Pick<DecisionPoint, 'id' | 'site' | 'target'>>> {
+    return await this.createQueryBuilder('experimentPartition')
+      .select(['experimentPartition.id', 'experimentPartition.site', 'experimentPartition.target'])
+      .getMany()
+      .catch((errorMsg: any) => {
+        const errorMsgString = repositoryError(this.constructor.name, 'partitionPointAndNameId', undefined, errorMsg);
         throw errorMsgString;
       });
   }
