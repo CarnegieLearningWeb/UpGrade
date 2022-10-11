@@ -16,7 +16,6 @@ import {
   EXCLUSION_CODE,
   MARKED_DECISION_POINT_STATUS,
 } from 'upgrade_types';
-import { getExperimentPartitionID } from '../models/DecisionPoint';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { Service } from 'typedi';
@@ -33,7 +32,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentService } from './ExperimentService';
 import { PreviewUser } from '../models/PreviewUser';
 import { ExperimentUserService } from './ExperimentUserService';
-import { MonitoredDecisionPoint, getMonitoredDecisionPointId } from '../models/MonitoredDecisionPoint';
+import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { ErrorRepository } from '../repositories/ErrorRepository';
 import { ExperimentError } from '../models/ExperimentError';
 import { ErrorService } from './ErrorService';
@@ -53,17 +52,11 @@ import { SegmentService } from './SegmentService';
 import { MonitoredDecisionPointLogRepository } from '../repositories/MonitoredDecisionPointLogRepository';
 import seedrandom from 'seedrandom';
 import { globalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
-
-// TODO delete this after x-prize competition
-import {
-  assignAlternateCondition,
-  replaceAlternateConditionWithValidCondition,
-} from '../../../patch/AlternateConditionFunctions';
 import { GroupEnrollment } from '../models/GroupEnrollment';
 import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
 import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
-import { In } from 'typeorm'
+import { In } from 'typeorm';
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -108,10 +101,11 @@ export class ExperimentAssignmentService {
   ) {}
   public async markExperimentPoint(
     userId: string,
-    experimentPoint: string,
+    site: string,
     status: MARKED_DECISION_POINT_STATUS | undefined,
     condition: string | null,
     requestContext: { logger: UpgradeLogger; userDoc: any },
+    target?: string,
     experimentId?: string
   ): Promise<MonitoredDecisionPoint> {
     // find working group for user
@@ -128,15 +122,23 @@ export class ExperimentAssignmentService {
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
-    // TODO delete this after x-prize competitionTODO
-    condition = replaceAlternateConditionWithValidCondition(experimentPoint, experimentId, condition, userDoc);
+    // search decision points in experiments:
+    let dpExperiments = await this.decisionPointRepository.find({
+      where: {
+        site: site,
+        target: target,
+      },
+      relations: [
+        'experiment'
+      ]
+    });
 
     const { workingGroup } = userDoc;
 
-    const decisionPoint = getExperimentPartitionID(experimentPoint, experimentId);
-    const experimentDecisionPoint = await this.decisionPointRepository.findOne({
+    const experimentDecisionPoint = await this.decisionPointRepository.find({
       where: {
-        id: decisionPoint,
+        site: site,
+        target: target,
       },
       relations: [
         'experiment',
@@ -147,112 +149,240 @@ export class ExperimentAssignmentService {
         'experiment.experimentSegmentInclusion.segment',
         'experiment.experimentSegmentExclusion.segment',
         'experiment.experimentSegmentInclusion.segment.subSegments',
-        'experiment.experimentSegmentExclusion.segment.subSegments'
+        'experiment.experimentSegmentExclusion.segment.subSegments',
       ],
     });
 
     logger.info({
-      message: `markExperimentPoint: Experiment Name: ${experimentId}, Experiment Point: ${experimentPoint} for User: ${userId}`,
+      message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
 
-    let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
-      id: getMonitoredDecisionPointId(decisionPoint, userDoc.id),
-    });
-    if (experimentDecisionPoint) {
-      const { experiment } = experimentDecisionPoint;
-      const { conditions, partitions } = experiment;
+    if (experimentId && dpExperiments.length) {
+      const dpExpExists = dpExperiments.filter( dp => dp.experiment.id === experimentId);
 
-      const aliasConditions = await this.conditionAliasRepository.find({
-        relations: ['parentCondition', 'decisionPoint'],
-        where: { parentCondition: In(conditions.map(x => x.id)) , decisionPoint: In(partitions.map(x => x.id))},
-      });
-
-      const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
-      const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
-      if (matchedCondition.length === 0 && matchedAliasCondition.length === 0 && condition !== null) {
-        const error = new Error(`Condition not found: ${condition}`);
-        (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
+      if (!dpExpExists.length) {
+        const error = new Error(`Experiment ID not provided for shared Decision Point in markExperimentPoint: ${userId}`);
+        (error as any).type = SERVER_ERROR.INVALID_EXPERIMENT_ID_FOR_SHARED_DECISIONPOINT;
+        (error as any).httpCode = 404;
         logger.error(error);
         throw error;
       }
+    }
 
-      let individualEnrollments: IndividualEnrollment;
-      let individualExclusions: IndividualExclusion;
-      let groupEnrollments: GroupEnrollment | undefined;
-      let groupExclusions: GroupExclusion | undefined;
-      try {
-        [individualEnrollments, individualExclusions, groupEnrollments, groupExclusions] = await Promise.all([
-          // query individual assignment for user
-          this.individualEnrollmentRepository.findOne({
-            where: {
-              user: { id: userDoc.id },
-              experiment: { id: experiment.id },
-              partition: { id: decisionPoint },
-            },
-          }),
-          // query individual exclusion for user
-          this.individualExclusionRepository.findOne({
-            where: { user: { id: userDoc.id }, experiment: { id: experiment.id } },
-          }),
-          // query group assignment
-          (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            workingGroup &&
-            workingGroup[experiment.group] &&
-            this.groupEnrollmentRepository.findOne({
-              where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
-            })) ||
-            Promise.resolve(undefined),
-          // query group exclusion
-          (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
-            workingGroup &&
-            workingGroup[experiment.group] &&
-            this.groupExclusionRepository.findOne({
-              where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
-            })) ||
-            Promise.resolve(undefined),
-        ]);
-      } catch (error) {
-        const err: any = error;
-        logger.error(err);
-        throw err;
-      }
+    // experiment filtering based on inclusion exclusion criterias:
+    let experiments;
+    let context;
+    if (dpExperiments[0]) {
+      context = dpExperiments[0].experiment.context[0];
+    } else {
+      context = 'home';
+    }
 
+    if (previewUser) {
+      experiments = await this.experimentRepository.getValidExperimentsWithPreview(context);
+    } else {
+      experiments = await this.experimentRepository.getValidExperiments(context);
+    }
+
+    // Experiment has assignment type as GROUP_ASSIGNMENT
+    const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
+    // check for group and working group
+    const experimentUser = userDoc;
+    if (groupExperiments.length > 0) {
+      /**
+       * Check already assigned group experiment or exclude group experiment
+       * @param filteredGroupExperiments
+       * @param addError
+       */
+      
       if (
-        (experiment.state === EXPERIMENT_STATE.ENROLLING ||
-          experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
-        !previewUser
+        !experimentUser.group ||
+        !experimentUser.workingGroup ||
+        Object.keys(experimentUser.workingGroup).length === 0
       ) {
-        await this.updateEnrollmentExclusion(
-          userDoc,
-          experimentDecisionPoint.experiment,
-          experimentDecisionPoint,
-          {
-            individualEnrollment: individualEnrollments,
-            individualExclusion: individualExclusions,
-            groupEnrollment: groupEnrollments,
-            groupExclusion: groupExclusions,
-          },
-          status,
+        const invalidGroupExperiment = await this.groupExperimentWithoutEnrollments(
+          groupExperiments,
+          experimentUser,
           logger
         );
-        if (experiment.enrollmentCompleteCondition) {
-          await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
-        }
+        const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
+        experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
+      } else {
+        const experimentWithInvalidGroupOrWorkingGroup = this.experimentsWithInvalidGroupAndWorkingGroup(
+          experimentUser,
+          groupExperiments
+        );
+        const invalidGroupExperiment = await this.groupExperimentWithoutEnrollments(
+          experimentWithInvalidGroupOrWorkingGroup,
+          experimentUser,
+          logger
+        );
+        const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
+        experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
       }
     }
 
-    // adding in monitored experiment point table
-    if (!monitoredDocument) {
-      monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
-        user: userDoc,
-        condition,
-        decisionPoint,
-      });
+    // ============= check if user or group is excluded
+    const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+
+    if (userExcluded || groupExcluded.length > 0) {
+      // no experiments if the user or group is excluded from the experiment
+      experiments = [];
     }
 
-    // save monitored log document
-    await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
-    return monitoredDocument;
+    let globalFilteredExperiments: Experiment[] = [...experiments];
+    const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
+
+    // no experiment
+    if (experimentIds.length === 0) {
+      experiments = [];
+    }
+
+    // experiment level inclusion and exclusion
+    let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
+      globalFilteredExperiments,
+      experimentUser,
+      logger
+    );
+
+    if (filteredExperiments.length) {
+      // filter experiments based on decision point
+      filteredExperiments = filteredExperiments.filter( exp => {
+        return exp.partitions.some( dp => dp.site === site && dp.target === target)});
+
+      if (!experimentId) {
+        if (filteredExperiments.length > 1) {
+          const random = seedrandom(userId)();
+          experimentId = filteredExperiments[Math.floor(random * experiments.length)].id;
+        } else {
+          experimentId = filteredExperiments[0] ? filteredExperiments[0].id : '';
+        }
+      }
+
+      let monitoredDocument: MonitoredDecisionPoint = await this.monitoredDecisionPointRepository.findOne({
+        where: {
+          site: site,
+          target: target,
+          user: userId,
+        },
+      });
+
+      if (experimentDecisionPoint.length) {
+        let selectedExperimentDP = experimentDecisionPoint.filter( dp => dp.experiment.id === experimentId);
+        const decisionPointId = selectedExperimentDP[0].id;
+        let experiment = selectedExperimentDP[0].experiment;
+        let individualEnrollments: IndividualEnrollment;
+        let individualExclusions: IndividualExclusion;
+        let groupEnrollments: GroupEnrollment | undefined;
+        let groupExclusions: GroupExclusion | undefined;
+        try {
+          [individualEnrollments, individualExclusions, groupEnrollments, groupExclusions] = await Promise.all([
+            // query individual assignment for user
+            this.individualEnrollmentRepository.findOne({
+              where: {
+                user: { id: userDoc.id },
+                experiment: { id: experiment.id },
+                partition: { id: decisionPointId },
+              },
+            }),
+            // query individual exclusion for user
+            this.individualExclusionRepository.findOne({
+              where: { user: { id: userDoc.id }, experiment: { id: experiment.id } },
+            }),
+            // query group assignment
+            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+              workingGroup &&
+              workingGroup[experiment.group] &&
+              this.groupEnrollmentRepository.findOne({
+                where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
+              })) ||
+              Promise.resolve(undefined),
+            // query group exclusion
+            (experiment.assignmentUnit === ASSIGNMENT_UNIT.GROUP &&
+              workingGroup &&
+              workingGroup[experiment.group] &&
+              this.groupExclusionRepository.findOne({
+                where: { groupId: workingGroup[experiment.group], experiment: { id: experiment.id } },
+              })) ||
+              Promise.resolve(undefined),
+          ]);
+        } catch (error) {
+          const err: any = error;
+          logger.error(err);
+          throw err;
+        }
+
+        if (
+          (experiment.state === EXPERIMENT_STATE.ENROLLING ||
+            experiment.state === EXPERIMENT_STATE.ENROLLMENT_COMPLETE) &&
+          !previewUser
+        ) {
+          const experiment = await this.experimentService.findOne(experimentId);
+          await this.updateEnrollmentExclusion(
+            userDoc,
+            experiment,
+            selectedExperimentDP[0],
+            {
+              individualEnrollment: individualEnrollments,
+              individualExclusion: individualExclusions,
+              groupEnrollment: groupEnrollments,
+              groupExclusion: groupExclusions,
+            },
+            status,
+            logger
+          );
+          if (experiment.enrollmentCompleteCondition) {
+            await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
+          }
+        }
+
+        const { conditions, partitions } = experiment;
+
+        const aliasConditions = await this.conditionAliasRepository.find({
+          relations: ['parentCondition', 'decisionPoint'],
+          where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
+        });
+
+        const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
+        const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
+        if (matchedCondition.length === 0 && matchedAliasCondition.length === 0 && condition !== null) {
+          const error = new Error(`Condition not found: ${condition}`);
+          (error as any).type = SERVER_ERROR.CONDITION_NOT_FOUND;
+          logger.error(error);
+          throw error;
+        }
+      }
+      // adding in monitored experiment point table
+      if (!monitoredDocument) {
+        monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
+          id: uuid(),
+          experimentId: experimentId,
+          condition: condition,
+          user: userDoc,
+          site: site,
+          target: target,
+        });
+      }
+
+      // save monitored log document
+      await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
+      monitoredDocument = modifiedMarkResponse(monitoredDocument);
+      return monitoredDocument;
+    } else {
+      let monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
+        id: uuid(),
+        experimentId: experimentId,
+        condition: condition,
+        user: userDoc,
+        site: site,
+        target: target,
+      });
+
+      // save monitored log document
+      await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
+      monitoredDocument = modifiedMarkResponse(monitoredDocument);
+      return monitoredDocument;
+    }
   }
 
   public async getAllExperimentConditions(
@@ -332,7 +462,7 @@ export class ExperimentAssignmentService {
       }
 
       // ============= check if user or group is excluded
-      const [userExcluded ,groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+      const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
       if (userExcluded || groupExcluded.length > 0) {
         // return null if the user or group is excluded from the experiment
@@ -378,11 +508,59 @@ export class ExperimentAssignmentService {
       }
 
       // experiment level inclusion and exclusion
-      const [filteredExperiments] = await this.experimentLevelExclusionInclusion(
+      let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
         experimentUser,
         logger
       );
+
+      // Create experiment pool
+      const experimentPools = this.createExperimentPool(filteredExperiments);
+      console.log(
+        'experimentPools',
+        experimentPools.map((exp) => exp.map(({ id }) => id))
+      );
+
+      // filter pools which are not assigned
+      const unassignedPools = experimentPools.filter((pool) => {
+        return !pool.some((experiment) => {
+          const individualEnrollment = mergedIndividualAssignment.find((enrollment) => {
+            return enrollment.experiment.id === experiment.id;
+          });
+          const groupEnrollment = groupEnrollments.find((enrollment) => {
+            return (
+              enrollment.experiment.id === experiment.id &&
+              enrollment.groupId === experimentUser.workingGroup[experiment.group]
+            );
+          });
+          return individualEnrollment || groupEnrollment ? true : false;
+        });
+      });
+
+      // Assign experiments inside the pools
+      const random = seedrandom(userId)();
+      filteredExperiments = unassignedPools.map((pool) => {
+        return pool[Math.floor(random * pool.length)];
+      });
+      console.log("Assigned pools", filteredExperiments);
+
+      // Create new filtered experiment
+      const alreadyAssignedExperiment = experimentPools.map((pool) => {
+        return pool.filter((experiment) => {
+          const individualEnrollment = individualEnrollments.find((enrollment) => {
+            return enrollment.experiment.id === experiment.id;
+          });
+          const groupEnrollment = groupEnrollments.find((enrollment) => {
+            return (
+              enrollment.experiment.id === experiment.id &&
+              enrollment.groupId === experimentUser.workingGroup[experiment.group]
+            );
+          });
+          return individualEnrollment || groupEnrollment ? true : false;
+        });
+      });
+
+      filteredExperiments = alreadyAssignedExperiment.flat().concat(filteredExperiments);
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
@@ -420,31 +598,29 @@ export class ExperimentAssignmentService {
         })
       );
 
-      // TODO delete map after x-prize competition
-      const mapForAlternateCondition = assignAlternateCondition(userDoc);
-
-      let conditionsToAssign = [];
-      let decisionsToAssign = [];
-      experimentAssignment.forEach(assignment => {
+      const conditionsToAssign = [];
+      const decisionsToAssign = [];
+      experimentAssignment.forEach((assignment) => {
         if (assignment) {
           conditionsToAssign.push(assignment.id);
         }
       });
 
-      filteredExperiments.forEach(experiment => {
-        experiment.partitions.forEach(decisionPoint => {
-          decisionsToAssign.push(`${decisionPoint.target}_${decisionPoint.site}`);
-        })
+      filteredExperiments.forEach((experiment) => {
+        experiment.partitions.forEach((decisionPoint) => {
+          decisionsToAssign.push(decisionPoint.id);
+        });
       });
 
       const allAliasConditions = await this.conditionAliasRepository.find({
         relations: ['parentCondition', 'decisionPoint'],
-        where: { parentCondition: In(conditionsToAssign) , decisionPoint: In(decisionsToAssign)},
+        where: { parentCondition: In(conditionsToAssign), decisionPoint: In(decisionsToAssign) },
       });
 
       return filteredExperiments
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
+          // const { state, logging, name, id } = experiment;
           const { state, logging, name } = experiment;
           const decisionPoints = experiment.partitions.map((decisionPoint) => {
             const { target, site, twoCharacterId } = decisionPoint;
@@ -452,15 +628,18 @@ export class ExperimentAssignmentService {
 
             let aliasCondition: ExperimentCondition = null;
             if (conditionAssigned) {
-              const aliasFound = allAliasConditions.find(x => x.parentCondition.id === conditionAssigned.id 
-                && x.decisionPoint.id === `${decisionPoint.target}_${decisionPoint.site}`
+              const aliasFound = allAliasConditions.find(
+                (x) =>
+                  x.parentCondition.id === conditionAssigned.id &&
+                  x.decisionPoint.site === decisionPoint.site &&
+                  x.decisionPoint.target === decisionPoint.target
               );
 
               if (aliasFound) {
-                aliasCondition = {...conditionAssigned, conditionCode: aliasFound.aliasName};
+                aliasCondition = { ...conditionAssigned, conditionCode: aliasFound.aliasName };
               }
             }
-            
+
             // adding info based on experiment state or logging flag
             if (logging || state === EXPERIMENT_STATE.PREVIEW) {
               // TODO add enrollment code here
@@ -474,14 +653,15 @@ export class ExperimentAssignmentService {
               target,
               site,
               twoCharacterId,
-              assignedCondition: aliasCondition || conditionAssigned || {
-                conditionCode: null,
-              },
+              // experimentId: id,
+              assignedCondition: aliasCondition ||
+                conditionAssigned || {
+                  conditionCode: null,
+                },
             };
           });
           return assignment ? [...accumulator, ...decisionPoints] : accumulator;
         }, [])
-        .map(mapForAlternateCondition); // TODO delete map after x-prize competition
     } catch (err) {
       const error = err as ErrorWithType;
       error.details = 'Error in assignment';
@@ -491,6 +671,83 @@ export class ExperimentAssignmentService {
     }
   }
 
+  private createPool(
+    decisionPointToStart: string,
+    decisionPointExperimentMap: Record<string, Experiment[]>,
+    experimentMarked: Experiment[]
+  ): Experiment[] {
+    let poolExperiments = [];
+    const experimentToLoop = decisionPointExperimentMap[decisionPointToStart]
+      ? [...decisionPointExperimentMap[decisionPointToStart]]
+      : [];
+    experimentToLoop.forEach((experiment) => {
+      if (!experimentMarked.includes(experiment)) {
+        // mark experiment
+        experimentMarked.push(experiment);
+        poolExperiments.push(experiment);
+        experiment.partitions.forEach((partition) => {
+          const id = `${partition.site}_${partition.target}`;
+          poolExperiments = poolExperiments.concat(
+            this.createPool(id, decisionPointExperimentMap, experimentMarked)
+          );
+        });
+      }
+    });
+    delete decisionPointExperimentMap[decisionPointToStart];
+    return poolExperiments;
+  }
+
+  private createExperimentPool(experiments: Experiment[]): Experiment[][] {
+    const pool: Experiment[][] = [];
+    // const localExperiment = [...experiments];
+
+    const decisionPointExperimentMap: Record<string, Experiment[]> = {};
+
+    experiments.forEach((experiment) => {
+      experiment.partitions.forEach((partition) => {
+        const partitionId = `${partition.site}_${partition.target}`;
+        decisionPointExperimentMap[partitionId] = decisionPointExperimentMap[partitionId] || [];
+        decisionPointExperimentMap[partitionId].push(experiment);
+      });
+    });
+
+    while (Object.keys(decisionPointExperimentMap).length > 0) {
+      const decisionPointToStart = Object.keys(decisionPointExperimentMap)[0];
+      pool.push(this.createPool(decisionPointToStart, decisionPointExperimentMap, []));
+    }
+
+    // while (localExperiment.length > 0) {
+    //   const poolElements = [];
+    //   const decisionPointHashMap: Record<string, Experiment[]> = {};
+
+    //   for (let i = 0; i < localExperiment.length; i++) {
+    //     // Push single element inside the pool
+    //     const experiment = localExperiment[i];
+    //     if (i === 0) {
+    //       poolElements.push(experiment);
+    //     }
+
+    //     // add to decision point hashmap
+    //     let isIntersecting = false;
+    //     experiment.partitions.forEach((partition) => {
+    //       const partitionId = `${partition.site}_${partition.target}`;
+    //       if (partitionId in decisionPointHashMap) {
+    //         isIntersecting = true;
+    //       }
+    //       decisionPointHashMap[partitionId] = decisionPointHashMap[partitionId] || [];
+    //       decisionPointHashMap[partitionId].push(experiment);
+    //     });
+
+    //     if(isIntersecting) {
+
+    //     }
+    //   }
+
+    //   // remove elements from localExperiment
+    // }
+
+    return pool;
+  }
 
   private async checkUserOrGroupIsGloballyExcluded(experimentUser: ExperimentUser): Promise<[string, string[]]> {
     let userGroup = [];
@@ -499,7 +756,9 @@ export class ExperimentAssignmentService {
     });
 
     const globalExcludeSegmentObj = {};
-    const segmentDetails: Segment[] = [], excludedUsers:string[] = [], excludedGroups = [];
+    const segmentDetails: Segment[] = [],
+      excludedUsers: string[] = [],
+      excludedGroups = [];
 
     globalExcludeSegmentObj[globalExcludeSegment.id] = {
       segmentIdsQueue: [globalExcludeSegment.id],
@@ -507,9 +766,13 @@ export class ExperimentAssignmentService {
       currentExcludedSegmentIds: [globalExcludeSegment.id],
       allIncludedSegmentIds: [],
       allExcludedSegmentIds: [globalExcludeSegment.id],
-    }
+    };
 
-    const [updatedGlobalExcludeSegmentObj, updatedSegmentDetails] = await this.resolveSegment(globalExcludeSegmentObj, segmentDetails, 0);
+    const [updatedGlobalExcludeSegmentObj, updatedSegmentDetails] = await this.resolveSegment(
+      globalExcludeSegmentObj,
+      segmentDetails,
+      0
+    );
 
     updatedGlobalExcludeSegmentObj[globalExcludeSegment.id].allExcludedSegmentIds.forEach((segmentId) => {
       const foundSegment: Segment = updatedSegmentDetails.find((segment) => segment.id === segmentId);
@@ -579,9 +842,9 @@ export class ExperimentAssignmentService {
 
   public async clientFailedExperimentPoint(
     reason: string,
-    experimentPoint: string,
+    site: string,
     userId: string,
-    experimentId: string,
+    target: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentError> {
     const error = new ExperimentError();
@@ -604,8 +867,8 @@ export class ExperimentAssignmentService {
 
     error.type = SERVER_ERROR.REPORTED_ERROR;
     error.message = JSON.stringify({
-      experimentPoint,
-      experimentId,
+      site,
+      target,
       userId: userDoc.id,
       reason,
     });
@@ -851,16 +1114,30 @@ export class ExperimentAssignmentService {
     });
 
     // get the monitored document for all the decisionPoints in the experiment
-    const experimentDecisionPointIds = decisionPoints.map((decisionPoint) => {
-      const experimentId = decisionPoint.target;
-      const experimentPoint = decisionPoint.site;
-      return getExperimentPartitionID(experimentPoint, experimentId);
+    const experimentDecisionPointIds = decisionPoints.map(async (decisionPoint) => {
+      const target = decisionPoint.target;
+      const site = decisionPoint.site;
+      const decisionPointId = await this.decisionPointRepository.findOne({
+        where: {
+          site: site,
+          target: target,
+        },
+      });
+      return decisionPointId;
     });
 
     const monitoredDocumentIds = [];
     individualAssignments.forEach((individualAssignment) => {
-      experimentDecisionPointIds.forEach((experimentDecisionPointId) => {
-        monitoredDocumentIds.push(getMonitoredDecisionPointId(experimentDecisionPointId, individualAssignment.user.id));
+      experimentDecisionPointIds.forEach(async (experimentDecisionPointId) => {
+        monitoredDocumentIds.push(
+          await this.monitoredDecisionPointRepository.findOne({
+            where: {
+              site: (await experimentDecisionPointId).site,
+              target: (await experimentDecisionPointId).target,
+              user: individualAssignment.user.id,
+            },
+          })
+        );
       });
     });
 
@@ -1051,7 +1328,11 @@ export class ExperimentAssignmentService {
     // Check if user or group is in global exclusion list
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(user);
 
-    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion([experiment], user, logger);
+    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion(
+      [experiment],
+      user,
+      logger
+    );
     // experiment level exclusion
     let experimentExcluded = false;
     if (includedExperiments.length === 0) {
@@ -1088,7 +1369,7 @@ export class ExperimentAssignmentService {
       return;
     } else if (experimentExcluded) {
       // TODO: testing this
-      if(excludedExperiment[0].reason === 'user') {
+      if (excludedExperiment[0].reason === 'user') {
         const excludeUserDoc: Pick<IndividualExclusion, 'user' | 'experiment' | 'exclusionCode'> = {
           user,
           experiment,
@@ -1110,7 +1391,7 @@ export class ExperimentAssignmentService {
         };
         await this.individualExclusionRepository.saveRawJson([excludeUserDoc]);
       }
-      return ;
+      return;
     }
 
     // if group experiment check if group is valid
@@ -1182,7 +1463,7 @@ export class ExperimentAssignmentService {
           const groupEnrollmentDocument: Omit<GroupEnrollment, 'createdAt' | 'updatedAt' | 'versionNumber'> = {
             id: uuid(),
             experiment,
-            partition: decisionPoint as DecisionPoint, 
+            partition: decisionPoint as DecisionPoint,
             groupId: user.workingGroup[experiment.group],
             condition: conditionAssigned,
           };
@@ -1208,7 +1489,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: decisionPoint as DecisionPoint, 
+              partition: decisionPoint as DecisionPoint,
               user,
               condition: conditionAssigned,
               groupId: user?.workingGroup[experiment.group],
@@ -1250,7 +1531,7 @@ export class ExperimentAssignmentService {
             {
               id: uuid(),
               experiment,
-              partition: decisionPoint as DecisionPoint, 
+              partition: decisionPoint,
               user,
               condition: conditionAssigned,
               enrollmentCode: ENROLLMENT_CODE.ALGORITHMIC,
@@ -1360,7 +1641,7 @@ export class ExperimentAssignmentService {
     return experimentalCondition;
   }
 
-  private async resolveSegment(segmentObj: object, segmentDetails: Segment[] ,depth: number): Promise<any> {
+  private async resolveSegment(segmentObj: object, segmentDetails: Segment[], depth: number): Promise<any> {
     const segmentsToFetchArray = Object.keys(segmentObj).map((expId) => segmentObj[expId].segmentIdsQueue);
     const segmentsToFetch = segmentsToFetchArray.flat();
 
@@ -1374,19 +1655,20 @@ export class ExperimentAssignmentService {
     Object.keys(segmentObj).forEach((expId) => {
       const exp = segmentObj[expId];
 
-      let newIncludedSegments: string[] = [], newExcludedSegments: string[] = [];
+      let newIncludedSegments: string[] = [],
+        newExcludedSegments: string[] = [];
 
       exp.currentIncludedSegmentIds.forEach((includedSegmentId) => {
-        const foundSegment = segmentDetails.find(({id}) => id === includedSegmentId);
+        const foundSegment = segmentDetails.find(({ id }) => id === includedSegmentId);
         newIncludedSegments.push(...foundSegment.subSegments.map((subSegment) => subSegment.id));
       });
 
       exp.currentExcludedSegmentIds.forEach((excludedSegmentId) => {
-        const foundSegment = segmentDetails.find(({id}) => id === excludedSegmentId);
+        const foundSegment = segmentDetails.find(({ id }) => id === excludedSegmentId);
         newExcludedSegments.push(...foundSegment.subSegments.map((subSegment) => subSegment.id));
       });
-      
-      if(depth < 4) { 
+
+      if (depth < 4) {
         exp.segmentIdsQueue = [...newIncludedSegments, ...newExcludedSegments];
         exp.currentIncludedSegmentIds = [...newIncludedSegments];
         exp.currentExcludedSegmentIds = [...newExcludedSegments];
@@ -1402,7 +1684,7 @@ export class ExperimentAssignmentService {
     experiments: Experiment[],
     experimentUser: ExperimentUser,
     logger: UpgradeLogger
-  ): Promise<[Experiment[], {experiment: Experiment, reason: string}[]]> {
+  ): Promise<[Experiment[], { experiment: Experiment; reason: string }[]]> {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
 
@@ -1422,46 +1704,52 @@ export class ExperimentAssignmentService {
     let depth = 0;
     [segmentObj, segmentDetails] = await this.resolveSegment(segmentObj, segmentDetails, depth);
 
-    let explicitExperimentIndividualInclusionFilteredData: { userId: string, experimentId: string; }[] = [];
-    let explicitExperimentIndividualExclusionFilteredData: { userId: string, experimentId: string; }[] = [];
-    let explicitExperimentGroupInclusionFilteredData: { groupId: string, type: string, experimentId: string; }[] = [];
-    let explicitExperimentGroupExclusionFilteredData: { groupId: string, type: string, experimentId: string; }[] = [];
+    let explicitExperimentIndividualInclusionFilteredData: { userId: string; experimentId: string }[] = [];
+    let explicitExperimentIndividualExclusionFilteredData: { userId: string; experimentId: string }[] = [];
+    let explicitExperimentGroupInclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
+    let explicitExperimentGroupExclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
 
     Object.keys(segmentObj).forEach((expId) => {
       const exp = segmentObj[expId];
 
       exp.allIncludedSegmentIds.forEach((includedSegmentId) => {
-        const foundSegment = segmentDetails.find(({id}) => id === includedSegmentId);
+        const foundSegment = segmentDetails.find(({ id }) => id === includedSegmentId);
 
         foundSegment.individualForSegment.forEach((individual) => {
           if (individual.userId === experimentUser.id) {
             explicitExperimentIndividualInclusionFilteredData.push({
-              userId: individual.userId, experimentId: expId
+              userId: individual.userId,
+              experimentId: expId,
             });
           }
         });
 
         foundSegment.groupForSegment.forEach((group) => {
           explicitExperimentGroupInclusionFilteredData.push({
-            groupId: group.groupId, type: group.type, experimentId: expId
+            groupId: group.groupId,
+            type: group.type,
+            experimentId: expId,
           });
         });
       });
 
       exp.allExcludedSegmentIds.forEach((excludedSegmentId) => {
-        const foundSegment = segmentDetails.find(({id}) => id === excludedSegmentId);
+        const foundSegment = segmentDetails.find(({ id }) => id === excludedSegmentId);
 
         foundSegment.individualForSegment.forEach((individual) => {
           if (individual.userId === experimentUser.id) {
             explicitExperimentIndividualExclusionFilteredData.push({
-              userId: individual.userId, experimentId: expId
+              userId: individual.userId,
+              experimentId: expId,
             });
           }
         });
 
         foundSegment.groupForSegment.forEach((group) => {
           explicitExperimentGroupExclusionFilteredData.push({
-            groupId: group.groupId, type: group.type, experimentId: expId
+            groupId: group.groupId,
+            type: group.type,
+            experimentId: expId,
           });
         });
       });
@@ -1496,45 +1784,48 @@ export class ExperimentAssignmentService {
     let includedExperiments: Experiment[] = [];
     let excludedExperiments = [];
 
-
     experiments.forEach((experiment) => {
       let inclusionFlag = false;
       let exclusionFlag = false;
-      
+
       if (experiment.filterMode === FILTER_MODE.INCLUDE_ALL) {
         if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          excludedExperiments.push({ experiment: experiment, reason: 'user'});
+          excludedExperiments.push({ experiment: experiment, reason: 'user' });
         } else if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           includedExperiments.push(experiment);
         } else {
           for (let userGroup of userGroups) {
-            if (explicitExperimentGroupExclusionFilteredData.some((e) =>
-                  e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
+            if (
+              explicitExperimentGroupExclusionFilteredData.some(
+                (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+              )
             ) {
-              inclusionFlag=true;
+              inclusionFlag = true;
             }
           }
-          if(!inclusionFlag) {
+          if (!inclusionFlag) {
             includedExperiments.push(experiment);
           } else {
-            excludedExperiments.push({experiment: experiment, reason: 'group'});
+            excludedExperiments.push({ experiment: experiment, reason: 'group' });
           }
         }
       } else {
         if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           includedExperiments.push(experiment);
         } else if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
-          excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
+          excludedExperiments.push({ experiment: experiment, reason: 'filterMode' });
         } else {
           for (let userGroup of userGroups) {
-            if (explicitExperimentGroupInclusionFilteredData.some((e) =>
-                  e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id)
+            if (
+              explicitExperimentGroupInclusionFilteredData.some(
+                (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
+              )
             ) {
-              exclusionFlag=true;
+              exclusionFlag = true;
             }
           }
-          if(!exclusionFlag) {
-            excludedExperiments.push({experiment: experiment, reason: 'filterMode'});
+          if (!exclusionFlag) {
+            excludedExperiments.push({ experiment: experiment, reason: 'filterMode' });
           } else {
             includedExperiments.push(experiment);
           }
@@ -1545,3 +1836,11 @@ export class ExperimentAssignmentService {
     return [includedExperiments, excludedExperiments];
   }
 }
+function modifiedMarkResponse(monitoredDocument: MonitoredDecisionPoint): MonitoredDecisionPoint {
+  monitoredDocument['experimentId'] = monitoredDocument['site'];
+  monitoredDocument['decisionPoint'] = monitoredDocument['target'];
+  delete monitoredDocument['site'];
+  delete monitoredDocument['target'];
+  return monitoredDocument;
+}
+

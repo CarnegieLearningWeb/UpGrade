@@ -5,15 +5,16 @@ import repositoryError from './utils/repositoryError';
 @EntityRepository(MonitoredDecisionPoint)
 export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisionPoint> {
   public async saveRawJson(
-    rawData: Omit<MonitoredDecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'id' | 'monitoredPointLogs'>
-  ): Promise<MonitoredDecisionPoint> {
-    const id = `${rawData.decisionPoint}_${rawData.user.id}`;
+    rawData: Omit<MonitoredDecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'monitoredPointLogs'>
+    // experimentId: string, condition: string, user: ExperimentUser, site: string, target: string): Promise<MonitoredDecisionPoint> {
+    ): Promise<MonitoredDecisionPoint> {
     const result = await this.createQueryBuilder('monitoredPoint')
       .insert()
       .into(MonitoredDecisionPoint)
-      .values({ id, ...rawData })
-      .onConflict(`("id") DO UPDATE SET "decisionPoint" = :decisionPoint`)
-      .setParameter('decisionPoint', rawData.decisionPoint)
+      .values({ ...rawData })
+      .onConflict(`("id") DO UPDATE SET "site" = :site, "target" = :target`)
+      .setParameter('site', rawData.site)
+      .setParameter('target', rawData.target)
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {

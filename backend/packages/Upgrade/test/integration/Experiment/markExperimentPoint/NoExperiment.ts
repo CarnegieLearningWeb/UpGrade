@@ -25,6 +25,7 @@ export default async function NoExperiment(): Promise<void> {
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
   const condition = experimentObject.conditions[0].conditionCode;
+  const experimentID = experimentObject.id;
 
   const markedExperimentPoint = await markExperimentPoint(
     experimentUsers[0].id,
@@ -32,6 +33,7 @@ export default async function NoExperiment(): Promise<void> {
     experimentPoint,
     condition,
     new UpgradeLogger(),
+    experimentID,
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
