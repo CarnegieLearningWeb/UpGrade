@@ -17,6 +17,7 @@ export class LogMiddleware implements ExpressMiddlewareInterface {
     return JSON.stringify({
       remote_address: tokens['remote-addr'](req, res),
       time: tokens['date'](req, res, 'iso'),
+      "total-time": tokens['total-time'](req, res),
       method: tokens['method'](req, res),
       url: tokens['url'](req, res),
       http_version: tokens['http-version'](req, res),
