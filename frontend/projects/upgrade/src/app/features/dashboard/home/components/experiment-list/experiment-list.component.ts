@@ -21,6 +21,7 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
 
 @Component({
   selector: 'home-experiment-list',
@@ -186,6 +187,18 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
+  openExportAllExperimentsDialog() {
+    console.log(this.allExperiments.data);
+    const dialogRef = this.dialog.open(ExportModalComponent, {
+      panelClass: 'export-modal',
+      data: { experiment: this.allExperiments.data }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      // Add code of further actions after opening query modal
+    });
+  }
+
   setChipsVisible(experimentId: string, type: string) {
     const index = this[type].findIndex(
       data => data.experimentId === experimentId
@@ -252,3 +265,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return ThemeOptions;
   }
 }
+function clonedeep(experiment: any): any {
+  throw new Error('Function not implemented.');
+}
+

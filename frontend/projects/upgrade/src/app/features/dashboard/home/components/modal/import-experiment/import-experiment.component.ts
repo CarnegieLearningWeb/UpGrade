@@ -26,6 +26,7 @@ export class ImportExperimentComponent implements OnInit {
   missingAllProperties: string;
   allPartitions = [];
   allPartitionsSub: Subscription;
+  allExperiments: Experiment[] = [];
 
   constructor(
     private experimentService: ExperimentService,
@@ -55,16 +56,29 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   importExperiment() {
-    this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
-    if (this.isExperimentJSONValid) {
-      this.experimentInfo.id = uuidv4();
-      this.experimentInfo.conditions.map(condition => {
+    this.allExperiments.filter(exp => this.validateExperimentJSON(exp));
+
+    this.allExperiments.forEach(exp => {
+      exp.id = uuidv4();
+      exp.conditions.map(condition => {
         condition.id = condition.id || uuidv4();
       });
-      this.experimentService.importExperiment({ ...this.experimentInfo });
-      this.onCancelClick();
-      this.openSnackBar();
-    }
+    });
+    // this.experimentService.createBulkExperiment(this.allExperiments);
+    this.experimentService.importExperiment(this.allExperiments);
+    this.onCancelClick();
+    this.openSnackBar();
+
+    // this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
+    // if (this.isExperimentJSONValid) {
+    //   this.experimentInfo.id = uuidv4();
+    //   this.experimentInfo.conditions.map(condition => {
+    //     condition.id = condition.id || uuidv4();
+    //   });
+    //   this.experimentService.importExperiment({ ...this.experimentInfo });
+    //   this.onCancelClick();
+    //   this.openSnackBar();
+    // }
   }
   async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
     const version = await this.versionService.getVersion();
@@ -91,16 +105,27 @@ export class ImportExperimentComponent implements OnInit {
   }
   
   async uploadFile(event) {
+    let index = 0;
     const reader = new FileReader();
+
+    readFile(index);
+    function readFile(index: number) {
+      if (index >= event.target.files.length) return;
+      reader.readAsText(event.target.files[index]);
+    }
     reader.addEventListener(
       'load',
       async function() {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
         this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
+        if (this.isExperimentJSONVersionValid) {
+          this.allExperiments.push(this.experimentInfo);
+        }
+        readFile(++index);
       }.bind(this)
     );
-    reader.readAsText(event.target.files[0]);
+    // reader.readAsText(event.target.files[0]);
   }
 
   private validateExperimentJSON(experiment: Experiment) {

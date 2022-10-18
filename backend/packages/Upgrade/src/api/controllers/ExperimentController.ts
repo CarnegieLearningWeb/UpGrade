@@ -741,10 +741,12 @@ export class ExperimentController {
 
   @Post('/batch')
   public createMultipleExperiments(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: ExperimentInput[],
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment[],
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment[]> {
-    return this.experimentService.createMultipleExperiments(experiment, request.logger);
+    request.logger.child({ user: currentUser });
+    return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
   }
 
   /**
@@ -924,27 +926,29 @@ export class ExperimentController {
   */
   @Post('/import')
   public importExperiment(
-    @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment,
+    @Body({ validate: { validationError: { target: false, value: false } } }) experiments: Experiment[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
-  ): Promise<Experiment> {
-    return this.experimentService.importExperiment(experiment, currentUser, request.logger);
+  ): Promise<Experiment[]> {
+    return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
 
-  @Get('/export/:id')
+  @Post('/export')
   public exportExperiment(
-    @Param('id') id: string, 
+    @Body({ validate: { validationError: { target: false, value: false } } }) experimentIds: string[],
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
-  ): Promise<Experiment> {
-    if (!isUUID(id)) {
-      return Promise.reject(
-        new Error(
-          JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : experiment id should be of type UUID.' })
-        )
-      );
-    }
-    return this.experimentService.exportExperiment(id, currentUser, request.logger);
+  ): Promise<Experiment[]> {
+    // experimentIds.forEach(id => {
+    //   if (!isUUID(id)) {
+    //     return Promise.reject(
+    //       new Error(
+    //         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : experiment id should be of type UUID.' })
+    //       )
+    //     );
+    //   }
+    // });
+    return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
 
  /**
