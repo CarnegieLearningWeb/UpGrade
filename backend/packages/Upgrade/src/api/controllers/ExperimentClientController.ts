@@ -449,19 +449,12 @@ export class ExperimentClientController {
     experiment: ExperimentAssignmentValidator
   ): Promise<IExperimentAssignment[]> {
     request.logger.info({ message: 'Starting the getAllExperimentConditions call for user' });
-    // getOriginalUserDoc call for alias
-    const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
-    if (experimentUserDoc) {
-      // append userDoc in logger
-      request.logger.child({ userDoc: experimentUserDoc });
-      request.logger.info({ message: 'Got the original user doc' });
-    }
     const assignedData = await this.experimentAssignmentService.getAllExperimentConditions(
       experiment.userId,
       experiment.context,
       {
         logger: request.logger,
-        userDoc: experimentUserDoc,
+        userDoc: null,
       }
     );
 
