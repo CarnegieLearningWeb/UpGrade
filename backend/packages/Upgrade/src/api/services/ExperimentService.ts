@@ -1421,7 +1421,7 @@ export class ExperimentService {
     return createdExperiment;
   }
 
-  private formatingConditionAlias(experiment: Experiment): any {
+  public formatingConditionAlias(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
   
     let conditionAlias: ConditionAlias[] = [];
