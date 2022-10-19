@@ -529,12 +529,11 @@ export class ExperimentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.partitions.filter((partition) => {
+    const validDecisionPointIds = experiment.partitions.filter((partition) => {
       return partition.excludeIfReached;
-    }).map(({ id }) => {
-      return id;
+    }).map(({ site, target }) => {
+      return { site:site, target:target };
     });
-
     // get all preview usersData
     const previewUsers = await this.previewUserService.find(logger);
 
@@ -543,20 +542,16 @@ export class ExperimentService {
     if (state === EXPERIMENT_STATE.ENROLLING) {
       monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
         relations: ['user'],
-        where: { id: In(subExperiments) },
+        where: { site: In(validDecisionPointIds.map((x) => x.site)),
+                target: In(validDecisionPointIds.map((x) => x.target))},
       });
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       const previewUsersIds = previewUsers.map((user) => user.id);
-
       if (previewUsersIds.length > 0) {
-        const monitoredPointsToSearch = previewUsersIds.reduce((acc, userId) => {
-          const monitoredIds = subExperiments.map((id) => {
-            return `${id}_${userId}`;
-          });
-          return [...acc, ...monitoredIds];
-        }, []);
-        monitoredDecisionPoints = await this.monitoredDecisionPointRepository.findByIds(monitoredPointsToSearch, {
+        monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
           relations: ['user'],
+          where: { site: In(validDecisionPointIds.map((x) => x.site)),
+                  target: In(validDecisionPointIds.map((x) => x.target))},
         });
       }
     }
