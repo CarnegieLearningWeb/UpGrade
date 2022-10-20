@@ -517,6 +517,14 @@ export class ExperimentService {
     }
   }
 
+  private async getValidMoniteredDecisionPoints( excludeIfReachedDecisionPoints ) {
+    return await this.monitoredDecisionPointRepository.find({
+      relations: ['user'],
+      where: { site: In(excludeIfReachedDecisionPoints.map((x) => x.site)),
+              target: In(excludeIfReachedDecisionPoints.map((x) => x.target))},
+    });
+  }
+
   private async populateExclusionTable(
     experimentId: string,
     state: EXPERIMENT_STATE,
@@ -529,7 +537,7 @@ export class ExperimentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const validDecisionPointIds = experiment.partitions.filter((partition) => {
+    const excludeIfReachedDecisionPoints = experiment.partitions.filter((partition) => {
       return partition.excludeIfReached;
     }).map(({ site, target }) => {
       return { site:site, target:target };
@@ -540,19 +548,11 @@ export class ExperimentService {
     // query all monitored experiment point for this experiment Id
     let monitoredDecisionPoints: MonitoredDecisionPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
-      monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
-        relations: ['user'],
-        where: { site: In(validDecisionPointIds.map((x) => x.site)),
-                target: In(validDecisionPointIds.map((x) => x.target))},
-      });
+      monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       const previewUsersIds = previewUsers.map((user) => user.id);
       if (previewUsersIds.length > 0) {
-        monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
-          relations: ['user'],
-          where: { site: In(validDecisionPointIds.map((x) => x.site)),
-                  target: In(validDecisionPointIds.map((x) => x.target))},
-        });
+        monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
       }
     }
 
