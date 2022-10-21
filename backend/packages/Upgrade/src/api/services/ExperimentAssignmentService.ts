@@ -398,16 +398,8 @@ export class ExperimentAssignmentService {
       this.experimentUserService.getOriginalUserDoc(userId, logger)
     ]);
 
-    const experimentUser: ExperimentUser = userDoc || {
-      createdAt: experimentUserDoc.createdAt,
-      id: experimentUserDoc.id,
-      requestedUserId: userId,
-      group: experimentUserDoc.group,
-      workingGroup: experimentUserDoc.workingGroup
-    };
-
     // throw error if user not defined
-    if (!experimentUser) {
+    if (!experimentUserDoc || !experimentUserDoc.id) {
       logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
       let error = new Error(
         JSON.stringify({
@@ -419,6 +411,14 @@ export class ExperimentAssignmentService {
       (error as any).httpCode = 404;
       throw error;
     }
+
+    const experimentUser: ExperimentUser = userDoc || {
+      createdAt: experimentUserDoc.createdAt,
+      id: experimentUserDoc.id,
+      requestedUserId: userId,
+      group: experimentUserDoc.group,
+      workingGroup: experimentUserDoc.workingGroup
+    };
 
     // query all experiment and sub experiment
     // check if user or group is excluded
