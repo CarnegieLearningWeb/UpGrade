@@ -392,11 +392,14 @@ export class ExperimentAssignmentService {
   ): Promise<INewExperimentAssignment[]> {
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
-    const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
-    const experimentUser: ExperimentUser = userDoc;
+
+    const [previewUser,experimentUserDoc] = await Promise.all([
+      this.previewUserService.findOne(userId, logger),
+      this.experimentUserService.getOriginalUserDoc(userId, logger)
+    ]);
 
     // throw error if user not defined
-    if (!experimentUser) {
+    if (!experimentUserDoc || !experimentUserDoc.id) {
       logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
       let error = new Error(
         JSON.stringify({
@@ -409,13 +412,29 @@ export class ExperimentAssignmentService {
       throw error;
     }
 
+    const experimentUser: ExperimentUser = userDoc || {
+      createdAt: experimentUserDoc.createdAt,
+      id: experimentUserDoc.id,
+      requestedUserId: userId,
+      group: experimentUserDoc.group,
+      workingGroup: experimentUserDoc.workingGroup
+    };
+
     // query all experiment and sub experiment
-    let experiments: Experiment[] = [];
+    // check if user or group is excluded
+    let experiments: Experiment[] = [], userExcluded: string, groupExcluded: string[];
     if (previewUser) {
-      experiments = await this.experimentRepository.getValidExperimentsWithPreview(context);
+      [experiments, [userExcluded, groupExcluded]] = await Promise.all([
+        this.experimentRepository.getValidExperimentsWithPreview(context),
+        this.checkUserOrGroupIsGloballyExcluded(experimentUser)
+      ]);
     } else {
-      experiments = await this.experimentRepository.getValidExperiments(context);
+      [experiments, [userExcluded, groupExcluded]] = await Promise.all([
+        this.experimentRepository.getValidExperiments(context),
+        this.checkUserOrGroupIsGloballyExcluded(experimentUser)
+      ]);
     }
+    experiments = experiments.map(exp => this.experimentService.formatingConditionAlias(exp));
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
@@ -460,9 +479,6 @@ export class ExperimentAssignmentService {
       if (experiments.length === 0) {
         return [];
       }
-
-      // ============= check if user or group is excluded
-      const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
 
       if (userExcluded || groupExcluded.length > 0) {
         // return null if the user or group is excluded from the experiment
@@ -598,37 +614,18 @@ export class ExperimentAssignmentService {
         })
       );
 
-      const conditionsToAssign = [];
-      const decisionsToAssign = [];
-      experimentAssignment.forEach((assignment) => {
-        if (assignment) {
-          conditionsToAssign.push(assignment.id);
-        }
-      });
-
-      filteredExperiments.forEach((experiment) => {
-        experiment.partitions.forEach((decisionPoint) => {
-          decisionsToAssign.push(decisionPoint.id);
-        });
-      });
-
-      const allAliasConditions = await this.conditionAliasRepository.find({
-        relations: ['parentCondition', 'decisionPoint'],
-        where: { parentCondition: In(conditionsToAssign), decisionPoint: In(decisionsToAssign) },
-      });
-
       return filteredExperiments
         .reduce((accumulator, experiment, index) => {
           const assignment = experimentAssignment[index];
           // const { state, logging, name, id } = experiment;
-          const { state, logging, name } = experiment;
+          const { state, logging, name, conditionAliases } = experiment;
           const decisionPoints = experiment.partitions.map((decisionPoint) => {
             const { target, site, twoCharacterId } = decisionPoint;
             const conditionAssigned = assignment;
 
             let aliasCondition: ExperimentCondition = null;
             if (conditionAssigned) {
-              const aliasFound = allAliasConditions.find(
+              const aliasFound = conditionAliases.find(
                 (x) =>
                   x.parentCondition.id === conditionAssigned.id &&
                   x.decisionPoint.site === decisionPoint.site &&
@@ -1838,7 +1835,7 @@ export class ExperimentAssignmentService {
 }
 function modifiedMarkResponse(monitoredDocument: MonitoredDecisionPoint): MonitoredDecisionPoint {
   monitoredDocument['experimentId'] = monitoredDocument['site'];
-  monitoredDocument['decisionPoint'] = monitoredDocument['target'];
+  monitoredDocument['experimentPoint'] = monitoredDocument['target'];
   delete monitoredDocument['site'];
   delete monitoredDocument['target'];
   return monitoredDocument;

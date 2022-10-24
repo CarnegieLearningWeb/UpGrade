@@ -517,6 +517,14 @@ export class ExperimentService {
     }
   }
 
+  private async getValidMoniteredDecisionPoints( excludeIfReachedDecisionPoints ) {
+    return await this.monitoredDecisionPointRepository.find({
+      relations: ['user'],
+      where: { site: In(excludeIfReachedDecisionPoints.map((x) => x.site)),
+              target: In(excludeIfReachedDecisionPoints.map((x) => x.target))},
+    });
+  }
+
   private async populateExclusionTable(
     experimentId: string,
     state: EXPERIMENT_STATE,
@@ -529,35 +537,22 @@ export class ExperimentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.partitions.filter((partition) => {
+    const excludeIfReachedDecisionPoints = experiment.partitions.filter((partition) => {
       return partition.excludeIfReached;
-    }).map(({ id }) => {
-      return id;
+    }).map(({ site, target }) => {
+      return { site:site, target:target };
     });
-
     // get all preview usersData
     const previewUsers = await this.previewUserService.find(logger);
 
     // query all monitored experiment point for this experiment Id
     let monitoredDecisionPoints: MonitoredDecisionPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
-      monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
-        relations: ['user'],
-        where: { id: In(subExperiments) },
-      });
+      monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       const previewUsersIds = previewUsers.map((user) => user.id);
-
       if (previewUsersIds.length > 0) {
-        const monitoredPointsToSearch = previewUsersIds.reduce((acc, userId) => {
-          const monitoredIds = subExperiments.map((id) => {
-            return `${id}_${userId}`;
-          });
-          return [...acc, ...monitoredIds];
-        }, []);
-        monitoredDecisionPoints = await this.monitoredDecisionPointRepository.findByIds(monitoredPointsToSearch, {
-          relations: ['user'],
-        });
+        monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
       }
     }
 
@@ -1421,7 +1416,7 @@ export class ExperimentService {
     return createdExperiment;
   }
 
-  private formatingConditionAlias(experiment: Experiment): any {
+  public formatingConditionAlias(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
   
     let conditionAlias: ConditionAlias[] = [];
