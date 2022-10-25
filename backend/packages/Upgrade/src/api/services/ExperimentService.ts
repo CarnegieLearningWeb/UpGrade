@@ -1001,14 +1001,14 @@ export class ExperimentService {
 
   // Used to generate twoCharacterId for condition and decision point
   private getUniqueIdentifier(uniqueIdentifiers: string[]): string {
-    let identifier;
-    while (true) {
-      identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
+    const numCombinations = 36 * 36;
+    while (uniqueIdentifiers.length < numCombinations) {
+      const identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
       if (uniqueIdentifiers.indexOf(identifier) === -1) {
-        break;
+        return identifier;
       }
     }
-    return identifier;
+    return "";
   }
 
   private setConditionOrPartitionIdentifiers(
