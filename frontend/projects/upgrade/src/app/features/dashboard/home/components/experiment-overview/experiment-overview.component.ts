@@ -35,7 +35,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   consistencyRules = [
     { value: CONSISTENCY_RULE.INDIVIDUAL },
     { value: CONSISTENCY_RULE.GROUP },
-    { value: CONSISTENCY_RULE.EXPERIMENT }
   ];
   designTypes = [
     {
@@ -94,7 +93,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           case ASSIGNMENT_UNIT.INDIVIDUAL:
             this.overviewForm.get('groupType').disable();
             this.overviewForm.get('groupType').reset();
-            this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.EXPERIMENT }];
+            this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }];
             break;
           case ASSIGNMENT_UNIT.GROUP:
             if (this.overviewForm.get('context')) {
@@ -104,7 +103,6 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
               this.consistencyRules = [
                 { value: CONSISTENCY_RULE.INDIVIDUAL },
                 { value: CONSISTENCY_RULE.GROUP },
-                { value: CONSISTENCY_RULE.EXPERIMENT }
               ];
             } else {
               this.overviewForm.get('groupType').reset();

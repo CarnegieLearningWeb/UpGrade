@@ -46,7 +46,6 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
       .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
       .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
@@ -57,7 +56,6 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
       .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
       .where(
@@ -93,8 +91,6 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('experiment.queries', 'queries')
-      .leftJoinAndSelect('queries.metric', 'metric')
       .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
       .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
       .where(
