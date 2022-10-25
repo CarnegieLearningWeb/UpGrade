@@ -204,24 +204,20 @@ describe('Experiment Controller Testing', () => {
   test('Post request for /api/experiments/import', async done => {
     await request(app)
       .post('/api/experiments/import')
-      .send(experimentData)
+      .send([experimentData])
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
     done();
   });
 
-  test('Get request for /api/experiments/export/:id', async done => {
+  test('Get request for /api/experiments/export', async done => {
     await request(app)
-      .get(`/api/experiments/export/${uuid()}`)
-      .expect(200);
-    done();
-  });
-
-  test('Get request for /api/experiments/export/:id with no uuid', async done => {
-    await request(app)
-      .get(`/api/experiments/export/${expIdNotTypeUUID}`)
-      .expect(500);
+    .post('/api/experiments/import')
+    .send([experimentData])
+    .set('Accept', 'application/json')
+    .expect('Content-Type', /json/)
+    .expect(200);
     done();
   });
 });

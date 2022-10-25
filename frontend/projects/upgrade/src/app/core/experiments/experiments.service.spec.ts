@@ -330,11 +330,11 @@ describe('ExperimentService', () => {
         it('should dispatch actionUpsertExperiment with the given input', () => {
             const experiment = { ...mockExperiment};
 
-            service.importExperiment(experiment);
+            service.importExperiment([experiment]);
 
             expect(mockStore.dispatch).toHaveBeenCalledWith(actionUpsertExperiment({
                 experiment,
-                actionType: UpsertExperimentType.IMPORT_EXPERIMENT
+                actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT
             }));
         })
     })
@@ -539,9 +539,9 @@ describe('ExperimentService', () => {
         it('should dispatch actionExportExperimentDesign with the given input', () => {
             const experimentId = 'abc123';
 
-            service.exportExperimentDesign(experimentId);
+            service.exportExperimentDesign([experimentId]);
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportExperimentDesign({ experimentId }))
+            expect(mockStore.dispatch).toHaveBeenCalledWith(actionExportExperimentDesign({ experimentIds: [experimentId]}))
         })
     })
 

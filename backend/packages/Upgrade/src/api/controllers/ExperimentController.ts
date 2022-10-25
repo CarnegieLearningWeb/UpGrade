@@ -24,7 +24,6 @@ import { DecisionPoint } from '../models/DecisionPoint';
 import { AssignmentStateUpdateValidator } from './validators/AssignmentStateUpdateValidator';
 import { env } from '../../env';
 import { AppRequest, PaginationResponse } from '../../types';
-import { ExperimentInput } from '../../types/ExperimentInput';
 
 interface ExperimentPaginationInfo extends PaginationResponse {
   nodes: Experiment[];
@@ -939,15 +938,6 @@ export class ExperimentController {
     @CurrentUser() currentUser: User,
     @Req() request: AppRequest 
   ): Promise<Experiment[]> {
-    // experimentIds.forEach(id => {
-    //   if (!isUUID(id)) {
-    //     return Promise.reject(
-    //       new Error(
-    //         JSON.stringify({ type: SERVER_ERROR.INCORRECT_PARAM_FORMAT, message: ' : experiment id should be of type UUID.' })
-    //       )
-    //     );
-    //   }
-    // });
     return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
 

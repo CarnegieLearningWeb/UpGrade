@@ -7,7 +7,6 @@ import { AuthService } from '../../../../../../core/auth/auth.service';
 import { ExperimentVM } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import JSZip from 'jszip';
 
 @Component({
   selector: 'experiment-export',

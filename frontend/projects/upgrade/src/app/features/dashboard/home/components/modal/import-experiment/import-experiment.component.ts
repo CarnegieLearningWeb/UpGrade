@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTableDataSource } from '@angular/material/table';
 
 interface ImportExperimentJSON {
   schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
@@ -27,6 +28,9 @@ export class ImportExperimentComponent implements OnInit {
   allPartitions = [];
   allPartitionsSub: Subscription;
   allExperiments: Experiment[] = [];
+  importFileErrorsDataSource = new MatTableDataSource<{filename: string, error: string}>();
+  importFileErrors: {filename: string, error: string}[] = [];
+  displayedColumns: string[] = ['File Name', 'Error'];
 
   constructor(
     private experimentService: ExperimentService,
@@ -56,29 +60,15 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   importExperiment() {
-    this.allExperiments.filter(exp => this.validateExperimentJSON(exp));
-
     this.allExperiments.forEach(exp => {
       exp.id = uuidv4();
       exp.conditions.map(condition => {
         condition.id = condition.id || uuidv4();
       });
     });
-    // this.experimentService.createBulkExperiment(this.allExperiments);
     this.experimentService.importExperiment(this.allExperiments);
     this.onCancelClick();
     this.openSnackBar();
-
-    // this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
-    // if (this.isExperimentJSONValid) {
-    //   this.experimentInfo.id = uuidv4();
-    //   this.experimentInfo.conditions.map(condition => {
-    //     condition.id = condition.id || uuidv4();
-    //   });
-    //   this.experimentService.importExperiment({ ...this.experimentInfo });
-    //   this.onCancelClick();
-    //   this.openSnackBar();
-    // }
   }
   async validateExperimentJSONVersion(experimentInfo: any): Promise<any> {
     const version = await this.versionService.getVersion();
@@ -105,23 +95,41 @@ export class ImportExperimentComponent implements OnInit {
   }
   
   async uploadFile(event) {
-    let index = 0;
+    let index = 0, fileName = '';
+    this.importFileErrors = [];
     const reader = new FileReader();
 
     readFile(index);
     function readFile(index: number) {
       if (index >= event.target.files.length) return;
+      fileName = event.target.files[index].name;
       reader.readAsText(event.target.files[index]);
     }
+
     reader.addEventListener(
       'load',
       async function() {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
         this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
-        if (this.isExperimentJSONVersionValid) {
+        this.isExperimentJSONValid = this.validateExperimentJSON(this.experimentInfo);
+
+        if (this.isExperimentJSONVersionValid && this.isExperimentJSONValid) {
+          this.allExperiments.push(this.experimentInfo);
+        } else if (!this.isExperimentJSONValid) {
+          this.importFileErrors.push({
+            fileName: fileName,
+            error: this.translate.instant('home.import-experiment.error.message.text')
+          });
+        } else {
+          this.importFileErrors.push({
+            fileName: fileName,
+            error: this.translate.instant('home.import-experiment.version-error.message.text')
+          });
           this.allExperiments.push(this.experimentInfo);
         }
+
+        this.importFileErrorsDataSource.data = this.importFileErrors;
         readFile(++index);
       }.bind(this)
     );
