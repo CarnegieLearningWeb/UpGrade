@@ -22,6 +22,7 @@ export class NewExperimentComponent implements OnInit {
   animationCompletedIndex: Number;
   currentContext: string;
   isContextChanged: boolean = false;
+  dataChanged: boolean = false;
   @ViewChild('stepper') stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
@@ -42,6 +43,12 @@ export class NewExperimentComponent implements OnInit {
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  checkDataChanged(isFormDataChanged: boolean){
+    if(isFormDataChanged || this.dataChanged ){
+      this.dataChanged=true;
+    }
   }
 
   getExperimentData(event: NewExperimentDialogData) {
@@ -69,6 +76,10 @@ export class NewExperimentComponent implements OnInit {
           this.experimentService.createNewExperiment(this.newExperimentData);
           this.onNoClick();
         }
+
+        // console.log(this.experimentInfo);
+        // console.log(this.newExperimentData);
+        // console.log(isSubset(this.newExperimentData, this.experimentInfo));
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
         this.onNoClick();
@@ -84,6 +95,15 @@ export class NewExperimentComponent implements OnInit {
     }
   }
 
+  // isSubset = (superObj, subObj) => {
+  //   return Object.keys(subObj).every(ele => {
+  //       if (typeof subObj[ele] == 'object') {
+  //           return isSubset(superObj[ele], subObj[ele]);
+  //       }
+  //       return subObj[ele] === superObj[ele]
+  //   });
+  // }
+
   openSnackBar() {
     this._snackBar.open(this.translate.instant('global.save-confirmation.message.text') , null, { duration: 2000 });
   }
@@ -96,3 +116,4 @@ export class NewExperimentComponent implements OnInit {
     this.animationCompletedIndex = this.selectedStepperIndex;
   }
 }
+

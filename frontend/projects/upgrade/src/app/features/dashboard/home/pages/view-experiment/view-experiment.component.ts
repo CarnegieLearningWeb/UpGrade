@@ -155,7 +155,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   loadMetrics(experiment: ExperimentVM){ 
     if (this.experiment) {
       this.displayMetrics=[];
-      console.log(this.experiment.queries);
       this.experiment.queries.forEach((query, queryIndex) => {
         let key;
         if (query.metric.key) {

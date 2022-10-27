@@ -83,6 +83,7 @@
   "home.experiments-table.enrollments-tooltip.text": "Experiment enrollment details",
   "home.experiments-table.students.text": "{{ noOfStudents }} students",
   "home.experiments-table.classes.text": "{{ noOfClasses }}",
+  "home.experiments-edit.confirm-close.text": "Are you sure, you wish to close?",
   "home.new-experiment.overview.text": "Overview",
   "home.new-experiment.experiment-design.text": "Design",
   "home.new-experiment.monitored-metrics.text": "Metrics",

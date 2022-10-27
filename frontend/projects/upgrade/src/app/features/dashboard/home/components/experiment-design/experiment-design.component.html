@@ -360,6 +360,7 @@
         class="shared-modal--modal-btn btn-back default-button"
         [class.default-button--disabled]="(isAliasTableEditMode$ | async)"
         [disabled]="(isAliasTableEditMode$ | async)"
+        (click)="checkDataChangedEvent.emit(this.experimentDesignForm.dirty)"
       >
         {{ 'global.back.text' | translate }}
       </button>

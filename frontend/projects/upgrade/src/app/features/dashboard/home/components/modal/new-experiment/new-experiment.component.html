@@ -16,6 +16,8 @@
     </ng-template>
     <home-experiment-overview
       [experimentInfo]="experimentInfo"
+      [dataChanged]="dataChanged"
+      (checkDataChangedEvent)="checkDataChanged($event)"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-overview>
   </mat-step>
@@ -28,9 +30,11 @@
     </ng-template>
     <home-experiment-design
       [experimentInfo]="experimentInfo"
+      [dataChanged]="dataChanged"
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
+      (checkDataChangedEvent)="checkDataChanged($event)"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-design>
   </mat-step>
@@ -46,6 +50,8 @@
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
+      [dataChanged]="dataChanged"
+      (checkDataChangedEvent)="checkDataChanged($event)"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-participants>
   </mat-step>
@@ -61,6 +67,8 @@
       [currentContext]="currentContext"
       [isContextChanged]="isContextChanged"
       [animationCompleteStepperIndex]="animationCompletedIndex"
+      [dataChanged]="dataChanged"
+      (checkDataChangedEvent)="checkDataChanged($event)"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-monitored-metrics>
   </mat-step>
@@ -72,9 +80,11 @@
       </span>
     </ng-template>
     <home-experiment-schedule
-      (emitExperimentDialogEvent)="getExperimentData($event)"
       [experimentInfo]="experimentInfo"
       [groupType]="newExperimentData?.group"
+      [dataChanged]="dataChanged"
+      (checkDataChangedEvent)="checkDataChanged($event)"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-schedule>
   </mat-step>
 
@@ -87,6 +97,8 @@
     <home-experiment-post-condition
       [newExperimentData]="newExperimentData"
       [experimentInfo]="experimentInfo"
+      [dataChanged]="dataChanged"
+      (checkDataChangedEvent)="checkDataChanged($event)"
       (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-post-condition>
   </mat-step>

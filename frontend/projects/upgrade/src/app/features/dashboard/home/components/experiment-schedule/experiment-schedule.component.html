@@ -136,6 +136,7 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
+        (click)="checkDataChangedEvent.emit(this.experimentScheduleForm.dirty)"
       >
         {{ 'global.back.text' | translate }}
       </button>
