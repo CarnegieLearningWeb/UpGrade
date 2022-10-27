@@ -351,7 +351,7 @@ export class AnalyticsService {
       let emailText;
       monitorFileBuffer = fs.readFileSync(fileName);
       // delete local file copy:
-      //fs.unlinkSync(`${folderPath}${simpleExportCSV}`); //TODO uncomment this
+      fs.unlinkSync(`${folderPath}${simpleExportCSV}`);
 
       await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, simpleExportCSV)]);
 
