@@ -469,17 +469,15 @@ export class ExperimentEffects {
       filter(( {experimentIds} ) => !!experimentIds),
       switchMap(({ experimentIds }) =>
         this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
-          map((data: any) => {
+          map((data: Experiment[]) => {
             if (data.length > 1) {
               var zip = new JSZip();
-              let index = 1;
-              data.forEach(experiment => {
-                zip.file(experiment.name+' (File '+index+').json', JSON.stringify(experiment));
-                index++;
+              data.forEach((experiment,index) => {
+                zip.file(experiment.name+' (File '+ (index+1) +').json', JSON.stringify(experiment));
               });
-              zip.generateAsync({type:"base64"}).then(function (content) {
+              zip.generateAsync({type:"base64"}).then((content) => {
                 this.download('Experiments.zip', content, true)
-              }.bind(this));
+            });
             } else {
               this.download(data[0].name+'.json', data[0], false);
             }

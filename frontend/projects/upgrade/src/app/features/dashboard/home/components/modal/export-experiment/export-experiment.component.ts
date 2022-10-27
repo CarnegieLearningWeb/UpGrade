@@ -82,9 +82,9 @@ export class ExportModalComponent implements OnInit {
 
   exportExperiment() {
     const { exportMethod } = this.exportForm.value;
-    if (exportMethod == EXPORT_METHOD.DATA) {
+    if (exportMethod == EXPORT_METHOD.DATA && this.experiments[0]) {
       this.exportExperimentInfo(this.experiments[0].id, this.experiments[0].name)
-    } else {
+    } else if (exportMethod == EXPORT_METHOD.DESIGN) {
       this.exportExperimentDesign(this.experiments.map(exp => exp.id));
     }
     this.onCancelClick();

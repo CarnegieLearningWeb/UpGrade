@@ -171,31 +171,18 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       panelClass: 'new-experiment-modal',
       disableClose: true
     });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
-    });
   }
 
   openImportExperimentDialog() {
     const dialogRef = this.dialog.open(ImportExperimentComponent, {
       panelClass: 'import-experiment-modal'
     });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
-    });
   }
 
   openExportAllExperimentsDialog() {
-    console.log(this.allExperiments.data);
     const dialogRef = this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
       data: { experiment: this.allExperiments.data }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
     });
   }
 
@@ -265,7 +252,3 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
     return ThemeOptions;
   }
 }
-function clonedeep(experiment: any): any {
-  throw new Error('Function not implemented.');
-}
-

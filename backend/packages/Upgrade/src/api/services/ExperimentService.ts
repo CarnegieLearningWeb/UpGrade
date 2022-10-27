@@ -363,7 +363,7 @@ export class ExperimentService {
   public async importExperiment(experiments: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
     for (let experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
-      if (duplicateExperiment && experiment.id !== undefined) {
+      if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);

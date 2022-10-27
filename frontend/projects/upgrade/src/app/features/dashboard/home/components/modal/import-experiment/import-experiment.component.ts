@@ -133,7 +133,6 @@ export class ImportExperimentComponent implements OnInit {
         readFile(++index);
       }.bind(this)
     );
-    // reader.readAsText(event.target.files[0]);
   }
 
   private validateExperimentJSON(experiment: Experiment) {
