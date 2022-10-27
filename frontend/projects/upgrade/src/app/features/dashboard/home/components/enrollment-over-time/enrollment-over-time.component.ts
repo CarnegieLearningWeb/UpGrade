@@ -84,7 +84,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   // remove empty series data labels
   formateXAxisLabel(value) {
-    if(this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS) {
+    if (this.selectedDateFilter === DATE_RANGE.LAST_SEVEN_DAYS) {
       return !isNaN(value) ? '' : value.substring(0, 5);
     }
     return !isNaN(value) ? '' : value.substring(0, 3); 

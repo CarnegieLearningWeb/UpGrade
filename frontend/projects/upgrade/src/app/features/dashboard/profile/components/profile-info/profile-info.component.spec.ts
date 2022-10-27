@@ -14,7 +14,7 @@ xdescribe('ProfileInfoComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ ProfileInfoComponent ],
       imports: [TestingModule],
-      providers:[
+      providers: [
         UsersService,
         AuthService,
         SettingsService

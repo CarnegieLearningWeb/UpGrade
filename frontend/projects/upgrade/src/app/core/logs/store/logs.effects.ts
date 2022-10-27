@@ -35,9 +35,7 @@ export class LogsEffects {
         this.store$.pipe(select(selectIsAuditLogLoading)),
         this.store$.pipe(select(selectTotalAuditLogs)),
       ),
-      filter(([fromStart, skipAuditLog, __, isAuditLogLoading, totalAuditLogs]) => {
-        return !isAuditLogLoading && (skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart);
-      }),
+      filter(([fromStart, skipAuditLog, __, isAuditLogLoading, totalAuditLogs]) => !isAuditLogLoading && (skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart)),
       tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsAuditLogLoading({ isAuditLogLoading: true }));
         if (fromStart) {
@@ -53,12 +51,10 @@ export class LogsEffects {
           }
         }
         return this.logsDataService.getAllAuditLogs(params).pipe(
-          map((data: any) => {
-            return logsActions.actionGetAuditLogsSuccess({
+          map((data: any) => logsActions.actionGetAuditLogsSuccess({
               auditLogs: data.nodes,
               totalAuditLogs: data.total
-            })
-          }),
+            })),
           catchError(() => [logsActions.actionGetAuditLogsFailure()])
         )
       })
@@ -75,9 +71,7 @@ export class LogsEffects {
         this.store$.pipe(select(selectIsErrorLogLoading)),
         this.store$.pipe(select(selectTotalErrorLogs))
       ),
-      filter(([fromStart, skipErrorLog, __, isErrorLogLoading, totalErrorLogs]) => {
-        return !isErrorLogLoading && (skipErrorLog < totalErrorLogs || totalErrorLogs === null || fromStart);
-      }),
+      filter(([fromStart, skipErrorLog, __, isErrorLogLoading, totalErrorLogs]) => !isErrorLogLoading && (skipErrorLog < totalErrorLogs || totalErrorLogs === null || fromStart)),
       tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsErrorLogLoading({ isErrorLogLoading: true }));
         if (fromStart) {
@@ -93,12 +87,10 @@ export class LogsEffects {
           }
         }
         return this.logsDataService.getAllErrorLogs(params).pipe(
-          map((data: any) => {
-            return logsActions.actionGetErrorLogsSuccess({
+          map((data: any) => logsActions.actionGetErrorLogsSuccess({
               errorLogs: data.nodes,
               totalErrorLogs: data.total
             })
-          }
           ),
           catchError(() => [logsActions.actionGetErrorLogsFailure()])
         )

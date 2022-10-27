@@ -148,7 +148,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
     this.setGroupTypes();
     const result = find(this.groupTypes, type => type.value === this.experimentInfo.group);
-    return result ? { groupType: result.value }: { groupType: null };
+    return result ? { groupType: result.value } : { groupType: null };
   }
 
   setGroupTypes() {
@@ -194,7 +194,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Check if experiment is created before new context-metadata and reset app-contexts
   checkExperiment() {
-    if(this.contextMetaData['contextMetadata'] && !this.contextMetaData['contextMetadata'][this.currentContext]) {
+    if (this.contextMetaData['contextMetadata'] && !this.contextMetaData['contextMetadata'][this.currentContext]) {
       this.overviewForm.get('context').setValue(null);
       this.overviewForm.get('groupType').reset();
     }

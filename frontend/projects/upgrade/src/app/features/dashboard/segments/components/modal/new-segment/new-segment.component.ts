@@ -14,7 +14,7 @@ export class NewSegmentComponent implements OnInit {
   newSegmentData: any = {};
   segmentInfo: Segment;
   currentContext: string;
-  isContextChanged: boolean = false;
+  isContextChanged = false;
   @ViewChild('stepper', { static: false }) stepper: any;
 
   constructor(

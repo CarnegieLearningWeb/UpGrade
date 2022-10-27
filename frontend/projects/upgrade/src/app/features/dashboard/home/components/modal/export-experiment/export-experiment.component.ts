@@ -64,9 +64,9 @@ export class ExportModalComponent implements OnInit {
       if (userInfo.email && exportType) {
         this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 });
       } else if (!userInfo.email && !exportType) {
-        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 });
+        this._snackBar.open('Email will be sent to registered email', null, { duration: 2000 });
       } else {
-        this._snackBar.open(`Experiment Design JSON downloaded!`, null, { duration: 2000 });
+        this._snackBar.open('Experiment Design JSON downloaded!', null, { duration: 2000 });
       }
     });
   }

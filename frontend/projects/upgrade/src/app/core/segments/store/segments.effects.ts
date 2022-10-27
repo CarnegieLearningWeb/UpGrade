@@ -84,7 +84,7 @@ export class SegmentsEffects {
       switchMap(({ segmentId }) =>
         this.segmentsDataService.exportSegment(segmentId).pipe(
           map((data: any) => {
-            this.download(data.name+'.json', data);
+            this.download(data.name + '.json', data);
             return SegmentsActions.actionExportSegmentSuccess();
           }),
           catchError(() => [SegmentsActions.actionExportSegmentFailure()])
@@ -94,7 +94,7 @@ export class SegmentsEffects {
   );
 
   private download(filename, text) {
-    var element = document.createElement('a');
+    const element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
     element.setAttribute('download', filename);
     element.style.display = 'none';

@@ -1,7 +1,7 @@
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from "@angular/common/http";
-import { Inject, Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { ENV, Environment } from "../../../environments/environment-types";
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
+import { Inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class BaseUrlInterceptor implements HttpInterceptor {

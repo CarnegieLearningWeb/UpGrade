@@ -1,18 +1,18 @@
-import { experimentUsersReducer, initialState } from "./experiment-users.reducer";
-import * as experimentUsersActions from "./experiment-users.actions";
+import { experimentUsersReducer, initialState } from './experiment-users.reducer';
+import * as experimentUsersActions from './experiment-users.actions';
 
-describe("experimentUsersReducer", () => {
-    describe("actions to kick off requests w/ isLoading ", () => {
+describe('experimentUsersReducer', () => {
+    describe('actions to kick off requests w/ isLoading ', () => {
         const testActions = {
-            "actionFetchExcludedUsers": experimentUsersActions.actionFetchExcludedUsers,
-            "actionFetchExcludedGroups": experimentUsersActions.actionFetchExcludedGroups,
-            "actionExcludeUser": experimentUsersActions.actionExcludeUser,
-            "actionExcludeGroup": experimentUsersActions.actionExcludeGroup,
-            "actionDeleteExcludedUser": experimentUsersActions.actionDeleteExcludedUser,
-            "actionDeleteExcludedGroup": experimentUsersActions.actionDeleteExcludedGroup,
+            'actionFetchExcludedUsers': experimentUsersActions.actionFetchExcludedUsers,
+            'actionFetchExcludedGroups': experimentUsersActions.actionFetchExcludedGroups,
+            'actionExcludeUser': experimentUsersActions.actionExcludeUser,
+            'actionExcludeGroup': experimentUsersActions.actionExcludeGroup,
+            'actionDeleteExcludedUser': experimentUsersActions.actionDeleteExcludedUser,
+            'actionDeleteExcludedGroup': experimentUsersActions.actionDeleteExcludedGroup,
         }
 
-        for (let actionKey in testActions) {
+        for (const actionKey in testActions) {
             const previousState = { ...initialState };
             previousState.isLoading = false;
 
@@ -24,7 +24,7 @@ describe("experimentUsersReducer", () => {
         }
     })
 
-    describe("actions to fetch excluded entities", () => {
+    describe('actions to fetch excluded entities', () => {
         it('on actionFetchExcludedUsers reducer should return the excludedUsers with isLoading: false', () => {
             const mockData = [{
                 createdAt: 'testDate',
@@ -137,17 +137,17 @@ describe("experimentUsersReducer", () => {
         })
     })
 
-    describe("actions to resolve requests w/ isLoading false ", () => {
+    describe('actions to resolve requests w/ isLoading false ', () => {
         const testActions = {
-            "actionFetchExcludedUsersFailure": experimentUsersActions.actionFetchExcludedUsersFailure,
-            "actionFetchExcludedGroupsFailure": experimentUsersActions.actionFetchExcludedGroupsFailure,
-            "actionExcludedUserFailure": experimentUsersActions.actionExcludedUserFailure,
-            "actionExcludedGroupFailure": experimentUsersActions.actionExcludedGroupFailure,
-            "actionDeleteExcludedUserFailure": experimentUsersActions.actionDeleteExcludedUserFailure,
-            "actionDeleteExcludedGroupFailure": experimentUsersActions.actionDeleteExcludedGroupFailure,
+            'actionFetchExcludedUsersFailure': experimentUsersActions.actionFetchExcludedUsersFailure,
+            'actionFetchExcludedGroupsFailure': experimentUsersActions.actionFetchExcludedGroupsFailure,
+            'actionExcludedUserFailure': experimentUsersActions.actionExcludedUserFailure,
+            'actionExcludedGroupFailure': experimentUsersActions.actionExcludedGroupFailure,
+            'actionDeleteExcludedUserFailure': experimentUsersActions.actionDeleteExcludedUserFailure,
+            'actionDeleteExcludedGroupFailure': experimentUsersActions.actionDeleteExcludedGroupFailure,
         }
 
-        for (let actionKey in testActions) {
+        for (const actionKey in testActions) {
             const previousState = { ...initialState };
             previousState.isLoading = true;
 
@@ -159,7 +159,7 @@ describe("experimentUsersReducer", () => {
         }
     })
 
-    describe("actions to delete excluded entities", () => {
+    describe('actions to delete excluded entities', () => {
         it('on actionDeleteExcludedUserSuccess reducer should return the excludedUsers with isLoading: false', () => {
             const mockData = [{
                 createdAt: 'testDate',

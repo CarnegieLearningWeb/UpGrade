@@ -1,10 +1,10 @@
 import { initialState, logsReducer } from './logs.reducer';
-import * as LogsActions from "./logs.actions";
+import * as LogsActions from './logs.actions';
 import { AuditLogs, ErrorLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './logs.model';
 
 
-describe("LogsReducer", () => {
-    let mockAuditLogs: AuditLogs[] = [
+describe('LogsReducer', () => {
+    const mockAuditLogs: AuditLogs[] = [
         {
             id: 'abc123',
             createdAt: 'test',
@@ -23,7 +23,7 @@ describe("LogsReducer", () => {
         }
     ];
 
-    let mockErrorLogs: ErrorLogs[] = [
+    const mockErrorLogs: ErrorLogs[] = [
         {
             id: 'abc123',
             createdAt: 'test',

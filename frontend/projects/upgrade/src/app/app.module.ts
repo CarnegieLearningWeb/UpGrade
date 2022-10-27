@@ -23,8 +23,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
 
   // in a prod build, we currently need to fetch environment.json at root to provide
   // apiBaseUrl and gapiClientId
-  return () => {
-    return http.get('/environment.json')
+  return () => http.get('/environment.json')
       .toPromise()
       .then(data => {
         env.apiBaseUrl = (data as any).endpointApi;
@@ -33,7 +32,6 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       .catch(error => {
         console.log({ error })
       })
-  }
 }
 
 @NgModule({
@@ -43,7 +41,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
     BrowserModule,
     // global configuration for notification
     SimpleNotificationsModule.forRoot({
-        position: ["bottom", "center"],
+        position: ['bottom', 'center'],
         timeOut: 4000,
         showProgressBar: false,
         pauseOnHover: true,

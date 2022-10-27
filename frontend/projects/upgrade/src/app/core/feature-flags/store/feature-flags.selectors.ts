@@ -21,11 +21,9 @@ export const selectIsLoadingFeatureFlags = createSelector(
 export const selectSelectedFeatureFlag = createSelector(
   selectRouterState,
   selectFeatureFlagsState,
-  ({ state: { params } }, featureFlagState) => {
-    return featureFlagState.entities[params.flagId]
+  ({ state: { params } }, featureFlagState) => featureFlagState.entities[params.flagId]
       ? featureFlagState.entities[params.flagId]
-      : undefined;
-  }
+      : undefined
 );
 
 export const selectSkipFlags = createSelector(

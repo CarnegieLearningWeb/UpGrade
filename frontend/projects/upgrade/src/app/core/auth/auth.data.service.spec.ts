@@ -1,8 +1,8 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { AuthDataService } from "./auth.data.service";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { AuthDataService } from './auth.data.service';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
 
 class MockHTTPClient {
     get = jest.fn().mockReturnValue(of());

@@ -1,23 +1,21 @@
-import { BehaviorSubject } from "rxjs";
-import { AnalysisService } from "./analysis.service";
-import { actionDeleteMetric, actionExecuteQuery, actionSetMetricsFilterValue, actionSetQueryResult, actionUpsertMetrics } from "./store/analysis.actions";
-import { UpsertMetrics } from "./store/analysis.models";
+import { BehaviorSubject } from 'rxjs';
+import { AnalysisService } from './analysis.service';
+import { actionDeleteMetric, actionExecuteQuery, actionSetMetricsFilterValue, actionSetQueryResult, actionUpsertMetrics } from './store/analysis.actions';
+import { UpsertMetrics } from './store/analysis.models';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 
-jest.mock('./store/analysis.selectors', () => {
-    return {
+jest.mock('./store/analysis.selectors', () => ({
         selectMetrics: jest.fn(),
         selectIsMetricsLoading: jest.fn(),
         selectQueryResult: jest.fn(),
         selectIsQueryExecuting: jest.fn(),
         selectQueryResultById: jest.fn(),
-    }
-});
+    }));
 
 describe('AnalysisService', () => {
-    let mockStore: any = MockStateStore$;
+    const mockStore: any = MockStateStore$;
     let service: AnalysisService;
     
     beforeEach(() => {
@@ -141,7 +139,7 @@ describe('AnalysisService', () => {
                 ] 
             };
             const mockSearchForKey = '4';
-            const expectedReturnValue = ["child", "grandchild", "greatgrandchild"];
+            const expectedReturnValue = ['child', 'grandchild', 'greatgrandchild'];
             
             const actualReturnValue =  service.findParents(mockNode, mockSearchForKey);
 

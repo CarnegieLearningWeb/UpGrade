@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { PreviewUsersDataService } from "./preview-users.data.service";
-import { PreviewUserAssignCondition } from "./store/preview-users.model";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { PreviewUsersDataService } from './preview-users.data.service';
+import { PreviewUserAssignCondition } from './store/preview-users.model';
 
 
 class MockHTTPClient {

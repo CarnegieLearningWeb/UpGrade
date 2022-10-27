@@ -39,15 +39,11 @@ const reducer = createReducer(
   ),
   on(
     previewUsersActions.actionAddPreviewUserSuccess,
-    (state, { data }) => {
-      return adapter.addOne(data, { ...state, isLoading: false });
-    }
+    (state, { data }) => adapter.addOne(data, { ...state, isLoading: false })
   ),
   on(
     previewUsersActions.actionDeletePreviewUserSuccess,
-    (state, { data }) => {
-      return adapter.removeOne(data.id, { ...state, isLoading: false });
-    }
+    (state, { data }) => adapter.removeOne(data.id, { ...state, isLoading: false })
   ),
   on(
     previewUsersActions.actionFetchPreviewUsersFailure,

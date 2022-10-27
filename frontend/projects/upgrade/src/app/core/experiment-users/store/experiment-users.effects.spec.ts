@@ -1,8 +1,8 @@
-import { ActionsSubject } from "@ngrx/store";
-import { ExperimentUsersEffects } from "./experiment-users.effects";
+import { ActionsSubject } from '@ngrx/store';
+import { ExperimentUsersEffects } from './experiment-users.effects';
 import * as ExperimentUsersActions from './experiment-users.actions';
-import { of, throwError } from "rxjs";
-import { fakeAsync, tick } from "@angular/core/testing";
+import { of, throwError } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('ExperimentUsersEffects', () => {
     let service: ExperimentUsersEffects;
@@ -19,7 +19,7 @@ describe('ExperimentUsersEffects', () => {
         );
     })
     
-    describe("#fetchExcludedUsers$", () => {
+    describe('#fetchExcludedUsers$', () => {
         it('should dispatch actionFetchExcludedUsersSuccess with entity collection on success', fakeAsync(() => {
             const mockEntities = [{
                 createdAt: 'testDate',
@@ -42,7 +42,7 @@ describe('ExperimentUsersEffects', () => {
         }))
 
         it('should dispatch actionFetchExcludedUsersFailure on error', fakeAsync(() => {
-            experimentUsersDataService.fetchExcludedUsers = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            experimentUsersDataService.fetchExcludedUsers = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = ExperimentUsersActions.actionFetchExcludedUsersFailure();
 
@@ -56,7 +56,7 @@ describe('ExperimentUsersEffects', () => {
         }))
     })
 
-    describe("#fetchExcludedGroups$", () => {
+    describe('#fetchExcludedGroups$', () => {
         it('should dispatch actionFetchExcludedGroupsSuccess with entity collection on success', fakeAsync(() => {
             const mockEntities = [{
                 createdAt: 'testDate',
@@ -80,7 +80,7 @@ describe('ExperimentUsersEffects', () => {
         }))
 
         it('should dispatch actionFetchExcludedUsersFailure on error', fakeAsync(() => {
-            experimentUsersDataService.fetchExcludedGroups = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            experimentUsersDataService.fetchExcludedGroups = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = ExperimentUsersActions.actionFetchExcludedGroupsFailure();
 
@@ -94,7 +94,7 @@ describe('ExperimentUsersEffects', () => {
         }))
     })
 
-    describe("#excludedUser", () => {
+    describe('#excludedUser', () => {
         it('should do nothing if no id property in payload', fakeAsync(() => {
             const mockEntity = {
                 createdAt: 'testDate',
@@ -146,7 +146,7 @@ describe('ExperimentUsersEffects', () => {
                 userId: 'abc123'
             }
 
-            experimentUsersDataService.excludeUser = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            experimentUsersDataService.excludeUser = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = ExperimentUsersActions.actionExcludedUserFailure();
 
@@ -160,7 +160,7 @@ describe('ExperimentUsersEffects', () => {
         }))
     })
 
-    describe("#excludedGroup", () => {
+    describe('#excludedGroup', () => {
         it('should do nothing if no id property in payload', fakeAsync(() => {
             const mockEntity = {
                 createdAt: 'testDate',
@@ -221,7 +221,7 @@ describe('ExperimentUsersEffects', () => {
                 type: 'school'
             }
 
-            experimentUsersDataService.excludeGroup = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            experimentUsersDataService.excludeGroup = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = ExperimentUsersActions.actionExcludedGroupFailure();
 
@@ -238,7 +238,7 @@ describe('ExperimentUsersEffects', () => {
         }))
     })
 
-    describe("#deleteExcludedUser", () => {
+    describe('#deleteExcludedUser', () => {
         it('should do nothing if no id property in payload', fakeAsync(() => {
             const mockEntity = {
                 createdAt: 'testDate',
@@ -290,7 +290,7 @@ describe('ExperimentUsersEffects', () => {
                 userId: 'abc123'
             }
 
-            experimentUsersDataService.deleteExcludedUser = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            experimentUsersDataService.deleteExcludedUser = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = ExperimentUsersActions.actionDeleteExcludedUserFailure();
 
@@ -304,7 +304,7 @@ describe('ExperimentUsersEffects', () => {
         }))
     })
 
-    describe("#deleteExcludedGroup", () => {
+    describe('#deleteExcludedGroup', () => {
         it('should do nothing if no id property in payload', fakeAsync(() => {
             const mockEntity = {
                 createdAt: 'testDate',
@@ -365,7 +365,7 @@ describe('ExperimentUsersEffects', () => {
                 type: 'school'
             }
 
-            experimentUsersDataService.deleteExcludedGroup = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            experimentUsersDataService.deleteExcludedGroup = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = ExperimentUsersActions.actionDeleteExcludedGroupFailure();
 

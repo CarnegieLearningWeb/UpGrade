@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { FeatureFlagsDataService } from "./feature-flags.data.service";
-import { FeatureFlag, FeatureFlagsPaginationParams } from "./store/feature-flags.model";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { FeatureFlagsDataService } from './feature-flags.data.service';
+import { FeatureFlag, FeatureFlagsPaginationParams } from './store/feature-flags.model';
 
 class MockHTTPClient {
     get = jest.fn().mockReturnValue(of());

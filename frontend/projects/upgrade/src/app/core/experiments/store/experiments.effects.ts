@@ -186,15 +186,13 @@ export class ExperimentEffects {
       ofType(experimentAction.actionDeleteExperiment),
       map(action => action.experimentId),
       filter(experimentId => !!experimentId),
-      switchMap(experimentId => {
-        return this.experimentDataService.deleteExperiment(experimentId).pipe(
+      switchMap(experimentId => this.experimentDataService.deleteExperiment(experimentId).pipe(
           switchMap(_ => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
             experimentAction.actionFetchAllPartitions()
           ]),
           catchError(() => [experimentAction.actionDeleteExperimentFailure()])
-        );
-      })
+        ))
     )
   );
 
@@ -227,12 +225,10 @@ export class ExperimentEffects {
       ofType(experimentAction.actionFetchExperimentDetailStat),
       map(action => action.experimentId),
       filter(experimentId => !!experimentId),
-      switchMap((experimentId) => {
-        return this.experimentDataService.getExperimentDetailStat(experimentId).pipe(
+      switchMap((experimentId) => this.experimentDataService.getExperimentDetailStat(experimentId).pipe(
           map((data: IExperimentEnrollmentDetailStats) => experimentAction.actionFetchExperimentDetailStatSuccess({ stat: data })),
           catchError(() => [experimentAction.actionFetchExperimentDetailStatFailure()])
-        )
-      })
+        ))
     )
   );
 
@@ -241,24 +237,20 @@ export class ExperimentEffects {
       ofType(experimentAction.actionBeginExperimentDetailStatsPolling),
       map(action => action.experimentId),
       filter(experimentId => !!experimentId),
-      switchMap(experimentId => {
-        return interval(this.environment.pollingInterval).pipe(
+      switchMap(experimentId => interval(this.environment.pollingInterval).pipe(
           switchMap(() => this.store$.pipe(select(selectIsPollingExperimentDetailStats))),
           takeWhile((isPolling) => isPolling),
           take(this.environment.pollingLimit),
           switchMap(() => this.store$.pipe(select(selectExperimentGraphRange))),
-          switchMap((graphRange) => {
-            return [
+          switchMap((graphRange) => [
               experimentAction.actionFetchExperimentDetailStat({ experimentId }),
               experimentAction.actionFetchExperimentGraphInfo({
                 experimentId,
                 range: graphRange,
                 clientOffset: -new Date().getTimezoneOffset()
               })
-            ]
-          })
-        )
-      })
+            ])
+        ))
     )
   )
 
@@ -432,9 +424,7 @@ export class ExperimentEffects {
       filter(([{ experimentId }, { email }]) => !!experimentId && !!email),
       switchMap(([{ experimentId, experimentName }, { email }]) =>
         this.experimentDataService.exportExperimentInfo(experimentId, email).pipe(
-          map((data: any) => {
-            return experimentAction.actionExportExperimentInfoSuccess();
-          }),
+          map((data: any) => experimentAction.actionExportExperimentInfoSuccess()),
           catchError(() => [experimentAction.actionExportExperimentInfoFailure()])
         )
       )
@@ -471,15 +461,15 @@ export class ExperimentEffects {
         this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
           map((data: Experiment[]) => {
             if (data.length > 1) {
-              var zip = new JSZip();
-              data.forEach((experiment,index) => {
-                zip.file(experiment.name+' (File '+ (index+1) +').json', JSON.stringify(experiment));
+              const zip = new JSZip();
+              data.forEach((experiment, index) => {
+                zip.file(experiment.name + ' (File ' + (index + 1) + ').json', JSON.stringify(experiment));
               });
-              zip.generateAsync({type:"base64"}).then((content) => {
+              zip.generateAsync({type: 'base64'}).then((content) => {
                 this.download('Experiments.zip', content, true)
             });
             } else {
-              this.download(data[0].name+'.json', data[0], false);
+              this.download(data[0].name + '.json', data[0], false);
             }
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
@@ -490,7 +480,7 @@ export class ExperimentEffects {
   );
 
   private download(filename, text, isZip: boolean) {
-    var element = document.createElement('a');
+    const element = document.createElement('a');
     isZip
       ? element.setAttribute('href', 'data:application/zip;base64,' + text)
       : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));

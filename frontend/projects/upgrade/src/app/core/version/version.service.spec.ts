@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { VersionService } from "./version.service";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { VersionService } from './version.service';
 
 
 class MockHTTPClient {

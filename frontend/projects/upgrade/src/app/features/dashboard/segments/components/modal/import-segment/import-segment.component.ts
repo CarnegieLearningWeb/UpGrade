@@ -30,17 +30,11 @@ export class ImportSegmentComponent {
 
   importSegment() {
     // TODO: improve the logic here 
-    let { individualForSegment, groupForSegment, subSegments, ...rest } = this.segmentInfo;
+    const { individualForSegment, groupForSegment, subSegments, ...rest } = this.segmentInfo;
   
-    const userIds = this.segmentInfo.individualForSegment.map((individual) => {
-      return individual.userId;
-    });
-    const subSegmentIds = this.segmentInfo.subSegments.map((subSegment) => {
-      return subSegment.id;
-    });
-    const groups = this.segmentInfo.groupForSegment.map((group) => {
-      return { type: group.type, groupId: group.groupId } ;
-    });
+    const userIds = this.segmentInfo.individualForSegment.map((individual) => individual.userId);
+    const subSegmentIds = this.segmentInfo.subSegments.map((subSegment) => subSegment.id);
+    const groups = this.segmentInfo.groupForSegment.map((group) => ({ type: group.type, groupId: group.groupId } ));
     
     this.segmentTemp = {...rest, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups};
     this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
@@ -79,7 +73,7 @@ export class ImportSegmentComponent {
     //   type: 'string',
     // }
 
-    let missingProperties = this.checkForMissingProperties({ schema: segmentSchema, data: segment });
+    const missingProperties = this.checkForMissingProperties({ schema: segmentSchema, data: segment });
     if (missingProperties.length > 0) {
       return false;
     } else {

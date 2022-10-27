@@ -1,24 +1,22 @@
-import { BehaviorSubject } from "rxjs";
-import { UserRole } from "upgrade_types";
-import { AuthService } from "./auth.service";
-import { actionBindAttachHandlerWithButton, actionInitializeGapi, actionLoginStart, actionLogoutStart, actionSetRedirectUrl } from "./store/auth.actions";
+import { BehaviorSubject } from 'rxjs';
+import { UserRole } from 'upgrade_types';
+import { AuthService } from './auth.service';
+import { actionBindAttachHandlerWithButton, actionInitializeGapi, actionLoginStart, actionLogoutStart, actionSetRedirectUrl } from './store/auth.actions';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 
-jest.mock('./store/auth.selectors', () => {
-    return {
+jest.mock('./store/auth.selectors', () => ({
         selectIsLoggedIn: jest.fn(),
         selectIsAuthenticating: jest.fn(),
         selectCurrentUser: jest.fn().mockReturnValueOnce({
             id: 'testUser',
             token: 'abc123'
         }).mockReturnValueOnce(null)
-    }
-});
+    }));
 
 describe('AuthService', () => {
-    let mockStore: any = MockStateStore$;
+    const mockStore: any = MockStateStore$;
     let service: AuthService;
     
     beforeEach(() => {

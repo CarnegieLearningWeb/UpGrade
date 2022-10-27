@@ -1,7 +1,7 @@
-import { Action } from "@ngrx/store";
-import { authReducer, initialState } from "./auth.reducer";
-import * as AuthActions from "./auth.actions";
-import { UserRole } from "../../users/store/users.model";
+import { Action } from '@ngrx/store';
+import { authReducer, initialState } from './auth.reducer';
+import * as AuthActions from './auth.actions';
+import { UserRole } from '../../users/store/users.model';
 
 describe('AuthReducer', () => {
     it('should not affect state if no action is recognized', () => {

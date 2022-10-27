@@ -1,6 +1,6 @@
-import { RouterStateSnapshot } from "@angular/router";
-import { BehaviorSubject } from "rxjs";
-import { AuthGuard } from "./auth.guard.";
+import { RouterStateSnapshot } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
+import { AuthGuard } from './auth.guard.';
 
 describe(AuthGuard, () => {
     let service: AuthGuard;

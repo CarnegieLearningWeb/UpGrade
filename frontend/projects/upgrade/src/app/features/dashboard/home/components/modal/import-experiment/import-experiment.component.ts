@@ -192,7 +192,7 @@ export class ImportExperimentComponent implements OnInit {
       excludeIfReached: 'boolean'
     }
 
-    let missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
+    const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
     this.missingAllProperties = this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
     let missingConditionProperties;
@@ -202,14 +202,14 @@ export class ImportExperimentComponent implements OnInit {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
     });
     if (missingConditionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.condition.text') + ": " + missingConditionProperties;
+      this.missingAllProperties = this.missingAllProperties + ', ' + this.translate.instant('global.condition.text') + ': ' + missingConditionProperties;
     }
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
     experiment.partitions.map(partition => {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
     });
     if (missingPartitionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ", " + this.translate.instant('global.decision-points.text') + ": " + missingPartitionProperties;
+      this.missingAllProperties = this.missingAllProperties + ', ' + this.translate.instant('global.decision-points.text') + ': ' + missingPartitionProperties;
     }
     missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
     return missingPropertiesFlag;

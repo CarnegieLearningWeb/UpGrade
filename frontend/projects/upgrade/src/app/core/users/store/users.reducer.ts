@@ -48,14 +48,10 @@ const reducer = createReducer(
   ),
   on(
     UsersActions.actionUpdateUserDetailsSuccess,
-    (state, { user }) => {
-    return adapter.updateOne({ id: user.email, changes: { ...user } }, { ...state, isUsersLoading: false });
-  }),
+    (state, { user }) => adapter.updateOne({ id: user.email, changes: { ...user } }, { ...state, isUsersLoading: false })),
   on(
     UsersActions.actionCreateNewUserSuccess,
-    (state, { user }) => {
-    return adapter.addOne(user, { ...state, isUsersLoading: false });
-  }),
+    (state, { user }) => adapter.addOne(user, { ...state, isUsersLoading: false })),
   on(
     UsersActions.actionSetSkipUsers,
     (state, { skipUsers }) => ({ ...state, skipUsers })
@@ -82,9 +78,7 @@ const reducer = createReducer(
   ),
   on(
     UsersActions.actionDeleteUserSuccess,
-    (state, { user }) => {
-      return adapter.removeOne(user.email, { ...state, isUsersLoading: false });
-    }
+    (state, { user }) => adapter.removeOne(user.email, { ...state, isUsersLoading: false })
   ),
 );
 

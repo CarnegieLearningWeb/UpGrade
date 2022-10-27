@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { UserRole } from "./store/users.model";
-import { UsersDataService } from "./users.data.service";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { UserRole } from './store/users.model';
+import { UsersDataService } from './users.data.service';
 
 
 class MockHTTPClient {
@@ -26,7 +26,7 @@ describe('SettingsDataService', () => {
         mockEnvironment = { ...environment };
         service = new UsersDataService(mockHttpClient as HttpClient, mockEnvironment);
         mockParams = {};
-        mockEmail = "test@testmail.com";
+        mockEmail = 'test@testmail.com';
         mockRole = UserRole.ADMIN;
     });
 

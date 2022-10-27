@@ -31,7 +31,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     'actions'
   ];
 
-  initialLoad: boolean = true;
+  initialLoad = true;
 
   constructor(
     private experimentService: ExperimentService,
@@ -56,9 +56,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
       this.currentAliasInput$
     ]).pipe(
       filter(([ conditions, input ]) => !!conditions && !!this.experimentUtilityService.isValidString(input)),
-      map(([ conditions, input ]) => {
-        return conditions.filter((condition: string) => condition.toLowerCase().includes(input.toLowerCase()));
-      })
+      map(([ conditions, input ]) => conditions.filter((condition: string) => condition.toLowerCase().includes(input.toLowerCase())))
     ).subscribe(this.filteredContextMetaDataConditions$);
   }
 
@@ -97,7 +95,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]], conditionAliases: ExperimentConditionAlias[]): ExperimentAliasTableRow[] {
     const [ decisionPoints, conditions ] = designData;
     const aliasTableData: ExperimentAliasTableRow[] = [];
-    const useExistingAliasData: boolean = !!(conditionAliases && this.initialLoad);
+    const useExistingAliasData = !!(conditionAliases && this.initialLoad);
 
     decisionPoints.forEach((decisionPoint) => {
       conditions.forEach((condition) => {
@@ -105,11 +103,9 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
         let existingAlias: ExperimentConditionAlias = null;
 
         if (useExistingAliasData) {
-          existingAlias = conditionAliases.find(alias => {
-            return ((alias.decisionPoint as ExperimentPartition)?.target === decisionPoint.target &&
+          existingAlias = conditionAliases.find(alias => ((alias.decisionPoint as ExperimentPartition)?.target === decisionPoint.target &&
             (alias.decisionPoint as ExperimentPartition)?.site === decisionPoint.site) && 
-              (alias.parentCondition as ExperimentCondition).conditionCode === condition.conditionCode;
-          })
+              (alias.parentCondition as ExperimentCondition).conditionCode === condition.conditionCode)
         }
 
         aliasTableData.push({

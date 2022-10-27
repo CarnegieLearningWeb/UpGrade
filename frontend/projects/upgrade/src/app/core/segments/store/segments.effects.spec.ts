@@ -1,14 +1,14 @@
-import { fakeAsync, tick } from "@angular/core/testing";
-import { ActionsSubject } from "@ngrx/store";
-import { BehaviorSubject, of, throwError } from "rxjs";
-import { SEGMENT_TYPE } from "upgrade_types";
-import { SegmentsEffects } from "./segments.effects";
-import { Segment, SegmentInput, UpsertSegmentType } from "./segments.model";
+import { fakeAsync, tick } from '@angular/core/testing';
+import { ActionsSubject } from '@ngrx/store';
+import { BehaviorSubject, of, throwError } from 'rxjs';
+import { SEGMENT_TYPE } from 'upgrade_types';
+import { SegmentsEffects } from './segments.effects';
+import { Segment, SegmentInput, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
 import * as SegmentsActions from './segments.actions';
 
 
-describe("SegmentsEffects", () => {
+describe('SegmentsEffects', () => {
     let store$: any;
     let actions$: ActionsSubject;
     let segmentsDataService: any;
@@ -101,7 +101,7 @@ describe("SegmentsEffects", () => {
         }))
     })
 
-    describe("upsertSegment$", () => {
+    describe('upsertSegment$', () => {
         it('should do nothing if Segment is falsey', fakeAsync(() => {
             let neverEmitted = true;
 
@@ -202,7 +202,7 @@ describe("SegmentsEffects", () => {
         }))
     })
 
-    describe("exportSegment$", () => {
+    describe('exportSegment$', () => {
         it('should do nothing if Segment is id', fakeAsync(() => {
             let neverEmitted = true;
 
@@ -250,7 +250,7 @@ describe("SegmentsEffects", () => {
         }))
     })
 
-    describe("deleteSegments$", () => {
+    describe('deleteSegments$', () => {
         it('should do nothing if Segment is id', fakeAsync(() => {
             let neverEmitted = true;
 

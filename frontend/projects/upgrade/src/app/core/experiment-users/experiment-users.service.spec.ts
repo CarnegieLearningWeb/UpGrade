@@ -5,20 +5,18 @@ import { actionDeleteExcludedGroup, actionDeleteExcludedUser, actionExcludeGroup
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 
-jest.mock('./store/experiment-users.selectors', () => {
-    return {
+jest.mock('./store/experiment-users.selectors', () => ({
         selectAllEntities: jest.fn().mockReturnValue([
-            { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
-            { id: 'first', createdAt:`04/25/17 04:34:22 +0000`},
-            { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
-            { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
+            { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000'},
+            { id: 'first', createdAt: '04/25/17 04:34:22 +0000'},
+            { id: 'second', createdAt: '04/24/17 04:34:22 +0000'},
+            { id: 'third', createdAt: '04/24/17 04:34:22 +0000'},
         ]),
         selectIsExcludedEntityLoading: jest.fn().mockReturnValue(true)
-    }
-});
+    }));
 
 describe('ExperimentUsersService', () => {
-    let mockStore: any = MockStateStore$;
+    const mockStore: any = MockStateStore$;
     let service: ExperimentUsersService;
 
     beforeEach(() => {
@@ -31,10 +29,10 @@ describe('ExperimentUsersService', () => {
 
             service.allExcludedEntities$.subscribe(val => {
                 expect(val).toEqual([
-                    { id: 'first', createdAt:`04/25/17 04:34:22 +0000`},
-                    { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
-                    { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
-                    { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
+                    { id: 'first', createdAt: '04/25/17 04:34:22 +0000'},
+                    { id: 'second', createdAt: '04/24/17 04:34:22 +0000'},
+                    { id: 'third', createdAt: '04/24/17 04:34:22 +0000'},
+                    { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000'},
                 ]);
                 done();
             })

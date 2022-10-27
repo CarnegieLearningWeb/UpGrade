@@ -59,8 +59,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   metricsDataSource = new BehaviorSubject<AbstractControl[]>([]);
 
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
-  queryIndex: number = 0;
-  editMode: boolean = false;
+  queryIndex = 0;
+  editMode = false;
 
   queryMetricKeyError = [];
   queryNameError = [];
@@ -98,7 +98,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     const metricsFormControl = this.queries as FormArray;
     metricsFormControl.controls.forEach((_, keyIndex) => {
       this.ManageKeysControl(this.queryIndex, keyIndex);
-      this.setQueryIndex(this.queryIndex+1);
+      this.setQueryIndex(this.queryIndex + 1);
     });
     this.queryIndex = 0;
 
@@ -145,7 +145,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
             }
           });
         }
-        this.setQueryIndex(this.queryIndex+1);
+        this.setQueryIndex(this.queryIndex + 1);
         this.ManageKeysControl(queryIndex, 0);
       });
     }
@@ -274,8 +274,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     const scrollTableType = 'metricTable';
     this.updateView(scrollTableType);
     const index = this.queries.length;
-    this.setQueryIndex(index-1);
-    const metricFormControl = this.queries.at(index-1).get('keys') as FormArray;
+    this.setQueryIndex(index - 1);
+    const metricFormControl = this.queries.at(index - 1).get('keys') as FormArray;
     this.ManageKeysControl(this.queryIndex, 0);
   }
 
@@ -300,7 +300,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   isMetricRepeated(selectedNode, queryIndex: number, editMode = false) {
-    if (this.experimentInfo && queryIndex && queryIndex+1 <= this.experimentInfoQueriesLength && !editMode) {
+    if (this.experimentInfo && queryIndex && queryIndex + 1 <= this.experimentInfoQueriesLength && !editMode) {
       let key;
       if (this.experimentInfo.queries[queryIndex].metric.key != undefined) {
         key = this.experimentInfo.queries[queryIndex].metric.key;
@@ -347,8 +347,8 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
 
   filteredMetricKeys(queryIndex: number, keyIndex: number) {
     // Prepare filteredMetrics for each query and its keys for new experiment and for experimentInfo while in edit Mode
-    let keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
-    let filteredMetric = keysArray.at(keyIndex).get('metricKey').valueChanges
+    const keysArray = this.queries.at(queryIndex).get('keys') as FormArray;
+    const filteredMetric = keysArray.at(keyIndex).get('metricKey').valueChanges
     .pipe(
       startWith<string>(''),
       map(key => {
@@ -370,13 +370,13 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   ManageKeysControl(queryIndex: number, keyIndex: number) {
     if (keyIndex === 0) {
       this.optionsSub();
-      let filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
+      const filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
       this.filteredMetrics1$[queryIndex] = filteredMetric;
     } else if (keyIndex === 1) {
-      let filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
+      const filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
       this.filteredMetrics2$[queryIndex] = filteredMetric;
     } else {
-      let filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
+      const filteredMetric = this.filteredMetricKeys(queryIndex, keyIndex);
       this.filteredMetrics3$[queryIndex] = filteredMetric;
     }
   }
@@ -406,12 +406,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.getKeys(queryIndex).length !== 3) {
       // push middle node from addMoreSelectKey
       this.addMoreSelectKey(null, queryIndex);
-      this.ManageKeysControl(queryIndex, keyIndex+1);
+      this.ManageKeysControl(queryIndex, keyIndex + 1);
       // push leaf node of the repeated metric
       this.getKeys(queryIndex).push(this.addKey(null));
     } else {
       // if its already repeat metric earlier just prepare filtered list of metrics for leaf node
-      this.ManageKeysControl(queryIndex, keyIndex+1);
+      this.ManageKeysControl(queryIndex, keyIndex + 1);
     }
   }
 
@@ -421,7 +421,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       this.handleFirstRepeatMetricNode(queryIndex, keyIndex);
     } else if (keyIndex === 1) { 
       // if it's the middle node of repeated metric, prepare filtered list of metrics for leaf node
-      this.ManageKeysControl(queryIndex, keyIndex+1);
+      this.ManageKeysControl(queryIndex, keyIndex + 1);
     } else if (keyIndex === 2) {
       // if it's the leaf node of repeated metric, prepare filtered list of metrics for the first node
       this.ManageKeysControl(queryIndex, 0);
@@ -442,7 +442,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     this.getKeys(queryIndex).clear();
     this.addMoreSelectKey(event.option.value.key, queryIndex);
     this.ManageKeysControl(queryIndex, keyIndex);
-    let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+    const metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
     this.firstSelectedNode[queryIndex] = metric;
     this.selectedNode[queryIndex] = metric;
     const { metadata: { type } } = this.selectedNode[queryIndex];
@@ -472,7 +472,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.selectSimpleMetricNode(queryIndex, keyIndex);
       }
       // handling leaf node of repeated metrics
-      let metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
+      const metric = this.allMetrics.find(metric => metric.key === event.option.value.key);
       this.selectedNode[queryIndex] = metric;
       // reset options for metric keys:
       this.optionsSub();
@@ -522,7 +522,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
               if (keys.length) {
                 this.checkQueryNameRequiredError(queryName);
                 this.checkStatisticRequiredError(operationType);
-                let metric = this.allMetrics.find(metric => metric.key === keys[0]);
+                const metric = this.allMetrics.find(metric => metric.key === keys[0]);
                 const { metadata: { type } } = metric;
                 if (type === IMetricMetaData.CATEGORICAL) {
                   this.checkComparisonStatisticRequiredError(compareFn, compareValue);

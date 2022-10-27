@@ -1,9 +1,9 @@
-import { AuthState } from "./auth.models";
+import { AuthState } from './auth.models';
 import { User, UserRole } from '../../users/store/users.model';
-import * as AuthSelectors from "./auth.selectors";
+import * as AuthSelectors from './auth.selectors';
 
 describe('Auth Selectors', () => {
-    let mockState: AuthState = {
+    const mockState: AuthState = {
         isLoggedIn: true,
         isAuthenticating: false,
         redirectUrl: 'test.com',
@@ -62,7 +62,7 @@ describe('Auth Selectors', () => {
     describe('#selectRedirectUrl', () => {
         it('should select url string if defined', () => {
             const state = { ...mockState };
-            state.redirectUrl = "test.com";
+            state.redirectUrl = 'test.com';
             
             const result = AuthSelectors.selectRedirectUrl.projector(state);
             

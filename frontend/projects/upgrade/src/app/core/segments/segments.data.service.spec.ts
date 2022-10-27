@@ -1,10 +1,10 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { SegmentsDataService } from "./segments.data.service";
-import { SegmentInput } from "./store/segments.model";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { SegmentsDataService } from './segments.data.service';
+import { SegmentInput } from './store/segments.model';
 import { SEGMENT_TYPE } from 'upgrade_types';
-import { Environment } from "../../../environments/environment-types";
+import { Environment } from '../../../environments/environment-types';
 
 
 class MockHTTPClient {

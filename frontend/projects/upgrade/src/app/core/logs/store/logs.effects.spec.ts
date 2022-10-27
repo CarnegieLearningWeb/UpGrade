@@ -1,12 +1,12 @@
-import { ActionsSubject } from "@ngrx/store";
-import { BehaviorSubject, of, throwError } from "rxjs";
-import { LogsEffects } from "./logs.effects";
-import * as LogsActions from "./logs.actions";
-import * as LogsSelectors from "./logs.selectors";
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from "./logs.model";
-import { fakeAsync, tick } from "@angular/core/testing";
+import { ActionsSubject } from '@ngrx/store';
+import { BehaviorSubject, of, throwError } from 'rxjs';
+import { LogsEffects } from './logs.effects';
+import * as LogsActions from './logs.actions';
+import * as LogsSelectors from './logs.selectors';
+import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { fakeAsync, tick } from '@angular/core/testing';
 
-describe("LogsEffects", () => {
+describe('LogsEffects', () => {
     let service: LogsEffects;
     let actions$: ActionsSubject;
     let store$: any;
@@ -33,7 +33,7 @@ describe("LogsEffects", () => {
         service = new LogsEffects(actions$, logsDataService, store$);
     })
 
-    describe("getAllAuditLogs$", () => {
+    describe('getAllAuditLogs$', () => {
         it('should do nothing if isAuditLogLoading is true and skipAuditLog < totalAuditLogs, totalAuditlogs is not null, and fromStarting is true', fakeAsync(() => {
             let neverEmitted = true;
             LogsSelectors.selectIsAuditLogLoading.setResult(true);
@@ -152,7 +152,7 @@ describe("LogsEffects", () => {
         }))
     })
 
-    describe("getAllErrorLogs$", () => {
+    describe('getAllErrorLogs$', () => {
         it('should do nothing if isErrorLogLoading is true and skipErrorLog < totalErrorLogs, totalErrorlogs is not null, and fromStarting is true', fakeAsync(() => {
             let neverEmitted = true;
             LogsSelectors.selectIsErrorLogLoading.setResult(true);
@@ -271,7 +271,7 @@ describe("LogsEffects", () => {
         }))
     })
 
-    describe("changeAuditFilter", () => {
+    describe('changeAuditFilter', () => {
         it('should always dispatch actionGetAuditLogs(fromStart: true)', fakeAsync(() => {
             service.changeAuditFilter$.subscribe();
             
@@ -285,7 +285,7 @@ describe("LogsEffects", () => {
         }))
     })
 
-    describe("changeErrorFilter", () => {
+    describe('changeErrorFilter', () => {
         it('should always dispatch actionGetAuditLogs(fromStart: true)', fakeAsync(() => {
             service.changeErrorFilter$.subscribe();
             

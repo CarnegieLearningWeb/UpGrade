@@ -40,9 +40,7 @@ export class SegmentsService {
       this.store$.pipe(select(selectIsLoadingSegments)),
       this.allSegments$
       ).pipe(
-      map(([isLoading, segments]) => {
-        return !isLoading || !!segments.length;
-      })
+      map(([isLoading, segments]) => !isLoading || !!segments.length)
     );
   }
 

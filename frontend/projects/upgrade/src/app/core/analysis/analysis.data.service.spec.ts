@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { AnalysisDataService } from "./analysis.data.service";
-import { UpsertMetrics } from "./store/analysis.models";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { AnalysisDataService } from './analysis.data.service';
+import { UpsertMetrics } from './store/analysis.models';
 
 class MockHTTPClient {
     get = jest.fn().mockReturnValue(of());

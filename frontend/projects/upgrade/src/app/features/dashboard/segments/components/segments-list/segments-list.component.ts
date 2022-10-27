@@ -60,9 +60,7 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.permissions$ = this.authService.userPermissions$;
     this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(
       allSegments => {
-        allSegments = allSegments.map(segment => {
-          return {...segment, status: segment.status || SEGMENT_STATUS.UNUSED};
-        });
+        allSegments = allSegments.map(segment => ({...segment, status: segment.status || SEGMENT_STATUS.UNUSED}));
         this.allSegments = new CustomMatTableSource();
         this.allSegments.data = [...allSegments];
         this.allSegments.sort = this.sort;

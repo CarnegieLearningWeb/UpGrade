@@ -1,9 +1,9 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { LogsDataService } from "./logs.data.service";
-import { AuditLogParams, ErrorLogParams } from "./store/logs.model";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { LogsDataService } from './logs.data.service';
+import { AuditLogParams, ErrorLogParams } from './store/logs.model';
 
 class MockHTTPClient {
     get = jest.fn().mockReturnValue(of());

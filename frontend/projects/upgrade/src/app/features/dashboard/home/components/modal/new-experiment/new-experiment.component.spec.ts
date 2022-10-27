@@ -23,7 +23,7 @@ xdescribe('NewExperimentComponent', () => {
         ExperimentScheduleComponent,
         ExperimentPostConditionComponent
       ],
-      imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule,],
+      imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule, ],
       providers: [
         ExperimentService,
         { provide: MatDialogRef, useValue: {} },

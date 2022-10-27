@@ -1,9 +1,9 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject } from 'rxjs';
 import { PreviewUsersService } from './preview-users.service';
 import * as PreviewUsersSelectors from './store/preview-users.selectors';
 import * as PreviewUsersActions from './store/preview-users.actions';
-import { fakeAsync, tick } from "@angular/core/testing";
-import { PreviewUsers } from "./store/preview-users.model";
+import { fakeAsync, tick } from '@angular/core/testing';
+import { PreviewUsers } from './store/preview-users.model';
 
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -12,27 +12,27 @@ const MockStateStore$ = new BehaviorSubject({});
 describe('PreviewUsersService', () => {
     let mockStore: any;
     let service: PreviewUsersService;
-    let mockPreviewUsersList: PreviewUsers[] = [
+    const mockPreviewUsersList: PreviewUsers[] = [
         {
-            createdAt: `04/23/17 04:34:22 +0000`,
+            createdAt: '04/23/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'user1',
         },
         {
-            createdAt: `04/25/17 04:34:22 +0000`,
+            createdAt: '04/25/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'user2',
         },
         {
-            createdAt: `04/24/17 04:34:22 +0000`,
+            createdAt: '04/24/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'user3',
         },
         {
-            createdAt: `04/24/17 04:34:22 +0000`,
+            createdAt: '04/24/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'user4',

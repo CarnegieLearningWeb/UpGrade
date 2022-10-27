@@ -62,9 +62,7 @@ const reducer = createReducer(
   ),
   on(
     experimentsAction.actionUpsertExperimentSuccess,
-    (state, { experiment }) => {
-      return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
-    }
+    (state, { experiment }) => adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
   ),
   on(
     experimentsAction.actionFetchExperimentStatsSuccess,
@@ -82,27 +80,19 @@ const reducer = createReducer(
   ),
   on(
     experimentsAction.actionFetchExperimentGraphInfo,
-    (state) => {
-      return { ...state, graphInfo: null };
-    }
+    (state) => ({ ...state, graphInfo: null })
   ),
   on(
     experimentsAction.actionFetchExperimentGraphInfoSuccess,
-    (state, { graphInfo, range }) => {
-      return { ...state, graphInfo: { ...state.graphInfo, [range]: graphInfo }, isGraphInfoLoading: false };
-    }
+    (state, { graphInfo, range }) => ({ ...state, graphInfo: { ...state.graphInfo, [range]: graphInfo }, isGraphInfoLoading: false })
   ),
   on(
     experimentsAction.actionSetExperimentGraphInfo,
-    (state, { graphInfo }) => {
-      return { ...state, graphInfo };
-    }
+    (state, { graphInfo }) => ({ ...state, graphInfo })
   ),
   on(
     experimentsAction.actionSetGraphRange,
-    (state, { range }) => {
-      return { ...state, graphRange: range };
-    }
+    (state, { range }) => ({ ...state, graphRange: range })
   ),
   on(
     experimentsAction.actionRemoveExperimentStat,
@@ -119,15 +109,11 @@ const reducer = createReducer(
   ),
   on(
     experimentsAction.actionGetExperimentByIdSuccess,
-    (state, { experiment }) => {
-      return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
-    }
+    (state, { experiment }) => adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
   ),
   on(
     experimentsAction.actionDeleteExperimentSuccess,
-    (state, { experimentId }) => {
-      return adapter.removeOne(experimentId, state);
-    }
+    (state, { experimentId }) => adapter.removeOne(experimentId, state)
   ),
   on(
     experimentsAction.actionUpdateExperimentState,
@@ -135,15 +121,11 @@ const reducer = createReducer(
   ),
   on(
     experimentsAction.actionUpdateExperimentStateSuccess,
-    (state, { experiment }) => {
-      return adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false });
-    }
+    (state, { experiment }) => adapter.upsertOne(experiment, { ...state, isLoadingExperiment: false })
   ),
   on(
     experimentsAction.actionFetchAllPartitionSuccess,
-    (state, { partitions }) => {
-      return ({ ...state, allPartitions: partitions })
-    }
+    (state, { partitions }) => ({ ...state, allPartitions: partitions })
   ),
   on(
     experimentsAction.actionSetIsLoadingExperiment,
@@ -185,36 +167,28 @@ const reducer = createReducer(
   ),
   on(
     experimentsAction.actionSetCurrentContext,
-    (state, { context }) => {
-      return {
+    (state, { context }) => ({
         ...state,
         currentUserSelectedContext: state.contextMetaData.contextMetadata[context]
-      }
-    }
+      })
   ),
   on(
     experimentsAction.actionFetchGroupAssignmentStatusSuccess,
-    (state, { experiment }) => {
-      return adapter.upsertOne(experiment, state);
-    }
+    (state, { experiment }) => adapter.upsertOne(experiment, state)
   ),
   on(
     experimentsAction.actionFetchExperimentDetailStat,
-    (state) => { 
-      return {
+    (state) => ({
         ...state,
         isLoadingExperimentDetailStats: true 
-      }
-    }
+      })
   ),
   on(
     experimentsAction.actionFetchExperimentDetailStatFailure,
-    (state) => { 
-      return {
+    (state) => ({
         ...state,
         isLoadingExperimentDetailStats: false 
-      }
-    }
+      })
   ),
   on(
     experimentsAction.actionFetchExperimentDetailStatSuccess,
@@ -230,31 +204,25 @@ const reducer = createReducer(
   ),
   on(
     experimentsAction.actionBeginExperimentDetailStatsPolling,
-    (state) => {
-      return {
+    (state) => ({
         ...state,
         isPollingExperimentDetailStats: true
-      }
-    }
+      })
   ),
   on(
     experimentsAction.actionEndExperimentDetailStatsPolling,
-    (state) => {
-      return {
+    (state) => ({
         ...state,
         isPollingExperimentDetailStats: false
-      }
-    }
+      })
   ),
   on(
     experimentsAction.actionUpdateAliasTableEditMode,
-    (state, { isAliasTableEditMode, aliasTableEditIndex }) => {
-      return {
+    (state, { isAliasTableEditMode, aliasTableEditIndex }) => ({
         ...state,
         isAliasTableEditMode,
         aliasTableEditIndex
-      }
-    }
+      })
   )
 );
 

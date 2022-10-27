@@ -12,7 +12,7 @@ import { EXPERIMENT_STATE } from '../../../../../../core/experiments/store/exper
 })
 export class SegmentExperimentListComponent implements OnInit {
 
-  segmentExperimentListDisplayedColumns = ['experimentName', 'experimentState', 'experimentContext','usedList'];
+  segmentExperimentListDisplayedColumns = ['experimentName', 'experimentState', 'experimentContext', 'usedList'];
   segment: any;
   allExperimentSegmentsInclusionSub: Subscription;
   allExperimentSegmentsExclusionSub: Subscription;
@@ -39,7 +39,7 @@ export class SegmentExperimentListComponent implements OnInit {
 
     if (this.allExperimentSegmentsInclusion) {
       this.allExperimentSegmentsInclusion.forEach((ele) => {
-        let subSegments = ele.segment.subSegments;
+        const subSegments = ele.segment.subSegments;
         subSegments.forEach((subSegment) => {
           if (subSegment.id === this.segment.id) {
             this.segmentsExperimentList.push({experimentName: ele.experiment.name, experimentState: ele.experiment.state, experimentContext: ele.experiment.context, usedList: 'Inclusion' });
@@ -50,7 +50,7 @@ export class SegmentExperimentListComponent implements OnInit {
 
     if (this.allExperimentSegmentsExclusion) {
       this.allExperimentSegmentsExclusion.forEach((ele) => {
-        let subSegments = ele.segment.subSegments;
+        const subSegments = ele.segment.subSegments;
         subSegments.forEach((subSegment) => {
           if (subSegment.id === this.segment.id) {
             this.segmentsExperimentList.push({experimentName: ele.experiment.name, experimentState: ele.experiment.state, experimentContext: ele.experiment.context, usedList: 'Exclusion'});

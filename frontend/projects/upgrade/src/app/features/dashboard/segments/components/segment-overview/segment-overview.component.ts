@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import {  Segment,  NewSegmentDialogEvents ,NewSegmentDialogData, NewSegmentPaths } from '../../../../../core/segments/store/segments.model';
+import {  Segment,  NewSegmentDialogEvents , NewSegmentDialogData, NewSegmentPaths } from '../../../../../core/segments/store/segments.model';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';

@@ -1,7 +1,7 @@
 import { createAction, createReducer, props } from '@ngrx/store';
 import { debug } from './debug.reducer';
 
-describe("debug", () => {
+describe('debug', () => {
     it('should load console.log without affecting state', () => {
         const previousState = {
             msg: 'hello!',

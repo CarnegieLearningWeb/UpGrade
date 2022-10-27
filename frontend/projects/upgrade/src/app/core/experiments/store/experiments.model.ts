@@ -55,7 +55,7 @@ export enum NewExperimentPaths {
 }
 
 export enum ExperimentDesignTypes {
-  SIMPLE = "Simple Experiment"
+  SIMPLE = 'Simple Experiment'
 }
 
 export interface NewExperimentDialogData {

@@ -1,12 +1,12 @@
-import { ActionsSubject } from "@ngrx/store";
-import { BehaviorSubject } from "rxjs";
-import { AnalysisEffects } from "./analysis.effects";
+import { ActionsSubject } from '@ngrx/store';
+import { BehaviorSubject } from 'rxjs';
+import { AnalysisEffects } from './analysis.effects';
 import * as AnalysisActions from './analysis.actions';
-import { of, throwError } from "rxjs";
-import { fakeAsync, tick } from "@angular/core/testing";
-import { selectQueryResult } from "./analysis.selectors";
+import { of, throwError } from 'rxjs';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { selectQueryResult } from './analysis.selectors';
 
- describe("AnalysisEffects", () => {
+ describe('AnalysisEffects', () => {
     let service: AnalysisEffects;
     let actions$: ActionsSubject;
     let store$: any;
@@ -21,7 +21,7 @@ import { selectQueryResult } from "./analysis.selectors";
         service = new AnalysisEffects(actions$, store$, analysisDataService);
     })
 
-    describe("fetchMetrics$", () => {
+    describe('fetchMetrics$', () => {
         it('should dispatch actionFetchMetricsSuccess with metrics on success', fakeAsync(() => {
             const metrics = [{
                 key: 'totalTimeSeconds',
@@ -42,7 +42,7 @@ import { selectQueryResult } from "./analysis.selectors";
         }))
 
         it('should dispatch actionFetchMetricsFailure on error', fakeAsync(() => {
-            analysisDataService.fetchMetrics = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            analysisDataService.fetchMetrics = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = AnalysisActions.actionFetchMetricsFailure();
 
@@ -56,7 +56,7 @@ import { selectQueryResult } from "./analysis.selectors";
         }))
     })
 
-    describe("upsertMetrics$", () => {
+    describe('upsertMetrics$', () => {
         it('should do nothing if metrics undefined', fakeAsync(() => {
             let neverEmitted = true;
 
@@ -98,7 +98,7 @@ import { selectQueryResult } from "./analysis.selectors";
                 }]
             }
 
-            analysisDataService.upsertMetrics = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            analysisDataService.upsertMetrics = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = AnalysisActions.actionUpsertMetricsFailure();
 
@@ -111,7 +111,7 @@ import { selectQueryResult } from "./analysis.selectors";
         }))
     })
 
-    describe("deleteMetrics$", () => {
+    describe('deleteMetrics$', () => {
         it('should do nothing if key undefined', fakeAsync(() => {
             let neverEmitted = true;
 
@@ -169,7 +169,7 @@ import { selectQueryResult } from "./analysis.selectors";
                 }]
             }
 
-            analysisDataService.deleteMetric = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            analysisDataService.deleteMetric = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = AnalysisActions.actionDeleteMetricFailure();
 
@@ -182,7 +182,7 @@ import { selectQueryResult } from "./analysis.selectors";
         }))
     })
 
-    describe("executeQuery$", () => {
+    describe('executeQuery$', () => {
         it('should do nothing if queryIds size is falsey', fakeAsync(() => {
             const queryIds = [];
             let neverEmitted = true;
@@ -291,7 +291,7 @@ import { selectQueryResult } from "./analysis.selectors";
             ];
             selectQueryResult.setResult(previousQueryResult);
 
-            analysisDataService.executeQuery = jest.fn().mockReturnValue(throwError(() => new Error("test")));
+            analysisDataService.executeQuery = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
             const action = AnalysisActions.actionExecuteQueryFailure();
 

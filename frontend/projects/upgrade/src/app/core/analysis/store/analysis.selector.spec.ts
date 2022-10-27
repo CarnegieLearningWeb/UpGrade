@@ -1,9 +1,9 @@
-import { initialState } from "./analysis.reducer";
-import * as AnalysisSelectors from "./analysis.selectors";
+import { initialState } from './analysis.reducer';
+import * as AnalysisSelectors from './analysis.selectors';
 
 
-describe("Analysis Selectors", () => {
-    let mockState = { ...initialState};
+describe('Analysis Selectors', () => {
+    const mockState = { ...initialState};
 
     describe('#selectIsMetricsLoading', () => {
         it('should select isMetricsLoading boolean', () => {

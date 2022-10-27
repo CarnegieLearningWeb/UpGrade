@@ -27,9 +27,7 @@ const reducer = createReducer(
   on(
     experimentUsersActions.actionFetchExcludedUsersSuccess,
     experimentUsersActions.actionFetchExcludedGroupsSuccess,
-    (state, { data }) => {
-      return adapter.upsertMany(data, { ...state, isLoading: false });
-    }
+    (state, { data }) => adapter.upsertMany(data, { ...state, isLoading: false })
   ),
   on(
     experimentUsersActions.actionExcludeUserSuccess,

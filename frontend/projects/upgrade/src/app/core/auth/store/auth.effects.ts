@@ -39,8 +39,7 @@ export class AuthEffects {
   ) {}
 
   initializeGapi$ = createEffect(
-    () => {
-      return this.actions$.pipe(
+    () => this.actions$.pipe(
         ofType(authActions.actionInitializeGapi),
         tap(() => {
           this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: true }));
@@ -49,8 +48,7 @@ export class AuthEffects {
             hosted_domain: this.environment.domainName
           }));
         })
-      );
-    },
+      ),
     { dispatch: false }
   );
 
@@ -98,16 +96,14 @@ export class AuthEffects {
   }
 
   attachSignIn$ = createEffect(
-    () => {
-      return this.actions$.pipe(
+    () => this.actions$.pipe(
         ofType(authActions.actionBindAttachHandlerWithButton),
         tap(() => this.handleAttachGoogleAuthClickHandler())
-      )
-    },
+      ),
     { dispatch: false }
   );
 
-  handleAttachGoogleAuthClickHandler= () => {
+  handleAttachGoogleAuthClickHandler = () => {
     const btn = this.authService.getGoogleSignInElementRef();
     console.log({ btn })
     this.auth2.attachClickHandler(btn, {},
@@ -164,8 +160,7 @@ export class AuthEffects {
   }
 
   setUserInfoInStore$ = createEffect(
-    () => {
-      return this.actions$.pipe(
+    () => this.actions$.pipe(
         ofType(authActions.actionSetUserInfo),
         map(action => action.user),
         filter(user => !!user.email),
@@ -187,8 +182,7 @@ export class AuthEffects {
             return this.trySetUserSettingWithEmail(user, actions);
           }
         })
-      );
-    },
+      ),
   );
 
   setUserSettingsWithRole = (user: any, actions: Action[]) => {
@@ -199,8 +193,7 @@ export class AuthEffects {
     ];
   }
 
-  trySetUserSettingWithEmail = (user: any, actions: Action[]) => {
-    return this.authDataService.getUserByEmail(user.email).pipe(
+  trySetUserSettingWithEmail = (user: any, actions: Action[]) => this.authDataService.getUserByEmail(user.email).pipe(
       switchMap((res: User) => {
         if (res[0]) {
           // Avoid null name in account
@@ -220,11 +213,9 @@ export class AuthEffects {
         }
       })
     )
-  }
 
   logout$ = createEffect(
-    () => {
-      return this.actions$.pipe(
+    () => this.actions$.pipe(
         ofType(authActions.actionLogoutStart),
         tap(() => {
           this.auth2.signOut().then(() => {
@@ -236,34 +227,29 @@ export class AuthEffects {
               this.store$.dispatch(authActions.actionLogoutFailure());
             });
         })
-      );
-    },
+      ),
     { dispatch: false }
   );
 
   navigationOnLoginSuccess$ = createEffect(
-    () => {
-      return this.actions$.pipe(
+    () => this.actions$.pipe(
         ofType(authActions.actionLoginSuccess),
         withLatestFrom(this.store$.pipe(select(selectRedirectUrl))),
         tap(([, redirectUrl]) => {
           const path = redirectUrl || '/home';
           this.router.navigate([path]);
         })
-      );
-    },
+      ),
     { dispatch: false }
   );
 
   navigationOnLogOutSuccess$ = createEffect(
-    () => {
-      return this.actions$.pipe(
+    () => this.actions$.pipe(
         ofType(authActions.actionLogoutSuccess),
         tap(() => {
           this.router.navigateByUrl('/login');
         })
-      );
-    },
+      ),
     { dispatch: false }
   );
 }

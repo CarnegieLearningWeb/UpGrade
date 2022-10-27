@@ -34,11 +34,9 @@ export const selectIsLoadingExperimentDetailStats = createSelector(
 export const selectSelectedExperiment = createSelector(
   selectRouterState,
   selectExperimentState,
-  ({ state: { params } }, experimentState) => {
-    return experimentState.stats[params.experimentId]
+  ({ state: { params } }, experimentState) => experimentState.stats[params.experimentId]
       ? ({ ...experimentState.entities[params.experimentId], stat: experimentState.stats[params.experimentId] })
-      : ({ ...experimentState.entities[params.experimentId], stat: null });
-  }
+      : ({ ...experimentState.entities[params.experimentId], stat: null })
 );
 
 export const selectExperimentById = createSelector(
@@ -114,9 +112,7 @@ export const selectExperimentGraphInfo = createSelector(
 
 export const selectExperimentStatById = createSelector(
   selectExperimentState,
-  (state, { experimentId }) => {
-    return state.stats[experimentId];
-  }
+  (state, { experimentId }) => state.stats[experimentId]
 );
 
 export const selectContextMetaData = createSelector(

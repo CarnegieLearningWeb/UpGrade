@@ -72,12 +72,10 @@ export class SettingsEffects {
   getSetting$ = createEffect(
     () => this.actions$.pipe(
       ofType(SettingsActions.actionGetSetting),
-      switchMap(() => {
-        return this.settingsDataService.getSettings().pipe(
+      switchMap(() => this.settingsDataService.getSettings().pipe(
           map((data: any) => SettingsActions.actionGetSettingSuccess({ setting: data })),
           catchError(() => [SettingsActions.actionGetSettingFailure()])
-        )
-      })
+        ))
     )
   );
 

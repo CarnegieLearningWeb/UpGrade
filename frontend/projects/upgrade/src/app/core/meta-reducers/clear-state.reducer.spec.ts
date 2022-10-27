@@ -6,8 +6,8 @@ import { ThemeOptions } from '../settings/store/settings.model';
 import { clearState } from './clear-state.reducer';
 import { ExperimentLocalStorageKeys } from '../experiments/store/experiments.model';
 
-describe("clearState", () => {
-    let mockState = {
+describe('clearState', () => {
+    const mockState = {
         settings: {
             theme: ThemeOptions.DARK_THEME
         }

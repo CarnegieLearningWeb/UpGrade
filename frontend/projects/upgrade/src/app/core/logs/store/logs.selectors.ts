@@ -21,19 +21,15 @@ export const selectIsErrorLogLoading = createSelector(
 export const selectAllAuditLogs = createSelector(
   selectLogState,
   selectAllLogs,
-  (state, logs) => logs.filter((log: AuditLogs | ErrorLogs) => {
-    return (Object.values(EXPERIMENT_LOG_TYPE).includes((log as any ).type) &&
-      ((log.type as any) === state.auditLogFilter || state.auditLogFilter === null ))
-  })
+  (state, logs) => logs.filter((log: AuditLogs | ErrorLogs) => (Object.values(EXPERIMENT_LOG_TYPE).includes((log as any ).type) &&
+      ((log.type as any) === state.auditLogFilter || state.auditLogFilter === null )))
 );
 
 export const selectAllErrorLogs = createSelector(
   selectLogState,
   selectAllLogs,
-  (state, logs) => logs.filter((log: AuditLogs | ErrorLogs) => {
-    return (Object.values(SERVER_ERROR).includes((log as any ).type) &&
-      ((log.type as any) === state.errorLogFilter || state.errorLogFilter === null ))
-  })
+  (state, logs) => logs.filter((log: AuditLogs | ErrorLogs) => (Object.values(SERVER_ERROR).includes((log as any ).type) &&
+      ((log.type as any) === state.errorLogFilter || state.errorLogFilter === null )))
 );
 
 export const selectSkipAuditLog = createSelector(

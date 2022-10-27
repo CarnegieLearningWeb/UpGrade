@@ -1,6 +1,6 @@
-import { AppErrorHandler } from "./app-error-handler.service";
+import { AppErrorHandler } from './app-error-handler.service';
 import { environment } from '../../../environments/environment';
-import { Environment } from "../../../environments/environment-types";
+import { Environment } from '../../../environments/environment-types';
 
 describe('AppErrorHandler', () => {
     let mockNotificationsService: any;

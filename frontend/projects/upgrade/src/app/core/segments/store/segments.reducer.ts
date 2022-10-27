@@ -47,21 +47,15 @@ const reducer = createReducer(
   ),
   on(
     SegmentsActions.actionUpsertSegmentSuccess,
-    (state, { segment }) => {
-      return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
-    }
+    (state, { segment }) => adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
   ),
   on(
     SegmentsActions.actionGetSegmentByIdSuccess,
-    (state, { segment }) => {
-      return adapter.upsertOne(segment, { ...state, isLoadingSegments: false });
-    }
+    (state, { segment }) => adapter.upsertOne(segment, { ...state, isLoadingSegments: false })
   ),
   on(
     SegmentsActions.actionDeleteSegmentSuccess,
-    (state, { segment }) => {
-      return adapter.removeOne(segment.id, state);
-    }
+    (state, { segment }) => adapter.removeOne(segment.id, state)
   ),
   on(
     SegmentsActions.actionSetIsLoadingSegments,

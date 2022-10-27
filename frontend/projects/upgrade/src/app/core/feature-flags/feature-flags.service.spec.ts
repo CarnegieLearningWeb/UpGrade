@@ -1,10 +1,10 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject } from 'rxjs';
 import { FeatureFlagsService } from './feature-flags.service';
 import * as FeatureFlagSelectors from './store/feature-flags.selectors';
 import * as FeatureFlagsActions from './store/feature-flags.actions';
-import { FeatureFlag, FLAG_SEARCH_SORT_KEY, SORT_AS, UpsertFeatureFlagType } from "./store/feature-flags.model";
-import { fakeAsync, tick } from "@angular/core/testing";
-import { isEmpty } from "rxjs/operators";
+import { FeatureFlag, FLAG_SEARCH_SORT_KEY, SORT_AS, UpsertFeatureFlagType } from './store/feature-flags.model';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { isEmpty } from 'rxjs/operators';
 
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -13,9 +13,9 @@ const MockStateStore$ = new BehaviorSubject({});
 describe('FeatureFlagService', () => {
     let mockStore: any;
     let service: FeatureFlagsService;
-    let mockFeatureFlagsList: FeatureFlag[] = [
+    const mockFeatureFlagsList: FeatureFlag[] = [
         {
-            createdAt: `04/23/17 04:34:22 +0000`,
+            createdAt: '04/23/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'flag1',
@@ -27,7 +27,7 @@ describe('FeatureFlagService', () => {
             variations: []
         },
         {
-            createdAt: `04/25/17 04:34:22 +0000`,
+            createdAt: '04/25/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'flag2',
@@ -39,7 +39,7 @@ describe('FeatureFlagService', () => {
             variations: []
         },
         {
-            createdAt: `04/24/17 04:34:22 +0000`,
+            createdAt: '04/24/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'flag3',
@@ -51,7 +51,7 @@ describe('FeatureFlagService', () => {
             variations: []
         },
         {
-            createdAt: `04/24/17 04:34:22 +0000`,
+            createdAt: '04/24/17 04:34:22 +0000',
             updatedAt: 'abc123',
             versionNumber: 5,
             id: 'flag4',
@@ -63,7 +63,7 @@ describe('FeatureFlagService', () => {
             variations: []
         }
     ]
-    let mockFeatureFlag = mockFeatureFlagsList[0];
+    const mockFeatureFlag = mockFeatureFlagsList[0];
 
     beforeEach(() => {
         mockStore = MockStateStore$;

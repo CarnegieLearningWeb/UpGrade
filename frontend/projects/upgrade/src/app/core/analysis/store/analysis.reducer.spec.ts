@@ -1,15 +1,15 @@
-import { analysisReducer, initialState } from "./analysis.reducer";
-import * as AnalysisActions from "./analysis.actions";
+import { analysisReducer, initialState } from './analysis.reducer';
+import * as AnalysisActions from './analysis.actions';
 
 describe('AnalysisReducer', () => {
-    describe("actions to kick off requests w/ isLoading ", () => {
+    describe('actions to kick off requests w/ isLoading ', () => {
         const testActions = {
             actionFetchMetrics: AnalysisActions.actionFetchMetrics,
             actionDeleteMetric: AnalysisActions.actionDeleteMetric,
             actionUpsertMetrics: AnalysisActions.actionUpsertMetrics,
         }
 
-        for (let actionKey in testActions) {
+        for (const actionKey in testActions) {
             const previousState = { ...initialState };
             previousState.isMetricsLoading = false;
 
@@ -21,14 +21,14 @@ describe('AnalysisReducer', () => {
         }
     })
 
-    describe("actions to request failures to set isloading to false", () => {
+    describe('actions to request failures to set isloading to false', () => {
         const testActions = {
             actionFetchMetricsFailure: AnalysisActions.actionFetchMetricsFailure,
             actionDeleteMetricFailure: AnalysisActions.actionDeleteMetricFailure,
             actionUpsertMetricsFailure: AnalysisActions.actionUpsertMetricsFailure,
         }
 
-        for (let actionKey in testActions) {
+        for (const actionKey in testActions) {
             const previousState = { ...initialState };
             previousState.isMetricsLoading = true;
 
@@ -40,7 +40,7 @@ describe('AnalysisReducer', () => {
         }
     })
 
-    it("actionFetchMetricsSuccess should set metrics and isMetricsLoading to false", () => {
+    it('actionFetchMetricsSuccess should set metrics and isMetricsLoading to false', () => {
         const previousState = { ...initialState };
         previousState.metrics = null;
         previousState.isMetricsLoading = true;
@@ -55,8 +55,8 @@ describe('AnalysisReducer', () => {
         expect(newState.isMetricsLoading).toEqual(false);
     })
 
-    describe("actionDeleteMetricSuccess", () => {
-        it("should set metrics when key is defined and strip out '@__@' in keys and isMetricsLoading to false", () => {
+    describe('actionDeleteMetricSuccess', () => {
+        it('should set metrics when key is defined and strip out \'@__@\' in keys and isMetricsLoading to false', () => {
             const metrics = [
                 { key: 'filteredOutKey1', children: [] },
                 { key: 'filteredOutKey2', children: [] },
@@ -85,7 +85,7 @@ describe('AnalysisReducer', () => {
                     { key: 'filteredOutKey1', children: [] },
                     { key: 'filteredOutKey2', children: [] },
                     { key: 'keyTest', children: [] }
-                ];;
+                ]; ;
                 previousState.isMetricsLoading = true;
                 const action = AnalysisActions.actionDeleteMetricSuccess({
                     metrics,
@@ -99,7 +99,7 @@ describe('AnalysisReducer', () => {
             })
         })
 
-        it("should return stored metrics when no key is given", () => {
+        it('should return stored metrics when no key is given', () => {
             const metrics = [
                 { key: 'filteredOutKey1', children: [] },
                 { key: 'filteredOutKey2', children: [] },
@@ -135,7 +135,7 @@ describe('AnalysisReducer', () => {
         })
     })
 
-    describe("actionUpsertMetricsSuccess", () => {
+    describe('actionUpsertMetricsSuccess', () => {
         it('should merge new metrics with preexisting metrics', () => {
             const previousState = { ...initialState };
             previousState.metrics = [
@@ -198,7 +198,7 @@ describe('AnalysisReducer', () => {
         })
     })
 
-    it("actionSetMetricsFilterValue should replace filterstring on state", () => {
+    it('actionSetMetricsFilterValue should replace filterstring on state', () => {
         const previousState = { ...initialState };
         previousState.metricsFilter = '';
         const filterString = 'test';
@@ -211,7 +211,7 @@ describe('AnalysisReducer', () => {
         expect(newState.metricsFilter).toEqual(filterString);
     })
 
-    it("actionExecuteQuery should set isQueryExecuting to true", () => {
+    it('actionExecuteQuery should set isQueryExecuting to true', () => {
         const previousState = { ...initialState };
         previousState.isQueryExecuting = false;
 
@@ -224,7 +224,7 @@ describe('AnalysisReducer', () => {
         expect(newState.isQueryExecuting).toEqual(true);
     })
 
-    it("actionExecuteQuerySuccess should set queryResult and isQueryExecuting to false", () => {
+    it('actionExecuteQuerySuccess should set queryResult and isQueryExecuting to false', () => {
         const previousState = { ...initialState };
         previousState.isQueryExecuting = true;
         previousState.queryResult = null;
@@ -239,7 +239,7 @@ describe('AnalysisReducer', () => {
         expect(newState.isQueryExecuting).toEqual(false);
     })
 
-    it("actionExecuteQueryFailure should set isQueryExecuting to true", () => {
+    it('actionExecuteQueryFailure should set isQueryExecuting to true', () => {
         const previousState = { ...initialState };
         previousState.isQueryExecuting = true;
 
@@ -250,7 +250,7 @@ describe('AnalysisReducer', () => {
         expect(newState.isQueryExecuting).toEqual(false);
     })
 
-    it("actionSetQueryResult should set queryResult", () => {
+    it('actionSetQueryResult should set queryResult', () => {
         const previousState = { ...initialState };
         previousState.queryResult = null;
 

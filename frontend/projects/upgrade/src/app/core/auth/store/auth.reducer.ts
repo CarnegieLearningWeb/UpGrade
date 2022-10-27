@@ -24,15 +24,11 @@ const reducer = createReducer(
   ),
   on(
     authActions.actionSetIsLoggedIn,
-    (state, { isLoggedIn }) => {
-      return { ...state, isLoggedIn }
-    }
+    (state, { isLoggedIn }) => ({ ...state, isLoggedIn })
   ),
   on(
     authActions.actionSetIsAuthenticating,
-    (state, { isAuthenticating }) => {
-      return { ...state, isAuthenticating }
-    }
+    (state, { isAuthenticating }) => ({ ...state, isAuthenticating })
   ),
   on(
     authActions.actionSetUserInfo,

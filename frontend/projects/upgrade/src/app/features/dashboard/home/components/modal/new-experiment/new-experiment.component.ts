@@ -21,7 +21,7 @@ export class NewExperimentComponent implements OnInit {
   experimentInfo: ExperimentVM;
   animationCompletedIndex: Number;
   currentContext: string;
-  isContextChanged: boolean = false;
+  isContextChanged = false;
   @ViewChild('stepper') stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,

@@ -29,15 +29,9 @@ export class DuplicateSegmentComponent {
   onDuplicateClick(segmentName: string, segmentDescription: string) {
     const duplicateSegmentData =  { ...this.data.segment, name: segmentName, description: segmentDescription, id: null };
     
-    duplicateSegmentData.userIds = duplicateSegmentData.individualForSegment.map((individual) => {
-      return individual.userId;
-    });
-    duplicateSegmentData.subSegmentIds = duplicateSegmentData.subSegments.map((subSegment) => {
-      return subSegment.id;
-    });
-    duplicateSegmentData.groups = duplicateSegmentData.groupForSegment.map((group) => {
-      return { type: group.type, groupId: group.groupId } ;
-    });
+    duplicateSegmentData.userIds = duplicateSegmentData.individualForSegment.map((individual) => individual.userId);
+    duplicateSegmentData.subSegmentIds = duplicateSegmentData.subSegments.map((subSegment) => subSegment.id);
+    duplicateSegmentData.groups = duplicateSegmentData.groupForSegment.map((group) => ({ type: group.type, groupId: group.groupId } ));
 
     this.segmentsService.createNewSegment(duplicateSegmentData);
     this.onCancelClick();

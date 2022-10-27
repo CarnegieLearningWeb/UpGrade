@@ -1,7 +1,7 @@
-import { initialState, experimentsReducer } from "./experiments.reducer";
+import { initialState, experimentsReducer } from './experiments.reducer';
 import { Action } from '@ngrx/store';
-import { actionBeginExperimentDetailStatsPolling, actionDeleteExperimentSuccess, actionEndExperimentDetailStatsPolling, actionFetchAllExperimentNamesSuccess, actionFetchAllPartitionSuccess, actionFetchContextMetaDataSuccess, actionFetchExperimentDetailStat, actionFetchExperimentDetailStatFailure, actionFetchExperimentDetailStatSuccess, actionFetchExperimentGraphInfo, actionFetchExperimentGraphInfoSuccess, actionFetchExperimentStatsSuccess, actionGetExperimentById, actionGetExperimentByIdFailure, actionGetExperimentByIdSuccess, actionGetExperiments, actionGetExperimentsFailure, actionGetExperimentsSuccess, actionRemoveExperimentStat, actionSetExperimentGraphInfo, actionSetGraphRange, actionSetIsGraphLoading, actionSetIsLoadingExperiment, actionSetSearchKey, actionSetSearchString, actionSetSkipExperiment, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpdateExperimentStateSuccess, actionUpsertExperiment, actionUpsertExperimentFailure, actionUpsertExperimentSuccess } from "./experiments.actions";
-import { DATE_RANGE, ExperimentState, ExperimentVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, UpsertExperimentType } from "./experiments.model";
+import { actionBeginExperimentDetailStatsPolling, actionDeleteExperimentSuccess, actionEndExperimentDetailStatsPolling, actionFetchAllExperimentNamesSuccess, actionFetchAllPartitionSuccess, actionFetchContextMetaDataSuccess, actionFetchExperimentDetailStat, actionFetchExperimentDetailStatFailure, actionFetchExperimentDetailStatSuccess, actionFetchExperimentGraphInfo, actionFetchExperimentGraphInfoSuccess, actionFetchExperimentStatsSuccess, actionGetExperimentById, actionGetExperimentByIdFailure, actionGetExperimentByIdSuccess, actionGetExperiments, actionGetExperimentsFailure, actionGetExperimentsSuccess, actionRemoveExperimentStat, actionSetExperimentGraphInfo, actionSetGraphRange, actionSetIsGraphLoading, actionSetIsLoadingExperiment, actionSetSearchKey, actionSetSearchString, actionSetSkipExperiment, actionSetSortingType, actionSetSortKey, actionUpdateExperimentState, actionUpdateExperimentStateSuccess, actionUpsertExperiment, actionUpsertExperimentFailure, actionUpsertExperimentSuccess } from './experiments.actions';
+import { DATE_RANGE, ExperimentState, ExperimentVM, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, UpsertExperimentType } from './experiments.model';
 
 describe('ExperimentsReducer', () => {
     it('should not affect state if no action is recognized', () => {
@@ -52,12 +52,12 @@ describe('ExperimentsReducer', () => {
         expect(newState).toEqual({
             ...previousState,
             entities: { 
-                "1": {
-                    "id": "1"
+                '1': {
+                    'id': '1'
                 }
             },
             ids: [
-                "1"
+                '1'
             ],
             totalExperiments: 1,
             skipExperiment: 1,
@@ -115,12 +115,12 @@ describe('ExperimentsReducer', () => {
             ...previousState,
             isLoadingExperiment: false,
             entities: { 
-                "1": {
-                    "id": "1"
+                '1': {
+                    'id': '1'
                 }
             },
             ids: [
-                "1"
+                '1'
             ],
         });
     })
@@ -289,8 +289,8 @@ describe('ExperimentsReducer', () => {
 
     it('action "actionRemoveExperimentStat" should remove the stat by id', () => {
         const previousState = { ...initialState };
-        previousState.stats["1"] = {
-            id: "1",
+        previousState.stats['1'] = {
+            id: '1',
             users: 10,
             groups: 2,
             usersExcluded: 1,
@@ -298,13 +298,13 @@ describe('ExperimentsReducer', () => {
             conditions: []
         }
         const testAction: Action = actionRemoveExperimentStat({
-            experimentStatId: "1"
+            experimentStatId: '1'
         })
 
         const newState = experimentsReducer(previousState, testAction);
 
         expect(newState).not.toBe(previousState);
-        expect(newState.stats["1"]).toBeUndefined();
+        expect(newState.stats['1']).toBeUndefined();
     })
 
     it('action "actionUpsertExperiment" should set loading to true', () => {
@@ -313,7 +313,7 @@ describe('ExperimentsReducer', () => {
 
         const testAction: Action = actionUpsertExperiment({
             experiment: {
-                "id": "1"
+                'id': '1'
             } as any,
             actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT
         })
@@ -329,7 +329,7 @@ describe('ExperimentsReducer', () => {
         previousState.isLoadingExperiment = false;
 
         const testAction: Action = actionGetExperimentById({
-            experimentId: "1"
+            experimentId: '1'
         })
 
         const newState = experimentsReducer(previousState, testAction);
@@ -344,7 +344,7 @@ describe('ExperimentsReducer', () => {
 
         const testAction: Action = actionGetExperimentByIdSuccess({
             experiment: {
-                id: "1"
+                id: '1'
             } as any
         })
 
@@ -355,12 +355,12 @@ describe('ExperimentsReducer', () => {
             ...previousState,
             isLoadingExperiment: false,
             entities: { 
-                "1": {
-                    "id": "1"
+                '1': {
+                    'id': '1'
                 }
             },
             ids: [
-                "1"
+                '1'
             ],
         });
     })
@@ -368,16 +368,16 @@ describe('ExperimentsReducer', () => {
     it('action "actionDeleteExperimentSuccess" should remove experiment by id', () => {
         const previousState = { ...initialState };
         previousState.entities = { 
-            "1": {
-                "id": "1"
+            '1': {
+                'id': '1'
             } as ExperimentVM
         }
         previousState.ids = [
-            "1"
+            '1'
         ]
 
         const testAction: Action = actionDeleteExperimentSuccess({
-            experimentId: "1"
+            experimentId: '1'
         })
 
         const newState = experimentsReducer(previousState, testAction);
@@ -395,7 +395,7 @@ describe('ExperimentsReducer', () => {
         previousState.isLoadingExperiment = false;
 
         const testAction: Action = actionUpdateExperimentState({
-            experimentId: "1",
+            experimentId: '1',
             experimentStateInfo: null
         })
 
@@ -411,7 +411,7 @@ describe('ExperimentsReducer', () => {
 
         const testAction: Action = actionUpdateExperimentStateSuccess({
             experiment: {
-                id: "1"
+                id: '1'
             } as any
         })
 
@@ -422,12 +422,12 @@ describe('ExperimentsReducer', () => {
             ...previousState,
             isLoadingExperiment: false,
             entities: { 
-                "1": {
-                    "id": "1"
+                '1': {
+                    'id': '1'
                 }
             },
             ids: [
-                "1"
+                '1'
             ],
         });
     })
@@ -584,7 +584,7 @@ describe('ExperimentsReducer', () => {
         previousState.isLoadingExperimentDetailStats = false;
 
         const testAction: Action = actionFetchExperimentDetailStat({
-            experimentId: "1"
+            experimentId: '1'
         })
 
         const newState = experimentsReducer(previousState, testAction);
@@ -609,7 +609,7 @@ describe('ExperimentsReducer', () => {
         const previousState = { ...initialState };
         previousState.isLoadingExperimentDetailStats = true;
         previousState.stats['1'] = {
-            id: "1",
+            id: '1',
             users: 10,
             groups: 2,
             usersExcluded: 1,
@@ -619,7 +619,7 @@ describe('ExperimentsReducer', () => {
 
         const testAction: Action = actionFetchExperimentDetailStatSuccess({
             stat: {
-                id: "1",
+                id: '1',
                 users: 11,
                 groups: 2,
                 usersExcluded: 1,
@@ -631,7 +631,7 @@ describe('ExperimentsReducer', () => {
         const newState = experimentsReducer(previousState, testAction);
 
         expect(newState).not.toBe(previousState);
-        expect(newState.stats["1"].users).toEqual(11);
+        expect(newState.stats['1'].users).toEqual(11);
 
     })
 

@@ -1,21 +1,21 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject } from 'rxjs';
 import { SegmentsService } from './segments.service';
 import * as SegmentSelectors from './store/segments.selectors';
-import { Segment, SegmentInput, UpsertSegmentType } from "./store/segments.model";
-import { fakeAsync, tick } from "@angular/core/testing";
-import { isEmpty } from "rxjs/operators";
-import { SEGMENT_TYPE } from "upgrade_types";
-import { actionUpsertSegment, actionDeleteSegment, actionExportSegment }from "./store/segments.actions";
+import { Segment, SegmentInput, UpsertSegmentType } from './store/segments.model';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { isEmpty } from 'rxjs/operators';
+import { SEGMENT_TYPE } from 'upgrade_types';
+import { actionUpsertSegment, actionDeleteSegment, actionExportSegment }from './store/segments.actions';
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 
 describe('SegmentService', () => {
     let mockStore: any;
     let service: SegmentsService;
-    let mockSegmentsList: any = [
-        { id: 'first', createdAt:`04/25/17 04:34:22 +0000`},
-        { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
-        { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
+    const mockSegmentsList: any = [
+        { id: 'first', createdAt: '04/25/17 04:34:22 +0000'},
+        { id: 'second', createdAt: '04/24/17 04:34:22 +0000'},
+        { id: 'third', createdAt: '04/24/17 04:34:22 +0000'},
     ]
     const mockSegment = {
         createdAt: 'time',
@@ -45,9 +45,9 @@ describe('SegmentService', () => {
             service.allSegments$.subscribe(val => {
                 tick(0);
                 expect(val).toEqual([
-                    { id: 'first', createdAt:`04/25/17 04:34:22 +0000`},
-                    { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
-                    { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
+                    { id: 'first', createdAt: '04/25/17 04:34:22 +0000'},
+                    { id: 'second', createdAt: '04/24/17 04:34:22 +0000'},
+                    { id: 'third', createdAt: '04/24/17 04:34:22 +0000'},
                 ]);
             })
         }))

@@ -1,5 +1,5 @@
-import { BehaviorSubject } from "rxjs";
-import { NegateAuthGuard } from "./negate.auth.guard";
+import { BehaviorSubject } from 'rxjs';
+import { NegateAuthGuard } from './negate.auth.guard';
 
 describe('NegateAuthGuard', () => {
     let service: NegateAuthGuard;

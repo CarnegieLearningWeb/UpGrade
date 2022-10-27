@@ -25,9 +25,7 @@ export class UsersEffects {
         this.store$.pipe(select(selectSearchKey)),
         this.store$.pipe(select(selectSortKey)),
       ),
-      filter(([fromStarting, user, skip, total]) => {
-        return !!user && user.role === UserRole.ADMIN && (skip < total || total === null || fromStarting);
-      }),
+      filter(([fromStarting, user, skip, total]) => !!user && user.role === UserRole.ADMIN && (skip < total || total === null || fromStarting)),
       tap(() => {
         this.store$.dispatch(UsersActions.actionSetIsUserLoading({ isUsersLoading: true }));
       }),
@@ -97,12 +95,10 @@ export class UsersEffects {
       ofType(UsersActions.actionCreateNewUser),
       map(action => action.user),
       filter(({ firstName, lastName, email, role }) => !!firstName && !!lastName && !!email && !!role),
-      switchMap(({ firstName, lastName, email, role }) => {
-        return this.usersDataService.createNewUser(firstName, lastName, email, role).pipe(
+      switchMap(({ firstName, lastName, email, role }) => this.usersDataService.createNewUser(firstName, lastName, email, role).pipe(
           map((data: User) => UsersActions.actionCreateNewUserSuccess({ user: data })),
           catchError(() => [UsersActions.actionCreateNewUserFailure()])
-        );
-      })
+        ))
     )
   );
 

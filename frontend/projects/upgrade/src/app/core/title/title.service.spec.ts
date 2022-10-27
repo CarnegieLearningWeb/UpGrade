@@ -1,8 +1,8 @@
-import { fakeAsync, tick } from "@angular/core/testing";
-import { of } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { TitleService } from "./title.service";
+import { fakeAsync, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { TitleService } from './title.service';
 
 class MockTranslateService {
     get = () => {};
@@ -15,7 +15,7 @@ class MockTitle {
 describe('TitleService', () => {
     let mockTranslateService: any;
     let mockTitle: any;
-    let mockEnvironment: Environment = { ...environment };
+    const mockEnvironment: Environment = { ...environment };
     let service: TitleService;
 
     beforeEach(() => {

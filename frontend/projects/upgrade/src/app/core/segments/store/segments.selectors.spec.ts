@@ -4,7 +4,7 @@ import { initialState } from './segments.reducer';
 import * as SegmentSelectors from './segments.selectors';
 
 describe('SegmentSelectors', () => {
-    let mockState = { ...initialState };
+    const mockState = { ...initialState };
 
     describe('#selectIsLoadingSegments', () => {
         it('should return boolean from isLoadingSegments', () => {

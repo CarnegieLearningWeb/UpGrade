@@ -1,11 +1,11 @@
-import { HttpClient } from "@angular/common/http";
-import { of } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
 import { FILTER_MODE, SEGMENT_TYPE } from 'upgrade_types';
-import { environment } from "../../../environments/environment";
-import { Environment } from "../../../environments/environment-types";
-import { Segment } from "../segments/store/segments.model";
-import { ExperimentDataService } from "./experiments.data.service";
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, Experiment, ExperimentPaginationParams, ExperimentStateInfo, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, segmentNew } from "./store/experiments.model";
+import { environment } from '../../../environments/environment';
+import { Environment } from '../../../environments/environment-types';
+import { Segment } from '../segments/store/segments.model';
+import { ExperimentDataService } from './experiments.data.service';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, Experiment, ExperimentPaginationParams, ExperimentStateInfo, EXPERIMENT_STATE, POST_EXPERIMENT_RULE, segmentNew } from './store/experiments.model';
 
 class MockHTTPClient {
     get = jest.fn().mockReturnValue(of());

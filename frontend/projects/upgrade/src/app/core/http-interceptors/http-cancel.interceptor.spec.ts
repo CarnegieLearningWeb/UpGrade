@@ -1,9 +1,9 @@
-import { HttpRequest } from "@angular/common/http";
-import { fakeAsync, tick } from "@angular/core/testing";
-import { ActivationEnd, ActivationStart } from "@angular/router";
-import { BehaviorSubject, Subject } from "rxjs";
-import { finalize } from "rxjs/operators";
-import { HttpCancelInterceptor } from "./http-cancel.interceptor";
+import { HttpRequest } from '@angular/common/http';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { ActivationEnd, ActivationStart } from '@angular/router';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { HttpCancelInterceptor } from './http-cancel.interceptor';
 
 class MockRouter {
     events = new Subject();
@@ -12,7 +12,7 @@ class MockRouter {
 describe('HttpCancelInterceptor', () => {
     let mockRouter: any;
     let service: HttpCancelInterceptor;
-    let mockSnapshot = {
+    const mockSnapshot = {
         data: {
             title: 'test'
         },

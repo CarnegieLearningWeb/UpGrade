@@ -74,9 +74,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         withLatestFrom(
           this.isLoadingExperimentDetailStats$,
           this.isPollingExperimentDetailStats$,
-          (experiment, isLoadingDetails, isPolling) => {
-            return { experiment, isLoadingDetails, isPolling }
-          }
+          (experiment, isLoadingDetails, isPolling) => ({ experiment, isLoadingDetails, isPolling })
         ),
         filter(({ isLoadingDetails }) => !isLoadingDetails),
       ).subscribe(({ experiment, isPolling }) => {

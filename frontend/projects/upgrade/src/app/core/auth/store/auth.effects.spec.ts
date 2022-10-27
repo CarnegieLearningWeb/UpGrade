@@ -1,18 +1,18 @@
-import { ActionsSubject } from "@ngrx/store";
-import { BehaviorSubject, never, of, throwError } from "rxjs";
-import { AuthEffects } from "./auth.effects";
-import * as AuthActions from "./auth.actions";
-import { fakeAsync, tick } from "@angular/core/testing";
-import { environment } from "../../../../environments/environment";
-import { UserRole } from "../../users/store/users.model";
-import { actionFetchExcludedGroups, actionFetchExcludedUsers } from "../../experiment-users/store/experiment-users.actions";
-import { actionFetchAllPartitions } from "../../experiments/store/experiments.actions";
-import { actionFetchUsers } from "../../users/store/users.actions";
-import { actionGetSetting } from "../../settings/store/settings.actions";
-import { actionFetchMetrics } from "../../analysis/store/analysis.actions";
-import { last, scan, take } from "rxjs/operators";
-import { selectRedirectUrl } from "./auth.selectors";
-import { Environment } from "../../../../environments/environment-types";
+import { ActionsSubject } from '@ngrx/store';
+import { BehaviorSubject, never, of, throwError } from 'rxjs';
+import { AuthEffects } from './auth.effects';
+import * as AuthActions from './auth.actions';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { environment } from '../../../../environments/environment';
+import { UserRole } from '../../users/store/users.model';
+import { actionFetchExcludedGroups, actionFetchExcludedUsers } from '../../experiment-users/store/experiment-users.actions';
+import { actionFetchAllPartitions } from '../../experiments/store/experiments.actions';
+import { actionFetchUsers } from '../../users/store/users.actions';
+import { actionGetSetting } from '../../settings/store/settings.actions';
+import { actionFetchMetrics } from '../../analysis/store/analysis.actions';
+import { last, scan, take } from 'rxjs/operators';
+import { selectRedirectUrl } from './auth.selectors';
+import { Environment } from '../../../../environments/environment-types';
 
 declare let window: {
     gapi: any
@@ -28,25 +28,21 @@ describe('AuthEffects', () => {
     let authService: any;
     let settingsService: any;
     let mockEnvironment: Environment;
-    let mockUser = {
+    const mockUser = {
         currentUser: {
             listen: jest.fn(),
-            getBasicProfile: () => {
-                return {
+            getBasicProfile: () => ({
                     getGivenName: jest.fn().mockReturnValue('Test'),
                     getFamilyName: jest.fn().mockReturnValue('Guy'),
                     getEmail: jest.fn().mockReturnValue('testmail.com'),
                     getImageUrl: jest.fn().mockReturnValue('image.com')
-                }
-            },
-            getAuthResponse: () => {
-                return {
+                }),
+            getAuthResponse: () => ({
                     id_token: 'abc123'
-                }
-            }
+                })
         }
     }
-    let mockOAuth = {
+    const mockOAuth = {
         init: jest.fn().mockReturnValue(mockUser),
         isSignedIn: {
             get: () => {}
@@ -123,7 +119,7 @@ describe('AuthEffects', () => {
         it('should call init and set listener on user object, have hosted_domain match env.domainName if given', () => {
             service.scope = ['profile', 'email'].join(' ');
             const client_id = 'abc123';
-            const hosted_domain = "testdomain";
+            const hosted_domain = 'testdomain';
 
             const expectedConfig = {
                 client_id,

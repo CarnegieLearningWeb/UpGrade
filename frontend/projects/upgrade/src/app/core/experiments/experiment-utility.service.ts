@@ -33,12 +33,8 @@ export class ExperimentUtilityService {
     if (!partitions.length || !conditions.length) {
       return false;
     }
-    const hasValidDecisionPointStrings = partitions.every(({ site, target }) => {
-      return this.isValidString(site) && this.isValidString(target)
-    })
-    const hasValidConditionStrings = conditions.every(({ conditionCode }) => {
-      return this.isValidString(conditionCode)
-    })
+    const hasValidDecisionPointStrings = partitions.every(({ site, target }) => this.isValidString(site) && this.isValidString(target))
+    const hasValidConditionStrings = conditions.every(({ conditionCode }) => this.isValidString(conditionCode))
     return hasValidDecisionPointStrings && hasValidConditionStrings;
   }
 }

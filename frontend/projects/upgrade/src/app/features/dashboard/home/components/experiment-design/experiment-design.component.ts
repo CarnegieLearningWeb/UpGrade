@@ -69,14 +69,14 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   contextMetaDataSub: Subscription;
   expPointAndIdErrors: string[] = [];
   conditionCodeErrors: string[] = [];
-  equalWeightFlag: boolean = true;
+  equalWeightFlag = true;
 
   // Alias Table details
-  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[],[]]);
+  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[], []]);
   designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
-  isExperimentEditable: boolean = true;
+  isExperimentEditable = true;
   
   constructor(
     private _formBuilder: FormBuilder,
@@ -141,9 +141,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
-      this.equalWeightFlag = this.experimentInfo.conditions.every(condition => {
-        return condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight;
-      });
+      this.equalWeightFlag = this.experimentInfo.conditions.every(condition => condition.assignmentWeight === this.experimentInfo.conditions[0].assignmentWeight);
       // Remove previously added group of conditions and partitions
       this.condition.removeAt(0);
       this.partition.removeAt(0);
@@ -352,7 +350,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateConditionCodes(conditions: ExperimentCondition[]) {
 
-    let conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
+    const conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
     const hasUniqueConditionError = conditionCodes.length !== new Set(conditionCodes).size;
     if (hasUniqueConditionError && this.conditionCodeErrors.indexOf(conditionUniqueErrorText) === -1) {
@@ -367,8 +365,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateHasConditionCodeDefault(conditions: ExperimentCondition[]) {
 
-    let defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
-    let defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text');
+    const defaultKeyword = this.translate.instant('home.new-experiment.design.condition.invalid.text');
+    const defaultConditionCodeErrorText = this.translate.instant('home.new-experiment.design.condition-name-validation.text');
     if (conditions.length) {
       const hasDefaultConditionCode = conditions.filter(
         condition => typeof condition.conditionCode === 'string' && condition.conditionCode.toUpperCase().trim() === defaultKeyword
@@ -386,7 +384,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateHasAssignmentWeightsNegative(conditions: ExperimentCondition[]) {
     
-    let negativeAssignmentWeightErrorText = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
+    const negativeAssignmentWeightErrorText = this.translate.instant('home.new-experiment.design.assignment-weight-negative.text');
     if (conditions.length) {
       const hasNegativeAssignmentWeights = conditions.filter(
         condition => condition.assignmentWeight < 0
@@ -503,7 +501,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
             (condition, index) => {
               if (isNaN(condition.assignmentWeight)) {
-                condition.assignmentWeight = Number(condition.assignmentWeight.slice(0,-1));
+                condition.assignmentWeight = Number(condition.assignmentWeight.slice(0, -1));
               }
               return this.experimentInfo
                 ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
@@ -512,14 +510,12 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           );
           order = 1;
           experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
-            (partition, index) => {
-              return this.experimentInfo
+            (partition, index) => this.experimentInfo
                 ? ({ ...this.experimentInfo.partitions[index], ...partition, order: order++ })
                 : (partition.target 
                   ? ({...partition, order: order++, id: uuidv4()}) 
                   : ({...this.removePartitionName(partition), order: order++ })
-                );
-            }
+                )
           );
           experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
             this.aliasTableData, 
@@ -551,13 +547,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         return;
       }
 
-      const parentCondition = conditions.find((condition) => {
-        return condition.conditionCode === aliasRowData.condition;
-      })
+      const parentCondition = conditions.find((condition) => condition.conditionCode === aliasRowData.condition)
 
-      const decisionPoint = decisionPoints.find((decisionPoint) => {
-        return decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site;
-      })
+      const decisionPoint = decisionPoints.find((decisionPoint) => decisionPoint.target === aliasRowData.target && decisionPoint.site === aliasRowData.site)
 
       // need some error-handling in UI to prevent creation if aliases can't be created...
       if (!parentCondition || !decisionPoint) {
@@ -583,7 +575,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         const len = conditions.controls.length;
         this.previousAssignmentWeightValues =  [];
         conditions.controls.forEach( control => {
-          control.get('assignmentWeight').setValue(parseFloat((100.0/len).toFixed(1)).toString());
+          control.get('assignmentWeight').setValue(parseFloat((100.0 / len).toFixed(1)).toString());
           this.previousAssignmentWeightValues.push(control.get('assignmentWeight').value);
           control.get('assignmentWeight').disable();
         });

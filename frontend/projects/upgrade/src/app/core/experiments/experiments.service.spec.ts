@@ -25,11 +25,11 @@ describe('ExperimentService', () => {
     let mockLocalStorageService: LocalStorageService;
     let mockEnvironment: Environment;
     let service: ExperimentService;
-    let mockExperimentsList: any = [
-        { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
-        { id: 'first', createdAt:`04/25/17 04:34:22 +0000`},
-        { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
-        { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
+    const mockExperimentsList: any = [
+        { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000'},
+        { id: 'first', createdAt: '04/25/17 04:34:22 +0000'},
+        { id: 'second', createdAt: '04/24/17 04:34:22 +0000'},
+        { id: 'third', createdAt: '04/24/17 04:34:22 +0000'},
     ]
 
     const segmentData: Segment = {
@@ -61,7 +61,7 @@ describe('ExperimentService', () => {
         segment: segmentData,
     }
 
-    let mockExperiment = {
+    const mockExperiment = {
         id: 'abc123',
         name: 'abc123',
         description: 'abc123',
@@ -94,11 +94,11 @@ describe('ExperimentService', () => {
         backendVersion: '1.0.0',
         groupSatisfied: 0
     }
-    let mockExperimentStateInfo = {
+    const mockExperimentStateInfo = {
         newStatus: EXPERIMENT_STATE.INACTIVE,
         scheduleDate: 'never!'
     }
-    let mockExperimentSearchKey = EXPERIMENT_SEARCH_KEY.ALL;
+    const mockExperimentSearchKey = EXPERIMENT_SEARCH_KEY.ALL;
 
     beforeEach(() => {
         mockStore = MockStateStore$;
@@ -116,10 +116,10 @@ describe('ExperimentService', () => {
             service.experiments$.subscribe(val => {
                 tick(0);
                 expect(val).toEqual([
-                    { id: 'first', createdAt:`04/25/17 04:34:22 +0000`},
-                    { id: 'second', createdAt:`04/24/17 04:34:22 +0000`},
-                    { id: 'third', createdAt:`04/24/17 04:34:22 +0000`},
-                    { id: 'fourth', createdAt:`04/23/17 04:34:22 +0000`},
+                    { id: 'first', createdAt: '04/25/17 04:34:22 +0000'},
+                    { id: 'second', createdAt: '04/24/17 04:34:22 +0000'},
+                    { id: 'third', createdAt: '04/24/17 04:34:22 +0000'},
+                    { id: 'fourth', createdAt: '04/23/17 04:34:22 +0000'},
                 ]);
             })
         }))
@@ -156,43 +156,43 @@ describe('ExperimentService', () => {
             const testCases = [
                 {
                     searchKey: null,
-                    searchString: "test",
-                    description: "searchKey is null",
+                    searchString: 'test',
+                    description: 'searchKey is null',
                 },
                 {
                     searchKey: undefined,
-                    searchString: "test",
-                    description: "searchKey is undefined",
+                    searchString: 'test',
+                    description: 'searchKey is undefined',
                 },
                 {
-                    searchKey: "",
-                    searchString: "test",
-                    description: "searchKey is empty string",
+                    searchKey: '',
+                    searchString: 'test',
+                    description: 'searchKey is empty string',
                 },
                 {
                     searchKey: null,
-                    searchString: "test",
-                    description: "searchString is null",
+                    searchString: 'test',
+                    description: 'searchString is null',
                 },
                 {
                     searchKey: undefined,
-                    searchString: "test",
-                    description: "searchString is undefined",
+                    searchString: 'test',
+                    description: 'searchString is undefined',
                 },
                 {
-                    searchKey: "",
-                    searchString: "test",
-                    description: "searchString is empty string",
+                    searchKey: '',
+                    searchString: 'test',
+                    description: 'searchString is empty string',
                 },
                 { 
                     searchKey: null,
                     searchString: '', 
-                    description: "Both are falsey"
+                    description: 'Both are falsey'
                 },
             ];
             
             testCases.forEach((testCase) => {
-                it(`${testCase.description}`, fakeAsync(() =>{
+                it(`${testCase.description}`, fakeAsync(() => {
                     (service.selectSearchKey$ as any) = of(testCase.searchKey);
                     service.selectSearchString$ = of(testCase.searchString);
     

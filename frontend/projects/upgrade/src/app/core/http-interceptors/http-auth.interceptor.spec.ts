@@ -1,5 +1,5 @@
-import { BehaviorSubject } from "rxjs"
-import { HttpAuthInterceptor } from "./http-auth.interceptor"
+import { BehaviorSubject } from 'rxjs'
+import { HttpAuthInterceptor } from './http-auth.interceptor'
 
 
 describe('HttpAuthInterceptor', () => {
@@ -14,7 +14,7 @@ describe('HttpAuthInterceptor', () => {
         service = new HttpAuthInterceptor(mockAuthService);
         const mockHeaders = {
             setHeaders: {
-              Authorization: `Bearer abc123`
+              Authorization: 'Bearer abc123'
             }
         }
         const mockRequest: any = {
@@ -38,7 +38,7 @@ describe('HttpAuthInterceptor', () => {
         service = new HttpAuthInterceptor(mockAuthService);
         const mockHeaders = {
             setHeaders: {
-              Authorization: `Bearer abc123`
+              Authorization: 'Bearer abc123'
             }
         }
         const mockRequest: any = {

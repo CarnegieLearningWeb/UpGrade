@@ -1,10 +1,10 @@
-import { NotificationService } from "./notification.service"
+import { NotificationService } from './notification.service'
 
 describe('#NotificationService', () => {
     let mockSnackBar: any;
     let mockZone: any;
     let service: NotificationService;
-    let mockMessage = 'test123';
+    const mockMessage = 'test123';
 
     beforeEach(() => {
         mockSnackBar = {

@@ -31,11 +31,11 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   segmentMemberTypes : any[];
   subSegmentIds: string[] = [];
   userIdsToSend: string[] = [];
-  groupsToSend: {type: string, groupId: string}[] = [];;
+  groupsToSend: {type: string, groupId: string}[] = []; ;
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
-  groupString: string = ' ( group )';
+  groupString = ' ( group )';
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -130,7 +130,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   validateMembersCount(members: any) {
-    const membersCountErrorMsg = this.translate.instant("segments.global-members.segments-count-members-error.text");
+    const membersCountErrorMsg = this.translate.instant('segments.global-members.segments-count-members-error.text');
     this.membersCountError = null;
     if (members.length === 0) {
       this.membersCountError = membersCountErrorMsg;
@@ -157,11 +157,11 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     }
   }
 
-  gettingMembersValueToSend(members: {type: string, id:string}[]) {
+  gettingMembersValueToSend(members: {type: string, id: string}[]) {
     members.forEach(member => {
       if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
-      } else if(member.type === MemberTypes.SEGMENT) {
+      } else if (member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });

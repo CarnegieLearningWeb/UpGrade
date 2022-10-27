@@ -8,7 +8,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
 
-type ParticipantMember = {
+interface ParticipantMember {
   id: string;
   type: string;
 }
@@ -46,7 +46,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   subSegmentIdsToSend = [];
   userIdsToSend = [];
   groupsToSend = [];
-  groupString: string = ' ( group )';
+  groupString = ' ( group )';
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -100,7 +100,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
 
     if (this.experimentInfo) {
-      if( this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
+      if ( this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
@@ -214,7 +214,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     memberFiltered.forEach(member => {
       if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
-      } else if(member.type === MemberTypes.SEGMENT) {
+      } else if (member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
@@ -236,7 +236,7 @@ export class ExperimentParticipantsComponent implements OnInit {
           ? FILTER_MODE.EXCLUDE_ALL
           : FILTER_MODE.INCLUDE_ALL;
 
-        if(filterMode === FILTER_MODE.INCLUDE_ALL) {
+        if (filterMode === FILTER_MODE.INCLUDE_ALL) {
           this.members2.clear();
         }
 

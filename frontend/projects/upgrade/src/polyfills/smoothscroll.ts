@@ -33,7 +33,7 @@ const w: { [key: string]: any } = window;
 const d: { [key: string]: any } = document;
 const isScrollBehaviorSupported: boolean = 'scrollBehavior' in d.documentElement.style;
 const element: { [key: string]: any } = w.HTMLElement || w.Element;
-const DEFAULT_DURATION: number = 468;
+const DEFAULT_DURATION = 468;
 const DEFAULT_EASING_FUNCTION: (k: number) => number = (k) => 0.5 * (1 - Math.cos(Math.PI * k));
 
 // object gathering original scroll methods
@@ -96,7 +96,7 @@ function shouldBailOut(firstArg: { [key: string]: any }): boolean {
 }
 
 // context type alias
-type Context = {
+interface Context {
   scrollable: Object;
 	method: (x: number, y: number) => void;
 	startTime: number;
@@ -106,7 +106,7 @@ type Context = {
 	y: number;
 	duration: number;
 	easingFunction: (k: number) => number; 
-};
+}
 
 // self invoked function that, given a context, steps through scrolling
 function step(context: Context): void {

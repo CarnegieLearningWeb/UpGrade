@@ -1,16 +1,16 @@
-import { segmentsReducer, initialState } from "./segments.reducer";
-import * as SegmentsActions from "./segments.actions";
-import { Segment } from "./segments.model";
-import { SEGMENT_TYPE } from "upgrade_types";
+import { segmentsReducer, initialState } from './segments.reducer';
+import * as SegmentsActions from './segments.actions';
+import { Segment } from './segments.model';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
-describe("SegmentsReducer", () => {
-    describe("actions to kick off requests w/ isLoadingSegments ", () => {
+describe('SegmentsReducer', () => {
+    describe('actions to kick off requests w/ isLoadingSegments ', () => {
         const testActions = {
             actionUpsertSegment: SegmentsActions.actionUpsertSegment,
             actionGetSegmentById: SegmentsActions.actionGetSegmentById,
         }
 
-        for (let actionKey in testActions) {
+        for (const actionKey in testActions) {
             const previousState = { ...initialState };
             previousState.isLoadingSegments = false;
 
@@ -22,8 +22,8 @@ describe("SegmentsReducer", () => {
         }
     })
 
-    describe("actionFetchSegmentsSuccess", () => {
-        it("should set allExperimentSegments values", () => {
+    describe('actionFetchSegmentsSuccess', () => {
+        it('should set allExperimentSegments values', () => {
             const previousState = { ...initialState };
             previousState.allExperimentSegmentsInclusion = null;
             previousState.allExperimentSegmentsExclusion = null;
@@ -41,14 +41,14 @@ describe("SegmentsReducer", () => {
         })
     })
 
-    describe("actions to request failures to set isloadingSegments to false", () => {
+    describe('actions to request failures to set isloadingSegments to false', () => {
         const testActions = {
             actionFetchSegmentsFailure: SegmentsActions.actionFetchSegmentsFailure,
             actionUpsertSegmentFailure: SegmentsActions.actionUpsertSegmentFailure,
             actionGetSegmentByIdFailure: SegmentsActions.actionGetSegmentByIdFailure,
         }
 
-        for (let actionKey in testActions) {
+        for (const actionKey in testActions) {
             const previousState = { ...initialState };
             previousState.isLoadingSegments = true;
 
@@ -60,7 +60,7 @@ describe("SegmentsReducer", () => {
         }
     })
 
-    describe("actionUpsertSegmentSuccess", () => {
+    describe('actionUpsertSegmentSuccess', () => {
         it('should set segment and set isLoadingSegments to false', () => {
             const previousState = { ...initialState };
             previousState.entities = {};
@@ -91,7 +91,7 @@ describe("SegmentsReducer", () => {
         })
     })
 
-    describe("actionGetSegmentByIdSuccess", () => {
+    describe('actionGetSegmentByIdSuccess', () => {
         it('should set segment and set isLoadingSegments to false', () => {
             const previousState = { ...initialState };
             previousState.entities = {};
@@ -122,7 +122,7 @@ describe("SegmentsReducer", () => {
         })
     })
 
-    describe("actionDeleteSegmentSuccess", () => {
+    describe('actionDeleteSegmentSuccess', () => {
         it('should remove segment from enitities and set isLoadingSegments to false', () => {
             const previousState = { ...initialState };
             const mockSegment: Segment = {
@@ -154,8 +154,8 @@ describe("SegmentsReducer", () => {
         })
     })
 
-    describe("actionSetIsLoadingSegments", () => {
-        it("should set boolean for isLoadingSegments", () => {
+    describe('actionSetIsLoadingSegments', () => {
+        it('should set boolean for isLoadingSegments', () => {
             const previousState = { ...initialState };
             previousState.isLoadingSegments = false;
 

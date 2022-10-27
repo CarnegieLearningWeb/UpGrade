@@ -1,12 +1,12 @@
-import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from "./logs.model";
-import { initialState } from "./logs.reducer";
-import * as LogsSelectors from "./logs.selectors";
+import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './logs.model';
+import { initialState } from './logs.reducer';
+import * as LogsSelectors from './logs.selectors';
 
-describe("LogsSelectors", () => {
-    let mockState = { ...initialState };
+describe('LogsSelectors', () => {
+    const mockState = { ...initialState };
 
-    describe("#selectIsAuditLogLoading", () => {
-        it("should return a boolean from isErrorLogLoading", () => {
+    describe('#selectIsAuditLogLoading', () => {
+        it('should return a boolean from isErrorLogLoading', () => {
             const state = { ...mockState };
             state.isAuditLogLoading = true;
             
@@ -16,8 +16,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectIsErrorLogLoading", () => {
-        it("should return a boolean from isErrorLogLoading", () => {
+    describe('#selectIsErrorLogLoading', () => {
+        it('should return a boolean from isErrorLogLoading', () => {
             const state = { ...mockState };
             state.isErrorLogLoading = true;
             
@@ -27,7 +27,7 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectAllAuditLogs", () => {
+    describe('#selectAllAuditLogs', () => {
         it('should return an array of logs that contain the filtertype given', () => {
             const state = { ...mockState };
             state.auditLogFilter = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED
@@ -41,7 +41,7 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectAllErrorLogs", () => {
+    describe('#selectAllErrorLogs', () => {
         it('should return an array of logs that contain the filtertype given', () => {
             const state = { ...mockState };
             state.errorLogFilter = SERVER_ERROR.CONDITION_NOT_FOUND
@@ -55,8 +55,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectSkipAuditLog", () => {
-        it("should return a number from skipAuditLog", () => {
+    describe('#selectSkipAuditLog', () => {
+        it('should return a number from skipAuditLog', () => {
             const state = { ...mockState };
             state.skipAuditLog = 2;
             
@@ -66,8 +66,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectTotalAuditLogs", () => {
-        it("should return a number from totalAuditLogs", () => {
+    describe('#selectTotalAuditLogs', () => {
+        it('should return a number from totalAuditLogs', () => {
             const state = { ...mockState };
             state.totalAuditLogs = 10;
             
@@ -77,8 +77,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectSkipErrorLog", () => {
-        it("should return a number from skipErrorLog", () => {
+    describe('#selectSkipErrorLog', () => {
+        it('should return a number from skipErrorLog', () => {
             const state = { ...mockState };
             state.skipErrorLog = 3;
             
@@ -88,8 +88,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectTotalErrorLogs", () => {
-        it("should return a number from totalErrorLogs", () => {
+    describe('#selectTotalErrorLogs', () => {
+        it('should return a number from totalErrorLogs', () => {
             const state = { ...mockState };
             state.totalErrorLogs = 10;
             
@@ -99,8 +99,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectAuditFilterType", () => {
-        it("should return a EXPERIMENT_LOG_TYPE from auditLogFilter", () => {
+    describe('#selectAuditFilterType', () => {
+        it('should return a EXPERIMENT_LOG_TYPE from auditLogFilter', () => {
             const state = { ...mockState };
             state.auditLogFilter = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
             
@@ -110,8 +110,8 @@ describe("LogsSelectors", () => {
         })
     })
 
-    describe("#selectErrorFilterType", () => {
-        it("should return a SERVER_ERROR from erroerrorLogFilterrLogFilter", () => {
+    describe('#selectErrorFilterType', () => {
+        it('should return a SERVER_ERROR from erroerrorLogFilterrLogFilter', () => {
             const state = { ...mockState };
             state.errorLogFilter = SERVER_ERROR.CONDITION_NOT_FOUND;
             

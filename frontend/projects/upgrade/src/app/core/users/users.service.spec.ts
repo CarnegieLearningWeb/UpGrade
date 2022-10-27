@@ -1,9 +1,9 @@
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject } from 'rxjs';
 import * as UsersSelectors from './store/users.selectors';
 import * as UsersActions from './store/users.actions';
-import { fakeAsync, tick } from "@angular/core/testing";
-import { UsersService } from "./users.service";
-import { SORT_AS, User, UserRole, USER_SEARCH_SORT_KEY } from "./store/users.model";
+import { fakeAsync, tick } from '@angular/core/testing';
+import { UsersService } from './users.service';
+import { SORT_AS, User, UserRole, USER_SEARCH_SORT_KEY } from './store/users.model';
 
 
 const MockStateStore$ = new BehaviorSubject({});
@@ -12,10 +12,10 @@ const MockStateStore$ = new BehaviorSubject({});
 describe('UsersService', () => {
     let mockStore: any;
     let service: UsersService;
-    let mockUsersList: User[] = [
+    const mockUsersList: User[] = [
         {
-            createdAt: `04/23/17 04:34:22 +0000`,
-            updatedAt: `04/23/17 04:34:22 +0000`,
+            createdAt: '04/23/17 04:34:22 +0000',
+            updatedAt: '04/23/17 04:34:22 +0000',
             versionNumber: '1',
             firstName: 'test',
             lastName: 'test',
@@ -24,8 +24,8 @@ describe('UsersService', () => {
             role: UserRole.ADMIN
         },
         {
-            createdAt: `04/25/17 04:34:22 +0000`,
-            updatedAt: `04/25/17 04:34:22 +0000`,
+            createdAt: '04/25/17 04:34:22 +0000',
+            updatedAt: '04/25/17 04:34:22 +0000',
             versionNumber: '1',
             firstName: 'test',
             lastName: 'test',
@@ -34,8 +34,8 @@ describe('UsersService', () => {
             role: UserRole.ADMIN
         },
         {
-            createdAt: `04/24/17 04:34:22 +0000`,
-            updatedAt: `04/24/17 04:34:22 +0000`,
+            createdAt: '04/24/17 04:34:22 +0000',
+            updatedAt: '04/24/17 04:34:22 +0000',
             versionNumber: '1',
             firstName: 'test',
             lastName: 'test',
@@ -44,8 +44,8 @@ describe('UsersService', () => {
             role: UserRole.ADMIN
         },
         {
-            createdAt: `04/24/17 04:34:22 +0000`,
-            updatedAt: `04/24/17 04:34:22 +0000`,
+            createdAt: '04/24/17 04:34:22 +0000',
+            updatedAt: '04/24/17 04:34:22 +0000',
             versionNumber: '1',
             firstName: 'test',
             lastName: 'test',
@@ -54,8 +54,8 @@ describe('UsersService', () => {
             role: UserRole.ADMIN
         }
     ]
-    let mockEmail = 'test@test.com';
-    let mockRole = UserRole.ADMIN;
+    const mockEmail = 'test@test.com';
+    const mockRole = UserRole.ADMIN;
 
     beforeEach(() => {
         mockStore = MockStateStore$;

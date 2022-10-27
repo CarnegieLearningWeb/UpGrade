@@ -1,8 +1,8 @@
-import { fakeAsync, tick } from "@angular/core/testing";
-import { NotificationType } from "angular2-notifications";
-import { of, throwError } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { HttpErrorInterceptor } from "./http-error.interceptor";
+import { fakeAsync, tick } from '@angular/core/testing';
+import { NotificationType } from 'angular2-notifications';
+import { of, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { HttpErrorInterceptor } from './http-error.interceptor';
 
 class MockAuthService {
 
@@ -13,10 +13,10 @@ class MockNotificationService {
 }
 
 describe('HttpErrorInterceptor', () => {
-    let mockAuthService: any = new MockAuthService();
-    let mockNotificationService: any = new MockNotificationService();
-    let mockEnvironment = { ...environment };
-    let mockTemp = {
+    const mockAuthService: any = new MockAuthService();
+    const mockNotificationService: any = new MockNotificationService();
+    const mockEnvironment = { ...environment };
+    const mockTemp = {
         type: NotificationType.Error,
         title: 'Network call failed.',
         content: 'test.html',

@@ -1,11 +1,11 @@
-import { BehaviorSubject } from "rxjs";
-import { LogsService } from "./logs.service";
+import { BehaviorSubject } from 'rxjs';
+import { LogsService } from './logs.service';
 import * as LogSelectors from './store/logs.selectors';
 import * as ExperimentSelectors from '../experiments/store/experiments.selectors';
 import * as LogActions from './store/logs.actions';
-import { fakeAsync, tick } from "@angular/core/testing";
-import { isEmpty } from "rxjs/operators";
-import { AuditLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from "./store/logs.model";
+import { fakeAsync, tick } from '@angular/core/testing';
+import { isEmpty } from 'rxjs/operators';
+import { AuditLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './store/logs.model';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
@@ -13,7 +13,7 @@ const MockStateStore$ = new BehaviorSubject({});
 describe('LogsService', () => {
     let mockStore: any;
     let service: LogsService;
-    let mockAuditLog: AuditLogs = {
+    const mockAuditLog: AuditLogs = {
         id: 'log1',
         createdAt: 'test',
         updatedAt: 'test',

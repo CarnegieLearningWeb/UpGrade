@@ -50,21 +50,15 @@ const reducer = createReducer(
   ),
   on(
     FeatureFlagsActions.actionUpsertFeatureFlagSuccess,
-    (state, { flag }) => {
-      return adapter.upsertOne(flag, { ...state, isLoadingFeatureFlags: false });
-    }
+    (state, { flag }) => adapter.upsertOne(flag, { ...state, isLoadingFeatureFlags: false })
   ),
   on(
     FeatureFlagsActions.actionUpdateFlagStatusSuccess,
-    (state, { flag }) => {
-      return adapter.updateOne({ id: flag.id, changes: flag }, { ...state, isLoadingFeatureFlags: false });
-    }
+    (state, { flag }) => adapter.updateOne({ id: flag.id, changes: flag }, { ...state, isLoadingFeatureFlags: false })
   ),
   on(
     FeatureFlagsActions.actionDeleteFeatureFlagSuccess,
-    (state, { flag }) => {
-      return adapter.removeOne(flag.id, state);
-    }
+    (state, { flag }) => adapter.removeOne(flag.id, state)
   ),
   on(
     FeatureFlagsActions.actionSetIsLoadingFeatureFlags,
