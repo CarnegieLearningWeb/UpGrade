@@ -28,7 +28,6 @@ import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { PreviewUserService } from './PreviewUserService';
 import { AuditLogData } from 'upgrade_types';
-import { ExperimentInput } from '../../types/ExperimentInput';
 import { Query } from '../models/Query';
 import { MetricRepository } from '../repositories/MetricRepository';
 import { QueryRepository } from '../repositories/QueryRepository';
@@ -205,9 +204,9 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
-  public createMultipleExperiments(experiment: ExperimentInput[], logger: UpgradeLogger): Promise<Experiment[]> {
+  public createMultipleExperiments(experiment: Experiment[], user:User, logger: UpgradeLogger): Promise<Experiment[]> {
     logger.info({ message: `Generating test experiments`, details: experiment });
-    return this.addBulkExperiments(experiment, logger);
+    return this.addBulkExperiments(experiment, user, logger);
   }
 
   public async delete(
@@ -361,120 +360,56 @@ export class ExperimentService {
     };
   }
 
-  public async importExperiment(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<any> {
-    const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
-    if (duplicateExperiment && experiment.id !== undefined) {
-      const error = new Error('Duplicate experiment');
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
-    }
-    let experimentDecisionPoints = experiment.partitions;
-    // Remove the decision points which already exist
-    for (const decisionPoint of experimentDecisionPoints) {
-      const decisionPointExists = await this.decisionPointRepository.findOne(decisionPoint.id);
-      if (decisionPointExists) {
-        // provide new uuid:
-        experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
-      }
-    }
-
-    // Generate new twoCharacterId if it is already exist for conditions
-    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
-    experiment.conditions = experiment.conditions.map((condition) => {
-      let twoCharacterId = condition.twoCharacterId;
-      if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
-        twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-        condition.twoCharacterId = twoCharacterId;
-      }
-      uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-      return condition;
-    });
-
-    // Generate new twoCharacterId if it is already exist for decision points
-    experimentDecisionPoints = experimentDecisionPoints.map((decisionPoint) => {
-      let twoCharacterId = decisionPoint.twoCharacterId;
-      if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
-        twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
-        logger.info({ message: `Generate new twoCharacterId for Decision Point =>`, details: twoCharacterId });
-        decisionPoint.twoCharacterId = twoCharacterId;
-      }
-      uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
-      return decisionPoint;
-    });
-
-    experiment.partitions = experimentDecisionPoints;
-    experiment.endOn = null;
-    experiment.createdAt = new Date();
-    experiment.state = EXPERIMENT_STATE.INACTIVE;
-    experiment.stateTimeLogs = [];
-
-    let segmentExcludeData = {
-      type: experiment.experimentSegmentExclusion.segment.type,
-      userIds: experiment.experimentSegmentExclusion.segment.individualForSegment.map(user => {
-        return user.userId;
-      }),
-      groups: experiment.experimentSegmentExclusion.segment.groupForSegment.map(group => {
-        return {type: group.type, groupId: group.groupId};
-      }),
-      subSegmentIds: experiment.experimentSegmentExclusion.segment.subSegments.map(subSegment => {
-        return subSegment.id;
-      }),
-      id: experiment.experimentSegmentExclusion.segment.id,
-      name: experiment.experimentSegmentExclusion.segment.name,
-      description: experiment.experimentSegmentExclusion.segment.description,
-      context: experiment.context[0],
-    }
-
-    let segmentIncludeData = {
-      type: experiment.experimentSegmentInclusion.segment.type,
-      userIds: experiment.experimentSegmentInclusion.segment.individualForSegment.map(user => {
-        return user.userId;
-      }),
-      groups: experiment.experimentSegmentInclusion.segment.groupForSegment.map(group => {
-        return {type: group.type, groupId: group.groupId};
-      }),
-      subSegmentIds: experiment.experimentSegmentInclusion.segment.subSegments.map(subSegment => {
-        return subSegment.id;
-      }),
-      id: experiment.experimentSegmentInclusion.segment.id,
-      name: experiment.experimentSegmentInclusion.segment.name,
-      description: experiment.experimentSegmentInclusion.segment.description,
-      context: experiment.context[0]
-    }
-
-    let segmentIncludeDoc: Segment;
-      let segmentExcludeDoc: Segment;
-      try {
-        segmentIncludeDoc = await this.segmentService.upsertSegment(segmentIncludeData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in updating IncludeSegment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
+  public async importExperiment(experiments: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
+    for (let experiment of experiments) {
+      const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
+      if (duplicateExperiment && experiment.id) {
+        const error = new Error('Duplicate experiment');
+        (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
       }
-
-      try {
-        segmentExcludeDoc = await this.segmentService.upsertSegment(segmentExcludeData, logger);
-      } catch (err) {
-        const error = err as ErrorWithType;
-        error.details = 'Error in updating ExcludeSegment in DB';
-        error.type = SERVER_ERROR.QUERY_FAILED;
-        logger.error(error);
-        throw error;
+      let experimentDecisionPoints = experiment.partitions;
+      // Remove the decision points which already exist
+      for (const decisionPoint of experimentDecisionPoints) {
+        const decisionPointExists = await this.decisionPointRepository.findOne(decisionPoint.id);
+        if (decisionPointExists) {
+          // provide new uuid:
+          experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
+        }
       }
 
-      experiment.experimentSegmentInclusion.segment = segmentIncludeDoc;
-      experiment.experimentSegmentExclusion.segment = segmentExcludeDoc;
-    
-    return this.create(experiment, user, logger, 'import');
+      // Generate new twoCharacterId if it is already exist for conditions
+      let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
+      experiment.conditions = experiment.conditions.map((condition) => {
+        let twoCharacterId = condition.twoCharacterId;
+        if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
+          twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+          condition.twoCharacterId = twoCharacterId;
+        }
+        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+        return condition;
+      });
+
+      // Generate new twoCharacterId if it is already exist for decision points
+      experimentDecisionPoints = experimentDecisionPoints.map((decisionPoint) => {
+        let twoCharacterId = decisionPoint.twoCharacterId;
+        if (uniqueIdentifiers.indexOf(twoCharacterId) !== -1) {
+          twoCharacterId = this.getUniqueIdentifier(uniqueIdentifiers);
+          logger.info({ message: `Generate new twoCharacterId for Decision Point =>`, details: twoCharacterId });
+          decisionPoint.twoCharacterId = twoCharacterId;
+        }
+        uniqueIdentifiers = [...uniqueIdentifiers, twoCharacterId];
+        return decisionPoint;
+      });
+    }
+    return this.addBulkExperiments(experiments, user, logger);
   }
 
-  public async exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<Experiment> {
-    logger.info({ message: `Inside export Experiment JSON ${experimentId}` });
-    const experimentDetails = await this.experimentRepository.findOne({
-      where: { id: experimentId },
+  public async exportExperiment(experimentIds: string[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
+    logger.info({ message: `Inside export Experiment JSON ${experimentIds}` });
+    const experimentDetails = await this.experimentRepository.find({
+      where: { id: In(experimentIds) },
       relations: [
         'partitions', 
         'conditions', 
@@ -495,13 +430,17 @@ export class ExperimentService {
         'partitions.conditionAliases.parentCondition'
       ],
     });
-    experimentDetails.backendVersion = env.app.version;
-    this.experimentAuditLogRepository.saveRawJson(
-      EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
-      { experimentName: experimentDetails.name },
-      user
-    );
-    return this.formatingConditionAlias(experimentDetails);
+    const formatedExperiments = experimentDetails.map(experiment => {
+      experiment.backendVersion = env.app.version;
+      this.experimentAuditLogRepository.saveRawJson(
+        EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
+        { experimentName: experiment.name },
+        user
+      );
+      return this.formatingConditionAlias(experiment);
+    }); 
+    
+    return formatedExperiments;    
   }
 
   private async updateExperimentSchedules(
@@ -1309,111 +1248,19 @@ export class ExperimentService {
     return searchStringConcatenated;
   }
 
-  private arrayGroupBy(docsArray: any, key: string): any {
-    return docsArray.reduce((result, currentValue) => {
-      (result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
-      return result;
-    }, {});
-  }
-
-  private async addBulkExperiments(experiments: ExperimentInput[], logger: UpgradeLogger): Promise<Experiment[]> {
-    // Create data to be entered in experiments table
-    const expDocs = experiments.map((experiment) => {
-      experiment.id = experiment.id || uuid();
-      experiment.context = experiment.context.map((context) => context.toLocaleLowerCase());
-
-      // adding a experiment id to experiment conditions
-      experiment.conditions =
-        experiment.conditions &&
-        experiment.conditions.length > 0 &&
-        experiment.conditions.map((condition: ExperimentCondition) => {
-          condition.id = condition.id || uuid();
-          condition.experiment = experiment as any;
-          return condition;
-        });
-
-      // adding a experiment id to experiment decision points
-      experiment.partitions =
-        experiment.partitions &&
-        experiment.partitions.length > 0 &&
-        experiment.partitions.map((decisionPoint) => {
-          decisionPoint.experiment = experiment as any;
-          return decisionPoint;
-        });
-
-      return experiment;
-    });
-
-    // Fetch all the conditions from array of experiments and flatten it to get new conditions
-    const allConditionDocs = expDocs.map((experiment) => {
-      return experiment.conditions;
-    });
-    let conditionDocsToSave = [].concat(...allConditionDocs);
-
-    // Fetch all the decision points from array of experiments and flatten it to get new decision points
-    const allDecisionPointDocs = expDocs.map((experiment) => {
-      return experiment.partitions;
-    });
-    let decisionPointDocsToSave = [].concat(...allDecisionPointDocs);
-
-    // add unique twoCharacterIds to experiment conditions and decision points
-    let uniqueIdentifiers = await this.getAllUniqueIdentifiers(logger);
-    if (conditionDocsToSave.length) {
-      const response = this.setConditionOrPartitionIdentifiers(conditionDocsToSave, uniqueIdentifiers);
-      conditionDocsToSave = response[0];
-      uniqueIdentifiers = response[1];
-    }
-    if (decisionPointDocsToSave.length) {
-      const response = this.setConditionOrPartitionIdentifiers(decisionPointDocsToSave, uniqueIdentifiers);
-      decisionPointDocsToSave = response[0];
-      uniqueIdentifiers = response[1];
-    }
-
-    // create a transaction and add experiments, conditions & decision points
-    const createdExperiment = await getConnection().transaction(async (transactionalEntityManager) => {
-      let experimentDoc: Experiment[];
+  private async addBulkExperiments(experiments: Experiment[], currentUser:User, logger: UpgradeLogger): Promise<Experiment[]> {
+    const createdExperiments = await Promise.all(experiments.map(async exp => {
       try {
-        // Saving experiment
-        experimentDoc = await this.experimentRepository.insertBatchExps(expDocs as any, transactionalEntityManager);
+        return await this.create(exp,currentUser,logger)
       } catch (err) {
         const error = err as Error;
         error.message = `Error in creating experiment document "addBulkExperiments"`;
         logger.error(error);
         throw error;
       }
-      // saving conditions and saving decision points
-      let conditionDocs: ExperimentCondition[];
-      let decisionPointDocs: DecisionPoint[];
-      try {
-        [conditionDocs, decisionPointDocs] = await Promise.all([
-          this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
-          this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
-        ]);
+    }));
 
-        const conditionDocToReturn = this.arrayGroupBy(conditionDocs, 'experimentId');
-        const decisionPointDocToReturn = this.arrayGroupBy(decisionPointDocs, 'experimentId');
-
-        const experimentsToReturn = experimentDoc.map((experiment) => {
-          const conditions = conditionDocToReturn[experiment.id].map((conditionDoc) => {
-            const { experimentId, ...rest } = conditionDoc as any;
-            return rest;
-          });
-          const decisionPoints = decisionPointDocToReturn[experiment.id].map((decisionPointDoc) => {
-            const { experimentId, ...rest } = decisionPointDoc as any;
-            return rest;
-          });
-          return { ...experiment, conditions, partitions: decisionPoints };
-        });
-        return experimentsToReturn;
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating conditions and decision points "addBulkExperiments"`;
-        logger.error(error);
-        throw error;
-      }
-    });
-
-    return createdExperiment;
+    return createdExperiments;
   }
 
   public formatingConditionAlias(experiment: Experiment): any {

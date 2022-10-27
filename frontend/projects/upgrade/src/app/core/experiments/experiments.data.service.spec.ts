@@ -150,9 +150,9 @@ describe('ExperimentDataService', () => {
             const mockUrl = mockEnvironment.api.importExperiment;
             const experiment = { ...mockExperiment };
 
-            service.importExperiment(experiment);
+            service.importExperiment([experiment]);
 
-            expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, { ...experiment });
+            expect(mockHttpClient.post).toHaveBeenCalledWith(mockUrl, [{ ...experiment }]);
         })
     })
 
@@ -243,11 +243,11 @@ describe('ExperimentDataService', () => {
     describe('#exportExperimentDesign', () => {
         it('should get the exportExperimentDesign http observable', () => {
             const experimentId = mockExperimentId;
-            const expectedUrl = `${mockEnvironment.api.exportExperiment}/${experimentId}`;
+            const expectedUrl = `${mockEnvironment.api.exportExperiment}`;
 
-            service.exportExperimentDesign(experimentId);
+            service.exportExperimentDesign([experimentId]);
 
-            expect(mockHttpClient.get).toHaveBeenCalledWith(expectedUrl);
+            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, [experimentId]);
         })
     })
 

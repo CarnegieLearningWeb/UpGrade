@@ -119,12 +119,6 @@ export class ExperimentService {
     );
   }
 
-  importExperiment(experiment: Experiment) {
-    this.store$.dispatch(
-      experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.IMPORT_EXPERIMENT })
-    );
-  }
-
   updateExperiment(experiment: ExperimentVM) {
     delete experiment.stat;
     this.store$.dispatch(
@@ -191,8 +185,14 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionExportExperimentInfo({ experimentId, experimentName }));
   }
 
-  exportExperimentDesign(experimentId: string) {
-    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentId }));
+  exportExperimentDesign(experimentIds: string[]) {
+    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds }));
+  }
+
+  importExperiment(experiments: Experiment[]) {
+    this.store$.dispatch(
+      experimentAction.actionImportExperiment({ experiments })
+    );
   }
 
   setGraphRange(range: DATE_RANGE, experimentId: string, clientOffset: number) {

@@ -34,6 +34,7 @@ import { interval } from 'rxjs';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ENV, Environment } from '../../../../environments/environment-types';
+import JSZip from 'jszip';
 
 @Injectable()
 export class ExperimentEffects {
@@ -139,7 +140,7 @@ export class ExperimentEffects {
           actionType === UpsertExperimentType.CREATE_NEW_EXPERIMENT
             ? this.experimentDataService.createNewExperiment(experiment)
             : actionType === UpsertExperimentType.IMPORT_EXPERIMENT
-            ? this.experimentDataService.importExperiment(experiment)
+            ? this.experimentDataService.importExperiment([])
             : this.experimentDataService.updateExperiment(experiment);
         return experimentMethod.pipe(
           switchMap((data: Experiment) => this.experimentDataService.getAllExperimentsStats([data.id]).pipe(
@@ -440,15 +441,46 @@ export class ExperimentEffects {
     )
   );
 
+  importExperiment$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(experimentAction.actionImportExperiment),
+      map(action => ({ experiments: action.experiments })),
+      filter(( {experiments} ) => !!experiments),
+      switchMap(({ experiments }) =>
+        this.experimentDataService.importExperiment(experiments).pipe(
+          switchMap((data: Experiment[]) => {
+            const experimentIds = data.map(exp => exp.id);
+            return [
+              experimentAction.actionImportExperimentSuccess(),
+              experimentAction.actionGetExperimentsSuccess({ experiments: data, totalExperiments: data.length }),
+              experimentAction.actionFetchExperimentStats({ experimentIds })
+            ];
+          }),
+          catchError(() => [experimentAction.actionImportExperimentFailure()])
+        )
+      )
+    )
+  );
+
   exportExperimentDesign$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentAction.actionExportExperimentDesign),
-      map(action => ({ experimentId: action.experimentId })),
-      filter(( {experimentId} ) => !!experimentId),
-      switchMap(({ experimentId }) =>
-        this.experimentDataService.exportExperimentDesign(experimentId).pipe(
-          map((data: any) => {
-            this.download(data.name+'.json', data);
+      map(action => ({ experimentIds: action.experimentIds })),
+      filter(( {experimentIds} ) => !!experimentIds),
+      switchMap(({ experimentIds }) =>
+        this.experimentDataService.exportExperimentDesign(experimentIds).pipe(
+          map((data: Experiment[]) => {
+            if (data.length > 1) {
+              var zip = new JSZip();
+              data.forEach((experiment,index) => {
+                zip.file(experiment.name+' (File '+ (index+1) +').json', JSON.stringify(experiment));
+              });
+              zip.generateAsync({type:"base64"}).then((content) => {
+                this.download('Experiments.zip', content, true)
+            });
+            } else {
+              this.download(data[0].name+'.json', data[0], false);
+            }
             return experimentAction.actionExportExperimentDesignSuccess();
           }),
           catchError(() => [experimentAction.actionExportExperimentDesignFailure()])
@@ -457,9 +489,11 @@ export class ExperimentEffects {
     )
   );
 
-  private download(filename, text) {
+  private download(filename, text, isZip: boolean) {
     var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
+    isZip
+      ? element.setAttribute('href', 'data:application/zip;base64,' + text)
+      : element.setAttribute('href', 'data:text/plain;charset=utf-8,' + JSON.stringify(text));
     element.setAttribute('download', filename);
     element.style.display = 'none';
     document.body.appendChild(element);
