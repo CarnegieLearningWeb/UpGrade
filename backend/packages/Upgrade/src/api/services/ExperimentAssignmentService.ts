@@ -267,7 +267,7 @@ export class ExperimentAssignmentService {
         },
       });
 
-      if (experimentDecisionPoint.length) {
+      if (experimentDecisionPoint.length && experimentId !== '') {
         let selectedExperimentDP = experimentDecisionPoint.filter( dp => dp.experiment.id === experimentId);
         const decisionPointId = selectedExperimentDP[0].id;
         let experiment = selectedExperimentDP[0].experiment;
