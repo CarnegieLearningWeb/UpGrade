@@ -1,4 +1,4 @@
-import { getExperiment, getRevertToExperiment, getSecondExperiment, getThirdExperiment, getFourthExperiment, getFifthExperiment} from './raw';
+import { getExperiment, getRevertToExperiment, getSecondExperiment, getThirdExperiment, getFourthExperiment, getFifthExperiment, getSixthExperiment} from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
@@ -186,4 +186,18 @@ export const decimalWeightExperiment = {
 
 export const aliasConditionExperiment = {
   ...getFifthExperiment(),
+};
+
+export const competingExperimentAssignmentExperiment1 = {
+  ...getSecondExperiment(),
+};
+
+export const competingExperimentAssignmentExperiment2 = {
+  ...getThirdExperiment(),
+  state: EXPERIMENT_STATE.ENROLLING,
+};
+
+export const competingExperimentAssignmentExperiment3 = {
+  ...getSixthExperiment(),
+  state: EXPERIMENT_STATE.ENROLLING,
 };

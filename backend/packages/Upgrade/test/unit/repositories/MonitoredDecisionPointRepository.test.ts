@@ -55,7 +55,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
         insertMock.expects('into').once().returns(insertQueryBuilder);
         insertMock.expects('values').once().returns(insertQueryBuilder);
         insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').once().returns(insertQueryBuilder);
+        insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
         insertMock.expects('returning').once().returns(insertQueryBuilder);
         insertMock.expects('execute').once().returns(Promise.resolve(result));
 
@@ -83,7 +83,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
         insertMock.expects('into').once().returns(insertQueryBuilder);
         insertMock.expects('values').once().returns(insertQueryBuilder);
         insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').once().returns(insertQueryBuilder);
+        insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
         insertMock.expects('returning').once().returns(insertQueryBuilder);
         insertMock.expects('execute').once().returns(Promise.resolve(result));
 
@@ -104,7 +104,7 @@ describe('MonitoredDecisionPointRepository Testing', () => {
         insertMock.expects('into').once().returns(insertQueryBuilder);
         insertMock.expects('values').once().returns(insertQueryBuilder);
         insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').once().returns(insertQueryBuilder);
+        insertMock.expects('setParameter').twice().returns(insertQueryBuilder);
         insertMock.expects('returning').once().returns(insertQueryBuilder);
         insertMock.expects('execute').once().returns(Promise.reject(err));
 

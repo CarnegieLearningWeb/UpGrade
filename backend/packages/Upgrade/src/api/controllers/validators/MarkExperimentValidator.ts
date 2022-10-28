@@ -16,5 +16,7 @@ export class MarkExperimentValidator {
   @IsDefined()
   public condition: string | null;
 
+  public experimentId: string | null;
+
   public status?: MARKED_DECISION_POINT_STATUS;
 }

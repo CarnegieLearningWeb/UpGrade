@@ -13,7 +13,7 @@ import uuid from 'uuid/v4';
 import { ExperimentConditionRepository } from '../repositories/ExperimentConditionRepository';
 import { DecisionPointRepository } from '../repositories/DecisionPointRepository';
 import { ExperimentCondition } from '../models/ExperimentCondition';
-import { DecisionPoint, getExperimentPartitionID } from '../models/DecisionPoint';
+import { DecisionPoint } from '../models/DecisionPoint';
 import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
@@ -370,22 +370,13 @@ export class ExperimentService {
       throw error;
     }
     let experimentDecisionPoints = experiment.partitions;
-
     // Remove the decision points which already exist
     for (const decisionPoint of experimentDecisionPoints) {
       const decisionPointExists = await this.decisionPointRepository.findOne(decisionPoint.id);
       if (decisionPointExists) {
-        if (experimentDecisionPoints.indexOf(decisionPoint) >= 0) {
-          experimentDecisionPoints.splice(experimentDecisionPoints.indexOf(decisionPoint), 1);
-        }
+        // provide new uuid:
+        experimentDecisionPoints[experimentDecisionPoints.indexOf(decisionPoint)].id = uuid();
       }
-    }
-
-    if (experimentDecisionPoints.length === 0) {
-      const error = new Error('Duplicate Decision Point');
-      (error as any).type = SERVER_ERROR.QUERY_FAILED;
-      logger.error(error);
-      throw error;
     }
 
     // Generate new twoCharacterId if it is already exist for conditions
@@ -526,6 +517,14 @@ export class ExperimentService {
     }
   }
 
+  private async getValidMoniteredDecisionPoints( excludeIfReachedDecisionPoints ) {
+    return await this.monitoredDecisionPointRepository.find({
+      relations: ['user'],
+      where: { site: In(excludeIfReachedDecisionPoints.map((x) => x.site)),
+              target: In(excludeIfReachedDecisionPoints.map((x) => x.target))},
+    });
+  }
+
   private async populateExclusionTable(
     experimentId: string,
     state: EXPERIMENT_STATE,
@@ -538,35 +537,22 @@ export class ExperimentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const subExperiments = experiment.partitions.filter((partition) => {
+    const excludeIfReachedDecisionPoints = experiment.partitions.filter((partition) => {
       return partition.excludeIfReached;
-    }).map(({ id }) => {
-      return id;
+    }).map(({ site, target }) => {
+      return { site:site, target:target };
     });
-
     // get all preview usersData
     const previewUsers = await this.previewUserService.find(logger);
 
     // query all monitored experiment point for this experiment Id
     let monitoredDecisionPoints: MonitoredDecisionPoint[] = [];
     if (state === EXPERIMENT_STATE.ENROLLING) {
-      monitoredDecisionPoints = await this.monitoredDecisionPointRepository.find({
-        relations: ['user'],
-        where: { decisionPoint: In(subExperiments) },
-      });
+      monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
     } else if (state === EXPERIMENT_STATE.PREVIEW) {
       const previewUsersIds = previewUsers.map((user) => user.id);
-
       if (previewUsersIds.length > 0) {
-        const monitoredPointsToSearch = previewUsersIds.reduce((acc, userId) => {
-          const monitoredIds = subExperiments.map((id) => {
-            return `${id}_${userId}`;
-          });
-          return [...acc, ...monitoredIds];
-        }, []);
-        monitoredDecisionPoints = await this.monitoredDecisionPointRepository.findByIds(monitoredPointsToSearch, {
-          relations: ['user'],
-        });
+        monitoredDecisionPoints = await this.getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints);
       }
     }
 
@@ -778,25 +764,27 @@ export class ExperimentService {
           [];
 
         // creating decision point docs
+        let promiseArray = []
         const decisionPointDocToSave =
           (decisionPoints &&
             decisionPoints.length > 0 &&
-            decisionPoints.map((decisionPoint) => {
+            decisionPoints.map((decisionPoint: any) => {
+              promiseArray.push(this.decisionPointRepository.findOne({
+                where: {
+                  site: decisionPoint.site,
+                  target: decisionPoint.target,
+                }
+              }));
               // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
-              const joinedForId = getExperimentPartitionID(rest.site, rest.target);
-              if (rest.id && rest.id === joinedForId) {
-                rest.id = rest.id;
-              } else {
-                rest.id = getExperimentPartitionID(rest.site, rest.target);
-              }
               rest.experiment = experimentDoc;
+              rest.id = rest.id || uuid();
               return rest;
             })) ||
           [];
 
         // creating queries docs
-        const promiseArray = [];
+        promiseArray = [];
         let queriesDocToSave =
           (queries[0] &&
             queries.length > 0 &&
@@ -876,7 +864,7 @@ export class ExperimentService {
             ) as any,
             Promise.all(
               decisionPointDocToSave.map(async (decisionPointDoc) => {
-                return this.decisionPointRepository.upsertDecisionPoint(decisionPointDoc, transactionalEntityManager);
+                return this.decisionPointRepository.upsertDecisionPoint(await decisionPointDoc, transactionalEntityManager);
               })
             ) as any,
             Promise.all(
@@ -1157,10 +1145,23 @@ export class ExperimentService {
         partitions &&
         partitions.length > 0 &&
         partitions.map((decisionPoint) => {
-          decisionPoint.id = getExperimentPartitionID(decisionPoint.site, decisionPoint.target);
+          decisionPoint.id = decisionPoint.id || uuid();
           decisionPoint.experiment = experimentDoc;
           return decisionPoint;
         });
+      
+      // update conditionAliases condition uuids:
+      if (conditionAliases) {
+        conditionAliases.map(conditionAlias => {
+          let condition = conditions.find((doc) => {
+            return doc.conditionCode === conditionAlias.parentCondition.conditionCode;
+          });
+          if (condition) {
+            conditionAlias.parentCondition.id = condition.id;
+          }
+        })
+      }
+        
       const conditionAliasDocsToSave = 
         (conditionAliases &&
         conditionAliases.length > 0 &&
@@ -1336,7 +1337,6 @@ export class ExperimentService {
         experiment.partitions &&
         experiment.partitions.length > 0 &&
         experiment.partitions.map((decisionPoint) => {
-          decisionPoint.id = getExperimentPartitionID(decisionPoint.site, decisionPoint.target);
           decisionPoint.experiment = experiment as any;
           return decisionPoint;
         });
@@ -1416,7 +1416,7 @@ export class ExperimentService {
     return createdExperiment;
   }
 
-  private formatingConditionAlias(experiment: Experiment): any {
+  public formatingConditionAlias(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
   
     let conditionAlias: ConditionAlias[] = [];

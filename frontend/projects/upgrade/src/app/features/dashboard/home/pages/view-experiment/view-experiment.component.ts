@@ -61,6 +61,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[]=[];
+  tabIndex: Number  = 0;
 
   constructor(
     private experimentService: ExperimentService,
@@ -99,11 +100,18 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         this.loadMetrics(experiment);
       })
 
-      if (this.experiment) {
+      if(this.experiment) {
         this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
         this.experimentService.groupSatisfied$(this.experiment.id).subscribe(data => this.experiment.groupSatisfied = data);
       }
-        
+
+      if(this.experiment){
+        if(this.experiment.state===this.ExperimentState.ENROLLING){
+          this.tabIndex=1;
+        }else{
+          this.tabIndex=0;
+        }
+      }
   }
   
   onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
@@ -112,6 +120,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experimentService.toggleDetailsPolling(experiment, isPolling);
     } else {
       this.experimentService.fetchExperimentDetailStat(experiment.id);
+    }
+
+    if(this.experiment){
+      if(this.experiment.state===this.ExperimentState.ENROLLING){
+        this.tabIndex=1;
+      }else{
+        this.tabIndex=0;
+      }
     }
   }
 
@@ -155,7 +171,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   loadMetrics(experiment: ExperimentVM){ 
     if (this.experiment) {
       this.displayMetrics=[];
-      console.log(this.experiment.queries);
       this.experiment.queries.forEach((query, queryIndex) => {
         let key;
         if (query.metric.key) {

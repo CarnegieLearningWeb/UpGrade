@@ -9,7 +9,7 @@ import * as settingsActions from '../../settings/store/settings.actions';
 import { tap, map, filter, withLatestFrom, catchError, switchMap } from 'rxjs/operators';
 import { AppState } from '../../core.module';
 import { Store, select, Action } from '@ngrx/store';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { selectRedirectUrl } from './auth.selectors';
 import { AuthDataService } from '../auth.data.service';
 import { AuthService } from '../auth.service';
@@ -146,10 +146,21 @@ export class AuthEffects {
       tap((res: User) => {
         this.hasUserClickedLogin = false;
         this.store$.dispatch(authActions.actionLoginSuccess());
-        this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
+        this.deferSetUserInfoAfterNavigateEnd(res, token);
       }),
       catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
     ).subscribe();
+  }
+
+  // wait after google auth login navs back to app on success to dispatch data fetches
+  deferSetUserInfoAfterNavigateEnd = (res: User, token: string) => {
+    let hasFired = false;
+    this.router.events.pipe().subscribe(event => {
+      if (!hasFired && event instanceof NavigationEnd) {
+        hasFired = true;
+        this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
+      }
+    });
   }
 
   setUserInfoInStore$ = createEffect(
@@ -169,6 +180,7 @@ export class AuthEffects {
           ];
           // Set theme from local storage if exist
           this.settingsService.setLocalStorageTheme();
+          
           if (user.role) {
             return this.setUserSettingsWithRole(user, actions);
           } else {

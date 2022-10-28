@@ -71,8 +71,8 @@ describe('ExperimentService', () => {
         state: EXPERIMENT_STATE.INACTIVE,
         context: [],
         startOn: 'test',
-        consistencyRule: CONSISTENCY_RULE.EXPERIMENT,
-        assignmentUnit: ASSIGNMENT_UNIT.GROUP,
+        consistencyRule: CONSISTENCY_RULE.INDIVIDUAL,
+        assignmentUnit: ASSIGNMENT_UNIT.INDIVIDUAL,
         postExperimentRule: POST_EXPERIMENT_RULE.ASSIGN,
         enrollmentCompleteCondition: {
             userCount: 1,

@@ -15,6 +15,7 @@ import {
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
   IExperimentSortParams,
+  EXPERIMENT_TYPE
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -139,4 +140,11 @@ export class Experiment extends BaseModel {
   
   @Column({ default: '1.0.0' })
   public backendVersion: string;
+
+  @Column({ 
+  type: 'enum',
+  enum: EXPERIMENT_TYPE,
+  default: EXPERIMENT_TYPE.SIMPLE, 
+  })
+  public type: string;
 }

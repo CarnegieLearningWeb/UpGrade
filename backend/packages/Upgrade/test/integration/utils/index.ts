@@ -15,14 +15,14 @@ import { ExperimentUserService } from '../../../src/api/services/ExperimentUserS
 
 export function checkExperimentAssignedIsNull(
   experimentConditionAssignments: any,
-  experimentName: string,
-  experimentPoint: string
+  target: string,
+  site: string
 ): void {
   expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        expId: experimentName,
-        expPoint: experimentPoint,
+        expId: target,
+        expPoint: site,
       }),
     ])
   );
@@ -30,12 +30,12 @@ export function checkExperimentAssignedIsNull(
 
 export function checkExperimentAssignedIsNotDefault(
   experimentConditionAssignments: INewExperimentAssignment[],
-  experimentName: string,
-  experimentPoint: string
+  target: string,
+  site: string
 ): void {
   // get object with name and point
   const experimentObject = experimentConditionAssignments.find((experiment) => {
-    return experiment.target === experimentName && experiment.site === experimentPoint;
+    return experiment.target === target && experiment.site === site;
   });
   expect(experimentObject.assignedCondition.conditionCode).not.toEqual('default');
 }
@@ -43,17 +43,16 @@ export function checkExperimentAssignedIsNotDefault(
 export function checkMarkExperimentPointForUser(
   markedDecisionPoint: MonitoredDecisionPoint[],
   userId: string,
-  experimentName: string,
-  experimentPoint: string,
+  target: string,
+  site: string,
   markExperimentPointLogLength?: number,
 ): void {
-  const experimentId = experimentName ? `${experimentName}_${experimentPoint}` : experimentPoint;
   if (!markExperimentPointLogLength) {
     expect(markedDecisionPoint).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: `${experimentId}_${userId}`,
-          decisionPoint: experimentId,
+          site: site,
+          target: target,
           user: expect.objectContaining({
             id: userId,
           }),
@@ -64,8 +63,7 @@ export function checkMarkExperimentPointForUser(
     expect(markedDecisionPoint).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: `${experimentId}_${userId}`,
-          experimentId,
+          site: site,
           user: expect.objectContaining({
             id: userId,
           }),
@@ -74,7 +72,7 @@ export function checkMarkExperimentPointForUser(
     );
 
     const monitorDocument = markedDecisionPoint.find((markedPoint) => {
-      return markedPoint.id === `${experimentId}_${userId}` && experimentId === experimentId;
+      return markedPoint.site === site && markedPoint.target === target && markedPoint.user.id === userId;
     });
 
     expect(monitorDocument.monitoredPointLogs.length).toEqual(markExperimentPointLogLength);
@@ -99,10 +97,11 @@ export async function getAllExperimentCondition(
 
 export async function markExperimentPoint(
   userId: string,
-  experimentName: string,
-  experimentPoint: string,
+  target: string,
+  site: string,
   condition: string | null,
-  logger: UpgradeLogger
+  logger: UpgradeLogger,
+  experimentId?: string
 ): Promise<MonitoredDecisionPoint[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
@@ -112,11 +111,12 @@ export async function markExperimentPoint(
   // mark experiment point
   await experimentAssignmentService.markExperimentPoint(
     userId,
-    experimentPoint,
+    site,
     MARKED_DECISION_POINT_STATUS.CONDITION_APPLIED,
     condition,
     { logger, userDoc: experimentUserDoc },
-    experimentName
+    target,
+    experimentId
   );
   return checkService.getAllMarkedExperimentPoints();
 }

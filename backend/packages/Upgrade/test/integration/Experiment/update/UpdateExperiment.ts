@@ -70,7 +70,6 @@ export default async function UpdateExperiment(): Promise<void> {
 
   editedDecisionPoints[0].target = 'T1';
   editedDecisionPoints[0].site = 'Test';
-  editedDecisionPoints[0].id = 'T1_Test';
 
   // adding new condition
   const newExperimentDoc = {
@@ -110,7 +109,7 @@ export default async function UpdateExperiment(): Promise<void> {
 
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
   // check the conditions
-  expect(updatedExperimentDoc.conditions).toEqual(
+   expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([
       ...editedConditions.map((condition) => {
         return expect.objectContaining({
@@ -140,7 +139,6 @@ export default async function UpdateExperiment(): Promise<void> {
     expect.arrayContaining([
       ...editedDecisionPoints.map((decisionPoint) => {
         return expect.objectContaining({
-          id: decisionPoint.id,
           site: decisionPoint.site,
           target: decisionPoint.target,
           description: decisionPoint.description,
@@ -159,6 +157,7 @@ export default async function UpdateExperiment(): Promise<void> {
 
   // get all experimental decision points
   const experimentDecisionPoints = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
+  console.log(experimentDecisionPoints);
   expect(experimentDecisionPoints.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // update the experiment state

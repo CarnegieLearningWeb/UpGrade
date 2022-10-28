@@ -42,6 +42,7 @@ export interface IExperimentEnrollmentDetailStats {
 export type INewExperimentAssignment = Pick<IExperimentAssignment, 'twoCharacterId' | 'description' | 'assignedCondition'> & {
   target: string;
   site: string;
+  experimentId: string;
 };
 
 export interface IExperimentAssignment {

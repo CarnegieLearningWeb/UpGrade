@@ -13,7 +13,7 @@ export class CacheService {
     } else {
       store = 'none';
     }
-    this.memoryCache = cacheManager.caching({ store, max: 100, ttl: 100 });
+    this.memoryCache = cacheManager.caching({ store, max: 100, ttl: 900 });
   }
 
   public setCache<T>(id: string, value: T): Promise<T> {
