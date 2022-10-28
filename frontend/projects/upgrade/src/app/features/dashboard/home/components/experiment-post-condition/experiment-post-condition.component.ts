@@ -5,6 +5,7 @@ import { ExperimentFormValidators } from '../../validators/experiment-form.valid
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DialogService } from '../../../../../shared/services/dialog.service';
 
 @Component({
   selector: 'home-experiment-post-condition',
@@ -16,6 +17,8 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
 
   @Input() experimentInfo: ExperimentVM;
   @Input() newExperimentData: Partial<ExperimentVM>;
+  @Input() dataChanged: false;
+  @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   postExperimentRuleForm: FormGroup;
   postExperimentRules = [
@@ -27,7 +30,9 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   ];
   experimentSub: Subscription;
 
-  constructor(private experimentService: ExperimentService,
+  constructor(
+    private experimentService: ExperimentService,
+    private dialogService: DialogService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _formBuilder: FormBuilder) { }
 
@@ -81,19 +86,40 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   }
 
   emitEvent(eventType: NewExperimentDialogEvents) {
-    if (eventType === NewExperimentDialogEvents.CLOSE_DIALOG) {
-      this.emitExperimentDialogEvent.emit({ type: eventType });
-    } else {
-      let { postExperimentRule, revertTo } = this.postExperimentRuleForm.value;
-      if (postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
-        revertTo = null;
-      }
-      this.emitExperimentDialogEvent.emit({
-        type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
-        formData: { postExperimentRule, conditions: this.newExperimentData.conditions, revertTo: revertTo !== 'default' ? revertTo : null },
-        path: NewExperimentPaths.POST_EXPERIMENT_RULE
-      });
+    switch (eventType) {
+      case NewExperimentDialogEvents.CLOSE_DIALOG:
+        if( this.dataChanged || this.postExperimentRuleForm.dirty ){
+          this.dialogService.openConfirmDialog().afterClosed().subscribe(res=>{
+            if(res){
+              this.emitExperimentDialogEvent.emit({ type: eventType });
+            }
+          });
+        }else{
+          this.emitExperimentDialogEvent.emit({ type: eventType });
+        }
+        break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        this.checkDataChangedEvent.emit(this.postExperimentRuleForm.dirty);
+        this.saveData(eventType);
+        break;
+      case NewExperimentDialogEvents.SAVE_DATA:
+        this.saveData(eventType);
+        this.dataChanged=false;
+        this.postExperimentRuleForm.markAsPristine();
+        break;
     }
+  }
+
+  saveData(eventType){
+    let { postExperimentRule, revertTo } = this.postExperimentRuleForm.value;
+    if (postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
+      revertTo = null;
+    }
+    this.emitExperimentDialogEvent.emit({
+      type: this.experimentInfo ? NewExperimentDialogEvents.UPDATE_EXPERIMENT : eventType,
+      formData: { postExperimentRule, conditions: this.newExperimentData.conditions, revertTo: revertTo !== 'default' ? revertTo : null },
+      path: NewExperimentPaths.POST_EXPERIMENT_RULE
+    });
   }
 
   get NewExperimentDialogEvents() {

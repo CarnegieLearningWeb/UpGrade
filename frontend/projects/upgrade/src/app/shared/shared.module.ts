@@ -42,6 +42,7 @@ import { OperationPipe } from './pipes/operation.pipe';
 import { SegmentStatusPipe } from './pipes/segment-status.pipe';
 import { QueryResultComponent } from './components/query-result/query-result.component';
 import { DeleteComponent } from './components/delete/delete.component';
+import { MatConfirmDialogComponent } from './components/mat-confirm-dialog/mat-confirm-dialog.component';
 
 @NgModule({
     imports: [
@@ -85,7 +86,8 @@ import { DeleteComponent } from './components/delete/delete.component';
         OperationPipe,
         QueryResultComponent,
         DeleteComponent,
-        SegmentStatusPipe
+        SegmentStatusPipe,
+        MatConfirmDialogComponent
     ],
     exports: [
         CommonModule,
@@ -128,7 +130,8 @@ import { DeleteComponent } from './components/delete/delete.component';
         OperationPipe,
         QueryResultComponent,
         DeleteComponent,
-        SegmentStatusPipe
+        SegmentStatusPipe,
+        MatConfirmDialogComponent
     ]
 })
 export class SharedModule {}
