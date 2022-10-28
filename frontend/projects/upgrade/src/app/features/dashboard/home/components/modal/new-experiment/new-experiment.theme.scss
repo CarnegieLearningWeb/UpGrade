@@ -7,7 +7,7 @@
     .mat-horizontal-stepper-header-container {
       box-shadow: 0 8px 8px -8px mat.get-color-from-palette($background, shadow-color);
     }
-    
+
     .shared-modal--buttons-container {
       &.sticky {
         background-color: mat.get-color-from-palette($background, card);

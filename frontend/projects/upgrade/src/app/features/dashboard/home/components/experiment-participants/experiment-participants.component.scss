@@ -82,7 +82,6 @@
     color: var(--blue);
   }
 
-
   .property-container {
     .inclusion-criteria {
       width: 30%;
@@ -94,11 +93,10 @@
     }
   }
 
-
   ::ng-deep .mat-form-field-label {
     color: var(--grey-6);
   }
-  
+
   ::ng-deep .form-control .mat-form-field-underline {
     bottom: unset;
     background-color: unset !important;
