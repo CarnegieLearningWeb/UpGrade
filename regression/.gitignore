@@ -1,0 +1,7 @@
+.DS_Store
+.dccache
+node_modules
+.vscode
+
+/dist
+/src/results
