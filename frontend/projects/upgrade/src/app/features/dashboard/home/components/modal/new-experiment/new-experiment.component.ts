@@ -73,6 +73,7 @@ export class NewExperimentComponent implements OnInit {
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
         this.onNoClick();
         // TODO: eslint wants a break statement here, not sure on usage
+      // eslint-disable-next-line no-fallthrough
       case NewExperimentDialogEvents.SAVE_DATA:
         this.newExperimentData = {
           ...this.experimentInfo,

@@ -207,6 +207,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
         this.overviewForm.markAllAsTouched();
+      // TODO: look into code here to see if we really need fallthrough
+      // eslint-disable-next-line no-fallthrough
       case NewExperimentDialogEvents.SAVE_DATA:
         if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
           this.emitExperimentDialogEvent.emit({

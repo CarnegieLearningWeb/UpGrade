@@ -2,7 +2,6 @@ export const environment = {
   appName: 'UpGrade',
   envName: 'bsnl',
   apiBaseUrl: 'http://new-bsnl-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api',
-  appVersion: require('../../../../package.json').version,
   production: true,
   test: false,
   i18nPrefix: '',

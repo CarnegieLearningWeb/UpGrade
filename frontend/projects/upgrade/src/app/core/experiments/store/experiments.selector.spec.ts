@@ -421,24 +421,7 @@ describe('Experiments Selectors', () => {
         },
         'graphRange': DATE_RANGE.LAST_SEVEN_DAYS,
         'isGraphInfoLoading': false,
-        'allPartitions': [
-            {
-                'expPoint': 'CurriculumSequence',
-                'expId': 'W1'
-            },
-            {
-                'expPoint': 'CurriculumSequence',
-                'expId': 'W2'
-            },
-            {
-                'expPoint': 'CurriculumSequence',
-                'expId': null
-            },
-            {
-                'expPoint': 'SelectSection',
-                'expId': 'is-it-cake'
-            }
-        ],
+        'allPartitions': {},
         'allExperimentNames': null,
         'contextMetaData': {
             contextMetadata: null

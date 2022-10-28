@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../core/settings/settings.service';
 import { AuthService } from '../../../core/auth/auth.service';
-import { environment } from '../../../../environments/environment';
 import { VersionService } from '../../../core/version/version.service';
 
 @Component({
@@ -13,8 +12,7 @@ export class DashboardRootComponent implements OnInit {
   theme$ = this.settingsService.theme$;
   isLoggedIn$ = this.authService.isLoggedIn$;
   currentUser$ = this.authService.currentUser$;
-  serverVersion: any;
-  clientVersion: string;
+  serverVersion = "";
   routeLinks = [
     {
       path: ['/home'],
@@ -51,6 +49,5 @@ export class DashboardRootComponent implements OnInit {
 
   async ngOnInit() {
     this.serverVersion = 'v' + await this.versionService.getVersion();
-    this.clientVersion = 'v' + environment.appVersion;
   }
 }

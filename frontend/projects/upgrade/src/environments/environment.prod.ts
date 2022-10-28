@@ -5,7 +5,6 @@ export const environment = {
   production: true,
   test: false,
   i18nPrefix: '',
-  appVersion: require('../../../../package.json').version,
   gapiClientId: '',
   domainName: '',
   pollingEnabled: true,

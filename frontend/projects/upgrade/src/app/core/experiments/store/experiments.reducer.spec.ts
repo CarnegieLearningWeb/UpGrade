@@ -434,7 +434,7 @@ describe('ExperimentsReducer', () => {
 
     it('action "actionFetchAllPartitionSuccess" should set partitions', () => {
         const previousState = { ...initialState };
-        previousState.allPartitions = [];
+        previousState.allPartitions = {};
 
         const testAction: Action = actionFetchAllPartitionSuccess({
             partitions: [

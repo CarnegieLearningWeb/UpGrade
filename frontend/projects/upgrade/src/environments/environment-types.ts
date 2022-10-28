@@ -50,7 +50,6 @@ export interface Environment {
     production: boolean,
     test: boolean,
     i18nPrefix: string,
-    appVersion: string,
     gapiClientId: string,
     domainName: string,
     pollingEnabled: boolean,
