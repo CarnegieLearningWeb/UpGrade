@@ -245,7 +245,7 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   openExportModal() {
     const dialogRef = this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: clonedeep(this.experiment) }
+      data: { experiment: [clonedeep(this.experiment)] }
     });
 
     dialogRef.afterClosed().subscribe(result => {

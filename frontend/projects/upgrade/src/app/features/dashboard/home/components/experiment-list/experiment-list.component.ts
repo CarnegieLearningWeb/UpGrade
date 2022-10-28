@@ -21,6 +21,7 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 import { ImportExperimentComponent } from '../modal/import-experiment/import-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
+import { ExportModalComponent } from '../modal/export-experiment/export-experiment.component';
 
 @Component({
   selector: 'home-experiment-list',
@@ -170,19 +171,18 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
       panelClass: 'new-experiment-modal',
       disableClose: true
     });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
-    });
   }
 
   openImportExperimentDialog() {
     const dialogRef = this.dialog.open(ImportExperimentComponent, {
       panelClass: 'import-experiment-modal'
     });
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
+  openExportAllExperimentsDialog() {
+    const dialogRef = this.dialog.open(ExportModalComponent, {
+      panelClass: 'export-modal',
+      data: { experiment: this.allExperiments.data }
     });
   }
 

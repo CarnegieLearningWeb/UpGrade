@@ -1269,27 +1269,12 @@ describe('ExperimentEffects', () => {
     })
 
     describe('exportExperimentDesign$', () => {
-        it('should not do anything if experimentId is falsey', fakeAsync(() => {
-            const experimentId = '';
-            let neverEmitted = true;
-
-            service.exportExperimentDesign$.subscribe(_ => {
-                neverEmitted = false;
-            })
-
-            actions$.next(actionExportExperimentDesign({ experimentId }));
-
-            tick(0);
-
-            expect(neverEmitted).toBeTruthy();
-        }))
-
         it('should dispatch actionExportExperimentDesignSuccess and call download function on success', fakeAsync(() => {
             const experimentId = 'testId';
             const data = {
                 id: 'payloadObject'
             }
-            experimentDataService.exportExperimentDesign = jest.fn().mockReturnValue(of(data));
+            experimentDataService.exportExperimentDesign = jest.fn().mockReturnValue(of([data]));
 
             const expectedAction = actionExportExperimentDesignSuccess();
 
@@ -1297,7 +1282,7 @@ describe('ExperimentEffects', () => {
                 expect(resultingAction).toEqual(expectedAction);
             });
 
-            actions$.next(actionExportExperimentDesign({ experimentId }));
+            actions$.next(actionExportExperimentDesign({ experimentIds: [experimentId] }));
 
             tick(0);
         }))
@@ -1312,7 +1297,7 @@ describe('ExperimentEffects', () => {
                 expect(resultingAction).toEqual(expectedAction);
             });
 
-            actions$.next(actionExportExperimentDesign({ experimentId }));
+            actions$.next(actionExportExperimentDesign({ experimentIds: [experimentId] }));
 
             tick(0);
         }))

@@ -18,7 +18,7 @@ export class ExportModalComponent implements OnInit {
   exportMethod = [];
   emailId: string;
   exportForm: FormGroup;
-  experiment: ExperimentVM;
+  experiments: ExperimentVM[];
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -27,7 +27,7 @@ export class ExportModalComponent implements OnInit {
     public dialogRef: MatDialogRef<ExportModalComponent>,
     @Inject(MAT_DIALOG_DATA) private data: any
     ) {
-      this.experiment = this.data.experiment;
+      this.experiments = this.data.experiment;
     }
   
   onCancelClick(): void {
@@ -75,17 +75,17 @@ export class ExportModalComponent implements OnInit {
     this.experimentService.exportExperimentInfo(experimentId, experimentName);
     this.openSnackBar(true);
   }
-  exportExperimentDesign(experimentId: string) {
-    this.experimentService.exportExperimentDesign(experimentId);
+  exportExperimentDesign(experimentIds: string[]) {
+    this.experimentService.exportExperimentDesign(experimentIds);
     this.openSnackBar(false);
   }
 
   exportExperiment() {
     const { exportMethod } = this.exportForm.value;
-    if (exportMethod == EXPORT_METHOD.DATA) {
-      this.exportExperimentInfo(this.experiment.id, this.experiment.name)
-    } else {
-      this.exportExperimentDesign(this.experiment.id)
+    if (exportMethod == EXPORT_METHOD.DATA && this.experiments[0]) {
+      this.exportExperimentInfo(this.experiments[0].id, this.experiments[0].name)
+    } else if (exportMethod == EXPORT_METHOD.DESIGN) {
+      this.exportExperimentDesign(this.experiments.map(exp => exp.id));
     }
     this.onCancelClick();
   }

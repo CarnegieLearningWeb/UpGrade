@@ -26,6 +26,15 @@
     </div>
     <div>
       <button
+        mat-flat-button
+        color="primary"
+        class="ft-14-700 export-experiments"
+        (click)="openExportAllExperimentsDialog()"
+      >
+        <mat-icon>download</mat-icon>
+        <span>{{ 'segments.export-all-segments.text' | translate }}</span>
+      </button>
+      <button
         (click)="openImportExperimentDialog()"
         mat-flat-button
         color="primary"

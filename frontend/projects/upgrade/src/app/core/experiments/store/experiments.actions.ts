@@ -142,7 +142,7 @@ export const actionExportExperimentInfo = createAction(
 
 export const actionExportExperimentDesign = createAction(
   '[Experiment] Export Experiment Design',
-  props<{ experimentId: string }>()
+  props<{ experimentIds: string[] }>()
 );
 
 export const actionExportExperimentInfoSuccess = createAction(
@@ -159,6 +159,19 @@ export const actionExportExperimentInfoFailure = createAction(
 
 export const actionExportExperimentDesignFailure = createAction(
   '[Experiment] Export Experiment Design Failure'
+);
+
+export const actionImportExperiment = createAction(
+  '[Experiment] Import Experiment',
+  props<{ experiments: Experiment[] }>()
+);
+
+export const actionImportExperimentSuccess = createAction(
+  '[Experiment] Import Experiment Success'
+);
+
+export const actionImportExperimentFailure = createAction(
+  '[Experiment] Import Experiment Failure'
 );
 
 export const actionSetIsGraphLoading = createAction(
