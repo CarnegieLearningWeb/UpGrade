@@ -49,7 +49,12 @@ export class PostExperimentRuleComponent implements OnInit {
 
     this.resetRevertToControl(this.experimentInfo.postExperimentRule);
     this.postExperimentRuleForm.get('postExperimentRule').valueChanges.subscribe(ruleValue => {
-      (ruleValue === POST_EXPERIMENT_RULE.CONTINUE) ? this.postExperimentRuleForm.get('revertTo').disable() : this.postExperimentRuleForm.get('revertTo').enable();
+      if (ruleValue === POST_EXPERIMENT_RULE.CONTINUE) { 
+        this.postExperimentRuleForm.get('revertTo').disable();
+      } else {
+        this.postExperimentRuleForm.get('revertTo').enable();
+      };
+
       this.resetRevertToControl(ruleValue);
     });
   }
@@ -62,7 +67,7 @@ export class PostExperimentRuleComponent implements OnInit {
     }
   }
 
-  validatePostExperimentRuleForm(controls: AbstractControl): { [key: string]: any } | null {
+  validatePostExperimentRuleForm(controls: AbstractControl): Record<string, any> | null {
     const postExperimentRule = controls.get('postExperimentRule').value;
     const revertTo = controls.get('revertTo').value;
     if (postExperimentRule === POST_EXPERIMENT_RULE.ASSIGN && !revertTo) {
@@ -72,7 +77,8 @@ export class PostExperimentRuleComponent implements OnInit {
   }
 
   changePostExperimentRule() {
-    let { postExperimentRule, revertTo } = this.postExperimentRuleForm.value;
+    const { postExperimentRule } = this.postExperimentRuleForm.value;
+    let { revertTo } = this.postExperimentRuleForm.value;
     if (postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
       revertTo = null;
     }

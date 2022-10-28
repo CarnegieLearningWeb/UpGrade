@@ -1,3 +1,7 @@
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable prefer-rest-params */
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable no-bitwise */
 /*
 
 The code in this file is based on Smooth Scroll behavior polyfill (https://github.com/iamdustan/smoothscroll).
@@ -29,15 +33,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 'use strict';
 
 // globals
-const w: { [key: string]: any } = window;
-const d: { [key: string]: any } = document;
+const w: Record<string, any> = window;
+const d: Record<string, any> = document;
 const isScrollBehaviorSupported: boolean = 'scrollBehavior' in d.documentElement.style;
-const element: { [key: string]: any } = w.HTMLElement || w.Element;
+const element: Record<string, any> = w.HTMLElement || w.Element;
 const DEFAULT_DURATION = 468;
 const DEFAULT_EASING_FUNCTION: (k: number) => number = (k) => 0.5 * (1 - Math.cos(Math.PI * k));
 
 // object gathering original scroll methods
-const original: { [key: string]: any } = {
+const original: Record<string, any> = {
 	scroll: w.scroll || w.scrollTo,
 	elementScroll: element.prototype.scroll || scrollElement
 };
@@ -52,7 +56,7 @@ function scrollElement(x: number, y: number): void {
 }
 
 // easing functions
-const EASING_FUNCTIONS: { [key: string]: (k: number) => number } = {
+const EASING_FUNCTIONS: Record<string, (k: number) => number> = {
 	linear: (k: number): number => k,
 	easeInQuad: (k: number): number => k * k,
 	easeOutQuad: (k: number): number => k * (2 - k),
@@ -69,7 +73,7 @@ const EASING_FUNCTIONS: { [key: string]: (k: number) => number } = {
 }
 
 // indicates if a smooth behavior should be applied
-function shouldBailOut(firstArg: { [key: string]: any }): boolean {
+function shouldBailOut(firstArg: Record<string, any>): boolean {
 	if (
 		firstArg === null ||
 		typeof firstArg !== 'object' ||
@@ -111,19 +115,16 @@ interface Context {
 // self invoked function that, given a context, steps through scrolling
 function step(context: Context): void {
 	const time: number = now();
-	let value: number; 
-	let currentX: number; 
-	let currentY: number; 
 	let elapsed: number = (time - context.startTime) / context.duration;
 
 	// avoid elapsed times higher than one
 	elapsed = elapsed > 1 ? 1 : elapsed;
 
 	// apply easing to elapsed time
-	value = context.easingFunction(elapsed);
+	const value = context.easingFunction(elapsed);
 
-	currentX = context.startX + (context.x - context.startX) * value;
-	currentY = context.startY + (context.y - context.startY) * value;
+	const currentX = context.startX + (context.x - context.startX) * value;
+	const currentY = context.startY + (context.y - context.startY) * value;
 
 	context.method.call(context.scrollable, currentX, currentY);
 
@@ -138,7 +139,7 @@ type El = HTMLElement;
 
 // scroll window or element with a smooth behavior
 function smoothScroll(el: El, x: number, y: number, duration: number, easingFunction: (k: number) => number): void {
-	let scrollable: { [key: string]: any }; 
+	let scrollable: Record<string, any>; 
 	let startX: number; 
 	let startY: number; 
 	let method: (x: number, y: number) => void;
@@ -189,7 +190,7 @@ element.prototype.scroll = element.prototype.scrollTo = function() {
 	}
 
 	// avoid smooth behavior if not required
-	if (shouldBailOut(arguments[0]) === true) {
+	if (shouldBailOut(arguments[0])) {
 		// if one number is passed, throw error to match Firefox implementation
 		if (typeof arguments[0] === 'number' && arguments[1] === undefined) {
 			throw new SyntaxError('Value could not be converted');

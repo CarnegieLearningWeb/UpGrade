@@ -29,12 +29,8 @@ export class SegmentsRootComponent implements OnInit {
   }
 
   openNewSegmentDialog() {
-    const dialogRef = this.dialog.open(NewSegmentComponent, {
+    this.dialog.open(NewSegmentComponent, {
       panelClass: 'new-segment-modal'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
     });
   }
 

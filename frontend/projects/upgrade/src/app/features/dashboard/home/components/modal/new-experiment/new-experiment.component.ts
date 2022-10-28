@@ -16,13 +16,13 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./new-experiment.component.scss'],
 })
 export class NewExperimentComponent implements OnInit {
+  @ViewChild('stepper') stepper: any;
   newExperimentData: any = {};
   selectedStepperIndex = 0;
   experimentInfo: ExperimentVM;
-  animationCompletedIndex: Number;
+  animationCompletedIndex: number;
   currentContext: string;
   isContextChanged = false;
-  @ViewChild('stepper') stepper: any;
   constructor(
     private dialogRef: MatDialogRef<NewExperimentComponent>,
     private experimentService: ExperimentService,
@@ -72,6 +72,7 @@ export class NewExperimentComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
         this.onNoClick();
+        // TODO: eslint wants a break statement here, not sure on usage
       case NewExperimentDialogEvents.SAVE_DATA:
         this.newExperimentData = {
           ...this.experimentInfo,

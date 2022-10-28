@@ -34,14 +34,14 @@ export class MockStorage {
   }
 }
 
-export const MockLocation = {
+export const mockLocation = {
   protocol: 'https:',
   port: '1234',
   hostname: 'testing.com'
 };
 
-export const MockWindow = {
-  open() { }
+export const mockWindow = {
+  open() { return; }
 };
 
 @NgModule({
@@ -157,14 +157,12 @@ export const MockWindow = {
         },
       }
     }),
-    { provide: 'LOCATION', useValue: MockLocation },
+    { provide: 'LOCATION', useValue: mockLocation },
     { provide: 'SESSION_STORAGE', useValue: new MockStorage() },
-    { provide: 'WINDOW', useValue: MockWindow },
+    { provide: 'WINDOW', useValue: mockWindow },
   ]
 })
-export class TestingModule {
-  constructor() { }
-}
+export class TestingModule {}
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http);

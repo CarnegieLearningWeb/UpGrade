@@ -106,7 +106,7 @@ describe('ExperimentUsersEffects', () => {
 
             experimentUsersDataService.excludeUser = jest.fn().mockReturnValue(of([mockEntity]));
 
-            service.excludedUser$.subscribe((result: any) => {
+            service.excludedUser$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -173,7 +173,7 @@ describe('ExperimentUsersEffects', () => {
 
             experimentUsersDataService.excludeGroup = jest.fn().mockReturnValue(of([mockEntity]));
 
-            service.excludedGroup$.subscribe((result: any) => {
+            service.excludedGroup$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -250,7 +250,7 @@ describe('ExperimentUsersEffects', () => {
 
             experimentUsersDataService.deleteExcludedUser = jest.fn().mockReturnValue(of([mockEntity]));
 
-            service.deleteExcludedUser$.subscribe((result: any) => {
+            service.deleteExcludedUser$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -317,7 +317,7 @@ describe('ExperimentUsersEffects', () => {
 
             experimentUsersDataService.deleteExcludedGroup = jest.fn().mockReturnValue(of([mockEntity]));
 
-            service.deleteExcludedGroup$.subscribe((result: any) => {
+            service.deleteExcludedGroup$.subscribe(() => {
                 neverEmitted = false;
             })
 

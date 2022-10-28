@@ -22,6 +22,8 @@ import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/fe
   styleUrls: ['./profile-info.component.scss']
 })
 export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;
+
   permissions$: Observable<UserPermission>;
   theme$ = this.settingsService.theme$;
   displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit', 'deleteUser'];
@@ -40,37 +42,16 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   toCheckAuth$ = this.settingsService.toCheckAuth$;
   toFilterMetric$ = this.settingsService.toFilterMetric$;
   userFilterOptions = [
-    { value: USER_SEARCH_SORT_KEY.ALL, viewValue: 'All'},
-    { value: USER_SEARCH_SORT_KEY.FIRST_NAME, viewValue: 'First Name'},
-    { value: USER_SEARCH_SORT_KEY.LAST_NAME, viewValue: 'Last Name'},
-    { value: USER_SEARCH_SORT_KEY.EMAIL, viewValue: 'Email'},
-    { value: USER_SEARCH_SORT_KEY.ROLE, viewValue: 'Role'},
+    { value: USER_SEARCH_SORT_KEY.ALL, viewValue: 'All' },
+    { value: USER_SEARCH_SORT_KEY.FIRST_NAME, viewValue: 'First Name' },
+    { value: USER_SEARCH_SORT_KEY.LAST_NAME, viewValue: 'Last Name' },
+    { value: USER_SEARCH_SORT_KEY.EMAIL, viewValue: 'Email' },
+    { value: USER_SEARCH_SORT_KEY.ROLE, viewValue: 'Role' },
   ];
   selectedUserFilterOption = USER_SEARCH_SORT_KEY.ALL;
-
-  @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;
-  @ViewChild('usersTable') set content(content: ElementRef) {
-    if (content) {
-      const windowHeight = window.innerHeight;
-      content.nativeElement.style.maxHeight = (windowHeight - 557) + 'px';
-    }
- }
- // Used to prevent execution of searchInput setter multiple times
- isSearchInputRefSet = false;
- @ViewChild('searchInput') set searchInput(searchInput: ElementRef) {
-   if (searchInput && !this.isSearchInputRefSet) {
-    this.isSearchInputRefSet = true;
-    fromEvent(searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(input => {
-      this.setSearchString((input as any).target.value);
-    });
-   }
- }
-
-  private sort: MatSort;
-  @ViewChild(MatSort) set matSort(ms: MatSort) {
-    this.sort = ms;
-    this.allUsers.sort = this.sort;
-  }
+  // Used to prevent execution of searchInput setter multiple times
+  isSearchInputRefSet = false;
+  sort: MatSort;
 
   constructor(
     private usersService: UsersService,
@@ -78,7 +59,36 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private _matDialog: MatDialog,
     private settingsService: SettingsService
-  ) {}
+  ) { }
+
+  get UserRole() {
+    return UserRole;
+  }
+
+  get ThemeOptions() {
+    return ThemeOptions;
+  }
+
+  @ViewChild('usersTable') set content(content: ElementRef) {
+    if (content) {
+      const windowHeight = window.innerHeight;
+      content.nativeElement.style.maxHeight = (windowHeight - 557) + 'px';
+    }
+  }
+
+  @ViewChild('searchInput') set searchInput(searchInput: ElementRef) {
+    if (searchInput && !this.isSearchInputRefSet) {
+      this.isSearchInputRefSet = true;
+      fromEvent(searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(input => {
+        this.setSearchString((input as any).target.value);
+      });
+    }
+  }
+
+  @ViewChild(MatSort) set matSort(ms: MatSort) {
+    this.sort = ms;
+    this.allUsers.sort = this.sort;
+  }
 
   ngOnInit() {
     this.usersService.fetchUsers(true);
@@ -164,7 +174,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openNewUserModal() {
-    const dialogRef = this._matDialog.open(NewUserComponent, {
+    this._matDialog.open(NewUserComponent, {
       panelClass: 'new-user-modal',
       disableClose: false,
       data: { users: this.allUsers.data }
@@ -229,14 +239,6 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.usersService.setSearchKey(USER_SEARCH_SORT_KEY.ALL);
     this.usersService.setSortKey(null);
     this.usersService.setSortingType(null);
-  }
-
-  get UserRole() {
-    return UserRole;
-  }
-
-  get ThemeOptions() {
-    return ThemeOptions;
   }
 
   ngAfterViewInit() {

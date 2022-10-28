@@ -37,12 +37,12 @@ export interface experimentSegmentInclusionExclusionData {
   versionNumber: number;
   experiment: {
     name: string;
-    context: Array<any>;
+    context: any[];
     state: string;
   };
   segment: {
     id: string;
-    subSegments: Array<any>;
+    subSegments: any[];
   };
 }
 

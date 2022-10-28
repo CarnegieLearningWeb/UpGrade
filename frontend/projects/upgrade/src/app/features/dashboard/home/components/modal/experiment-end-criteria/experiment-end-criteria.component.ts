@@ -26,6 +26,14 @@ export class ExperimentEndCriteriaComponent implements OnInit {
     this.experiment = this.data.experiment;
   }
 
+  get EndExperimentCondition() {
+    return EndExperimentCondition;
+  }
+
+  get groupTypeValue(): boolean {
+    return this.experimentEndForm && this.experimentEndForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
+  }
+
   ngOnInit() {
     this.experimentEndForm = this._formBuilder.group({
       endExperimentAutomatically: [null],
@@ -145,13 +153,5 @@ export class ExperimentEndCriteriaComponent implements OnInit {
       this.experimentService.updateExperiment(this.experiment);
       this.onCancelClick();
     }
-  }
-
-  get EndExperimentCondition() {
-    return EndExperimentCondition;
-  }
-
-  get groupTypeValue(): boolean {
-    return this.experimentEndForm && this.experimentEndForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
   }
 }

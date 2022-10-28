@@ -17,6 +17,8 @@ import { DeleteMetricsComponent } from '../modals/delete-metrics/delete-metrics.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('metricsTable') metricsTable: ElementRef;
+
   permissions: UserPermission;
   permissionSub: Subscription;
 
@@ -35,8 +37,6 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
   insertNodeIndex = 0;
 
   selectedMetricIndex = null;
-
-  @ViewChild('metricsTable') metricsTable: ElementRef;
 
   constructor(
     private analysisService: AnalysisService,
@@ -62,7 +62,6 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  private _getChildren = (node: MetricUnit) => of(node.children);
   hasNestedChild = (_: number, nodeData: MetricUnit) => nodeData.children.length > 0;
 
   createTree(metrics: MetricUnit[]): void {
@@ -92,13 +91,9 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     const key = this.analysisService.findParents(data, nodeToBeDeleted.id);
     this.selectedMetricIndex = null;
-    const dialogRef = this.dialog.open(DeleteMetricsComponent, {
+    this.dialog.open(DeleteMetricsComponent, {
       panelClass: 'delete-modal',
       data: { key }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after deleting metric
     });
   }
 
@@ -128,4 +123,6 @@ export class MetricsComponent implements OnInit, OnDestroy, AfterViewInit {
     this.allMetricsSub.unsubscribe();
     this.permissionSub.unsubscribe();
   }
+
+  private _getChildren = (node: MetricUnit) => of(node.children);
 }

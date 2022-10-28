@@ -6,7 +6,6 @@ import * as UsersActions from './store/users.actions';
 import { UserRole, USER_SEARCH_SORT_KEY, SORT_AS } from './store/users.model';
 import { combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { FLAG_SEARCH_SORT_KEY } from '../feature-flags/store/feature-flags.model';
 
 @Injectable()
 export class UsersService {

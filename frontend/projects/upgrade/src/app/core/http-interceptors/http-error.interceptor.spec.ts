@@ -107,9 +107,6 @@ describe('HttpErrorInterceptor', () => {
         }))
 
         it('should NOT logout or open popup if no error', fakeAsync(() => {
-            const mockError = {
-                status: 400
-            }
             const mockRequest: any = {};
             const mockNextHandler = {
                 handle: jest.fn().mockReturnValue(of(null))

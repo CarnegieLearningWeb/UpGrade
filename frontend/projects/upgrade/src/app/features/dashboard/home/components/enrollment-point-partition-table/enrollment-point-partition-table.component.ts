@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnChanges, Input, SimpleChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, Input } from '@angular/core';
 import { ExperimentVM, ASSIGNMENT_UNIT } from '../../../../../core/experiments/store/experiments.model';
 
 
@@ -21,7 +21,7 @@ export class EnrollmentPointPartitionTableComponent implements OnChanges {
   ];
   displayedColumns: string[] = [];
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges() {
     if (this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
       this.displayedColumns = this.commonColumns;
     } else {

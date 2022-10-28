@@ -15,7 +15,7 @@ import { selectQueryResult } from './analysis.selectors';
     beforeEach(() => {
         actions$ = new ActionsSubject();
         store$ = new BehaviorSubject({});
-        (store$ as any).dispatch = jest.fn();
+        (store$ ).dispatch = jest.fn();
         analysisDataService = {};
 
         service = new AnalysisEffects(actions$, store$, analysisDataService);
@@ -60,7 +60,7 @@ import { selectQueryResult } from './analysis.selectors';
         it('should do nothing if metrics undefined', fakeAsync(() => {
             let neverEmitted = true;
 
-            service.upsertMetrics$.subscribe((result: any) => {
+            service.upsertMetrics$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -115,7 +115,7 @@ import { selectQueryResult } from './analysis.selectors';
         it('should do nothing if key undefined', fakeAsync(() => {
             let neverEmitted = true;
 
-            service.deleteMetrics$.subscribe((result: any) => {
+            service.deleteMetrics$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -162,12 +162,6 @@ import { selectQueryResult } from './analysis.selectors';
 
         it('should dispatch actionDeleteMetricFailure on error', fakeAsync(() => {
             const key = 'test';
-            const metrics = {
-                metricUnit: [{
-                    key: 'totalTimeSeconds',
-                    children: []
-                }]
-            }
 
             analysisDataService.deleteMetric = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
@@ -188,7 +182,7 @@ import { selectQueryResult } from './analysis.selectors';
             let neverEmitted = true;
             selectQueryResult.setResult({});
 
-            service.executeQuery$.subscribe((result: any) => {
+            service.executeQuery$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -283,12 +277,7 @@ import { selectQueryResult } from './analysis.selectors';
                 'xyz1789'
             ];
             const previousQueryResult = null;
-            const currentQueryResult = [
-                { id: 'xyz1789' }
-            ];
-            const mergedResult = [
-                { id: 'xyz1789' }
-            ];
+
             selectQueryResult.setResult(previousQueryResult);
 
             analysisDataService.executeQuery = jest.fn().mockReturnValue(throwError(() => new Error('test')));

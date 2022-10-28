@@ -29,14 +29,12 @@ export class ImportSegmentComponent {
   }
 
   importSegment() {
-    // TODO: improve the logic here 
-    const { individualForSegment, groupForSegment, subSegments, ...rest } = this.segmentInfo;
-  
+    // TODO: improve the logic here   
     const userIds = this.segmentInfo.individualForSegment.map((individual) => individual.userId);
     const subSegmentIds = this.segmentInfo.subSegments.map((subSegment) => subSegment.id);
     const groups = this.segmentInfo.groupForSegment.map((group) => ({ type: group.type, groupId: group.groupId } ));
     
-    this.segmentTemp = {...rest, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups};
+    this.segmentTemp = {...this.segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups};
     this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
     if (this.isSegmentJSONValid) {
       this.segmentsService.importSegment({ ...this.segmentTemp });

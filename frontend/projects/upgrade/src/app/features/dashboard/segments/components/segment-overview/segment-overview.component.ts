@@ -20,7 +20,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
   allContexts = [];
   currentContext = null;
 
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
 
   constructor(
@@ -28,12 +28,16 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
     private experimentService: ExperimentService
     ) {}
 
+  get NewSegmentDialogEvents() {
+    return NewSegmentDialogEvents;
+  }
+
   ngOnInit() {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
       this.contextMetaData = contextMetaData;
 
-      if (this.contextMetaData && this.contextMetaData['contextMetadata']) {
-        this.allContexts = Object.keys(this.contextMetaData['contextMetadata']);
+      if (this.contextMetaData && this.contextMetaData.contextMetadata) {
+        this.allContexts = Object.keys(this.contextMetaData.contextMetadata);
       }
     });
 
@@ -83,10 +87,6 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
         }
       break;
     }
-  }
-
-  get NewSegmentDialogEvents() {
-    return NewSegmentDialogEvents;
   }
 
   ngOnDestroy() {

@@ -7,11 +7,6 @@ import { Segment, MemberTypes  } from '../../../../../core/segments/store/segmen
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
-
-interface ParticipantMember {
-  id: string;
-  type: string;
-}
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -22,7 +17,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
-  @Input() animationCompleteStepperIndex: Number;
+  @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
@@ -36,7 +31,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   membersDisplayedColumns = [ 'type', 'id', 'removeMember' ];
 
   enableSave = true;
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
   allSegmentsSub: Subscription;
@@ -199,8 +194,8 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.subSegmentTypes = [];
     this.subSegmentTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
     this.subSegmentTypes.push({'name': MemberTypes.SEGMENT, 'value': MemberTypes.SEGMENT});
-    if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
+    if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
+      this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach(type => {
         this.subSegmentTypes.push({'name': type + this.groupString, 'value': type});
       });
     }
@@ -229,46 +224,48 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        this.participantsForm.markAllAsTouched();
-        this.participantsForm2.markAllAsTouched();
+        {
+          this.participantsForm.markAllAsTouched();
+          this.participantsForm2.markAllAsTouched();
 
-        const filterMode = this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
-          ? FILTER_MODE.EXCLUDE_ALL
-          : FILTER_MODE.INCLUDE_ALL;
+          const filterMode = this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
+            ? FILTER_MODE.EXCLUDE_ALL
+            : FILTER_MODE.INCLUDE_ALL;
 
-        if (filterMode === FILTER_MODE.INCLUDE_ALL) {
-          this.members2.clear();
-        }
-
-        const { members1 } = this.participantsForm.value;
-        const { members2 } = this.participantsForm2.value;
-
-        // TODO: Handle member2:
-        if (this.participantsForm.valid && this.participantsForm2.valid) {
-          this.gettingMembersValueToSend(members1);
-          const segmentMembers1FormData = {
-            userIds: this.userIdsToSend,
-            groups: this.groupsToSend,
-            subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PRIVATE
+          if (filterMode === FILTER_MODE.INCLUDE_ALL) {
+            this.members2.clear();
           }
 
-          // if dropdown is includeall except then members2.clear()
-          this.gettingMembersValueToSend(members2);
-          const segmentMembers2FormData = {
-            userIds: this.userIdsToSend,
-            groups: this.groupsToSend,
-            subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PRIVATE
+          const { members1 } = this.participantsForm.value;
+          const { members2 } = this.participantsForm2.value;
+
+          // TODO: Handle member2:
+          if (this.participantsForm.valid && this.participantsForm2.valid) {
+            this.gettingMembersValueToSend(members1);
+            const segmentMembers1FormData = {
+              userIds: this.userIdsToSend,
+              groups: this.groupsToSend,
+              subSegmentIds: this.subSegmentIdsToSend,
+              type: SEGMENT_TYPE.PRIVATE
+            }
+
+            // if dropdown is includeall except then members2.clear()
+            this.gettingMembersValueToSend(members2);
+            const segmentMembers2FormData = {
+              userIds: this.userIdsToSend,
+              groups: this.groupsToSend,
+              subSegmentIds: this.subSegmentIdsToSend,
+              type: SEGMENT_TYPE.PRIVATE
+            }
+            this.emitExperimentDialogEvent.emit({
+              type: eventType,
+              formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
+                ? { experimentSegmentInclusion: segmentMembers1FormData, experimentSegmentExclusion: segmentMembers2FormData, filterMode: filterMode }
+                : { experimentSegmentInclusion: segmentMembers2FormData, experimentSegmentExclusion: segmentMembers1FormData, filterMode: filterMode },
+              path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS
+            });
           }
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
-              ? { experimentSegmentInclusion: segmentMembers1FormData, experimentSegmentExclusion: segmentMembers2FormData, filterMode: filterMode }
-              : { experimentSegmentInclusion: segmentMembers2FormData, experimentSegmentExclusion: segmentMembers1FormData, filterMode: filterMode },
-            path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS
-          });
-        }
+      }
       break;
     }
   }

@@ -39,6 +39,14 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
     this.experimentInfo = this.data.experiment;
   }
 
+  get METRICS_JOIN_TEXT() {
+    return METRICS_JOIN_TEXT;
+  }
+
+  get IMetricMetadata() {
+    return IMetricMetaData;
+  }
+
   ngOnInit() {
     this.permissionSub = this.authService.userPermissions$.subscribe(permission => this.permissions = permission);
     this.experimentSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe(experiment => {
@@ -93,13 +101,4 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
     this.analysisService.setMetricsFilterValue(null);
     this.permissionSub.unsubscribe();
   }
-
-  get METRICS_JOIN_TEXT() {
-    return METRICS_JOIN_TEXT;
-  }
-
-  get IMetricMetadata() {
-    return IMetricMetaData;
-  }
-
 }

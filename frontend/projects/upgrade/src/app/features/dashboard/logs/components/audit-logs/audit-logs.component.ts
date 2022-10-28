@@ -12,18 +12,26 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
   styleUrls: ['./audit-logs.component.scss']
 })
 export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('auditLogContainer') auditLogContainer: ElementRef;
   auditLogData: any;
   auditLogsSubscription: Subscription;
   isAllAuditLogFetched = false;
   isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
   theme$ = this.settingsService.theme$;
-  @ViewChild('auditLogContainer') auditLogContainer: ElementRef;
 
   constructor(
     private logsService: LogsService,
     private settingsService: SettingsService
   ) {}
+
+  get LogType() {
+    return LogType;
+  }
+
+  get LogDateFormatTypes() {
+    return LogDateFormatType;
+  }
 
   ngOnInit() {
     this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe(logs => {
@@ -43,14 +51,6 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
       return b.key;
     }
   };
-
-  get LogType() {
-    return LogType;
-  }
-
-  get LogDateFormatTypes() {
-    return LogDateFormatType;
-  }
 
   fetchAuditLogOnScroll() {
     if (!this.isAllAuditLogFetched) {

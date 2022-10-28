@@ -64,7 +64,7 @@ export class ExperimentQueryResultComponent implements OnInit, OnDestroy {
 
   getConditionCode(conditionId: string) {
     return this.experiment.conditions.reduce((acc, condition) =>
-      condition.id === conditionId ? acc = condition['conditionCode'] as any : acc
+      condition.id === conditionId ? acc = condition.conditionCode as any : acc
       , null);
   }
 

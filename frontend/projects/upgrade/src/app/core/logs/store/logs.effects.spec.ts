@@ -15,7 +15,7 @@ describe('LogsEffects', () => {
     beforeEach(() => {
         actions$ = new ActionsSubject();
         store$ = new BehaviorSubject({});
-        (store$ as any).dispatch = jest.fn();
+        (store$ ).dispatch = jest.fn();
         logsDataService = {};
 
         LogsSelectors.selectSkipAuditLog.setResult(0);
@@ -40,7 +40,7 @@ describe('LogsEffects', () => {
             LogsSelectors.selectSkipAuditLog.setResult(1);
             LogsSelectors.selectTotalAuditLogs.setResult(10);
 
-            service.getAllAuditLogs$.subscribe(result => {
+            service.getAllAuditLogs$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -57,7 +57,7 @@ describe('LogsEffects', () => {
             LogsSelectors.selectSkipAuditLog.setResult(11);
             LogsSelectors.selectTotalAuditLogs.setResult(10);
 
-            service.getAllAuditLogs$.subscribe(result => {
+            service.getAllAuditLogs$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -118,7 +118,7 @@ describe('LogsEffects', () => {
                 totalAuditLogs: 0
             })
 
-            service.getAllAuditLogs$.subscribe(result => {
+            service.getAllAuditLogs$.subscribe((result) => {
                 expect(result).toEqual(expectedAction);
             });
 
@@ -133,16 +133,11 @@ describe('LogsEffects', () => {
             LogsSelectors.selectTotalAuditLogs.setResult(10);
             LogsSelectors.selectAuditFilterType.setResult(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
 
-            const mockReturnData = {
-                nodes: [],
-                total: 0
-            }
-
             logsDataService.getAllAuditLogs = jest.fn().mockReturnValue(throwError( () => new Error('test')));
 
             const expectedAction = LogsActions.actionGetAuditLogsFailure();
 
-            service.getAllAuditLogs$.subscribe(result => {
+            service.getAllAuditLogs$.subscribe((result) => {
                 expect(result).toEqual(expectedAction);
             });
 
@@ -159,7 +154,7 @@ describe('LogsEffects', () => {
             LogsSelectors.selectSkipErrorLog.setResult(1);
             LogsSelectors.selectTotalErrorLogs.setResult(10);
 
-            service.getAllErrorLogs$.subscribe(result => {
+            service.getAllErrorLogs$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -176,7 +171,7 @@ describe('LogsEffects', () => {
             LogsSelectors.selectSkipErrorLog.setResult(11);
             LogsSelectors.selectTotalErrorLogs.setResult(10);
 
-            service.getAllErrorLogs$.subscribe(result => {
+            service.getAllErrorLogs$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -237,7 +232,7 @@ describe('LogsEffects', () => {
                 totalErrorLogs: 0
             })
 
-            service.getAllErrorLogs$.subscribe(result => {
+            service.getAllErrorLogs$.subscribe((result) => {
                 expect(result).toEqual(expectedAction);
             });
 
@@ -252,16 +247,11 @@ describe('LogsEffects', () => {
             LogsSelectors.selectTotalErrorLogs.setResult(10);
             LogsSelectors.selectErrorFilterType.setResult(SERVER_ERROR.ASSIGNMENT_ERROR);
 
-            const mockReturnData = {
-                nodes: [],
-                total: 0
-            }
-
             logsDataService.getAllErrorLogs = jest.fn().mockReturnValue(throwError( () => new Error('test')));
 
             const expectedAction = LogsActions.actionGetErrorLogsFailure();
 
-            service.getAllErrorLogs$.subscribe(result => {
+            service.getAllErrorLogs$.subscribe((result) => {
                 expect(result).toEqual(expectedAction);
             });
 

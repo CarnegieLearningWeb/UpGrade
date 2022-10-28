@@ -39,22 +39,16 @@ export class ViewFeatureFlagComponent implements OnInit, OnDestroy {
   }
 
   openEditFlagDialog() {
-    const dialogRef = this.dialog.open(NewFlagComponent as any, {
+    this.dialog.open(NewFlagComponent as any, {
       panelClass: 'new-flag-modal',
       data: { flagInfo: clonedeep(this.flag) }
     });
-
-    dialogRef.afterClosed().subscribe(() => { });
   }
 
   deleteFlag() {
-    const dialogRef = this.dialog.open(DeleteFlagComponent, {
+    this.dialog.open(DeleteFlagComponent, {
       panelClass: 'delete-modal',
       data: { flagName: this.flag.name, flagId: this.flag.id }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // Add code of further actions after deleting feature flag
     });
   }
 

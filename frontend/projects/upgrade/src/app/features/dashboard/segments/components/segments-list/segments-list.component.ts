@@ -21,6 +21,11 @@ import { MatSort } from '@angular/material/sort';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
+
+  @ViewChild('tableContainer', { static: false }) segmentsTableContainer: ElementRef;
+  @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
+
   permissions$: Observable<UserPermission>;
   displayedColumns: string[] = [
     'name',
@@ -45,16 +50,19 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   isAllSegmentsFetchedSub: Subscription;
 
-  @ViewChild('tableContainer', { static: false }) segmentsTableContainer: ElementRef;
-  @ViewChild('searchInput', { static: false }) searchInput: ElementRef;
-
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
-
   constructor(
     private authService: AuthService,
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
   ) { }
+
+  get SegmentStatus() {
+    return SEGMENT_STATUS;
+  }
+
+  get SegmentStatusPipeTypes() {
+    return SegmentStatusPipeType;
+  }
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -70,27 +78,15 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openNewSegmentDialog() {
-    const dialogRef = this.dialog.open(NewSegmentComponent, {
+    this.dialog.open(NewSegmentComponent, {
       panelClass: 'new-segment-modal'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
     });
   }
 
   openImportSegmentsDialog() {
-    const dialogRef = this.dialog.open(ImportSegmentComponent, {
+    this.dialog.open(ImportSegmentComponent, {
       panelClass: 'import-segment-modal'
     });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
-    });
-  }
-
-  openExportAllSegmentDialog() {
-
   }
 
   ngOnDestroy() {
@@ -101,13 +97,5 @@ export class SegmentsListComponent implements OnInit, OnDestroy, AfterViewInit {
     // subtract other component's height
     const windowHeight = window.innerHeight;
     this.segmentsTableContainer.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
-  }
-
-  get SegmentStatus() {
-    return SEGMENT_STATUS;
-  }
-
-  get SegmentStatusPipeTypes() {
-    return SegmentStatusPipeType;
   }
 }

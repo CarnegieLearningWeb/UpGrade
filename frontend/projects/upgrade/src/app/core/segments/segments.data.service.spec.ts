@@ -19,7 +19,6 @@ describe('SegmentDataService', () => {
     let service: SegmentsDataService;
     let mockSegment: SegmentInput;
     let mockSegmentId: string;
-    let mockSegmentIds: string[];
     let mockEnvironment: Environment;
     
     beforeEach(() => {
@@ -28,10 +27,6 @@ describe('SegmentDataService', () => {
         service = new SegmentsDataService(mockHttpClient as HttpClient, mockEnvironment);
        
         mockSegmentId = 'segmentId1';
-        mockSegmentIds = [
-            'segmentId101',
-            'segmentId102'
-        ]
         mockSegment = {
             createdAt: 'time',
             updatedAt: 'time',

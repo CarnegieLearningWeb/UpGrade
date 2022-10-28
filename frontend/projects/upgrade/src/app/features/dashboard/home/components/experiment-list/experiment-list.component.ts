@@ -167,20 +167,20 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   openNewExperimentDialog() {
-    const dialogRef = this.dialog.open(NewExperimentComponent, {
+    this.dialog.open(NewExperimentComponent, {
       panelClass: 'new-experiment-modal',
       disableClose: true
     });
   }
 
   openImportExperimentDialog() {
-    const dialogRef = this.dialog.open(ImportExperimentComponent, {
+    this.dialog.open(ImportExperimentComponent, {
       panelClass: 'import-experiment-modal'
     });
   }
 
   openExportAllExperimentsDialog() {
-    const dialogRef = this.dialog.open(ExportModalComponent, {
+    this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
       data: { experiment: this.allExperiments.data }
     });
@@ -212,7 +212,7 @@ export class ExperimentListComponent implements OnInit, OnDestroy, AfterViewInit
 
   getConditionCode(conditionId: string, experimentId: string) {
     const experimentFound = this.allExperiments.data.find(experiment => experiment.id === experimentId);
-    return !!experimentFound ? '(' + experimentFound.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
+    return experimentFound ? '(' + experimentFound.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
   }
 
   fetchExperimentOnScroll() {

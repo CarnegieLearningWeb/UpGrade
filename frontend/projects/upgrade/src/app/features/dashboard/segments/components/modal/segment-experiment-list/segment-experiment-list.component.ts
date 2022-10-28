@@ -28,6 +28,14 @@ export class SegmentExperimentListComponent implements OnInit {
     this.segment = this.data.segment;
   }
 
+  get ExperimentStatePipeTypes() {
+    return ExperimentStatePipeType;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
+  }
+
   ngOnInit() {
     this.allExperimentSegmentsInclusionSub = this.segmentsService.allExperimentSegmentsInclusion$.subscribe(ele => {
       this.allExperimentSegmentsInclusion = ele;
@@ -59,13 +67,5 @@ export class SegmentExperimentListComponent implements OnInit {
       });
     }
 
-  }
-
-  get ExperimentStatePipeTypes() {
-    return ExperimentStatePipeType;
-  }
-
-  get ExperimentState() {
-    return EXPERIMENT_STATE;
   }
 }

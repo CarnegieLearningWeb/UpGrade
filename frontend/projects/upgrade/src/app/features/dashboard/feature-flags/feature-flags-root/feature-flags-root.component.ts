@@ -28,12 +28,8 @@ export class FeatureFlagsRootComponent implements OnInit {
   }
 
   openNewFlagDialog() {
-    const dialogRef = this.dialog.open(NewFlagComponent, {
+    this.dialog.open(NewFlagComponent, {
       panelClass: 'new-flag-modal'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
     });
   }
 

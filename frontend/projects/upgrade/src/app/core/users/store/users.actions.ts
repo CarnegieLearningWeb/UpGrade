@@ -1,5 +1,4 @@
 import { createAction, props } from '@ngrx/store';
-import { FLAG_SEARCH_SORT_KEY } from '../../feature-flags/store/feature-flags.model';
 import { UpdateUser, User, USER_SEARCH_SORT_KEY, SORT_AS } from './users.model';
 
 export const actionFetchUsers = createAction(

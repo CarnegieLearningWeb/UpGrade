@@ -1,15 +1,13 @@
-import { SegmentsDataService } from '../segments.data.service';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
-import * as SegmentsActions from './segments.actions';
-import { catchError, switchMap, map, filter, withLatestFrom, tap, first } from 'rxjs/operators';
-import { UpsertSegmentType } from './segments.model';
 import { Router } from '@angular/router';
-import { Store, select } from '@ngrx/store';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { select, Store } from '@ngrx/store';
+import { catchError, filter, map, switchMap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from '../../core.module';
-import { combineLatest } from 'rxjs';
+import { SegmentsDataService } from '../segments.data.service';
+import * as SegmentsActions from './segments.actions';
+import { Segment, UpsertSegmentType } from './segments.model';
 import { selectAllSegments } from './segments.selectors';
-import { Segment } from './segments.model';
 
 @Injectable()
 export class SegmentsEffects {

@@ -3,8 +3,8 @@ import { AnalysisService } from './analysis.service';
 import { actionDeleteMetric, actionExecuteQuery, actionSetMetricsFilterValue, actionSetQueryResult, actionUpsertMetrics } from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
 
-const MockStateStore$ = new BehaviorSubject({});
-(MockStateStore$ as any).dispatch = jest.fn();
+const mockStateStore$ = new BehaviorSubject({});
+(mockStateStore$ as any).dispatch = jest.fn();
 
 jest.mock('./store/analysis.selectors', () => ({
         selectMetrics: jest.fn(),
@@ -15,7 +15,7 @@ jest.mock('./store/analysis.selectors', () => ({
     }));
 
 describe('AnalysisService', () => {
-    const mockStore: any = MockStateStore$;
+    const mockStore: any = mockStateStore$;
     let service: AnalysisService;
     
     beforeEach(() => {

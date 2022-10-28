@@ -71,7 +71,7 @@ export class FeatureFlagsService {
   getActiveVariation(flag: FeatureFlag, type?: boolean) {
     const status = type === undefined  ? flag.status : type;
     const existedVariation = flag.variations.filter(variation => {
-      if (variation.defaultVariation && variation.defaultVariation.indexOf(status) !== -1) {
+      if (variation.defaultVariation && variation.defaultVariation.includes(status)) {
         return variation;
       }
     })[0];

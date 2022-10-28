@@ -25,7 +25,6 @@ describe(AuthGuard, () => {
             mockAuthService.isAuthenticating$.next(false);
             const expectedResult = true;
             const mockUrl = 'testUrl';
-            const expectedNavArray = ['/login'];
 
             service.canActivate(undefined, { url: mockUrl } as RouterStateSnapshot).subscribe(val => {
                 expect(val).toEqual(expectedResult);

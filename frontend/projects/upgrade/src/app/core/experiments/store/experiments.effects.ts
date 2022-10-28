@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as experimentAction from './experiments.actions';
 import * as analysisAction from '../../analysis/store/analysis.actions';
 import { ExperimentDataService } from '../experiments.data.service';
-import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeUntil, mapTo, distinctUntilChanged, takeWhile, take, flatMap } from 'rxjs/operators';
+import { map, filter, switchMap, catchError, tap, withLatestFrom, first, mergeMap, takeWhile, take } from 'rxjs/operators';
 import {
   UpsertExperimentType,
   IExperimentEnrollmentStats,
@@ -187,7 +187,7 @@ export class ExperimentEffects {
       map(action => action.experimentId),
       filter(experimentId => !!experimentId),
       switchMap(experimentId => this.experimentDataService.deleteExperiment(experimentId).pipe(
-          switchMap(_ => [
+          switchMap(() => [
             experimentAction.actionDeleteExperimentSuccess({ experimentId }),
             experimentAction.actionFetchAllPartitions()
           ]),
@@ -422,9 +422,9 @@ export class ExperimentEffects {
         this.store$.pipe(select(selectCurrentUser))
       ),
       filter(([{ experimentId }, { email }]) => !!experimentId && !!email),
-      switchMap(([{ experimentId, experimentName }, { email }]) =>
+      switchMap(([{ experimentId }, { email }]) =>
         this.experimentDataService.exportExperimentInfo(experimentId, email).pipe(
-          map((data: any) => experimentAction.actionExportExperimentInfoSuccess()),
+          map(() => experimentAction.actionExportExperimentInfoSuccess()),
           catchError(() => [experimentAction.actionExportExperimentInfoFailure()])
         )
       )

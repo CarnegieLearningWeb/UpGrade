@@ -60,7 +60,7 @@ export class FlagOverviewComponent implements OnInit, OnDestroy {
   }
 
   validateFormData(key: string): boolean {
-    return this.allFlagsKeys.indexOf(key) === -1;
+    return !this.allFlagsKeys.includes(key);
   }
 
   emitEvent(eventType: NewFlagDialogEvents) {

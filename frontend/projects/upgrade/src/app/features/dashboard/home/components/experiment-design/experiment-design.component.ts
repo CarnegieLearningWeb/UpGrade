@@ -12,8 +12,8 @@ import {
   OnDestroy
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAlias, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
+import { BehaviorSubject, combineLatest, Observable, Subscription } from 'rxjs';
+import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, ExperimentCondition, ExperimentPartition, IContextMetaData, EXPERIMENT_STATE, ExperimentAliasTableRow, ExperimentConditionAliasRequestObject } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -72,7 +72,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   equalWeightFlag = true;
 
   // Alias Table details
-  designData$: BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]> = new BehaviorSubject([[], []]);
+  designData$ = new BehaviorSubject<[ExperimentPartition[], ExperimentCondition[]]>([[], []]);
   designDataSub: Subscription;
   aliasTableData: ExperimentAliasTableRow[] = [];
   isAliasTableEditMode$: Observable<boolean>;
@@ -227,8 +227,8 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (this.currentContext) {
-      const currentContextConditionCode = (this.contextMetaData['contextMetadata'][this.currentContext].CONDITIONS || []);
-      return currentContextConditionCode.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+      const currentContextConditionCode = (this.contextMetaData.contextMetadata[this.currentContext].CONDITIONS || []);
+      return currentContextConditionCode.filter(option => option.toLowerCase().startsWith(filterValue));
     }
     return [];
   }
@@ -241,11 +241,11 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (key === 'expPoints' && this.currentContext) {
-      const currentContextExpPoints = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS || []);
-      return currentContextExpPoints.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+      const currentContextExpPoints = (this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS || []);
+      return currentContextExpPoints.filter(option => option.toLowerCase().startsWith(filterValue));
     } else if (key === 'expIds' && this.currentContext) {
-      const currentContextExpIds = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS || []);
-      return currentContextExpIds.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+      const currentContextExpIds = (this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS || []);
+      return currentContextExpIds.filter(option => option.toLowerCase().startsWith(filterValue));
     }
     return [];
   }
@@ -316,7 +316,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   validatePartitionNames(partitions: any) {
     this.partitionPointErrors = [];
     // Used to differentiate errors
-    const alreadyExistedPartitions = [];
     const duplicatePartitions = [];
 
     // Used for updating existing experiment
@@ -335,7 +334,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         value.site === partition.site &&
         (value.target || '') === (partition.target || '') && // To match null and empty string, add '' as default value. target as optional and hence it's value can be null.
         partitionIndex !== index &&
-        duplicatePartitions.indexOf(partition.target ? partition.site + ' and ' + partition.target : partition.site) === -1)) {
+        !duplicatePartitions.includes(partition.target ? partition.site + ' and ' + partition.target : partition.site))) {
         duplicatePartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
       }
     });
@@ -353,7 +352,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     const conditionUniqueErrorText = this.translate.instant('home.new-experiment.design.condition-unique-validation.text');
     const conditionCodes = conditions.map(condition => condition.conditionCode);
     const hasUniqueConditionError = conditionCodes.length !== new Set(conditionCodes).size;
-    if (hasUniqueConditionError && this.conditionCodeErrors.indexOf(conditionUniqueErrorText) === -1) {
+    if (hasUniqueConditionError && !this.conditionCodeErrors.includes(conditionUniqueErrorText)) {
       this.conditionCodeErrors.push(conditionUniqueErrorText);
     } else if (!hasUniqueConditionError) {
       const index = this.conditionCodeErrors.indexOf(conditionUniqueErrorText, 0);
@@ -371,7 +370,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const hasDefaultConditionCode = conditions.filter(
         condition => typeof condition.conditionCode === 'string' && condition.conditionCode.toUpperCase().trim() === defaultKeyword
       );
-      if (hasDefaultConditionCode.length && this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText) === -1) {
+      if (hasDefaultConditionCode.length && !this.conditionCodeErrors.includes(defaultConditionCodeErrorText)) {
         this.conditionCodeErrors.push(defaultConditionCodeErrorText);
       } else if (!hasDefaultConditionCode.length) {
         const index = this.conditionCodeErrors.indexOf(defaultConditionCodeErrorText, 0);
@@ -389,7 +388,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       const hasNegativeAssignmentWeights = conditions.filter(
         condition => condition.assignmentWeight < 0
       );
-      if (hasNegativeAssignmentWeights.length && this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText) === -1) {
+      if (hasNegativeAssignmentWeights.length && !this.conditionCodeErrors.includes(negativeAssignmentWeightErrorText)) {
         this.conditionCodeErrors.push(negativeAssignmentWeightErrorText);
       } else if (!hasNegativeAssignmentWeights.length) {
         const index = this.conditionCodeErrors.indexOf(negativeAssignmentWeightErrorText, 0);
@@ -428,10 +427,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
 
   validateExpPoints(partitions: ExperimentPartition[]) {
     const sites = partitions.map(partition => partition.site);
-    const currentContextExpPoints = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_POINTS);
+    const currentContextExpPoints = (this.contextMetaData.contextMetadata[this.currentContext].EXP_POINTS);
 
     for (let siteIndex = 0; siteIndex < sites.length; siteIndex++) {
-      if (currentContextExpPoints.indexOf(sites[siteIndex]) === -1) {
+      if (!currentContextExpPoints.includes(sites[siteIndex])) {
         // Add partition point selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[4]);
         break;
@@ -441,10 +440,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   
   validateExpIds(partitions: ExperimentPartition[]) {
     const targets = partitions.map(partition => partition.target).filter(target => target);
-    const currentContextExpIds = (this.contextMetaData['contextMetadata'][this.currentContext].EXP_IDS);
+    const currentContextExpIds = (this.contextMetaData.contextMetadata[this.currentContext].EXP_IDS);
 
     for (let targetIndex = 0; targetIndex < targets.length; targetIndex++) {
-      if (currentContextExpIds.indexOf(targets[targetIndex]) === -1) {
+      if (!currentContextExpIds.includes(targets[targetIndex])) {
         // Add partition id selection error
         this.expPointAndIdErrors.push(this.partitionErrorMessages[5]);
         break;

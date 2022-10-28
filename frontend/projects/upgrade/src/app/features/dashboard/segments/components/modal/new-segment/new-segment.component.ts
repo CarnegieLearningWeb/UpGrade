@@ -11,11 +11,11 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewSegmentComponent implements OnInit {
+  @ViewChild('stepper', { static: false }) stepper: any;
   newSegmentData: any = {};
   segmentInfo: Segment;
   currentContext: string;
   isContextChanged = false;
-  @ViewChild('stepper', { static: false }) stepper: any;
 
   constructor(
     private dialogRef: MatDialogRef<NewSegmentComponent>,

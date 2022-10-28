@@ -1,5 +1,5 @@
 import { AuthState } from './auth.models';
-import { User, UserRole } from '../../users/store/users.model';
+import { UserRole } from '../../users/store/users.model';
 import * as AuthSelectors from './auth.selectors';
 
 describe('Auth Selectors', () => {

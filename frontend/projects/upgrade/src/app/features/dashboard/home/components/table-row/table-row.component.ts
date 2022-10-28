@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, Input, OnDestroy } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
@@ -17,7 +16,7 @@ export class TableRowComponent implements OnDestroy {
   @Input() experiment: ExperimentVM;
 
   expandedId = '';
-  columnHeaders: {};
+  columnHeaders = {};
   translateSub: Subscription;
   constructor(
     private translate: TranslateService

@@ -22,7 +22,24 @@ export class ExperimentScheduleComponent implements OnInit {
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;
   minDate = new Date();
+
   constructor(private _formBuilder: FormBuilder) { }
+
+  get NewExperimentDialogEvents() {
+    return NewExperimentDialogEvents;
+  }
+
+  get EndExperimentCondition() {
+    return EndExperimentCondition;
+  }
+
+  get groupTypeValue(): boolean {
+    return this.experimentScheduleForm && this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
+  }
 
   ngOnInit() {
     this.experimentScheduleForm = this._formBuilder.group({
@@ -67,7 +84,7 @@ export class ExperimentScheduleComponent implements OnInit {
           this.experimentScheduleForm.get('userCount').disable();
           this.experimentScheduleForm.get('groupCount').disable();
         } else if (endCondition === EndExperimentCondition.END_CRITERIA) {
-          if (this.experimentInfo && this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+          if (this.experimentInfo && this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE) {
             this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
             this.experimentScheduleForm.get('userCount').disable();
             this.experimentScheduleForm.get('groupCount').disable();
@@ -83,7 +100,7 @@ export class ExperimentScheduleComponent implements OnInit {
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
       // disable control on edit:
-      if (this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+      if (this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE) {
         this.experimentScheduleForm.get('userCount').disable();
         this.experimentScheduleForm.get('groupCount').disable();
       }
@@ -151,7 +168,7 @@ export class ExperimentScheduleComponent implements OnInit {
               ...scheduleData,
               state: this.experimentInfo.state
             };
-            if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+            if (this.experimentInfo.state === this.ExperimentState.ENROLLING || this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE) {
               this.emitExperimentDialogEvent.emit({
                 type: eventType,
                 formData: scheduleData,
@@ -204,21 +221,5 @@ export class ExperimentScheduleComponent implements OnInit {
         }
         break;
     }
-  }
-
-  get NewExperimentDialogEvents() {
-    return NewExperimentDialogEvents;
-  }
-
-  get EndExperimentCondition() {
-    return EndExperimentCondition;
-  }
-
-  get groupTypeValue(): boolean {
-    return this.experimentScheduleForm && this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
-  }
-
-  get ExperimentState() {
-    return EXPERIMENT_STATE;
   }
 }

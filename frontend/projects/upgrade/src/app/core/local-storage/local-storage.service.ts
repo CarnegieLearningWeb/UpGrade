@@ -12,8 +12,6 @@ const APP_PREFIX = 'UPGRADE-';
   providedIn: 'root'
 })
 export class LocalStorageService {
-  constructor() {}
-
   loadInitialState() {
     const experimentSortKey = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_KEY);
     const experimentSortType = this.getItem(ExperimentLocalStorageKeys.EXPERIMENT_SORT_TYPE);

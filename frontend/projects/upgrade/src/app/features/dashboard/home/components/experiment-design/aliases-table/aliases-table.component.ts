@@ -10,8 +10,8 @@ import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AliasesTableComponent implements OnInit, OnDestroy {
-  @Output() aliasTableData$: EventEmitter<ExperimentAliasTableRow[]> = new EventEmitter();
-  @Output() hideAliasTable: EventEmitter<boolean> = new EventEmitter();
+  @Output() aliasTableData$ = new EventEmitter<ExperimentAliasTableRow[]>();
+  @Output() hideAliasTable = new EventEmitter<boolean>();
   @Input() designData$: Observable<[ExperimentPartition[], ExperimentCondition[]]>;
   @Input() experimentInfo: ExperimentVM;
 
@@ -19,8 +19,8 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   isAliasTableEditMode$: Observable<boolean>;
   aliasTableEditIndex$: Observable<number>;
   currentContextMetaDataConditions$: Observable<string[]>;
-  filteredContextMetaDataConditions$: BehaviorSubject<string[]> = new BehaviorSubject(['']);
-  currentAliasInput$: BehaviorSubject<string> = new BehaviorSubject('');
+  filteredContextMetaDataConditions$ = new BehaviorSubject<string[]>(['']);
+  currentAliasInput$ = new BehaviorSubject<string>('');
 
   aliasTableData: ExperimentAliasTableRow[] = [];
   aliasesDisplayedColumns = [
@@ -47,7 +47,7 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   ngAfterViewInit(): void {
     // must sub after view init to ensure table reference is loaded before emitting table data
     this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
-      this.aliasTableData = this.createAliasTableData(designData, this.experimentInfo?.conditionAliases);
+      this.aliasTableData = this.createAliasTableData(designData, this.experimentInfo.conditionAliases);
       this.aliasTableData$.emit(this.aliasTableData);
     })
 
@@ -103,17 +103,17 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
         let existingAlias: ExperimentConditionAlias = null;
 
         if (useExistingAliasData) {
-          existingAlias = conditionAliases.find(alias => ((alias.decisionPoint as ExperimentPartition)?.target === decisionPoint.target &&
-            (alias.decisionPoint as ExperimentPartition)?.site === decisionPoint.site) && 
-              (alias.parentCondition as ExperimentCondition).conditionCode === condition.conditionCode)
+          existingAlias = conditionAliases.find(alias => ((alias.decisionPoint ).target === decisionPoint.target &&
+            (alias.decisionPoint ).site === decisionPoint.site) && 
+              (alias.parentCondition ).conditionCode === condition.conditionCode)
         }
 
         aliasTableData.push({
-          id: existingAlias?.id,
+          id: existingAlias.id,
           site: decisionPoint.site,
           target: decisionPoint.target,
           condition: condition.conditionCode,
-          alias: existingAlias?.aliasName || condition.conditionCode,
+          alias: existingAlias.aliasName || condition.conditionCode,
           isEditing: false
         })
       })

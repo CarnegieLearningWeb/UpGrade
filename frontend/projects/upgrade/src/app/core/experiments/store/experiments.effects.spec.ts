@@ -24,7 +24,7 @@ describe('ExperimentEffects', () => {
     beforeEach(() => {
         actions$ = new ActionsSubject();
         store$ = new BehaviorSubject({});
-        (store$ as any).dispatch = jest.fn();
+        (store$ ).dispatch = jest.fn();
         experimentDataService = {};
         router = {
             navigate: jest.fn()
@@ -274,7 +274,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             Selectors.selectExperimentStats.setResult({ 'test1': stats })
 
-            service.UpsertExperiment$.subscribe(resultingActions => {
+            service.UpsertExperiment$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -289,7 +289,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             Selectors.selectExperimentStats.setResult({ 'test1': stats })
 
-            service.UpsertExperiment$.subscribe(resultingActions => {
+            service.UpsertExperiment$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -305,7 +305,7 @@ describe('ExperimentEffects', () => {
             Selectors.selectExperimentStats.setResult({ 'test1': stats });
             experimentDataService.getAllExperimentsStats = jest.fn().mockReturnValue(throwError({ error: { message: 'test1' }}))
 
-            service.UpsertExperiment$.subscribe(resultingActions => {
+            service.UpsertExperiment$.subscribe((resultingActions) => {
 
                 const failureAction = actionUpsertExperimentFailure();
 
@@ -337,7 +337,7 @@ describe('ExperimentEffects', () => {
                     return acc;
                 }, []),
                 last(),
-            ).subscribe(resultingActions => {
+            ).subscribe((resultingActions) => {
                 resultingActions.reverse();
                 expect(resultingActions).toEqual(expectedActions);
                 expect(experimentDataService.createNewExperiment).toHaveBeenCalled();
@@ -370,7 +370,7 @@ describe('ExperimentEffects', () => {
                     return acc;
                 }, []),
                 last(),
-            ).subscribe(resultingActions => {
+            ).subscribe((resultingActions) => {
                 resultingActions.reverse();
                 expect(resultingActions).toEqual(expectedActions);
                 expect(experimentDataService.createNewExperiment).not.toHaveBeenCalled();
@@ -403,7 +403,7 @@ describe('ExperimentEffects', () => {
                     return acc;
                 }, []),
                 last(),
-            ).subscribe(resultingActions => {
+            ).subscribe((resultingActions) => {
                 resultingActions.reverse();
                 expect(resultingActions).toEqual(expectedActions);
                 expect(experimentDataService.createNewExperiment).not.toHaveBeenCalled();
@@ -622,7 +622,7 @@ describe('ExperimentEffects', () => {
         it('should not emit anything if no experimentId is given', fakeAsync(() => {
             let neverEmitted = true;
 
-            service.beginExperimentDetailStatsPolling$.subscribe(_ => {
+            service.beginExperimentDetailStatsPolling$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -637,7 +637,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             mockEnvironment.pollingLimit = 0;
 
-            service.beginExperimentDetailStatsPolling$.subscribe(_ => {
+            service.beginExperimentDetailStatsPolling$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -653,7 +653,7 @@ describe('ExperimentEffects', () => {
             mockEnvironment.pollingInterval = 2;
             Selectors.selectIsPollingExperimentDetailStats.setResult(false);
 
-            service.beginExperimentDetailStatsPolling$.subscribe(isEmpty => {
+            service.beginExperimentDetailStatsPolling$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -786,7 +786,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             Selectors.selectExperimentGraphInfo.setResult([])
 
-            service.fetchGraphInfo$.subscribe(resultingActions => {
+            service.fetchGraphInfo$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -805,7 +805,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             Selectors.selectExperimentGraphInfo.setResult([])
 
-            service.fetchGraphInfo$.subscribe(resultingActions => {
+            service.fetchGraphInfo$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -824,7 +824,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             Selectors.selectExperimentGraphInfo.setResult([])
 
-            service.fetchGraphInfo$.subscribe(resultingActions => {
+            service.fetchGraphInfo$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -852,7 +852,7 @@ describe('ExperimentEffects', () => {
             service.fetchGraphInfo$.pipe(
                 take(2),
                 pairwise()
-            ).subscribe(resultingActions => {
+            ).subscribe((resultingActions) => {
                 expect(resultingActions).toEqual(expectedActions)
             })
 
@@ -873,7 +873,7 @@ describe('ExperimentEffects', () => {
 
             const expectedActions = []
 
-            service.fetchGraphInfo$.subscribe(resultingActions => {
+            service.fetchGraphInfo$.subscribe((resultingActions) => {
                 neverEmitted = false;
                 expect(resultingActions).not.toEqual(expectedActions)
             })
@@ -906,7 +906,7 @@ describe('ExperimentEffects', () => {
                 ]
             })
 
-            service.fetchGraphInfo$.subscribe(resultingActions => {
+            service.fetchGraphInfo$.subscribe((resultingActions) => {
                 expect(resultingActions).toEqual(expectedActions)
             })
 
@@ -925,7 +925,7 @@ describe('ExperimentEffects', () => {
             let neverEmitted = true;
             store$.dispatch = jest.fn();
 
-            service.setExperimentGraphRange$.subscribe(resultingActions => {
+            service.setExperimentGraphRange$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -1092,7 +1092,7 @@ describe('ExperimentEffects', () => {
             });
             experimentDataService.fetchContextMetaData = jest.fn().mockReturnValue(of({contextMetadata: {}}))
 
-            service.fetchContextMetaData$.subscribe(resultingActions => {
+            service.fetchContextMetaData$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -1115,7 +1115,7 @@ describe('ExperimentEffects', () => {
 
             const expectedAction = actionFetchContextMetaDataSuccess({ contextMetaData, isLoadingContextMetaData: false })
 
-            service.fetchContextMetaData$.subscribe(resultingActions => {
+            service.fetchContextMetaData$.subscribe((resultingActions) => {
                 expect(resultingActions).toEqual(expectedAction);
             })
 
@@ -1132,7 +1132,7 @@ describe('ExperimentEffects', () => {
 
             const expectedAction = actionFetchContextMetaDataFailure({ isLoadingContextMetaData: false });
 
-            service.fetchContextMetaData$.subscribe(resultingActions => {
+            service.fetchContextMetaData$.subscribe((resultingActions) => {
                 expect(resultingActions).toEqual(expectedAction);
             })
 
@@ -1160,7 +1160,7 @@ describe('ExperimentEffects', () => {
             selectCurrentUser.setResult(user);
             experimentDataService.exportExperimentInfo = jest.fn().mockReturnValue(of({}))
 
-            service.exportExperimentInfo$.subscribe(resultingActions => {
+            service.exportExperimentInfo$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -1191,7 +1191,7 @@ describe('ExperimentEffects', () => {
             selectCurrentUser.setResult(user);
             experimentDataService.exportExperimentInfo = jest.fn().mockReturnValue(of({}))
 
-            service.exportExperimentInfo$.subscribe(resultingActions => {
+            service.exportExperimentInfo$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -1224,7 +1224,7 @@ describe('ExperimentEffects', () => {
 
             const expectedAction = actionExportExperimentInfoSuccess();
 
-            service.exportExperimentInfo$.subscribe(resultingActions => {
+            service.exportExperimentInfo$.subscribe((resultingActions) => {
                 expect(resultingActions).toEqual(expectedAction);
             })
 
@@ -1255,7 +1255,7 @@ describe('ExperimentEffects', () => {
 
             const expectedAction = actionExportExperimentInfoFailure();
 
-            service.exportExperimentInfo$.subscribe(resultingActions => {
+            service.exportExperimentInfo$.subscribe((resultingActions) => {
                 expect(resultingActions).toEqual(expectedAction);
             })
 

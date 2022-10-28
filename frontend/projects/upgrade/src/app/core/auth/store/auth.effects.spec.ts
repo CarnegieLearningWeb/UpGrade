@@ -1,5 +1,5 @@
 import { ActionsSubject } from '@ngrx/store';
-import { BehaviorSubject, never, of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { AuthEffects } from './auth.effects';
 import * as AuthActions from './auth.actions';
 import { fakeAsync, tick } from '@angular/core/testing';
@@ -45,7 +45,7 @@ describe('AuthEffects', () => {
     const mockOAuth = {
         init: jest.fn().mockReturnValue(mockUser),
         isSignedIn: {
-            get: () => {}
+            get: () => { return; }
         },
         attachClickHandler: jest.fn(),
     }
@@ -53,7 +53,7 @@ describe('AuthEffects', () => {
     beforeEach(() => {
         actions$ = new ActionsSubject();
         store$ = new BehaviorSubject({});
-        (store$ as any).dispatch = jest.fn();
+        (store$ ).dispatch = jest.fn();
         router = {
             navigate: jest.fn(),
             navigateByUrl: jest.fn()
@@ -86,7 +86,7 @@ describe('AuthEffects', () => {
 
         // mock gapi.js object that is loaded via script on index.html
         window.gapi = {
-            load: (str: string, fn: Function) => {
+            load: (str: string, fn: () => void) => {
                 fn();
             },
             auth2: mockOAuth
@@ -444,8 +444,6 @@ describe('AuthEffects', () => {
                 actionFetchMetrics()
             ];
 
-            const additionalSuccessAction = AuthActions.actionSetUserInfoSuccess({ user })
-
             const result = service.setUserSettingsWithRole(user, actions)
 
             expect(authService.setUserPermissions).toHaveBeenCalledWith(user.role);
@@ -458,15 +456,6 @@ describe('AuthEffects', () => {
 
     describe('#trySetUserSettingWithEmail', () => {
         it('should return actionSetUserInfoFailed if response object is falsey at index 0', fakeAsync(() => {
-            const user: any = {
-                firstName: 'Test',
-                lastName: 'Guy',
-                email: 'testmail.com',
-                imageUrl: 'image.com',
-                role: UserRole.ADMIN,
-                token: 'abc123'
-            }
-
             const actions = [
                 actionFetchExcludedUsers(),
                 actionFetchExcludedGroups(),
@@ -477,7 +466,7 @@ describe('AuthEffects', () => {
             ];
             
             const response = {}
-            authDataService.getUserByEmail = jest.fn().mockReturnValue(of(response))
+            authDataService.getUserByEmail = jest.fn().mockReturnValue(of(response));
 
             const expectedActions = AuthActions.actionSetUserInfoFailed();
 

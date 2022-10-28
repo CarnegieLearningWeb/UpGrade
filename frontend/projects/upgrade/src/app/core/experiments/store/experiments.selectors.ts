@@ -132,7 +132,7 @@ export const selectIsLoadingContextMetaData = createSelector(
 
 export const selectCurrentContextMetaDataConditions = createSelector(
   selectExperimentState,
-  (state) => state.currentUserSelectedContext?.CONDITIONS || []
+  (state) => state.currentUserSelectedContext.CONDITIONS || []
 )
 
 export const selectGroupAssignmentStatus = createSelector(

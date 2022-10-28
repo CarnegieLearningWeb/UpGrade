@@ -53,7 +53,7 @@ export class FlagVariationsComponent implements OnChanges {
       this.setVariationFormControl();
     }
     this.updateView();
-    this.flagVariationsForm.get('variations').valueChanges.subscribe(change => {
+    this.flagVariationsForm.get('variations').valueChanges.subscribe(() => {
       this.flagVariationsForm.patchValue({
         defaultOnVariation: null,
         defaultOffVariation: null

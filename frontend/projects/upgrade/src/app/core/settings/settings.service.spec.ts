@@ -1,8 +1,8 @@
 import { BehaviorSubject } from 'rxjs';
 import { LocalStorageService } from '../core.module';
 import { SettingsService } from './settings.service';
-import { SETTINGS_KEY, ThemeOptions } from './store/settings.model';
 import * as SettingsActions from './store/settings.actions';
+import { ThemeOptions } from './store/settings.model';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();

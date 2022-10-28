@@ -36,7 +36,6 @@ describe('NegateAuthGuard', () => {
             mockAuthService.isLoggedIn$.next(false);
             mockAuthService.isAuthenticating$.next(false);
             const expectedResult = true;
-            const expectedNavArray = ['/home'];
 
             service.canActivate().subscribe(val => {
                 expect(val).toEqual(expectedResult);

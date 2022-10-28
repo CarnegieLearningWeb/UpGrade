@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { ASSIGNMENT_UNIT, ExperimentVM, EnrollmentByConditionOrPartitionData } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Subscription } from 'rxjs';
@@ -24,7 +24,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
 
   constructor(private experimentService: ExperimentService) {}
 
-  ngOnChanges(changes: SimpleChanges) {
+  ngOnChanges() {
     if (this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL) {
       this.displayedColumns = this.commonColumns;
     } else {
@@ -50,7 +50,7 @@ export class EnrollmentConditionTableComponent implements OnChanges, OnInit {
           };
 
           const partitions = [];
-          (condition as any).partitions.forEach(partition => {
+          (condition ).partitions.forEach(partition => {
             const partitionObj: EnrollmentByConditionOrPartitionData = {
               experimentPoint: this.getPartitionData(partition.id, 'site'),
               experimentId: this.getPartitionData(partition.id, 'target') || '',

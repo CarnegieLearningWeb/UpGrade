@@ -56,6 +56,26 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private _Activatedroute: ActivatedRoute
   ) {}
 
+  get DialogType() {
+    return DialogType;
+  }
+
+  get ExperimentState() {
+    return EXPERIMENT_STATE;
+  }
+
+  get ExperimentSearchKey() {
+    return EXPERIMENT_SEARCH_KEY;
+  }
+
+  get ExperimentStatePipeTypes() {
+    return ExperimentStatePipeType;
+  }
+
+  get isExperimentStateCancelled() {
+    return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
+  }
+
   ngOnInit() {
     this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
     this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;
@@ -105,15 +125,13 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         : dialogType === DialogType.STATE_TIME_LOGS
         ? StateTimeLogsComponent
         : NewExperimentComponent;
-    const dialogRef = this.dialog.open(dialogComponent as any, {
+    this.dialog.open(dialogComponent as any, {
       panelClass: dialogType === DialogType.STATE_TIME_LOGS ? 'state-time-logs-modal' :
                   dialogType === DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' :
                   'experiment-general-modal',
       data: { experiment: clonedeep(this.experiment) },
       disableClose : dialogType === DialogType.EDIT_EXPERIMENT
     });
-
-    dialogRef.afterClosed().subscribe(() => {});
   }
 
   searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: FLAG_SEARCH_SORT_KEY) {
@@ -136,44 +154,28 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   }
 
   openQueriesModal() {
-    const dialogRef = this.dialog.open(QueriesModalComponent, {
+    this.dialog.open(QueriesModalComponent, {
       panelClass: 'queries-modal',
       data: { experiment: clonedeep(this.experiment) }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
     });
   }
 
   openExportModal() {
-    const dialogRef = this.dialog.open(ExportModalComponent, {
+    this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
       data: { experiment: [clonedeep(this.experiment)] }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
     });
   }
 
   updateEndingCriteria() {
-    const dialogRef = this.dialog.open(ExperimentEndCriteriaComponent, {
+    this.dialog.open(ExperimentEndCriteriaComponent, {
       panelClass: 'experiment-ending-criteria',
       data: { experiment: clonedeep(this.experiment) }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
     });
   }
 
   getConditionCode(conditionId: string) {
-    return !!this.experiment ? '(' + this.experiment.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
-  }
-
-  get DialogType() {
-    return DialogType;
+    return this.experiment ? '(' + this.experiment.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
   }
 
   toggleVerboseLogging(event) {
@@ -185,21 +187,5 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.permissionsSub.unsubscribe();
     this.experimentIdSub.unsubscribe();
     this.experimentService.endDetailStatsPolling();
-  }
-
-  get ExperimentState() {
-    return EXPERIMENT_STATE;
-  }
-
-  get ExperimentSearchKey() {
-    return EXPERIMENT_SEARCH_KEY;
-  }
-
-  get ExperimentStatePipeTypes() {
-    return ExperimentStatePipeType;
-  }
-
-  get isExperimentStateCancelled() {
-    return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
   }
 }

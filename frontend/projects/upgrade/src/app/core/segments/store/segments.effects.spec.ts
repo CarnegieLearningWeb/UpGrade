@@ -47,7 +47,7 @@ describe('SegmentsEffects', () => {
     beforeEach(() => {
         actions$ = new ActionsSubject();
         store$ = new BehaviorSubject({});
-        (store$ as any).dispatch = jest.fn();
+        (store$ ).dispatch = jest.fn();
         segmentsDataService = {};
         router = {
             navigate: jest.fn()
@@ -105,7 +105,7 @@ describe('SegmentsEffects', () => {
         it('should do nothing if Segment is falsey', fakeAsync(() => {
             let neverEmitted = true;
 
-            service.upsertSegment$.subscribe(result => {
+            service.upsertSegment$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -206,7 +206,7 @@ describe('SegmentsEffects', () => {
         it('should do nothing if Segment is id', fakeAsync(() => {
             let neverEmitted = true;
 
-            service.exportSegment$.subscribe(result => {
+            service.exportSegment$.subscribe(() => {
                 neverEmitted = false;
             })
 
@@ -254,7 +254,7 @@ describe('SegmentsEffects', () => {
         it('should do nothing if Segment is id', fakeAsync(() => {
             let neverEmitted = true;
 
-            service.deleteSegment$.subscribe(result => {
+            service.deleteSegment$.subscribe(() => {
                 neverEmitted = false;
             })
 

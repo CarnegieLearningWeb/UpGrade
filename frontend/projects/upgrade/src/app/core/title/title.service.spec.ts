@@ -5,7 +5,9 @@ import { Environment } from '../../../environments/environment-types';
 import { TitleService } from './title.service';
 
 class MockTranslateService {
-    get = () => {};
+    get = () => {
+      return;
+    };
 }
 
 class MockTitle {

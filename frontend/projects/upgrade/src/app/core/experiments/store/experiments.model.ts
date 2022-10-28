@@ -16,7 +16,7 @@ import {
   IExperimentEnrollmentDetailDateStats,
   FILTER_MODE
 } from 'upgrade_types';
-import { Segment, SegmentInput } from '../../segments/store/segments.model';
+import { Segment } from '../../segments/store/segments.model';
 
 export {
   CONSISTENCY_RULE,
@@ -225,9 +225,7 @@ export interface ISingleContextMetadata {
   CONDITIONS: string[]
 }
 export interface IContextMetaData {
-  contextMetadata: {
-    [key: string]: ISingleContextMetadata;
-  }
+  contextMetadata: Record<string, ISingleContextMetadata>
 }
 
 export interface IExperimentGraphInfo {
@@ -251,14 +249,12 @@ export interface ExperimentState extends EntityState<Experiment> {
   searchString: string;
   sortKey: EXPERIMENT_SORT_KEY;
   sortAs: EXPERIMENT_SORT_AS;
-  stats: {
-    [key: string]: IExperimentEnrollmentDetailStats;
-  };
+  stats: Record<string, IExperimentEnrollmentDetailStats>;
   graphInfo: IExperimentGraphInfo,
   graphRange: DATE_RANGE;
   isGraphInfoLoading: boolean;
-  allPartitions: {};
-  allExperimentNames: {};
+  allPartitions: Record<string, ExperimentPartition>;
+  allExperimentNames: ExperimentNameVM[];
   contextMetaData: IContextMetaData;
   isLoadingContextMetaData: boolean;
   currentUserSelectedContext: ISingleContextMetadata;

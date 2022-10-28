@@ -19,14 +19,12 @@ describe('SettingsDataService', () => {
     let service: UsersDataService;
     let mockParams: any;
     let mockRole: UserRole;
-    let mockEmail: string;
 
     beforeEach(() => {
         mockHttpClient = new MockHTTPClient();
         mockEnvironment = { ...environment };
         service = new UsersDataService(mockHttpClient as HttpClient, mockEnvironment);
         mockParams = {};
-        mockEmail = 'test@testmail.com';
         mockRole = UserRole.ADMIN;
     });
 

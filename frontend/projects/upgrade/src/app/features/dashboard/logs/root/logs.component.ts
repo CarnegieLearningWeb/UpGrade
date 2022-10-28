@@ -66,7 +66,11 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   changeLogOption(value: any) {
     value = value === 'all' ? null : value;
-    (this.selectedTabIndex === 0) ? this.logsService.setAuditLogFilter(value) : this.logsService.setErrorLogFilter(value);
+    if (this.selectedTabIndex === 0) { 
+      this.logsService.setAuditLogFilter(value)
+    } else {
+      this.logsService.setErrorLogFilter(value);
+    }
   }
 
   ngOnDestroy() {

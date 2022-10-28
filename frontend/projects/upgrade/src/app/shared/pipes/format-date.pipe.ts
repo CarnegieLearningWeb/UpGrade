@@ -6,7 +6,7 @@ import { DateType } from '../../core/experiments/store/experiments.model';
 })
 export class FormatDatePipe implements PipeTransform {
   transform(date: string, type?: DateType): any {
-    if (!!date) {
+    if (date) {
       const experimentDate = new Date(date);
       const months = [
         'January',
@@ -40,7 +40,7 @@ export class FormatDatePipe implements PipeTransform {
           ' ' +
           months[experimentDate.getMonth()].substring(0, 3) +
           ', ' +
-          (dateHours < 10 || dateHours == 12 ? '0' : '' ) +
+          (dateHours < 10 || dateHours === 12 ? '0' : '' ) +
           (dateHours < 12 ? dateHours : dateHours - 12) +
           ':' +
           (experimentDate.getMinutes() < 10 ? '0' : '' ) + experimentDate.getMinutes() +

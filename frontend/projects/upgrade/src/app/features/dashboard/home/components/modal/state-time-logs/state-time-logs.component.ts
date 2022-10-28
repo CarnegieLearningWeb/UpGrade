@@ -49,7 +49,7 @@ export class StateTimeLogsComponent implements OnInit {
     if (this.endTimeLogs.length > this.startTimeLogs.length) {
       this.startTimeLogs.unshift({timeLog: NaN});
     }
-    else if ((this.endTimeLogs.length == this.startTimeLogs.length) &&  (this.experiment && this.experiment.state == EXPERIMENT_STATE.ENROLLING)) {
+    else if ((this.endTimeLogs.length === this.startTimeLogs.length) &&  (this.experiment && this.experiment.state === EXPERIMENT_STATE.ENROLLING)) {
       this.startTimeLogs.unshift({timeLog: NaN});
     }
 

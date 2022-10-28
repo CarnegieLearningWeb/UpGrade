@@ -82,8 +82,8 @@ export class ImportExperimentComponent implements OnInit {
     const alreadyExistedPartitions = [];
     partitions.forEach((partition) => {
       const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
-      if (this.allPartitions.indexOf(partitionInfo) !== -1 &&
-        alreadyExistedPartitions.indexOf(partition.target ? partition.site + ' and ' + partition.target : partition.site) === -1) {
+      if (this.allPartitions.includes(partitionInfo) &&
+        !alreadyExistedPartitions.includes(partition.target ? partition.site + ' and ' + partition.target : partition.site)) {
         // if we want to show the duplicate partition details:
         alreadyExistedPartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
       }
@@ -95,15 +95,17 @@ export class ImportExperimentComponent implements OnInit {
   }
   
   async uploadFile(event) {
-    let index = 0, fileName = '';
-    this.importFileErrors = [];
+    let index = 0;
+    let fileName = '';
     const reader = new FileReader();
+    
+    this.importFileErrors = [];
 
     readFile(index);
-    function readFile(index: number) {
-      if (index >= event.target.files.length) return;
-      fileName = event.target.files[index].name;
-      reader.readAsText(event.target.files[index]);
+    function readFile(fileIndex: number) {
+      if (fileIndex >= event.target.files.length) return;
+      fileName = event.target.files[fileIndex].name;
+      reader.readAsText(event.target.files[fileIndex]);
     }
 
     reader.addEventListener(

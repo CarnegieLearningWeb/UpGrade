@@ -1,4 +1,4 @@
-import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY, IContextMetaData } from './experiments.model';
+import { ExperimentState, Experiment, EXPERIMENT_SEARCH_KEY, EXPERIMENT_SORT_AS, EXPERIMENT_SORT_KEY } from './experiments.model';
 import { createReducer, on, Action } from '@ngrx/store';
 import * as experimentsAction from './experiments.actions';
 import { createEntityAdapter, EntityAdapter } from '@ngrx/entity';

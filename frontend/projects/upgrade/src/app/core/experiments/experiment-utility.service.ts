@@ -6,18 +6,16 @@ import { ExperimentPartition, ExperimentCondition } from './store/experiments.mo
 })
 export class ExperimentUtilityService {
 
-  constructor() { }
-
   isValidString(value: any) {
     return typeof value === 'string' && value.trim();
   }
 
   filterForUnchangedDesignData(designData: [ExperimentPartition[], ExperimentCondition[] ][] ): boolean {
     const [ previous, current ] = designData;
-    const prevSiteTargets: string[] = previous[0].map(dp => dp.site?.trim() + dp.target?.trim())
-    const prevConditions: string[] = previous[1].map(c => c.conditionCode?.trim())
-    const currentSiteTargets: string[] = current[0].map(dp => dp.site?.trim() + dp.target?.trim())
-    const currentConditions: string[]  = current[1].map(c => c.conditionCode?.trim())
+    const prevSiteTargets: string[] = previous[0].map(dp => dp.site.trim() + dp.target.trim())
+    const prevConditions: string[] = previous[1].map(c => c.conditionCode.trim())
+    const currentSiteTargets: string[] = current[0].map(dp => dp.site.trim() + dp.target.trim())
+    const currentConditions: string[]  = current[1].map(c => c.conditionCode.trim())
 
     const prev = prevSiteTargets.concat(prevConditions);
     const curr = currentSiteTargets.concat(currentConditions);

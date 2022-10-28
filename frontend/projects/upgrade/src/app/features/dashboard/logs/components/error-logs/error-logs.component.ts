@@ -12,18 +12,26 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
   styleUrls: ['./error-logs.component.scss']
 })
 export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('ErrorLogContainer') errorLogContainer: ElementRef;
   errorLogData: any;
   errorLogSubscription: Subscription;
   isAllErrorLogFetched = false;
   isAllErrorLogFetchedSub: Subscription;
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
   theme$ = this.settingsService.theme$;
-  @ViewChild('ErrorLogContainer') errorLogContainer: ElementRef;
 
   constructor(
     private logsService: LogsService,
     private settingsService: SettingsService
   ) {}
+
+  get LogType() {
+    return LogType;
+  }
+
+  get LogDateFormatTypes() {
+    return LogDateFormatType;
+  }
 
   ngOnInit() {
     this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe(errorLogs => {
@@ -42,14 +50,6 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
       return b.key;
     }
   };
-
-  get LogType() {
-    return LogType;
-  }
-
-  get LogDateFormatTypes() {
-    return LogDateFormatType;
-  }
 
   fetchErrorLogOnScroll() {
     if (!this.isAllErrorLogFetched) {

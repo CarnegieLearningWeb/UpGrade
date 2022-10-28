@@ -48,7 +48,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   addChipOnBlur = true;
 
   // Used for autocomplete context input
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   isLoadingContextMetaData$: Observable<boolean>;
 
@@ -69,8 +69,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         this.overviewForm.patchValue(this.setGroupTypeControlValue());
       }
 
-      if (this.contextMetaData && this.contextMetaData['contextMetadata']) {
-        this.allContexts = Object.keys(this.contextMetaData['contextMetadata']);
+      if (this.contextMetaData && this.contextMetaData.contextMetadata) {
+        this.allContexts = Object.keys(this.contextMetaData.contextMetadata);
       }
 
       this.overviewForm = this._formBuilder.group(
@@ -153,8 +153,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   setGroupTypes() {
     this.groupTypes = [];
-    if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(groupType => {
+    if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
+      this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach(groupType => {
         this.groupTypes.push({ value: groupType });
       });
     }
@@ -194,7 +194,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Check if experiment is created before new context-metadata and reset app-contexts
   checkExperiment() {
-    if (this.contextMetaData['contextMetadata'] && !this.contextMetaData['contextMetadata'][this.currentContext]) {
+    if (this.contextMetaData.contextMetadata && !this.contextMetaData.contextMetadata[this.currentContext]) {
       this.overviewForm.get('context').setValue(null);
       this.overviewForm.get('groupType').reset();
     }

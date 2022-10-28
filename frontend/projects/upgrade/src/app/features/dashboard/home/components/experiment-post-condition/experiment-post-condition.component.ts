@@ -84,7 +84,8 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
     if (eventType === NewExperimentDialogEvents.CLOSE_DIALOG) {
       this.emitExperimentDialogEvent.emit({ type: eventType });
     } else {
-      let { postExperimentRule, revertTo } = this.postExperimentRuleForm.value;
+      const { postExperimentRule } = this.postExperimentRuleForm.value;
+      let { revertTo } = this.postExperimentRuleForm.value;
       if (postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
         revertTo = null;
       }

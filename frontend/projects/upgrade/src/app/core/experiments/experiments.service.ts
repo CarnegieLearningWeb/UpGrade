@@ -84,7 +84,7 @@ export class ExperimentService {
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
 
-  selectSearchExperimentParams(): Observable<Object> {
+  selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString })),

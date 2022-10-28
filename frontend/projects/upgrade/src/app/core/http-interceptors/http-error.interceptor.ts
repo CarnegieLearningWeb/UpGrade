@@ -1,14 +1,12 @@
-import { Inject, Injectable, isDevMode } from '@angular/core';
 import {
-  HttpEvent,
-  HttpInterceptor,
-  HttpHandler,
-  HttpRequest} from '@angular/common/http';
-import { Observable, EMPTY } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { AuthService } from '../auth/auth.service';
+  HttpEvent, HttpHandler, HttpInterceptor, HttpRequest
+} from '@angular/common/http';
+import { Inject, Injectable } from '@angular/core';
 import { NotificationsService, NotificationType } from 'angular2-notifications';
+import { EMPTY, Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ENV, Environment } from '../../../environments/environment-types';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class HttpErrorInterceptor implements HttpInterceptor {
@@ -28,7 +26,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     if (!this.environment.production) {
       temp.title += ' See console for details.';
     }
-    if (!((error as any).status === 401) && !this.environment.production) {
+    if (!((error ).status === 401) && !this.environment.production) {
     this._notifications.create(temp.title, temp.content, temp.type, temp);
     }
   }

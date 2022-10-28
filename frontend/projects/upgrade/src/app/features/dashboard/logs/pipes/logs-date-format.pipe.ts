@@ -6,7 +6,7 @@ import { LogDateFormatType } from '../../../../core/logs/store/logs.model';
 })
 export class LogDateFormatPipe implements PipeTransform {
   transform(date: string, type?: any): any {
-    if (!!date) {
+    if (date) {
       const logDate = new Date(date);
       const months = [
         'January',

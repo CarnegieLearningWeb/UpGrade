@@ -28,6 +28,19 @@ export class ExperimentStatusComponent implements OnInit {
     this.experimentInfo = this.data.experiment;
   }
 
+  get ExperimentStatus() {
+    return EXPERIMENT_STATE;
+  }
+
+  get newStatusValue() {
+    return this.statusForm.get('newStatus').value;
+  }
+
+  get isScheduleDateWrong(): boolean {
+    const { scheduleDate } =  this.statusForm.value;
+    return !!this.experimentInfo.endOn && !!scheduleDate && new Date(this.experimentInfo.endOn).getTime() < new Date(new Date(scheduleDate)).getTime();
+  }
+
   onCancelClick(): void {
     this.dialogRef.close();
   }
@@ -71,19 +84,6 @@ export class ExperimentStatusComponent implements OnInit {
         this.showConditionCountErrorMsg = false;
       }
     });
-  }
-
-  get ExperimentStatus() {
-    return EXPERIMENT_STATE;
-  }
-
-  get newStatusValue() {
-    return this.statusForm.get('newStatus').value;
-  }
-
-  get isScheduleDateWrong(): boolean {
-    const { scheduleDate } =  this.statusForm.value;
-    return !!this.experimentInfo.endOn && !!scheduleDate && new Date(this.experimentInfo.endOn).getTime() < new Date(new Date(scheduleDate)).getTime();
   }
 
   changeStatus() {

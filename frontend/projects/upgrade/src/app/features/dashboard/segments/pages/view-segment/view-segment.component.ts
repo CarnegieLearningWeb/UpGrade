@@ -24,7 +24,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   permissionsSub: Subscription;
   segment: Segment;
   segmentSub: Subscription;
-  members: {type: string, id: string}[] = [];
+  members: { type: string, id: string }[] = [];
 
   displayedVariationColumns: string[] = ['value', 'name'];
 
@@ -32,6 +32,14 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     private segmentsService: SegmentsService,
     private dialog: MatDialog,
     private authService: AuthService) { }
+
+  get SegmentStatus() {
+    return SEGMENT_STATUS;
+  }
+
+  get SegmentStatusPipeTypes() {
+    return SegmentStatusPipeType;
+  }
 
   ngOnInit() {
     this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
@@ -41,29 +49,27 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
     this.segmentSub = this.segmentsService.selectedSegment$
       .pipe(filter(segment => !!segment))
       .subscribe(segment => {
-        this.segment = {...segment, status: segment.status || SEGMENT_STATUS.UNUSED};
+        this.segment = { ...segment, status: segment.status || SEGMENT_STATUS.UNUSED };
 
         this.permissions.segments.delete = (this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE);
         this.members = [];
         this.segment.individualForSegment.forEach(user => {
-          this.members.push({type: MemberTypes.INDIVIDUAL, id: user.userId});
+          this.members.push({ type: MemberTypes.INDIVIDUAL, id: user.userId });
         });
         this.segment.groupForSegment.forEach(group => {
-          this.members.push({type: group.type, id: group.groupId});
+          this.members.push({ type: group.type, id: group.groupId });
         });
         this.segment.subSegments.forEach(subSegment => {
-          this.members.push({type: MemberTypes.SEGMENT, id: subSegment.name});
+          this.members.push({ type: MemberTypes.SEGMENT, id: subSegment.name });
         });
-    });
+      });
   }
 
   openEditSegmentDialog() {
-    const dialogRef = this.dialog.open(NewSegmentComponent as any, {
+    this.dialog.open(NewSegmentComponent as any, {
       panelClass: 'new-segment-modal',
       data: { segmentInfo: clonedeep(this.segment) }
     });
-
-    dialogRef.afterClosed().subscribe(() => { });
   }
 
   deleteSegment() {
@@ -106,13 +112,5 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.segmentSub.unsubscribe();
     this.permissionsSub.unsubscribe();
-  }
-
-  get SegmentStatus() {
-    return SEGMENT_STATUS;
-  }
-
-  get SegmentStatusPipeTypes() {
-    return SegmentStatusPipeType;
   }
 }

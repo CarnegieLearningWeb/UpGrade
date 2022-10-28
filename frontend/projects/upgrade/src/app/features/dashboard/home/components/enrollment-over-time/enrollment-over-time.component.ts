@@ -52,6 +52,15 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
 
   constructor(private experimentService: ExperimentService) { this.formateXAxisLabel = this.formateXAxisLabel.bind(this); }
 
+  // Getters
+  get ExperimentFilter() {
+    return ExperimentFilterType;
+  }
+
+  get AssignmentUnit() {
+    return ASSIGNMENT_UNIT;
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes.experiment && this.isInitialLoad) {
       this.isInitialLoad = false;
@@ -107,7 +116,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         this.graphData = [...this.graphData, ...this.formEmptyGraphSeriesData(6)];
         break;
       case DATE_RANGE.LAST_TWELVE_MONTHS:
-        this.graphData = this.graphData;
+        this.graphData = [...this.graphData];
         break;
     }
   }
@@ -123,13 +132,13 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
       series = [];
       const graphInfoConditions = graphData.stats.conditions;
       this.experiment.conditions.map((condition) => {
-        if (this.selectedCondition.indexOf(condition.id) !== -1) {
+        if (this.selectedCondition.includes(condition.id)) {
           let users = 0;
           let groups = 0;
           // Find index based on experiment conditions from graphInfoConditions to maintain colors
           const index = graphInfoConditions.findIndex(graphCondition => graphCondition.id === condition.id);
           graphInfoConditions[index].partitions.map(partition => {
-            if (this.selectedPartition.indexOf(partition.id) !== -1) {
+            if (this.selectedPartition.includes(partition.id)) {
               users += partition.users;
               groups += partition.groups;
             }
@@ -209,17 +218,8 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const yy = date.getFullYear();
     const day = days[date.getDay()].substring(0, 3);
-    const new_date = mm + '/' + dd + '/' + yy + '-' + day;
-    return new_date;
-  }
-  
-  // Getters
-  get ExperimentFilter() {
-    return ExperimentFilterType;
-  }
-
-  get AssignmentUnit() {
-    return ASSIGNMENT_UNIT;
+    const newDate = mm + '/' + dd + '/' + yy + '-' + day;
+    return newDate;
   }
 
   ngOnDestroy() {

@@ -1,11 +1,10 @@
-import { BehaviorSubject } from 'rxjs';
-import { SegmentsService } from './segments.service';
-import * as SegmentSelectors from './store/segments.selectors';
-import { Segment, SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { fakeAsync, tick } from '@angular/core/testing';
-import { isEmpty } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 import { SEGMENT_TYPE } from 'upgrade_types';
-import { actionUpsertSegment, actionDeleteSegment, actionExportSegment }from './store/segments.actions';
+import { SegmentsService } from './segments.service';
+import { actionDeleteSegment, actionExportSegment, actionUpsertSegment } from './store/segments.actions';
+import { SegmentInput, UpsertSegmentType } from './store/segments.model';
+import * as SegmentSelectors from './store/segments.selectors';
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 

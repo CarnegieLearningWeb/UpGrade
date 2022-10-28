@@ -1,11 +1,10 @@
-import { BehaviorSubject } from 'rxjs';
-import { LogsService } from './logs.service';
-import * as LogSelectors from './store/logs.selectors';
-import * as ExperimentSelectors from '../experiments/store/experiments.selectors';
-import * as LogActions from './store/logs.actions';
 import { fakeAsync, tick } from '@angular/core/testing';
-import { isEmpty } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
+import * as ExperimentSelectors from '../experiments/store/experiments.selectors';
+import { LogsService } from './logs.service';
+import * as LogActions from './store/logs.actions';
 import { AuditLogs, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from './store/logs.model';
+import * as LogSelectors from './store/logs.selectors';
 
 const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();

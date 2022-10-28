@@ -1,5 +1,4 @@
 import { createAction, props } from '@ngrx/store';
-import { FLAG_SEARCH_SORT_KEY } from '../../feature-flags/store/feature-flags.model';
 import {
   Experiment,
   UpsertExperimentType,
