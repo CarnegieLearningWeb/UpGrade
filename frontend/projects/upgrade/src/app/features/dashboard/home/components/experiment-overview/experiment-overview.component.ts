@@ -24,7 +24,7 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() dataChanged: false;
+  @Input() dataChanged: boolean = false;
   @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;

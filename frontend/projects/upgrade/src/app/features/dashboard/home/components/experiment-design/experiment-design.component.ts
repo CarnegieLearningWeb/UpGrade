@@ -33,7 +33,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
-  @Input() dataChanged: false;
+  @Input() dataChanged: boolean = false;
   @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 

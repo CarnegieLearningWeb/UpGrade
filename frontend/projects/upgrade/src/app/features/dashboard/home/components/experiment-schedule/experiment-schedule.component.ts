@@ -20,7 +20,7 @@ export class ExperimentScheduleComponent implements OnInit {
 
   @Input() groupType: string;
   @Input() experimentInfo: ExperimentVM;
-  @Input() dataChanged: false;
+  @Input() dataChanged: boolean = false;
   @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;

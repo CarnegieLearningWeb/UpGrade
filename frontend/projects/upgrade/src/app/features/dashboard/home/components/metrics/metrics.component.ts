@@ -31,7 +31,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: Number;
-  @Input() dataChanged: false;
+  @Input() dataChanged: boolean = false;
   @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('metricTable', { static: false, read: ElementRef }) metricTable: ElementRef;

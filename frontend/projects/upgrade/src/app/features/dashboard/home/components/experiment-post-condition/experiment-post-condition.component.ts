@@ -17,7 +17,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
 
   @Input() experimentInfo: ExperimentVM;
   @Input() newExperimentData: Partial<ExperimentVM>;
-  @Input() dataChanged: false;
+  @Input() dataChanged: boolean = false;
   @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   postExperimentRuleForm: FormGroup;
