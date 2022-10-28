@@ -500,53 +500,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           });
           break;
         }
-<<<<<<< Updated upstream
-        this.validateForm()
-        
-        // TODO: Uncomment to validate partitions with predefined site and target
-        // this.validatePartitions();
-
-        // enabling Assignment weight for form to validate
-        if (!this.partitionPointErrors.length && !this.expPointAndIdErrors.length && !this.conditionCodeErrors.length && !this.partitionCountError) {
-          (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach(control => {
-            control.get('assignmentWeight').enable({ emitEvent: false });
-          });
-        }
-        if (this.isFormValid()) {
-          const experimentDesignFormData = this.experimentDesignForm.value;
-          let order = 1;
-          experimentDesignFormData.conditions = experimentDesignFormData.conditions.map(
-            (condition, index) => {
-              if (isNaN(condition.assignmentWeight)) {
-                condition.assignmentWeight = Number(condition.assignmentWeight.slice(0,-1));
-              }
-              return this.experimentInfo
-                ? ({ ...this.experimentInfo.conditions[index], ...condition, order: order++ })
-                : ({ id: uuidv4(), ...condition, name: '', order: order++ });
-            }
-          );
-          order = 1;
-          experimentDesignFormData.partitions = experimentDesignFormData.partitions.map(
-            (partition, index) => {
-              return this.experimentInfo
-                ? ({ ...this.experimentInfo.partitions[index], ...partition, order: order++ })
-                : (partition.target 
-                  ? ({...partition, order: order++, id: uuidv4()}) 
-                  : ({...this.removePartitionName(partition), order: order++ })
-                );
-            }
-          );
-          experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
-            this.aliasTableData, 
-            experimentDesignFormData.conditions, 
-            experimentDesignFormData.partitions
-          );
-=======
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         if (!this.isExperimentEditable) {
->>>>>>> Stashed changes
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: this.experimentInfo,
