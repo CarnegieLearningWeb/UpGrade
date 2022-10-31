@@ -4,6 +4,7 @@
 
 # Testing Frontend
 cd frontend
+npm run lint:fix
 npm test
 cd ..
 
