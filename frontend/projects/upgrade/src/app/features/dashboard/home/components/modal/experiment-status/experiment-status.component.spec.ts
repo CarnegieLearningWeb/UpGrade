@@ -12,19 +12,18 @@ xdescribe('ExperimentStatusComponent', () => {
   let fixture: ComponentFixture<ExperimentStatusComponent>;
 
   const modalData = {
-    experiment: TestMockData.getExperiment()[0]
-  }
+    experiment: TestMockData.getExperiment()[0],
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExperimentStatusComponent ],
+      declarations: [ExperimentStatusComponent],
       imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule],
       providers: [
         ExperimentService,
         { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: modalData },
-      ]
-    })
-    .compileComponents();
+        { provide: MAT_DIALOG_DATA, useValue: modalData },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

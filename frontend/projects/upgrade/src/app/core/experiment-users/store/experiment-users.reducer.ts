@@ -4,13 +4,13 @@ import { createReducer, Action, on } from '@ngrx/store';
 import * as experimentUsersActions from './experiment-users.actions';
 
 export const adapter: EntityAdapter<any> = createEntityAdapter<ExcludeEntity>({
-  selectId: entity => (entity.userId ? 'user' + entity.userId : entity.type + entity.groupId)
+  selectId: (entity) => (entity.userId ? 'user' + entity.userId : entity.type + entity.groupId),
 });
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
 
 export const initialState: ExperimentUsersState = adapter.getInitialState({
-  isLoading: false
+  isLoading: false,
 });
 
 const reducer = createReducer(
@@ -22,7 +22,7 @@ const reducer = createReducer(
     experimentUsersActions.actionExcludeGroup,
     experimentUsersActions.actionDeleteExcludedUser,
     experimentUsersActions.actionDeleteExcludedGroup,
-    state => ({ ...state, isLoading: true })
+    (state) => ({ ...state, isLoading: true })
   ),
   on(
     experimentUsersActions.actionFetchExcludedUsersSuccess,
@@ -47,7 +47,7 @@ const reducer = createReducer(
     experimentUsersActions.actionExcludedGroupFailure,
     experimentUsersActions.actionDeleteExcludedUserFailure,
     experimentUsersActions.actionDeleteExcludedGroupFailure,
-    state => ({ ...state, isLoading: false })
+    (state) => ({ ...state, isLoading: false })
   ),
   on(
     experimentUsersActions.actionDeleteExcludedUserSuccess,

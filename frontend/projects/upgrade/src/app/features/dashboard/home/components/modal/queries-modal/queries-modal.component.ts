@@ -16,7 +16,6 @@ import { AuthService } from '../../../../../../core/auth/auth.service';
   styleUrls: ['./queries-modal.component.scss'],
 })
 export class QueriesModalComponent implements OnInit, OnDestroy {
-
   permissions: UserPermission;
   permissionSub: Subscription;
 
@@ -48,21 +47,24 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.permissionSub = this.authService.userPermissions$.subscribe(permission => this.permissions = permission);
-    this.experimentSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe(experiment => {
+    this.permissionSub = this.authService.userPermissions$.subscribe((permission) => (this.permissions = permission));
+    this.experimentSub = this.experimentService.selectExperimentById(this.experimentInfo.id).subscribe((experiment) => {
       this.experimentInfo = experiment;
       this.experimentQueries = experiment.queries;
     });
   }
 
   applyFilter(filterValue?: string) {
-    const searchValue = filterValue && filterValue.toLowerCase() || this.searchInput && this.searchInput.toLowerCase() || '';
+    const searchValue =
+      (filterValue && filterValue.toLowerCase()) || (this.searchInput && this.searchInput.toLowerCase()) || '';
     if (searchValue) {
-      this.experimentQueries = this.experimentInfo.queries.filter(query => {
+      this.experimentQueries = this.experimentInfo.queries.filter((query) => {
         const operationPipedValue = this.operationPipe.transform(query.query.operationType).toLowerCase();
-        return query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(searchValue)
-          || operationPipedValue.includes(searchValue)
-          || query.name.toLowerCase().includes(searchValue);
+        return (
+          query.metric.key.toLowerCase().split(METRICS_JOIN_TEXT).join(' ').includes(searchValue) ||
+          operationPipedValue.includes(searchValue) ||
+          query.name.toLowerCase().includes(searchValue)
+        );
       });
     } else {
       this.experimentQueries = this.experimentInfo.queries;
@@ -73,7 +75,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
     this.analysisService.executeQuery([query.id]);
     const dialogRef = this.dialog.open(QueryResultComponent, {
       panelClass: 'query-result',
-      data: { experiment: this.experimentInfo, query }
+      data: { experiment: this.experimentInfo, query },
     });
 
     dialogRef.afterClosed().subscribe(() => {
@@ -88,7 +90,7 @@ export class QueriesModalComponent implements OnInit, OnDestroy {
   }
 
   deleteQuery(query: any) {
-    this.experimentInfo.queries = this.experimentInfo.queries.filter(expQuery => expQuery.id !== query.id);
+    this.experimentInfo.queries = this.experimentInfo.queries.filter((expQuery) => expQuery.id !== query.id);
     this.experimentService.updateExperiment(this.experimentInfo);
   }
 

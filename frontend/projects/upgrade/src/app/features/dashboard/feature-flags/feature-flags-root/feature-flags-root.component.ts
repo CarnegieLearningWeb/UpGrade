@@ -10,7 +10,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
   selector: 'app-feature-flags-root',
   templateUrl: './feature-flags-root.component.html',
   styleUrls: ['./feature-flags-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagsRootComponent implements OnInit {
   permissions$: Observable<UserPermission>;
@@ -20,7 +20,7 @@ export class FeatureFlagsRootComponent implements OnInit {
     private featureFlagsService: FeatureFlagsService,
     private dialog: MatDialog,
     private authService: AuthService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -29,8 +29,7 @@ export class FeatureFlagsRootComponent implements OnInit {
 
   openNewFlagDialog() {
     this.dialog.open(NewFlagComponent, {
-      panelClass: 'new-flag-modal'
+      panelClass: 'new-flag-modal',
     });
   }
-
 }

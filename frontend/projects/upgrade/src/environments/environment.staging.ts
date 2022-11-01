@@ -13,8 +13,8 @@ export const environment = {
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
-    importExperiment : '/experiments/import',
-    exportExperiment : '/experiments/export',
+    importExperiment: '/experiments/import',
+    exportExperiment: '/experiments/export',
     updateExperiments: '/experiments',
     experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
@@ -49,6 +49,6 @@ export const environment = {
     segments: '/segments',
     importSegment: '/segments/import',
     exportSegment: '/segments/export',
-    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus'
-  }
+    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
+  },
 };

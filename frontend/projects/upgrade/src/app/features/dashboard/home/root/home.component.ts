@@ -13,7 +13,7 @@ import { SegmentsService } from '../../../../core/segments/segments.service';
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit {
   permissions$: Observable<UserPermission>;
@@ -36,13 +36,13 @@ export class HomeComponent implements OnInit {
   openNewExperimentDialog() {
     this.dialog.open(NewExperimentComponent, {
       panelClass: 'new-experiment-modal',
-      disableClose : true
+      disableClose: true,
     });
   }
 
   openImportExperimentDialog() {
     this.dialog.open(ImportExperimentComponent, {
-      panelClass: 'import-experiment-modal'
+      panelClass: 'import-experiment-modal',
     });
   }
 }

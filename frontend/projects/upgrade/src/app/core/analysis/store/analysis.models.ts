@@ -1,11 +1,7 @@
 import { AppState } from '../../core.module';
 import { OPERATION_TYPES, IMetricMetaData, IMetricUnit, REPEATED_MEASURE } from 'upgrade_types';
 
-export {
-  OPERATION_TYPES,
-  IMetricMetaData,
-  REPEATED_MEASURE
-};
+export { OPERATION_TYPES, IMetricMetaData, REPEATED_MEASURE };
 
 export const METRICS_JOIN_TEXT = '@__@';
 
@@ -23,8 +19,8 @@ export interface Query {
   query: any;
   metric: {
     key: string;
-  },
-  repeatedMeasure: REPEATED_MEASURE
+  };
+  repeatedMeasure: REPEATED_MEASURE;
 }
 
 export interface AnalysisState {

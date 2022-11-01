@@ -7,7 +7,14 @@ import { User, UserRole, NUMBER_OF_USERS } from './users.model';
 import { Store, select } from '@ngrx/store';
 import { AppState } from '../../core.state';
 import { selectCurrentUser } from '../../auth/store/auth.selectors';
-import { selectTotalUsers, selectSkipUsers, selectSearchKey, selectSortKey, selectSortAs, selectSearchString } from './users.selectors';
+import {
+  selectTotalUsers,
+  selectSkipUsers,
+  selectSearchKey,
+  selectSortKey,
+  selectSortAs,
+  selectSearchString,
+} from './users.selectors';
 import { combineLatest } from 'rxjs';
 
 @Injectable()
@@ -17,15 +24,18 @@ export class UsersEffects {
   fetchUsers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UsersActions.actionFetchUsers),
-      map(action => action.fromStarting),
+      map((action) => action.fromStarting),
       withLatestFrom(
         this.store$.pipe(select(selectCurrentUser)),
         this.store$.pipe(select(selectSkipUsers)),
         this.store$.pipe(select(selectTotalUsers)),
         this.store$.pipe(select(selectSearchKey)),
-        this.store$.pipe(select(selectSortKey)),
+        this.store$.pipe(select(selectSortKey))
       ),
-      filter(([fromStarting, user, skip, total]) => !!user && user.role === UserRole.ADMIN && (skip < total || total === null || fromStarting)),
+      filter(
+        ([fromStarting, user, skip, total]) =>
+          !!user && user.role === UserRole.ADMIN && (skip < total || total === null || fromStarting)
+      ),
       tap(() => {
         this.store$.dispatch(UsersActions.actionSetIsUserLoading({ isUsersLoading: true }));
       }),
@@ -35,21 +45,21 @@ export class UsersEffects {
 
         // As withLatestFrom does not support more than 5 arguments
         // TODO: Find alternative
-        this.getSearchString$().subscribe(data => {
+        this.getSearchString$().subscribe((data) => {
           searchString = data.searchString;
-          sortAs = data.sortAs
+          sortAs = data.sortAs;
         });
         let params: any = {
           skip: fromStarting ? 0 : skip,
-          take: NUMBER_OF_USERS
-        }
+          take: NUMBER_OF_USERS,
+        };
         if (sortKey) {
           params = {
             ...params,
             sortParams: {
               key: sortKey,
-              sortAs
-            }
+              sortAs,
+            },
           };
         }
         if (searchString) {
@@ -57,29 +67,25 @@ export class UsersEffects {
             ...params,
             searchParams: {
               key: searchKey,
-              string: searchString
-            }
+              string: searchString,
+            },
           };
         }
         return this.usersDataService.fetchUsers(params).pipe(
           switchMap((data: any) => {
             const actions = fromStarting ? [UsersActions.actionSetSkipUsers({ skipUsers: 0 })] : [];
-            return [
-              ...actions,
-              UsersActions.actionFetchUsersSuccess({ users: data.nodes, totalUsers: data.total })
-            ]
+            return [...actions, UsersActions.actionFetchUsersSuccess({ users: data.nodes, totalUsers: data.total })];
           }),
           catchError(() => [UsersActions.actionFetchUsersFailure()])
-        )
-      }
-      )
+        );
+      })
     )
   );
 
   updateUserDetails$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UsersActions.actionUpdateUserDetails),
-      map(action => action.userDetailsData),
+      map((action) => action.userDetailsData),
       filter(({ firstName, lastName, email, role }) => !!firstName && !!lastName && !!email && !!role),
       switchMap(({ firstName, lastName, email, role }) =>
         this.usersDataService.updateUserDetails(firstName, lastName, email, role).pipe(
@@ -93,33 +99,37 @@ export class UsersEffects {
   createNewUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UsersActions.actionCreateNewUser),
-      map(action => action.user),
+      map((action) => action.user),
       filter(({ firstName, lastName, email, role }) => !!firstName && !!lastName && !!email && !!role),
-      switchMap(({ firstName, lastName, email, role }) => this.usersDataService.createNewUser(firstName, lastName, email, role).pipe(
+      switchMap(({ firstName, lastName, email, role }) =>
+        this.usersDataService.createNewUser(firstName, lastName, email, role).pipe(
           map((data: User) => UsersActions.actionCreateNewUserSuccess({ user: data })),
           catchError(() => [UsersActions.actionCreateNewUserFailure()])
-        ))
+        )
+      )
     )
   );
 
   deleteUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UsersActions.actionDeleteUser),
-      map(action => action.email),
+      map((action) => action.email),
       filter((email) => !!email),
-      switchMap(( email ) => this.usersDataService.deleteUser(email).pipe(
+      switchMap((email) =>
+        this.usersDataService.deleteUser(email).pipe(
           map((data: User[]) => UsersActions.actionDeleteUserSuccess({ user: data[0] })),
           catchError(() => [UsersActions.actionDeleteUserFailure()])
-      ))
-    ),
+        )
+      )
+    )
   );
 
   fetchUsersOnSearchString$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(UsersActions.actionSetSearchString),
-        map(action => action.searchString),
-        tap(searchString => {
+        map((action) => action.searchString),
+        tap((searchString) => {
           // Allow empty string as we erasing text from search input
           if (searchString !== null) {
             this.store$.dispatch(UsersActions.actionFetchUsers({ fromStarting: true }));
@@ -144,10 +154,7 @@ export class UsersEffects {
   );
 
   private getSearchString$ = () =>
-    combineLatest([
-      this.store$.pipe(select(selectSearchString)),
-      this.store$.pipe(select(selectSortAs)),
-    ]).pipe(
+    combineLatest([this.store$.pipe(select(selectSearchString)), this.store$.pipe(select(selectSortAs))]).pipe(
       map(([searchString, sortAs]) => ({ searchString, sortAs })),
       first()
     );

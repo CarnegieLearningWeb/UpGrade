@@ -7,17 +7,17 @@ const routes: Routes = [
   {
     path: '',
     component: SegmentsRootComponent,
-    data: { title: 'app-header.title.segments' }
+    data: { title: 'app-header.title.segments' },
   },
   {
     path: 'detail/:segmentId',
     component: ViewSegmentComponent,
-    data: { title: 'app-header.title.view-segment' }
-  }
+    data: { title: 'app-header.title.view-segment' },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class SegmentsRoutingModule { }
+export class SegmentsRoutingModule {}

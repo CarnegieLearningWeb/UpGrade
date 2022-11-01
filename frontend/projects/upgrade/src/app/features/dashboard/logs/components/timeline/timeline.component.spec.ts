@@ -11,8 +11,8 @@ xdescribe('TimelineComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [TimelineComponent, ErrorLogPipe, ExperimentActionMessage ],
-      imports: [TestingModule]
+      declarations: [TimelineComponent, ErrorLogPipe, ExperimentActionMessage],
+      imports: [TestingModule],
     }).compileComponents();
   }));
 

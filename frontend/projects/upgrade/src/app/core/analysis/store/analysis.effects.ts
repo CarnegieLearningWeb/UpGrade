@@ -9,12 +9,11 @@ import { selectQueryResult } from './analysis.selectors';
 
 @Injectable()
 export class AnalysisEffects {
-
   constructor(
     private actions$: Actions,
     private store$: Store<AppState>,
     private analysisDataService: AnalysisDataService
-  ) { }
+  ) {}
 
   fetchMetrics$ = createEffect(() =>
     this.actions$.pipe(
@@ -31,31 +30,31 @@ export class AnalysisEffects {
   upsertMetrics$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionUpsertMetrics),
-      map(action => action.metrics),
-      filter(metrics => !!metrics),
-      switchMap(metrics =>
+      map((action) => action.metrics),
+      filter((metrics) => !!metrics),
+      switchMap((metrics) =>
         this.analysisDataService.upsertMetrics(metrics).pipe(
           map(() => AnalysisActions.actionFetchMetrics()),
-          catchError(() => [ AnalysisActions.actionUpsertMetricsFailure()])
+          catchError(() => [AnalysisActions.actionUpsertMetricsFailure()])
         )
       )
     )
-  )
+  );
 
   deleteMetrics$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionDeleteMetric),
-      map(action => action.key),
-      filter(key => !!key),
+      map((action) => action.key),
+      filter((key) => !!key),
       switchMap((key) =>
         this.analysisDataService.deleteMetric(key).pipe(
           map((data: any) => {
             if (data.length) {
               // If data is present then update tree
-              return AnalysisActions.actionDeleteMetricSuccess({ metrics: data })
+              return AnalysisActions.actionDeleteMetricSuccess({ metrics: data });
             } else {
               // if data length is 0 then it does not have any children so remove existing tree
-              return AnalysisActions.actionDeleteMetricSuccess({ metrics: data, key })
+              return AnalysisActions.actionDeleteMetricSuccess({ metrics: data, key });
             }
           }),
           catchError(() => [AnalysisActions.actionDeleteMetricFailure()])
@@ -67,18 +66,16 @@ export class AnalysisEffects {
   executeQuery$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AnalysisActions.actionExecuteQuery),
-      map(action => action.queryIds),
-      filter(queryIds => !!queryIds.length),
-      withLatestFrom(
-        this.store$.pipe(select(selectQueryResult))
-      ),
+      map((action) => action.queryIds),
+      filter((queryIds) => !!queryIds.length),
+      withLatestFrom(this.store$.pipe(select(selectQueryResult))),
       switchMap(([queryIds, queryResult]) =>
         this.analysisDataService.executeQuery(queryIds).pipe(
           map((data: any) => {
             let newResults = queryResult && queryResult.length ? queryResult : [];
             if (data.length) {
-              data.map(res => {
-                const existingResultIndex = newResults.findIndex(result => result.id === res.id);
+              data.map((res) => {
+                const existingResultIndex = newResults.findIndex((result) => result.id === res.id);
                 if (existingResultIndex !== -1) {
                   newResults[existingResultIndex] = res;
                 } else {

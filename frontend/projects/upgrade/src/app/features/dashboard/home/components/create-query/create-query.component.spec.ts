@@ -11,11 +11,10 @@ xdescribe('CreateQueryComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CreateQueryComponent ],
+      declarations: [CreateQueryComponent],
       imports: [TestingModule],
-      providers: [AnalysisService, ExperimentService]
-    })
-    .compileComponents();
+      providers: [AnalysisService, ExperimentService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

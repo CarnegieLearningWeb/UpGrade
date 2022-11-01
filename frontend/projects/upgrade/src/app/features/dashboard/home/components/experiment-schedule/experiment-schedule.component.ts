@@ -13,17 +13,16 @@ import {
   selector: 'home-experiment-schedule',
   templateUrl: './experiment-schedule.component.html',
   styleUrls: ['./experiment-schedule.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentScheduleComponent implements OnInit {
-
   @Input() groupType: string;
   @Input() experimentInfo: ExperimentVM;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;
   minDate = new Date();
 
-  constructor(private _formBuilder: FormBuilder) { }
+  constructor(private _formBuilder: FormBuilder) {}
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
@@ -34,7 +33,10 @@ export class ExperimentScheduleComponent implements OnInit {
   }
 
   get groupTypeValue(): boolean {
-    return this.experimentScheduleForm && this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA;
+    return (
+      this.experimentScheduleForm &&
+      this.experimentScheduleForm.get('endCondition').value === EndExperimentCondition.END_CRITERIA
+    );
   }
 
   get ExperimentState() {
@@ -49,27 +51,34 @@ export class ExperimentScheduleComponent implements OnInit {
       endCondition: [{ value: '', disabled: true }, Validators.required],
       dateOfExperimentEnd: [{ value: '', disabled: true }],
       userCount: [{ value: '', disabled: true }],
-      groupCount: [{ value: '', disabled: true }]
+      groupCount: [{ value: '', disabled: true }],
     });
 
-    this.experimentScheduleForm.get('startExperimentAutomatically').valueChanges.subscribe(
-      (isExperimentStartAutomatically) => {
+    this.experimentScheduleForm
+      .get('startExperimentAutomatically')
+      .valueChanges.subscribe((isExperimentStartAutomatically) => {
         if (isExperimentStartAutomatically) {
           this.experimentScheduleForm.get('dateOfExperimentStart').enable();
         } else {
           this.experimentScheduleForm.get('dateOfExperimentStart').disable();
           this.experimentScheduleForm.get('dateOfExperimentStart').reset();
         }
-      }
-    );
+      });
 
-    this.experimentScheduleForm.get('endExperimentAutomatically').valueChanges.subscribe(
-      (isExperimentEndAutomatically) => {
+    this.experimentScheduleForm
+      .get('endExperimentAutomatically')
+      .valueChanges.subscribe((isExperimentEndAutomatically) => {
         if (isExperimentEndAutomatically) {
           this.experimentScheduleForm.get('endCondition').enable();
         } else {
-          Object.keys(this.experimentScheduleForm.controls).forEach(formControlName => {
-            if (!(formControlName === 'endExperimentAutomatically' || formControlName === 'startExperimentAutomatically' || formControlName === 'dateOfExperimentStart')) {
+          Object.keys(this.experimentScheduleForm.controls).forEach((formControlName) => {
+            if (
+              !(
+                formControlName === 'endExperimentAutomatically' ||
+                formControlName === 'startExperimentAutomatically' ||
+                formControlName === 'dateOfExperimentStart'
+              )
+            ) {
               this.experimentScheduleForm.controls[formControlName].disable();
               this.experimentScheduleForm.controls[formControlName].reset();
             }
@@ -77,25 +86,23 @@ export class ExperimentScheduleComponent implements OnInit {
         }
       });
 
-    this.experimentScheduleForm.get('endCondition').valueChanges.subscribe(
-      endCondition => {
-        if (endCondition === EndExperimentCondition.END_ON_DATE) {
-          this.experimentScheduleForm.get('dateOfExperimentEnd').enable();
+    this.experimentScheduleForm.get('endCondition').valueChanges.subscribe((endCondition) => {
+      if (endCondition === EndExperimentCondition.END_ON_DATE) {
+        this.experimentScheduleForm.get('dateOfExperimentEnd').enable();
+        this.experimentScheduleForm.get('userCount').disable();
+        this.experimentScheduleForm.get('groupCount').disable();
+      } else if (endCondition === EndExperimentCondition.END_CRITERIA) {
+        if (this.experimentInfo && this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE) {
+          this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
           this.experimentScheduleForm.get('userCount').disable();
           this.experimentScheduleForm.get('groupCount').disable();
-        } else if (endCondition === EndExperimentCondition.END_CRITERIA) {
-          if (this.experimentInfo && this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE) {
-            this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
-            this.experimentScheduleForm.get('userCount').disable();
-            this.experimentScheduleForm.get('groupCount').disable();
-          } else {
-            this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
-            this.experimentScheduleForm.get('userCount').enable();
-            this.experimentScheduleForm.get('groupCount').enable();
-          }
+        } else {
+          this.experimentScheduleForm.get('dateOfExperimentEnd').disable();
+          this.experimentScheduleForm.get('userCount').enable();
+          this.experimentScheduleForm.get('groupCount').enable();
         }
       }
-    );
+    });
 
     // populate values in form to update experiment if experiment data is available
     if (this.experimentInfo) {
@@ -107,7 +114,9 @@ export class ExperimentScheduleComponent implements OnInit {
       const { enrollmentCompleteCondition, endOn, startOn } = this.experimentInfo;
       const isEndAutomaticallyChecked = !!endOn || !!enrollmentCompleteCondition;
       const endCondition = isEndAutomaticallyChecked
-        ? (endOn ? EndExperimentCondition.END_ON_DATE : EndExperimentCondition.END_CRITERIA)
+        ? endOn
+          ? EndExperimentCondition.END_ON_DATE
+          : EndExperimentCondition.END_CRITERIA
         : null;
       this.experimentScheduleForm.patchValue({
         startExperimentAutomatically: !!startOn,
@@ -116,7 +125,7 @@ export class ExperimentScheduleComponent implements OnInit {
         endCondition,
         dateOfExperimentEnd: endOn ? new Date(endOn) : null,
         userCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.userCount : null,
-        groupCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.groupCount : null
+        groupCount: enrollmentCompleteCondition ? enrollmentCompleteCondition.groupCount : null,
       });
     }
   }
@@ -132,8 +141,7 @@ export class ExperimentScheduleComponent implements OnInit {
     if (endExperimentAutomatically && !!endCondition) {
       if (endCondition === EndExperimentCondition.END_ON_DATE && !dateOfExperimentEnd) {
         this.experimentScheduleForm.setErrors({ dateOfExperimentEndError: true });
-      } else if (
-        endCondition === EndExperimentCondition.END_CRITERIA && !(userCount || groupCount)) {
+      } else if (endCondition === EndExperimentCondition.END_CRITERIA && !(userCount || groupCount)) {
         this.experimentScheduleForm.setErrors({ endCriteriaError: true });
       }
     } else if (endExperimentAutomatically && !endCondition) {
@@ -142,8 +150,11 @@ export class ExperimentScheduleComponent implements OnInit {
     if (startExperimentAutomatically && !dateOfExperimentStart) {
       this.experimentScheduleForm.setErrors({ startOnSelectionError: true });
     }
-    if (dateOfExperimentStart && dateOfExperimentEnd
-      && new Date(dateOfExperimentStart).getTime() >= new Date(dateOfExperimentEnd).getTime()) {
+    if (
+      dateOfExperimentStart &&
+      dateOfExperimentEnd &&
+      new Date(dateOfExperimentStart).getTime() >= new Date(dateOfExperimentEnd).getTime()
+    ) {
       this.experimentScheduleForm.setErrors({ wrongDateSelectionError: true });
     }
   }
@@ -161,28 +172,38 @@ export class ExperimentScheduleComponent implements OnInit {
             endOn: null,
             enrollmentCompleteCondition: null,
             startOn: null,
-            state: EXPERIMENT_STATE.INACTIVE
+            state: EXPERIMENT_STATE.INACTIVE,
           };
           if (this.experimentInfo) {
             scheduleData = {
               ...scheduleData,
-              state: this.experimentInfo.state
+              state: this.experimentInfo.state,
             };
-            if (this.experimentInfo.state === this.ExperimentState.ENROLLING || this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE) {
+            if (
+              this.experimentInfo.state === this.ExperimentState.ENROLLING ||
+              this.experimentInfo.state === this.ExperimentState.ENROLLMENT_COMPLETE
+            ) {
               this.emitExperimentDialogEvent.emit({
                 type: eventType,
                 formData: scheduleData,
-                path: NewExperimentPaths.EXPERIMENT_SCHEDULE
+                path: NewExperimentPaths.EXPERIMENT_SCHEDULE,
               });
             }
           }
-          const { endExperimentAutomatically, endCondition, dateOfExperimentEnd, userCount, groupCount, dateOfExperimentStart } = this.experimentScheduleForm.value;
+          const {
+            endExperimentAutomatically,
+            endCondition,
+            dateOfExperimentEnd,
+            userCount,
+            groupCount,
+            dateOfExperimentStart,
+          } = this.experimentScheduleForm.value;
           if (endExperimentAutomatically) {
             switch (endCondition) {
               case EndExperimentCondition.END_ON_DATE:
                 scheduleData = {
                   ...scheduleData,
-                  endOn: dateOfExperimentEnd.toISOString()
+                  endOn: dateOfExperimentEnd.toISOString(),
                 };
                 break;
 
@@ -191,8 +212,8 @@ export class ExperimentScheduleComponent implements OnInit {
                   ...scheduleData,
                   enrollmentCompleteCondition: {
                     userCount: userCount || 0,
-                    groupCount: groupCount || 0
-                  }
+                    groupCount: groupCount || 0,
+                  },
                 };
                 break;
             }
@@ -201,22 +222,22 @@ export class ExperimentScheduleComponent implements OnInit {
             scheduleData = {
               ...scheduleData,
               startOn: dateOfExperimentStart,
-              state: EXPERIMENT_STATE.SCHEDULED
-            }
+              state: EXPERIMENT_STATE.SCHEDULED,
+            };
           } else {
             if (this.experimentInfo) {
               const { state } = this.experimentInfo;
               scheduleData = {
                 ...scheduleData,
                 startOn: null,
-                state: state === EXPERIMENT_STATE.SCHEDULED ? EXPERIMENT_STATE.INACTIVE : state
-              }
+                state: state === EXPERIMENT_STATE.SCHEDULED ? EXPERIMENT_STATE.INACTIVE : state,
+              };
             }
           }
           this.emitExperimentDialogEvent.emit({
             type: eventType,
             formData: scheduleData,
-            path: NewExperimentPaths.EXPERIMENT_SCHEDULE
+            path: NewExperimentPaths.EXPERIMENT_SCHEDULE,
           });
         }
         break;

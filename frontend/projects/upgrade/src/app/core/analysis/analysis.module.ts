@@ -12,8 +12,8 @@ import { AnalysisService } from './analysis.service';
   imports: [
     CommonModule,
     EffectsModule.forFeature([AnalysisEffects]),
-    StoreModule.forFeature('analysis', analysisReducer)
+    StoreModule.forFeature('analysis', analysisReducer),
   ],
-  providers: [AnalysisService, AnalysisDataService ]
+  providers: [AnalysisService, AnalysisDataService],
 })
-export class AnalysisModule { }
+export class AnalysisModule {}

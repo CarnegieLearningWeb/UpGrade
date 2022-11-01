@@ -1,5 +1,10 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Inject, OnInit } from '@angular/core';
-import { NewSegmentDialogData, NewSegmentDialogEvents, NewSegmentPaths, Segment } from '../../../../../../core/segments/store/segments.model';
+import {
+  NewSegmentDialogData,
+  NewSegmentDialogEvents,
+  NewSegmentPaths,
+  Segment,
+} from '../../../../../../core/segments/store/segments.model';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { SegmentsService } from '../../../../../../core/segments/segments.service';
@@ -8,7 +13,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   selector: 'app-new-segment',
   templateUrl: './new-segment.component.html',
   styleUrls: ['./new-segment.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewSegmentComponent implements OnInit {
   @ViewChild('stepper', { static: false }) stepper: any;
@@ -45,14 +50,14 @@ export class NewSegmentComponent implements OnInit {
       case NewSegmentDialogEvents.SEND_FORM_DATA:
         this.newSegmentData = {
           ...this.newSegmentData,
-          ...formData
+          ...formData,
         };
         if (!this.currentContext && this.segmentInfo) {
           this.currentContext = this.segmentInfo.context;
         }
 
-        this.isContextChanged = this.currentContext ? (this.currentContext !== this.newSegmentData.context) : false;
-        this.currentContext  = this.newSegmentData.context;
+        this.isContextChanged = this.currentContext ? this.currentContext !== this.newSegmentData.context : false;
+        this.currentContext = this.newSegmentData.context;
 
         this.stepper.next();
         if (path === NewSegmentPaths.SEGMENT_MEMBERS) {
@@ -65,7 +70,7 @@ export class NewSegmentComponent implements OnInit {
         this.newSegmentData = {
           ...this.segmentInfo,
           ...this.newSegmentData,
-          ...formData
+          ...formData,
         };
         this.segmentService.updateSegment(this.newSegmentData);
         this.onNoClick();

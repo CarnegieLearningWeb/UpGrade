@@ -2,10 +2,9 @@ import { Directive, HostListener, EventEmitter, Output, ElementRef, Input } from
 import { debounce } from '../decorator/debounce.decorator';
 
 @Directive({
-   selector: '[scroll]'
+  selector: '[scroll]',
 })
 export class ScrollDirective {
-
   @Output() scrolled = new EventEmitter<number>();
   @Input() scrollPercentage = 80;
 
@@ -19,9 +18,11 @@ export class ScrollDirective {
   @HostListener('scroll', ['$event'])
   @debounce()
   onListenerTriggered(): void {
-
     // Calculate the scroll percentage
-    const percent = Math.round((this.el.nativeElement.scrollTop / (this.el.nativeElement.scrollHeight - this.el.nativeElement.clientHeight)) * 100);
+    const percent = Math.round(
+      (this.el.nativeElement.scrollTop / (this.el.nativeElement.scrollHeight - this.el.nativeElement.clientHeight)) *
+        100
+    );
     // // Compare the new with old and only raise the event if values change and percent is greater than scrollPercentage
     if (this.percentValue !== percent && percent > this.scrollPercentage) {
       //   // Update the percent value

@@ -10,16 +10,15 @@ import { UserRole } from '../users/store/users.model';
 
 @Injectable()
 export class AuthService {
-
-  constructor(private store$: Store<AppState>) { }
+  constructor(private store$: Store<AppState>) {}
 
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getIdToken$ = this.store$.pipe(
     select(selectCurrentUser),
-    map(currentUser => currentUser ? currentUser.token : null)
-  )
+    map((currentUser) => (currentUser ? currentUser.token : null))
+  );
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
   googleSignInElementRef: ElementRef;
 
@@ -28,7 +27,7 @@ export class AuthService {
   }
 
   getGoogleSignInElementRef(): ElementRef {
-    return this.googleSignInElementRef
+    return this.googleSignInElementRef;
   }
 
   authLoginStart() {

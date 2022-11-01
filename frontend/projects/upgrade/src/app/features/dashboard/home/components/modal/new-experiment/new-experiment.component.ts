@@ -5,7 +5,7 @@ import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
   NewExperimentPaths,
-  ExperimentVM
+  ExperimentVM,
 } from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -53,7 +53,7 @@ export class NewExperimentComponent implements OnInit {
       case NewExperimentDialogEvents.SEND_FORM_DATA:
         this.newExperimentData = {
           ...this.newExperimentData,
-          ...formData
+          ...formData,
         };
 
         if (!this.currentContext && this.experimentInfo) {
@@ -62,7 +62,7 @@ export class NewExperimentComponent implements OnInit {
 
         this.isContextChanged = this.currentContext !== this.newExperimentData.context[0];
 
-        this.currentContext  = this.newExperimentData.context[0];
+        this.currentContext = this.newExperimentData.context[0];
 
         this.stepper.next();
         if (path === NewExperimentPaths.POST_EXPERIMENT_RULE) {
@@ -72,13 +72,13 @@ export class NewExperimentComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.UPDATE_EXPERIMENT:
         this.onNoClick();
-        // TODO: eslint wants a break statement here, not sure on usage
+      // TODO: eslint wants a break statement here, not sure on usage
       // eslint-disable-next-line no-fallthrough
       case NewExperimentDialogEvents.SAVE_DATA:
         this.newExperimentData = {
           ...this.experimentInfo,
           ...this.newExperimentData,
-          ...formData
+          ...formData,
         };
         this.openSnackBar();
         this.experimentService.updateExperiment(this.newExperimentData);
@@ -87,7 +87,7 @@ export class NewExperimentComponent implements OnInit {
   }
 
   openSnackBar() {
-    this._snackBar.open(this.translate.instant('global.save-confirmation.message.text') , null, { duration: 2000 });
+    this._snackBar.open(this.translate.instant('global.save-confirmation.message.text'), null, { duration: 2000 });
   }
 
   stepChanged(event) {

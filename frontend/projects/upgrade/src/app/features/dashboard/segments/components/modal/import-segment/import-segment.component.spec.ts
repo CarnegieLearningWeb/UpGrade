@@ -10,15 +10,10 @@ xdescribe('ImportSegmentComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ImportSegmentComponent ],
+      declarations: [ImportSegmentComponent],
       imports: [TestingModule],
-      providers: [
-        SegmentsService,
-        { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: [] },
-      ]
-    })
-    .compileComponents();
+      providers: [SegmentsService, { provide: MatDialogRef, useValue: {} }, { provide: MAT_DIALOG_DATA, useValue: [] }],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

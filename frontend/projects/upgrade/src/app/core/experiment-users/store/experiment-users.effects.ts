@@ -36,8 +36,8 @@ export class ExperimentUsersEffects {
   excludedUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentUsersActions.actionExcludeUser),
-      map(action => action.id),
-      filter(id => !!id),
+      map((action) => action.id),
+      filter((id) => !!id),
       switchMap((id: string) =>
         this.experimentUsersDataService.excludeUser(id).pipe(
           map((data: ExcludeEntity[]) => experimentUsersActions.actionExcludeUserSuccess({ data })),
@@ -50,7 +50,7 @@ export class ExperimentUsersEffects {
   excludedGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentUsersActions.actionExcludeGroup),
-      map(action => ({ id: action.id, type: action.groupType })),
+      map((action) => ({ id: action.id, type: action.groupType })),
       filter(({ id, type }) => !!id && !!type),
       switchMap(({ id, type }) =>
         this.experimentUsersDataService.excludeGroup(id, type).pipe(
@@ -64,8 +64,8 @@ export class ExperimentUsersEffects {
   deleteExcludedUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentUsersActions.actionDeleteExcludedUser),
-      map(action => action.id),
-      filter(id => !!id),
+      map((action) => action.id),
+      filter((id) => !!id),
       switchMap((id: string) =>
         this.experimentUsersDataService.deleteExcludedUser(id).pipe(
           map((data: ExcludeEntity[]) => experimentUsersActions.actionDeleteExcludedUserSuccess({ data })),
@@ -78,7 +78,7 @@ export class ExperimentUsersEffects {
   deleteExcludedGroup$ = createEffect(() =>
     this.actions$.pipe(
       ofType(experimentUsersActions.actionDeleteExcludedGroup),
-      map(action => ({ id: action.id, type: action.groupType })),
+      map((action) => ({ id: action.id, type: action.groupType })),
       filter(({ id, type }) => !!id && !!type),
       switchMap(({ id, type }) =>
         this.experimentUsersDataService.deleteExcludedGroup(id, type).pipe(

@@ -7,7 +7,7 @@ import {
   selectAllSegments,
   selectSelectedSegment,
   selectExperimentSegmentsInclusion,
-  selectExperimentSegmentsExclusion 
+  selectExperimentSegmentsExclusion,
 } from './store/segments.selectors';
 import { SegmentInput, UpsertSegmentType } from './store/segments.model';
 import { filter, map } from 'rxjs/operators';
@@ -25,8 +25,8 @@ export class SegmentsService {
 
   allSegments$ = this.store$.pipe(
     select(selectAllSegments),
-    filter(allSegments => !!allSegments),
-    map(Segments =>
+    filter((allSegments) => !!allSegments),
+    map((Segments) =>
       Segments.sort((a, b) => {
         const d1 = new Date(a.createdAt);
         const d2 = new Date(b.createdAt);
@@ -36,10 +36,7 @@ export class SegmentsService {
   );
 
   isInitialSegmentsLoading() {
-    return combineLatest(
-      this.store$.pipe(select(selectIsLoadingSegments)),
-      this.allSegments$
-      ).pipe(
+    return combineLatest(this.store$.pipe(select(selectIsLoadingSegments)), this.allSegments$).pipe(
       map(([isLoading, segments]) => !isLoading || !!segments.length)
     );
   }
@@ -49,7 +46,9 @@ export class SegmentsService {
   }
 
   createNewSegment(segment: SegmentInput) {
-    this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.CREATE_NEW_SEGMENT }));
+    this.store$.dispatch(
+      SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.CREATE_NEW_SEGMENT })
+    );
   }
 
   deleteSegment(segmentId: string) {
@@ -57,7 +56,9 @@ export class SegmentsService {
   }
 
   updateSegment(segment: SegmentInput) {
-    this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.UPDATE_SEGMENT }));
+    this.store$.dispatch(
+      SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.UPDATE_SEGMENT })
+    );
   }
 
   exportSegment(segmentId: string) {
@@ -65,6 +66,8 @@ export class SegmentsService {
   }
 
   importSegment(segment: SegmentInput) {
-    this.store$.dispatch(SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.IMPORT_SEGMENT }));
+    this.store$.dispatch(
+      SegmentsActions.actionUpsertSegment({ segment, actionType: UpsertSegmentType.IMPORT_SEGMENT })
+    );
   }
 }

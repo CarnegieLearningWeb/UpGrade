@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { LogDateFormatType } from '../../../../core/logs/store/logs.model';
 
 @Pipe({
-  name: 'logDateFormatPipe'
+  name: 'logDateFormatPipe',
 })
 export class LogDateFormatPipe implements PipeTransform {
   transform(date: string, type?: any): any {
@@ -20,7 +20,7 @@ export class LogDateFormatPipe implements PipeTransform {
         'September',
         'October',
         'November',
-        'December'
+        'December',
       ];
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       const dateNumber = logDate.getDate();

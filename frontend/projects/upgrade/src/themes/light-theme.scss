@@ -30,7 +30,7 @@ mat.$blue-palette: (
     A100: #000000,
     A200: #000000,
     A400: #000000,
-    A700: #000000
+    A700: #000000,
   )
 );
 
@@ -63,7 +63,7 @@ mat.$red-palette: (
     A100: #000000,
     A200: #000000,
     A400: #000000,
-    A700: #000000
+    A700: #000000,
   )
 );
 
@@ -89,7 +89,7 @@ $background: map_merge(
   $background,
   (
     background: $background-color,
-    shadow-color: $shadow-color
+    shadow-color: $shadow-color,
   )
 );
 $foreground: map_merge(
@@ -98,18 +98,18 @@ $foreground: map_merge(
     text: $text-color,
     icon: $icon-color,
     icons: $icon-color,
-    chart-border: $chart-border
+    chart-border: $chart-border,
   )
 );
 $light-theme: map_merge(
   $light-theme,
   (
-    background: $background
+    background: $background,
   )
 );
 $light-theme: map_merge(
   $light-theme,
   (
-    foreground: $foreground
+    foreground: $foreground,
   )
 );

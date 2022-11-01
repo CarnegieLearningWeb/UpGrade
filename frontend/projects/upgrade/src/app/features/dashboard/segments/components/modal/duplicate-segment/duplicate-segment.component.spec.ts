@@ -7,9 +7,8 @@ xdescribe('DuplicateSegmentComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DuplicateSegmentComponent ]
-    })
-    .compileComponents();
+      declarations: [DuplicateSegmentComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -10,11 +10,10 @@ xdescribe('SegmentOverviewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SegmentOverviewComponent ],
+      declarations: [SegmentOverviewComponent],
       imports: [TestingModule],
-      providers: [SegmentsService]
-    })
-    .compileComponents();
+      providers: [SegmentsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

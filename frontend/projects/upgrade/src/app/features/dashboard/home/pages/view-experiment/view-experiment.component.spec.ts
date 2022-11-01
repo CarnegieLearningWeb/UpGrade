@@ -23,12 +23,11 @@ xdescribe('ViewExperimentComponent', () => {
         EnrollmentConditionTableComponent,
         ExperimentQueryResultComponent,
         TableRowComponent,
-        EnrollmentPointPartitionTableComponent
+        EnrollmentPointPartitionTableComponent,
       ],
       imports: [TestingModule, NgxChartsModule],
-      providers: [ExperimentService, AuthService]
-    })
-    .compileComponents();
+      providers: [ExperimentService, AuthService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

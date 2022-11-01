@@ -9,7 +9,7 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
 @Component({
   selector: 'error-logs',
   templateUrl: './error-logs.component.html',
-  styleUrls: ['./error-logs.component.scss']
+  styleUrls: ['./error-logs.component.scss'],
 })
 export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('ErrorLogContainer') errorLogContainer: ElementRef;
@@ -20,10 +20,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   isErrorLogLoading$ = this.logsService.isErrorLogLoading$;
   theme$ = this.settingsService.theme$;
 
-  constructor(
-    private logsService: LogsService,
-    private settingsService: SettingsService
-  ) {}
+  constructor(private logsService: LogsService, private settingsService: SettingsService) {}
 
   get LogType() {
     return LogType;
@@ -34,14 +31,16 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
-    this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe(errorLogs => {
+    this.errorLogSubscription = this.logsService.getAllErrorLogs$.subscribe((errorLogs) => {
       errorLogs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
-      this.errorLogData = groupBy(errorLogs, log => {
+      this.errorLogData = groupBy(errorLogs, (log) => {
         const date = new Date(log.createdAt);
         return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
       });
     });
-    this.isAllErrorLogFetchedSub = this.logsService.isAllErrorLogsFetched().subscribe(value => this.isAllErrorLogFetched = value);
+    this.isAllErrorLogFetchedSub = this.logsService
+      .isAllErrorLogsFetched()
+      .subscribe((value) => (this.isAllErrorLogFetched = value));
   }
 
   // Used for keyvalue pipe to sort data by key
@@ -60,7 +59,7 @@ export class ErrorLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.errorLogContainer.nativeElement.style.height = (windowHeight - 325) + 'px';
+    this.errorLogContainer.nativeElement.style.height = windowHeight - 325 + 'px';
   }
 
   ngOnDestroy() {

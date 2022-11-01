@@ -15,15 +15,9 @@ xdescribe('ErrorLogsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        ErrorLogsComponent,
-        TimelineComponent,
-        LogDateFormatPipe,
-        ErrorLogPipe,
-        ExperimentActionMessage
-      ],
+      declarations: [ErrorLogsComponent, TimelineComponent, LogDateFormatPipe, ErrorLogPipe, ExperimentActionMessage],
       imports: [TestingModule],
-      providers: [LogsService, SettingsService]
+      providers: [LogsService, SettingsService],
     }).compileComponents();
   }));
 

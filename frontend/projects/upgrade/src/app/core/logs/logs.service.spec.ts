@@ -10,224 +10,221 @@ const MockStateStore$ = new BehaviorSubject({});
 (MockStateStore$ as any).dispatch = jest.fn();
 
 describe('LogsService', () => {
-    let mockStore: any;
-    let service: LogsService;
-    const mockAuditLog: AuditLogs = {
-        id: 'log1',
-        createdAt: 'test',
-        updatedAt: 'test',
-        versionNUmber: 2,
-        type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
-        data: {}
-      }
+  let mockStore: any;
+  let service: LogsService;
+  const mockAuditLog: AuditLogs = {
+    id: 'log1',
+    createdAt: 'test',
+    updatedAt: 'test',
+    versionNUmber: 2,
+    type: EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED,
+    data: {},
+  };
 
-    beforeEach(() => {
-        mockStore = MockStateStore$;
-        service = new LogsService(mockStore);
-    })
+  beforeEach(() => {
+    mockStore = MockStateStore$;
+    service = new LogsService(mockStore);
+  });
 
-    describe('#getAuditLogs', () => {
-        const testCases = [
-            {
-                whenCondition: 'experimentId is not present, set log to isExperimentExist false',
-                expectedValue: {
-                    ...mockAuditLog,
-                    data: {
-                        experimentId: null,
-                        isExperimentExist: false
-                    },
-                },
-                logs: [{
-                    ...mockAuditLog,
-                    data: {
-                        experimentId: null,
-                    }
-                }],
-                experiments: [{
-                    id: null
-                }]
+  describe('#getAuditLogs', () => {
+    const testCases = [
+      {
+        whenCondition: 'experimentId is not present, set log to isExperimentExist false',
+        expectedValue: {
+          ...mockAuditLog,
+          data: {
+            experimentId: null,
+            isExperimentExist: false,
+          },
+        },
+        logs: [
+          {
+            ...mockAuditLog,
+            data: {
+              experimentId: null,
             },
-            {
-                whenCondition: 'experimentId matched, set log to isExperimentExist true',
-                expectedValue: {
-                    ...mockAuditLog,
-                    data: {
-                        experimentId: '1',
-                        isExperimentExist: true
-                    },
-                },
-                logs: [{
-                    ...mockAuditLog,
-                    data: {
-                        experimentId: '1',
-                    }
-                }],
-                experiments: [{
-                    id: '1'
-                }]
+          },
+        ],
+        experiments: [
+          {
+            id: null,
+          },
+        ],
+      },
+      {
+        whenCondition: 'experimentId matched, set log to isExperimentExist true',
+        expectedValue: {
+          ...mockAuditLog,
+          data: {
+            experimentId: '1',
+            isExperimentExist: true,
+          },
+        },
+        logs: [
+          {
+            ...mockAuditLog,
+            data: {
+              experimentId: '1',
             },
-            {
-                whenCondition: 'experimentId NOT matched, set log to isExperimentExist false',
-                expectedValue: {
-                    ...mockAuditLog,
-                    data: {
-                        experimentId: '1',
-                        isExperimentExist: false
-                    },
-                },
-                logs: [{
-                    ...mockAuditLog,
-                    data: {
-                        experimentId: '1',
-                    }
-                }],
-                experiments: [{
-                    id: '2'
-                }]
-            }
-        ]
-
-        testCases.forEach(testCase => {
-            const {
-                whenCondition,
-                expectedValue,
-                logs,
-                experiments
-            } = testCase;
-
-            it(`WHEN ${whenCondition}, THEN expected value is ${JSON.stringify(expectedValue)}`, fakeAsync(() => {
-                LogSelectors.selectAllAuditLogs.setResult([ ...logs ]);
-                ExperimentSelectors.selectAllExperiment.setResult(([ ...experiments ] as any));
-
-                service.getAuditLogs().subscribe(val => {
-                    tick(0);
-                    expect(val[0]).toEqual(expectedValue)
-                })
-            }))
-        })
-    })
-
-    describe('#isAllAuditLogsFetched', () => {
-        const testCases = [
-            {
-                whenCondition: 'skip does not equal total',
-                expectedValue: false,
-                skipLogs: 0,
-                totalLogs: 1,
+          },
+        ],
+        experiments: [
+          {
+            id: '1',
+          },
+        ],
+      },
+      {
+        whenCondition: 'experimentId NOT matched, set log to isExperimentExist false',
+        expectedValue: {
+          ...mockAuditLog,
+          data: {
+            experimentId: '1',
+            isExperimentExist: false,
+          },
+        },
+        logs: [
+          {
+            ...mockAuditLog,
+            data: {
+              experimentId: '1',
             },
-            {
-                whenCondition: 'skip does equal total',
-                expectedValue: true,
-                skipLogs: 1,
-                totalLogs: 1
-            }
-        ]
+          },
+        ],
+        experiments: [
+          {
+            id: '2',
+          },
+        ],
+      },
+    ];
 
-        testCases.forEach(testCase => {
-            const {
-                whenCondition,
-                expectedValue,
-                skipLogs,
-                totalLogs
-            } = testCase;
+    testCases.forEach((testCase) => {
+      const { whenCondition, expectedValue, logs, experiments } = testCase;
 
-            it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
-                LogSelectors.selectSkipAuditLog.setResult(skipLogs)
-                LogSelectors.selectTotalAuditLogs.setResult(totalLogs);
+      it(`WHEN ${whenCondition}, THEN expected value is ${JSON.stringify(expectedValue)}`, fakeAsync(() => {
+        LogSelectors.selectAllAuditLogs.setResult([...logs]);
+        ExperimentSelectors.selectAllExperiment.setResult([...experiments] as any);
 
-                service.isAllAuditLogsFetched().subscribe(val => {
-                    tick(0);
-                    expect(val).toEqual(expectedValue)
-                })
-            }))
-        })
-    })
+        service.getAuditLogs().subscribe((val) => {
+          tick(0);
+          expect(val[0]).toEqual(expectedValue);
+        });
+      }));
+    });
+  });
 
-    describe('#isAllErrorLogsFetched', () => {
-        const testCases = [
-            {
-                whenCondition: 'skip does not equal total',
-                expectedValue: false,
-                skipLogs: 0,
-                totalLogs: 1,
-            },
-            {
-                whenCondition: 'skip does equal total',
-                expectedValue: true,
-                skipLogs: 1,
-                totalLogs: 1
-            }
-        ]
+  describe('#isAllAuditLogsFetched', () => {
+    const testCases = [
+      {
+        whenCondition: 'skip does not equal total',
+        expectedValue: false,
+        skipLogs: 0,
+        totalLogs: 1,
+      },
+      {
+        whenCondition: 'skip does equal total',
+        expectedValue: true,
+        skipLogs: 1,
+        totalLogs: 1,
+      },
+    ];
 
-        testCases.forEach(testCase => {
-            const {
-                whenCondition,
-                expectedValue,
-                skipLogs,
-                totalLogs
-            } = testCase;
+    testCases.forEach((testCase) => {
+      const { whenCondition, expectedValue, skipLogs, totalLogs } = testCase;
 
-            it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
-                LogSelectors.selectSkipErrorLog.setResult(skipLogs)
-                LogSelectors.selectTotalErrorLogs.setResult(totalLogs);
+      it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
+        LogSelectors.selectSkipAuditLog.setResult(skipLogs);
+        LogSelectors.selectTotalAuditLogs.setResult(totalLogs);
 
-                service.isAllErrorLogsFetched().subscribe(val => {
-                    tick(0);
-                    expect(val).toEqual(expectedValue)
-                })
-            }))
-        })
-    })
+        service.isAllAuditLogsFetched().subscribe((val) => {
+          tick(0);
+          expect(val).toEqual(expectedValue);
+        });
+      }));
+    });
+  });
 
-    describe('#fetchAuditLogs', () => {
-        it('should dispatch actionGetAuditLogs with fromStart defined', () => {
-            const fromStart = true;
-    
-            service.fetchAuditLogs(fromStart)
+  describe('#isAllErrorLogsFetched', () => {
+    const testCases = [
+      {
+        whenCondition: 'skip does not equal total',
+        expectedValue: false,
+        skipLogs: 0,
+        totalLogs: 1,
+      },
+      {
+        whenCondition: 'skip does equal total',
+        expectedValue: true,
+        skipLogs: 1,
+        totalLogs: 1,
+      },
+    ];
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetAuditLogs({ fromStart }));
-        })
+    testCases.forEach((testCase) => {
+      const { whenCondition, expectedValue, skipLogs, totalLogs } = testCase;
 
-        it('should dispatch actionGetAuditLogs with fromStart defined', () => {
-            service.fetchAuditLogs()
+      it(`WHEN ${whenCondition}, THEN ${expectedValue}:`, fakeAsync(() => {
+        LogSelectors.selectSkipErrorLog.setResult(skipLogs);
+        LogSelectors.selectTotalErrorLogs.setResult(totalLogs);
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetAuditLogs({ fromStart: undefined }));
-        })
-    })
+        service.isAllErrorLogsFetched().subscribe((val) => {
+          tick(0);
+          expect(val).toEqual(expectedValue);
+        });
+      }));
+    });
+  });
 
-    describe('#fetchErrorLogs', () => {
-        it('should dispatch actionGetErrorLogs with fromStart defined', () => {
-            const fromStart = true;
-    
-            service.fetchErrorLogs(fromStart)
+  describe('#fetchAuditLogs', () => {
+    it('should dispatch actionGetAuditLogs with fromStart defined', () => {
+      const fromStart = true;
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetErrorLogs({ fromStart }));
-        })
+      service.fetchAuditLogs(fromStart);
 
-        it('should dispatch actionGetErrorLogs with fromStart defined', () => {
-            service.fetchErrorLogs()
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetAuditLogs({ fromStart }));
+    });
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetErrorLogs({ fromStart: undefined }));
-        })
-    })
+    it('should dispatch actionGetAuditLogs with fromStart defined', () => {
+      service.fetchAuditLogs();
 
-    describe('#setAuditLogFilter', () => {
-        it('should dispatch actionSetAuditLogFilter with filterType', () => {
-            const filterType = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetAuditLogs({ fromStart: undefined }));
+    });
+  });
 
-            service.setAuditLogFilter(filterType);
+  describe('#fetchErrorLogs', () => {
+    it('should dispatch actionGetErrorLogs with fromStart defined', () => {
+      const fromStart = true;
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionSetAuditLogFilter({ filterType }))
-        })
-    })
+      service.fetchErrorLogs(fromStart);
 
-    describe('#setErrorLogFilter', () => {
-        it('should dispatch actionSetAuditLogFilter with filterType', () => {
-            const filterType = SERVER_ERROR.ASSIGNMENT_ERROR;
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetErrorLogs({ fromStart }));
+    });
 
-            service.setErrorLogFilter(filterType);
+    it('should dispatch actionGetErrorLogs with fromStart defined', () => {
+      service.fetchErrorLogs();
 
-            expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionSetErrorLogFilter({ filterType }))
-        })
-    })
-})
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionGetErrorLogs({ fromStart: undefined }));
+    });
+  });
+
+  describe('#setAuditLogFilter', () => {
+    it('should dispatch actionSetAuditLogFilter with filterType', () => {
+      const filterType = EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED;
+
+      service.setAuditLogFilter(filterType);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionSetAuditLogFilter({ filterType }));
+    });
+  });
+
+  describe('#setErrorLogFilter', () => {
+    it('should dispatch actionSetAuditLogFilter with filterType', () => {
+      const filterType = SERVER_ERROR.ASSIGNMENT_ERROR;
+
+      service.setErrorLogFilter(filterType);
+
+      expect(mockStore.dispatch).toHaveBeenCalledWith(LogActions.actionSetErrorLogFilter({ filterType }));
+    });
+  });
+});

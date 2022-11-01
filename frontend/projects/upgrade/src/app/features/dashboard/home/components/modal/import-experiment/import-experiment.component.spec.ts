@@ -11,15 +11,14 @@ xdescribe('ImportExperimentComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ImportExperimentComponent ],
+      declarations: [ImportExperimentComponent],
       imports: [TestingModule],
       providers: [
         ExperimentService,
         { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: [] },
-      ]
-    })
-    .compileComponents();
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

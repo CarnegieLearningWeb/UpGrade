@@ -13,7 +13,7 @@ import { DeleteFlagComponent } from '../../components/modal/delete-flag/delete-f
 @Component({
   selector: 'feature-flag-view-flag',
   templateUrl: './view-feature-flag.component.html',
-  styleUrls: ['./view-feature-flag.component.scss']
+  styleUrls: ['./view-feature-flag.component.scss'],
 })
 export class ViewFeatureFlagComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
@@ -25,30 +25,29 @@ export class ViewFeatureFlagComponent implements OnInit, OnDestroy {
   constructor(
     private featureFlagsService: FeatureFlagsService,
     private dialog: MatDialog,
-    private authService: AuthService) { }
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
+    this.permissionsSub = this.authService.userPermissions$.subscribe((permission) => {
       this.permissions = permission;
     });
-    this.flagSub = this.featureFlagsService.selectedFeatureFlag$
-      .pipe(filter(flag => !!flag))
-      .subscribe(flag => {
-        this.flag = flag;
-      });
+    this.flagSub = this.featureFlagsService.selectedFeatureFlag$.pipe(filter((flag) => !!flag)).subscribe((flag) => {
+      this.flag = flag;
+    });
   }
 
   openEditFlagDialog() {
     this.dialog.open(NewFlagComponent as any, {
       panelClass: 'new-flag-modal',
-      data: { flagInfo: clonedeep(this.flag) }
+      data: { flagInfo: clonedeep(this.flag) },
     });
   }
 
   deleteFlag() {
     this.dialog.open(DeleteFlagComponent, {
       panelClass: 'delete-modal',
-      data: { flagName: this.flag.name, flagId: this.flag.id }
+      data: { flagName: this.flag.name, flagId: this.flag.id },
     });
   }
 

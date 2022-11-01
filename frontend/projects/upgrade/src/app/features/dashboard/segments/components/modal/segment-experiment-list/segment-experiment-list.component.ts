@@ -8,10 +8,9 @@ import { EXPERIMENT_STATE } from '../../../../../../core/experiments/store/exper
   selector: 'app-segment-experiment-list',
   templateUrl: './segment-experiment-list.component.html',
   styleUrls: ['./segment-experiment-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentExperimentListComponent implements OnInit {
-
   segmentExperimentListDisplayedColumns = ['experimentName', 'experimentState', 'experimentContext', 'usedList'];
   segment: any;
   allExperimentSegmentsInclusionSub: Subscription;
@@ -37,11 +36,11 @@ export class SegmentExperimentListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.allExperimentSegmentsInclusionSub = this.segmentsService.allExperimentSegmentsInclusion$.subscribe(ele => {
+    this.allExperimentSegmentsInclusionSub = this.segmentsService.allExperimentSegmentsInclusion$.subscribe((ele) => {
       this.allExperimentSegmentsInclusion = ele;
     });
 
-    this.allExperimentSegmentsExclusionSub = this.segmentsService.allExperimentSegmentsExclusion$.subscribe(ele => {
+    this.allExperimentSegmentsExclusionSub = this.segmentsService.allExperimentSegmentsExclusion$.subscribe((ele) => {
       this.allExperimentSegmentsExclusion = ele;
     });
 
@@ -50,7 +49,12 @@ export class SegmentExperimentListComponent implements OnInit {
         const subSegments = ele.segment.subSegments;
         subSegments.forEach((subSegment) => {
           if (subSegment.id === this.segment.id) {
-            this.segmentsExperimentList.push({experimentName: ele.experiment.name, experimentState: ele.experiment.state, experimentContext: ele.experiment.context, usedList: 'Inclusion' });
+            this.segmentsExperimentList.push({
+              experimentName: ele.experiment.name,
+              experimentState: ele.experiment.state,
+              experimentContext: ele.experiment.context,
+              usedList: 'Inclusion',
+            });
           }
         });
       });
@@ -61,11 +65,15 @@ export class SegmentExperimentListComponent implements OnInit {
         const subSegments = ele.segment.subSegments;
         subSegments.forEach((subSegment) => {
           if (subSegment.id === this.segment.id) {
-            this.segmentsExperimentList.push({experimentName: ele.experiment.name, experimentState: ele.experiment.state, experimentContext: ele.experiment.context, usedList: 'Exclusion'});
+            this.segmentsExperimentList.push({
+              experimentName: ele.experiment.name,
+              experimentState: ele.experiment.state,
+              experimentContext: ele.experiment.context,
+              usedList: 'Exclusion',
+            });
           }
         });
       });
     }
-
   }
 }

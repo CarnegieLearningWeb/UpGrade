@@ -2,12 +2,19 @@ import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subscription } from 'rxjs';
 import { ExperimentUtilityService } from '../../../../../../core/experiments/experiment-utility.service';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
-import { ExperimentAliasTableRow, ExperimentCondition, ExperimentConditionAlias, ExperimentPartition, ExperimentVM, TableEditModeDetails } from '../../../../../../core/experiments/store/experiments.model';
+import {
+  ExperimentAliasTableRow,
+  ExperimentCondition,
+  ExperimentConditionAlias,
+  ExperimentPartition,
+  ExperimentVM,
+  TableEditModeDetails,
+} from '../../../../../../core/experiments/store/experiments.model';
 @Component({
   selector: 'app-aliases-table',
   templateUrl: './aliases-table.component.html',
   styleUrls: ['./aliases-table.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AliasesTableComponent implements OnInit, OnDestroy {
   @Output() aliasTableData$ = new EventEmitter<ExperimentAliasTableRow[]>();
@@ -23,19 +30,13 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
   currentAliasInput$ = new BehaviorSubject<string>('');
 
   aliasTableData: ExperimentAliasTableRow[] = [];
-  aliasesDisplayedColumns = [
-    'site',
-    'target',
-    'condition',
-    'alias',
-    'actions'
-  ];
+  aliasesDisplayedColumns = ['site', 'target', 'condition', 'alias', 'actions'];
 
   initialLoad = true;
 
   constructor(
     private experimentService: ExperimentService,
-    private experimentUtilityService: ExperimentUtilityService,
+    private experimentUtilityService: ExperimentUtilityService
   ) {}
 
   ngOnInit(): void {
@@ -49,21 +50,22 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     this.subscriptions = this.designData$.subscribe((designData: [ExperimentPartition[], ExperimentCondition[]]) => {
       this.aliasTableData = this.createAliasTableData(designData, this.experimentInfo.conditionAliases);
       this.aliasTableData$.emit(this.aliasTableData);
-    })
+    });
 
-    this.subscriptions = combineLatest([
-      this.currentContextMetaDataConditions$,
-      this.currentAliasInput$
-    ]).pipe(
-      filter(([ conditions, input ]) => !!conditions && !!this.experimentUtilityService.isValidString(input)),
-      map(([ conditions, input ]) => conditions.filter((condition: string) => condition.toLowerCase().includes(input.toLowerCase())))
-    ).subscribe(this.filteredContextMetaDataConditions$);
+    this.subscriptions = combineLatest([this.currentContextMetaDataConditions$, this.currentAliasInput$])
+      .pipe(
+        filter(([conditions, input]) => !!conditions && !!this.experimentUtilityService.isValidString(input)),
+        map(([conditions, input]) =>
+          conditions.filter((condition: string) => condition.toLowerCase().includes(input.toLowerCase()))
+        )
+      )
+      .subscribe(this.filteredContextMetaDataConditions$);
   }
 
   ngOnDestroy(): void {
     this.experimentService.setUpdateAliasTableEditMode({
       isEditMode: false,
-      rowIndex: null
+      rowIndex: null,
     });
     this.subscriptions.unsubscribe();
   }
@@ -79,11 +81,11 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
 
     rowData.isEditing = !rowData.isEditing;
 
-    const isEditMode = this.aliasTableData.some(rowData => rowData.isEditing);
+    const isEditMode = this.aliasTableData.some((rowData) => rowData.isEditing);
     const editModeDetails: TableEditModeDetails = {
       isEditMode,
-      rowIndex: isEditMode ? rowIndex : null 
-    }
+      rowIndex: isEditMode ? rowIndex : null,
+    };
     this.experimentService.setUpdateAliasTableEditMode(editModeDetails);
     this.currentAliasInput$.next(rowData.alias);
   }
@@ -92,8 +94,11 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
     this.currentAliasInput$.next(value);
   }
 
-  createAliasTableData(designData: [ExperimentPartition[], ExperimentCondition[]], conditionAliases: ExperimentConditionAlias[]): ExperimentAliasTableRow[] {
-    const [ decisionPoints, conditions ] = designData;
+  createAliasTableData(
+    designData: [ExperimentPartition[], ExperimentCondition[]],
+    conditionAliases: ExperimentConditionAlias[]
+  ): ExperimentAliasTableRow[] {
+    const [decisionPoints, conditions] = designData;
     const aliasTableData: ExperimentAliasTableRow[] = [];
     const useExistingAliasData = !!(conditionAliases && this.initialLoad);
 
@@ -103,9 +108,12 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
         let existingAlias: ExperimentConditionAlias = null;
 
         if (useExistingAliasData) {
-          existingAlias = conditionAliases.find(alias => ((alias.decisionPoint ).target === decisionPoint.target &&
-            (alias.decisionPoint ).site === decisionPoint.site) && 
-              (alias.parentCondition ).conditionCode === condition.conditionCode)
+          existingAlias = conditionAliases.find(
+            (alias) =>
+              alias.decisionPoint.target === decisionPoint.target &&
+              alias.decisionPoint.site === decisionPoint.site &&
+              alias.parentCondition.conditionCode === condition.conditionCode
+          );
         }
 
         aliasTableData.push({
@@ -114,10 +122,10 @@ export class AliasesTableComponent implements OnInit, OnDestroy {
           target: decisionPoint.target,
           condition: condition.conditionCode,
           alias: existingAlias.aliasName || condition.conditionCode,
-          isEditing: false
-        })
-      })
-    })
+          isEditing: false,
+        });
+      });
+    });
 
     this.initialLoad = false;
 

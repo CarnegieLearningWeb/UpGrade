@@ -4,7 +4,7 @@ import { createReducer, Action, on } from '@ngrx/store';
 import * as UsersActions from './users.actions';
 
 export const adapter: EntityAdapter<User> = createEntityAdapter<User>({
-  selectId: entity => entity.email
+  selectId: (entity) => entity.email,
 });
 
 export const { selectIds, selectEntities, selectAll, selectTotal } = adapter.getSelectors();
@@ -16,7 +16,7 @@ export const initialState: UserState = adapter.getInitialState({
   searchKey: USER_SEARCH_SORT_KEY.ALL,
   searchString: null,
   sortKey: null,
-  sortAs: null
+  sortAs: null,
 });
 
 const reducer = createReducer(
@@ -25,17 +25,16 @@ const reducer = createReducer(
     UsersActions.actionUpdateUserDetails,
     UsersActions.actionCreateNewUser,
     UsersActions.actionDeleteUser,
-    state => ({
-    ...state,
-    isUsersLoading: true
-  })),
-  on(
-    UsersActions.actionFetchUsersSuccess,
-    (state, { users, totalUsers }) => {
+    (state) => ({
+      ...state,
+      isUsersLoading: true,
+    })
+  ),
+  on(UsersActions.actionFetchUsersSuccess, (state, { users, totalUsers }) => {
     const newState = {
       ...state,
       totalUsers,
-      skipUsers: state.skipUsers + users.length
+      skipUsers: state.skipUsers + users.length,
     };
     return adapter.upsertMany(users, { ...newState, isUsersLoading: false });
   }),
@@ -44,42 +43,23 @@ const reducer = createReducer(
     UsersActions.actionUpdateUserDetailsFailure,
     UsersActions.actionCreateNewUserFailure,
     UsersActions.actionDeleteUserFailure,
-    state => ({ ...state, isUsersLoading: false })
+    (state) => ({ ...state, isUsersLoading: false })
   ),
-  on(
-    UsersActions.actionUpdateUserDetailsSuccess,
-    (state, { user }) => adapter.updateOne({ id: user.email, changes: { ...user } }, { ...state, isUsersLoading: false })),
-  on(
-    UsersActions.actionCreateNewUserSuccess,
-    (state, { user }) => adapter.addOne(user, { ...state, isUsersLoading: false })),
-  on(
-    UsersActions.actionSetSkipUsers,
-    (state, { skipUsers }) => ({ ...state, skipUsers })
+  on(UsersActions.actionUpdateUserDetailsSuccess, (state, { user }) =>
+    adapter.updateOne({ id: user.email, changes: { ...user } }, { ...state, isUsersLoading: false })
   ),
-  on(
-    UsersActions.actionSetIsUserLoading,
-    (state, { isUsersLoading }) => ({ ...state, isUsersLoading })
+  on(UsersActions.actionCreateNewUserSuccess, (state, { user }) =>
+    adapter.addOne(user, { ...state, isUsersLoading: false })
   ),
-  on(
-    UsersActions.actionSetSearchKey,
-    (state, { searchKey }) => ({ ...state, searchKey })
-  ),
-  on(
-    UsersActions.actionSetSearchString,
-    (state, { searchString }) => ({ ...state, searchString })
-  ),
-  on(
-    UsersActions.actionSetSortKey,
-    (state, { sortKey }) => ({ ...state, sortKey })
-  ),
-  on(
-    UsersActions.actionSetSortingType,
-    (state, { sortingType }) => ({ ...state, sortAs: sortingType })
-  ),
-  on(
-    UsersActions.actionDeleteUserSuccess,
-    (state, { user }) => adapter.removeOne(user.email, { ...state, isUsersLoading: false })
-  ),
+  on(UsersActions.actionSetSkipUsers, (state, { skipUsers }) => ({ ...state, skipUsers })),
+  on(UsersActions.actionSetIsUserLoading, (state, { isUsersLoading }) => ({ ...state, isUsersLoading })),
+  on(UsersActions.actionSetSearchKey, (state, { searchKey }) => ({ ...state, searchKey })),
+  on(UsersActions.actionSetSearchString, (state, { searchString }) => ({ ...state, searchString })),
+  on(UsersActions.actionSetSortKey, (state, { sortKey }) => ({ ...state, sortKey })),
+  on(UsersActions.actionSetSortingType, (state, { sortingType }) => ({ ...state, sortAs: sortingType })),
+  on(UsersActions.actionDeleteUserSuccess, (state, { user }) =>
+    adapter.removeOne(user.email, { ...state, isUsersLoading: false })
+  )
 );
 
 export function UsersReducer(state: UserState | undefined, action: Action) {

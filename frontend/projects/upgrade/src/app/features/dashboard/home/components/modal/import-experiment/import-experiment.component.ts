@@ -1,6 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Experiment, ExperimentCondition, ExperimentPartition } from '../../../../../../core/experiments/store/experiments.model';
+import {
+  Experiment,
+  ExperimentCondition,
+  ExperimentPartition,
+} from '../../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../../core/experiments/experiments.service';
 import { VersionService } from '../../../../../../core/version/version.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -11,14 +15,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 
 interface ImportExperimentJSON {
-  schema: Record<keyof Experiment, string> | Record<keyof ExperimentCondition, string> | Record<keyof ExperimentPartition, string>,
-  data: Experiment | ExperimentCondition | ExperimentPartition
+  schema:
+    | Record<keyof Experiment, string>
+    | Record<keyof ExperimentCondition, string>
+    | Record<keyof ExperimentPartition, string>;
+  data: Experiment | ExperimentCondition | ExperimentPartition;
 }
 
 @Component({
   selector: 'app-import-experiment',
   templateUrl: './import-experiment.component.html',
-  styleUrls: ['./import-experiment.component.scss']
+  styleUrls: ['./import-experiment.component.scss'],
 })
 export class ImportExperimentComponent implements OnInit {
   experimentInfo: Experiment;
@@ -28,8 +35,8 @@ export class ImportExperimentComponent implements OnInit {
   allPartitions = [];
   allPartitionsSub: Subscription;
   allExperiments: Experiment[] = [];
-  importFileErrorsDataSource = new MatTableDataSource<{filename: string, error: string}>();
-  importFileErrors: {filename: string, error: string}[] = [];
+  importFileErrorsDataSource = new MatTableDataSource<{ filename: string; error: string }>();
+  importFileErrors: { filename: string; error: string }[] = [];
   displayedColumns: string[] = ['File Name', 'Error'];
 
   constructor(
@@ -41,18 +48,17 @@ export class ImportExperimentComponent implements OnInit {
     private _snackBar: MatSnackBar
   ) {}
 
-
   ngOnInit() {
-    this.allPartitionsSub = this.experimentService.allPartitions$.pipe(
-      filter(partitions => !!partitions))
+    this.allPartitionsSub = this.experimentService.allPartitions$
+      .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {
-      this.allPartitions = partitions.map(partition =>
-        partition.target ? partition.site + partition.target : partition.site
-      );
-    });
+        this.allPartitions = partitions.map((partition) =>
+          partition.target ? partition.site + partition.target : partition.site
+        );
+      });
   }
   openSnackBar() {
-    this._snackBar.open(this.translate.instant('global.import-segments.message.text') , null, { duration: 4000 });
+    this._snackBar.open(this.translate.instant('global.import-segments.message.text'), null, { duration: 4000 });
   }
 
   onCancelClick(): void {
@@ -60,9 +66,9 @@ export class ImportExperimentComponent implements OnInit {
   }
 
   importExperiment() {
-    this.allExperiments.forEach(exp => {
+    this.allExperiments.forEach((exp) => {
       exp.id = uuidv4();
-      exp.conditions.map(condition => {
+      exp.conditions.map((condition) => {
         condition.id = condition.id || uuidv4();
       });
     });
@@ -82,8 +88,12 @@ export class ImportExperimentComponent implements OnInit {
     const alreadyExistedPartitions = [];
     partitions.forEach((partition) => {
       const partitionInfo = partition.target ? partition.site + partition.target : partition.site;
-      if (this.allPartitions.includes(partitionInfo) &&
-        !alreadyExistedPartitions.includes(partition.target ? partition.site + ' and ' + partition.target : partition.site)) {
+      if (
+        this.allPartitions.includes(partitionInfo) &&
+        !alreadyExistedPartitions.includes(
+          partition.target ? partition.site + ' and ' + partition.target : partition.site
+        )
+      ) {
         // if we want to show the duplicate partition details:
         alreadyExistedPartitions.push(partition.target ? partition.site + ' and ' + partition.target : partition.site);
       }
@@ -93,12 +103,12 @@ export class ImportExperimentComponent implements OnInit {
       return true;
     }
   }
-  
+
   async uploadFile(event) {
     let index = 0;
     let fileName = '';
     const reader = new FileReader();
-    
+
     this.importFileErrors = [];
 
     readFile(index);
@@ -110,7 +120,7 @@ export class ImportExperimentComponent implements OnInit {
 
     reader.addEventListener(
       'load',
-      async function() {
+      async function () {
         const result = JSON.parse(reader.result as any);
         this.experimentInfo = result;
         this.isExperimentJSONVersionValid = await this.validateExperimentJSONVersion(this.experimentInfo);
@@ -121,12 +131,12 @@ export class ImportExperimentComponent implements OnInit {
         } else if (!this.isExperimentJSONValid) {
           this.importFileErrors.push({
             fileName: fileName,
-            error: this.translate.instant('home.import-experiment.error.message.text')
+            error: this.translate.instant('home.import-experiment.error.message.text'),
           });
         } else {
           this.importFileErrors.push({
             fileName: fileName,
-            error: this.translate.instant('home.import-experiment.version-error.message.text')
+            error: this.translate.instant('home.import-experiment.version-error.message.text'),
           });
           this.allExperiments.push(this.experimentInfo);
         }
@@ -165,7 +175,7 @@ export class ImportExperimentComponent implements OnInit {
       filterMode: 'string',
       experimentSegmentInclusion: 'interface',
       experimentSegmentExclusion: 'interface',
-      backendVersion: 'string'
+      backendVersion: 'string',
     };
 
     const conditionSchema: Record<keyof ExperimentCondition, string> = {
@@ -178,8 +188,8 @@ export class ImportExperimentComponent implements OnInit {
       order: 'number',
       createdAt: 'string',
       updatedAt: 'string',
-      versionNumber: 'number'
-    }
+      versionNumber: 'number',
+    };
 
     const partitionSchema: Record<keyof ExperimentPartition, string> = {
       id: 'string',
@@ -191,27 +201,38 @@ export class ImportExperimentComponent implements OnInit {
       createdAt: 'string',
       updatedAt: 'string',
       versionNumber: 'number',
-      excludeIfReached: 'boolean'
-    }
+      excludeIfReached: 'boolean',
+    };
 
     const missingProperties = this.checkForMissingProperties({ schema: experimentSchema, data: experiment });
     let missingPropertiesFlag = true;
-    this.missingAllProperties = this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
+    this.missingAllProperties =
+      this.translate.instant('home.import-experiment.missing-properties.message.text') + missingProperties;
     let missingConditionProperties;
     let missingPartitionProperties;
     missingPropertiesFlag = missingPropertiesFlag && missingProperties.length === 0;
-    experiment.conditions.map(condition => {
+    experiment.conditions.map((condition) => {
       missingConditionProperties = this.checkForMissingProperties({ schema: conditionSchema, data: condition });
     });
     if (missingConditionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ', ' + this.translate.instant('global.condition.text') + ': ' + missingConditionProperties;
+      this.missingAllProperties =
+        this.missingAllProperties +
+        ', ' +
+        this.translate.instant('global.condition.text') +
+        ': ' +
+        missingConditionProperties;
     }
     missingPropertiesFlag = missingPropertiesFlag && missingConditionProperties.length === 0;
-    experiment.partitions.map(partition => {
+    experiment.partitions.map((partition) => {
       missingPartitionProperties = this.checkForMissingProperties({ schema: partitionSchema, data: partition });
     });
     if (missingPartitionProperties.length > 0) {
-      this.missingAllProperties = this.missingAllProperties + ', ' + this.translate.instant('global.decision-points.text') + ': ' + missingPartitionProperties;
+      this.missingAllProperties =
+        this.missingAllProperties +
+        ', ' +
+        this.translate.instant('global.decision-points.text') +
+        ': ' +
+        missingPartitionProperties;
     }
     missingPropertiesFlag = missingPropertiesFlag && missingPartitionProperties.length === 0;
     return missingPropertiesFlag;
@@ -220,9 +241,9 @@ export class ImportExperimentComponent implements OnInit {
   private checkForMissingProperties(experimentJson: ImportExperimentJSON) {
     const { schema, data } = experimentJson;
     const missingProperty = Object.keys(schema)
-      .filter(key => data[key] === undefined)
-      .map(key => key as keyof (Experiment | ExperimentPartition | ExperimentCondition))
-      .map(key => `${key}`);
-      return missingProperty.join(', ');
+      .filter((key) => data[key] === undefined)
+      .map((key) => key as keyof (Experiment | ExperimentPartition | ExperimentCondition))
+      .map((key) => `${key}`);
+    return missingProperty.join(', ');
   }
 }

@@ -14,7 +14,6 @@ import { environment } from '../environments/environment';
 import { ENV, Environment } from '../environments/environment-types';
 
 export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
-
   // in non-prod build, all env vars can be provided on .environment.ts,
   // so skip fetch
   if (!environment.production) {
@@ -23,16 +22,18 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
 
   // in a prod build, we currently need to fetch environment.json at root to provide
   // apiBaseUrl and gapiClientId
-  return () => http.get('/environment.json')
+  return () =>
+    http
+      .get('/environment.json')
       .toPromise()
-      .then(data => {
+      .then((data) => {
         env.apiBaseUrl = (data as any).endpointApi;
         env.gapiClientId = (data as any).gapiClientId;
       })
-      .catch(error => {
-        console.log({ error })
-      })
-}
+      .catch((error) => {
+        console.log({ error });
+      });
+};
 
 @NgModule({
   imports: [
@@ -41,11 +42,11 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
     BrowserModule,
     // global configuration for notification
     SimpleNotificationsModule.forRoot({
-        position: ['bottom', 'center'],
-        timeOut: 4000,
-        showProgressBar: false,
-        pauseOnHover: true,
-        clickToClose: false
+      position: ['bottom', 'center'],
+      timeOut: 4000,
+      showProgressBar: false,
+      pauseOnHover: true,
+      clickToClose: false,
     }),
 
     // core & shared
@@ -55,7 +56,7 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
     // app
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
   ],
   providers: [
     { provide: ENV, useValue: environment },
@@ -63,10 +64,10 @@ export const getEnvironmentConfig = (http: HttpClient, env: Environment) => {
       provide: APP_INITIALIZER,
       useFactory: getEnvironmentConfig,
       multi: true,
-      deps: [HttpClient, ENV]
+      deps: [HttpClient, ENV],
     },
   ],
   declarations: [AppComponent],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

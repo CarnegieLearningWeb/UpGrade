@@ -9,19 +9,13 @@ import { ExperimentStatusComponent } from '../experiment-status/experiment-statu
   selector: 'home-post-experiment-rule',
   templateUrl: './post-experiment-rule.component.html',
   styleUrls: ['./post-experiment-rule.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostExperimentRuleComponent implements OnInit {
-
   experimentInfo: ExperimentVM;
   postExperimentRuleForm: FormGroup;
-  postExperimentRules = [
-    { value: POST_EXPERIMENT_RULE.CONTINUE },
-    { value: POST_EXPERIMENT_RULE.ASSIGN }
-  ];
-  experimentConditions = [
-    { value: 'default', id: 'default' }
-  ];
+  postExperimentRules = [{ value: POST_EXPERIMENT_RULE.CONTINUE }, { value: POST_EXPERIMENT_RULE.ASSIGN }];
+  experimentConditions = [{ value: 'default', id: 'default' }];
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
@@ -29,36 +23,40 @@ export class PostExperimentRuleComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) private data: any
   ) {
     this.experimentInfo = this.data.experiment;
-   }
+  }
 
   onCancelClick(): void {
     this.dialogRef.close();
   }
 
   ngOnInit() {
-    this.experimentInfo.conditions.forEach(condition => {
+    this.experimentInfo.conditions.forEach((condition) => {
       this.experimentConditions.push({ value: condition.conditionCode, id: condition.id });
     });
-    this.postExperimentRuleForm = this._formBuilder.group({
-      postExperimentRule: [this.experimentInfo.postExperimentRule, Validators.required],
-      revertTo: [{
-        value: this.experimentInfo.revertTo === null ? 'default' : this.experimentInfo.revertTo,
-        disabled: this.experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE
-      }]
-    }, { validators: this.validatePostExperimentRuleForm });
+    this.postExperimentRuleForm = this._formBuilder.group(
+      {
+        postExperimentRule: [this.experimentInfo.postExperimentRule, Validators.required],
+        revertTo: [
+          {
+            value: this.experimentInfo.revertTo === null ? 'default' : this.experimentInfo.revertTo,
+            disabled: this.experimentInfo.postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE,
+          },
+        ],
+      },
+      { validators: this.validatePostExperimentRuleForm }
+    );
 
     this.resetRevertToControl(this.experimentInfo.postExperimentRule);
-    this.postExperimentRuleForm.get('postExperimentRule').valueChanges.subscribe(ruleValue => {
-      if (ruleValue === POST_EXPERIMENT_RULE.CONTINUE) { 
+    this.postExperimentRuleForm.get('postExperimentRule').valueChanges.subscribe((ruleValue) => {
+      if (ruleValue === POST_EXPERIMENT_RULE.CONTINUE) {
         this.postExperimentRuleForm.get('revertTo').disable();
       } else {
         this.postExperimentRuleForm.get('revertTo').enable();
-      };
+      }
 
       this.resetRevertToControl(ruleValue);
     });
   }
-
 
   // Used to reset revertTo control based on postExperimentRule value
   resetRevertToControl(controlValue: POST_EXPERIMENT_RULE) {
@@ -82,7 +80,11 @@ export class PostExperimentRuleComponent implements OnInit {
     if (postExperimentRule === POST_EXPERIMENT_RULE.CONTINUE) {
       revertTo = null;
     }
-    this.experimentService.updateExperiment({ ...this.experimentInfo, postExperimentRule, revertTo: revertTo !== 'default' ? revertTo : null });
+    this.experimentService.updateExperiment({
+      ...this.experimentInfo,
+      postExperimentRule,
+      revertTo: revertTo !== 'default' ? revertTo : null,
+    });
     this.onCancelClick();
   }
 }

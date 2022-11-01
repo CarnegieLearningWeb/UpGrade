@@ -39,48 +39,48 @@ export class AuthEffects {
   ) {}
 
   initializeGapi$ = createEffect(
-    () => this.actions$.pipe(
+    () =>
+      this.actions$.pipe(
         ofType(authActions.actionInitializeGapi),
         tap(() => {
           this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: true }));
-          gapi.load('auth2', () => this.handleGapiInit({
-            client_id: this.environment.gapiClientId,
-            hosted_domain: this.environment.domainName
-          }));
+          gapi.load('auth2', () =>
+            this.handleGapiInit({
+              client_id: this.environment.gapiClientId,
+              hosted_domain: this.environment.domainName,
+            })
+          );
         })
       ),
     { dispatch: false }
   );
 
-  handleGapiInit = ({
-    client_id,
-    hosted_domain
-  }) => {
+  handleGapiInit = ({ client_id, hosted_domain }) => {
     let initConfig: any = {
       client_id,
       cookiepolicy: 'single_host_origin',
       scope: this.scope,
-    }
+    };
     if (hosted_domain) {
       initConfig = {
         ...initConfig,
-        hosted_domain
-      }
+        hosted_domain,
+      };
     }
     this.auth2 = gapi.auth2.init(initConfig);
     this.auth2.currentUser.listen(this.handleUserLoginInNgZone);
-  }
+  };
 
-  handleUserLoginInNgZone = currentUser => {
+  handleUserLoginInNgZone = (currentUser) => {
     this.ngZone.run(() => this.handleUserLogin(currentUser));
-  }
+  };
 
   handleUserLogin = (currentUser) => {
     if (!this.hasUserClickedLogin) {
       const profile = currentUser.getBasicProfile();
       const isCurrentUserSignedIn = this.auth2.isSignedIn.get();
 
-      const action = authActions.actionSetIsLoggedIn({ isLoggedIn: !!isCurrentUserSignedIn })
+      const action = authActions.actionSetIsLoggedIn({ isLoggedIn: !!isCurrentUserSignedIn });
 
       this.store$.dispatch(action);
       this.store$.dispatch(authActions.actionSetIsAuthenticating({ isAuthenticating: false }));
@@ -88,15 +88,16 @@ export class AuthEffects {
       if (!!profile && isCurrentUserSignedIn) {
         const user: any = {
           token: currentUser.getAuthResponse().id_token,
-          email: profile.getEmail()
+          email: profile.getEmail(),
         };
         this.store$.dispatch(authActions.actionSetUserInfo({ user }));
       }
     }
-  }
+  };
 
   attachSignIn$ = createEffect(
-    () => this.actions$.pipe(
+    () =>
+      this.actions$.pipe(
         ofType(authActions.actionBindAttachHandlerWithButton),
         tap(() => this.handleAttachGoogleAuthClickHandler())
       ),
@@ -105,22 +106,19 @@ export class AuthEffects {
 
   handleAttachGoogleAuthClickHandler = () => {
     const btn = this.authService.getGoogleSignInElementRef();
-    console.log({ btn })
-    this.auth2.attachClickHandler(btn, {},
-      this.onAuthedUserFetchSuccess,
-      this.onAuthedUserFetchError
-    );
-  }
+    console.log({ btn });
+    this.auth2.attachClickHandler(btn, {}, this.onAuthedUserFetchSuccess, this.onAuthedUserFetchError);
+  };
 
   onAuthedUserFetchSuccess = (googleUser) => {
     this.hasUserClickedLogin = true;
-    this.ngZone.run(() => this.handleGoogleAuthClickInNgZone(googleUser))
-  }
+    this.ngZone.run(() => this.handleGoogleAuthClickInNgZone(googleUser));
+  };
 
   onAuthedUserFetchError = (error) => {
     console.log(JSON.stringify(error, undefined, 2));
     this.store$.dispatch(authActions.actionLoginFailure());
-  }
+  };
 
   handleGoogleAuthClickInNgZone = (googleUser) => {
     const profile = googleUser.getBasicProfile();
@@ -129,7 +127,7 @@ export class AuthEffects {
       lastName: profile.getFamilyName(),
       email: profile.getEmail(),
       imageUrl: profile.getImageUrl(),
-      localTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      localTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
     const token = googleUser.getAuthResponse().id_token;
     // Store the token in the ngrx store as this is being passed in every request via http interceptor
@@ -138,87 +136,86 @@ export class AuthEffects {
   };
 
   doLogin = (user, token: string) => {
-    this.authDataService.login(user).pipe(
-      tap((res: User) => {
-        this.hasUserClickedLogin = false;
-        this.store$.dispatch(authActions.actionLoginSuccess());
-        this.deferSetUserInfoAfterNavigateEnd(res, token);
-      }),
-      catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
-    ).subscribe();
-  }
+    this.authDataService
+      .login(user)
+      .pipe(
+        tap((res: User) => {
+          this.hasUserClickedLogin = false;
+          this.store$.dispatch(authActions.actionLoginSuccess());
+          this.deferSetUserInfoAfterNavigateEnd(res, token);
+        }),
+        catchError(() => [this.store$.dispatch(authActions.actionLoginFailure())])
+      )
+      .subscribe();
+  };
 
   // wait after google auth login navs back to app on success to dispatch data fetches
   deferSetUserInfoAfterNavigateEnd = (res: User, token: string) => {
     let hasFired = false;
-    this.router.events.pipe().subscribe(event => {
+    this.router.events.pipe().subscribe((event) => {
       if (!hasFired && event instanceof NavigationEnd) {
         hasFired = true;
         this.store$.dispatch(authActions.actionSetUserInfo({ user: { ...res, token } }));
       }
     });
-  }
+  };
 
-  setUserInfoInStore$ = createEffect(
-    () => this.actions$.pipe(
-        ofType(authActions.actionSetUserInfo),
-        map(action => action.user),
-        filter(user => !!user.email),
-        switchMap((user: User) => {
-          const actions = [
-            experimentUserActions.actionFetchExcludedUsers(),
-            experimentUserActions.actionFetchExcludedGroups(),
-            experimentActions.actionFetchAllPartitions(),
-            usersActions.actionFetchUsers({ fromStarting: true }),
-            settingsActions.actionGetSetting(),
-            analysisActions.actionFetchMetrics()
-          ];
-          // Set theme from local storage if exist
-          this.settingsService.setLocalStorageTheme();
-          
-          if (user.role) {
-            return this.setUserSettingsWithRole(user, actions);
-          } else {
-            return this.trySetUserSettingWithEmail(user, actions);
-          }
-        })
-      ),
+  setUserInfoInStore$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(authActions.actionSetUserInfo),
+      map((action) => action.user),
+      filter((user) => !!user.email),
+      switchMap((user: User) => {
+        const actions = [
+          experimentUserActions.actionFetchExcludedUsers(),
+          experimentUserActions.actionFetchExcludedGroups(),
+          experimentActions.actionFetchAllPartitions(),
+          usersActions.actionFetchUsers({ fromStarting: true }),
+          settingsActions.actionGetSetting(),
+          analysisActions.actionFetchMetrics(),
+        ];
+        // Set theme from local storage if exist
+        this.settingsService.setLocalStorageTheme();
+
+        if (user.role) {
+          return this.setUserSettingsWithRole(user, actions);
+        } else {
+          return this.trySetUserSettingWithEmail(user, actions);
+        }
+      })
+    )
   );
 
   setUserSettingsWithRole = (user: any, actions: Action[]) => {
     this.authService.setUserPermissions(user.role);
-    return [
-      authActions.actionSetUserInfoSuccess({ user }),
-      ...actions
-    ];
-  }
+    return [authActions.actionSetUserInfoSuccess({ user }), ...actions];
+  };
 
-  trySetUserSettingWithEmail = (user: any, actions: Action[]) => this.authDataService.getUserByEmail(user.email).pipe(
+  trySetUserSettingWithEmail = (user: any, actions: Action[]) =>
+    this.authDataService.getUserByEmail(user.email).pipe(
       switchMap((res: User) => {
         if (res[0]) {
           // Avoid null name in account
           if (res[0].firstName) {
             this.authService.setUserPermissions(res[0].role);
-            return [
-              authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }),
-              ...actions
-            ];
+            return [authActions.actionSetUserInfoSuccess({ user: { ...res[0], token: user.token } }), ...actions];
           } else {
             return [authActions.actionLogoutStart()];
           }
         } else {
-          return [
-            authActions.actionSetUserInfoFailed()
-          ];
+          return [authActions.actionSetUserInfoFailed()];
         }
       })
-    )
+    );
 
   logout$ = createEffect(
-    () => this.actions$.pipe(
+    () =>
+      this.actions$.pipe(
         ofType(authActions.actionLogoutStart),
         tap(() => {
-          this.auth2.signOut().then(() => {
+          this.auth2
+            .signOut()
+            .then(() => {
               this.ngZone.run(() => {
                 this.store$.dispatch(authActions.actionLogoutSuccess());
               });
@@ -232,7 +229,8 @@ export class AuthEffects {
   );
 
   navigationOnLoginSuccess$ = createEffect(
-    () => this.actions$.pipe(
+    () =>
+      this.actions$.pipe(
         ofType(authActions.actionLoginSuccess),
         withLatestFrom(this.store$.pipe(select(selectRedirectUrl))),
         tap(([, redirectUrl]) => {
@@ -244,7 +242,8 @@ export class AuthEffects {
   );
 
   navigationOnLogOutSuccess$ = createEffect(
-    () => this.actions$.pipe(
+    () =>
+      this.actions$.pipe(
         ofType(authActions.actionLogoutSuccess),
         tap(() => {
           this.router.navigateByUrl('/login');

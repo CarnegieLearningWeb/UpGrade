@@ -7,7 +7,7 @@ import { NewExperimentComponent } from '../../components/modal/new-experiment/ne
 import {
   EXPERIMENT_STATE,
   ExperimentVM,
-  EXPERIMENT_SEARCH_KEY
+  EXPERIMENT_SEARCH_KEY,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -28,13 +28,13 @@ enum DialogType {
   CHANGE_STATUS = 'Change status',
   CHANGE_POST_EXPERIMENT_RULE = 'Change post experiment rule',
   EDIT_EXPERIMENT = 'Edit Experiment',
-  STATE_TIME_LOGS = 'State Time Logs'
+  STATE_TIME_LOGS = 'State Time Logs',
 }
 
 @Component({
   selector: 'home-view-experiment',
   templateUrl: './view-experiment.component.html',
-  styleUrls: ['./view-experiment.component.scss']
+  styleUrls: ['./view-experiment.component.scss'],
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
@@ -80,31 +80,34 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
     this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;
 
-    this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
+    this.permissionsSub = this.authService.userPermissions$.subscribe((permission) => {
       this.permissions = permission;
     });
 
-    this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => { 
+    this.experimentIdSub = this._Activatedroute.paramMap.subscribe((params) => {
       const experimentIdFromParams = params.get('experimentId');
       this.experimentService.fetchExperimentById(experimentIdFromParams);
     });
 
-    this.experimentSub = this.experimentService.selectedExperiment$      
+    this.experimentSub = this.experimentService.selectedExperiment$
       .pipe(
         withLatestFrom(
           this.isLoadingExperimentDetailStats$,
           this.isPollingExperimentDetailStats$,
           (experiment, isLoadingDetails, isPolling) => ({ experiment, isLoadingDetails, isPolling })
         ),
-        filter(({ isLoadingDetails }) => !isLoadingDetails),
-      ).subscribe(({ experiment, isPolling }) => {
+        filter(({ isLoadingDetails }) => !isLoadingDetails)
+      )
+      .subscribe(({ experiment, isPolling }) => {
         this.onExperimentChange(experiment, isPolling);
-      })
+      });
 
-      if (this.experiment) {
-        this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
-        this.experimentService.groupSatisfied$(this.experiment.id).subscribe(data => this.experiment.groupSatisfied = data);
-      }
+    if (this.experiment) {
+      this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
+      this.experimentService
+        .groupSatisfied$(this.experiment.id)
+        .subscribe((data) => (this.experiment.groupSatisfied = data));
+    }
   }
 
   onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
@@ -126,11 +129,14 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         ? StateTimeLogsComponent
         : NewExperimentComponent;
     this.dialog.open(dialogComponent as any, {
-      panelClass: dialogType === DialogType.STATE_TIME_LOGS ? 'state-time-logs-modal' :
-                  dialogType === DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' :
-                  'experiment-general-modal',
+      panelClass:
+        dialogType === DialogType.STATE_TIME_LOGS
+          ? 'state-time-logs-modal'
+          : dialogType === DialogType.EDIT_EXPERIMENT
+          ? 'new-experiment-modal'
+          : 'experiment-general-modal',
       data: { experiment: clonedeep(this.experiment) },
-      disableClose : dialogType === DialogType.EDIT_EXPERIMENT
+      disableClose: dialogType === DialogType.EDIT_EXPERIMENT,
     });
   }
 
@@ -142,10 +148,10 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   deleteExperiment() {
     const dialogRef = this.dialog.open(DeleteComponent, {
-      panelClass: 'delete-modal'
+      panelClass: 'delete-modal',
     });
 
-    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
         this.experimentService.deleteExperiment(this.experiment.id);
         // Add code of further actions after deleting experiment
@@ -156,30 +162,32 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   openQueriesModal() {
     this.dialog.open(QueriesModalComponent, {
       panelClass: 'queries-modal',
-      data: { experiment: clonedeep(this.experiment) }
+      data: { experiment: clonedeep(this.experiment) },
     });
   }
 
   openExportModal() {
     this.dialog.open(ExportModalComponent, {
       panelClass: 'export-modal',
-      data: { experiment: [clonedeep(this.experiment)] }
+      data: { experiment: [clonedeep(this.experiment)] },
     });
   }
 
   updateEndingCriteria() {
     this.dialog.open(ExperimentEndCriteriaComponent, {
       panelClass: 'experiment-ending-criteria',
-      data: { experiment: clonedeep(this.experiment) }
+      data: { experiment: clonedeep(this.experiment) },
     });
   }
 
   getConditionCode(conditionId: string) {
-    return this.experiment ? '(' + this.experiment.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
+    return this.experiment
+      ? '(' + this.experiment.conditions.find((condition) => condition.id === conditionId).conditionCode + ')'
+      : '';
   }
 
   toggleVerboseLogging(event) {
-    this.experimentService.updateExperiment({...this.experiment, logging: event.checked })
+    this.experimentService.updateExperiment({ ...this.experiment, logging: event.checked });
   }
 
   ngOnDestroy() {

@@ -20,8 +20,8 @@ import { LogsRoutingModule } from './logs-routing.module';
     TimelineComponent,
     ErrorLogPipe,
     LogDateFormatPipe,
-    ExperimentActionMessage
+    ExperimentActionMessage,
   ],
-  imports: [CommonModule, SharedModule, LogsRoutingModule]
+  imports: [CommonModule, SharedModule, LogsRoutingModule],
 })
 export class LogsModule {}

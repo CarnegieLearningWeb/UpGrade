@@ -4,12 +4,13 @@ import {
   ExperimentState,
   EXPERIMENT_SEARCH_KEY,
   EXPERIMENT_SORT_AS,
-  EXPERIMENT_SORT_KEY} from '../experiments/store/experiments.model';
+  EXPERIMENT_SORT_KEY,
+} from '../experiments/store/experiments.model';
 
 const APP_PREFIX = 'UPGRADE-';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LocalStorageService {
   loadInitialState() {
@@ -27,7 +28,7 @@ export class LocalStorageService {
       isPollingExperimentDetailStats: false,
       skipExperiment: 0,
       totalExperiments: null,
-      searchKey: (experimentSearchKey as EXPERIMENT_SEARCH_KEY),
+      searchKey: experimentSearchKey as EXPERIMENT_SEARCH_KEY,
       searchString: experimentSearchString || null,
       sortKey: (experimentSortKey as EXPERIMENT_SORT_KEY) || EXPERIMENT_SORT_KEY.NAME,
       sortAs: (experimentSortType as EXPERIMENT_SORT_AS) || EXPERIMENT_SORT_AS.ASCENDING,
@@ -38,16 +39,16 @@ export class LocalStorageService {
       allPartitions: null,
       allExperimentNames: null,
       contextMetaData: {
-        contextMetadata: {}
+        contextMetadata: {},
       },
       isLoadingContextMetaData: false,
       currentUserSelectedContext: null,
       isAliasTableEditMode: false,
-      aliasTableEditIndex: null
+      aliasTableEditIndex: null,
     };
 
     const state = {
-      experiments: experimentState // experiment state,
+      experiments: experimentState, // experiment state,
     };
     return state;
   }

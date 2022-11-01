@@ -12,15 +12,10 @@ xdescribe('ProfileInfoComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ProfileInfoComponent ],
+      declarations: [ProfileInfoComponent],
       imports: [TestingModule],
-      providers: [
-        UsersService,
-        AuthService,
-        SettingsService
-      ]
-    })
-    .compileComponents();
+      providers: [UsersService, AuthService, SettingsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

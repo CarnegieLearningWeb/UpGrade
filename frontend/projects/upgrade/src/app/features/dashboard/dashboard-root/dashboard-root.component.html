@@ -29,7 +29,7 @@
                 *ngIf="currentUser$ | async as user"
                 routerLinkActive="user-list--item-selected"
               >
-                <img src="{{user?.imageUrl}}" class="user-pic" />
+                <img src="{{ user?.imageUrl }}" class="user-pic" />
                 <span>{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</span>
               </mat-list-item>
             </a>

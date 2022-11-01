@@ -16,57 +16,62 @@ export class SegmentsEffects {
     private actions$: Actions,
     private segmentsDataService: SegmentsDataService,
     private router: Router
-  ) { }
+  ) {}
 
-  fetchSegments$ = createEffect(
-    () => this.actions$.pipe(
+  fetchSegments$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(SegmentsActions.actionFetchSegments),
-      withLatestFrom(
-        this.store$.pipe(select(selectAllSegments))
-      ),
+      withLatestFrom(this.store$.pipe(select(selectAllSegments))),
       switchMap(() =>
         this.segmentsDataService.fetchSegments().pipe(
-          map((data: any) => SegmentsActions.actionFetchSegmentsSuccess({ segments: data.segmentsData, experimentSegmentInclusion: data.experimentSegmentInclusionData, experimentSegmentExclusion: data.experimentSegmentExclusionData })),
+          map((data: any) =>
+            SegmentsActions.actionFetchSegmentsSuccess({
+              segments: data.segmentsData,
+              experimentSegmentInclusion: data.experimentSegmentInclusionData,
+              experimentSegmentExclusion: data.experimentSegmentExclusionData,
+            })
+          ),
           catchError(() => [SegmentsActions.actionFetchSegmentsFailure()])
         )
       )
     )
   );
 
-  upsertSegment$ = createEffect(
-    () => this.actions$.pipe(
+  upsertSegment$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(SegmentsActions.actionUpsertSegment),
-      map(action => ({ Segment: action.segment, actionType: action.actionType })),
+      map((action) => ({ Segment: action.segment, actionType: action.actionType })),
       filter(({ Segment }) => !!Segment),
       switchMap(({ Segment, actionType }) => {
-        const action = actionType === UpsertSegmentType.CREATE_NEW_SEGMENT
-          ? this.segmentsDataService.createNewSegment(Segment)
-          : actionType === UpsertSegmentType.IMPORT_SEGMENT
-          ? this.segmentsDataService.importSegment(Segment)
-          : this.segmentsDataService.updateSegment(Segment);
+        const action =
+          actionType === UpsertSegmentType.CREATE_NEW_SEGMENT
+            ? this.segmentsDataService.createNewSegment(Segment)
+            : actionType === UpsertSegmentType.IMPORT_SEGMENT
+            ? this.segmentsDataService.importSegment(Segment)
+            : this.segmentsDataService.updateSegment(Segment);
         return action.pipe(
           map((data: Segment) => {
             if (actionType === UpsertSegmentType.CREATE_NEW_SEGMENT) {
               this.router.navigate(['/segments']);
             }
-            return  SegmentsActions.actionUpsertSegmentSuccess({ segment: data })
+            return SegmentsActions.actionUpsertSegmentSuccess({ segment: data });
           }),
           catchError(() => [SegmentsActions.actionUpsertSegmentFailure()])
-        )
+        );
       })
     )
   );
 
-  deleteSegment$ = createEffect(
-    () => this.actions$.pipe(
+  deleteSegment$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(SegmentsActions.actionDeleteSegment),
-      map(action => action.segmentId),
-      filter(id => !!id),
+      map((action) => action.segmentId),
+      filter((id) => !!id),
       switchMap((id) =>
         this.segmentsDataService.deleteSegment(id).pipe(
           map((data: any) => {
             this.router.navigate(['/segments']);
-            return SegmentsActions.actionDeleteSegmentSuccess({ segment: data[0] })
+            return SegmentsActions.actionDeleteSegmentSuccess({ segment: data[0] });
           }),
           catchError(() => [SegmentsActions.actionDeleteSegmentFailure()])
         )
@@ -77,8 +82,8 @@ export class SegmentsEffects {
   exportSegment$ = createEffect(() =>
     this.actions$.pipe(
       ofType(SegmentsActions.actionExportSegment),
-      map(action => ({ segmentId: action.segmentId })),
-      filter(( {segmentId} ) => !!segmentId),
+      map((action) => ({ segmentId: action.segmentId })),
+      filter(({ segmentId }) => !!segmentId),
       switchMap(({ segmentId }) =>
         this.segmentsDataService.exportSegment(segmentId).pipe(
           map((data: any) => {

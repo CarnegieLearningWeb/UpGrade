@@ -4,10 +4,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class ExperimentUsersDataService {
-  constructor(
-    private http: HttpClient,
-    @Inject(ENV) private environment: Environment,
-  ) {}
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   fetchExcludedUsers() {
     const url = this.environment.api.excludeUsers;

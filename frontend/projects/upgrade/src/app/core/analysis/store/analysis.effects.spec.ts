@@ -6,290 +6,271 @@ import { of, throwError } from 'rxjs';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { selectQueryResult } from './analysis.selectors';
 
- describe('AnalysisEffects', () => {
-    let service: AnalysisEffects;
-    let actions$: ActionsSubject;
-    let store$: any;
-    let analysisDataService: any;
+describe('AnalysisEffects', () => {
+  let service: AnalysisEffects;
+  let actions$: ActionsSubject;
+  let store$: any;
+  let analysisDataService: any;
 
-    beforeEach(() => {
-        actions$ = new ActionsSubject();
-        store$ = new BehaviorSubject({});
-        (store$ ).dispatch = jest.fn();
-        analysisDataService = {};
+  beforeEach(() => {
+    actions$ = new ActionsSubject();
+    store$ = new BehaviorSubject({});
+    store$.dispatch = jest.fn();
+    analysisDataService = {};
 
-        service = new AnalysisEffects(actions$, store$, analysisDataService);
-    })
+    service = new AnalysisEffects(actions$, store$, analysisDataService);
+  });
 
-    describe('fetchMetrics$', () => {
-        it('should dispatch actionFetchMetricsSuccess with metrics on success', fakeAsync(() => {
-            const metrics = [{
-                key: 'totalTimeSeconds',
-                children: []
-            }]
+  describe('fetchMetrics$', () => {
+    it('should dispatch actionFetchMetricsSuccess with metrics on success', fakeAsync(() => {
+      const metrics = [
+        {
+          key: 'totalTimeSeconds',
+          children: [],
+        },
+      ];
 
-            analysisDataService.fetchMetrics = jest.fn().mockReturnValue(of(metrics));
+      analysisDataService.fetchMetrics = jest.fn().mockReturnValue(of(metrics));
 
-            const action = AnalysisActions.actionFetchMetricsSuccess({ metrics });
+      const action = AnalysisActions.actionFetchMetricsSuccess({ metrics });
 
-            service.fetchMetrics$.subscribe((result: any) => {
-                
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionFetchMetrics());
-            tick(0);
-        }))
+      service.fetchMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-        it('should dispatch actionFetchMetricsFailure on error', fakeAsync(() => {
-            analysisDataService.fetchMetrics = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+      actions$.next(AnalysisActions.actionFetchMetrics());
+      tick(0);
+    }));
 
-            const action = AnalysisActions.actionFetchMetricsFailure();
+    it('should dispatch actionFetchMetricsFailure on error', fakeAsync(() => {
+      analysisDataService.fetchMetrics = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
-            service.fetchMetrics$.subscribe((result: any) => {
-                
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionFetchMetrics());
-            tick(0);
-        }))
-    })
+      const action = AnalysisActions.actionFetchMetricsFailure();
 
-    describe('upsertMetrics$', () => {
-        it('should do nothing if metrics undefined', fakeAsync(() => {
-            let neverEmitted = true;
+      service.fetchMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            service.upsertMetrics$.subscribe(() => {
-                neverEmitted = false;
-            })
+      actions$.next(AnalysisActions.actionFetchMetrics());
+      tick(0);
+    }));
+  });
 
-            actions$.next(AnalysisActions.actionUpsertMetrics({ metrics: undefined }));
-            tick(0);
+  describe('upsertMetrics$', () => {
+    it('should do nothing if metrics undefined', fakeAsync(() => {
+      let neverEmitted = true;
 
-            expect(neverEmitted).toBe(true);
-        }))
+      service.upsertMetrics$.subscribe(() => {
+        neverEmitted = false;
+      });
 
-        it('should dispatch actionFetchMetrics with metrics on success', fakeAsync(() => {
-            const metrics = {
-                metricUnit: [{
-                    key: 'totalTimeSeconds',
-                    children: []
-                }]
-            }
+      actions$.next(AnalysisActions.actionUpsertMetrics({ metrics: undefined }));
+      tick(0);
 
-            analysisDataService.upsertMetrics = jest.fn().mockReturnValue(of(metrics));
+      expect(neverEmitted).toBe(true);
+    }));
 
-            const action = AnalysisActions.actionFetchMetrics();
+    it('should dispatch actionFetchMetrics with metrics on success', fakeAsync(() => {
+      const metrics = {
+        metricUnit: [
+          {
+            key: 'totalTimeSeconds',
+            children: [],
+          },
+        ],
+      };
 
-            service.upsertMetrics$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionUpsertMetrics({ metrics }));
-            tick(0);
-        }))
+      analysisDataService.upsertMetrics = jest.fn().mockReturnValue(of(metrics));
 
-        it('should dispatch actionUpsertMetricsFailure on error', fakeAsync(() => {
-            const metrics = {
-                metricUnit: [{
-                    key: 'totalTimeSeconds',
-                    children: []
-                }]
-            }
+      const action = AnalysisActions.actionFetchMetrics();
 
-            analysisDataService.upsertMetrics = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+      service.upsertMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            const action = AnalysisActions.actionUpsertMetricsFailure();
+      actions$.next(AnalysisActions.actionUpsertMetrics({ metrics }));
+      tick(0);
+    }));
 
-            service.upsertMetrics$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionUpsertMetrics({ metrics }));
-            tick(0);
-        }))
-    })
+    it('should dispatch actionUpsertMetricsFailure on error', fakeAsync(() => {
+      const metrics = {
+        metricUnit: [
+          {
+            key: 'totalTimeSeconds',
+            children: [],
+          },
+        ],
+      };
 
-    describe('deleteMetrics$', () => {
-        it('should do nothing if key undefined', fakeAsync(() => {
-            let neverEmitted = true;
+      analysisDataService.upsertMetrics = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
-            service.deleteMetrics$.subscribe(() => {
-                neverEmitted = false;
-            })
+      const action = AnalysisActions.actionUpsertMetricsFailure();
 
-            actions$.next(AnalysisActions.actionDeleteMetric({ key: undefined }));
-            tick(0);
+      service.upsertMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            expect(neverEmitted).toBe(true);
-        }))
+      actions$.next(AnalysisActions.actionUpsertMetrics({ metrics }));
+      tick(0);
+    }));
+  });
 
-        it('should dispatch actionDeleteMetricSuccess with metrics on success with data of truthy size', fakeAsync(() => {
-            const key = 'test';
-            const metrics = [{
-                key: 'totalTimeSeconds',
-                children: []
-            }];
+  describe('deleteMetrics$', () => {
+    it('should do nothing if key undefined', fakeAsync(() => {
+      let neverEmitted = true;
 
-            analysisDataService.deleteMetric = jest.fn().mockReturnValue(of(metrics));
+      service.deleteMetrics$.subscribe(() => {
+        neverEmitted = false;
+      });
 
-            const action = AnalysisActions.actionDeleteMetricSuccess({ metrics });
+      actions$.next(AnalysisActions.actionDeleteMetric({ key: undefined }));
+      tick(0);
 
-            service.deleteMetrics$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionDeleteMetric({ key }));
-            tick(0);
-        }))
+      expect(neverEmitted).toBe(true);
+    }));
 
-        it('should dispatch actionDeleteMetricSuccess with metrics and key on success with data of falsey size', fakeAsync(() => {
-            const key = 'test';
-            const metrics = [];
+    it('should dispatch actionDeleteMetricSuccess with metrics on success with data of truthy size', fakeAsync(() => {
+      const key = 'test';
+      const metrics = [
+        {
+          key: 'totalTimeSeconds',
+          children: [],
+        },
+      ];
 
-            analysisDataService.deleteMetric = jest.fn().mockReturnValue(of(metrics));
+      analysisDataService.deleteMetric = jest.fn().mockReturnValue(of(metrics));
 
-            const action = AnalysisActions.actionDeleteMetricSuccess({ metrics, key });
+      const action = AnalysisActions.actionDeleteMetricSuccess({ metrics });
 
-            service.deleteMetrics$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionDeleteMetric({ key }));
-            tick(0);
-        }))
+      service.deleteMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-        it('should dispatch actionDeleteMetricFailure on error', fakeAsync(() => {
-            const key = 'test';
+      actions$.next(AnalysisActions.actionDeleteMetric({ key }));
+      tick(0);
+    }));
 
-            analysisDataService.deleteMetric = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+    it('should dispatch actionDeleteMetricSuccess with metrics and key on success with data of falsey size', fakeAsync(() => {
+      const key = 'test';
+      const metrics = [];
 
-            const action = AnalysisActions.actionDeleteMetricFailure();
+      analysisDataService.deleteMetric = jest.fn().mockReturnValue(of(metrics));
 
-            service.deleteMetrics$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionDeleteMetric({ key }));
-            tick(0);
-        }))
-    })
+      const action = AnalysisActions.actionDeleteMetricSuccess({ metrics, key });
 
-    describe('executeQuery$', () => {
-        it('should do nothing if queryIds size is falsey', fakeAsync(() => {
-            const queryIds = [];
-            let neverEmitted = true;
-            selectQueryResult.setResult({});
+      service.deleteMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            service.executeQuery$.subscribe(() => {
-                neverEmitted = false;
-            })
+      actions$.next(AnalysisActions.actionDeleteMetric({ key }));
+      tick(0);
+    }));
 
-            actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
-            tick(0);
+    it('should dispatch actionDeleteMetricFailure on error', fakeAsync(() => {
+      const key = 'test';
 
-            expect(neverEmitted).toBe(true);
-        }))
+      analysisDataService.deleteMetric = jest.fn().mockReturnValue(throwError(() => new Error('test')));
 
-        it('should dispatch actionExecuteQuerySuccess with matching query result', fakeAsync(() => {
-            const queryIds = [
-                'abc123'
-            ];
-            const previousQueryResult = [
-                { id: 'abc123' }
-            ];
-            const currentQueryResult = [
-                { id: 'abc123' }
-            ];
-            const mergedResult = [
-                { id: 'abc123' }
-            ];
-            selectQueryResult.setResult(previousQueryResult);
+      const action = AnalysisActions.actionDeleteMetricFailure();
 
-            analysisDataService.executeQuery = jest.fn().mockReturnValue(of(currentQueryResult));
+      service.deleteMetrics$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            const action = AnalysisActions.actionExecuteQuerySuccess({ queryResult: mergedResult });
+      actions$.next(AnalysisActions.actionDeleteMetric({ key }));
+      tick(0);
+    }));
+  });
 
-            service.executeQuery$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
-            tick(0);
-        }))
+  describe('executeQuery$', () => {
+    it('should do nothing if queryIds size is falsey', fakeAsync(() => {
+      const queryIds = [];
+      let neverEmitted = true;
+      selectQueryResult.setResult({});
 
-        it('should dispatch actionExecuteQuerySuccess with merged query result', fakeAsync(() => {
-            const queryIds = [
-                'xyz1789'
-            ];
-            const previousQueryResult = [
-                { id: 'abc123' }
-            ];
-            const currentQueryResult = [
-                { id: 'xyz1789' }
-            ];
-            const mergedResult = [
-                { id: 'abc123' },
-                { id: 'xyz1789' }
-            ];
-            selectQueryResult.setResult(previousQueryResult);
+      service.executeQuery$.subscribe(() => {
+        neverEmitted = false;
+      });
 
-            analysisDataService.executeQuery = jest.fn().mockReturnValue(of(currentQueryResult));
+      actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
+      tick(0);
 
-            const action = AnalysisActions.actionExecuteQuerySuccess({ queryResult: mergedResult });
+      expect(neverEmitted).toBe(true);
+    }));
 
-            service.executeQuery$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
-            tick(0);
-        }))
+    it('should dispatch actionExecuteQuerySuccess with matching query result', fakeAsync(() => {
+      const queryIds = ['abc123'];
+      const previousQueryResult = [{ id: 'abc123' }];
+      const currentQueryResult = [{ id: 'abc123' }];
+      const mergedResult = [{ id: 'abc123' }];
+      selectQueryResult.setResult(previousQueryResult);
 
-        it('should dispatch actionExecuteQuerySuccess with current query result if stored previous result is falsey', fakeAsync(() => {
-            const queryIds = [
-                'xyz1789'
-            ];
-            const previousQueryResult = null;
-            const currentQueryResult = [
-                { id: 'xyz1789' }
-            ];
-            const mergedResult = [
-                { id: 'xyz1789' }
-            ];
-            selectQueryResult.setResult(previousQueryResult);
+      analysisDataService.executeQuery = jest.fn().mockReturnValue(of(currentQueryResult));
 
-            analysisDataService.executeQuery = jest.fn().mockReturnValue(of(currentQueryResult));
+      const action = AnalysisActions.actionExecuteQuerySuccess({ queryResult: mergedResult });
 
-            const action = AnalysisActions.actionExecuteQuerySuccess({ queryResult: mergedResult });
+      service.executeQuery$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            service.executeQuery$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
-            tick(0);
-        }))
+      actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
+      tick(0);
+    }));
 
-        it('should dispatch actionExecuteQueryFailure if service call encounters an error', fakeAsync(() => {
-            const queryIds = [
-                'xyz1789'
-            ];
-            const previousQueryResult = null;
+    it('should dispatch actionExecuteQuerySuccess with merged query result', fakeAsync(() => {
+      const queryIds = ['xyz1789'];
+      const previousQueryResult = [{ id: 'abc123' }];
+      const currentQueryResult = [{ id: 'xyz1789' }];
+      const mergedResult = [{ id: 'abc123' }, { id: 'xyz1789' }];
+      selectQueryResult.setResult(previousQueryResult);
 
-            selectQueryResult.setResult(previousQueryResult);
+      analysisDataService.executeQuery = jest.fn().mockReturnValue(of(currentQueryResult));
 
-            analysisDataService.executeQuery = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+      const action = AnalysisActions.actionExecuteQuerySuccess({ queryResult: mergedResult });
 
-            const action = AnalysisActions.actionExecuteQueryFailure();
+      service.executeQuery$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
 
-            service.executeQuery$.subscribe((result: any) => {
-                expect(result).toEqual(action);
-            })
-            
-            actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
-            tick(0);
-        }))
-    })
- })
+      actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
+      tick(0);
+    }));
+
+    it('should dispatch actionExecuteQuerySuccess with current query result if stored previous result is falsey', fakeAsync(() => {
+      const queryIds = ['xyz1789'];
+      const previousQueryResult = null;
+      const currentQueryResult = [{ id: 'xyz1789' }];
+      const mergedResult = [{ id: 'xyz1789' }];
+      selectQueryResult.setResult(previousQueryResult);
+
+      analysisDataService.executeQuery = jest.fn().mockReturnValue(of(currentQueryResult));
+
+      const action = AnalysisActions.actionExecuteQuerySuccess({ queryResult: mergedResult });
+
+      service.executeQuery$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
+
+      actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
+      tick(0);
+    }));
+
+    it('should dispatch actionExecuteQueryFailure if service call encounters an error', fakeAsync(() => {
+      const queryIds = ['xyz1789'];
+      const previousQueryResult = null;
+
+      selectQueryResult.setResult(previousQueryResult);
+
+      analysisDataService.executeQuery = jest.fn().mockReturnValue(throwError(() => new Error('test')));
+
+      const action = AnalysisActions.actionExecuteQueryFailure();
+
+      service.executeQuery$.subscribe((result: any) => {
+        expect(result).toEqual(action);
+      });
+
+      actions$.next(AnalysisActions.actionExecuteQuery({ queryIds }));
+      tick(0);
+    }));
+  });
+});

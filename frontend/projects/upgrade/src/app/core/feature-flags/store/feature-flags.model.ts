@@ -12,12 +12,12 @@ export enum FLAG_SEARCH_SORT_KEY {
 
 export enum SORT_AS {
   ASCENDING = 'ASC',
-  DESCENDING = 'DESC'
+  DESCENDING = 'DESC',
 }
 
 interface IFeatureFlagsSearchParams {
   key: FLAG_SEARCH_SORT_KEY;
-  string: string
+  string: string;
 }
 
 interface IFeatureFlagsSortParams {
@@ -37,7 +37,7 @@ export const NUMBER_OF_FLAGS = 20;
 export enum NewFlagDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
-  UPDATE_FLAG = 'Update flag'
+  UPDATE_FLAG = 'Update flag',
 }
 
 export enum NewFlagPaths {
@@ -47,12 +47,12 @@ export enum NewFlagPaths {
 
 export enum VariationTypes {
   CUSTOM = 'custom',
-  BOOLEAN = 'boolean'
+  BOOLEAN = 'boolean',
 }
 
 export enum UpsertFeatureFlagType {
   CREATE_NEW_FLAG = 'Create new feature flag',
-  UPDATE_FLAG = 'Update feature flag'
+  UPDATE_FLAG = 'Update feature flag',
 }
 
 export interface NewFlagDialogData {

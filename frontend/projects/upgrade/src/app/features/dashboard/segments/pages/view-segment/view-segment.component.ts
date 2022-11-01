@@ -17,21 +17,18 @@ import { SegmentStatusPipeType } from '../../../../../shared/pipes/segment-statu
 @Component({
   selector: 'view-segment',
   templateUrl: './view-segment.component.html',
-  styleUrls: ['./view-segment.component.scss']
+  styleUrls: ['./view-segment.component.scss'],
 })
 export class ViewSegmentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
   permissionsSub: Subscription;
   segment: Segment;
   segmentSub: Subscription;
-  members: { type: string, id: string }[] = [];
+  members: { type: string; id: string }[] = [];
 
   displayedVariationColumns: string[] = ['value', 'name'];
 
-  constructor(
-    private segmentsService: SegmentsService,
-    private dialog: MatDialog,
-    private authService: AuthService) { }
+  constructor(private segmentsService: SegmentsService, private dialog: MatDialog, private authService: AuthService) {}
 
   get SegmentStatus() {
     return SEGMENT_STATUS;
@@ -42,24 +39,24 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
+    this.permissionsSub = this.authService.userPermissions$.subscribe((permission) => {
       this.permissions = permission;
     });
 
     this.segmentSub = this.segmentsService.selectedSegment$
-      .pipe(filter(segment => !!segment))
-      .subscribe(segment => {
+      .pipe(filter((segment) => !!segment))
+      .subscribe((segment) => {
         this.segment = { ...segment, status: segment.status || SEGMENT_STATUS.UNUSED };
 
-        this.permissions.segments.delete = (this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE);
+        this.permissions.segments.delete = this.segment.type !== SEGMENT_TYPE.GLOBAL_EXCLUDE;
         this.members = [];
-        this.segment.individualForSegment.forEach(user => {
+        this.segment.individualForSegment.forEach((user) => {
           this.members.push({ type: MemberTypes.INDIVIDUAL, id: user.userId });
         });
-        this.segment.groupForSegment.forEach(group => {
+        this.segment.groupForSegment.forEach((group) => {
           this.members.push({ type: group.type, id: group.groupId });
         });
-        this.segment.subSegments.forEach(subSegment => {
+        this.segment.subSegments.forEach((subSegment) => {
           this.members.push({ type: MemberTypes.SEGMENT, id: subSegment.name });
         });
       });
@@ -68,16 +65,16 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   openEditSegmentDialog() {
     this.dialog.open(NewSegmentComponent as any, {
       panelClass: 'new-segment-modal',
-      data: { segmentInfo: clonedeep(this.segment) }
+      data: { segmentInfo: clonedeep(this.segment) },
     });
   }
 
   deleteSegment() {
     const dialogRef = this.dialog.open(DeleteComponent, {
-      panelClass: 'delete-modal'
+      panelClass: 'delete-modal',
     });
 
-    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
         this.segmentsService.deleteSegment(this.segment.id);
         // Add code of further actions after deleting experiment
@@ -88,7 +85,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   duplicateSegmentDialog() {
     const dialogRef = this.dialog.open(DuplicateSegmentComponent, {
       panelClass: 'duplicate-segment-modal',
-      data: { segment: this.segment }
+      data: { segment: this.segment },
     });
     dialogRef.afterClosed().subscribe(() => {
       // Add code of further actions after deleting feature segment
@@ -98,7 +95,7 @@ export class ViewSegmentComponent implements OnInit, OnDestroy {
   openExperimentSegmentList() {
     const dialogRef = this.dialog.open(SegmentExperimentListComponent, {
       panelClass: 'segment-experiment-list-modal',
-      data: { segment: this.segment }
+      data: { segment: this.segment },
     });
     dialogRef.afterClosed().subscribe(() => {
       // Add code of further actions after deleting feature segment

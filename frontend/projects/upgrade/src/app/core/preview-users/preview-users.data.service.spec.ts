@@ -5,78 +5,77 @@ import { Environment } from '../../../environments/environment-types';
 import { PreviewUsersDataService } from './preview-users.data.service';
 import { PreviewUserAssignCondition } from './store/preview-users.model';
 
-
 class MockHTTPClient {
-    get = jest.fn().mockReturnValue(of());
-    post = jest.fn().mockReturnValue(of());
-    delete = jest.fn().mockReturnValue(of());
-    put = jest.fn().mockReturnValue(of());
+  get = jest.fn().mockReturnValue(of());
+  post = jest.fn().mockReturnValue(of());
+  delete = jest.fn().mockReturnValue(of());
+  put = jest.fn().mockReturnValue(of());
 }
 
 describe('PreviewUsersDataService', () => {
-    let mockHttpClient: any;
-    let mockEnvironment: Environment;
-    let service: PreviewUsersDataService;
-    let mockParams: any;
-    let mockId: string;
-    let mockData: PreviewUserAssignCondition;
+  let mockHttpClient: any;
+  let mockEnvironment: Environment;
+  let service: PreviewUsersDataService;
+  let mockParams: any;
+  let mockId: string;
+  let mockData: PreviewUserAssignCondition;
 
-    beforeEach(() => {
-        mockHttpClient = new MockHTTPClient();
-        mockEnvironment = { ...environment };
-        service = new PreviewUsersDataService(mockHttpClient as HttpClient, mockEnvironment);
-        mockParams = {
-            skip: 0,
-            take: 10
-        };
-        mockId = 'abc123';
-        mockData = {
-            id: 'abc123',
-            assignments: []
-        }
+  beforeEach(() => {
+    mockHttpClient = new MockHTTPClient();
+    mockEnvironment = { ...environment };
+    service = new PreviewUsersDataService(mockHttpClient as HttpClient, mockEnvironment);
+    mockParams = {
+      skip: 0,
+      take: 10,
+    };
+    mockId = 'abc123';
+    mockData = {
+      id: 'abc123',
+      assignments: [],
+    };
+  });
+
+  describe('#fetchPreviewUsers', () => {
+    it('should get the fetchPreviewUsers http observable', () => {
+      const expectedUrl = mockEnvironment.api.getAllPreviewUsers;
+      const params = { ...mockParams };
+
+      service.fetchPreviewUsers(params);
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, params);
     });
+  });
 
-    describe('#fetchPreviewUsers', () => {
-        it('should get the fetchPreviewUsers http observable', () => {
-            const expectedUrl = mockEnvironment.api.getAllPreviewUsers;
-            const params = { ...mockParams };
+  describe('#addPreviewUser', () => {
+    it('should get the addPreviewUser http observable', () => {
+      const expectedUrl = mockEnvironment.api.previewUsers;
+      const id = mockId;
 
-            service.fetchPreviewUsers(params);
+      service.addPreviewUser(id);
 
-            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, params);
-        })
-    })
+      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { id });
+    });
+  });
 
-    describe('#addPreviewUser', () => {
-        it('should get the addPreviewUser http observable', () => {
-            const expectedUrl = mockEnvironment.api.previewUsers;
-            const id = mockId;
+  describe('#deletePreviewUser', () => {
+    it('should get the deletePreviewUser http observable', () => {
+      const id = mockId;
+      const expectedUrl = `${mockEnvironment.api.previewUsers}/${id}`;
 
-            service.addPreviewUser(id);
+      service.deletePreviewUser(id);
 
-            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, { id });
-        })
-    })
+      expect(mockHttpClient.delete).toHaveBeenCalledWith(expectedUrl);
+    });
+  });
 
-    describe('#deletePreviewUser', () => {
-        it('should get the deletePreviewUser http observable', () => {
-            const id = mockId;
-            const expectedUrl = `${mockEnvironment.api.previewUsers}/${id}`;
+  describe('#assignConditionToPreviewUser', () => {
+    it('should get the assignConditionToPreviewUser http observable', () => {
+      const data = mockData;
+      const expectedUrl = mockEnvironment.api.previewUsersAssignCondition;
 
-            service.deletePreviewUser(id);
+      service.assignConditionToPreviewUser(data);
 
-            expect(mockHttpClient.delete).toHaveBeenCalledWith(expectedUrl);
-        })
-    })
-
-    describe('#assignConditionToPreviewUser', () => {
-        it('should get the assignConditionToPreviewUser http observable', () => {
-            const data = mockData;
-            const expectedUrl = mockEnvironment.api.previewUsersAssignCondition;
-
-            service.assignConditionToPreviewUser(data);
-
-            expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, data);
-        })
-    })
-})
+      expect(mockHttpClient.post).toHaveBeenCalledWith(expectedUrl, data);
+    });
+  });
+});

@@ -4,14 +4,14 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
 import { SegmentInput, Segment } from '../../../../../../core/segments/store/segments.model';
 
 interface ImportSegmentJSON {
-  schema: Record<keyof SegmentInput, string>,
-  data: SegmentInput
+  schema: Record<keyof SegmentInput, string>;
+  data: SegmentInput;
 }
 
 @Component({
   selector: 'app-import-segment',
   templateUrl: './import-segment.component.html',
-  styleUrls: ['./import-segment.component.scss']
+  styleUrls: ['./import-segment.component.scss'],
 })
 export class ImportSegmentComponent {
   file: any;
@@ -29,12 +29,12 @@ export class ImportSegmentComponent {
   }
 
   importSegment() {
-    // TODO: improve the logic here   
+    // TODO: improve the logic here
     const userIds = this.segmentInfo.individualForSegment.map((individual) => individual.userId);
     const subSegmentIds = this.segmentInfo.subSegments.map((subSegment) => subSegment.id);
-    const groups = this.segmentInfo.groupForSegment.map((group) => ({ type: group.type, groupId: group.groupId } ));
-    
-    this.segmentTemp = {...this.segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups};
+    const groups = this.segmentInfo.groupForSegment.map((group) => ({ type: group.type, groupId: group.groupId }));
+
+    this.segmentTemp = { ...this.segmentInfo, userIds: userIds, subSegmentIds: subSegmentIds, groups: groups };
     this.isSegmentJSONValid = this.validateSegmentJSON(this.segmentTemp);
     if (this.isSegmentJSONValid) {
       this.segmentsService.importSegment({ ...this.segmentTemp });
@@ -46,7 +46,7 @@ export class ImportSegmentComponent {
     const reader = new FileReader();
     reader.addEventListener(
       'load',
-      function() {
+      function () {
         const result = JSON.parse(reader.result as any);
         this.segmentInfo = result;
       }.bind(this)
@@ -63,7 +63,7 @@ export class ImportSegmentComponent {
       userIds: 'array',
       groups: 'interface',
       subSegmentIds: 'array',
-      type: 'enum'
+      type: 'enum',
     };
 
     // const groupSchema: Record<keyof any, string> = {
@@ -85,9 +85,9 @@ export class ImportSegmentComponent {
   private checkForMissingProperties(segmentJson: ImportSegmentJSON) {
     const { schema, data } = segmentJson;
     const missingProperties = Object.keys(schema)
-      .filter(key => data[key] === undefined)
-      .map(key => key as keyof (SegmentInput))
-      .map(key => new Error(`Document is missing ${key} ${schema[key]}`));
-      return missingProperties;
+      .filter((key) => data[key] === undefined)
+      .map((key) => key as keyof SegmentInput)
+      .map((key) => new Error(`Document is missing ${key} ${schema[key]}`));
+    return missingProperties;
   }
 }

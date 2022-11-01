@@ -54,7 +54,9 @@
             {{ 'users.table.id.text' | translate }}
           </span>
         </th>
-        <td class="ft-12-600" mat-cell *matCellDef="let element">{{ element.type ? element.groupId : element.userId }}</td>
+        <td class="ft-12-600" mat-cell *matCellDef="let element">
+          {{ element.type ? element.groupId : element.userId }}
+        </td>
       </ng-container>
 
       <!-- Delete Column -->

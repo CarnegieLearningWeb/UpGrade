@@ -1,6 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import {  Segment,  NewSegmentDialogEvents , NewSegmentDialogData, NewSegmentPaths } from '../../../../../core/segments/store/segments.model';
+import {
+  Segment,
+  NewSegmentDialogEvents,
+  NewSegmentDialogData,
+  NewSegmentPaths,
+} from '../../../../../core/segments/store/segments.model';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
 import { Subscription } from 'rxjs';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -10,7 +15,7 @@ import { SEGMENT_TYPE } from 'upgrade_types';
   selector: 'segment-overview',
   templateUrl: './segment-overview.component.html',
   styleUrls: ['./segment-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentOverviewComponent implements OnInit, OnDestroy {
   @Input() segmentInfo: Segment;
@@ -23,17 +28,14 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
 
-  constructor(
-    private _formBuilder: FormBuilder,
-    private experimentService: ExperimentService
-    ) {}
+  constructor(private _formBuilder: FormBuilder, private experimentService: ExperimentService) {}
 
   get NewSegmentDialogEvents() {
     return NewSegmentDialogEvents;
   }
 
   ngOnInit() {
-    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
 
       if (this.contextMetaData && this.contextMetaData.contextMetadata) {
@@ -47,7 +49,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       context: [null, Validators.required],
     });
 
-    this.overviewForm.get('context').valueChanges.subscribe(context => {
+    this.overviewForm.get('context').valueChanges.subscribe((context) => {
       this.currentContext = context;
     });
 
@@ -56,7 +58,7 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
       this.overviewForm.setValue({
         name: this.segmentInfo.name,
         description: this.segmentInfo.description,
-        context: this.segmentInfo.context
+        context: this.segmentInfo.context,
       });
     }
 
@@ -77,15 +79,15 @@ export class SegmentOverviewComponent implements OnInit, OnDestroy {
           const overviewFormData = {
             name,
             description: description || '',
-            context
+            context,
           };
           this.emitSegmentDialogEvent.emit({
             type: eventType,
             formData: overviewFormData,
-            path: NewSegmentPaths.SEGMENT_OVERVIEW
+            path: NewSegmentPaths.SEGMENT_OVERVIEW,
           });
         }
-      break;
+        break;
     }
   }
 
