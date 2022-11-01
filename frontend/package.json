@@ -14,10 +14,9 @@
     "prebuild:prod": "npm run test",
     "build:prod": "ng build --configuration production",
     "build:dev": "ng build -c=development",
-    "clean": "rimraf node_modules && npm update && npm i",
-    "lint:report": "eslint -c .eslintrc.js --ext .ts './projects/upgrade/src'",
+    "clean": "rimraf node_modules && rm package-lock.json && npm update && npm i",
+    "lint:report": "eslint -c .eslintrc.js --ext .ts './projects/upgrade/src' && npm run prettier:report",
     "lint:fix": "eslint -c .eslintrc.js --ext .ts './projects/upgrade/src' --fix && npm run prettier:write",
-    "lint:watch": "onchange './projects/upgrade/src' -- prettier --write {{changed}}",
     "test": "jest --runInBand",
     "test:coverage": "open ./coverage/lcov-report/index.html",
     "test:once": "jest --maxWorkers=50% --coverage",
@@ -25,17 +24,19 @@
     "test:badges": "coverage-badge-creator",
     "test:dev": "npm-run-all --parallel test:watch test:coverage test:badges",
     "prettier:write": "prettier --config .prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --write",
-    "prettier:test": "prettier --config .prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --list-different",
+    "prettier:report": "prettier --config .prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --list-different",
     "release": "standard-version && git push --follow-tags origin master",
     "analyze": "npm run build:prod -- --stats-json && webpack-bundle-analyzer ./dist/upgrade/stats.json",
     "server": "node ./projects/server/server.js",
     "build:development": "npm run build:dev",
-    "build:production": "npm run build:prod"
+    "build:production": "npm run build:prod",
+    "prepare": "cd .. && husky install frontend/.husky"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint:fix && npm run test"
-    }
+  "lint-staged": {
+    "./projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
+      "prettier --config .prettierrc --write",
+      "git add"
+    ]
   },
   "private": true,
   "dependencies": {
@@ -88,6 +89,7 @@
     "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
     "jest": "^27.0.0",
     "jest-preset-angular": "~11.1.1",
     "lint-staged": "^13.0.3",

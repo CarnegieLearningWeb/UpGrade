@@ -4,8 +4,8 @@
 
 # Testing Frontend
 cd frontend
-npm run lint:fix
-npm test
+npx lint-staged
+npm run test
 cd ..
 
 # Testing Backend Upgrade
