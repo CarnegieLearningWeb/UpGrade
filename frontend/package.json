@@ -34,6 +34,7 @@
   },
   "lint-staged": {
     "./projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
+      "eslint -c .eslintrc.js --ext .ts --fix",
       "prettier --config .prettierrc --write"
     ]
   },
