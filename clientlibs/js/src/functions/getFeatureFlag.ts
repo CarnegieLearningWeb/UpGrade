@@ -1,20 +1,15 @@
 import { IFeatureFlag } from 'upgrade_types';
 
-export default function getFeatureFlag(
-  featureFlagsData: IFeatureFlag[],
-  key: string
-): IFeatureFlag {
+export default function getFeatureFlag(featureFlagsData: IFeatureFlag[], key: string): IFeatureFlag {
   try {
     if (featureFlagsData) {
-      const result = featureFlagsData.filter((data) =>
-        data.key === key
-      );
+      const result = featureFlagsData.filter((data) => data.key === key);
       if (result.length) {
         const activeVariation = getActiveVariation(result[0]) as any;
         return {
           ...result[0],
-          variations: activeVariation
-        }
+          variations: activeVariation,
+        };
       } else {
         throw new Error('Feature flag with given key not found');
       }
@@ -27,10 +22,10 @@ export default function getFeatureFlag(
 }
 
 function getActiveVariation(flag: IFeatureFlag) {
-  const existedVariation = flag.variations.filter(variation => {
-    if (variation.defaultVariation && variation.defaultVariation.indexOf(flag.status) !== -1) {
+  const existedVariation = flag.variations.filter((variation) => {
+    if (variation.defaultVariation && variation.defaultVariation.includes(flag.status)) {
       return variation;
     }
   });
-  return  existedVariation || [];
+  return existedVariation || [];
 }

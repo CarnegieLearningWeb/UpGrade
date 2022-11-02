@@ -13,9 +13,16 @@ export default async function log(
   try {
     const data = {
       userId,
-      value
+      value,
     };
-    const logResponse = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST, sendAsAnalytics);
+    const logResponse = await fetchDataService(
+      url,
+      token,
+      clientSessionId,
+      data,
+      Types.REQUEST_TYPES.POST,
+      sendAsAnalytics
+    );
     if (logResponse.status) {
       return logResponse.data;
     } else {
