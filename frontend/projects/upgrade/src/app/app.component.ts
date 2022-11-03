@@ -13,5 +13,5 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.translateService.setDefaultLang('en');
     this.authService.initializeGapi();
-  } // test
+  }
 }

@@ -9,7 +9,7 @@
     "importHelpers": true,
     "lib": ["es2018", "dom"],
     "paths": {
-      "upgrade_types": ["../../types"]
+      "upgrade_types": ["./types"]
     }
   }
 }
