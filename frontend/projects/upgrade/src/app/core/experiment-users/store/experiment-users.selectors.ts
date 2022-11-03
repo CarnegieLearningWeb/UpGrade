@@ -6,4 +6,4 @@ export const selectExperimentUsersState = createFeatureSelector<State, Experimen
 
 export const selectAllEntities = createSelector(selectExperimentUsersState, selectAll);
 
-export const selectIsExcludedEntityLoading = createSelector(selectExperimentUsersState, state => state.isLoading);
+export const selectIsExcludedEntityLoading = createSelector(selectExperimentUsersState, (state) => state.isLoading);

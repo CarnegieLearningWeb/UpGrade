@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, Input, OnDestroy } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
@@ -8,7 +7,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-table-row',
   templateUrl: './table-row.component.html',
   styleUrls: ['./table-row.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableRowComponent implements OnDestroy {
   @Input() dataSource: any;
@@ -17,28 +16,28 @@ export class TableRowComponent implements OnDestroy {
   @Input() experiment: ExperimentVM;
 
   expandedId = '';
-  columnHeaders: {};
+  columnHeaders = {};
   translateSub: Subscription;
-  constructor(
-    private translate: TranslateService
-  ) {
-    this.translateSub = this.translate.get([
-      'global.condition.text',
-      'home.view-experiment.global.weight.text',
-      'home.view-experiment.global.users-enrolled.text',
-      'home.view-experiment.global.group-enrolled.text',
-      'home.view-experiment-global.experiment-site.text',
-      'home.view-experiment-global.experiment-target.text'
-    ]).subscribe(arrayValues => {
-      this.columnHeaders = {
-        condition: arrayValues['global.condition.text'],
-        weight: arrayValues['home.view-experiment.global.weight.text'],
-        userEnrolled: arrayValues['home.view-experiment.global.users-enrolled.text'],
-        groupEnrolled: arrayValues['home.view-experiment.global.group-enrolled.text'],
-        experimentPoint: arrayValues['home.view-experiment-global.experiment-site.text'],
-        experimentId: arrayValues['home.view-experiment-global.experiment-target.text'],
-      }
-    })
+  constructor(private translate: TranslateService) {
+    this.translateSub = this.translate
+      .get([
+        'global.condition.text',
+        'home.view-experiment.global.weight.text',
+        'home.view-experiment.global.users-enrolled.text',
+        'home.view-experiment.global.group-enrolled.text',
+        'home.view-experiment-global.experiment-site.text',
+        'home.view-experiment-global.experiment-target.text',
+      ])
+      .subscribe((arrayValues) => {
+        this.columnHeaders = {
+          condition: arrayValues['global.condition.text'],
+          weight: arrayValues['home.view-experiment.global.weight.text'],
+          userEnrolled: arrayValues['home.view-experiment.global.users-enrolled.text'],
+          groupEnrolled: arrayValues['home.view-experiment.global.group-enrolled.text'],
+          experimentPoint: arrayValues['home.view-experiment-global.experiment-site.text'],
+          experimentId: arrayValues['home.view-experiment-global.experiment-target.text'],
+        };
+      });
   }
 
   toggleExpandableSymbol(id: string): void {

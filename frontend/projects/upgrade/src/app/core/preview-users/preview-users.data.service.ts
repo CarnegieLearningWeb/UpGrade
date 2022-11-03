@@ -5,10 +5,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class PreviewUsersDataService {
-  constructor(
-    private http: HttpClient,
-    @Inject(ENV) private environment: Environment
-  ) {}
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   fetchPreviewUsers(params: any) {
     const url = this.environment.api.getAllPreviewUsers;

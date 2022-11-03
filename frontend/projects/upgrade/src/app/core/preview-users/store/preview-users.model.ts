@@ -4,14 +4,14 @@ import { EntityState } from '@ngrx/entity';
 export interface Assignments {
   experiment: {
     id: string;
-  },
+  };
   experimentCondition: {
     id: string;
-  }
+  };
 }
 export interface PreviewUserAssignCondition {
   id: string;
-  assignments: Assignments[]
+  assignments: Assignments[];
 }
 export const NUMBER_OF_PREVIEW_USERS = 20;
 export interface PreviewUsers {
@@ -28,5 +28,5 @@ export interface PreviewUsersState extends EntityState<PreviewUsers> {
 }
 
 export interface State extends AppState {
-  previewUsers: PreviewUsersState
+  previewUsers: PreviewUsersState;
 }

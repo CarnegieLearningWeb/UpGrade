@@ -1,5 +1,4 @@
 import { createAction, props } from '@ngrx/store';
-import { FLAG_SEARCH_SORT_KEY } from '../../feature-flags/store/feature-flags.model';
 import {
   Experiment,
   UpsertExperimentType,
@@ -11,13 +10,10 @@ import {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IEnrollmentStatByDate,
-  IContextMetaData
+  IContextMetaData,
 } from './experiments.model';
 
-export const actionGetExperiments = createAction(
-  '[Experiment] Get Experiments',
-  props<{ fromStarting?: boolean }>()
-);
+export const actionGetExperiments = createAction('[Experiment] Get Experiments', props<{ fromStarting?: boolean }>());
 
 export const actionGetExperimentsSuccess = createAction(
   '[Experiment] Get Experiments Success',
@@ -36,9 +32,7 @@ export const actionFetchExperimentStatsSuccess = createAction(
   props<{ stats: any }>()
 );
 
-export const actionFetchExperimentStatsFailure = createAction(
-  '[Experiment] Fetch Experiment Stats Failure'
-);
+export const actionFetchExperimentStatsFailure = createAction('[Experiment] Fetch Experiment Stats Failure');
 
 export const actionRemoveExperimentStat = createAction(
   '[Experiment] Remove Experiment stat',
@@ -145,34 +139,22 @@ export const actionExportExperimentDesign = createAction(
   props<{ experimentIds: string[] }>()
 );
 
-export const actionExportExperimentInfoSuccess = createAction(
-  '[Experiment] Export Experiment Info Success'
-);
+export const actionExportExperimentInfoSuccess = createAction('[Experiment] Export Experiment Info Success');
 
-export const actionExportExperimentDesignSuccess = createAction(
-  '[Experiment] Export Experiment Design Success'
-);
+export const actionExportExperimentDesignSuccess = createAction('[Experiment] Export Experiment Design Success');
 
-export const actionExportExperimentInfoFailure = createAction(
-  '[Experiment] Export Experiment Info Failure'
-);
+export const actionExportExperimentInfoFailure = createAction('[Experiment] Export Experiment Info Failure');
 
-export const actionExportExperimentDesignFailure = createAction(
-  '[Experiment] Export Experiment Design Failure'
-);
+export const actionExportExperimentDesignFailure = createAction('[Experiment] Export Experiment Design Failure');
 
 export const actionImportExperiment = createAction(
   '[Experiment] Import Experiment',
   props<{ experiments: Experiment[] }>()
 );
 
-export const actionImportExperimentSuccess = createAction(
-  '[Experiment] Import Experiment Success'
-);
+export const actionImportExperimentSuccess = createAction('[Experiment] Import Experiment Success');
 
-export const actionImportExperimentFailure = createAction(
-  '[Experiment] Import Experiment Failure'
-);
+export const actionImportExperimentFailure = createAction('[Experiment] Import Experiment Failure');
 
 export const actionSetIsGraphLoading = createAction(
   '[Experiment] Set is Graph Loading',
@@ -181,17 +163,15 @@ export const actionSetIsGraphLoading = createAction(
 
 export const actionFetchExperimentGraphInfo = createAction(
   '[Experiment] Fetch Experiment graph Info',
-  props<{ experimentId: string, range: DATE_RANGE, clientOffset: number }>()
+  props<{ experimentId: string; range: DATE_RANGE; clientOffset: number }>()
 );
 
 export const actionFetchExperimentGraphInfoSuccess = createAction(
   '[Experiment] Fetch Experiment graph Info Success',
-  props<{ range: DATE_RANGE, graphInfo: IEnrollmentStatByDate[] }>()
+  props<{ range: DATE_RANGE; graphInfo: IEnrollmentStatByDate[] }>()
 );
 
-export const actionFetchExperimentGraphInfoFailure = createAction(
-  '[Experiment] Fetch Experiment graph Info Failure',
-);
+export const actionFetchExperimentGraphInfoFailure = createAction('[Experiment] Fetch Experiment graph Info Failure');
 
 export const actionSetExperimentGraphInfo = createAction(
   '[Experiment] Set Experiment Graph Info',
@@ -200,7 +180,7 @@ export const actionSetExperimentGraphInfo = createAction(
 
 export const actionSetGraphRange = createAction(
   '[Experiment] Set Graph Range',
-  props<{ range: DATE_RANGE, experimentId: string, clientOffset: number }>()
+  props<{ range: DATE_RANGE; experimentId: string; clientOffset: number }>()
 );
 
 export const actionFetchExperimentDetailStat = createAction(
@@ -213,9 +193,7 @@ export const actionFetchExperimentDetailStatSuccess = createAction(
   props<{ stat: IExperimentEnrollmentDetailStats }>()
 );
 
-export const actionFetchExperimentDetailStatFailure = createAction(
-  '[Experiment] Fetch Experiment Detail stat Failure',
-);
+export const actionFetchExperimentDetailStatFailure = createAction('[Experiment] Fetch Experiment Detail stat Failure');
 
 export const actionFetchContextMetaData = createAction(
   '[Experiment] Fetch contextMetaData',
@@ -225,11 +203,11 @@ export const actionFetchContextMetaData = createAction(
 export const actionSetIsLoadingContextMetaData = createAction(
   '[Experiment] Set IsLoadingContextMetaData',
   props<{ isLoadingContextMetaData: boolean }>()
-)
+);
 
 export const actionFetchContextMetaDataSuccess = createAction(
   '[Experiment] Fetch contextMetaData Success',
-  props<{ contextMetaData: IContextMetaData, isLoadingContextMetaData: boolean }>()
+  props<{ contextMetaData: IContextMetaData; isLoadingContextMetaData: boolean }>()
 );
 
 export const actionFetchContextMetaDataFailure = createAction(
@@ -241,7 +219,6 @@ export const actionSetCurrentContext = createAction(
   '[Experiment] Set User-Selected Context',
   props<{ context: string }>()
 );
-
 
 export const actionFetchGroupAssignmentStatus = createAction(
   '[Experiment] Fetch group counts having met ending criteria',
@@ -259,13 +236,11 @@ export const actionFetchGroupAssignmentStatusFailure = createAction(
 export const actionBeginExperimentDetailStatsPolling = createAction(
   '[Experiment] Begin polling every n seconds for details stats',
   props<{ experimentId: string }>()
-)
+);
 
-export const actionEndExperimentDetailStatsPolling = createAction(
-  '[Experiment] End polling for detail stats'
-)
+export const actionEndExperimentDetailStatsPolling = createAction('[Experiment] End polling for detail stats');
 
 export const actionUpdateAliasTableEditMode = createAction(
   '[Experiment] Update Alias Table Edit Mode Details',
-  props<{ isAliasTableEditMode: boolean, aliasTableEditIndex: number | null }>()
-)
+  props<{ isAliasTableEditMode: boolean; aliasTableEditIndex: number | null }>()
+);

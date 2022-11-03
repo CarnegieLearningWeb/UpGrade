@@ -8,7 +8,8 @@ cd ../../
 
 # Testing Frontend
 cd frontend
-npm test
+npx lint-staged
+npm run test
 cd ..
 
 # Testing Backend Upgrade

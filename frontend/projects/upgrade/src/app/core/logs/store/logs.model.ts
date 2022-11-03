@@ -4,16 +4,16 @@ import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 
 export { EXPERIMENT_LOG_TYPE, SERVER_ERROR };
 
-export const NUMBER_OF_LOGS  = 20;
+export const NUMBER_OF_LOGS = 20;
 
 export enum LogType {
   ERROR_LOG = 'Error log',
-  AUDIT_LOG = 'Audit log'
+  AUDIT_LOG = 'Audit log',
 }
 
 export enum LogDateFormatType {
   DATE_MONTH = 'dateMonth',
-  YEAR_DAY = 'yearDay'
+  YEAR_DAY = 'yearDay',
 }
 
 export interface AuditLogParams {

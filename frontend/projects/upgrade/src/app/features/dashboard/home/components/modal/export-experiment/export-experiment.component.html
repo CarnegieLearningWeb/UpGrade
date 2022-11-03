@@ -18,9 +18,9 @@
   ></span>
   <span
     class="info-msg"
-    *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length>1"
+    *ngIf="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1"
   >
-    {{ 'home.view-experiment.export-csv-warning.text' | translate }} 
+    {{ 'home.view-experiment.export-csv-warning.text' | translate }}
   </span>
   <div class="button-container">
     <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
@@ -28,9 +28,11 @@
     </button>
     <button
       mat-raised-button
-      [ngClass]="{ 'default-button--disabled': exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' 
-        && experiments.length>1}"
-      [disabled]="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length>1"
+      [ngClass]="{
+        'default-button--disabled':
+          exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1
+      }"
+      [disabled]="exportForm.get('exportMethod').value === 'Email Experiment Data (CSV)' && experiments.length > 1"
       class="shared-modal--modal-btn default-button"
       (click)="exportExperiment()"
     >

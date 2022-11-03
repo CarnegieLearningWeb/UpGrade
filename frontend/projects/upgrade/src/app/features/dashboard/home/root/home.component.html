@@ -1,9 +1,6 @@
 <mat-card class="experiments-container">
   <h1 class="title ft-32-700">{{ 'global.experiment.title' | translate }}</h1>
-  <span
-    class="subtitle ft-16-400"
-    [innerHTML]="'home.experiment.text.subtitle' | translate"
-  ></span>
+  <span class="subtitle ft-16-400" [innerHTML]="'home.experiment.text.subtitle' | translate"></span>
 
   <ng-container *ngIf="isLoadingExperiments$ | async; else loadingExperimentState">
     <mat-card class="experiment-table" *ngIf="(experiments$ | async).length; else noExperimentTemplate">
@@ -11,10 +8,7 @@
     </mat-card>
     <ng-template #noExperimentTemplate>
       <mat-card class="no-experiment-container">
-        <span
-          class="text ft-24-600"
-          [innerHTML]="'home.no-experiment.text' | translate"
-        ></span>
+        <span class="text ft-24-600" [innerHTML]="'home.no-experiment.text' | translate"></span>
         <button
           mat-flat-button
           color="primary"

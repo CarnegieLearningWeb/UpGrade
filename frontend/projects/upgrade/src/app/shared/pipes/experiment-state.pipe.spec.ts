@@ -45,11 +45,12 @@ describe('ExperimentStatePipe', () => {
   });
 
   it('should return #0cdda5 color for Enrollment Complete State', () => {
-    expect(experimentStatePipe.transform(EXPERIMENT_STATE.ENROLLMENT_COMPLETE, ExperimentStatePipeType.COLOR)).toBe('#0cdda5');
+    expect(experimentStatePipe.transform(EXPERIMENT_STATE.ENROLLMENT_COMPLETE, ExperimentStatePipeType.COLOR)).toBe(
+      '#0cdda5'
+    );
   });
 
   it('should return #d8d8d8 color for Inactive State', () => {
     expect(experimentStatePipe.transform(EXPERIMENT_STATE.INACTIVE, ExperimentStatePipeType.COLOR)).toBe('#d8d8d8');
   });
-
 });

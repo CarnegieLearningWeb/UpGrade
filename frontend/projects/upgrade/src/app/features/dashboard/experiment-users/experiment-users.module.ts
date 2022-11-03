@@ -9,10 +9,6 @@ import { ExperimentUsersComponent } from './components/experiment-users/experime
 
 @NgModule({
   declarations: [ExperimentUsersRootComponent, PreviewUserComponent, ExperimentUsersComponent],
-  imports: [
-    CommonModule,
-    SharedModule,
-    UserRoutingModule
-  ]
+  imports: [CommonModule, SharedModule, UserRoutingModule],
 })
 export class ExperimentUsersModule {}

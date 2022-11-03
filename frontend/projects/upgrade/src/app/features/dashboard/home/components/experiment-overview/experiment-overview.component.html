@@ -1,13 +1,11 @@
-<div *ngIf="!(isLoadingContextMetaData$ | async); else loadingExperimentOverview;" class="shared-modal--step-container">
+<div *ngIf="!(isLoadingContextMetaData$ | async); else loadingExperimentOverview" class="shared-modal--step-container">
   <section class="shared-modal--form-container">
     <form class="experiment-overview" [formGroup]="overviewForm">
       <mat-form-field class="ft-14-600 name">
         <input
           matInput
           class="ft-14-400"
-          [placeholder]="
-            'home.new-experiment.overview.name.placeHolder' | translate
-          "
+          [placeholder]="'home.new-experiment.overview.name.placeHolder' | translate"
           formControlName="experimentName"
           autocomplete="off"
           cdkFocusInitial
@@ -18,9 +16,7 @@
         <input
           matInput
           class="ft-14-400"
-          [placeholder]="
-            'home.new-experiment.overview.description.placeHolder' | translate
-          "
+          [placeholder]="'home.new-experiment.overview.description.placeHolder' | translate"
           formControlName="description"
           autocomplete="off"
         />
@@ -39,10 +35,7 @@
         <mat-form-field class="ft-14-600 unit-of-assignment">
           <mat-label>{{ 'home-global.unit-of-assignment.text' | translate }}</mat-label>
           <mat-select class="ft-14-400" formControlName="unitOfAssignment">
-            <mat-option
-              *ngFor="let unitOfAssignment of unitOfAssignments"
-              [value]="unitOfAssignment.value"
-            >
+            <mat-option *ngFor="let unitOfAssignment of unitOfAssignments" [value]="unitOfAssignment.value">
               {{ unitOfAssignment.value | titlecase }}
             </mat-option>
           </mat-select>
@@ -59,10 +52,7 @@
       <mat-form-field class="ft-14-600 consistency-rule">
         <mat-label>{{ 'home-global.consistency-rule.text' | translate }}</mat-label>
         <mat-select class="ft-14-400" formControlName="consistencyRule">
-          <mat-option
-            *ngFor="let consistencyRule of consistencyRules"
-            [value]="consistencyRule.value"
-          >
+          <mat-option *ngFor="let consistencyRule of consistencyRules" [value]="consistencyRule.value">
             {{ consistencyRule.value | titlecase }}
           </mat-option>
         </mat-select>
@@ -71,10 +61,7 @@
       <mat-form-field class="ft-14-600 design-type">
         <mat-label>{{ 'home-global.design-type.text' | translate }}</mat-label>
         <mat-select class="ft-14-400" formControlName="designType">
-          <mat-option
-            *ngFor="let designType of designTypes"
-            [value]="designType.value"
-          >
+          <mat-option *ngFor="let designType of designTypes" [value]="designType.value">
             {{ designType.value | titlecase }}
           </mat-option>
         </mat-select>
@@ -92,9 +79,7 @@
             <mat-icon matChipRemove *ngIf="isChipRemovable">cancel</mat-icon>
           </mat-chip>
           <input
-            [placeholder]="
-              'home.new-experiment.overview.tags.placeHolder' | translate
-            "
+            [placeholder]="'home.new-experiment.overview.tags.placeHolder' | translate"
             [matChipInputFor]="tagsList"
             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
             [matChipInputAddOnBlur]="addChipOnBlur"
@@ -137,10 +122,17 @@
         *ngIf="experimentInfo && enableSave"
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{ 'default-button--disabled': experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE }"
-        [disabled]="experimentInfo.state == ExperimentState.ENROLLING || experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE"
+        [ngClass]="{
+          'default-button--disabled':
+            experimentInfo.state == ExperimentState.ENROLLING ||
+            experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE
+        }"
+        [disabled]="
+          experimentInfo.state == ExperimentState.ENROLLING ||
+          experimentInfo.state == ExperimentState.ENROLLMENT_COMPLETE
+        "
         (click)="emitEvent(NewExperimentDialogEvents.SAVE_DATA)"
-        >
+      >
         {{ 'global.update.text' | translate }}
       </button>
     </span>

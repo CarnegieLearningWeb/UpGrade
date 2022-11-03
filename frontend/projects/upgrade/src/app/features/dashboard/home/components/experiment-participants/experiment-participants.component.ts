@@ -1,28 +1,38 @@
-import { Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, Input, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  Output,
+  EventEmitter,
+  Input,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NewExperimentDialogEvents, NewExperimentDialogData, NewExperimentPaths, ExperimentVM, IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
+import {
+  NewExperimentDialogEvents,
+  NewExperimentDialogData,
+  NewExperimentPaths,
+  ExperimentVM,
+  IContextMetaData,
+} from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { Segment, MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
-
-type ParticipantMember = {
-  id: string;
-  type: string;
-}
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
   styleUrls: ['./experiment-participants.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentParticipantsComponent implements OnInit {
   @Input() experimentInfo: ExperimentVM;
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
-  @Input() animationCompleteStepperIndex: Number;
+  @Input() animationCompleteStepperIndex: number;
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
@@ -32,11 +42,11 @@ export class ExperimentParticipantsComponent implements OnInit {
   members1DataSource = new BehaviorSubject<AbstractControl[]>([]);
   members2DataSource = new BehaviorSubject<AbstractControl[]>([]);
 
-  inclusionCriteria  = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
-  membersDisplayedColumns = [ 'type', 'id', 'removeMember' ];
+  inclusionCriteria = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
+  membersDisplayedColumns = ['type', 'id', 'removeMember'];
 
   enableSave = true;
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
   allSegmentsSub: Subscription;
@@ -46,14 +56,14 @@ export class ExperimentParticipantsComponent implements OnInit {
   subSegmentIdsToSend = [];
   userIdsToSend = [];
   groupsToSend = [];
-  groupString: string = ' ( group )';
+  groupString = ' ( group )';
 
   constructor(
     private _formBuilder: FormBuilder,
     private _formBuilder2: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService
-  ) { }
+  ) {}
 
   ngOnChanges() {
     if (this.currentContext) {
@@ -78,13 +88,13 @@ export class ExperimentParticipantsComponent implements OnInit {
     }
   }
 
-  ngOnInit() { 
-    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+  ngOnInit() {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
     });
 
-    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(allSegments => {
-      this.allSegments =  allSegments;
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((allSegments) => {
+      this.allSegments = allSegments;
     });
 
     this.participantsForm = this._formBuilder.group({
@@ -100,7 +110,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
 
     if (this.experimentInfo) {
-      if( this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
+      if (this.experimentInfo.filterMode === FILTER_MODE.EXCLUDE_ALL) {
         this.participantsForm.get('inclusionCriteria').setValue(INCLUSION_CRITERIA.INCLUDE_SPECIFIC);
         this.experimentInfo.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
           this.members1.push(this.addMembers1(MemberTypes.INDIVIDUAL, id.userId));
@@ -143,14 +153,14 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   addMembers1(type = null, id = null) {
     return this._formBuilder.group({
-      type: [type , Validators.required],
+      type: [type, Validators.required],
       id: [id, Validators.required],
     });
   }
 
   addMembers2(type = null, id = null) {
     return this._formBuilder.group({
-      type: [type , Validators.required],
+      type: [type, Validators.required],
       id: [id, Validators.required],
     });
   }
@@ -180,7 +190,7 @@ export class ExperimentParticipantsComponent implements OnInit {
     if (this.members1Table) {
       this.members1Table.nativeElement.scroll({
         top: this.members1Table.nativeElement.scrollHeight - 94,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }
@@ -190,18 +200,18 @@ export class ExperimentParticipantsComponent implements OnInit {
     if (this.members2Table) {
       this.members2Table.nativeElement.scroll({
         top: this.members2Table.nativeElement.scrollHeight - 94,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }
 
   setMemberTypes() {
     this.subSegmentTypes = [];
-    this.subSegmentTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
-    this.subSegmentTypes.push({'name': MemberTypes.SEGMENT, 'value': MemberTypes.SEGMENT});
-    if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
-        this.subSegmentTypes.push({'name': type + this.groupString, 'value': type});
+    this.subSegmentTypes.push({ name: MemberTypes.INDIVIDUAL, value: MemberTypes.INDIVIDUAL });
+    this.subSegmentTypes.push({ name: MemberTypes.SEGMENT, value: MemberTypes.SEGMENT });
+    if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
+      this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach((type) => {
+        this.subSegmentTypes.push({ name: type + this.groupString, value: type });
       });
     }
   }
@@ -210,11 +220,11 @@ export class ExperimentParticipantsComponent implements OnInit {
     this.userIdsToSend = [];
     this.subSegmentIdsToSend = [];
     this.groupsToSend = [];
-    const memberFiltered = members.filter(member =>  member.type);
-    memberFiltered.forEach(member => {
+    const memberFiltered = members.filter((member) => member.type);
+    memberFiltered.forEach((member) => {
       if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
-      } else if(member.type === MemberTypes.SEGMENT) {
+      } else if (member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
@@ -229,47 +239,59 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
       case NewExperimentDialogEvents.SAVE_DATA:
-        this.participantsForm.markAllAsTouched();
-        this.participantsForm2.markAllAsTouched();
+        {
+          this.participantsForm.markAllAsTouched();
+          this.participantsForm2.markAllAsTouched();
 
-        const filterMode = this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
-          ? FILTER_MODE.EXCLUDE_ALL
-          : FILTER_MODE.INCLUDE_ALL;
+          const filterMode =
+            this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
+              ? FILTER_MODE.EXCLUDE_ALL
+              : FILTER_MODE.INCLUDE_ALL;
 
-        if(filterMode === FILTER_MODE.INCLUDE_ALL) {
-          this.members2.clear();
-        }
-
-        const { members1 } = this.participantsForm.value;
-        const { members2 } = this.participantsForm2.value;
-
-        // TODO: Handle member2:
-        if (this.participantsForm.valid && this.participantsForm2.valid) {
-          this.gettingMembersValueToSend(members1);
-          const segmentMembers1FormData = {
-            userIds: this.userIdsToSend,
-            groups: this.groupsToSend,
-            subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PRIVATE
+          if (filterMode === FILTER_MODE.INCLUDE_ALL) {
+            this.members2.clear();
           }
 
-          // if dropdown is includeall except then members2.clear()
-          this.gettingMembersValueToSend(members2);
-          const segmentMembers2FormData = {
-            userIds: this.userIdsToSend,
-            groups: this.groupsToSend,
-            subSegmentIds: this.subSegmentIdsToSend,
-            type: SEGMENT_TYPE.PRIVATE
+          const { members1 } = this.participantsForm.value;
+          const { members2 } = this.participantsForm2.value;
+
+          // TODO: Handle member2:
+          if (this.participantsForm.valid && this.participantsForm2.valid) {
+            this.gettingMembersValueToSend(members1);
+            const segmentMembers1FormData = {
+              userIds: this.userIdsToSend,
+              groups: this.groupsToSend,
+              subSegmentIds: this.subSegmentIdsToSend,
+              type: SEGMENT_TYPE.PRIVATE,
+            };
+
+            // if dropdown is includeall except then members2.clear()
+            this.gettingMembersValueToSend(members2);
+            const segmentMembers2FormData = {
+              userIds: this.userIdsToSend,
+              groups: this.groupsToSend,
+              subSegmentIds: this.subSegmentIdsToSend,
+              type: SEGMENT_TYPE.PRIVATE,
+            };
+            this.emitExperimentDialogEvent.emit({
+              type: eventType,
+              formData:
+                filterMode === FILTER_MODE.EXCLUDE_ALL
+                  ? {
+                      experimentSegmentInclusion: segmentMembers1FormData,
+                      experimentSegmentExclusion: segmentMembers2FormData,
+                      filterMode: filterMode,
+                    }
+                  : {
+                      experimentSegmentInclusion: segmentMembers2FormData,
+                      experimentSegmentExclusion: segmentMembers1FormData,
+                      filterMode: filterMode,
+                    },
+              path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
+            });
           }
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: ( filterMode === FILTER_MODE.EXCLUDE_ALL )
-              ? { experimentSegmentInclusion: segmentMembers1FormData, experimentSegmentExclusion: segmentMembers2FormData, filterMode: filterMode }
-              : { experimentSegmentInclusion: segmentMembers2FormData, experimentSegmentExclusion: segmentMembers1FormData, filterMode: filterMode },
-            path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS
-          });
         }
-      break;
+        break;
     }
   }
 
@@ -287,7 +309,6 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   get inclusionCriterisAsIncludeSpecific() {
     return this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC;
-    
   }
 
   get NewExperimentDialogEvents() {

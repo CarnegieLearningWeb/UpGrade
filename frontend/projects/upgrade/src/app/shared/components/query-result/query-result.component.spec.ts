@@ -11,8 +11,8 @@ xdescribe('QueryResultComponent', () => {
   let fixture: ComponentFixture<QueryResultComponent>;
 
   const modalData = {
-    query: TestMockData.getQuery()[0]
-  }
+    query: TestMockData.getQuery()[0],
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [],
@@ -20,10 +20,9 @@ xdescribe('QueryResultComponent', () => {
       providers: [
         AnalysisService,
         { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: modalData },
-      ]
-    })
-    .compileComponents();
+        { provide: MAT_DIALOG_DATA, useValue: modalData },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

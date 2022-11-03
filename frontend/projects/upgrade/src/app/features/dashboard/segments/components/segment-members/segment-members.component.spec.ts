@@ -9,11 +9,10 @@ xdescribe('SegmentMembersComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SegmentMembersComponent ],
+      declarations: [SegmentMembersComponent],
       imports: [TestingModule],
-      providers: [SegmentsService]
-    })
-    .compileComponents();
+      providers: [SegmentsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

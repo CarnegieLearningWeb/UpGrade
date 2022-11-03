@@ -12,15 +12,10 @@ xdescribe('NewSegmentComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ NewSegmentComponent, SegmentOverviewComponent, SegmentMembersComponent ],
+      declarations: [NewSegmentComponent, SegmentOverviewComponent, SegmentMembersComponent],
       imports: [TestingModule],
-      providers: [
-        SegmentsService,
-        { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: [] },
-      ]
-    })
-    .compileComponents();
+      providers: [SegmentsService, { provide: MatDialogRef, useValue: {} }, { provide: MAT_DIALOG_DATA, useValue: [] }],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

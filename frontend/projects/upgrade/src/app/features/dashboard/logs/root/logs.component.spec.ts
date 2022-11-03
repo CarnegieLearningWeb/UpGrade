@@ -24,13 +24,10 @@ xdescribe('LogsComponent', () => {
         TimelineComponent,
         LogDateFormatPipe,
         ErrorLogPipe,
-        ExperimentActionMessage
+        ExperimentActionMessage,
       ],
       imports: [TestingModule],
-      providers: [
-        LogsService,
-        SettingsService
-      ]
+      providers: [LogsService, SettingsService],
     }).compileComponents();
   }));
 

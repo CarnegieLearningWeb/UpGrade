@@ -1,6 +1,12 @@
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
-import { OPERATION_TYPES, Query, METRICS_JOIN_TEXT, IMetricMetaData, REPEATED_MEASURE } from '../../../../../core/analysis/store/analysis.models';
+import {
+  OPERATION_TYPES,
+  Query,
+  METRICS_JOIN_TEXT,
+  IMetricMetaData,
+  REPEATED_MEASURE,
+} from '../../../../../core/analysis/store/analysis.models';
 import { AnalysisService } from '../../../../../core/analysis/analysis.service';
 import { ExperimentVM } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
@@ -24,7 +30,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   queryOperations = [];
   comparisonFns = [
     { value: '=', viewValue: 'equal' },
-    { value: '<>', viewValue: 'not equal' }
+    { value: '<>', viewValue: 'not equal' },
   ];
   queryForm: FormGroup;
   filteredOptions: Observable<any[]>[] = [];
@@ -37,12 +43,12 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     private analysisService: AnalysisService,
     private experimentService: ExperimentService,
     private fb: FormBuilder
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.allMetricsSub = this.analysisService.allMetrics$.subscribe(metrics => {
+    this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
       this.allMetrics = metrics;
-      this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
+      this.options[0] = this.allMetrics.filter((metric) => metric.children.length === 0);
     });
 
     this.queryForm = this.fb.group({
@@ -51,12 +57,12 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
       operationType: [null, Validators.required],
       compareFn: [null],
       compareValue: [null],
-      repeatedMeasure: [REPEATED_MEASURE.mostRecent]
+      repeatedMeasure: [REPEATED_MEASURE.mostRecent],
     });
     this.ManageKeysControl(0);
 
     // TODO: Move to separate validator file
-    this.queryForm.get('operationType').valueChanges.subscribe(operation => {
+    this.queryForm.get('operationType').valueChanges.subscribe((operation) => {
       if (operation === OPERATION_TYPES.PERCENTAGE) {
         this.queryForm.get('compareFn').setValidators([Validators.required]);
         this.queryForm.get('compareValue').setValidators([Validators.required]);
@@ -64,18 +70,18 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
         this.queryForm.get('compareFn').clearValidators();
         this.queryForm.get('compareValue').clearValidators();
       }
-      this.queryForm.get('compareFn').updateValueAndValidity()
-      this.queryForm.get('compareValue').updateValueAndValidity()
+      this.queryForm.get('compareFn').updateValueAndValidity();
+      this.queryForm.get('compareValue').updateValueAndValidity();
     });
 
-    this.queryForm.get('compareFn').valueChanges.subscribe(compareFn => {
+    this.queryForm.get('compareFn').valueChanges.subscribe((compareFn) => {
       if (compareFn) {
         this.queryForm.get('compareValue').setValidators([Validators.required]);
       } else {
         this.queryForm.get('compareValue').clearValidators();
         this.queryForm.get('compareValue').setValue(null);
       }
-      this.queryForm.get('compareValue').updateValueAndValidity()
+      this.queryForm.get('compareValue').updateValueAndValidity();
     });
   }
 
@@ -85,7 +91,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   addKey() {
     return this.fb.group({
-      metricKey: [null, Validators.required]
+      metricKey: [null, Validators.required],
     });
   }
 
@@ -95,19 +101,21 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
 
   ManageKeysControl(index: number) {
     const arrayControl = this.queryForm.get('keys') as FormArray;
-    this.filteredOptions[index] = arrayControl.at(index).get('metricKey').valueChanges
-      .pipe(
-      startWith<string>(''),
-      map(key => {
-        for (let i = index - 1; i >= 0; i--) {
-          arrayControl.at(i).disable();
-        }
-        if (index - 1 >= 0) {
-          const { metricKey } = arrayControl.at(index - 1).value;
-          this.options[index] = metricKey.children;
-        }
-        return key ? this._filter(key, index) : this.options[index] ? this.options[index].slice() : [];
-      })
+    this.filteredOptions[index] = arrayControl
+      .at(index)
+      .get('metricKey')
+      .valueChanges.pipe(
+        startWith<string>(''),
+        map((key) => {
+          for (let i = index - 1; i >= 0; i--) {
+            arrayControl.at(i).disable();
+          }
+          if (index - 1 >= 0) {
+            const { metricKey } = arrayControl.at(index - 1).value;
+            this.options[index] = metricKey.children;
+          }
+          return key ? this._filter(key, index) : this.options[index] ? this.options[index].slice() : [];
+        })
       );
   }
 
@@ -115,11 +123,11 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     this.resetForm();
     if (tabIndex === 0) {
       // Show only simple metrics
-      this.options[0] = this.allMetrics.filter(metric => metric.children.length === 0);
+      this.options[0] = this.allMetrics.filter((metric) => metric.children.length === 0);
     } else {
       // Show only grouped metrics
       this.queryForm.get('repeatedMeasure').setValue(REPEATED_MEASURE.mostRecent);
-      this.options[0] = this.allMetrics.filter(metric => metric.children.length !== 0);
+      this.options[0] = this.allMetrics.filter((metric) => metric.children.length !== 0);
     }
   }
 
@@ -145,7 +153,7 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
     } else {
       filterValue = key.key.toLowerCase();
     }
-    return this.options[index].filter(option => option.key.toLowerCase().indexOf(filterValue) === 0);
+    return this.options[index].filter((option) => option.key.toLowerCase().indexOf(filterValue) === 0);
   }
 
   addMoreSelectKey() {
@@ -161,7 +169,9 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
         this.keys.at(this.keys.length - 1).disable();
         const { keys } = this.queryForm.getRawValue();
         this.selectedNode = keys[keys.length - 1].metricKey;
-        const { metadata: { type } } = this.selectedNode;
+        const {
+          metadata: { type },
+        } = this.selectedNode;
         if (type && type === IMetricMetaData.CONTINUOUS) {
           this.queryOperations = [
             { value: OPERATION_TYPES.SUM, viewValue: 'Sum' },
@@ -171,12 +181,12 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
             { value: OPERATION_TYPES.AVERAGE, viewValue: 'Mean' },
             { value: OPERATION_TYPES.MODE, viewValue: 'Mode' },
             { value: OPERATION_TYPES.MEDIAN, viewValue: 'Median' },
-            { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' }
+            { value: OPERATION_TYPES.STDEV, viewValue: 'Standard Deviation' },
           ];
         } else if (type && type === IMetricMetaData.CATEGORICAL) {
           this.queryOperations = [
             { value: OPERATION_TYPES.COUNT, viewValue: 'Count' },
-            { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' }
+            { value: OPERATION_TYPES.PERCENTAGE, viewValue: 'Percentage' },
           ];
         }
       }
@@ -186,16 +196,16 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
   saveQuery() {
     const { operationType, queryName, compareFn, compareValue, repeatedMeasure } = this.queryForm.getRawValue();
     let { keys } = this.queryForm.getRawValue();
-    keys = keys.map(key => key.metricKey.key);
+    keys = keys.map((key) => key.metricKey.key);
     let queryObj: Query = {
       name: queryName,
       query: {
-        operationType
+        operationType,
       },
       metric: {
-        key: keys.join(METRICS_JOIN_TEXT)
+        key: keys.join(METRICS_JOIN_TEXT),
       },
-      repeatedMeasure
+      repeatedMeasure,
     };
     if (compareFn && !!compareValue) {
       queryObj = {
@@ -203,11 +213,11 @@ export class CreateQueryComponent implements OnInit, OnDestroy {
         query: {
           ...queryObj.query,
           compareFn,
-          compareValue
-        }
-      }
+          compareValue,
+        },
+      };
     }
-    this.experimentInfo.queries = [ ...this.experimentInfo.queries, queryObj];
+    this.experimentInfo.queries = [...this.experimentInfo.queries, queryObj];
     this.experimentService.updateExperiment(this.experimentInfo);
     this.resetForm();
     this.createdQueryEvent.emit(true);

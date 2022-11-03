@@ -9,40 +9,18 @@ import { SettingsService } from '../../../../../core/settings/settings.service';
 @Component({
   selector: 'audit-logs',
   templateUrl: './audit-logs.component.html',
-  styleUrls: ['./audit-logs.component.scss']
+  styleUrls: ['./audit-logs.component.scss'],
 })
 export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('auditLogContainer') auditLogContainer: ElementRef;
   auditLogData: any;
   auditLogsSubscription: Subscription;
   isAllAuditLogFetched = false;
   isAllAuditLogFetchedSub: Subscription;
   isAuditLoading$ = this.logsService.isAuditLogLoading$;
   theme$ = this.settingsService.theme$;
-  @ViewChild('auditLogContainer') auditLogContainer: ElementRef;
 
-  constructor(
-    private logsService: LogsService,
-    private settingsService: SettingsService
-  ) {}
-
-  ngOnInit() {
-    this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe(logs => {
-      logs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
-      this.auditLogData = groupBy(logs, log => {
-        const date = new Date(log.createdAt);
-        return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
-      });
-    });
-
-    this.isAllAuditLogFetchedSub = this.logsService.isAllAuditLogsFetched().subscribe(value => this.isAllAuditLogFetched = value);
-  }
-
-  // Used for keyvalue pipe to sort data by key
-  valueDescOrder = (a: KeyValue<string, AuditLogs>, b: KeyValue<string, AuditLogs>) => {
-    if (new Date(a.key).getTime() < new Date(b.key).getTime()) {
-      return b.key;
-    }
-  };
+  constructor(private logsService: LogsService, private settingsService: SettingsService) {}
 
   get LogType() {
     return LogType;
@@ -51,6 +29,27 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   get LogDateFormatTypes() {
     return LogDateFormatType;
   }
+
+  ngOnInit() {
+    this.auditLogsSubscription = this.logsService.getAuditLogs().subscribe((logs) => {
+      logs.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0));
+      this.auditLogData = groupBy(logs, (log) => {
+        const date = new Date(log.createdAt);
+        return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+      });
+    });
+
+    this.isAllAuditLogFetchedSub = this.logsService
+      .isAllAuditLogsFetched()
+      .subscribe((value) => (this.isAllAuditLogFetched = value));
+  }
+
+  // Used for keyvalue pipe to sort data by key
+  valueDescOrder = (a: KeyValue<string, AuditLogs>, b: KeyValue<string, AuditLogs>) => {
+    if (new Date(a.key).getTime() < new Date(b.key).getTime()) {
+      return b.key;
+    }
+  };
 
   fetchAuditLogOnScroll() {
     if (!this.isAllAuditLogFetched) {
@@ -61,7 +60,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.auditLogContainer.nativeElement.style.height = (windowHeight - 325) + 'px';
+    this.auditLogContainer.nativeElement.style.height = windowHeight - 325 + 'px';
   }
 
   ngOnDestroy() {

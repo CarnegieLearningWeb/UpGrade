@@ -14,7 +14,10 @@
       <mat-label>{{ 'home.change-experiment-status.new-status.text' | translate }}</mat-label>
       <mat-select class="ft-16-400 status-selection" formControlName="newStatus">
         <ng-container *ngFor="let status of experimentStatus">
-          <mat-option *ngIf="status.value === ExperimentStatus.SCHEDULED || status.value !== experimentInfo?.state" [value]="status">
+          <mat-option
+            *ngIf="status.value === ExperimentStatus.SCHEDULED || status.value !== experimentInfo?.state"
+            [value]="status"
+          >
             {{ status.value | experimentState }}
           </mat-option>
         </ng-container>
@@ -44,7 +47,7 @@
     {{ 'home.change-experiment-status.condition-count-error.text' | translate }}
   </span>
   <span class="error-msg" *ngIf="isScheduleDateWrong">
-    {{ 'home.change-experiment-status.enrolling-error.text' | translate: {endDate: (experimentInfo.endOn | date)} }}
+    {{ 'home.change-experiment-status.enrolling-error.text' | translate: { endDate: (experimentInfo.endOn | date) } }}
   </span>
 
   <div class="button-container">
@@ -54,7 +57,9 @@
     <button
       mat-raised-button
       class="shared-modal--modal-btn default-button"
-      [ngClass]="{ 'default-button--disabled': !this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg }"
+      [ngClass]="{
+        'default-button--disabled': !this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg
+      }"
       [disabled]="!this.statusForm.valid || isScheduleDateWrong || showConditionCountErrorMsg"
       (click)="changeStatus()"
     >

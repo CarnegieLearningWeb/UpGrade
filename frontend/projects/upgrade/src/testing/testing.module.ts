@@ -12,7 +12,6 @@ import { SharedModule } from '../app/shared/shared.module';
 import { provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-
 @Injectable()
 export class MockStorage {
   storageDB = {};
@@ -34,14 +33,16 @@ export class MockStorage {
   }
 }
 
-export const MockLocation = {
+export const mockLocation = {
   protocol: 'https:',
   port: '1234',
-  hostname: 'testing.com'
+  hostname: 'testing.com',
 };
 
-export const MockWindow = {
-  open() { }
+export const mockWindow = {
+  open() {
+    return;
+  },
 };
 
 @NgModule({
@@ -56,12 +57,12 @@ export const MockWindow = {
       loader: {
         provide: TranslateLoader,
         useFactory: createTranslateLoader,
-        deps: [HttpClient]
-      }
+        deps: [HttpClient],
+      },
     }),
     StoreModule.forRoot({
       ...coreReducers,
-    })
+    }),
   ],
   exports: [HttpClientTestingModule, RouterTestingModule, CommonModule, SharedModule, TranslateModule, FormsModule],
   providers: [
@@ -71,25 +72,25 @@ export const MockWindow = {
           state: {
             url: '',
             params: {},
-            queryParams: {}
-          }
+            queryParams: {},
+          },
         },
         analysis: {
           isMetricsLoading: false,
           isQueryExecuting: false,
           metrics: [],
           metricsFilter: null,
-          queryResult: null
+          queryResult: null,
         },
         auth: {
           isLoggedIn: false,
           isAuthenticating: false,
-          user: null
+          user: null,
         },
         experimentUsers: {
           ids: [],
           entities: {},
-          isLoading: false
+          isLoading: false,
         },
         experiments: {
           ids: [],
@@ -107,7 +108,7 @@ export const MockWindow = {
           isGraphInfoLoading: false,
           allPartitions: null,
           allExperimentNames: null,
-          context: []
+          context: [],
         },
         featureFlags: {
           ids: [],
@@ -118,7 +119,7 @@ export const MockWindow = {
           searchKey: 'all',
           searchString: null,
           sortKey: null,
-          sortAs: null
+          sortAs: null,
         },
         logs: {
           ids: [],
@@ -130,14 +131,14 @@ export const MockWindow = {
           skipErrorLog: 0,
           totalErrorLogs: null,
           auditLogFilter: null,
-          errorLogFilter: null
+          errorLogFilter: null,
         },
         previewUsers: {
           ids: [],
           entities: {},
           isLoading: false,
           skipPreviewUsers: 0,
-          totalPreviewUsers: null
+          totalPreviewUsers: null,
         },
         settings: {
           theme: 'light',
@@ -153,18 +154,16 @@ export const MockWindow = {
           searchKey: 'all',
           searchString: null,
           sortKey: null,
-          sortAs: null
+          sortAs: null,
         },
-      }
+      },
     }),
-    { provide: 'LOCATION', useValue: MockLocation },
+    { provide: 'LOCATION', useValue: mockLocation },
     { provide: 'SESSION_STORAGE', useValue: new MockStorage() },
-    { provide: 'WINDOW', useValue: MockWindow },
-  ]
+    { provide: 'WINDOW', useValue: mockWindow },
+  ],
 })
-export class TestingModule {
-  constructor() { }
-}
+export class TestingModule {}
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http);

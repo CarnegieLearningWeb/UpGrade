@@ -10,11 +10,10 @@ xdescribe('ExperimentOverviewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExperimentOverviewComponent ],
+      declarations: [ExperimentOverviewComponent],
       imports: [TestingModule],
-      providers: [ExperimentService]
-    })
-    .compileComponents();
+      providers: [ExperimentService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
