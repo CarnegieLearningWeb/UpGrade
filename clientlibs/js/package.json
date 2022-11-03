@@ -11,10 +11,10 @@
     "build": "npm run clean && webpack",
     "build:watch": "tsc -w",
     "clean": "rm -rf dist",
-    "lint:report": "eslint -c .eslintrc.js --ext .ts './{src, test}/**/*.ts' && npm run prettier:report",
+    "lint": "eslint -c .eslintrc.js --ext .ts './{src, test}/**/*.ts' && npm run prettier:check",
     "lint:fix": "eslint -c .eslintrc.js --ext .ts './{src, test}/**/*.ts' --fix && npm run prettier:write",
     "prettier:write": "prettier --config .prettierrc './{src, test}/**/*.ts' --write",
-    "prettier:report": "prettier --config .prettierrc './{src, test}/**/*.ts' --list-different",
+    "prettier:check": "prettier --config .prettierrc './{src, test}/**/*.ts' --check",
     "test": "jest"
   },
   "keywords": [],
