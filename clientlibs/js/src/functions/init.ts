@@ -7,8 +7,8 @@ export default async function init(
   userId: string,
   token: string,
   clientSessionId: string,
-  group?: Map<string, Array<string>>,
-  workingGroup?: Map<string, string>,
+  group?: Map<string, string[]>,
+  workingGroup?: Map<string, string>
 ): Promise<Interfaces.IUser> {
   try {
     let data: any = {
@@ -22,8 +22,8 @@ export default async function init(
       const groupObj = convertMapToObj(group);
       data = {
         ...data,
-        groupObj
-      }
+        groupObj,
+      };
     }
 
     if (workingGroup) {
@@ -33,8 +33,8 @@ export default async function init(
       const workingGroupObj = convertMapToObj(workingGroup);
       data = {
         ...data,
-        workingGroupObj
-      }
+        workingGroupObj,
+      };
     }
 
     const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST);

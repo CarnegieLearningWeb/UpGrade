@@ -7,14 +7,20 @@ export default async function setGroupMembership(
   userId: string,
   token: string,
   clientSessionId: string,
-  group: Map<string, Array<string>>
+  group: Map<string, string[]>
 ): Promise<Interfaces.IUser> {
   try {
     if (!(group instanceof Map)) {
       throw new Error('Group type should be Map<string, Array<string>>');
     }
     const groupObj = convertMapToObj(group);
-    const response = await fetchDataService(url, token, clientSessionId, { id: userId, group: groupObj }, Types.REQUEST_TYPES.POST);
+    const response = await fetchDataService(
+      url,
+      token,
+      clientSessionId,
+      { id: userId, group: groupObj },
+      Types.REQUEST_TYPES.POST
+    );
     if (response.status) {
       return response.data;
     } else {
