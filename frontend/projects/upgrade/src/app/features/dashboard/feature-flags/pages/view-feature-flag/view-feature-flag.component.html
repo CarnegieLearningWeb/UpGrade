@@ -35,22 +35,22 @@
       </span>
 
       <span class="ft-14-700 flag-create-date">
-        {{
-          ('home.view-experiment.created-on.text' | translate) + (flag.createdAt | formatDate: 'medium date')
-        }}
+        {{ ('home.view-experiment.created-on.text' | translate) + (flag.createdAt | formatDate: 'medium date') }}
       </span>
     </div>
 
     <div class="flag-secondary-info">
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-status.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{
+          'feature-flags.global-status.text' | translate | uppercase
+        }}</span>
         <mat-slide-toggle
-            color="primary"
-            [checked]="flag.status"
-            [disabled]="!permissions.featureFlags.update"
-            (change)="changeFlagStatus(flag.id, $event)"
-          >
-          </mat-slide-toggle>
+          color="primary"
+          [checked]="flag.status"
+          [disabled]="!permissions.featureFlags.update"
+          (change)="changeFlagStatus(flag.id, $event)"
+        >
+        </mat-slide-toggle>
       </div>
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-key.text' | translate | uppercase }}</span>
@@ -59,13 +59,17 @@
         </span>
       </div>
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.view-flag.variation-type.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{
+          'feature-flags.view-flag.variation-type.text' | translate | uppercase
+        }}</span>
         <span class="ft-18-700 section-data-value">
           {{ flag.variationType | titlecase }}
         </span>
       </div>
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'feature-flags.global-active-variation.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{
+          'feature-flags.global-active-variation.text' | translate | uppercase
+        }}</span>
         <span class="ft-18-700 section-data-value">
           {{ getActiveVariation(flag) }}
         </span>

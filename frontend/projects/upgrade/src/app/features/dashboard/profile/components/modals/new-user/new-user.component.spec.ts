@@ -18,9 +18,9 @@ xdescribe('NewUserComponent', () => {
         { provide: MatDialogRef, useValue: {} },
         {
           provide: MAT_DIALOG_DATA,
-          useValue: {}
-        }
-      ]
+          useValue: {},
+        },
+      ],
     }).compileComponents();
   }));
 

@@ -1,4 +1,14 @@
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, OnInit, Input, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  Output,
+  EventEmitter,
+  OnInit,
+  Input,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+} from '@angular/core';
 import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 import {
   NewExperimentDialogEvents,
@@ -6,7 +16,7 @@ import {
   ExperimentVM,
   NewExperimentPaths,
   IContextMetaData,
-  ExperimentDesignTypes
+  ExperimentDesignTypes,
 } from '../../../../../core/experiments/store/experiments.model';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
@@ -20,11 +30,11 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
   styleUrls: ['./experiment-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() dataChanged: boolean = false;
+  @Input() dataChanged = false;
   @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
@@ -35,15 +45,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   enableSave = true;
   allContexts = [];
   currentContext = null;
-  consistencyRules = [
-    { value: CONSISTENCY_RULE.INDIVIDUAL },
-    { value: CONSISTENCY_RULE.GROUP },
-  ];
+  consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
   designTypes = [
     {
-      value: ExperimentDesignTypes.SIMPLE
-    }
-  ]
+      value: ExperimentDesignTypes.SIMPLE,
+    },
+  ];
 
   // Used to control chips
   isChipSelectable = true;
@@ -51,7 +58,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   addChipOnBlur = true;
 
   // Used for autocomplete context input
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   isLoadingContextMetaData$: Observable<boolean>;
 
@@ -65,7 +72,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
-    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
 
       if (this.overviewForm && this.contextMetaData && this.experimentInfo) {
@@ -73,25 +80,23 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         this.overviewForm.patchValue(this.setGroupTypeControlValue());
       }
 
-      if (this.contextMetaData && this.contextMetaData['contextMetadata']) {
-        this.allContexts = Object.keys(this.contextMetaData['contextMetadata']);
+      if (this.contextMetaData && this.contextMetaData.contextMetadata) {
+        this.allContexts = Object.keys(this.contextMetaData.contextMetadata);
       }
 
-      this.overviewForm = this._formBuilder.group(
-        {
-          experimentName: [null, Validators.required],
-          description: [null],
-          unitOfAssignment: [null, Validators.required],
-          groupType: [null],
-          consistencyRule: [null, Validators.required],
-          designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
-          context: [null, Validators.required],
-          tags: [[]],
-          logging: [false]
-        }
-      );
+      this.overviewForm = this._formBuilder.group({
+        experimentName: [null, Validators.required],
+        description: [null],
+        unitOfAssignment: [null, Validators.required],
+        groupType: [null],
+        consistencyRule: [null, Validators.required],
+        designType: [ExperimentDesignTypes.SIMPLE, Validators.required],
+        context: [null, Validators.required],
+        tags: [[]],
+        logging: [false],
+      });
 
-      this.overviewForm.get('unitOfAssignment').valueChanges.subscribe(assignmentUnit => {
+      this.overviewForm.get('unitOfAssignment').valueChanges.subscribe((assignmentUnit) => {
         this.overviewForm.get('consistencyRule').reset();
         switch (assignmentUnit) {
           case ASSIGNMENT_UNIT.INDIVIDUAL:
@@ -104,10 +109,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
               this.overviewForm.get('groupType').enable();
               this.overviewForm.get('groupType').setValidators(Validators.required);
               this.setGroupTypes();
-              this.consistencyRules = [
-                { value: CONSISTENCY_RULE.INDIVIDUAL },
-                { value: CONSISTENCY_RULE.GROUP },
-              ];
+              this.consistencyRules = [{ value: CONSISTENCY_RULE.INDIVIDUAL }, { value: CONSISTENCY_RULE.GROUP }];
             } else {
               this.overviewForm.get('groupType').reset();
               this.overviewForm.get('groupType').disable();
@@ -116,7 +118,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         }
       });
 
-      this.overviewForm.get('context').valueChanges.subscribe(context => {
+      this.overviewForm.get('context').valueChanges.subscribe((context) => {
         this.currentContext = context;
         this.experimentService.setCurrentContext(context);
         this.setGroupTypes();
@@ -124,7 +126,10 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
       // populate values in form to update experiment if experiment data is available
       if (this.experimentInfo) {
-        if (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE) {
+        if (
+          this.experimentInfo.state == this.ExperimentState.ENROLLING ||
+          this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE
+        ) {
           this.overviewForm.disable();
         }
         this.currentContext = this.experimentInfo.context[0];
@@ -138,7 +143,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
           designType: ExperimentDesignTypes.SIMPLE,
           context: this.currentContext,
           tags: this.experimentInfo.tags,
-          logging: this.experimentInfo.logging
+          logging: this.experimentInfo.logging,
         });
         this.checkExperiment();
       }
@@ -151,14 +156,14 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     }
 
     this.setGroupTypes();
-    const result = find(this.groupTypes, type => type.value === this.experimentInfo.group);
-    return result ? { groupType: result.value }: { groupType: null };
+    const result = find(this.groupTypes, (type) => type.value === this.experimentInfo.group);
+    return result ? { groupType: result.value } : { groupType: null };
   }
 
   setGroupTypes() {
     this.groupTypes = [];
-    if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(groupType => {
+    if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
+      this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach((groupType) => {
         this.groupTypes.push({ value: groupType });
       });
     }
@@ -198,7 +203,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   // Check if experiment is created before new context-metadata and reset app-contexts
   checkExperiment() {
-    if(this.contextMetaData['contextMetadata'] && !this.contextMetaData['contextMetadata'][this.currentContext]) {
+    if (this.contextMetaData.contextMetadata && !this.contextMetaData.contextMetadata[this.currentContext]) {
       this.overviewForm.get('context').setValue(null);
       this.overviewForm.get('groupType').reset();
     }
@@ -207,13 +212,16 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if( this.dataChanged || this.overviewForm.dirty){
-          this.dialogService.openConfirmDialog().afterClosed().subscribe(res=>{
-            if(res){
-              this.emitExperimentDialogEvent.emit({ type: eventType });
-            }
-          });
-        }else{
+        if (this.dataChanged || this.overviewForm.dirty) {
+          this.dialogService
+            .openConfirmDialog()
+            .afterClosed()
+            .subscribe((res) => {
+              if (res) {
+                this.emitExperimentDialogEvent.emit({ type: eventType });
+              }
+            });
+        } else {
           this.emitExperimentDialogEvent.emit({ type: eventType });
         }
         break;
@@ -224,31 +232,27 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.dataChanged=false;
+        this.dataChanged = false;
         this.overviewForm.markAsPristine();
         break;
     }
   }
 
-  saveData(eventType){
-    if (this.experimentInfo && (this.experimentInfo.state == this.ExperimentState.ENROLLING || this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)) {
+  saveData(eventType) {
+    if (
+      this.experimentInfo &&
+      (this.experimentInfo.state == this.ExperimentState.ENROLLING ||
+        this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)
+    ) {
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: this.experimentInfo,
-        path: NewExperimentPaths.EXPERIMENT_OVERVIEW
+        path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
     }
     if (this.overviewForm.valid) {
-      const {
-        experimentName,
-        description,
-        unitOfAssignment,
-        groupType,
-        consistencyRule,
-        context,
-        tags,
-        logging
-      } = this.overviewForm.value;
+      const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, tags, logging } =
+        this.overviewForm.value;
       const overviewFormData = {
         name: experimentName,
         description: description || '',
@@ -257,12 +261,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         group: groupType,
         context: [context],
         tags,
-        logging
+        logging,
       };
       this.emitExperimentDialogEvent.emit({
         type: eventType,
         formData: overviewFormData,
-        path: NewExperimentPaths.EXPERIMENT_OVERVIEW
+        path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
     }
   }

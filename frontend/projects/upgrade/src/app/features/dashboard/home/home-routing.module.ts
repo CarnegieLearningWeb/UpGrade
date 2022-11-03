@@ -9,20 +9,20 @@ const routes: Routes = [
     path: '',
     component: HomeComponent,
     data: {
-      title: 'app-header.title.experiments'
-    }
+      title: 'app-header.title.experiments',
+    },
   },
   {
     path: 'detail/:experimentId',
     component: ViewExperimentComponent,
     data: {
-      title: 'app-header.title.experiment-dashboard'
-    }
-  }
+      title: 'app-header.title.experiment-dashboard',
+    },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class HomeRoutingModule {}

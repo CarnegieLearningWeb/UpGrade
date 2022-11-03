@@ -8,7 +8,7 @@
     background-color: mat.get-color-from-palette($background, background);
 
     .experiment-link {
-      color: mat.get-color-from-palette($foreground, text)
+      color: mat.get-color-from-palette($foreground, text);
     }
 
     .experiment {
@@ -72,7 +72,7 @@
 
   .owl-dt-control-button-arrow {
     svg {
-      fill: mat.get-color-from-palette($foreground, text)
+      fill: mat.get-color-from-palette($foreground, text);
     }
   }
 

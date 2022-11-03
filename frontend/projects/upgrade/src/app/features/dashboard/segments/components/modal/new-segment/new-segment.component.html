@@ -1,8 +1,4 @@
-<mat-horizontal-stepper
-  labelPosition="bottom"
-  class="segment-stepper"
-  #stepper
->
+<mat-horizontal-stepper labelPosition="bottom" class="segment-stepper" #stepper>
   <ng-template matStepperIcon="edit">
     <mat-icon>{{ 'segments.new-segment-done.text' | translate }}</mat-icon>
   </ng-template>
@@ -12,10 +8,7 @@
         {{ 'segments.new-segment-overview-stepper.text' | translate }}
       </span>
     </ng-template>
-    <segment-overview
-      [segmentInfo]="segmentInfo"
-      (emitSegmentDialogEvent)="getSegmentData($event)"
-    ></segment-overview>
+    <segment-overview [segmentInfo]="segmentInfo" (emitSegmentDialogEvent)="getSegmentData($event)"></segment-overview>
   </mat-step>
 
   <mat-step>

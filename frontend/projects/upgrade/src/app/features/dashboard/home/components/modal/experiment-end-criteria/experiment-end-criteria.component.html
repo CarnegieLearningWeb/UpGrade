@@ -2,28 +2,27 @@
   <span class="ft-24-700 title">{{ 'Experiment Ending Criteria' | translate }}</span>
 
   <form class="experiment-end-form" [formGroup]="experimentEndForm">
-
     <mat-checkbox class="ft-14-700" color="primary" formControlName="endExperimentAutomatically">
       {{ 'home.new-experiment.schedule.end-automatically.text' | translate }}
     </mat-checkbox>
 
     <mat-radio-group formControlName="endCondition">
-
       <div class="date-picker-container">
         <mat-radio-button class="ft-14-600" [value]="EndExperimentCondition.END_ON_DATE" color="primary">
           {{ 'home.new-experiment.schedule.end-on.text' | translate }}
         </mat-radio-button>
         <mat-form-field class="ft-14-700">
-            <input
-              matInput
-              readonly
-              class="input"
-              [min]="minDate"
-              [owlDateTimeTrigger]="dateTime" [owlDateTime]="dateTime"
-              [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
-              formControlName="dateOfExperimentEnd"
-            >
-            <owl-date-time #dateTime></owl-date-time>
+          <input
+            matInput
+            readonly
+            class="input"
+            [min]="minDate"
+            [owlDateTimeTrigger]="dateTime"
+            [owlDateTime]="dateTime"
+            [placeholder]="'home.new-experiment.schedule.date-picker.placeholder.text' | translate"
+            formControlName="dateOfExperimentEnd"
+          />
+          <owl-date-time #dateTime></owl-date-time>
         </mat-form-field>
       </div>
 
@@ -37,14 +36,22 @@
               type="number"
               matInput
               class="input"
-              [placeholder]="('home.new-experiment.schedule.group-count.placeholder.text' | translate) + (' ') + ('global.group-type-plural.text' | translate: { groupType: experiment.group })"
+              [placeholder]="
+                ('home.new-experiment.schedule.group-count.placeholder.text' | translate) +
+                ' ' +
+                ('global.group-type-plural.text' | translate: { groupType: experiment.group })
+              "
               formControlName="groupCount"
             />
           </mat-form-field>
           <span
             class="ft-14-400 group-type"
-            [innerHTML]="('global.group-type-plural.text' | translate: { groupType: experiment.group }) + (' ') + ('home.new-experiment.schedule.group-count.text' | translate)"
-            [ngClass]="{'group-type--disable': !groupTypeValue}"
+            [innerHTML]="
+              ('global.group-type-plural.text' | translate: { groupType: experiment.group }) +
+              ' ' +
+              ('home.new-experiment.schedule.group-count.text' | translate)
+            "
+            [ngClass]="{ 'group-type--disable': !groupTypeValue }"
           ></span>
         </div>
         <div class="end-criteria">
@@ -59,18 +66,25 @@
           </mat-form-field>
           <span
             class="ft-14-400 group-type"
-            [innerHTML]="!!experimentEndForm.get('groupCount').value && experiment.group
-              ? ('home.new-experiment.schedule.user-count-per-group.title.text' | translate: { groupType: experiment.group })
-              : ('home.new-experiment.schedule.user-count.title.text' | translate)"
-            [ngClass]="{'group-type--disable': !groupTypeValue}"
+            [innerHTML]="
+              !!experimentEndForm.get('groupCount').value && experiment.group
+                ? ('home.new-experiment.schedule.user-count-per-group.title.text'
+                  | translate: { groupType: experiment.group })
+                : ('home.new-experiment.schedule.user-count.title.text' | translate)
+            "
+            [ngClass]="{ 'group-type--disable': !groupTypeValue }"
           ></span>
         </div>
       </div>
       <div class="groupsatisfied-status" *ngIf="experiment.group">
-        <span  *ngIf="experiment.groupSatisfied">{{ 'home.new-experiment.schedule.group-count-having-met-ending-criters.text' | translate: { groupSatisfied: experiment.groupSatisfied } }}</span>
-        <span  *ngIf="!experiment.groupSatisfied">{{ 'home.new-experiment.schedule.group-count-having-met-ending-criters.text' | translate: { groupSatisfied: 0 } }}</span>
+        <span *ngIf="experiment.groupSatisfied">{{
+          'home.new-experiment.schedule.group-count-having-met-ending-criters.text'
+            | translate: { groupSatisfied: experiment.groupSatisfied }
+        }}</span>
+        <span *ngIf="!experiment.groupSatisfied">{{
+          'home.new-experiment.schedule.group-count-having-met-ending-criters.text' | translate: { groupSatisfied: 0 }
+        }}</span>
       </div>
-
     </mat-radio-group>
   </form>
 
@@ -99,11 +113,7 @@
     <button class="shared-modal--modal-btn" mat-raised-button (click)="onCancelClick()">
       {{ 'global.cancel.text' | translate }}
     </button>
-    <button
-      mat-raised-button
-      class="shared-modal--modal-btn default-button"
-      (click)="updateEndingCriteria()"
-    >
+    <button mat-raised-button class="shared-modal--modal-btn default-button" (click)="updateEndingCriteria()">
       {{ 'global.update.text' | translate }}
     </button>
   </div>

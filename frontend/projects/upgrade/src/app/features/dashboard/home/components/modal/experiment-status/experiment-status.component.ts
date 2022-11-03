@@ -9,7 +9,7 @@ import { ExperimentFormValidators } from '../../../validators/experiment-form.va
 @Component({
   selector: 'home-experiment-status',
   templateUrl: './experiment-status.component.html',
-  styleUrls: ['./experiment-status.component.scss']
+  styleUrls: ['./experiment-status.component.scss'],
 })
 export class ExperimentStatusComponent implements OnInit {
   experimentInfo: ExperimentVM;
@@ -28,51 +28,6 @@ export class ExperimentStatusComponent implements OnInit {
     this.experimentInfo = this.data.experiment;
   }
 
-  onCancelClick(): void {
-    this.dialogRef.close();
-  }
-
-  ngOnInit() {
-    this.statusForm = this._formBuilder.group(
-      {
-        newStatus: [
-          { value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED },
-          Validators.required
-        ],
-        scheduleDate: [null]
-      },
-      { validators: ExperimentFormValidators.validateExperimentStatusForm }
-    );
-    switch (this.experimentInfo.state) {
-      case EXPERIMENT_STATE.ENROLLING:
-      case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
-        this.experimentStatus = [
-          { value: EXPERIMENT_STATE.ENROLLING },
-          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
-          { value: EXPERIMENT_STATE.CANCELLED }
-        ];
-        break;
-      default:
-        this.experimentStatus = [
-          { value: EXPERIMENT_STATE.PREVIEW },
-          { value: EXPERIMENT_STATE.INACTIVE },
-          { value: EXPERIMENT_STATE.SCHEDULED },
-          { value: EXPERIMENT_STATE.ENROLLING },
-          { value: EXPERIMENT_STATE.CANCELLED }
-        ];
-    }
-      this.statusForm.get('newStatus').valueChanges.subscribe(status => {
-      this.showInfoMsg = status.value === EXPERIMENT_STATE.ENROLLING;
-      // set validation flag for condition count less than 2 and not for status as cancelled:
-      if (this.data.experiment.conditions.length < 2  && !(status.value === EXPERIMENT_STATE.CANCELLED)) {
-        this.showConditionCountErrorMsg = true;
-      } else {
-        // allow cancelled status for even less than 2 conditions:
-        this.showConditionCountErrorMsg = false;
-      }
-    });
-  }
-
   get ExperimentStatus() {
     return EXPERIMENT_STATE;
   }
@@ -82,14 +37,63 @@ export class ExperimentStatusComponent implements OnInit {
   }
 
   get isScheduleDateWrong(): boolean {
-    const { scheduleDate } =  this.statusForm.value;
-    return !!this.experimentInfo.endOn && !!scheduleDate && new Date(this.experimentInfo.endOn).getTime() < new Date(new Date(scheduleDate)).getTime();
+    const { scheduleDate } = this.statusForm.value;
+    return (
+      !!this.experimentInfo.endOn &&
+      !!scheduleDate &&
+      new Date(this.experimentInfo.endOn).getTime() < new Date(new Date(scheduleDate)).getTime()
+    );
+  }
+
+  onCancelClick(): void {
+    this.dialogRef.close();
+  }
+
+  ngOnInit() {
+    this.statusForm = this._formBuilder.group(
+      {
+        newStatus: [
+          { value: '', disabled: this.experimentInfo.state === EXPERIMENT_STATE.CANCELLED },
+          Validators.required,
+        ],
+        scheduleDate: [null],
+      },
+      { validators: ExperimentFormValidators.validateExperimentStatusForm }
+    );
+    switch (this.experimentInfo.state) {
+      case EXPERIMENT_STATE.ENROLLING:
+      case EXPERIMENT_STATE.ENROLLMENT_COMPLETE:
+        this.experimentStatus = [
+          { value: EXPERIMENT_STATE.ENROLLING },
+          { value: EXPERIMENT_STATE.ENROLLMENT_COMPLETE },
+          { value: EXPERIMENT_STATE.CANCELLED },
+        ];
+        break;
+      default:
+        this.experimentStatus = [
+          { value: EXPERIMENT_STATE.PREVIEW },
+          { value: EXPERIMENT_STATE.INACTIVE },
+          { value: EXPERIMENT_STATE.SCHEDULED },
+          { value: EXPERIMENT_STATE.ENROLLING },
+          { value: EXPERIMENT_STATE.CANCELLED },
+        ];
+    }
+    this.statusForm.get('newStatus').valueChanges.subscribe((status) => {
+      this.showInfoMsg = status.value === EXPERIMENT_STATE.ENROLLING;
+      // set validation flag for condition count less than 2 and not for status as cancelled:
+      if (this.data.experiment.conditions.length < 2 && !(status.value === EXPERIMENT_STATE.CANCELLED)) {
+        this.showConditionCountErrorMsg = true;
+      } else {
+        // allow cancelled status for even less than 2 conditions:
+        this.showConditionCountErrorMsg = false;
+      }
+    });
   }
 
   changeStatus() {
     const { newStatus, scheduleDate } = this.statusForm.value;
     let data: ExperimentStateInfo = {
-      newStatus: newStatus.value
+      newStatus: newStatus.value,
     };
     if (newStatus.value === EXPERIMENT_STATE.SCHEDULED) {
       data = { ...data, scheduleDate };

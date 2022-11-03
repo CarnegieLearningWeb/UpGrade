@@ -11,94 +11,78 @@
     </mat-form-field>
   </div>
   <div class="read-mode-container" *ngIf="permissions?.metrics.create">
-    <mat-slide-toggle
-      class="ft-16-400"
-      color="primary"
-      (change)="changeMetricMode($event)"
-      labelPosition="before"
-    >
+    <mat-slide-toggle class="ft-16-400" color="primary" (change)="changeMetricMode($event)" labelPosition="before">
       {{ 'metric.read-mode.text' | translate }}
     </mat-slide-toggle>
   </div>
-  <mat-progress-bar
-    mode="indeterminate"
-    class="spinner"
-    *ngIf="isAnalysisMetricsLoading$ | async"
-  ></mat-progress-bar>
-  <div
-    #metricsTable
-    class="metrics-table-container"
-  >
-    <ng-container  *ngIf="allMetrics.data?.length; else zeroState">
-        <table mat-table [dataSource]="allMetrics">
-          <!-- ID Column -->
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'query.table-id.text' | translate }}
-            </th>
-            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
-          </ng-container>
+  <mat-progress-bar mode="indeterminate" class="spinner" *ngIf="isAnalysisMetricsLoading$ | async"></mat-progress-bar>
+  <div #metricsTable class="metrics-table-container">
+    <ng-container *ngIf="allMetrics.data?.length; else zeroState">
+      <table mat-table [dataSource]="allMetrics">
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            {{ 'query.table-id.text' | translate }}
+          </th>
+          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">{{ index + 1 }}</td>
+        </ng-container>
 
-          <!-- Metric Column -->
-          <ng-container matColumnDef="metric">
-            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-              {{ 'query.metric.text' | translate }}
-            </th>
-            <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">
-                <button mat-icon-button (click)="setTreeForMetric(index)">
-                  <mat-icon class="mat-icon-rtl-mirror">chevron_right</mat-icon>
-                </button>
-                <span>{{ element.key }}</span>
-              </ng-container>
-              <ng-template #metricTreeTemplate>
-                <mat-tree
-                  [dataSource]="nestedDataSource"
-                  [treeControl]="nestedTreeControl"
-                  class="node-tree mat-tree-position"
-                >
-                  <!-- Without Children -->
-                  <mat-tree-node *matTreeNodeDef="let node">
-                    <li class="mat-tree-node">
-                      <button mat-icon-button disabled></button>
-                      <span class="ft-14-600">{{ node.key }}</span>
-                      <mat-icon
-                        *ngIf="permissions.metrics.delete && keyEditMode"
-                        class="icon"
-                        (click)="deleteNode(node)"
-                      >delete_outline</mat-icon>
-                    </li>
-                  </mat-tree-node>
+        <!-- Metric Column -->
+        <ng-container matColumnDef="metric">
+          <th mat-header-cell *matHeaderCellDef class="ft-12-700">
+            {{ 'query.metric.text' | translate }}
+          </th>
+          <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
+            <ng-container *ngIf="selectedMetricIndex !== index; else metricTreeTemplate">
+              <button mat-icon-button (click)="setTreeForMetric(index)">
+                <mat-icon class="mat-icon-rtl-mirror">chevron_right</mat-icon>
+              </button>
+              <span>{{ element.key }}</span>
+            </ng-container>
+            <ng-template #metricTreeTemplate>
+              <mat-tree
+                [dataSource]="nestedDataSource"
+                [treeControl]="nestedTreeControl"
+                class="node-tree mat-tree-position"
+              >
+                <!-- Without Children -->
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <li class="mat-tree-node">
+                    <button mat-icon-button disabled></button>
+                    <span class="ft-14-600">{{ node.key }}</span>
+                    <mat-icon *ngIf="permissions.metrics.delete && keyEditMode" class="icon" (click)="deleteNode(node)"
+                      >delete_outline</mat-icon
+                    >
+                  </li>
+                </mat-tree-node>
 
-                  <!-- With Children -->
-                  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
-                    <li>
-                      <button mat-icon-button matTreeNodeToggle>
-                        <mat-icon class="mat-icon-rtl-mirror">
-                          {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
-                        </mat-icon>
-                      </button>
-                      <span class="ft-14-600">
-                        {{ node.key }}
-                      </span>
-                      <mat-icon
-                        *ngIf="permissions.metrics.delete && keyEditMode"
-                        class="icon"
-                        (click)="deleteNode(node)"
-                      >delete_outline</mat-icon>
-                      <ul [class.node-tree-invisible]="!nestedTreeControl.isExpanded(node)">
-                        <ng-container matTreeNodeOutlet></ng-container>
-                      </ul>
-                    </li>
-                  </mat-nested-tree-node>
-                </mat-tree>
-              </ng-template>
-            </td>
-          </ng-container>
+                <!-- With Children -->
+                <mat-nested-tree-node *matTreeNodeDef="let node; when: hasNestedChild">
+                  <li>
+                    <button mat-icon-button matTreeNodeToggle>
+                      <mat-icon class="mat-icon-rtl-mirror">
+                        {{ nestedTreeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                      </mat-icon>
+                    </button>
+                    <span class="ft-14-600">
+                      {{ node.key }}
+                    </span>
+                    <mat-icon *ngIf="permissions.metrics.delete && keyEditMode" class="icon" (click)="deleteNode(node)"
+                      >delete_outline</mat-icon
+                    >
+                    <ul [class.node-tree-invisible]="!nestedTreeControl.isExpanded(node)">
+                      <ng-container matTreeNodeOutlet></ng-container>
+                    </ul>
+                  </li>
+                </mat-nested-tree-node>
+              </mat-tree>
+            </ng-template>
+          </td>
+        </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-        </table>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
     </ng-container>
   </div>
 

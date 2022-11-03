@@ -9,7 +9,7 @@ import { map } from 'rxjs/operators';
 export class ExperimentUsersService {
   allExcludedEntities$ = this.store$.pipe(
     select(selectAllEntities),
-    map(entities => entities.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0)))
+    map((entities) => entities.sort((a, b) => (a.createdAt > b.createdAt ? -1 : a.createdAt < b.createdAt ? 1 : 0)))
   );
   isExcludedEntityLoading$ = this.store$.pipe(select(selectIsExcludedEntityLoading));
   constructor(private store$: Store<AppState>) {}

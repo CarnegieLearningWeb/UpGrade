@@ -3,23 +3,22 @@ import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
 import * as AuthActions from './store/auth.actions';
 import { selectIsLoggedIn, selectIsAuthenticating, selectCurrentUser } from './store/auth.selectors';
-import { filter, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { UserPermission } from './store/auth.models';
 import { BehaviorSubject } from 'rxjs';
 import { UserRole } from '../users/store/users.model';
 
 @Injectable()
 export class AuthService {
-
-  constructor(private store$: Store<AppState>) { }
+  constructor(private store$: Store<AppState>) {}
 
   isLoggedIn$ = this.store$.pipe(select(selectIsLoggedIn));
   isAuthenticating$ = this.store$.pipe(select(selectIsAuthenticating));
   currentUser$ = this.store$.pipe(select(selectCurrentUser));
   getIdToken$ = this.store$.pipe(
     select(selectCurrentUser),
-    map(currentUser => !!currentUser ? currentUser['token'] : null)
-  )
+    map((currentUser) => (currentUser ? currentUser.token : null))
+  );
   userPermissions$ = new BehaviorSubject<UserPermission>(null);
   googleSignInElementRef: ElementRef;
 
@@ -28,7 +27,7 @@ export class AuthService {
   }
 
   getGoogleSignInElementRef(): ElementRef {
-    return this.googleSignInElementRef
+    return this.googleSignInElementRef;
   }
 
   authLoginStart() {

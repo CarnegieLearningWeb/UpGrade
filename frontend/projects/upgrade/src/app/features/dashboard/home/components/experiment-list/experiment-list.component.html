@@ -57,12 +57,7 @@
     </div>
   </div>
 
-  <div
-    scroll
-    (scrolled)="fetchExperimentOnScroll()"
-    class="experiment-list-table-container"
-    #tableContainer
-  >
+  <div scroll (scrolled)="fetchExperimentOnScroll()" class="experiment-list-table-container" #tableContainer>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingExperiment$ | async"></mat-progress-bar>
     <table
       class="experiment-list"
@@ -71,7 +66,7 @@
       matSort
       (matSortChange)="changeSorting($event)"
       [matSortActive]="experimentSortKey$ | async"
-      [matSortDirection]="(experimentSortAs$ | async) | lowercase"
+      [matSortDirection]="experimentSortAs$ | async | lowercase"
     >
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -80,11 +75,20 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
-          <a [routerLink]="['/home', 'detail', experiment.id]" *ngIf="experiment.name?.length < 30; else experimentNameEllipsis" class="experiment-name">
+          <a
+            [routerLink]="['/home', 'detail', experiment.id]"
+            *ngIf="experiment.name?.length < 30; else experimentNameEllipsis"
+            class="experiment-name"
+          >
             {{ experiment.name }}
           </a>
           <ng-template #experimentNameEllipsis>
-            <a [routerLink]="['/home', 'detail', experiment.id]" [matTooltip]="experiment.name" class="experiment-name" matTooltipPosition="above">
+            <a
+              [routerLink]="['/home', 'detail', experiment.id]"
+              [matTooltip]="experiment.name"
+              class="experiment-name"
+              matTooltipPosition="above"
+            >
               {{ experiment.name | truncate: 30 }}
             </a>
           </ng-template>
@@ -96,7 +100,11 @@
             {{ experiment.description }}
           </span>
           <ng-template #experimentDescription>
-            <span class="experiment-description ft-10-400" [matTooltip]="experiment.description" matTooltipPosition="above">
+            <span
+              class="experiment-description ft-10-400"
+              [matTooltip]="experiment.description"
+              matTooltipPosition="above"
+            >
               {{ experiment.description | truncate: 35 }}
             </span>
           </ng-template>
@@ -109,30 +117,34 @@
             {{ 'home-global.status.text' | translate }}
           </span>
         </th>
-        <td
-          class="ft-12-600"
-          mat-cell
-          *matCellDef="let experiment"
-        >
+        <td class="ft-12-600" mat-cell *matCellDef="let experiment">
           <div class="experiment-state">
             <ng-container
-              *ngIf="experiment.state === ExperimentState.PREVIEW || experiment.state === ExperimentState.CANCELLED || experiment.state === ExperimentState.SCHEDULED; else experimentStateTemplate"
+              *ngIf="
+                experiment.state === ExperimentState.PREVIEW ||
+                  experiment.state === ExperimentState.CANCELLED ||
+                  experiment.state === ExperimentState.SCHEDULED;
+                else experimentStateTemplate
+              "
             >
               <app-shared-icons class="icons" [iconType]="experiment.state"></app-shared-icons>
             </ng-container>
             <ng-template #experimentStateTemplate>
-              <span class="experiment-state-circle" [ngStyle]="{'backgroundColor': experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"></span>
+              <span
+                class="experiment-state-circle"
+                [ngStyle]="{ backgroundColor: experiment.state | experimentState: ExperimentStatePipeTypes.COLOR }"
+              ></span>
             </ng-template>
             <span
-              [ngClass]="{'experiment-state--light': experiment.state === ExperimentState.INACTIVE || experiment.state === ExperimentState.CANCELLED }"
+              [ngClass]="{
+                'experiment-state--light':
+                  experiment.state === ExperimentState.INACTIVE || experiment.state === ExperimentState.CANCELLED
+              }"
             >
               {{ experiment.state | experimentState }}
             </span>
           </div>
-          <span
-            class="experiment-schedule ft-10-400"
-            *ngIf="experiment.state === ExperimentState.SCHEDULED"
-          >
+          <span class="experiment-schedule ft-10-400" *ngIf="experiment.state === ExperimentState.SCHEDULED">
             {{ '(' + (experiment.startOn | date: 'MMM d, y h:mm a') + ')' }}
           </span>
         </td>
@@ -150,8 +162,15 @@
         <td class="ft-12-600" mat-cell *matCellDef="let experiment">
           <span>{{ experiment.postExperimentRule | titlecase }}</span>
           <br />
-          <span class="experiment-revertTo ft-10-400" *ngIf="experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)">
-            {{ experiment.revertTo ? getConditionCode(experiment.revertTo, experiment.id) : "(" + ('home-global.post-experiment-rule.default.text' | translate)  + ")" }}
+          <span
+            class="experiment-revertTo ft-10-400"
+            *ngIf="experiment.postExperimentRule === ('home-global.post-experiment-rule.assign.text' | translate)"
+          >
+            {{
+              experiment.revertTo
+                ? getConditionCode(experiment.revertTo, experiment.id)
+                : '(' + ('home-global.post-experiment-rule.default.text' | translate) + ')'
+            }}
           </span>
         </td>
       </ng-container>
@@ -254,14 +273,9 @@
               *ngIf="experiment.stat?.users"
               [innerHTML]="'home.experiments-table.students.text' | translate: { noOfStudents: experiment.stat?.users }"
             ></span>
-            <span
-              class="enrollment-info"
-              *ngIf="experiment.stat?.groups"
-            >
+            <span class="enrollment-info" *ngIf="experiment.stat?.groups">
               {{ 'home.experiments-table.classes.text' | translate: { noOfClasses: experiment.stat?.groups } }}
-              <span
-                *ngIf="experiment.stat?.groups < 2; else groupTypePlural"
-              >
+              <span *ngIf="experiment.stat?.groups < 2; else groupTypePlural">
                 {{ 'global.group-type-singular.text' | translate: { groupType: experiment.group } }}
               </span>
               <ng-template #groupTypePlural>
@@ -278,31 +292,30 @@
             <ngx-skeleton-loader
               count="1"
               animation="pulse"
-              [theme]="(theme$ | async) === Theme.DARK_THEME ?
-              {
-                'border-radius': '5px',
-                height: '20px',
-                position: 'relative',
-                top: '8px',
-                'background-color': '#323232',
-                border: '1px solid #323232',
-                'animation-duration': '2s'
-              }
-              :
-              {
-                'border-radius': '5px',
-                height: '20px',
-                position: 'relative',
-                top: '8px',
-                'animation-duration': '2s'
-              }
+              [theme]="
+                (theme$ | async) === Theme.DARK_THEME
+                  ? {
+                      'border-radius': '5px',
+                      height: '20px',
+                      position: 'relative',
+                      top: '8px',
+                      'background-color': '#323232',
+                      border: '1px solid #323232',
+                      'animation-duration': '2s'
+                    }
+                  : {
+                      'border-radius': '5px',
+                      height: '20px',
+                      position: 'relative',
+                      top: '8px',
+                      'animation-duration': '2s'
+                    }
               "
             >
             </ngx-skeleton-loader>
           </ng-template>
         </td>
       </ng-container>
-
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

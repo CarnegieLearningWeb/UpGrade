@@ -14,25 +14,28 @@
     "prebuild:prod": "npm run test",
     "build:prod": "ng build --configuration production",
     "build:dev": "ng build -c=development",
-    "clean": "rimraf node_modules && npm update && npm i",
-    "lint": "ng lint",
+    "clean": "rimraf node_modules && rm package-lock.json && npm update && npm i",
+    "lint:report": "eslint -c .eslintrc.js --ext .ts './projects/upgrade/src' && npm run prettier:report",
+    "lint:fix": "eslint -c .eslintrc.js --ext .ts './projects/upgrade/src' --fix && npm run prettier:write",
     "test": "jest --runInBand",
     "test:coverage": "open ./coverage/lcov-report/index.html",
     "test:once": "jest --maxWorkers=50% --coverage",
     "test:watch": " jest --maxWorkers=25% --watchAll --coverage",
     "test:badges": "coverage-badge-creator",
     "test:dev": "npm-run-all --parallel test:watch test:coverage test:badges",
-    "format:write": "prettier projects/**/*.{ts,json,md,scss} --write",
-    "format:test": "prettier projects/**/*.{ts,json,md,scss} --list-different",
+    "prettier:write": "prettier --config .prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --write",
+    "prettier:report": "prettier --config .prettierrc './projects/upgrade/src/**/*.{ts,js,html,json,scss}' --list-different",
     "release": "standard-version && git push --follow-tags origin master",
     "analyze": "npm run build:prod -- --stats-json && webpack-bundle-analyzer ./dist/upgrade/stats.json",
     "server": "node ./projects/server/server.js",
     "build:development": "npm run build:dev",
-    "build:production": "npm run build:prod"
+    "build:production": "npm run build:prod",
+    "prepare": "cd .. && husky install frontend/.husky"
   },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
+  "lint-staged": {
+    "./projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
+      "eslint -c .eslintrc.js --ext .ts --fix",
+      "prettier --config .prettierrc --write"
     ]
   },
   "private": true,
@@ -72,24 +75,30 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~13.3.7",
+    "@angular-eslint/eslint-plugin": "^14.1.2",
     "@angular/cli": "~13.3.7",
     "@angular/compiler-cli": "~13.3.11",
     "@angular/language-service": "~13.3.11",
     "@types/jest": "^27.0.0",
     "@types/node": "^16.0.0",
     "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.41.0",
+    "@typescript-eslint/parser": "^5.41.0",
     "codelyzer": "^6.0.2",
     "coverage-badge-creator": "^1.0.11",
+    "eslint": "^8.26.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
     "jest": "^27.0.0",
     "jest-preset-angular": "~11.1.1",
+    "lint-staged": "^13.0.3",
     "npm-run-all": "^4.1.5",
-    "prettier": "^1.17.1",
-    "pretty-quick": "^1.11.1",
+    "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "standard-version": "^9.5.0",
     "ts-jest": "^27.0.0",
     "ts-node": "~10.8.0",
-    "tslint": "~6.1.0",
     "typescript": "~4.6.4",
     "webpack-bundle-analyzer": "^4.6.1"
   }

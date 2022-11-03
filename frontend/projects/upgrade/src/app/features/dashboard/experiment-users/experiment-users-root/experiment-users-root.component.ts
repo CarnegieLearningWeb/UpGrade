@@ -5,13 +5,10 @@ import { PreviewUsersService } from '../../../../core/preview-users/preview-user
 @Component({
   selector: 'app-user-root',
   templateUrl: './experiment-users-root.component.html',
-  styleUrls: ['./experiment-users-root.component.scss']
+  styleUrls: ['./experiment-users-root.component.scss'],
 })
 export class ExperimentUsersRootComponent {
-  constructor(
-    private experimentService: ExperimentService,
-    private previewUsersService: PreviewUsersService
-  ) {}
+  constructor(private experimentService: ExperimentService, private previewUsersService: PreviewUsersService) {}
 
   selectedTabChange(event) {
     if (event.index === 1) {

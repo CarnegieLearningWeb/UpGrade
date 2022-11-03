@@ -10,17 +10,17 @@ export function clearState(reducer) {
       const settingState: SettingsState = {
         theme: state.settings.theme,
         toCheckAuth: null,
-        toFilterMetric: null
+        toFilterMetric: null,
       };
-      const localStorageService = new LocalStorageService()
+      const localStorageService = new LocalStorageService();
 
       state = {
         settings: settingState, // Used to persist theme,
       };
 
-      Object.values(ExperimentLocalStorageKeys).forEach(key => {
+      Object.values(ExperimentLocalStorageKeys).forEach((key) => {
         localStorageService.removeItem(key);
-      })
+      });
     }
     return reducer(state, action);
   };

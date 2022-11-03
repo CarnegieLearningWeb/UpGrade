@@ -14,12 +14,12 @@ export class PreviewUsersEffects {
     private actions$: Actions,
     private store$: Store<AppState>,
     private previewUserDataService: PreviewUsersDataService
-  ) { }
+  ) {}
 
   fetchPaginatedPreviewUsers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(previewUserActions.actionFetchPreviewUsers),
-      map(action => action.fromStarting),
+      map((action) => action.fromStarting),
       withLatestFrom(
         this.store$.pipe(select(selectSkipPreviewUsers)),
         this.store$.pipe(select(selectTotalPreviewUsers))
@@ -31,54 +31,58 @@ export class PreviewUsersEffects {
       switchMap(([fromStarting, skip, total]) => {
         const params = {
           skip: fromStarting ? 0 : skip,
-          take: NUMBER_OF_PREVIEW_USERS
+          take: NUMBER_OF_PREVIEW_USERS,
         };
         return this.previewUserDataService.fetchPreviewUsers(params).pipe(
           switchMap((data: any) => {
             const actions = fromStarting ? [previewUserActions.actionSetSkipPreviewUsers({ skipPreviewUsers: 0 })] : [];
             return [
               ...actions,
-              previewUserActions.actionFetchPreviewUsersSuccess({ data: data.nodes, totalPreviewUsers: data.total })
+              previewUserActions.actionFetchPreviewUsersSuccess({ data: data.nodes, totalPreviewUsers: data.total }),
             ];
           }),
           catchError(() => [previewUserActions.actionFetchPreviewUsersFailure()])
-        )
+        );
       })
     )
   );
 
-  addPreviewUser$ = createEffect(
-    () => this.actions$.pipe(
+  addPreviewUser$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(previewUserActions.actionAddPreviewUser),
-      map(action => ({ id: action.id })),
+      map((action) => ({ id: action.id })),
       filter(({ id }) => !!id),
-      switchMap(({ id }) => this.previewUserDataService.addPreviewUser(id).pipe(
-        map((data: PreviewUsers) => previewUserActions.actionAddPreviewUserSuccess({ data })),
-        catchError(error => [previewUserActions.actionAddPreviewUserFailure()])
-      ))
-    ),
+      switchMap(({ id }) =>
+        this.previewUserDataService.addPreviewUser(id).pipe(
+          map((data: PreviewUsers) => previewUserActions.actionAddPreviewUserSuccess({ data })),
+          catchError((error) => [previewUserActions.actionAddPreviewUserFailure()])
+        )
+      )
+    )
   );
 
-  deletePreviewUser$ = createEffect(
-    () => this.actions$.pipe(
+  deletePreviewUser$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(previewUserActions.actionDeletePreviewUser),
-      map(action => action.id),
+      map((action) => action.id),
       filter((id) => !!id),
-      switchMap((id) => this.previewUserDataService.deletePreviewUser(id).pipe(
-        map((data: PreviewUsers[]) => previewUserActions.actionDeletePreviewUserSuccess({ data: data[0] })),
-        catchError(error => [previewUserActions.actionDeletePreviewUserFailure()])
-      ))
-    ),
+      switchMap((id) =>
+        this.previewUserDataService.deletePreviewUser(id).pipe(
+          map((data: PreviewUsers[]) => previewUserActions.actionDeletePreviewUserSuccess({ data: data[0] })),
+          catchError((error) => [previewUserActions.actionDeletePreviewUserFailure()])
+        )
+      )
+    )
   );
 
-  assignCondition$ = createEffect(
-    () => this.actions$.pipe(
+  assignCondition$ = createEffect(() =>
+    this.actions$.pipe(
       ofType(previewUserActions.actionAssignConditionToPreviewUser),
-      map(action => action.data),
-      filter(data => !!data),
-      switchMap(data =>
+      map((action) => action.data),
+      filter((data) => !!data),
+      switchMap((data) =>
         this.previewUserDataService.assignConditionToPreviewUser(data).pipe(
-          map(previewUser => previewUserActions.actionAssignConditionToPreviewUserSuccess({ previewUser })),
+          map((previewUser) => previewUserActions.actionAssignConditionToPreviewUserSuccess({ previewUser })),
           catchError(() => [previewUserActions.actionAssignConditionToPreviewUserFailure()])
         )
       )

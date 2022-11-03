@@ -1,4 +1,4 @@
-export function debounce(delay: number = 500): MethodDecorator {
+export function debounce(delay = 500): MethodDecorator {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const timeoutKey = Symbol();
 

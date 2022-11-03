@@ -25,11 +25,13 @@ import { SegmentExperimentListComponent } from './components/modal/segment-exper
     ImportSegmentComponent,
     SegmentExperimentListComponent,
   ],
-  imports: [
-    CommonModule,
-    SegmentsRoutingModule,
-    SharedModule
+  imports: [CommonModule, SegmentsRoutingModule, SharedModule],
+  entryComponents: [
+    NewSegmentComponent,
+    DeleteSegmentComponent,
+    ImportSegmentComponent,
+    DuplicateSegmentComponent,
+    SegmentExperimentListComponent,
   ],
-  entryComponents: [NewSegmentComponent, DeleteSegmentComponent, ImportSegmentComponent, DuplicateSegmentComponent, SegmentExperimentListComponent]
 })
-export class SegmentsModule { }
+export class SegmentsModule {}

@@ -1,6 +1,4 @@
-<div
-  class="create-query-container"
->
+<div class="create-query-container">
   <mat-tab-group disableRipple="true" (selectedIndexChange)="selectedIndexChange($event)">
     <mat-tab [label]="'monitor.simple-metric.text' | translate">
       <ng-container *ngTemplateOutlet="queryTemplate; context: { tabIndex: 0 }"></ng-container>
@@ -25,31 +23,25 @@
                       matInput
                       formControlName="metricKey"
                       [matAutocomplete]="auto"
-                      >
-                    <mat-autocomplete 
+                    />
+                    <mat-autocomplete
                       (optionSelected)="selectedOption($event)"
                       #auto="matAutocomplete"
                       [displayWith]="displayFn"
                       panelWidth="fit-content"
-                      >
+                    >
                       <mat-option *ngFor="let option of filteredOptions[formIndex] | async" [value]="option">
-                        {{option.key}}
+                        {{ option.key }}
                       </mat-option>
                     </mat-autocomplete>
                   </mat-form-field>
                 </span>
               </ng-container>
-              <mat-icon *ngIf="(formIndex + 1) !== keys.controls.length" class="icon">arrow_right_alt</mat-icon>
+              <mat-icon *ngIf="formIndex + 1 !== keys.controls.length" class="icon">arrow_right_alt</mat-icon>
             </div>
           </ng-container>
         </div>
-        <button
-          mat-flat-button
-          color="primary"
-          class="ft-12-600 btn"
-          (click)="resetForm()"
-          type="button"
-          >
+        <button mat-flat-button color="primary" class="ft-12-600 btn" (click)="resetForm()" type="button">
           <span>{{ 'query.clear-btn.text' | translate }}</span>
         </button>
         <div class="secondary-form" *ngIf="selectedNode">
@@ -65,35 +57,32 @@
           <mat-form-field class="ft-14-600 form-control">
             <mat-label>{{ 'monitor.statistic.text' | translate | titlecase }}</mat-label>
             <mat-select class="ft-14-400" formControlName="operationType">
-              <mat-option
-                *ngFor="let operation of queryOperations"
-                [value]="operation.value"
-              >
+              <mat-option *ngFor="let operation of queryOperations" [value]="operation.value">
                 {{ operation.viewValue | titlecase }}
               </mat-option>
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+          <mat-form-field
+            class="ft-14-600 form-control"
+            *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS"
+          >
             <mat-label>{{ 'query.form-comparison-function.text' | translate | titlecase }}</mat-label>
             <mat-select class="ft-14-400" formControlName="compareFn">
               <mat-option>{{ 'query.none-option.text' | translate }}</mat-option>
-              <mat-option
-                *ngFor="let fn of comparisonFns"
-                [value]="fn.value"
-              >
+              <mat-option *ngFor="let fn of comparisonFns" [value]="fn.value">
                 {{ fn.viewValue | titlecase }}
               </mat-option>
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field class="ft-14-600 form-control" *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS">
+          <mat-form-field
+            class="ft-14-600 form-control"
+            *ngIf="selectedNode?.metadata?.type !== IMetricMetadata.CONTINUOUS"
+          >
             <mat-label>{{ 'query.form-compare-value.text' | translate | titlecase }}</mat-label>
             <mat-select class="ft-14-400" formControlName="compareValue">
-              <mat-option
-                *ngFor="let value of selectedNode?.allowedData"
-                [value]="value"
-              >
+              <mat-option *ngFor="let value of selectedNode?.allowedData" [value]="value">
                 {{ value | titlecase }}
               </mat-option>
             </mat-select>
@@ -101,29 +90,17 @@
         </div>
         <div *ngIf="selectedNode && tabIndex !== 0">
           <label>{{ 'monitor.metric-repeated-measure.text' | translate }}</label>
-          <br>
+          <br />
           <mat-radio-group class="radio-group" formControlName="repeatedMeasure">
-            <mat-radio-button
-              class="ft-14-600 repeated-measure"
-              [value]="RepeatedMeasure.mean"
-              color="primary"
-            >
+            <mat-radio-button class="ft-14-600 repeated-measure" [value]="RepeatedMeasure.mean" color="primary">
               {{ 'monitor.metric-mean.text' | translate }}
             </mat-radio-button>
-            <br>
-            <mat-radio-button
-              class="ft-14-600 repeated-measure"
-              [value]="RepeatedMeasure.earliest"
-              color="primary"
-            >
+            <br />
+            <mat-radio-button class="ft-14-600 repeated-measure" [value]="RepeatedMeasure.earliest" color="primary">
               {{ 'monitor.metric-earliest.text' | translate }}
             </mat-radio-button>
-            <br>
-            <mat-radio-button
-              class="ft-14-600 repeated-measure"
-              [value]="RepeatedMeasure.mostRecent"
-              color="primary"
-            >
+            <br />
+            <mat-radio-button class="ft-14-600 repeated-measure" [value]="RepeatedMeasure.mostRecent" color="primary">
               {{ 'monitor.metric-most-recent.text' | translate }}
             </mat-radio-button>
           </mat-radio-group>

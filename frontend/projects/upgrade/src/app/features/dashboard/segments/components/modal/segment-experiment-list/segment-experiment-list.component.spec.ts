@@ -8,9 +8,8 @@ xdescribe('SegmentExperimentListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ SegmentExperimentListComponent ]
-    })
-    .compileComponents();
+      declarations: [SegmentExperimentListComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

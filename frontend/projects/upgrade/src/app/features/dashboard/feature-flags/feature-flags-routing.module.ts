@@ -7,17 +7,17 @@ const routes: Routes = [
   {
     path: '',
     component: FeatureFlagsRootComponent,
-    data: { title: 'app-header.title.feature-flag' }
+    data: { title: 'app-header.title.feature-flag' },
   },
   {
     path: 'detail/:flagId',
     component: ViewFeatureFlagComponent,
-    data: { title: 'app-header.title.view-feature-flag' }
-  }
+    data: { title: 'app-header.title.view-feature-flag' },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class FeatureFlagsRoutingModule { }
+export class FeatureFlagsRoutingModule {}

@@ -11,7 +11,7 @@ import { UserRole } from 'upgrade_types';
 @Component({
   selector: 'users-preview-user',
   templateUrl: './preview-user.component.html',
-  styleUrls: ['./preview-user.component.scss']
+  styleUrls: ['./preview-user.component.scss'],
 })
 export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions: UserPermission;
@@ -47,10 +47,10 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
     private previewUserService: PreviewUsersService,
     private experimentService: ExperimentService,
     private authService: AuthService
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.permissionSub = this.authService.userPermissions$.subscribe(permission => {
+    this.permissionSub = this.authService.userPermissions$.subscribe((permission) => {
       this.permissions = permission;
     });
     // For creating preview user
@@ -60,17 +60,17 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // For assigning conditions to preview users
     this.previewUserAssignConditionForm = this._formBuilder.group({
-      assignedConditions: this._formBuilder.array([this.getNewExperimentCondition()])
+      assignedConditions: this._formBuilder.array([this.getNewExperimentCondition()]),
     });
 
-    this.allExperimentNamesSub = this.experimentService.allExperimentNames$.subscribe(experimentInfo => {
+    this.allExperimentNamesSub = this.experimentService.allExperimentNames$.subscribe((experimentInfo) => {
       if (experimentInfo) {
         this.allExperimentNames = experimentInfo as any;
         this.allExperimentNamesView[0] = this.allExperimentNames;
       }
     });
 
-    this.allPreviewUsersSub = this.previewUserService.allPreviewUsers$.subscribe(previewUsers => {
+    this.allPreviewUsersSub = this.previewUserService.allPreviewUsers$.subscribe((previewUsers) => {
       this.allPreviewUsers = new MatTableDataSource();
       this.allPreviewUsers.data = previewUsers;
     });
@@ -82,9 +82,9 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
 
-    this.isAllPreviewUsersFetchedSub = this.previewUserService.isAllPreviewUsersFetched().subscribe(
-      value => this.isAllPreviewUsersFetched = value
-    );
+    this.isAllPreviewUsersFetchedSub = this.previewUserService
+      .isAllPreviewUsersFetched()
+      .subscribe((value) => (this.isAllPreviewUsersFetched = value));
   }
 
   addPreviewUser() {
@@ -102,16 +102,17 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   getExperimentNames(index: number) {
-    const experimentIds = this.previewUserAssignConditionForm.get('assignedConditions').value
-      .filter((assignedCondition, conditionIndex) => !!assignedCondition.experimentId && conditionIndex !== index)
-      .map(assignedCondition => assignedCondition.experimentId);
-    return this.allExperimentNames.filter(experiment => experimentIds.indexOf(experiment.id) === -1);
+    const experimentIds = this.previewUserAssignConditionForm
+      .get('assignedConditions')
+      .value.filter((assignedCondition, conditionIndex) => !!assignedCondition.experimentId && conditionIndex !== index)
+      .map((assignedCondition) => assignedCondition.experimentId);
+    return this.allExperimentNames.filter((experiment) => experimentIds.indexOf(experiment.id) === -1);
   }
 
   getNewExperimentCondition(experimentId?: string, conditionId?: string) {
     return this._formBuilder.group({
       experimentId: [experimentId, Validators.required],
-      conditionId: [conditionId, Validators.required]
+      conditionId: [conditionId, Validators.required],
     });
   }
 
@@ -133,8 +134,10 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isFormPopulatedFromEditMode = true;
     const assignments = this.allPreviewUsers.data[index].assignments;
     if (assignments) {
-      assignments.map(assignment => {
-        this.assignedConditions.push(this.getNewExperimentCondition(assignment.experiment.id, assignment.experimentCondition.id));
+      assignments.map((assignment) => {
+        this.assignedConditions.push(
+          this.getNewExperimentCondition(assignment.experiment.id, assignment.experimentCondition.id)
+        );
       });
       this.setFormControls(this.previewUserAssignConditionForm.get('assignedConditions').value);
     } else {
@@ -148,11 +151,13 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
       this.allExperimentNamesView[i] = this.getExperimentNames(i);
       if (assignedConditions[i].experimentId) {
         this.experimentConditions[i] = [];
-        this.selectExperimentByIdSub.add(this.experimentService.selectExperimentById(assignedConditions[i].experimentId).subscribe(experiment => {
-          if (experiment) {
-            this.experimentConditions[i] = experiment.conditions;
-          }
-        }));
+        this.selectExperimentByIdSub.add(
+          this.experimentService.selectExperimentById(assignedConditions[i].experimentId).subscribe((experiment) => {
+            if (experiment) {
+              this.experimentConditions[i] = experiment.conditions;
+            }
+          })
+        );
       }
     }
   }
@@ -160,18 +165,18 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   saveAssignedConditions(userId: string) {
     this.editMode = null;
     let { assignedConditions } = this.previewUserAssignConditionForm.value;
-    assignedConditions = assignedConditions.map(experimentData => ({
-        experiment: {
-          id: experimentData.experimentId,
-        },
-        experimentCondition: {
-          id: experimentData.conditionId
-        }
+    assignedConditions = assignedConditions.map((experimentData) => ({
+      experiment: {
+        id: experimentData.experimentId,
+      },
+      experimentCondition: {
+        id: experimentData.conditionId,
+      },
     }));
     const data = {
       id: userId,
-      assignments: assignedConditions
-    }
+      assignments: assignedConditions,
+    };
     this.assignedConditions.clear();
     this.previewUserService.assignConditionForPreviewUser(data);
   }
@@ -181,7 +186,7 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assignCondition) {
       this.assignCondition.nativeElement.scroll({
         top: this.assignCondition.nativeElement.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }
@@ -203,7 +208,7 @@ export class PreviewUserComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.previewUserTable.nativeElement.style.maxHeight = (windowHeight - 475) + 'px';
+    this.previewUserTable.nativeElement.style.maxHeight = windowHeight - 475 + 'px';
   }
 
   ngOnDestroy() {

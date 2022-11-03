@@ -12,8 +12,8 @@ import { FeatureFlagsDataService } from './feature-flags.data.service';
   imports: [
     CommonModule,
     EffectsModule.forFeature([FeatureFlagsEffects]),
-    StoreModule.forFeature('featureFlags', featureFlagsReducer)
+    StoreModule.forFeature('featureFlags', featureFlagsReducer),
   ],
-  providers: [FeatureFlagsService, FeatureFlagsDataService]
+  providers: [FeatureFlagsService, FeatureFlagsDataService],
 })
-export class FeatureFlagsModule { }
+export class FeatureFlagsModule {}

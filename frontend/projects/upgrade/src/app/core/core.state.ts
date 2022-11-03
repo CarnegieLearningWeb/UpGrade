@@ -1,8 +1,4 @@
-import {
-  ActionReducerMap,
-  MetaReducer,
-  createFeatureSelector
-} from '@ngrx/store';
+import { ActionReducerMap, MetaReducer, createFeatureSelector } from '@ngrx/store';
 import { routerReducer, RouterReducerState } from '@ngrx/router-store';
 
 import { environment } from '../../environments/environment';
@@ -13,13 +9,10 @@ import { RouterStateUrl } from './router/router.state';
 import { clearState } from './meta-reducers/clear-state.reducer';
 
 export const reducers: ActionReducerMap<AppState> = {
-  router: routerReducer
+  router: routerReducer,
 };
 
-export const metaReducers: MetaReducer<AppState>[] = [
-  initStateFromLocalStorage,
-  clearState
-];
+export const metaReducers: MetaReducer<AppState>[] = [initStateFromLocalStorage, clearState];
 
 if (!environment.production) {
   if (!environment.test) {
@@ -27,10 +20,7 @@ if (!environment.production) {
   }
 }
 
-export const selectRouterState = createFeatureSelector<
-  AppState,
-  RouterReducerState<RouterStateUrl>
->('router');
+export const selectRouterState = createFeatureSelector<AppState, RouterReducerState<RouterStateUrl>>('router');
 
 export interface AppState {
   router: RouterReducerState<RouterStateUrl>;

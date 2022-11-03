@@ -3,11 +3,11 @@ import { EXPERIMENT_STATE } from '../../core/experiments/store/experiments.model
 
 export enum ExperimentStatePipeType {
   TEXT = 'text',
-  COLOR = 'color'
+  COLOR = 'color',
 }
 
 @Pipe({
-  name: 'experimentState'
+  name: 'experimentState',
 })
 export class ExperimentStatePipe implements PipeTransform {
   transform(experimentState: EXPERIMENT_STATE, type: ExperimentStatePipeType = ExperimentStatePipeType.TEXT): any {

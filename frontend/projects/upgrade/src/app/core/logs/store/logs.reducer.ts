@@ -15,59 +15,47 @@ export const initialState: LogState = adapter.getInitialState({
   skipErrorLog: 0,
   totalErrorLogs: null,
   auditLogFilter: null,
-  errorLogFilter: null
+  errorLogFilter: null,
 });
 
 const reducer = createReducer(
   initialState,
-  on(logsActions.actionGetAuditLogs, state => ({
-    ...state
+  on(logsActions.actionGetAuditLogs, (state) => ({
+    ...state,
   })),
-  on(logsActions.actionGetAuditLogsSuccess, (state, { auditLogs, totalAuditLogs }) => {
-    return adapter.upsertMany(auditLogs, {
+  on(logsActions.actionGetAuditLogsSuccess, (state, { auditLogs, totalAuditLogs }) =>
+    adapter.upsertMany(auditLogs, {
       ...state,
       isAuditLogLoading: false,
       totalAuditLogs,
-      skipAuditLog: state.skipAuditLog + auditLogs.length
-    });
-  }),
-  on(logsActions.actionGetAuditLogsFailure, state => ({
+      skipAuditLog: state.skipAuditLog + auditLogs.length,
+    })
+  ),
+  on(logsActions.actionGetAuditLogsFailure, (state) => ({
     ...state,
-    isAuditLogLoading: false
+    isAuditLogLoading: false,
   })),
-  on(logsActions.actionGetErrorLogs, state => ({
+  on(logsActions.actionGetErrorLogs, (state) => ({
     ...state,
   })),
-  on(logsActions.actionGetErrorLogsSuccess, (state, { errorLogs, totalErrorLogs }) => {
-    return adapter.upsertMany(errorLogs, {
+  on(logsActions.actionGetErrorLogsSuccess, (state, { errorLogs, totalErrorLogs }) =>
+    adapter.upsertMany(errorLogs, {
       ...state,
       isErrorLogLoading: false,
       totalErrorLogs,
-      skipErrorLog: state.skipErrorLog + errorLogs.length
-    });
-  }),
-  on(logsActions.actionGetErrorLogsFailure, state => ({
+      skipErrorLog: state.skipErrorLog + errorLogs.length,
+    })
+  ),
+  on(logsActions.actionGetErrorLogsFailure, (state) => ({
     ...state,
-    isErrorLogLoading: false
+    isErrorLogLoading: false,
   })),
-  on(logsActions.actionSetSkipAuditLog,  (state, { skipAuditLog }) => {
-    return ({ ...state, skipAuditLog });
-  }),
-  on(logsActions.actionSetSkipErrorLog,  (state, { skipErrorLog }) => {
-    return ({ ...state, skipErrorLog });
-  }),
-  on(logsActions.actionSetIsAuditLogLoading, (state, { isAuditLogLoading }) => {
-    return ({ ...state, isAuditLogLoading })
-  }),
-  on(logsActions.actionSetIsErrorLogLoading, (state, { isErrorLogLoading }) => {
-    return ({ ...state, isErrorLogLoading })
-  }),
-  on(logsActions.actionSetAuditLogFilter, (state, { filterType }) => {
-    return ({ ...state, auditLogFilter: filterType })
-  }),
-  on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => {
-    return ({ ...state, errorLogFilter: filterType })
-  })
+  on(logsActions.actionSetSkipAuditLog, (state, { skipAuditLog }) => ({ ...state, skipAuditLog })),
+  on(logsActions.actionSetSkipErrorLog, (state, { skipErrorLog }) => ({ ...state, skipErrorLog })),
+  on(logsActions.actionSetIsAuditLogLoading, (state, { isAuditLogLoading }) => ({ ...state, isAuditLogLoading })),
+  on(logsActions.actionSetIsErrorLogLoading, (state, { isErrorLogLoading }) => ({ ...state, isErrorLogLoading })),
+  on(logsActions.actionSetAuditLogFilter, (state, { filterType }) => ({ ...state, auditLogFilter: filterType })),
+  on(logsActions.actionSetErrorLogFilter, (state, { filterType }) => ({ ...state, errorLogFilter: filterType }))
 );
 
 export function logsReducer(state: LogState | undefined, action: Action) {

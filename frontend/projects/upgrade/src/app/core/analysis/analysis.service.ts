@@ -1,16 +1,19 @@
 import { Injectable } from '@angular/core';
 import { AppState } from '../core.module';
 import { Store, select } from '@ngrx/store';
-import { selectMetrics, selectIsMetricsLoading, selectQueryResult, selectIsQueryExecuting, selectQueryResultById } from './store/analysis.selectors';
+import {
+  selectMetrics,
+  selectIsMetricsLoading,
+  selectQueryResult,
+  selectIsQueryExecuting,
+  selectQueryResultById,
+} from './store/analysis.selectors';
 import * as AnalysisActions from './store/analysis.actions';
 import { UpsertMetrics } from './store/analysis.models';
 
 @Injectable()
 export class AnalysisService {
-
-  constructor(
-    private store$: Store<AppState>
-  ) {}
+  constructor(private store$: Store<AppState>) {}
 
   isMetricsLoading$ = this.store$.pipe(select(selectIsMetricsLoading));
   isQueryExecuting$ = this.store$.pipe(select(selectIsQueryExecuting));
@@ -49,16 +52,14 @@ export class AnalysisService {
     // Otherwise, if this node has a tree field/value, recursively
     // process the nodes in this tree array
     if (Array.isArray(node.children)) {
-
       for (const treeNode of node.children) {
-
         // Recursively process treeNode. If an array result is
         // returned, then add the treeNode.key to that result
         // and return recursively
-        const childResult = this.findParents(treeNode, searchForKey)
+        const childResult = this.findParents(treeNode, searchForKey);
 
         if (Array.isArray(childResult)) {
-          return [ treeNode.key ].concat( childResult );
+          return [treeNode.key].concat(childResult);
         }
       }
     }

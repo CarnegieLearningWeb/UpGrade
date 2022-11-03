@@ -11,10 +11,9 @@ xdescribe('EnrollmentConditionTableComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EnrollmentConditionTableComponent, TableRowComponent, EnrollmentPointPartitionTableComponent ],
-      imports: [TestingModule]
-    })
-    .compileComponents();
+      declarations: [EnrollmentConditionTableComponent, TableRowComponent, EnrollmentPointPartitionTableComponent],
+      imports: [TestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

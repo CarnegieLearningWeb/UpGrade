@@ -15,7 +15,7 @@ import { MatTableDataSource } from '@angular/material/table';
 @Component({
   selector: 'users-experiment-users',
   templateUrl: './experiment-users.component.html',
-  styleUrls: ['./experiment-users.component.scss']
+  styleUrls: ['./experiment-users.component.scss'],
 })
 export class ExperimentUsersComponent implements OnInit, OnDestroy {
   permissions$: Observable<UserPermission>;
@@ -30,7 +30,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
   groupTypeClass = 'class';
   isEntityLoading$ = this.experimentUserService.isExcludedEntityLoading$;
 
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   contexts: string[];
 
@@ -52,7 +52,7 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private experimentService: ExperimentService
   ) {
-    this.allExcludedEntitiesSub = this.experimentUserService.allExcludedEntities$.subscribe(entities => {
+    this.allExcludedEntitiesSub = this.experimentUserService.allExcludedEntities$.subscribe((entities) => {
       this.allExcludedEntities = new MatTableDataSource();
       this.allExcludedEntities.data = entities;
       this.allExcludedEntities.paginator = this.paginator;
@@ -75,12 +75,12 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
     this.allExcludedEntities.paginator = this.paginator;
     this.allExcludedEntities.sort = this.sort;
 
-    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
-      this.contextMetaData = contextMetaData; 
-      if (contextMetaData['contextMetadata']) {
-        this.contexts = Object.keys(contextMetaData['contextMetadata']) || [];
-        this.contexts.forEach(context => {
-          this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
+      this.contextMetaData = contextMetaData;
+      if (contextMetaData.contextMetadata) {
+        this.contexts = Object.keys(contextMetaData.contextMetadata) || [];
+        this.contexts.forEach((context) => {
+          this.contextMetaData.contextMetadata[context].GROUP_TYPES.forEach((group) => {
             this.groupTypes.add(group);
           });
         });
@@ -89,13 +89,11 @@ export class ExperimentUsersComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.excludeEntitiesForm = this._formBuilder.group(
-      {
-        entityType: [EntityTypes.GROUP_ID, Validators.required],
-        groupType: [this.groupTypeClass],
-        id: [null, Validators.required]
-      }
-    );
+    this.excludeEntitiesForm = this._formBuilder.group({
+      entityType: [EntityTypes.GROUP_ID, Validators.required],
+      groupType: [this.groupTypeClass],
+      id: [null, Validators.required],
+    });
   }
 
   excludeEntity() {

@@ -8,7 +8,7 @@ import { UsersService } from '../../../../../../core/users/users.service';
   selector: 'app-new-user',
   templateUrl: './new-user.component.html',
   styleUrls: ['./new-user.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewUserComponent implements OnInit {
   newUserForm: FormGroup;
@@ -26,7 +26,7 @@ export class NewUserComponent implements OnInit {
       firstName: [null, Validators.required],
       lastName: [null, Validators.required],
       email: [null, [Validators.required, Validators.email]],
-      role: [null, Validators.required]
+      role: [null, Validators.required],
     });
   }
 
@@ -36,7 +36,7 @@ export class NewUserComponent implements OnInit {
 
   addNewUser() {
     const { firstName, lastName, email, role } = this.newUserForm.value;
-    this.isUserExist = !!this.data.users.find(user => user.email === email);
+    this.isUserExist = !!this.data.users.find((user) => user.email === email);
     if (!this.isUserExist) {
       this.usersService.createNewUser(firstName, lastName, email, role);
       this.onNoClick();

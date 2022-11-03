@@ -6,7 +6,7 @@ import { SegmentsService } from '../../../../../../core/segments/segments.servic
   selector: 'app-delete-segment',
   templateUrl: './delete-segment.component.html',
   styleUrls: ['./delete-segment.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteSegmentComponent {
   segmentName: string;
@@ -14,7 +14,7 @@ export class DeleteSegmentComponent {
     public dialogRef: MatDialogRef<DeleteSegmentComponent>,
     private segmentsService: SegmentsService,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) { }
+  ) {}
 
   onCancelClick(): void {
     this.dialogRef.close();

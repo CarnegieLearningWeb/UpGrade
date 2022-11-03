@@ -10,10 +10,9 @@ xdescribe('ExperimentScheduleComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExperimentScheduleComponent ],
-      imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule]
-    })
-    .compileComponents();
+      declarations: [ExperimentScheduleComponent],
+      imports: [TestingModule, OwlDateTimeModule, OwlNativeDateTimeModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
