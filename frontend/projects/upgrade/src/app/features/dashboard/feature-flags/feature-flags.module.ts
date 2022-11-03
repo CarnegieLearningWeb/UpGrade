@@ -12,19 +12,15 @@ import { ViewFeatureFlagComponent } from './pages/view-feature-flag/view-feature
 import { DeleteFlagComponent } from './components/modal/delete-flag/delete-flag.component';
 
 @NgModule({
-    declarations: [
-        FeatureFlagsRootComponent,
-        FeatureFlagsListComponent,
-        NewFlagComponent,
-        FlagOverviewComponent,
-        FlagVariationsComponent,
-        ViewFeatureFlagComponent,
-        DeleteFlagComponent
-    ],
-    imports: [
-        CommonModule,
-        FeatureFlagsRoutingModule,
-        SharedModule
-    ]
+  declarations: [
+    FeatureFlagsRootComponent,
+    FeatureFlagsListComponent,
+    NewFlagComponent,
+    FlagOverviewComponent,
+    FlagVariationsComponent,
+    ViewFeatureFlagComponent,
+    DeleteFlagComponent,
+  ],
+  imports: [CommonModule, FeatureFlagsRoutingModule, SharedModule],
 })
-export class FeatureFlagsModule { }
+export class FeatureFlagsModule {}

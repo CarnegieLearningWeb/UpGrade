@@ -1,62 +1,60 @@
 // SHARED MODAL CLASSES
-// 
+//
 // shared-modal--step-container
 // shared-modal--form-container
 // shared-modal--buttons-container
-// 
+//
 // shared-modal--buttons-left
 // shared-modal--buttons-right
 // shared-modal--modal-btn
 
-
 .shared-modal--step-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 575px;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 575px;
+  position: relative;
 
-    &.scrollable {
-        height: 585px;
-        margin-top: -5px;
-        padding-top: 5px;
-        overflow: hidden;
-    }
+  &.scrollable {
+    height: 585px;
+    margin-top: -5px;
+    padding-top: 5px;
+    overflow: hidden;
+  }
 }
 
 .shared-modal--buttons-container {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 
-    .shared-modal--buttons-left {
-        .btn-back {
-            // TODO use parent container to position buttons
-            margin-left: 0 !important;
-        }
+  .shared-modal--buttons-left {
+    .btn-back {
+      // TODO use parent container to position buttons
+      margin-left: 0 !important;
     }
+  }
 
-    &.sticky {
-        position: sticky;
-        bottom: 0;
-        width: 100%;
-        background-color: white;
-        padding-bottom: 5px;
-    }
+  &.sticky {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    padding-bottom: 5px;
+  }
 
-    // .shared-modal--buttons-right {
-    //     // TODO use parent container to position buttons
-    // }
+  // .shared-modal--buttons-right {
+  //     // TODO use parent container to position buttons
+  // }
 }
 
 // Common style for modal button
 // TODO remove margin/padding from buttons (allow parent to control positioning)
 .shared-modal--modal-btn {
-    margin-left: 20px !important;
-    border-radius: 3px !important;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
-    width: 100px;
-    height: 36px;
-    font-family: 'Open Sans';
-    font-size: var(--text-size-normal);
-    font-weight: 600;
+  margin-left: 20px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
+  width: 100px;
+  height: 36px;
+  font-family: 'Open Sans';
+  font-size: var(--text-size-normal);
+  font-weight: 600;
 }

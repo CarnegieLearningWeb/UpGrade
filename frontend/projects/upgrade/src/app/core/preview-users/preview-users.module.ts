@@ -14,6 +14,6 @@ import { PreviewUsersService } from './preview-users.service';
     EffectsModule.forFeature([PreviewUsersEffects]),
     StoreModule.forFeature('previewUsers', previewUsersReducer),
   ],
-  providers: [PreviewUsersService, PreviewUsersDataService]
+  providers: [PreviewUsersService, PreviewUsersDataService],
 })
-export class PreviewUsersModule { }
+export class PreviewUsersModule {}

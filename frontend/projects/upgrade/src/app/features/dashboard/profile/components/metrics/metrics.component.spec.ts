@@ -11,11 +11,10 @@ xdescribe('MetricsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ MetricsComponent ],
+      declarations: [MetricsComponent],
       imports: [TestingModule],
-      providers: [AnalysisService, AuthService]
-    })
-    .compileComponents();
+      providers: [AnalysisService, AuthService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

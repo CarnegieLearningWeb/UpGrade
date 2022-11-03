@@ -25,19 +25,13 @@
         {{ context }}
       </mat-option>
     </mat-select>
-    <mat-error
-      *ngIf="overviewForm.controls.context.hasError('required')"
-    >
+    <mat-error *ngIf="overviewForm.controls.context.hasError('required')">
       {{ 'home.new-experiment.overview.context.error.text' | translate }}
     </mat-error>
   </mat-form-field>
 
   <div class="button-container">
-    <button
-      class="shared-modal--modal-btn"
-      mat-raised-button
-      (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)"
-    >
+    <button class="shared-modal--modal-btn" mat-raised-button (click)="emitEvent(NewSegmentDialogEvents.CLOSE_DIALOG)">
       {{ 'global.cancel.text' | translate }}
     </button>
     <button

@@ -11,11 +11,10 @@ xdescribe('EnrollmentOverTimeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EnrollmentOverTimeComponent ],
+      declarations: [EnrollmentOverTimeComponent],
       imports: [TestingModule, NgxChartsModule],
-      providers: [ExperimentService]
-    })
-    .compileComponents();
+      providers: [ExperimentService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

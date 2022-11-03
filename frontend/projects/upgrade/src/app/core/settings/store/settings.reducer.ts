@@ -10,24 +10,14 @@ export const initialState: SettingsState = {
 
 const reducer = createReducer(
   initialState,
-  on(
-    SettingsActions.actionChangeTheme,
-    (state, { theme }) => ({ ...state, theme })
-  ),
-  on(
-    SettingsActions.actionSetSettingSuccess,
-    SettingsActions.actionGetSettingSuccess,
-    (state, { setting }) => ({
-      ...state,
-      toCheckAuth: setting && (setting as any).toCheckAuth || false,
-      toFilterMetric: setting && (setting as any).toFilterMetric || false
-    })
-  )
+  on(SettingsActions.actionChangeTheme, (state, { theme }) => ({ ...state, theme })),
+  on(SettingsActions.actionSetSettingSuccess, SettingsActions.actionGetSettingSuccess, (state, { setting }) => ({
+    ...state,
+    toCheckAuth: (setting && (setting as any).toCheckAuth) || false,
+    toFilterMetric: (setting && (setting as any).toFilterMetric) || false,
+  }))
 );
 
-export function settingsReducer(
-  state: SettingsState | undefined,
-  action: Action
-) {
+export function settingsReducer(state: SettingsState | undefined, action: Action) {
   return reducer(state, action);
 }

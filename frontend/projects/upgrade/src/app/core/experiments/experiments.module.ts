@@ -13,8 +13,8 @@ import { ExperimentDataService } from './experiments.data.service';
   imports: [
     CommonModule,
     EffectsModule.forFeature([ExperimentEffects]),
-    StoreModule.forFeature('experiments', experimentsReducer)
+    StoreModule.forFeature('experiments', experimentsReducer),
   ],
-  providers: [ExperimentService, ExperimentDataService]
+  providers: [ExperimentService, ExperimentDataService],
 })
 export class ExperimentsModule {}

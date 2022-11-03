@@ -13,11 +13,10 @@ xdescribe('ExperimentListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExperimentListComponent ],
+      declarations: [ExperimentListComponent],
       imports: [TestingModule, NgxSkeletonLoaderModule],
-      providers: [ExperimentService, AuthService, SettingsService]
-    })
-    .compileComponents();
+      providers: [ExperimentService, AuthService, SettingsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

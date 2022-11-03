@@ -7,13 +7,13 @@ const routes: Routes = [
     path: '',
     component: LogsComponent,
     data: {
-      title: 'app-header.title.logs'
-    }
-  }
+      title: 'app-header.title.logs',
+    },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class LogsRoutingModule {}

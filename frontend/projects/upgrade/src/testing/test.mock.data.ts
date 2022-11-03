@@ -52,23 +52,23 @@ export abstract class TestMockData {
             description: 'No Partition',
             twoCharacterId: 'NP',
           },
-        ]
-      }
+        ],
+      },
     ];
   }
 
   public static getQuery() {
     return [
       {
-          name: 'query',
-          query: {
-            operationType: OPERATION_TYPES.SUM,
-          },
-          metric: {
-            key: 'key1',
-          },
-          experimentId: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
-      }
+        name: 'query',
+        query: {
+          operationType: OPERATION_TYPES.SUM,
+        },
+        metric: {
+          key: 'key1',
+        },
+        experimentId: 'be3ae74f-370a-4015-93f3-7761d16f8b17',
+      },
     ];
   }
 }

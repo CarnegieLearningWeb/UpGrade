@@ -7,13 +7,13 @@ const routes: Routes = [
     path: '',
     component: ExperimentUsersRootComponent,
     data: {
-      title: 'app-header.title.users'
-    }
-  }
+      title: 'app-header.title.users',
+    },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class UserRoutingModule {}

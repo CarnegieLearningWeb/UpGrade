@@ -11,15 +11,14 @@ xdescribe('DeleteFlagComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DeleteFlagComponent ],
+      declarations: [DeleteFlagComponent],
       imports: [TestingModule],
       providers: [
         FeatureFlagsService,
         { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: [] },
-      ]
-    })
-    .compileComponents();
+        { provide: MAT_DIALOG_DATA, useValue: [] },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -12,19 +12,25 @@ export default async function getAllExperimentConditions(
   try {
     const params: any = {
       userId,
-      context
+      context,
     };
-    const experimentConditionResponse = await fetchDataService(url, token, clientSessionId, params, Types.REQUEST_TYPES.POST);
+    const experimentConditionResponse = await fetchDataService(
+      url,
+      token,
+      clientSessionId,
+      params,
+      Types.REQUEST_TYPES.POST
+    );
     if (experimentConditionResponse.status) {
-      experimentConditionResponse.data = experimentConditionResponse.data.map(data => {
+      experimentConditionResponse.data = experimentConditionResponse.data.map((data) => {
         return {
           ...data,
           assignedCondition: {
             conditionCode: data.assignedCondition.conditionCode,
             twoCharacterId: data.assignedCondition.twoCharacterId,
-            description: data.assignedCondition.description
-          }
-        }
+            description: data.assignedCondition.description,
+          },
+        };
       });
       return experimentConditionResponse.data;
     } else {

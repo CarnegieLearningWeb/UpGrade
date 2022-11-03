@@ -10,7 +10,7 @@ xdescribe('SharedIconsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [],
-      imports: [TestingModule]
+      imports: [TestingModule],
     }).compileComponents();
   }));
 

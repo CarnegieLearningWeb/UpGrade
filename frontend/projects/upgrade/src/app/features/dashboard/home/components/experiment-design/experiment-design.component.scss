@@ -10,7 +10,7 @@
     .decision-point-header-container {
       display: flex;
       justify-content: space-between;
-  
+
       .toggle-button {
         margin-top: -5px;
         .icon-bump-left {
@@ -88,7 +88,7 @@
           display: flex;
           justify-content: center;
           align-items: center;
-  
+
           .remove-icon {
             display: flex;
             justify-content: center;
@@ -127,12 +127,12 @@
         flex: 0 0 82px;
         width: 82px;
       }
-      
+
       .cdk-column-description {
         margin-left: 30px;
         width: 100%;
       }
-            
+
       mat-form-field {
         width: 100%;
         text-align: left;
@@ -176,8 +176,7 @@
     margin: 0;
   }
 
-  input[type=number] {
+  input[type='number'] {
     -moz-appearance: textfield;
   }
 }
-

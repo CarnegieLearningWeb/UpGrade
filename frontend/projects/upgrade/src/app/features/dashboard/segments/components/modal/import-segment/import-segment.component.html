@@ -5,15 +5,10 @@
     <p class="ft-16-400">
       {{ 'segments.import-segmemt.message.text' | translate }}
     </p>
-    <input
-        accept=".json"
-        type="file"
-        class="ft-14-400 file-input"
-        (change)="uploadFile($event)"
-      />
-      <span class="error-msg" *ngIf="!isSegmentJSONValid">
-        {{ 'segments.import-segment.error.message.text' | translate }}
-      </span>
+    <input accept=".json" type="file" class="ft-14-400 file-input" (change)="uploadFile($event)" />
+    <span class="error-msg" *ngIf="!isSegmentJSONValid">
+      {{ 'segments.import-segment.error.message.text' | translate }}
+    </span>
   </div>
 
   <div class="button-container">

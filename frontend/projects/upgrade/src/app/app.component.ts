@@ -8,10 +8,7 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  constructor(
-    private authService: AuthService,
-    private translateService: TranslateService
-  ) {}
+  constructor(private authService: AuthService, private translateService: TranslateService) {}
 
   ngOnInit() {
     this.translateService.setDefaultLang('en');

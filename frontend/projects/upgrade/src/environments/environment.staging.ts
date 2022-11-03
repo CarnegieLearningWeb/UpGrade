@@ -5,7 +5,6 @@ export const environment = {
   production: true,
   test: false,
   i18nPrefix: '',
-  appVersion: require('../../../../package.json').version,
   gapiClientId: '135765367152-pq4jhd3gra10jda9l6bpnmu9gqt48tup.apps.googleusercontent.com',
   domainName: '',
   pollingEnabled: true,
@@ -14,8 +13,8 @@ export const environment = {
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
-    importExperiment : '/experiments/import',
-    exportExperiment : '/experiments/export',
+    importExperiment: '/experiments/import',
+    exportExperiment: '/experiments/export',
     updateExperiments: '/experiments',
     experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
@@ -47,9 +46,9 @@ export const environment = {
     queryResult: '/query/analyse',
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
-    segments: `/segments`,
-    importSegment: `/segments/import`,
-    exportSegment: `/segments/export`,
-    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus'
-  }
+    segments: '/segments',
+    importSegment: '/segments/import',
+    exportSegment: '/segments/export',
+    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
+  },
 };

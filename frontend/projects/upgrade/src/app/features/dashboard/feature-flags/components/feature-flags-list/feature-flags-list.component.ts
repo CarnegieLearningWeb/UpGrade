@@ -1,4 +1,12 @@
-import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+} from '@angular/core';
 import { Observable, Subscription, fromEvent } from 'rxjs';
 import { UserPermission } from '../../../../../core/auth/store/auth.models';
 import { AuthService } from '../../../../../core/auth/auth.service';
@@ -14,17 +22,11 @@ import { MatTableDataSource } from '@angular/material/table';
   selector: 'feature-flags-list',
   templateUrl: './feature-flags-list.component.html',
   styleUrls: ['./feature-flags-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewInit {
   permissions$: Observable<UserPermission>;
-  displayedColumns: string[] = [
-    'name',
-    'key',
-    'variationType',
-    'activeVariant',
-    'status',
-  ];
+  displayedColumns: string[] = ['name', 'key', 'variationType', 'activeVariant', 'status'];
   allFeatureFlags: MatTableDataSource<FeatureFlag>;
   allFeatureFlagsSub: Subscription;
   isLoadingFeatureFlags$ = this.featureFlagsService.isLoadingFeatureFlags$;
@@ -34,7 +36,7 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
     { value: FLAG_SEARCH_SORT_KEY.NAME, viewValue: FLAG_SEARCH_SORT_KEY.NAME },
     { value: FLAG_SEARCH_SORT_KEY.KEY, viewValue: FLAG_SEARCH_SORT_KEY.KEY },
     { value: FLAG_SEARCH_SORT_KEY.STATUS, viewValue: FLAG_SEARCH_SORT_KEY.STATUS },
-    { value: FLAG_SEARCH_SORT_KEY.VARIATION_TYPE, viewValue: 'Type'}
+    { value: FLAG_SEARCH_SORT_KEY.VARIATION_TYPE, viewValue: 'Type' },
   ];
   selectedFlagFilterOption = FLAG_SEARCH_SORT_KEY.ALL;
   searchValue: string;
@@ -49,31 +51,29 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
   constructor(
     private authService: AuthService,
     private featureFlagsService: FeatureFlagsService,
-    private dialog: MatDialog,
-  ) { }
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
-    this.allFeatureFlagsSub = this.featureFlagsService.allFeatureFlags$.subscribe(
-      allFeatureFlags => {
-        this.allFeatureFlags = new MatTableDataSource();
-        this.allFeatureFlags.data = [...allFeatureFlags];
-        this.allFeatureFlags.sort = this.sort;
-        this.applyFilter(this.searchValue);
-      }
-    );
+    this.allFeatureFlagsSub = this.featureFlagsService.allFeatureFlags$.subscribe((allFeatureFlags) => {
+      this.allFeatureFlags = new MatTableDataSource();
+      this.allFeatureFlags.data = [...allFeatureFlags];
+      this.allFeatureFlags.sort = this.sort;
+      this.applyFilter(this.searchValue);
+    });
 
-    this.isAllFlagsFetchedSub = this.featureFlagsService.isAllFlagsFetched().subscribe(
-      value => this.isAllFlagsFetched = value
-    );
+    this.isAllFlagsFetchedSub = this.featureFlagsService
+      .isAllFlagsFetched()
+      .subscribe((value) => (this.isAllFlagsFetched = value));
   }
 
   openNewFlagDialog() {
     const dialogRef = this.dialog.open(NewFlagComponent, {
-      panelClass: 'new-flag-modal'
+      panelClass: 'new-flag-modal',
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       // Code will be executed after closing dialog
     });
   }
@@ -127,9 +127,7 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
 
   // Used to search based on variation value
   isVariationFound(data: FeatureFlag, filterValue: string): boolean {
-    const isVariationFound = data.variations.filter(
-      variation => variation.value.includes(filterValue)
-    );
+    const isVariationFound = data.variations.filter((variation) => variation.value.includes(filterValue));
     return !!isVariationFound.length;
   }
 
@@ -138,7 +136,7 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
     this.featureFlagsService.setSortKey(event.direction ? event.active : null);
     this.featureFlagsTableContainer.nativeElement.scroll({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
     this.featureFlagsService.fetchFeatureFlags(true);
   }
@@ -162,10 +160,12 @@ export class FeatureFlagsListComponent implements OnInit, OnDestroy, AfterViewIn
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.featureFlagsTableContainer.nativeElement.style.maxHeight = (windowHeight - 325) + 'px';
+    this.featureFlagsTableContainer.nativeElement.style.maxHeight = windowHeight - 325 + 'px';
 
-    fromEvent(this.searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(searchInput => {
-      this.setSearchString((searchInput as any).target.value);
-    });
+    fromEvent(this.searchInput.nativeElement, 'keyup')
+      .pipe(debounceTime(500))
+      .subscribe((searchInput) => {
+        this.setSearchString((searchInput as any).target.value);
+      });
   }
 }

@@ -14,9 +14,9 @@ import {
   IExperimentEnrollmentDetailStats,
   DATE_RANGE,
   IExperimentEnrollmentDetailDateStats,
-  FILTER_MODE
+  FILTER_MODE,
 } from 'upgrade_types';
-import { Segment, SegmentInput } from '../../segments/store/segments.model';
+import { Segment } from '../../segments/store/segments.model';
 
 export {
   CONSISTENCY_RULE,
@@ -42,7 +42,7 @@ export enum NewExperimentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
   UPDATE_EXPERIMENT = 'Update experiment',
-  SAVE_DATA = 'Save Data'
+  SAVE_DATA = 'Save Data',
 }
 
 export enum NewExperimentPaths {
@@ -51,11 +51,11 @@ export enum NewExperimentPaths {
   EXPERIMENT_PARTICIPANTS = 'Experiment Participants',
   MONITORED_METRIC = 'Monitored Metric',
   EXPERIMENT_SCHEDULE = 'Experiment Schedule',
-  POST_EXPERIMENT_RULE = 'Post Experiment Rule'
+  POST_EXPERIMENT_RULE = 'Post Experiment Rule',
 }
 
 export enum ExperimentDesignTypes {
-  SIMPLE = "Simple Experiment"
+  SIMPLE = 'Simple Experiment',
 }
 
 export interface NewExperimentDialogData {
@@ -66,18 +66,18 @@ export interface NewExperimentDialogData {
 
 export enum DateType {
   MEDIUM_DATE = 'medium date',
-  SHORT_DATE = 'short date'
+  SHORT_DATE = 'short date',
 }
 
 export enum UpsertExperimentType {
   CREATE_NEW_EXPERIMENT = 'Create new experiment',
   UPDATE_EXPERIMENT = 'Update experiment',
-  IMPORT_EXPERIMENT = 'Import experiment'
+  IMPORT_EXPERIMENT = 'Import experiment',
 }
 
 export enum EndExperimentCondition {
   END_ON_DATE = 'End on Date',
-  END_CRITERIA = 'End Criteria'
+  END_CRITERIA = 'End Criteria',
 }
 
 export enum ExperimentLocalStorageKeys {
@@ -152,7 +152,7 @@ export interface segmentNew {
   createdAt: string;
   versionNumber: number;
   segment: Segment;
-} 
+}
 
 export interface Experiment {
   id: string;
@@ -178,9 +178,9 @@ export interface Experiment {
   conditionAliases: ExperimentConditionAlias[];
   queries: any[];
   stateTimeLogs: ExperimentStateTimeLog[];
-  filterMode: FILTER_MODE,
-  experimentSegmentInclusion: segmentNew,
-  experimentSegmentExclusion: segmentNew,
+  filterMode: FILTER_MODE;
+  experimentSegmentInclusion: segmentNew;
+  experimentSegmentExclusion: segmentNew;
   groupSatisfied?: number;
   backendVersion: string;
 }
@@ -227,22 +227,20 @@ export interface ExperimentPaginationParams {
 }
 
 export interface ISingleContextMetadata {
-  EXP_IDS: string[],
-  EXP_POINTS: string[],
-  GROUP_TYPES: string[],
-  CONDITIONS: string[]
+  EXP_IDS: string[];
+  EXP_POINTS: string[];
+  GROUP_TYPES: string[];
+  CONDITIONS: string[];
 }
 export interface IContextMetaData {
-  contextMetadata: {
-    [key: string]: ISingleContextMetadata;
-  }
+  contextMetadata: Record<string, ISingleContextMetadata>;
 }
 
 export interface IExperimentGraphInfo {
-  [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[],
-  [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[],
-  [DATE_RANGE.LAST_SIX_MONTHS]: IEnrollmentStatByDate[],
-  [DATE_RANGE.LAST_TWELVE_MONTHS]: IEnrollmentStatByDate[],
+  [DATE_RANGE.LAST_SEVEN_DAYS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_THREE_MONTHS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_SIX_MONTHS]: IEnrollmentStatByDate[];
+  [DATE_RANGE.LAST_TWELVE_MONTHS]: IEnrollmentStatByDate[];
 }
 
 export interface ExperimentVM extends Experiment {
@@ -259,14 +257,12 @@ export interface ExperimentState extends EntityState<Experiment> {
   searchString: string;
   sortKey: EXPERIMENT_SORT_KEY;
   sortAs: EXPERIMENT_SORT_AS;
-  stats: {
-    [key: string]: IExperimentEnrollmentDetailStats;
-  };
-  graphInfo: IExperimentGraphInfo,
+  stats: Record<string, IExperimentEnrollmentDetailStats>;
+  graphInfo: IExperimentGraphInfo;
   graphRange: DATE_RANGE;
   isGraphInfoLoading: boolean;
-  allPartitions: {};
-  allExperimentNames: {};
+  allPartitions: Record<string, ExperimentPartition>;
+  allExperimentNames: ExperimentNameVM[];
   contextMetaData: IContextMetaData;
   isLoadingContextMetaData: boolean;
   currentUserSelectedContext: ISingleContextMetadata;
@@ -282,6 +278,6 @@ export interface State extends AppState {
 }
 
 export interface TableEditModeDetails {
-  isEditMode: boolean,
-  rowIndex: number | null,
+  isEditMode: boolean;
+  rowIndex: number | null;
 }

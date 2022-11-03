@@ -5,7 +5,7 @@ import { EXPERIMENT_LOG_TYPE, SERVER_ERROR } from 'upgrade_types';
 @Component({
   selector: 'app-logs',
   templateUrl: './logs.component.html',
-  styleUrls: ['./logs.component.scss']
+  styleUrls: ['./logs.component.scss'],
 })
 export class LogsComponent implements OnInit, OnDestroy {
   // Audit log tab filter options
@@ -17,7 +17,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DELETED, viewValue: 'Experiment Deleted' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_EXPORTED, viewValue: 'Experiment Data Exported' },
     { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DATA_REQUESTED, viewValue: 'Experiment Data Requested' },
-    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED, viewValue: 'Experiment Design Exported' }
+    { value: EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED, viewValue: 'Experiment Design Exported' },
   ];
 
   // Error log tab filter options
@@ -31,8 +31,14 @@ export class LogsComponent implements OnInit, OnDestroy {
     { value: SERVER_ERROR.QUERY_FAILED, viewValue: SERVER_ERROR.QUERY_FAILED },
     { value: SERVER_ERROR.REPORTED_ERROR, viewValue: SERVER_ERROR.REPORTED_ERROR },
     { value: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED },
-    { value: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED, viewValue: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED },
-    { value: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP, viewValue: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP },
+    {
+      value: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
+      viewValue: SERVER_ERROR.EXPERIMENT_USER_GROUP_NOT_DEFINED,
+    },
+    {
+      value: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+      viewValue: SERVER_ERROR.WORKING_GROUP_NOT_SUBSET_OF_GROUP,
+    },
     { value: SERVER_ERROR.INVALID_TOKEN, viewValue: SERVER_ERROR.INVALID_TOKEN },
     { value: SERVER_ERROR.TOKEN_NOT_PRESENT, viewValue: SERVER_ERROR.TOKEN_NOT_PRESENT },
     { value: SERVER_ERROR.EMAIL_SEND_ERROR, viewValue: SERVER_ERROR.EMAIL_SEND_ERROR },
@@ -61,12 +67,19 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.filterOptions = tabIndex === 0 ? this.auditLogsOptions : this.errorLogsOptions;
 
     // Swap selected filter option
-    [this.selectedFilterOption, this.selectedOptionForAnotherTab] = [this.selectedOptionForAnotherTab, this.selectedFilterOption];
+    [this.selectedFilterOption, this.selectedOptionForAnotherTab] = [
+      this.selectedOptionForAnotherTab,
+      this.selectedFilterOption,
+    ];
   }
 
   changeLogOption(value: any) {
     value = value === 'all' ? null : value;
-    (this.selectedTabIndex === 0) ? this.logsService.setAuditLogFilter(value) : this.logsService.setErrorLogFilter(value);
+    if (this.selectedTabIndex === 0) {
+      this.logsService.setAuditLogFilter(value);
+    } else {
+      this.logsService.setErrorLogFilter(value);
+    }
   }
 
   ngOnDestroy() {

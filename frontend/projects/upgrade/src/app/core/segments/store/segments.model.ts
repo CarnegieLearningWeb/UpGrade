@@ -1,12 +1,12 @@
 import { AppState } from '../../core.state';
 import { EntityState } from '@ngrx/entity';
 import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
-export { SEGMENT_STATUS }
+export { SEGMENT_STATUS };
 
 export enum NewSegmentDialogEvents {
   CLOSE_DIALOG = 'Close Dialog',
   SEND_FORM_DATA = 'Send Form Data',
-  UPDATE_SEGMENT = 'Update segment'
+  UPDATE_SEGMENT = 'Update segment',
 }
 
 export enum NewSegmentPaths {
@@ -17,7 +17,7 @@ export enum NewSegmentPaths {
 export enum UpsertSegmentType {
   CREATE_NEW_SEGMENT = 'Create new segment',
   UPDATE_SEGMENT = 'Update segment',
-  IMPORT_SEGMENT = 'Import segment'
+  IMPORT_SEGMENT = 'Import segment',
 }
 
 export interface NewSegmentDialogData {
@@ -28,7 +28,7 @@ export interface NewSegmentDialogData {
 
 export enum MemberTypes {
   INDIVIDUAL = 'Individual',
-  SEGMENT = 'Segment'
+  SEGMENT = 'Segment',
 }
 
 export interface experimentSegmentInclusionExclusionData {
@@ -37,12 +37,12 @@ export interface experimentSegmentInclusionExclusionData {
   versionNumber: number;
   experiment: {
     name: string;
-    context: Array<any>;
+    context: any[];
     state: string;
   };
   segment: {
     id: string;
-    subSegments: Array<any>;
+    subSegments: any[];
   };
 }
 
@@ -81,7 +81,7 @@ export interface SegmentInput {
   context: string;
   description: string;
   userIds: string[];
-  groups: { groupId: string, type: string }[];
+  groups: { groupId: string; type: string }[];
   subSegmentIds: string[];
   type: SEGMENT_TYPE;
 }

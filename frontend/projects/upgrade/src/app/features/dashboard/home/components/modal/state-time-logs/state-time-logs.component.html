@@ -1,19 +1,14 @@
 <div class="state-time-logs-modal">
-    <ng-container>
-      <span class="ft-24-700 title">
-        {{ 'home.view-experiment.enrollment-time-logs.title.text' | translate }}
-      </span>
-    </ng-container>
+  <ng-container>
+    <span class="ft-24-700 title">
+      {{ 'home.view-experiment.enrollment-time-logs.title.text' | translate }}
+    </span>
+  </ng-container>
 
   <div class="state-time-logs-view">
     <div class="stateTimeLogs-table-container">
-
-      <ng-container *ngIf="filteredTimeLogs?.length; else zeroState">    
-        <mat-table
-          class="table"
-          [dataSource]="filteredTimeLogs"
-        >
-
+      <ng-container *ngIf="filteredTimeLogs?.length; else zeroState">
+        <mat-table class="table" [dataSource]="filteredTimeLogs">
           <!-- TIMELOG NUMBER Column -->
           <ng-container matColumnDef="timeLogNumber">
             <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -29,8 +24,8 @@
             <mat-header-cell class="ft-12-700" *matHeaderCellDef>
               {{ 'home.view-experiment.enrollment-start-time.title.text' | translate | uppercase }}
             </mat-header-cell>
-            <mat-cell class="ft-12-600" *matCellDef="let element"> 
-                {{ element.startTimeLog | date: 'medium'}}
+            <mat-cell class="ft-12-600" *matCellDef="let element">
+              {{ element.startTimeLog | date: 'medium' }}
             </mat-cell>
           </ng-container>
 
@@ -39,8 +34,8 @@
             <mat-header-cell class="ft-12-700" *matHeaderCellDef>
               {{ 'home.view-experiment.enrollment-end-time.title.text' | translate | uppercase }}
             </mat-header-cell>
-            <mat-cell class="ft-12-600" *matCellDef="let element"> 
-              {{ element.endTimeLog | date: 'medium'}} 
+            <mat-cell class="ft-12-600" *matCellDef="let element">
+              {{ element.endTimeLog | date: 'medium' }}
             </mat-cell>
           </ng-container>
 
@@ -50,11 +45,7 @@
       </ng-container>
     </div>
     <ng-template #zeroState>
-      <span
-        class="zero-state"
-        [innerHTML]="'logs-global.log-zero-state.text' | translate"
-      >
-      </span>
+      <span class="zero-state" [innerHTML]="'logs-global.log-zero-state.text' | translate"> </span>
     </ng-template>
   </div>
 </div>

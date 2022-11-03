@@ -10,17 +10,13 @@ import { MetricsComponent } from './components/metrics/metrics.component';
 import { DeleteMetricsComponent } from './components/modals/delete-metrics/delete-metrics.component';
 
 @NgModule({
-    declarations: [
-        ProfileRootComponent,
-        NewUserComponent,
-        ProfileInfoComponent,
-        MetricsComponent,
-        DeleteMetricsComponent
-    ],
-    imports: [
-        CommonModule,
-        ProfileRoutingModule,
-        SharedModule,
-    ]
+  declarations: [
+    ProfileRootComponent,
+    NewUserComponent,
+    ProfileInfoComponent,
+    MetricsComponent,
+    DeleteMetricsComponent,
+  ],
+  imports: [CommonModule, ProfileRoutingModule, SharedModule],
 })
 export class ProfileModule {}

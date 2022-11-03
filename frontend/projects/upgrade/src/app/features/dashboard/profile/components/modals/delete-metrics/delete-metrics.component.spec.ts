@@ -10,23 +10,22 @@ xdescribe('DeleteMetricsComponent', () => {
   let fixture: ComponentFixture<DeleteMetricsComponent>;
 
   const modalData = {
-    key: ['key1', 'key2']
-  }
+    key: ['key1', 'key2'],
+  };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DeleteMetricsComponent ],
+      declarations: [DeleteMetricsComponent],
       imports: [TestingModule],
       providers: [
         AnalysisService,
         { provide: MatDialogRef, useValue: {} },
         {
           provide: MAT_DIALOG_DATA,
-          useValue: modalData
-        }
-      ]
-    })
-    .compileComponents();
+          useValue: modalData,
+        },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -39,7 +39,7 @@ import {
   selectConditionsTableEditIndex,
   selectAliasTableEditIndex,
   selectCurrentContextMetaDataConditions,
-  selectIsLoadingContextMetaData
+  selectIsLoadingContextMetaData,
 } from './store/experiments.selectors';
 import * as experimentAction from './store//experiments.actions';
 import { AppState } from '../core.state';
@@ -57,7 +57,7 @@ export class ExperimentService {
 
   experiments$: Observable<Experiment[]> = this.store$.pipe(
     select(selectAllExperiment),
-    map(experiments =>
+    map((experiments) =>
       experiments.sort((a, b) => {
         const d1 = new Date(a.createdAt);
         const d2 = new Date(b.createdAt);
@@ -79,7 +79,7 @@ export class ExperimentService {
   isGraphLoading$ = this.store$.pipe(select(selectIsGraphLoading));
   experimentStatById$ = (experimentId) => this.store$.pipe(select(selectExperimentStatById, { experimentId }));
   contextMetaData$ = this.store$.pipe(select(selectContextMetaData));
-  isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData))
+  isLoadingContextMetaData$ = this.store$.pipe(select(selectIsLoadingContextMetaData));
   groupSatisfied$ = (experimentId) => this.store$.pipe(select(selectGroupAssignmentStatus, { experimentId }));
   pollingEnabled: boolean = this.environment.pollingEnabled;
   isConditionsTableEditMode$ = this.store$.pipe(select(selectIsConditionsTableEditMode));
@@ -88,7 +88,7 @@ export class ExperimentService {
   aliasTableEditIndex$ = this.store$.pipe(select(selectAliasTableEditIndex));
   currentContextMetaDataConditions$ = this.store$.pipe(select(selectCurrentContextMetaDataConditions));
 
-  selectSearchExperimentParams(): Observable<Object> {
+  selectSearchExperimentParams(): Observable<Record<string, unknown>> {
     return combineLatest([this.selectSearchKey$, this.selectSearchString$]).pipe(
       filter(([searchKey, searchString]) => !!searchKey && !!searchString),
       map(([searchKey, searchString]) => ({ searchKey, searchString })),
@@ -98,19 +98,15 @@ export class ExperimentService {
 
   isInitialExperimentsLoading() {
     return combineLatest([this.store$.pipe(select(selectIsLoadingExperiment)), this.experiments$]).pipe(
-      map(([isLoading, experiments]) => {
-        return !isLoading || !!experiments.length;
-      })
+      map(([isLoading, experiments]) => !isLoading || !!experiments.length)
     );
   }
 
   isAllExperimentsFetched() {
     return combineLatest([
       this.store$.pipe(select(selectSkipExperiment)),
-      this.store$.pipe(select(selectTotalExperiment))
-    ]).pipe(
-      map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments)
-    );
+      this.store$.pipe(select(selectTotalExperiment)),
+    ]).pipe(map(([skipExperiments, totalExperiments]) => skipExperiments === totalExperiments));
   }
 
   loadExperiments(fromStarting?: boolean) {
@@ -120,12 +116,6 @@ export class ExperimentService {
   createNewExperiment(experiment: Experiment) {
     this.store$.dispatch(
       experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.CREATE_NEW_EXPERIMENT })
-    );
-  }
-
-  importExperiment(experiment: Experiment) {
-    this.store$.dispatch(
-      experimentAction.actionUpsertExperiment({ experiment, actionType: UpsertExperimentType.IMPORT_EXPERIMENT })
     );
   }
 
@@ -142,7 +132,7 @@ export class ExperimentService {
 
   selectExperimentById(experimentId: string) {
     return this.store$.pipe(select(selectExperimentById, { experimentId })).pipe(
-      tap(experiment => {
+      tap((experiment) => {
         if (!experiment) {
           this.fetchExperimentById(experimentId);
         }
@@ -164,7 +154,7 @@ export class ExperimentService {
   }
 
   setCurrentContext(context: string) {
-    this.store$.dispatch(experimentAction.actionSetCurrentContext({ context }))
+    this.store$.dispatch(experimentAction.actionSetCurrentContext({ context }));
   }
 
   setSearchKey(searchKey: EXPERIMENT_SEARCH_KEY) {
@@ -195,8 +185,12 @@ export class ExperimentService {
     this.store$.dispatch(experimentAction.actionExportExperimentInfo({ experimentId, experimentName }));
   }
 
-  exportExperimentDesign(experimentId: string) {
-    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentId }));
+  exportExperimentDesign(experimentIds: string[]) {
+    this.store$.dispatch(experimentAction.actionExportExperimentDesign({ experimentIds }));
+  }
+
+  importExperiment(experiments: Experiment[]) {
+    this.store$.dispatch(experimentAction.actionImportExperiment({ experiments }));
   }
 
   setGraphRange(range: DATE_RANGE, experimentId: string, clientOffset: number) {
@@ -215,7 +209,7 @@ export class ExperimentService {
     if (!isPolling && experiment.state === EXPERIMENT_STATE.ENROLLING) {
       this.beginDetailStatsPolling(experiment.id);
     }
- 
+
     if (isPolling && experiment.state !== EXPERIMENT_STATE.ENROLLING) {
       this.endDetailStatsPolling();
     }
@@ -223,25 +217,29 @@ export class ExperimentService {
 
   beginDetailStatsPolling(experimentId: string) {
     if (this.pollingEnabled) {
-      this.store$.dispatch(experimentAction.actionBeginExperimentDetailStatsPolling({ experimentId }))
+      this.store$.dispatch(experimentAction.actionBeginExperimentDetailStatsPolling({ experimentId }));
     }
   }
 
   endDetailStatsPolling() {
-    this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling())
+    this.store$.dispatch(experimentAction.actionEndExperimentDetailStatsPolling());
   }
 
   setUpdateConditionsTableEditMode(details: TableEditModeDetails): void {
-    this.store$.dispatch(experimentAction.actionUpdateConditionsTableEditMode({
-      isConditionsTableEditMode: details.isEditMode,
-      conditionsTableEditIndex: details.rowIndex
-    }));
+    this.store$.dispatch(
+      experimentAction.actionUpdateConditionsTableEditMode({
+        isConditionsTableEditMode: details.isEditMode,
+        conditionsTableEditIndex: details.rowIndex,
+      })
+    );
   }
 
   setUpdateAliasTableEditMode(details: TableEditModeDetails): void {
-    this.store$.dispatch(experimentAction.actionUpdateAliasTableEditMode({
-      isAliasTableEditMode: details.isEditMode,
-      aliasTableEditIndex: details.rowIndex
-    }));
+    this.store$.dispatch(
+      experimentAction.actionUpdateAliasTableEditMode({
+        isAliasTableEditMode: details.isEditMode,
+        aliasTableEditIndex: details.rowIndex,
+      })
+    );
   }
 }

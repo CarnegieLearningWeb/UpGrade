@@ -47,36 +47,31 @@
           </button>
 
           <!-- Export Button -->
-          <button
-            mat-flat-button
-            class="ft-14-600 button"
-            (click)="exportSegment(segment.id)"
-          >
+          <button mat-flat-button class="ft-14-600 button" (click)="exportSegment(segment.id)">
             {{ 'global.export.text' | translate }}
           </button>
         </div>
       </div>
       <span class="ft-14-700 segment-create-date">
-        {{
-          ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate: 'medium date')
-        }}
+        {{ ('home.view-experiment.created-on.text' | translate) + (segment.createdAt | formatDate: 'medium date') }}
       </span>
       <span class="ft-14-700 segment-update-date">
         {{
           ('home.view-experiment.last-updated-on.text' | translate) + (segment.updatedAt | formatDate: 'medium date')
         }}
       </span>
-    </div> 
+    </div>
 
     <div class="segment-secondary-info">
       <!-- Status -->
       <div class="section-data section-data--fixed">
         <span class="ft-16-600 section-data-title">{{ 'segments.global-status.text' | translate | uppercase }}</span>
         <div class="segment-status-container">
-          <span class="status-circle" [ngStyle]="{ 'background-color':  segment.status | segmentStatus: SegmentStatusPipeTypes.COLOR }"></span>
-          <span class="ft-18-700 section-data-value section-data-value--editable"
-            (click)="openExperimentSegmentList()"
-          >
+          <span
+            class="status-circle"
+            [ngStyle]="{ 'background-color': segment.status | segmentStatus: SegmentStatusPipeTypes.COLOR }"
+          ></span>
+          <span class="ft-18-700 section-data-value section-data-value--editable" (click)="openExperimentSegmentList()">
             {{ segment.status | segmentStatus }}
           </span>
         </div>
@@ -84,7 +79,9 @@
 
       <!-- Description -->
       <div class="section-data section-data--fixed">
-        <span class="ft-16-600 section-data-title">{{ 'segments.global-description.text' | translate | uppercase }}</span>
+        <span class="ft-16-600 section-data-title">{{
+          'segments.global-description.text' | translate | uppercase
+        }}</span>
         <span class="ft-18-700 section-data-value">
           {{ segment.description }}
         </span>
@@ -140,4 +137,4 @@
       </mat-table>
     </div>
   </mat-card>
-</mat-card> 
+</mat-card>

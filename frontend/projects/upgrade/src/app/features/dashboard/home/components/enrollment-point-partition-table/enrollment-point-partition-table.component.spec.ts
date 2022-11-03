@@ -10,10 +10,9 @@ xdescribe('EnrollmentPointPartitionTableComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ EnrollmentPointPartitionTableComponent, TableRowComponent ],
-      imports: [TestingModule]
-    })
-    .compileComponents();
+      declarations: [EnrollmentPointPartitionTableComponent, TableRowComponent],
+      imports: [TestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

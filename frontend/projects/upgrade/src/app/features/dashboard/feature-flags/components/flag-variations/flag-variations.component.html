@@ -1,11 +1,6 @@
 <form class="flag-variation" [formGroup]="flagVariationsForm">
   <!-- VARIATION TABLE -->
-  <mat-table
-    class="variation-table"
-    [dataSource]="variationsDataSource"
-    formArrayName="variations"
-    #variationTable
-  >
+  <mat-table class="variation-table" [dataSource]="variationsDataSource" formArrayName="variations" #variationTable>
     <!-- VARIATION NUMBER Column -->
     <ng-container matColumnDef="variationNumber">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
@@ -16,16 +11,12 @@
       </mat-cell>
     </ng-container>
 
-
     <!-- VARIATION VALUE Column -->
     <ng-container matColumnDef="value">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'feature-flags.global-variation-value.text' | translate }}
       </mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
         <mat-form-field floatLabel="never" class="form-control">
           <input
             matInput
@@ -41,16 +32,9 @@
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'feature-flags.global-name.text' | translate }}
       </mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
         <mat-form-field floatLabel="never" class="form-control">
-          <input
-            matInput
-            [placeholder]="'feature-flags.global-name.text' | translate"
-            formControlName="name"
-          />
+          <input matInput [placeholder]="'feature-flags.global-name.text' | translate" formControlName="name" />
         </mat-form-field>
       </mat-cell>
     </ng-container>
@@ -60,10 +44,7 @@
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'feature-flags.variation-description.text' | translate }}
       </mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
         <mat-form-field floatLabel="never" class="form-control">
           <input
             matInput
@@ -76,39 +57,29 @@
 
     <ng-container matColumnDef="removeVariation">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
-      <!-- As conditions are different for both variation types make ng-template for another -->
-      <ng-container *ngIf="variationType === variationTypes.BOOLEAN; else customVariation">
-        <mat-icon
-          *ngIf="groupIndex !== 0 && groupIndex !== 1"
-          class="remove-icon"
-          (click)="removeVariation(groupIndex)"
-        >
-          delete_outline
-        </mat-icon>
-      </ng-container>
-      <ng-template #customVariation>
-        <mat-icon
-          *ngIf="groupIndex !== 0"
-          class="remove-icon"
-          (click)="removeVariation(groupIndex)"
-        >
-          delete_outline
-        </mat-icon>
-      </ng-template>
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+        <!-- As conditions are different for both variation types make ng-template for another -->
+        <ng-container *ngIf="variationType === variationTypes.BOOLEAN; else customVariation">
+          <mat-icon
+            *ngIf="groupIndex !== 0 && groupIndex !== 1"
+            class="remove-icon"
+            (click)="removeVariation(groupIndex)"
+          >
+            delete_outline
+          </mat-icon>
+        </ng-container>
+        <ng-template #customVariation>
+          <mat-icon *ngIf="groupIndex !== 0" class="remove-icon" (click)="removeVariation(groupIndex)">
+            delete_outline
+          </mat-icon>
+        </ng-template>
       </mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="variationDisplayedColumns; sticky: true"></mat-header-row>
     <mat-row *matRowDef="let row; columns: variationDisplayedColumns"></mat-row>
   </mat-table>
-  <mat-error
-    class="ft-14-600 validation-message"
-    *ngIf="variationError"
-  >{{ variationError }}</mat-error>
+  <mat-error class="ft-14-600 validation-message" *ngIf="variationError">{{ variationError }}</mat-error>
 
   <button
     type="button"
@@ -124,16 +95,11 @@
     <mat-form-field class="default-on-variation">
       <mat-label>{{ 'feature-flags.variation-on.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOnVariation">
-        <mat-option
-          *ngFor="let type of getVariationValues();"
-          [value]="type"
-        >
+        <mat-option *ngFor="let type of getVariationValues()" [value]="type">
           {{ type }}
         </mat-option>
       </mat-select>
-      <mat-error
-        *ngIf="flagVariationsForm.controls.defaultOnVariation.hasError('required')"
-      >
+      <mat-error *ngIf="flagVariationsForm.controls.defaultOnVariation.hasError('required')">
         {{ 'feature-flags.variation-on-error.text' | translate }}
       </mat-error>
     </mat-form-field>
@@ -141,10 +107,7 @@
     <mat-form-field class="default-off-variation">
       <mat-label>{{ 'feature-flags.variation-off.text' | translate }}</mat-label>
       <mat-select formControlName="defaultOffVariation">
-        <mat-option
-          *ngFor="let type of getVariationValues();"
-          [value]="type"
-        >
+        <mat-option *ngFor="let type of getVariationValues()" [value]="type">
           {{ type }}
         </mat-option>
       </mat-select>
@@ -155,30 +118,22 @@
   </div>
 
   <div class="button-container">
-    <button
-      matStepperPrevious
-      mat-raised-button
-      class="shared-modal--modal-btn default-button btn-back"
-    >
+    <button matStepperPrevious mat-raised-button class="shared-modal--modal-btn default-button btn-back">
       {{ 'global.back.text' | translate }}
     </button>
     <div>
-      <button
-        mat-raised-button
-        class="shared-modal--modal-btn"
-        (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)"
-      >
+      <button mat-raised-button class="shared-modal--modal-btn" (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)">
         {{ 'global.cancel.text' | translate }}
       </button>
       <button
         matStepperNext
         mat-raised-button
         class="shared-modal--modal-btn default-button"
-        [ngClass]="{'default-button--disabled': !flagVariationsForm.valid }"
+        [ngClass]="{ 'default-button--disabled': !flagVariationsForm.valid }"
         [disabled]="!flagVariationsForm.valid"
         (click)="emitEvent(NewFlagDialogEvents.SEND_FORM_DATA)"
       >
-      {{ flagInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
+        {{ flagInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
       </button>
     </div>
   </div>

@@ -11,10 +11,18 @@ export default async function setAltUserIds(
   try {
     const data = {
       userId,
-      aliases: altUserIds
+      aliases: altUserIds,
     };
     const skipRetryOnStatusCodes = [500]; // Response status codes for which request retry should be skipped on failure
-    const response = await fetchDataService(url, token, clientSessionId, data, Types.REQUEST_TYPES.POST, false, skipRetryOnStatusCodes);
+    const response = await fetchDataService(
+      url,
+      token,
+      clientSessionId,
+      data,
+      Types.REQUEST_TYPES.POST,
+      false,
+      skipRetryOnStatusCodes
+    );
     if (response.status) {
       return response.data;
     } else {

@@ -4,6 +4,8 @@ import { ExperimentRepository } from "../../../src/api/repositories/ExperimentRe
 import { Experiment } from "../../../src/api/models/Experiment";
 import { EXPERIMENT_STATE } from "upgrade_types";
 import { UpgradeLogger } from "../../../src/lib/logger/UpgradeLogger";
+import * as globalExcludeSegment from '../../../src/init/seed/globalExcludeSegment';
+
 
 let sandbox;
 let connection;
@@ -20,7 +22,7 @@ const err =  new Error("test error")
 let experiment = new Experiment();
 experiment.id = 'id1';
 
-beforeEach(() => {
+beforeEach(async () => {
     sandbox = sinon.createSandbox();
     
     const repocallback = sinon.stub()
@@ -484,9 +486,12 @@ describe('ExperimentRepository Testing', () => {
         let queryStub = sandbox.stub(ExperimentRepository.prototype, 
             'query').returns(Promise.resolve());
 
+        let segStub = sandbox.stub(globalExcludeSegment, 'createGlobalExcludeSegment').returns(Promise.resolve());
+
         let res = await repo.clearDB(manager, new UpgradeLogger());
 
         sinon.assert.calledOnce(queryStub);
+        sinon.assert.calledOnce(segStub);
         
         expect(res).toEqual('DB truncate successful')
     });

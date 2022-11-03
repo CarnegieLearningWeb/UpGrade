@@ -12,17 +12,17 @@ export interface UserPermission {
   experiments: CRUD;
   users: CRUD;
   logs: CRUD;
-  manageRoles: CRUD,
-  featureFlags: CRUD,
-  metrics: CRUD,
-  segments: CRUD,
+  manageRoles: CRUD;
+  featureFlags: CRUD;
+  metrics: CRUD;
+  segments: CRUD;
 }
 
 export interface AuthState {
   isLoggedIn: boolean;
   isAuthenticating: boolean;
   redirectUrl?: string;
-  user: User
+  user: User;
 }
 
 export interface State extends AppState {

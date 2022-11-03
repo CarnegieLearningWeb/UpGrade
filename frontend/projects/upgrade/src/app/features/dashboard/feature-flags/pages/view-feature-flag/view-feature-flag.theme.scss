@@ -8,7 +8,7 @@
     background-color: mat.get-color-from-palette($background, background);
 
     .flag-link {
-      color: mat.get-color-from-palette($foreground, text)
+      color: mat.get-color-from-palette($foreground, text);
     }
 
     .flag {
