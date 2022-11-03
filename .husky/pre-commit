@@ -1,6 +1,10 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Testing JS Client Lib
+cd clientlib/js
+lint-staged
+cd ../../
 
 # Testing Frontend
 cd frontend
