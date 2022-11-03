@@ -1,10 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import * as env from '../../../../../../environments/environment';
-import {
-  LogType,
-  EXPERIMENT_LOG_TYPE,
-  SERVER_ERROR
-} from '../../../../../core/logs/store/logs.model';
+import { LogType, EXPERIMENT_LOG_TYPE, SERVER_ERROR } from '../../../../../core/logs/store/logs.model';
 import Convert from 'ansi-to-html';
 import { ThemeOptions } from '../../../../../core/settings/store/settings.model';
 
@@ -12,7 +8,7 @@ import { ThemeOptions } from '../../../../../core/settings/store/settings.model'
   selector: 'logs-timeline',
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimelineComponent {
   @Input() logData;

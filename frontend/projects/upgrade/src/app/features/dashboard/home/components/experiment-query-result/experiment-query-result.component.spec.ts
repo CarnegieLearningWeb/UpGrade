@@ -12,11 +12,10 @@ xdescribe('ExperimentQueryResultComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExperimentQueryResultComponent ],
+      declarations: [ExperimentQueryResultComponent],
       imports: [TestingModule, NgxChartsModule],
-      providers: [AnalysisService]
-    })
-    .compileComponents();
+      providers: [AnalysisService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

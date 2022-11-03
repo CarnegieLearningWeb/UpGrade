@@ -7,16 +7,15 @@ import { METRICS_JOIN_TEXT } from '../../../../../../core/analysis/store/analysi
   selector: 'app-delete-metrics',
   templateUrl: './delete-metrics.component.html',
   styleUrls: ['./delete-metrics.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteMetricsComponent {
-
   metricName: string;
   constructor(
     private analysisService: AnalysisService,
     public dialogRef: MatDialogRef<DeleteMetricsComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) { }
+  ) {}
 
   onCancelClick(): void {
     this.dialogRef.close();

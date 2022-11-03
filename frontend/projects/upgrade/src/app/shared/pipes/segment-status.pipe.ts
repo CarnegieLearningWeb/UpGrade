@@ -3,11 +3,11 @@ import { SEGMENT_STATUS } from '../../core/segments/store/segments.model';
 
 export enum SegmentStatusPipeType {
   TEXT = 'text',
-  COLOR = 'color'
+  COLOR = 'color',
 }
 
 @Pipe({
-  name: 'segmentStatus'
+  name: 'segmentStatus',
 })
 export class SegmentStatusPipe implements PipeTransform {
   transform(segmentStatus: SEGMENT_STATUS, type: SegmentStatusPipeType = SegmentStatusPipeType.TEXT): any {

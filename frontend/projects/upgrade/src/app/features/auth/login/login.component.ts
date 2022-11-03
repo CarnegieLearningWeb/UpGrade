@@ -7,16 +7,12 @@ import { ThemeOptions } from '../../../core/settings/store/settings.model';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements AfterViewInit {
-
   theme$ = this.settingsService.theme$;
   @ViewChild('googleBtn') googleSignInBtn: ElementRef;
-  constructor(
-    private authService: AuthService,
-    private settingsService: SettingsService
-  ) {}
+  constructor(private authService: AuthService, private settingsService: SettingsService) {}
 
   login() {
     this.authService.authLoginStart();

@@ -55,7 +55,7 @@ $font-size-small: 15px;
               vertical-align: unset;
             }
           }
-          
+
           .button-long {
             margin-left: 24px !important;
             border: 1px solid var(--blue);
@@ -212,10 +212,9 @@ $font-size-small: 15px;
                 }
               }
 
-              &--editablediv{
+              &--editablediv {
                 display: flex;
                 align-items: center;
-
               }
             }
 
@@ -363,6 +362,9 @@ $font-size-small: 15px;
   color: var(--blue);
 }
 
-::ng-deep .owl-dt-calendar-table .owl-dt-calendar-cell-disabled>.owl-dt-calendar-cell-content:not(.owl-dt-calendar-cell-selected) {
+::ng-deep
+  .owl-dt-calendar-table
+  .owl-dt-calendar-cell-disabled
+  > .owl-dt-calendar-cell-content:not(.owl-dt-calendar-cell-selected) {
   color: var(--grey-2);
 }

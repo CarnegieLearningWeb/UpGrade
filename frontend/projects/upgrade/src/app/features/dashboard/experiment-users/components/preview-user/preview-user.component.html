@@ -22,13 +22,8 @@
     mode="indeterminate"
     [ngClass]="(isPreviewUserLoading$ | async) === true ? 'progress--visible' : 'progress--hide'"
   ></mat-progress-bar>
-  <div
-    scroll
-    (scrolled)="fetchPreviewUserOnScroll()"
-    #previewUserTable
-    class="preview-user-container"
-  >
-    <ng-container  *ngIf="allPreviewUsers.data.length; else zeroState">
+  <div scroll (scrolled)="fetchPreviewUserOnScroll()" #previewUserTable class="preview-user-container">
+    <ng-container *ngIf="allPreviewUsers.data.length; else zeroState">
       <form [formGroup]="previewUserAssignConditionForm">
         <table mat-table [dataSource]="allPreviewUsers" formArrayName="assignedConditions">
           <!-- ID Column -->
@@ -56,14 +51,15 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let i = index" class="assignment-list">
               <div #assignCondition *ngIf="editMode === i" class="condition-selection">
-                <div class="condition-container" *ngFor="let control of assignedConditions.controls; let formIndex = index" [formGroupName]="formIndex">
+                <div
+                  class="condition-container"
+                  *ngFor="let control of assignedConditions.controls; let formIndex = index"
+                  [formGroupName]="formIndex"
+                >
                   <mat-form-field class="ft-14-600 form-control">
                     <mat-label>{{ 'users.preview-users.experiment.text' | translate }}</mat-label>
                     <mat-select class="ft-14-600 form-control" formControlName="experimentId">
-                      <mat-option
-                        *ngFor="let experiment of allExperimentNamesView[formIndex]"
-                        [value]="experiment.id"
-                      >
+                      <mat-option *ngFor="let experiment of allExperimentNamesView[formIndex]" [value]="experiment.id">
                         {{ experiment.name | titlecase }}
                       </mat-option>
                     </mat-select>
@@ -72,31 +68,26 @@
                     <mat-form-field class="ft-14-600 form-control">
                       <mat-label>{{ 'global.condition.text' | translate | titlecase }}</mat-label>
                       <mat-select class="ft-14-600 form-control" formControlName="conditionId">
-                        <mat-option
-                          *ngFor="let condition of experimentConditions[formIndex]"
-                          [value]="condition?.id"
-                        >
+                        <mat-option *ngFor="let condition of experimentConditions[formIndex]" [value]="condition?.id">
                           {{ condition?.conditionCode | titlecase }}
                         </mat-option>
                       </mat-select>
                     </mat-form-field>
-                    <mat-icon
-                      class="action-icon--small"
-                      (click)="removeExperimentCondition(formIndex)"
-                    >
+                    <mat-icon class="action-icon--small" (click)="removeExperimentCondition(formIndex)">
                       delete_outline
                     </mat-icon>
                   </div>
                 </div>
               </div>
               <ng-container *ngIf="editMode !== i">
-                <ng-container
-                    [ngTemplateOutlet]="editExperimentName"
-                    [ngTemplateOutletContext]="{element: element}">
+                <ng-container [ngTemplateOutlet]="editExperimentName" [ngTemplateOutletContext]="{ element: element }">
                 </ng-container>
               </ng-container>
               <button
-                *ngIf="editMode === i && previewUserAssignConditionForm.get('assignedConditions').value.length !== allExperimentNames.length"
+                *ngIf="
+                  editMode === i &&
+                  previewUserAssignConditionForm.get('assignedConditions').value.length !== allExperimentNames.length
+                "
                 type="button"
                 class="ft-12-700 add-new-experiment"
                 (click)="addNewExperimentCondition()"
@@ -106,14 +97,14 @@
             </td>
 
             <ng-template #editExperimentName let-element="element">
-                <ng-container *ngIf="element.assignments">
-                  <div class="assigned-condition-list">
-                    <div class="assigned-condition-info" *ngFor="let assignment of element.assignments">
-                      <span>{{ assignment.experiment?.name }}</span>
-                      <span>{{ assignment.experimentCondition?.conditionCode }}</span>
-                    </div>
+              <ng-container *ngIf="element.assignments">
+                <div class="assigned-condition-list">
+                  <div class="assigned-condition-info" *ngFor="let assignment of element.assignments">
+                    <span>{{ assignment.experiment?.name }}</span>
+                    <span>{{ assignment.experimentCondition?.conditionCode }}</span>
                   </div>
-                </ng-container>
+                </div>
+              </ng-container>
             </ng-template>
           </ng-container>
 
@@ -121,9 +112,9 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <div class="icons-container" [ngClass]="{'icons-container--edit-mode': editMode === index}">
+              <div class="icons-container" [ngClass]="{ 'icons-container--edit-mode': editMode === index }">
                 <mat-icon
-                  *ngIf="(permissions?.users.update && editMode !== index); else saveBtnTemplate"
+                  *ngIf="permissions?.users.update && editMode !== index; else saveBtnTemplate"
                   class="action-icon action-icon--edit"
                   (click)="editAssignedConditions(index)"
                 >
@@ -143,11 +134,7 @@
                   </button>
                 </ng-template>
 
-                <mat-icon
-                  *ngIf="permissions?.users.delete"
-                  class="action-icon"
-                  (click)="removePreviewUser(element)"
-                >
+                <mat-icon *ngIf="permissions?.users.delete" class="action-icon" (click)="removePreviewUser(element)">
                   delete_outline
                 </mat-icon>
               </div>

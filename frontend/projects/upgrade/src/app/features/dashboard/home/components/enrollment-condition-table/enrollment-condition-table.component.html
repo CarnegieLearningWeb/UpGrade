@@ -1,9 +1,7 @@
 <div class="condition-table-container">
   <span class="ft-18-700">{{ 'home.view-experiment.enrollments-by-condition.title.text' | translate }}</span>
   <div class="spinner" *ngIf="isStatLoading; else conditionTableTemplate">
-    <mat-spinner
-      diameter="60"
-    ></mat-spinner>
+    <mat-spinner diameter="60"></mat-spinner>
   </div>
   <ng-template #conditionTableTemplate>
     <div class="data">
@@ -28,7 +26,7 @@
           <span class="ft-14-600 title">
             {{ 'home.view-experiment.global.group-excluded.text' | translate }}
           </span>
-          <span class="ft-30-700 numbers">{{ experiment.stat?.groupsExcluded || 0}}</span>
+          <span class="ft-30-700 numbers">{{ experiment.stat?.groupsExcluded || 0 }}</span>
         </div>
       </div>
     </div>

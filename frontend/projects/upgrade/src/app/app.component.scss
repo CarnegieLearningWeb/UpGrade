@@ -1,15 +1,15 @@
 :host ::ng-deep simple-notifications .sn-content {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 :host ::ng-deep simple-notifications .sn-title {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 :host ::ng-deep simple-notifications .simple-notification.error {
-    background-color: #3466FF;
+  background-color: #3466ff;
 }
 
 :host ::ng-deep simple-notifications .simple-notification {
-    width: 120%;
+  width: 120%;
 }

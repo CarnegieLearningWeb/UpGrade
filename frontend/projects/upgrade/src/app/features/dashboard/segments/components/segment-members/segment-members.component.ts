@@ -1,18 +1,34 @@
-import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, OnInit } from '@angular/core';
-import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NewSegmentDialogData, Segment, NewSegmentDialogEvents, NewSegmentPaths, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { SEGMENT_STATUS, SEGMENT_TYPE } from 'upgrade_types';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { IContextMetaData } from '../../../../../core/experiments/store/experiments.model';
-import { SEGMENT_TYPE, SEGMENT_STATUS } from 'upgrade_types';
 import { SegmentsService } from '../../../../../core/segments/segments.service';
-import { TranslateService } from '@ngx-translate/core';
+import {
+  MemberTypes,
+  NewSegmentDialogData,
+  NewSegmentDialogEvents,
+  NewSegmentPaths,
+  Segment,
+} from '../../../../../core/segments/store/segments.model';
 
 @Component({
   selector: 'segment-members',
   templateUrl: './segment-members.component.html',
   styleUrls: ['./segment-members.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentMembersComponent implements OnInit, OnChanges {
   @Input() segmentInfo: Segment;
@@ -23,19 +39,19 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   segmentMembersForm: FormGroup;
   membersDataSource = new BehaviorSubject<AbstractControl[]>([]);
-  contextMetaData: IContextMetaData | {} = {};
+  contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
   allSegments: Segment[];
   allSegmentsSub: Subscription;
 
-  segmentMemberTypes : any[];
+  segmentMemberTypes: any[];
   subSegmentIds: string[] = [];
   userIdsToSend: string[] = [];
-  groupsToSend: {type: string, groupId: string}[] = [];;
+  groupsToSend: { type: string; groupId: string }[] = [];
   subSegmentIdsToSend = [];
   segmentNameId = new Map();
   membersCountError: string = null;
-  groupString: string = ' ( group )';
+  groupString = ' ( group )';
 
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
   constructor(
@@ -44,6 +60,18 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     private experimentService: ExperimentService,
     private translate: TranslateService
   ) {}
+
+  get members(): FormArray {
+    return this.segmentMembersForm.get('members') as FormArray;
+  }
+
+  get NewSegmentDialogEvents() {
+    return NewSegmentDialogEvents;
+  }
+
+  get getMemberTypes() {
+    return this.segmentMemberTypes;
+  }
 
   ngOnChanges() {
     if (this.currentContext) {
@@ -58,12 +86,12 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
-    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe(contextMetaData => {
+    this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
     });
 
-    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe(allSegments => {
-      this.allSegments =  allSegments;
+    this.allSegmentsSub = this.segmentsService.allSegments$.subscribe((allSegments) => {
+      this.allSegments = allSegments;
     });
 
     if (this.allSegments) {
@@ -78,7 +106,7 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
             this.subSegmentIds.push(segment.name);
             this.segmentNameId.set(segment.name, segment.id);
           }
-        }  
+        }
       });
     }
 
@@ -98,13 +126,13 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.members.push(this.addMembers(MemberTypes.SEGMENT, id.name));
       });
     }
-  
+
     this.updateView();
   }
 
   addMembers(type = null, id = null) {
     return this._formBuilder.group({
-      type: [type , Validators.required],
+      type: [type, Validators.required],
       id: [id, Validators.required],
     });
   }
@@ -124,13 +152,13 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
     if (this.membersTable) {
       this.membersTable.nativeElement.scroll({
         top: this.membersTable.nativeElement.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }
 
   validateMembersCount(members: any) {
-    const membersCountErrorMsg = this.translate.instant("segments.global-members.segments-count-members-error.text");
+    const membersCountErrorMsg = this.translate.instant('segments.global-members.segments-count-members-error.text');
     this.membersCountError = null;
     if (members.length === 0) {
       this.membersCountError = membersCountErrorMsg;
@@ -139,29 +167,28 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
 
   setMemberTypes() {
     this.segmentMemberTypes = [];
-    this.segmentMemberTypes.push({'name': MemberTypes.INDIVIDUAL, 'value': MemberTypes.INDIVIDUAL});
-    this.segmentMemberTypes.push({'name': MemberTypes.SEGMENT, 'value': MemberTypes.SEGMENT});
+    this.segmentMemberTypes.push({ name: MemberTypes.INDIVIDUAL, value: MemberTypes.INDIVIDUAL });
+    this.segmentMemberTypes.push({ name: MemberTypes.SEGMENT, value: MemberTypes.SEGMENT });
 
     if (this.currentContext === 'ALL') {
-      const contexts = Object.keys(this.contextMetaData['contextMetadata']) || [];
-      contexts.forEach(context => {
-        this.contextMetaData['contextMetadata'][context].GROUP_TYPES.forEach(group => {
-          this.segmentMemberTypes.push({'name': group + this.groupString, 'value': group});
+      const contexts = Object.keys(this.contextMetaData.contextMetadata) || [];
+      contexts.forEach((context) => {
+        this.contextMetaData.contextMetadata[context].GROUP_TYPES.forEach((group) => {
+          this.segmentMemberTypes.push({ name: group + this.groupString, value: group });
         });
       });
-    }
-    else if (this.contextMetaData['contextMetadata'] && this.contextMetaData['contextMetadata'][this.currentContext]) {
-      this.contextMetaData['contextMetadata'][this.currentContext].GROUP_TYPES.forEach(type => {
-        this.segmentMemberTypes.push({'name': type + this.groupString, 'value': type});
+    } else if (this.contextMetaData.contextMetadata && this.contextMetaData.contextMetadata[this.currentContext]) {
+      this.contextMetaData.contextMetadata[this.currentContext].GROUP_TYPES.forEach((type) => {
+        this.segmentMemberTypes.push({ name: type + this.groupString, value: type });
       });
     }
   }
 
-  gettingMembersValueToSend(members: {type: string, id:string}[]) {
-    members.forEach(member => {
+  gettingMembersValueToSend(members: { type: string; id: string }[]) {
+    members.forEach((member) => {
       if (member.type === MemberTypes.INDIVIDUAL) {
         this.userIdsToSend.push(member.id);
-      } else if(member.type === MemberTypes.SEGMENT) {
+      } else if (member.type === MemberTypes.SEGMENT) {
         this.subSegmentIdsToSend.push(this.segmentNameId.get(member.id));
       } else {
         this.groupsToSend.push({ type: member.type, groupId: member.id });
@@ -175,37 +202,27 @@ export class SegmentMembersComponent implements OnInit, OnChanges {
         this.emitSegmentDialogEvent.emit({ type: eventType });
         break;
       case NewSegmentDialogEvents.SEND_FORM_DATA:
-        const { members } = this.segmentMembersForm.value;
-        this.validateMembersCount(members);
-        if (this.segmentMembersForm.valid && !this.membersCountError) {
-          this.gettingMembersValueToSend(members);
-          const segmentMembersFormData = {
-            userIds: this.userIdsToSend,
-            groups: this.groupsToSend,
-            subSegmentIds: this.subSegmentIdsToSend,
-            type: this.segmentInfo ? this.segmentInfo.type : SEGMENT_TYPE.PUBLIC,
-            status: SEGMENT_STATUS.UNUSED
+        {
+          const members = this.segmentMembersForm.value.members;
+          this.validateMembersCount(members);
+          if (this.segmentMembersForm.valid && !this.membersCountError) {
+            this.gettingMembersValueToSend(members);
+            const segmentMembersFormData = {
+              userIds: this.userIdsToSend,
+              groups: this.groupsToSend,
+              subSegmentIds: this.subSegmentIdsToSend,
+              type: this.segmentInfo ? this.segmentInfo.type : SEGMENT_TYPE.PUBLIC,
+              status: SEGMENT_STATUS.UNUSED,
+            };
+            this.emitSegmentDialogEvent.emit({
+              type: this.segmentInfo ? NewSegmentDialogEvents.UPDATE_SEGMENT : eventType,
+              formData: segmentMembersFormData,
+              path: NewSegmentPaths.SEGMENT_MEMBERS,
+            });
           }
-          this.emitSegmentDialogEvent.emit({
-            type: this.segmentInfo ? NewSegmentDialogEvents.UPDATE_SEGMENT : eventType,
-            formData: segmentMembersFormData,
-            path: NewSegmentPaths.SEGMENT_MEMBERS
-          });
         }
-      break;
+        break;
     }
-  }
-
-  get members(): FormArray {
-    return this.segmentMembersForm.get('members') as FormArray;
-  }
-
-  get NewSegmentDialogEvents() {
-    return NewSegmentDialogEvents;
-  }
-
-  get getMemberTypes() {
-    return this.segmentMemberTypes;
   }
 
   ngOnDestroy() {

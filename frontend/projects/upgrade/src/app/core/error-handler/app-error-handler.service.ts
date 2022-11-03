@@ -8,10 +8,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
  */
 @Injectable()
 export class AppErrorHandler extends ErrorHandler {
-  constructor(
-    private notificationsService: NotificationService,
-    @Inject(ENV) private environment: Environment
-    ) {
+  constructor(private notificationsService: NotificationService, @Inject(ENV) private environment: Environment) {
     super();
   }
 

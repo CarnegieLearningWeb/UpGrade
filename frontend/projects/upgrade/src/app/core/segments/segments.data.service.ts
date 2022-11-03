@@ -5,10 +5,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class SegmentsDataService {
-  constructor(
-    private http: HttpClient,
-    @Inject(ENV) private environment: Environment
-  ) { }
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   fetchSegments() {
     const url = this.environment.api.segments;
@@ -17,7 +14,7 @@ export class SegmentsDataService {
 
   createNewSegment(segment: SegmentInput) {
     const url = this.environment.api.segments;
-    return this.http.post(url , segment);
+    return this.http.post(url, segment);
   }
 
   deleteSegment(id: string) {
@@ -27,7 +24,7 @@ export class SegmentsDataService {
 
   updateSegment(segment: SegmentInput) {
     const url = this.environment.api.segments;
-    return this.http.post(url , segment);
+    return this.http.post(url, segment);
   }
 
   exportSegment(segmentId: string) {
@@ -37,6 +34,6 @@ export class SegmentsDataService {
 
   importSegment(segment: SegmentInput) {
     const url = this.environment.api.importSegment;
-    return this.http.post(url, {...segment});
+    return this.http.post(url, { ...segment });
   }
 }

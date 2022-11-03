@@ -11,11 +11,10 @@ xdescribe('DashboardRootComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DashboardRootComponent ],
+      declarations: [DashboardRootComponent],
       imports: [TestingModule],
-      providers: [SettingsService, AuthService]
-    })
-    .compileComponents();
+      providers: [SettingsService, AuthService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -4,30 +4,26 @@
   </p>
   <mat-form-field class="ft-14-600 name">
     <input
-		  matInput
+      matInput
       class="ft-14-400 name-input"
-			[(ngModel)]="segmentName"
-			[placeholder]="'segments.duplicate-segment.segmentName-input-placeholder.text' | translate"
+      [(ngModel)]="segmentName"
+      [placeholder]="'segments.duplicate-segment.segmentName-input-placeholder.text' | translate"
       required
     />
   </mat-form-field>
-	<br>
-  <mat-form-field class="ft-14-600 description">   
+  <br />
+  <mat-form-field class="ft-14-600 description">
     <input
       matInput
       class="ft-14-400 name-input"
-			[(ngModel)]="segmentDescription"
+      [(ngModel)]="segmentDescription"
       [value]="segmentDescription"
       [placeholder]="'segments.duplicate-segment.segmentDescription-input-placeholder.text' | translate"
-		/>
+    />
   </mat-form-field>
 </div>
 <div mat-dialog-actions class="duplicate-segment-dialog-actions">
-  <button
-    class="shared-modal--modal-btn"
-    mat-flat-button
-    (click)="onCancelClick()"
-  >
+  <button class="shared-modal--modal-btn" mat-flat-button (click)="onCancelClick()">
     {{ 'global.cancel.text' | translate }}
   </button>
   <button
@@ -35,6 +31,6 @@
     mat-flat-button
     (click)="onDuplicateClick(segmentName, segmentDescription)"
   >
-    {{ 'segments.duplicate-segment-duplicate.text' | translate | uppercase}}
+    {{ 'segments.duplicate-segment-duplicate.text' | translate | uppercase }}
   </button>
 </div>

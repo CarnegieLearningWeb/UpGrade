@@ -2,18 +2,13 @@ import { Injectable } from '@angular/core';
 import { AppState } from '../core.state';
 import { Store, select } from '@ngrx/store';
 import * as SettingsActions from './store/settings.actions';
-import {
-  selectToCheckAuth, selectTheme, selectToFilterMetric
-} from './store/settings.selectors';
+import { selectToCheckAuth, selectTheme, selectToFilterMetric } from './store/settings.selectors';
 import { SETTINGS_KEY, ThemeOptions } from './store/settings.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable()
 export class SettingsService {
-  constructor(
-    private store$: Store<AppState>,
-    private localStorageService: LocalStorageService
-  ) {}
+  constructor(private store$: Store<AppState>, private localStorageService: LocalStorageService) {}
 
   theme$ = this.store$.pipe(select(selectTheme));
   toCheckAuth$ = this.store$.pipe(select(selectToCheckAuth));

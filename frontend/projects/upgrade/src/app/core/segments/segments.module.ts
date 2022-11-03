@@ -12,8 +12,8 @@ import { SegmentsDataService } from './segments.data.service';
   imports: [
     CommonModule,
     EffectsModule.forFeature([SegmentsEffects]),
-    StoreModule.forFeature('segments', segmentsReducer)
+    StoreModule.forFeature('segments', segmentsReducer),
   ],
-  providers: [SegmentsService, SegmentsDataService]
+  providers: [SegmentsService, SegmentsDataService],
 })
-export class SegmentsModule { }
+export class SegmentsModule {}

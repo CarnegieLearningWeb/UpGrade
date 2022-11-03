@@ -1,12 +1,12 @@
-
 <div class="query-result-container">
   <span class="ft-24-700 title">{{ data?.query.name + ' ' + ('query.result-title.text' | translate) }}</span>
   <div class="query-result-view">
-    <mat-progress-bar
-      mode="indeterminate"
-      *ngIf="isQueryExecuting$ | async"
-    ></mat-progress-bar>
-    <mat-table *ngIf="(queryResult$ | async)?.length && !(isQueryExecuting$ | async); else emptyResult" [dataSource]="queryResult$ | async" class="table">
+    <mat-progress-bar mode="indeterminate" *ngIf="isQueryExecuting$ | async"></mat-progress-bar>
+    <mat-table
+      *ngIf="(queryResult$ | async)?.length && !(isQueryExecuting$ | async); else emptyResult"
+      [dataSource]="queryResult$ | async"
+      class="table"
+    >
       <!-- Number Column -->
       <ng-container matColumnDef="no">
         <mat-header-cell class="ft-12-700" *matHeaderCellDef>
@@ -55,4 +55,3 @@
   >
   </span>
 </ng-template>
-

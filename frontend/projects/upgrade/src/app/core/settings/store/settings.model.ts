@@ -4,7 +4,7 @@ export const SETTINGS_KEY = 'SETTINGS';
 
 export enum ThemeOptions {
   LIGHT_THEME = 'light-theme',
-  DARK_THEME = 'dark-theme'
+  DARK_THEME = 'dark-theme',
 }
 
 export interface SettingParams {

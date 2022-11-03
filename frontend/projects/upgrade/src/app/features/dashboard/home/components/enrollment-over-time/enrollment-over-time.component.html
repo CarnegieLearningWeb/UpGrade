@@ -2,7 +2,9 @@
   <span class="ft-18-700 title">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</span>
   <div class="enrollment-filters">
     <mat-form-field>
-      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-partitions.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{
+        'home.view-experiment.graph-partitions.text' | translate
+      }}</mat-label>
       <mat-select
         [(ngModel)]="selectedPartition"
         multiple
@@ -14,20 +16,20 @@
           [indeterminate]="isIndeterminate('partitions')"
           [checked]="isChecked('partitions')"
           (click)="$event.stopPropagation()"
-          (change)="toggleSelection($event, 'partitions')">
-            {{ 'home.view-experiment.graph-select-all.text' | translate }}
-        </mat-checkbox>
-        <mat-option
-          *ngFor="let partition of partitionsFilterOptions"
-          [value]="partition.id"
+          (change)="toggleSelection($event, 'partitions')"
         >
+          {{ 'home.view-experiment.graph-select-all.text' | translate }}
+        </mat-checkbox>
+        <mat-option *ngFor="let partition of partitionsFilterOptions" [value]="partition.id">
           {{ partition.point + ' (' + partition.twoCharacterId + ')' }}
         </mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label class="ft-16-700 dropdown-label">{{ 'home.view-experiment.graph-conditions.text' | translate }}</mat-label>
+      <mat-label class="ft-16-700 dropdown-label">{{
+        'home.view-experiment.graph-conditions.text' | translate
+      }}</mat-label>
       <mat-select
         [(ngModel)]="selectedCondition"
         multiple
@@ -39,13 +41,11 @@
           [indeterminate]="isIndeterminate('conditions')"
           [checked]="isChecked('conditions')"
           (click)="$event.stopPropagation()"
-          (change)="toggleSelection($event, 'conditions')">
-            {{ 'home.view-experiment.graph-select-all.text' | translate }}
-        </mat-checkbox>
-        <mat-option
-          *ngFor="let condition of conditionsFilterOptions"
-          [value]="condition.id"
+          (change)="toggleSelection($event, 'conditions')"
         >
+          {{ 'home.view-experiment.graph-select-all.text' | translate }}
+        </mat-checkbox>
+        <mat-option *ngFor="let condition of conditionsFilterOptions" [value]="condition.id">
           {{ condition.code }}
         </mat-option>
       </mat-select>
@@ -58,10 +58,7 @@
         [(ngModel)]="selectedGroupFilter"
         (selectionChange)="applyExperimentFilter(ExperimentFilter.GROUP_FILTER)"
       >
-        <mat-option
-          *ngFor="let groupValue of groupFiltersOptions"
-          [value]="groupValue"
-        >
+        <mat-option *ngFor="let groupValue of groupFiltersOptions" [value]="groupValue">
           {{ groupValue }}
         </mat-option>
       </mat-select>
@@ -73,10 +70,7 @@
         [(ngModel)]="selectedDateFilter"
         (selectionChange)="applyExperimentFilter(ExperimentFilter.DATE_FILTER)"
       >
-        <mat-option
-          *ngFor="let dateFilterType of dateFilterOptions"
-          [value]="dateFilterType.value"
-        >
+        <mat-option *ngFor="let dateFilterType of dateFilterOptions" [value]="dateFilterType.value">
           {{ dateFilterType.viewValue | titlecase }}
         </mat-option>
       </mat-select>
@@ -85,8 +79,8 @@
 
   <div class="chart-container">
     <div class="condition-container">
-      <div class="condition" *ngFor="let condition of experiment.conditions; let index= index">
-        <span class="color-box" [ngStyle]="{'background-color': colors[index]}" ></span>
+      <div class="condition" *ngFor="let condition of experiment.conditions; let index = index">
+        <span class="color-box" [ngStyle]="{ 'background-color': colors[index] }"></span>
         <span>{{ condition.conditionCode }}</span>
       </div>
     </div>
@@ -106,9 +100,7 @@
         >
         </ngx-charts-bar-vertical-stacked>
         <div class="spinner" *ngIf="isGraphLoading$ | async">
-          <mat-spinner
-            diameter="60"
-          ></mat-spinner>
+          <mat-spinner diameter="60"></mat-spinner>
         </div>
       </div>
 
@@ -119,7 +111,7 @@
           </span>
           <span class="ft-36-700 numbers">{{ totalMarkedUsers }}</span>
         </div>
-        <div class="enrollment-statistic__class" [ngClass]="{'group-enabled': selectedGroupFilter !== 'individual'}">
+        <div class="enrollment-statistic__class" [ngClass]="{ 'group-enabled': selectedGroupFilter !== 'individual' }">
           <span class="ft-16-600 title">
             {{ 'home.view-experiment.enrollment-over-time.group-enrollments-across-sites.text' | translate }}
           </span>

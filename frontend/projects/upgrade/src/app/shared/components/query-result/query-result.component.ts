@@ -7,10 +7,9 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-query-result',
   templateUrl: './query-result.component.html',
-  styleUrls: ['./query-result.component.scss']
+  styleUrls: ['./query-result.component.scss'],
 })
 export class QueryResultComponent implements OnInit {
-
   experiment: ExperimentVM;
   queryResult$: Observable<any>;
   isQueryExecuting$ = this.analysisService.isQueryExecuting$;
@@ -37,12 +36,9 @@ export class QueryResultComponent implements OnInit {
 
   getConditionName(conditionId) {
     if (this.experiment) {
-      const condition = this.experiment.conditions.filter(
-        con => con.id === conditionId
-      )[0];
+      const condition = this.experiment.conditions.filter((con) => con.id === conditionId)[0];
       return condition ? condition.conditionCode : '';
     }
     return '';
   }
-
 }

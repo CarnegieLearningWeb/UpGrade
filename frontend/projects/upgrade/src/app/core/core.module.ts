@@ -30,13 +30,7 @@ import { BaseUrlInterceptor } from './http-interceptors/http-base-url-intercepto
 import { ENV, Environment } from '../../environments/environment-types';
 import { environment } from '../../environments/environment';
 
-export {
-  TitleService,
-  AppState,
-  LocalStorageService,
-  selectRouterState,
-  NotificationService
-};
+export { TitleService, AppState, LocalStorageService, selectRouterState, NotificationService };
 
 export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
   return new TranslateHttpLoader(http, `${environment.i18nPrefix}/assets/i18n/`, '.json');
@@ -67,7 +61,7 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     environment.production
       ? []
       : StoreDevtoolsModule.instrument({
-          name: 'AB Testing Starter'
+          name: 'AB Testing Starter',
         }),
 
     // 3rd party
@@ -75,9 +69,9 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient, ENV]
-      }
-    })
+        deps: [HttpClient, ENV],
+      },
+    }),
   ],
   declarations: [],
   providers: [
@@ -86,9 +80,9 @@ export function HttpLoaderFactory(http: HttpClient, environment: Environment) {
     { provide: HTTP_INTERCEPTORS, useClass: HttpAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: HttpCancelInterceptor, multi: true },
     { provide: ErrorHandler, useClass: AppErrorHandler },
-    { provide: RouterStateSerializer, useClass: CustomSerializer }
+    { provide: RouterStateSerializer, useClass: CustomSerializer },
   ],
-  exports: [TranslateModule]
+  exports: [TranslateModule],
 })
 export class CoreModule {
   constructor(

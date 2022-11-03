@@ -5,6 +5,9 @@
       "outDir": "./dist",
       "sourceMap": true,
       "declaration": true,
+      "strict": false,
+      "alwaysStrict": false,
+      "strictNullChecks": false,
       "moduleResolution": "node",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
@@ -14,8 +17,12 @@
       "typeRoots": ["./node_modules/@types"],
       "lib": ["es2018", "dom"],
       "paths": {
-        "upgrade_types": ["../../types/src"]
+        "upgrade_types": ["../../../types"]
       }
-    }
+    },
+    "include": [
+      "src",
+      ".eslintrc.js"
+    ]
   }
   

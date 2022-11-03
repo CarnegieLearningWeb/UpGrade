@@ -11,11 +11,10 @@ xdescribe('FeatureFlagsListComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FeatureFlagsListComponent ],
+      declarations: [FeatureFlagsListComponent],
       imports: [TestingModule],
-      providers: [FeatureFlagsService, AuthService]
-    })
-    .compileComponents();
+      providers: [FeatureFlagsService, AuthService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -6,12 +6,12 @@ const routes: Routes = [
   {
     path: '',
     component: LoginComponent,
-    data: { title: 'app-header.title.login' }
-  }
+    data: { title: 'app-header.title.login' },
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AuthRoutingModule {}

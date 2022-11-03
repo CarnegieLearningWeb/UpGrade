@@ -15,15 +15,9 @@ xdescribe('AuditLogsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        AuditLogsComponent,
-        TimelineComponent,
-        LogDateFormatPipe,
-        ErrorLogPipe,
-        ExperimentActionMessage
-      ],
+      declarations: [AuditLogsComponent, TimelineComponent, LogDateFormatPipe, ErrorLogPipe, ExperimentActionMessage],
       imports: [TestingModule],
-      providers: [SettingsService, LogsService]
+      providers: [SettingsService, LogsService],
     }).compileComponents();
   }));
 

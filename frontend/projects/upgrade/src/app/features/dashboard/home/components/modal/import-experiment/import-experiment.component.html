@@ -5,47 +5,34 @@
     <p class="ft-16-400">
       {{ 'home.import-experiment.message.text' | translate }}
     </p>
-    <input
-        accept=".json"
-        type="file" multiple
-        class="ft-14-400 file-input"
-        (change)="uploadFile($event)"
-      />
+    <input accept=".json" type="file" multiple class="ft-14-400 file-input" (change)="uploadFile($event)" />
 
-      <ng-container *ngIf="importFileErrors.length">
-        <mat-table
-          class="table"
-          [dataSource]="importFileErrorsDataSource"
-        >
+    <ng-container *ngIf="importFileErrors.length">
+      <mat-table class="table" [dataSource]="importFileErrorsDataSource">
+        <!-- File Name -->
+        <ng-container matColumnDef="File Name">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> File Name </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let element">
+            {{ element.fileName }}
+          </mat-cell>
+        </ng-container>
 
-          <!-- File Name -->
-          <ng-container matColumnDef="File Name">
-            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-              File Name
-            </mat-header-cell>
-            <mat-cell class="ft-12-600" *matCellDef="let element"> 
-                {{ element.fileName }}
-            </mat-cell>
-          </ng-container>
+        <!-- Error -->
+        <ng-container matColumnDef="Error">
+          <mat-header-cell class="ft-12-700" *matHeaderCellDef> Error </mat-header-cell>
+          <mat-cell class="ft-12-600" *matCellDef="let element">
+            {{ element.error }}
+          </mat-cell>
+        </ng-container>
 
-          <!-- Error -->
-          <ng-container matColumnDef="Error">
-            <mat-header-cell class="ft-12-700" *matHeaderCellDef>
-              Error
-            </mat-header-cell>
-            <mat-cell class="ft-12-600" *matCellDef="let element"> 
-              {{ element.error }} 
-            </mat-cell>
-          </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
 
-          <mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-        </mat-table>
-
-        <span class="warn-msg">
-          {{'home.import-experiment.multiple-files-import.warning.message.text' | translate }}
-        </span>
-      </ng-container>
+      <span class="warn-msg">
+        {{ 'home.import-experiment.multiple-files-import.warning.message.text' | translate }}
+      </span>
+    </ng-container>
   </div>
 
   <div class="button-container">

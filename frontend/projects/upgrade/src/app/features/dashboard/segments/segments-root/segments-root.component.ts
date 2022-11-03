@@ -10,18 +10,14 @@ import { AuthService } from '../../../../core/auth/auth.service';
   selector: 'app-segments-root',
   templateUrl: './segments-root.component.html',
   styleUrls: ['./segments-root.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentsRootComponent implements OnInit {
   permissions$: Observable<UserPermission>;
   isLoadingSegments$ = this.segmentsService.isInitialSegmentsLoading();
   segments$ = this.segmentsService.allSegments$;
 
-  constructor(
-    private dialog: MatDialog,
-    private segmentsService: SegmentsService,
-    private authService: AuthService
-  ) { }
+  constructor(private dialog: MatDialog, private segmentsService: SegmentsService, private authService: AuthService) {}
 
   ngOnInit() {
     this.permissions$ = this.authService.userPermissions$;
@@ -29,13 +25,8 @@ export class SegmentsRootComponent implements OnInit {
   }
 
   openNewSegmentDialog() {
-    const dialogRef = this.dialog.open(NewSegmentComponent, {
-      panelClass: 'new-segment-modal'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Code will be executed after closing dialog
+    this.dialog.open(NewSegmentComponent, {
+      panelClass: 'new-segment-modal',
     });
   }
-
 }

@@ -11,11 +11,10 @@ xdescribe('LoginComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LoginComponent ],
+      declarations: [LoginComponent],
       imports: [TestingModule],
-      providers: [AuthService, SettingsService]
-    })
-    .compileComponents();
+      providers: [AuthService, SettingsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
