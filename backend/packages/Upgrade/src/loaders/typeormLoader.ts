@@ -41,6 +41,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     maxQueryExecutionTime: env.db.maxQueryExecutionTime,
     entities: env.app.dirs.entities,
     migrations: env.app.dirs.migrations,
+    extra: { max: env.db.maxConnectionPool },
   };
 
   const exportReplicaDBConnectionOptions = {
