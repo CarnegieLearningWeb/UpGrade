@@ -63,6 +63,7 @@ export const env = {
     synchronize: toBool(getOsEnvOptional('TYPEORM_SYNCHRONIZE')),
     logging: getOsEnv('TYPEORM_LOGGING'),
     maxQueryExecutionTime: toNumber(getOsEnvOptional('TYPEORM_MAX_QUERY_EXECUTION_TIME')),
+    maxConnectionPool: toNumber(getOsEnvOptional('TYPEORM_MAX_CONNECTION_POOL_SIZE')),
   },
   swagger: {
     enabled: toBool(getOsEnv('SWAGGER_ENABLED')),
