@@ -39,7 +39,7 @@ jobs:
         run: |
           cd ..
           npm ci
-          cd ../backend
+          cd backend
           cp -R ../types packages/Upgrade
           npm run install:all
       - name: Build Backend
