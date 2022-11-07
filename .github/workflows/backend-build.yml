@@ -37,6 +37,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         run: |
+          cd ..
+          npm ci
+          cd ../backend
           cp -R ../types packages/Upgrade
           npm run install:all
       - name: Build Backend
