@@ -1,10 +1,10 @@
 export class Emails {
-    public header = '';
-    public footer = `<br>
+  public header = '';
+  public footer = `<br>
     <br>
     UpGrade -LOGO-`;
-    public roleChangeEmailBody(role: string): string {
-      const emailBody = `Greetings!,
+  public roleChangeEmailBody(role: string): string {
+    const emailBody = `Greetings!,
       <br>
       Your Role in Upgrade is changed to ${role}!
       <br>
@@ -13,11 +13,11 @@ export class Emails {
       . To read the documentation, visit
       <a href="https://upgrade-platform.gitbook.io/upgrade-documentation/"> UpGrade-docs</a>
       <br>`;
-      return emailBody;
-    }
+    return emailBody;
+  }
 
-    public welcomeEmailBody(): string {
-        const emailBody = `Greetings!,
+  public welcomeEmailBody(): string {
+    const emailBody = `Greetings!,
         <br>
         A new user account was created for you in UpGrade. You can sign into UpGrade using your Google credentials.
         <br>
@@ -26,10 +26,10 @@ export class Emails {
         . To read the documentation, visit
         <a href="https://upgrade-platform.gitbook.io/upgrade-documentation/"> UpGrade-docs</a>
         <br>`;
-        return emailBody;
-    }
+    return emailBody;
+  }
 
-    public generateEmailText(emailBody: string): string {
-        return this.header + emailBody + this.footer;
-    }
+  public generateEmailText(emailBody: string): string {
+    return this.header + emailBody + this.footer;
+  }
 }

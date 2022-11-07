@@ -6,7 +6,6 @@ import { SERVER_ERROR } from 'upgrade_types';
 import { CONNECTION_NAME } from './enums';
 
 export const typeormLoader: MicroframeworkLoader = async (settings: MicroframeworkSettings | undefined) => {
-
   const loadedConnectionOptions = await getConnectionOptions();
   const loadedreplicaConnectionOptions = await getConnectionOptions();
   const replica_hostnames: string[] = (env.db.host_replica && JSON.parse(env.db.host_replica)) || [];
@@ -18,7 +17,7 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
     password: env.db.password,
     database: env.db.database,
   };
-  const replica_hosts = replica_hostnames.map(hostname => {
+  const replica_hosts = replica_hostnames.map((hostname) => {
     return {
       host: hostname,
       port: env.db.port,
@@ -72,7 +71,10 @@ export const typeormLoader: MicroframeworkLoader = async (settings: Microframewo
   }
 
   const mainConnectionOptions: ConnectionOptions = Object.assign(loadedConnectionOptions, mainDBConnectionOptions);
-  const exportReplicaConnectionOptions: ConnectionOptions = Object.assign(loadedreplicaConnectionOptions, exportReplicaDBConnectionOptions);
+  const exportReplicaConnectionOptions: ConnectionOptions = Object.assign(
+    loadedreplicaConnectionOptions,
+    exportReplicaDBConnectionOptions
+  );
 
   try {
     const connection = await createConnection(mainConnectionOptions);
