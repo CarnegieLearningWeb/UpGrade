@@ -8,13 +8,18 @@
     "build": "npm run clean && tsc",
     "build:watch": "tsc -w",
     "clean": "rm -rf dist",
+    "lint": "eslint -c ../.eslintrc.js --ext .ts './src' && npm run prettier:write",
+    "lint:fix": "eslint -c ../.eslintrc.js --ext .ts './src' --fix && npm run prettier:check",
+    "prettier:check": "prettier --config ../.prettierrc './src/**/*.ts' --check",
+    "prettier:write": "prettier --config ../.prettierrc './src/**/*.ts' --write",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "tslint": "^5.20.1",
+    "eslint": "^8.27.0",
+    "prettier": "^2.7.1",
     "typescript": "^3.7.3"
   }
 }

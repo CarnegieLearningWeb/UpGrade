@@ -27,6 +27,10 @@
     "./clientlibs/js/{src, test}/**/*.ts": [
       "prettier --config .prettierrc --write",
       "eslint -c .eslintrc.js --ext .ts"
+    ],
+    "./types/**/*.ts": [
+      "prettier --config .prettierrc --write",
+      "eslint -c .eslintrc.js --ext .ts"
     ]
   },
   "repository": {
