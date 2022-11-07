@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
-    "build:prod": "NODE_ENV=production npm run build"
+    "build:prod": "NODE_ENV=production npm run build",
+    "lint": "eslint -c ../../../.eslintrc.js --ext .ts './src' && npm run prettier:write",
+    "lint:fix": "eslint -c ../../../.eslintrc.js --ext .ts './src' --fix && npm run prettier:check",
+    "prettier:check": "prettier --config ../../../.prettierrc './src/**/*.ts' --check",
+    "prettier:write": "prettier --config ../../../.prettierrc './src/**/*.ts' --write"
   },
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
@@ -18,7 +22,9 @@
     "@types/jsonwebtoken": "^8.3.9",
     "@types/node": "^10.17.20",
     "@types/node-fetch": "^2.5.7",
+    "eslint": "^8.27.0",
     "fork-ts-checker-webpack-plugin": "^3.0.1",
+    "prettier": "^2.7.1",
     "ts-loader": "^5.3.3",
     "typescript": "^3.2.4",
     "webpack": "^4.46.0",
