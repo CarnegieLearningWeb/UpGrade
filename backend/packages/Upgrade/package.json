@@ -44,6 +44,7 @@
         "copyfiles": "^2.1.1",
         "coverage-badge-creator": "^1.0.11",
         "cross-env": "^6.0.3",
+        "eslint": "^8.27.0",
         "faker": "^4.1.0",
         "ncp": "^2.0.0",
         "nps": "^5.9.8",

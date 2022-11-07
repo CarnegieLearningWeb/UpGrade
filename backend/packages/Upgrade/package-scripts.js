@@ -248,5 +248,5 @@ function runFast(path) {
 }
 
 function eslint(path) {
-  return `eslint -c ../../../.eslintrc.js --ext .ts ${path} --fix`;
+  return `eslint -c ../../../.eslintrc.js --ext .ts ${path}`;
 }
