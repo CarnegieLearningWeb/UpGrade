@@ -29,6 +29,9 @@ runs:
       shell: bash
       working-directory: backend
       run: |
+        cd ..
+        npm ci
+        cd ../backend
         cp -R ../types packages/Upgrade
         npm ci
     - name: "[Backend] Run Build"
