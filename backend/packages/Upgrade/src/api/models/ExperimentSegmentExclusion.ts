@@ -9,7 +9,10 @@ export class ExperimentSegmentExclusion extends BaseModel {
   @JoinColumn()
   public segment: Segment;
 
-  @OneToOne((type) => Experiment, (experiment) => experiment.experimentSegmentExclusion, { onDelete: 'CASCADE', primary: true })
+  @OneToOne((type) => Experiment, (experiment) => experiment.experimentSegmentExclusion, {
+    onDelete: 'CASCADE',
+    primary: true,
+  })
   @JoinColumn()
   public experiment: Experiment;
 }

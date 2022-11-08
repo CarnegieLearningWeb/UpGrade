@@ -32,7 +32,7 @@ bootstrapMicroframework({
 })
   .then(() => {
     // logging data after the winston is configured
-    logger.info({detail: 'Server starting at ' + Date.now()});
+    logger.info({ detail: 'Server starting at ' + Date.now() });
     return CreateSystemUser();
   })
   .then(() => {
@@ -50,4 +50,3 @@ bootstrapMicroframework({
     // Create global exclude segment
     return createGlobalExcludeSegment(logger);
   });
-

@@ -24,7 +24,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { getCustomRepository } from 'typeorm';
-import moment from "moment-timezone";
+import moment from 'moment-timezone';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -117,36 +117,38 @@ export class AnalyticsService {
     return Object.keys(keyToReturn).map((date) => {
       const stats: IExperimentEnrollmentDetailDateStats = {
         id: experimentId,
-        conditions: experiment ? experiment.conditions.map(({ id }) => {
-          return {
-            id,
-            partitions: experiment.partitions.map((decisionPointDoc) => {
-              const userInConditionDecisionPoint = individualEnrollmentConditionAndDecisionPoint.find(
-                ({ conditionId, partitionId, date_range }) => {
-                  return (
-                    partitionId === decisionPointDoc.id &&
-                    conditionId === id &&
-                    new Date(date).getTime() === (date_range as any).getTime()
-                  );
-                }
-              );
-              const groupInConditionDecisionPoint = groupEnrollmentConditionAndDecisionPoint.find(
-                ({ conditionId, partitionId, date_range }) => {
-                  return (
-                    partitionId === decisionPointDoc.id &&
-                    conditionId === id &&
-                    new Date(date).getTime() === (date_range as any).getTime()
-                  );
-                }
-              );
+        conditions: experiment
+          ? experiment.conditions.map(({ id }) => {
               return {
-                id: decisionPointDoc.id,
-                users: (userInConditionDecisionPoint && userInConditionDecisionPoint.count) || 0,
-                groups: (groupInConditionDecisionPoint && groupInConditionDecisionPoint.count) || 0,
+                id,
+                partitions: experiment.partitions.map((decisionPointDoc) => {
+                  const userInConditionDecisionPoint = individualEnrollmentConditionAndDecisionPoint.find(
+                    ({ conditionId, partitionId, date_range }) => {
+                      return (
+                        partitionId === decisionPointDoc.id &&
+                        conditionId === id &&
+                        new Date(date).getTime() === (date_range as any).getTime()
+                      );
+                    }
+                  );
+                  const groupInConditionDecisionPoint = groupEnrollmentConditionAndDecisionPoint.find(
+                    ({ conditionId, partitionId, date_range }) => {
+                      return (
+                        partitionId === decisionPointDoc.id &&
+                        conditionId === id &&
+                        new Date(date).getTime() === (date_range as any).getTime()
+                      );
+                    }
+                  );
+                  return {
+                    id: decisionPointDoc.id,
+                    users: (userInConditionDecisionPoint && userInConditionDecisionPoint.count) || 0,
+                    groups: (groupInConditionDecisionPoint && groupInConditionDecisionPoint.count) || 0,
+                  };
+                }),
               };
-            }),
-          };
-        }) : [],
+            })
+          : [],
       };
       return {
         date,
@@ -172,7 +174,6 @@ export class AnalyticsService {
           where: { id: experimentId },
         }),
         userRepository.findOne({ email }),
-
       ]);
       const { localTimeZone } = user;
 
@@ -302,7 +303,9 @@ export class AnalyticsService {
             GroupId: row.groupId,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn).tz(localTimeZone).toISOString(true),
+            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn)
+              .tz(localTimeZone)
+              .toISOString(true),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };

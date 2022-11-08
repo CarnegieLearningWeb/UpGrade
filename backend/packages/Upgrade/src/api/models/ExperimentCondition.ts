@@ -29,7 +29,7 @@ export class ExperimentCondition extends BaseModel {
 
   @IsNotEmpty()
   @IsNumber()
-  @Column({ type: 'real'})
+  @Column({ type: 'real' })
   public assignmentWeight: number;
 
   @IsNotEmpty()

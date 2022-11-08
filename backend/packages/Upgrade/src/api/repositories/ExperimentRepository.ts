@@ -13,9 +13,9 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
       .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
@@ -24,8 +24,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
-      .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
+      .leftJoinAndSelect('partitions.conditionAliases', 'conditionAliases')
+      .leftJoinAndSelect('conditionAliases.parentCondition', 'parentCondition')
       .getMany()
       .catch((errorMsg: any) => {
         const errorMsgString = repositoryError('ExperimentRepository', 'find', {}, errorMsg);
@@ -47,9 +47,9 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
       .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
@@ -57,8 +57,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
-      .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
+      .leftJoinAndSelect('partitions.conditionAliases', 'conditionAliases')
+      .leftJoinAndSelect('conditionAliases.parentCondition', 'parentCondition')
       .where(
         new Brackets((qb) => {
           qb.where(
@@ -82,9 +82,9 @@ export class ExperimentRepository extends Repository<Experiment> {
     return this.createQueryBuilder('experiment')
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.conditions', 'conditions')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
       .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
@@ -92,8 +92,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       .leftJoinAndSelect('segmentExclusion.individualForSegment', 'individualForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
-      .leftJoinAndSelect('partitions.conditionAliases','conditionAliases')
-      .leftJoinAndSelect('conditionAliases.parentCondition','parentCondition')
+      .leftJoinAndSelect('partitions.conditionAliases', 'conditionAliases')
+      .leftJoinAndSelect('conditionAliases.parentCondition', 'parentCondition')
       .where(
         new Brackets((qb) => {
           qb.where(
@@ -217,7 +217,7 @@ export class ExperimentRepository extends Repository<Experiment> {
     try {
       const entities = entityManager.connection.entityMetadatas;
       for (const entity of entities) {
-        if(!(['user', 'metric', 'setting', 'migrations'].includes(entity.tableName))) {
+        if (!['user', 'metric', 'setting', 'migrations'].includes(entity.tableName)) {
           const repository = await entityManager.connection.getRepository(entity.name);
           await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
         }
@@ -230,6 +230,6 @@ export class ExperimentRepository extends Repository<Experiment> {
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
       logger.error(error);
       throw error;
-    } 
+    }
   }
 }

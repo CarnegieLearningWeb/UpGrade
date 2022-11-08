@@ -49,7 +49,12 @@ export class GroupForSegmentRepository extends Repository<GroupForSegment> {
     return result.raw;
   }
 
-  public async deleteGroupForSegment(segmentId: string, groupId: string, type: string ,logger: UpgradeLogger): Promise<GroupForSegment> {
+  public async deleteGroupForSegment(
+    segmentId: string,
+    groupId: string,
+    type: string,
+    logger: UpgradeLogger
+  ): Promise<GroupForSegment> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(GroupForSegment)

@@ -14,7 +14,7 @@ import {
 import { Experiment } from '../models/Experiment';
 import { ExperimentNotFoundError } from '../errors/ExperimentNotFoundError';
 import { ExperimentService } from '../services/ExperimentService';
-import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService'; 
+import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { SERVER_ERROR } from 'upgrade_types';
 import { validate, isUUID } from 'class-validator';
 import { ExperimentCondition } from '../models/ExperimentCondition';
@@ -345,7 +345,7 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get('/names')
-  public findName( @Req() request: AppRequest ): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
+  public findName(@Req() request: AppRequest): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
     return this.experimentService.findAllName(request.logger);
   }
 
@@ -369,7 +369,7 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get()
-  public find( @Req() request: AppRequest ): Promise<Experiment[]> {
+  public find(@Req() request: AppRequest): Promise<Experiment[]> {
     return this.experimentService.find(request.logger);
   }
 
@@ -408,7 +408,7 @@ export class ExperimentController {
    *            description: AuthorizationRequiredError
    */
   @Get('/contextMetaData')
-  public getContextMetaData( @Req() request: AppRequest ): object {
+  public getContextMetaData(@Req() request: AppRequest): object {
     return this.experimentService.getContextMetaData(request.logger);
   }
 
@@ -473,8 +473,9 @@ export class ExperimentController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true }}})
-    @Req() request: AppRequest,
+    @Body({ validate: { validationError: { target: true, value: true } } })
+    @Req()
+    request: AppRequest,
     paginatedParams: ExperimentPaginatedParamsValidator
   ): Promise<ExperimentPaginationInfo> {
     if (!paginatedParams) {
@@ -537,7 +538,7 @@ export class ExperimentController {
    *            description: Experiment Partitions not found
    */
   @Get('/partitions')
-  public getAllExperimentPoints( @Req() request: AppRequest ): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
+  public getAllExperimentPoints(@Req() request: AppRequest): Promise<Array<Pick<DecisionPoint, 'site' | 'target'>>> {
     return this.experimentService.getAllExperimentPartitions(request.logger);
   }
 
@@ -571,7 +572,7 @@ export class ExperimentController {
    */
   @Get('/single/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public one(@Param('id') id: string,  @Req() request: AppRequest ): Promise<Experiment> | undefined {
+  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<Experiment> | undefined {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -654,7 +655,7 @@ export class ExperimentController {
    */
   @Get('/conditions/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public getCondition(@Param('id') id: string, @Req() request: AppRequest ): Promise<ExperimentCondition[]> {
+  public getCondition(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentCondition[]> {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -701,7 +702,7 @@ export class ExperimentController {
   public create(
     @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment,
     @CurrentUser() currentUser: User,
-    @Req() request: AppRequest 
+    @Req() request: AppRequest
   ): Promise<Experiment> {
     request.logger.child({ user: currentUser });
     return this.experimentService.create(experiment, currentUser, request.logger);
@@ -742,7 +743,7 @@ export class ExperimentController {
   public createMultipleExperiments(
     @Body({ validate: { validationError: { target: false, value: false } } }) experiment: Experiment[],
     @CurrentUser() currentUser: User,
-    @Req() request: AppRequest 
+    @Req() request: AppRequest
   ): Promise<Experiment[]> {
     request.logger.child({ user: currentUser });
     return this.experimentService.createMultipleExperiments(experiment, currentUser, request.logger);
@@ -778,7 +779,11 @@ export class ExperimentController {
    */
 
   @Delete('/:id')
-  public delete(@Param('id') id: string, @CurrentUser() currentUser: User, @Req() request: AppRequest ): Promise<Experiment | undefined> {
+  public delete(
+    @Param('id') id: string,
+    @CurrentUser() currentUser: User,
+    @Req() request: AppRequest
+  ): Promise<Experiment | undefined> {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(
@@ -891,7 +896,7 @@ export class ExperimentController {
     @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
     experiment: Experiment,
     @CurrentUser() currentUser: User,
-    @Req() request: AppRequest 
+    @Req() request: AppRequest
   ): Promise<Experiment> {
     if (!isUUID(id)) {
       return Promise.reject(
@@ -904,30 +909,30 @@ export class ExperimentController {
     return this.experimentService.update(experiment, currentUser, request.logger);
   }
 
- /**
-  * @swagger
-  * /experiments/{import}:
-  *    put:
-  *       description: Import New Experiment
-  *       consumes:
-  *         - application/json
-  *       parameters:
-  *         - in: path
-  *       tags:
-  *         - Experiments
-  *       produces:
-  *         - application/json
-  *       responses:
-  *          '200':
-  *            description: Experiment is imported
-  *          '401':
-  *            description: AuthorizationRequiredError
-  */
+  /**
+   * @swagger
+   * /experiments/{import}:
+   *    put:
+   *       description: Import New Experiment
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *         - in: path
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment is imported
+   *          '401':
+   *            description: AuthorizationRequiredError
+   */
   @Post('/import')
   public importExperiment(
     @Body({ validate: { validationError: { target: false, value: false } } }) experiments: Experiment[],
     @CurrentUser() currentUser: User,
-    @Req() request: AppRequest 
+    @Req() request: AppRequest
   ): Promise<Experiment[]> {
     return this.experimentService.importExperiment(experiments, currentUser, request.logger);
   }
@@ -936,44 +941,47 @@ export class ExperimentController {
   public exportExperiment(
     @Body({ validate: { validationError: { target: false, value: false } } }) experimentIds: string[],
     @CurrentUser() currentUser: User,
-    @Req() request: AppRequest 
+    @Req() request: AppRequest
   ): Promise<Experiment[]> {
     return this.experimentService.exportExperiment(experimentIds, currentUser, request.logger);
   }
 
- /**
-  * @swagger
-  * /experiments/getGroupAssignmentStatus/{id}:
-  *    get:
-  *       description: Get all the groups assignment status having met the ending criteria
-  *       parameters:
-  *         - in: path
-  *           name: id
-  *           required: true
-  *           schema:
-  *             type: string
-  *           description: Experiment Id
-  *       tags:
-  *         - Experiments
-  *       produces:
-  *         - application/json
-  *       responses:
-  *          '200':
-  *            description: Experiment List
-  *            schema:
-  *              type: number
-  *              items:
-  *                $ref: '#/definitions/ExperimentResponse'
-  *          '401':
-  *            description: AuthorizationRequiredError
-  *          '404':
-  *            description: Not found error
-  *          '500':
-  *            description: id should be of type UUID
-  */
+  /**
+   * @swagger
+   * /experiments/getGroupAssignmentStatus/{id}:
+   *    get:
+   *       description: Get all the groups assignment status having met the ending criteria
+   *       parameters:
+   *         - in: path
+   *           name: id
+   *           required: true
+   *           schema:
+   *             type: string
+   *           description: Experiment Id
+   *       tags:
+   *         - Experiments
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Experiment List
+   *            schema:
+   *              type: number
+   *              items:
+   *                $ref: '#/definitions/ExperimentResponse'
+   *          '401':
+   *            description: AuthorizationRequiredError
+   *          '404':
+   *            description: Not found error
+   *          '500':
+   *            description: id should be of type UUID
+   */
   @Get('/getGroupAssignmentStatus/:id')
   @OnUndefined(ExperimentNotFoundError)
-  public async getGroupAssignmentStatus(@Param('id') id: string, @Req() request: AppRequest ): Promise<number> | undefined {
+  public async getGroupAssignmentStatus(
+    @Param('id') id: string,
+    @Req() request: AppRequest
+  ): Promise<number> | undefined {
     if (!isUUID(id)) {
       return Promise.reject(
         new Error(

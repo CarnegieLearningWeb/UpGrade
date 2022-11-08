@@ -35,4 +35,3 @@ export class MonitoredDecisionPoint extends BaseModel {
   @OneToMany((type) => MonitoredDecisionPointLog, (monitoredPointLog) => monitoredPointLog.monitoredDecisionPoint)
   public monitoredPointLogs: MonitoredDecisionPointLog[];
 }
-

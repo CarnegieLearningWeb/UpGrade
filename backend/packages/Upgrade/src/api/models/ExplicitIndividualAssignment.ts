@@ -9,17 +9,13 @@ export class ExplicitIndividualAssignment extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 
-  @ManyToOne(
-    type => PreviewUser,
-    previewUser => previewUser.assignments,
-    { onDelete: 'CASCADE' }
-  )
+  @ManyToOne((type) => PreviewUser, (previewUser) => previewUser.assignments, { onDelete: 'CASCADE' })
   public previewUser: PreviewUser;
 
   @Index()
-  @ManyToOne(type => Experiment, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @ManyToOne(type => ExperimentCondition, { onDelete: 'CASCADE' })
+  @ManyToOne((type) => ExperimentCondition, { onDelete: 'CASCADE' })
   public experimentCondition: ExperimentCondition;
 }

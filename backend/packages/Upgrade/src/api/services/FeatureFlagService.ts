@@ -27,7 +27,7 @@ export class FeatureFlagService {
   }
 
   public create(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    logger.info({ message : 'Create a new feature flag' });
+    logger.info({ message: 'Create a new feature flag' });
     return this.addFeatureFlagInDB(flag, logger);
   }
 
@@ -42,7 +42,7 @@ export class FeatureFlagService {
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
   ): Promise<FeatureFlag[]> {
-    logger.info({ message : 'Find paginated Feature flags' });
+    logger.info({ message: 'Find paginated Feature flags' });
 
     let queryBuilder = this.featureFlagRepository
       .createQueryBuilder('feature_flag')
@@ -65,7 +65,7 @@ export class FeatureFlagService {
   }
 
   public async delete(featureFlagId: string, logger: UpgradeLogger): Promise<FeatureFlag | undefined> {
-    logger.info({ message : `Delete Feature Flag => ${featureFlagId}` });
+    logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
     const featureFlag = await this.featureFlagRepository.find({
       where: { id: featureFlagId },
       relations: ['variations'],
@@ -87,7 +87,7 @@ export class FeatureFlagService {
   }
 
   public update(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    logger.info({ message : `Update a Feature Flag => ${flag.toString()}` });
+    logger.info({ message: `Update a Feature Flag => ${flag.toString()}` });
     // TODO add entry in log of updating feature flag
     return this.updateFeatureFlagInDB(flag, logger);
   }

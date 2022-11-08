@@ -15,7 +15,7 @@ import {
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
   IExperimentSortParams,
-  EXPERIMENT_TYPE
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -137,14 +137,14 @@ export class Experiment extends BaseModel {
   @OneToOne((type) => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
   @Type(() => ExperimentSegmentExclusion)
   public experimentSegmentExclusion: ExperimentSegmentExclusion;
-  
+
   @Column({ default: '1.0.0' })
   public backendVersion: string;
 
-  @Column({ 
-  type: 'enum',
-  enum: EXPERIMENT_TYPE,
-  default: EXPERIMENT_TYPE.SIMPLE, 
+  @Column({
+    type: 'enum',
+    enum: EXPERIMENT_TYPE,
+    default: EXPERIMENT_TYPE.SIMPLE,
   })
   public type: string;
 }

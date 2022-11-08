@@ -130,10 +130,11 @@ export class AnalyticsRepository {
             users: conditionData?.count || 0,
             groups: 0,
             partitions: experiment.partitions.map(({ id: decisionPointId }) => {
-              const decisionPointData: { id: string; partitionId: string; conditionId: string; count: number } | undefined =
-                perConditionDecisionPoint.find((perDecisionPoint) => {
-                  return perDecisionPoint.conditionId === conditionId && perDecisionPoint.partitionId === decisionPointId;
-                });
+              const decisionPointData:
+                | { id: string; partitionId: string; conditionId: string; count: number }
+                | undefined = perConditionDecisionPoint.find((perDecisionPoint) => {
+                return perDecisionPoint.conditionId === conditionId && perDecisionPoint.partitionId === decisionPointId;
+              });
 
               return {
                 id: decisionPointId,

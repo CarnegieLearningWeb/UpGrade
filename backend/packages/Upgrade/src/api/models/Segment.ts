@@ -12,16 +12,16 @@ export class Segment extends BaseModel {
   @PrimaryColumn('uuid')
   public id: string;
 
-	@Column()
-	public name: string;
+  @Column()
+  public name: string;
 
-	@Column({
-    nullable: true
+  @Column({
+    nullable: true,
   })
-	public description: string;
+  public description: string;
 
-	@Column()
-	public context: string;
+  @Column()
+  public context: string;
 
   @Column({
     type: 'enum',
@@ -30,31 +30,31 @@ export class Segment extends BaseModel {
   })
   public type: SEGMENT_TYPE;
 
-	@OneToMany((type) => IndividualForSegment, (individualForSegment) => individualForSegment.segment)
+  @OneToMany((type) => IndividualForSegment, (individualForSegment) => individualForSegment.segment)
   @Type(() => IndividualForSegment)
   public individualForSegment: IndividualForSegment[];
 
-	@OneToMany((type) => GroupForSegment, (groupForSegment) => groupForSegment.segment)
+  @OneToMany((type) => GroupForSegment, (groupForSegment) => groupForSegment.segment)
   @Type(() => GroupForSegment)
   public groupForSegment: GroupForSegment[];
 
-  @ManyToMany(type => Segment, segment => segment.subSegments)
+  @ManyToMany((type) => Segment, (segment) => segment.subSegments)
   @JoinTable({
     name: 'segment_for_segment',
     joinColumn: {
-      name: "childSegmentId",
-      referencedColumnName: "id"
-  },
-  inverseJoinColumn: {
-      name: "parentSegmentId",
-      referencedColumnName: "id"
-  }
+      name: 'childSegmentId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'parentSegmentId',
+      referencedColumnName: 'id',
+    },
   })
   public segments: Segment[];
 
-  @ManyToMany(type => Segment, segment => segment.segments,{
+  @ManyToMany((type) => Segment, (segment) => segment.segments, {
     cascade: true,
-    onDelete: "CASCADE"
+    onDelete: 'CASCADE',
   })
   public subSegments: Segment[];
 

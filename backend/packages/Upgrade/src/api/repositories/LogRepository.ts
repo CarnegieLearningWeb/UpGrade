@@ -1,6 +1,13 @@
 import { ExperimentRepository } from './ExperimentRepository';
 import { IndividualEnrollment } from './../models/IndividualEnrollment';
-import { EntityRepository, Repository, EntityManager, getRepository, SelectQueryBuilder, getCustomRepository } from 'typeorm';
+import {
+  EntityRepository,
+  Repository,
+  EntityManager,
+  getRepository,
+  SelectQueryBuilder,
+  getCustomRepository,
+} from 'typeorm';
 import { Log } from '../models/Log';
 import repositoryError from './utils/repositoryError';
 import { Experiment } from '../models/Experiment';

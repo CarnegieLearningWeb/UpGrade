@@ -12,7 +12,7 @@ export class PaginatedParamsValidator {
   @IsDefined()
   public take: number;
 
-  public searchParams: { key: string, string: string };
+  public searchParams: { key: string; string: string };
 
-  public sortParams: { key: string, sortAs: EXPERIMENT_SORT_AS };
+  public sortParams: { key: string; sortAs: EXPERIMENT_SORT_AS };
 }

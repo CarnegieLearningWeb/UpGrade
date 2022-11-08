@@ -45,7 +45,7 @@ export class QueryController {
   @Post('/analyse')
   public analyse(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    dataLogParams: DataLogAnalysisValidator, 
+    dataLogParams: DataLogAnalysisValidator,
     @Req() request: AppRequest
   ): Promise<any> {
     return this.queryService.analyze(dataLogParams.queryIds, request.logger);

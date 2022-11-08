@@ -12,22 +12,22 @@ import { AppRequest } from '../../types';
 @Authorized()
 @JsonController('/version')
 export class VersionController {
-    constructor() { }
+  constructor() {}
 
-    /**
-     * @swagger
-     * /version:
-     *    get:
-     *       description: Get Server Version
-     *       tags:
-     *         - Version
-     *       responses:
-     *          '200':
-     *            description: Get Server Version
-     */
-    @Get('/')
-    public async getVersionNumber(@Req() request: AppRequest): Promise<string> {
-        request.logger.info({ message: 'Request received for version' });
-        return env.app.version;
-    }
+  /**
+   * @swagger
+   * /version:
+   *    get:
+   *       description: Get Server Version
+   *       tags:
+   *         - Version
+   *       responses:
+   *          '200':
+   *            description: Get Server Version
+   */
+  @Get('/')
+  public async getVersionNumber(@Req() request: AppRequest): Promise<string> {
+    request.logger.info({ message: 'Request received for version' });
+    return env.app.version;
+  }
 }

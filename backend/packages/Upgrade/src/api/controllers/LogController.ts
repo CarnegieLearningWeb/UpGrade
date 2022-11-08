@@ -24,7 +24,7 @@ interface ExperimentErrorPaginatedInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/')
 export class AuditLogController {
-  constructor(public auditService: AuditService, public errorService: ErrorService) { }
+  constructor(public auditService: AuditService, public errorService: ErrorService) {}
 
   /**
    * @swagger

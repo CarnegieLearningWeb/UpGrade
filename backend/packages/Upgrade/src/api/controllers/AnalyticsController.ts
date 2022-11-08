@@ -65,8 +65,8 @@ export class AnalyticsController {
    */
   @Post('/enrollment')
   public async analyticsService(
-    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator, 
-    @Req() request: AppRequest 
+    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator,
+    @Req() request: AppRequest
   ): Promise<IExperimentEnrollmentStats[]> {
     return this.auditService.getEnrollments(auditParams.experimentIds, request.logger);
   }
@@ -146,8 +146,8 @@ export class AnalyticsController {
   @Post('/enrollment/detail')
   public async analyticsDetailService(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentDetailAnalyticsValidator, 
-    @Req() request: AppRequest 
+    auditParams: EnrollmentDetailAnalyticsValidator,
+    @Req() request: AppRequest
   ): Promise<IExperimentEnrollmentDetailStats> {
     return this.auditService.getDetailEnrollment(auditParams.experimentId, request.logger);
   }
@@ -233,10 +233,15 @@ export class AnalyticsController {
   @Post('/enrollment/date')
   public async enrollmentByDate(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentAnalyticsDateValidator, 
-    @Req() request: AppRequest 
+    auditParams: EnrollmentAnalyticsDateValidator,
+    @Req() request: AppRequest
   ): Promise<any> {
-    return this.auditService.getEnrollmentStatsByDate(auditParams.experimentId, auditParams.dateEnum, auditParams.clientOffset, request.logger);
+    return this.auditService.getEnrollmentStatsByDate(
+      auditParams.experimentId,
+      auditParams.dateEnum,
+      auditParams.clientOffset,
+      request.logger
+    );
   }
 
   /**
@@ -265,8 +270,8 @@ export class AnalyticsController {
   @Post('/csv')
   public async downloadCSV(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    csvInfo: DataExportValidator, 
-    @Req() request: AppRequest 
+    csvInfo: DataExportValidator,
+    @Req() request: AppRequest
   ): Promise<string> {
     request.logger.info({ message: `Request received for csv download ${JSON.stringify(csvInfo, null, 2)}` });
     return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email, request.logger);

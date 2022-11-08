@@ -30,7 +30,7 @@ export class User extends BaseModel {
   @IsUrl()
   public imageUrl: string;
 
-  @Column({ nullable: true})
+  @Column({ nullable: true })
   public localTimeZone?: string;
 
   @OneToMany((type) => ExperimentAuditLog, (auditLog) => auditLog.user)

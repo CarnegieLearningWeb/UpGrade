@@ -5,7 +5,7 @@ import { IndividualForSegmentRepository } from '../repositories/IndividualForSeg
 import { GroupForSegmentRepository } from '../repositories/GroupForSegmentRepository';
 import { Segment } from '../models/Segment';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
-import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types'
+import { EXPERIMENT_STATE, SEGMENT_TYPE, SERVER_ERROR, SEGMENT_STATUS } from 'upgrade_types';
 import { getConnection } from 'typeorm';
 import uuid from 'uuid';
 import { ErrorWithType } from '../errors/ErrorWithType';
@@ -14,7 +14,7 @@ import { GroupForSegment } from '../models/GroupForSegment';
 import { SegmentInputValidator } from '../controllers/validators/SegmentInputValidator';
 import { ExperimentSegmentExclusionRepository } from '../repositories/ExperimentSegmentExclusionRepository';
 import { ExperimentSegmentInclusionRepository } from '../repositories/ExperimentSegmentInclusionRepository';
-import { getSegmentData } from '../controllers/SegmentController'
+import { getSegmentData } from '../controllers/SegmentController';
 import { globalExcludeSegment } from '../../init/seed/globalExcludeSegment';
 import { CacheService } from './CacheService';
 @Service()
@@ -166,7 +166,9 @@ export class SegmentService {
     segment.subSegmentIds.forEach((subSegmentId) => {
       const subSegment = allSegments.find((segmentId) => subSegmentId === segmentId.id);
       if (!subSegment) {
-        const error = new Error('SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.');
+        const error = new Error(
+          'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+        );
         (error as any).type = SERVER_ERROR.QUERY_FAILED;
         logger.error(error);
         throw error;
@@ -235,13 +237,16 @@ export class SegmentService {
           if (subSegment) {
             return true;
           } else {
-            const error = new Error('SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.');
+            const error = new Error(
+              'SubSegment: ' + subSegmentId + ' not found. Please import subSegment and link in experiment.'
+            );
             (error as any).type = SERVER_ERROR.QUERY_FAILED;
             logger.error(error);
             return false;
           }
-        }).map((subSegmentId) => ({ id: subSegmentId }));
-      
+        })
+        .map((subSegmentId) => ({ id: subSegmentId }));
+
       try {
         segmentDoc = await transactionalEntityManager
           .getRepository(Segment)
