@@ -137,7 +137,7 @@ module.exports = {
       script: series(
         'nps banner.build',
         'nps config',
-        'nps lint',
+        'nps lint.eslint',
         'nps typecheck.build',
         'nps clean.dist',
         'nps transpile',
