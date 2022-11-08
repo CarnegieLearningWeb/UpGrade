@@ -18,4 +18,3 @@
   - ENROLLING
   - ENROLLMENT_COMPLETE
   - CANCELLED
->>>>>>> types/master

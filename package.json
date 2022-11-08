@@ -28,6 +28,10 @@
       "prettier --config .prettierrc --write",
       "eslint -c .eslintrc.js --ext .ts"
     ],
+    "./types/**/*.ts": [
+      "prettier --config .prettierrc --write",
+      "eslint -c .eslintrc.js --ext .ts"
+    ],
     "./backend/packages/Upgrade/{src, test}/**/*.ts": [
       "prettier --config .prettierrc --write",
       "eslint -c .eslintrc.js --ext .ts"
