@@ -22,12 +22,12 @@ export function authorizationChecker(): (action: Action, roles: any[]) => Promis
     const authService = Container.get<AuthService>(AuthService);
     const token = authService.parseBasicAuthFromRequest(action.request);
     if (token === undefined) {
-      log.warn({ message: 'No token provided'});
+      log.warn({ message: 'No token provided' });
       return env.auth.authCheck ? false : true;
     }
     try {
       const userDoc = await authService.validateUser(token, action.request);
-      log.info({ message: `User document in database ${JSON.stringify(userDoc, null, 2)}`});
+      log.info({ message: `User document in database ${JSON.stringify(userDoc, null, 2)}` });
       action.request.user = userDoc;
       return true;
     } catch (error) {

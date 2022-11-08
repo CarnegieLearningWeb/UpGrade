@@ -1,6 +1,0 @@
-package.json
-package-lock.json
-.prettierrc
-coverage
-dist
-node_modules

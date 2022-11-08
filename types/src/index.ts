@@ -21,7 +21,7 @@ export {
   MARKED_DECISION_POINT_STATUS,
   INCLUSION_CRITERIA,
   EXPORT_METHOD,
-  EXPERIMENT_TYPE
+  EXPERIMENT_TYPE,
 } from './Experiment/enums';
 export {
   IEnrollmentCompleteCondition,
@@ -38,5 +38,5 @@ export {
   IFlagVariation,
   ILogInput,
   IGroupMetric,
-  ISingleMetric
+  ISingleMetric,
 } from './Experiment/interfaces';

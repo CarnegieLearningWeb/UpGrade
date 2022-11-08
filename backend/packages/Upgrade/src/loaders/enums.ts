@@ -1,4 +1,4 @@
 export enum CONNECTION_NAME {
-    MAIN = 'default',
-    REPLICA = 'export',
-  }
+  MAIN = 'default',
+  REPLICA = 'export',
+}

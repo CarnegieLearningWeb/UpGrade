@@ -95,7 +95,7 @@ jobs:
           npm version ${{ needs.init.outputs.version }} --git-tag-version=false
           cp -R ../types packages/Upgrade
           npm ci
-          zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          zip -qq -r upgrade-backend-${{ needs.init.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json
       - uses: actions/upload-artifact@v2
         with:
           name: backend
