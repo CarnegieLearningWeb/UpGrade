@@ -65,10 +65,9 @@ export class AnalyticsController {
    */
   @Post('/enrollment')
   public async analyticsService(
-    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator,
-    @Req() request: AppRequest
+    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
-    return this.auditService.getEnrollments(auditParams.experimentIds, request.logger);
+    return this.auditService.getEnrollments(auditParams.experimentIds);
   }
 
   /**
@@ -146,10 +145,9 @@ export class AnalyticsController {
   @Post('/enrollment/detail')
   public async analyticsDetailService(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentDetailAnalyticsValidator,
-    @Req() request: AppRequest
+    auditParams: EnrollmentDetailAnalyticsValidator
   ): Promise<IExperimentEnrollmentDetailStats> {
-    return this.auditService.getDetailEnrollment(auditParams.experimentId, request.logger);
+    return this.auditService.getDetailEnrollment(auditParams.experimentId);
   }
 
   /**
@@ -233,14 +231,12 @@ export class AnalyticsController {
   @Post('/enrollment/date')
   public async enrollmentByDate(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentAnalyticsDateValidator,
-    @Req() request: AppRequest
+    auditParams: EnrollmentAnalyticsDateValidator
   ): Promise<any> {
     return this.auditService.getEnrollmentStatsByDate(
       auditParams.experimentId,
       auditParams.dateEnum,
-      auditParams.clientOffset,
-      request.logger
+      auditParams.clientOffset
     );
   }
 

@@ -203,10 +203,9 @@ export class FeatureFlagsController {
   @Post('/status')
   public async updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    flag: FeatureFlagStatusUpdateValidator,
-    @Req() request: AppRequest
+    flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.updateState(flag.flagId, flag.status, request.logger);
+    return this.featureFlagService.updateState(flag.flagId, flag.status);
   }
 
   /**
