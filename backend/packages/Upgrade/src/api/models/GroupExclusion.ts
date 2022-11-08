@@ -10,7 +10,7 @@ export class GroupExclusion extends BaseModel {
   public id: string;
 
   @Index()
-  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
   @IsNotEmpty()

@@ -12,7 +12,7 @@ export class ScheduledJob extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
-  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
   @Column()

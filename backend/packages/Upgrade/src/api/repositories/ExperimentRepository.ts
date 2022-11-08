@@ -225,8 +225,8 @@ export class ExperimentRepository extends Repository<Experiment> {
       // Create global exclude segment
       await createGlobalExcludeSegment(logger);
       return 'DB truncate successful';
-    } catch (error) {
-      error = new Error('DB truncate error. DB truncate unsuccessful');
+    } catch (err) {
+      const error = new Error('DB truncate error. DB truncate unsuccessful');
       (error as any).type = SERVER_ERROR.QUERY_FAILED;
       logger.error(error);
       throw error;

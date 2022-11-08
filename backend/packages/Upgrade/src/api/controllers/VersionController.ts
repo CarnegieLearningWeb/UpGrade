@@ -12,8 +12,6 @@ import { AppRequest } from '../../types';
 @Authorized()
 @JsonController('/version')
 export class VersionController {
-  constructor() {}
-
   /**
    * @swagger
    * /version:

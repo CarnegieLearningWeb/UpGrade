@@ -35,7 +35,7 @@ export class SegmentService {
 
   public async getAllSegments(logger: UpgradeLogger): Promise<Segment[]> {
     logger.info({ message: `Find all segments` });
-    let queryBuilder = await this.segmentRepository
+    const queryBuilder = await this.segmentRepository
       .createQueryBuilder('segment')
       .leftJoinAndSelect('segment.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
@@ -80,17 +80,17 @@ export class SegmentService {
   }
 
   public async getAllSegmentWithStatus(logger: UpgradeLogger): Promise<getSegmentData> {
-    const segmentsData = await getConnection().transaction(async (transactionalEntityManager) => {
+    const segmentsData = await getConnection().transaction(async () => {
       const segmentsData = await this.getAllSegments(logger);
       const allExperimentSegmentsInclusion = await this.getExperimentSegmenInclusionData();
       const allExperimentSegmentsExclusion = await this.getExperimentSegmenExclusionData();
 
-      let segmentsUsedLockedList = [];
-      let segmentsUsedUnlockedList = [];
+      const segmentsUsedLockedList = [];
+      const segmentsUsedUnlockedList = [];
 
       if (allExperimentSegmentsInclusion) {
         allExperimentSegmentsInclusion.forEach((ele) => {
-          let subSegments = ele.segment.subSegments;
+          const subSegments = ele.segment.subSegments;
           subSegments.forEach((subSegment) => {
             ele.experiment.state === EXPERIMENT_STATE.ENROLLING
               ? segmentsUsedLockedList.push(subSegment.id)
@@ -101,7 +101,7 @@ export class SegmentService {
 
       if (allExperimentSegmentsExclusion) {
         allExperimentSegmentsExclusion.forEach((ele) => {
-          let subSegments = ele.segment.subSegments;
+          const subSegments = ele.segment.subSegments;
           subSegments.forEach((subSegment) => {
             ele.experiment.state === EXPERIMENT_STATE.ENROLLING
               ? segmentsUsedLockedList.push(subSegment.id)
@@ -133,12 +133,12 @@ export class SegmentService {
   }
 
   public async getExperimentSegmenExclusionData() {
-    let queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionData();
+    const queryBuilder = await this.experimentSegmentExclusionRepository.getExperimentSegmentExclusionData();
     return queryBuilder;
   }
 
   public async getExperimentSegmenInclusionData() {
-    let queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
+    const queryBuilder = await this.experimentSegmentInclusionRepository.getExperimentSegmentInclusionData();
     return queryBuilder;
   }
 
@@ -181,7 +181,7 @@ export class SegmentService {
 
   public async exportSegment(segmentId: string, logger: UpgradeLogger): Promise<Segment> {
     logger.info({ message: `Export segment by id. segmentId: ${segmentId}` });
-    let segmentDoc = await this.segmentRepository.findOne({
+    const segmentDoc = await this.segmentRepository.findOne({
       where: { id: segmentId },
       relations: ['individualForSegment', 'groupForSegment', 'subSegments'],
     });

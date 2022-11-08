@@ -46,22 +46,18 @@ export class AnalyticsService {
     public errorService: ErrorService
   ) {}
 
-  public async getEnrollments(experimentIds: string[], logger: UpgradeLogger): Promise<IExperimentEnrollmentStats[]> {
+  public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
     return this.analyticsRepository.getEnrollments(experimentIds);
   }
 
-  public async getDetailEnrollment(
-    experimentId: string,
-    logger: UpgradeLogger
-  ): Promise<IExperimentEnrollmentDetailStats> {
+  public async getDetailEnrollment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
     return this.analyticsRepository.getEnrollmentPerPartitionCondition(experimentId);
   }
 
   public async getEnrollmentStatsByDate(
     experimentId: string,
     dateRange: DATE_RANGE,
-    clientOffset: number,
-    logger: UpgradeLogger
+    clientOffset: number
   ): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
@@ -330,9 +326,6 @@ export class AnalyticsService {
       const email_expiry_time = env.email.expireAfterSeconds;
       const email_from = env.email.from;
 
-      let monitorFileBuffer;
-      let signedURLMonitored;
-
       const fileName = `${folderPath}${simpleExportCSV}`;
       if (!fs.existsSync(fileName)) {
         // if file doesn't exist create a empty file
@@ -351,22 +344,21 @@ export class AnalyticsService {
         await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
       }
 
-      let emailText;
-      monitorFileBuffer = fs.readFileSync(fileName);
+      const monitorFileBuffer = fs.readFileSync(fileName);
       // delete local file copy:
       fs.unlinkSync(`${folderPath}${simpleExportCSV}`);
 
       await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, simpleExportCSV)]);
 
-      signedURLMonitored = await Promise.all([
+      const signedURLMonitored = await Promise.all([
         this.awsService.generateSignedURL(email_export, simpleExportCSV, email_expiry_time),
       ]);
 
-      emailText = `Hey,
+      const emailText = `Hey,
       <br>
       Here is the exported experiment data:
       <br>
-      <a href=\"${signedURLMonitored[0]}\">Monitored Experiment Data</a>`;
+      <a href="${signedURLMonitored[0]}">Monitored Experiment Data</a>`;
 
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user

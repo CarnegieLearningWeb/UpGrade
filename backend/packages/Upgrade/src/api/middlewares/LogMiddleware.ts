@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import express from 'express';
 import morgan from 'morgan';
 import { ExpressMiddlewareInterface, Middleware } from 'routing-controllers';

@@ -561,7 +561,7 @@ export class ExperimentClientController {
   @Post('bloblog')
   public async blobLog(@Req() request: express.Request): Promise<any> {
     return new Promise((resolve, reject) => {
-      request.on('readable', async (data) => {
+      request.on('readable', async () => {
         const blobData = JSON.parse(request.read());
         try {
           // The function will throw error if userId doesn't exist

@@ -7,6 +7,6 @@ export class MonitoredDecisionPointLog extends BaseModel {
   @PrimaryGeneratedColumn()
   public id: string;
 
-  @ManyToOne((type) => MonitoredDecisionPoint, { onDelete: 'CASCADE' })
+  @ManyToOne(() => MonitoredDecisionPoint, { onDelete: 'CASCADE' })
   public monitoredDecisionPoint: MonitoredDecisionPoint;
 }

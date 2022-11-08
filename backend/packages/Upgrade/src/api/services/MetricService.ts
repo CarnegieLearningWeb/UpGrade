@@ -122,7 +122,7 @@ export class MetricService {
     metrics.forEach((metric) => {
       const keyArray = metric.key.split(METRICS_JOIN_TEXT);
       let metricPointer = metricUnitArray;
-      keyArray.forEach((key, index) => {
+      keyArray.forEach((key) => {
         const keyExist = metricPointer.reduce((aggregator, unit) => {
           const isKey = unit && unit.key === key ? true : false;
           if (isKey) {

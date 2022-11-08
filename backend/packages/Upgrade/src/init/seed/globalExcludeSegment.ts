@@ -20,8 +20,8 @@ export async function createGlobalExcludeSegment(logger: UpgradeLogger): Promise
   if (!(await segmentService.getSegmentById(globalExcludeSegment.id, new UpgradeLogger()))) {
     try {
       return segmentService.upsertSegment(globalExcludeSegment, logger);
-    } catch (error) {
-      error = new Error('Error while creating Global Exclude Segment');
+    } catch (err) {
+      const error = new Error('Error while creating Global Exclude Segment');
       logger.error(error);
       throw error;
     }

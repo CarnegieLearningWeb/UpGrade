@@ -123,7 +123,7 @@ export class ExperimentAssignmentService {
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
 
     // search decision points in experiments:
-    let dpExperiments = await this.decisionPointRepository.find({
+    const dpExperiments = await this.decisionPointRepository.find({
       where: {
         site: site,
         target: target,
@@ -230,7 +230,7 @@ export class ExperimentAssignmentService {
       experiments = [];
     }
 
-    let globalFilteredExperiments: Experiment[] = [...experiments];
+    const globalFilteredExperiments: Experiment[] = [...experiments];
     const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
 
     // no experiment
@@ -239,11 +239,7 @@ export class ExperimentAssignmentService {
     }
 
     // experiment level inclusion and exclusion
-    let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
-      globalFilteredExperiments,
-      experimentUser,
-      logger
-    );
+    let [filteredExperiments] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, experimentUser);
 
     if (filteredExperiments.length) {
       // filter experiments based on decision point
@@ -269,9 +265,9 @@ export class ExperimentAssignmentService {
       });
 
       if (experimentDecisionPoint.length && experimentId) {
-        let selectedExperimentDP = experimentDecisionPoint.filter((dp) => dp.experiment.id === experimentId);
+        const selectedExperimentDP = experimentDecisionPoint.filter((dp) => dp.experiment.id === experimentId);
         const decisionPointId = selectedExperimentDP[0].id;
-        let experiment = selectedExperimentDP[0].experiment;
+        const experiment = selectedExperimentDP[0].experiment;
         let individualEnrollments: IndividualEnrollment;
         let individualExclusions: IndividualExclusion;
         let groupEnrollments: GroupEnrollment | undefined;
@@ -329,8 +325,7 @@ export class ExperimentAssignmentService {
               groupEnrollment: groupEnrollments,
               groupExclusion: groupExclusions,
             },
-            status,
-            logger
+            status
           );
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
@@ -402,7 +397,7 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
       logger.error({ message: `User not defined in getAllExperimentConditions: ${userId}` });
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined in getAllExperimentConditions: ${userId}`,
@@ -488,7 +483,7 @@ export class ExperimentAssignmentService {
         return [];
       }
 
-      let globalFilteredExperiments: Experiment[] = [...experiments];
+      const globalFilteredExperiments: Experiment[] = [...experiments];
       const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
 
       // return if no experiment
@@ -529,8 +524,7 @@ export class ExperimentAssignmentService {
       // experiment level inclusion and exclusion
       let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
-        experimentUser,
-        logger
+        experimentUser
       );
 
       // Create experiment pool
@@ -817,7 +811,7 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!userDoc) {
       logger.error({ message: `User not found in dataLog, userId => ${userId}`, details: jsonLog });
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined dataLog: ${userId}`,
@@ -851,7 +845,7 @@ export class ExperimentAssignmentService {
     // throw error if user not defined
     if (!userDoc) {
       logger.error({ message: `User not found in clientFailedExperimentPoint, userId => ${userId}` });
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined clientFailedExperimentPoint: ${userId}`,
@@ -1218,7 +1212,7 @@ export class ExperimentAssignmentService {
         const { userCount } = enrollmentCompleteCondition;
         const usersPerGroup = await this.analyticsRepository.getEnrollmentCountPerGroup(experiment.id);
 
-        let groupSatisfied = usersPerGroup.filter(({ count }) => {
+        const groupSatisfied = usersPerGroup.filter(({ count }) => {
           if (count >= userCount) {
             return true;
           }
@@ -1317,19 +1311,14 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    status: MARKED_DECISION_POINT_STATUS,
-    logger: UpgradeLogger
+    status: MARKED_DECISION_POINT_STATUS
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
 
     // Check if user or group is in global exclusion list
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(user);
 
-    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion(
-      [experiment],
-      user,
-      logger
-    );
+    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion([experiment], user);
     // experiment level exclusion
     let experimentExcluded = false;
     if (includedExperiments.length === 0) {
@@ -1652,7 +1641,7 @@ export class ExperimentAssignmentService {
     Object.keys(segmentObj).forEach((expId) => {
       const exp = segmentObj[expId];
 
-      let newIncludedSegments: string[] = [],
+      const newIncludedSegments: string[] = [],
         newExcludedSegments: string[] = [];
 
       exp.currentIncludedSegmentIds.forEach((includedSegmentId) => {
@@ -1679,8 +1668,7 @@ export class ExperimentAssignmentService {
 
   private async experimentLevelExclusionInclusion(
     experiments: Experiment[],
-    experimentUser: ExperimentUser,
-    logger: UpgradeLogger
+    experimentUser: ExperimentUser
   ): Promise<[Experiment[], { experiment: Experiment; reason: string }[]]> {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
@@ -1698,13 +1686,13 @@ export class ExperimentAssignmentService {
       };
     });
 
-    let depth = 0;
+    const depth = 0;
     [segmentObj, segmentDetails] = await this.resolveSegment(segmentObj, segmentDetails, depth);
 
-    let explicitExperimentIndividualInclusionFilteredData: { userId: string; experimentId: string }[] = [];
-    let explicitExperimentIndividualExclusionFilteredData: { userId: string; experimentId: string }[] = [];
-    let explicitExperimentGroupInclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
-    let explicitExperimentGroupExclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
+    const explicitExperimentIndividualInclusionFilteredData: { userId: string; experimentId: string }[] = [];
+    const explicitExperimentIndividualExclusionFilteredData: { userId: string; experimentId: string }[] = [];
+    const explicitExperimentGroupInclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
+    const explicitExperimentGroupExclusionFilteredData: { groupId: string; type: string; experimentId: string }[] = [];
 
     Object.keys(segmentObj).forEach((expId) => {
       const exp = segmentObj[expId];
@@ -1752,7 +1740,7 @@ export class ExperimentAssignmentService {
       });
     });
 
-    let userGroups = [];
+    const userGroups = [];
     if (experimentUser.group) {
       Object.keys(experimentUser.group).forEach((type) => {
         experimentUser.group[type].forEach((groupId) => {
@@ -1778,8 +1766,8 @@ export class ExperimentAssignmentService {
     //           Else include the user
     //     Else exclude the user
 
-    let includedExperiments: Experiment[] = [];
-    let excludedExperiments = [];
+    const includedExperiments: Experiment[] = [];
+    const excludedExperiments = [];
 
     experiments.forEach((experiment) => {
       let inclusionFlag = false;
@@ -1791,7 +1779,7 @@ export class ExperimentAssignmentService {
         } else if (explicitExperimentIndividualInclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           includedExperiments.push(experiment);
         } else {
-          for (let userGroup of userGroups) {
+          for (const userGroup of userGroups) {
             if (
               explicitExperimentGroupExclusionFilteredData.some(
                 (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id
@@ -1812,7 +1800,7 @@ export class ExperimentAssignmentService {
         } else if (explicitExperimentIndividualExclusionFilteredData.some((e) => e.experimentId === experiment.id)) {
           excludedExperiments.push({ experiment: experiment, reason: 'filterMode' });
         } else {
-          for (let userGroup of userGroups) {
+          for (const userGroup of userGroups) {
             if (
               explicitExperimentGroupInclusionFilteredData.some(
                 (e) => e.groupId === userGroup.groupId && e.type === userGroup.type && e.experimentId === experiment.id

@@ -5,11 +5,11 @@ import { Segment } from './Segment';
 
 @Entity()
 export class ExperimentSegmentInclusion extends BaseModel {
-  @OneToOne((type) => Segment, (segment) => segment.experimentSegmentInclusion, { onDelete: 'CASCADE', primary: true })
+  @OneToOne(() => Segment, (segment) => segment.experimentSegmentInclusion, { onDelete: 'CASCADE', primary: true })
   @JoinColumn()
   public segment: Segment;
 
-  @OneToOne((type) => Experiment, (experiment) => experiment.experimentSegmentInclusion, {
+  @OneToOne(() => Experiment, (experiment) => experiment.experimentSegmentInclusion, {
     onDelete: 'CASCADE',
     primary: true,
   })

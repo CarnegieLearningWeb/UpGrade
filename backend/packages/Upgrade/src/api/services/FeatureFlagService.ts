@@ -80,7 +80,7 @@ export class FeatureFlagService {
     return undefined;
   }
 
-  public async updateState(flagId: string, status: boolean, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: boolean): Promise<FeatureFlag> {
     // TODO: Add log for updating flag state
     const updatedState = await this.featureFlagRepository.updateState(flagId, status);
     return updatedState;
@@ -134,6 +134,8 @@ export class FeatureFlagService {
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
+        // TODO: please review this eslint error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { featureFlagId, ...rest } = variationDoc as any;
         return rest;
       });
@@ -153,6 +155,8 @@ export class FeatureFlagService {
     const oldVariations = oldFeatureFlag[0].variations;
 
     return getConnection().transaction(async (transactionalEntityManager) => {
+      // TODO: please review this eslint error
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { variations, versionNumber, createdAt, updatedAt, ...flagDoc } = flag;
       let featureFlagDoc: FeatureFlag;
       try {
@@ -169,7 +173,8 @@ export class FeatureFlagService {
         (variations &&
           variations.length > 0 &&
           variations.map((variation: FlagVariation) => {
-            // tslint:disable-next-line:no-shadowed-variable
+            // TODO: please review this eslint error
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, ...rest } = variation;
             rest.featureFlag = featureFlagDoc;
             rest.id = rest.id || uuid();
@@ -210,6 +215,8 @@ export class FeatureFlagService {
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
+        // TODO: please review this eslint error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { featureFlagId, ...rest } = variationDoc as any;
         return { ...rest, featureFlag: variationDoc.featureFlag };
       });

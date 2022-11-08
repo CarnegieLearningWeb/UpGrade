@@ -7,7 +7,7 @@ import { UpgradeLogger } from '../lib/logger/UpgradeLogger';
 export function authorizationChecker(): (action: Action, roles: any[]) => Promise<boolean> | boolean {
   const log = new UpgradeLogger();
 
-  return async function innerAuthorizationChecker(action: Action, roles: string[]): Promise<boolean> {
+  return async function innerAuthorizationChecker(action: Action): Promise<boolean> {
     // here you can use request/response objects from action
     // also if decorator defines roles it needs to access the action
     // you can use them to provide granular access check

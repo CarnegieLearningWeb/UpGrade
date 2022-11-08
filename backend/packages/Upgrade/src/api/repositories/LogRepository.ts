@@ -339,7 +339,7 @@ export class LogRepository extends Repository<Log> {
     // get experiment repository
     const experimentRepo = getRepository(Experiment);
 
-    let analyticsQuery = experimentRepo
+    const analyticsQuery = experimentRepo
       .createQueryBuilder('experiment')
       .innerJoin('experiment.queries', 'queries')
       .innerJoin('queries.metric', 'metric')

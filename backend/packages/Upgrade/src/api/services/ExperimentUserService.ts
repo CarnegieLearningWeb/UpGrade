@@ -35,7 +35,9 @@ export class ExperimentUserService {
 
   public async create(users: Array<Partial<ExperimentUser>>, logger: UpgradeLogger): Promise<ExperimentUser[]> {
     logger.info({ message: 'Create a new User. Metadata of the user =>', details: users });
+    // TODO: Pratik please review this eslint error, is this working as intended?
     const multipleUsers = users.map((user) => {
+      // eslint-disable-next-line no-self-assign
       user.id = user.id;
       return user;
     });
@@ -72,7 +74,7 @@ export class ExperimentUserService {
     if (!userExist) {
       logger.error({ message: 'User not defined setAliasesForUser' + userId, details: aliases });
 
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined setAliasesForUser: ${userId}`,
@@ -174,11 +176,11 @@ export class ExperimentUserService {
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
-    let userExist = userDoc;
+    const userExist = userDoc;
     logger.info({ message: 'Update working group for user: ' + userId, details: workingGroup });
     if (!userExist) {
       logger.error({ message: 'User not defined updateWorkingGroup', details: userId });
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined updateWorkingGroup: ${userId}`,
@@ -206,14 +208,14 @@ export class ExperimentUserService {
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<ExperimentUser> {
     const { logger, userDoc } = requestContext;
-    let userExist = userDoc;
+    const userExist = userDoc;
     logger.info({
       message: `Set Group Membership for userId: ${userId} with Group membership details as below:`,
       details: groupMembership,
     });
     if (!userExist) {
       logger.error({ message: 'User not defined updateGroupMembership', details: userId });
-      let error = new Error(
+      const error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
           message: `User not defined updateGroupMembership: ${userId}`,
@@ -250,6 +252,8 @@ export class ExperimentUserService {
           return userDoc[0].originalUser;
         } else {
           // If user is original user
+          // TODO: please review this eslint error
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { originalUser, ...rest } = userDoc[0];
           return rest as any;
         }
