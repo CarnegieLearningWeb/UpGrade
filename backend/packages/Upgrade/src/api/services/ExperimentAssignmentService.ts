@@ -998,7 +998,6 @@ export class ExperimentAssignmentService {
     // merge the metrics field
     logGroup.forEach((logData, index) => {
       if (logData !== null) {
-        // tslint:disable-next-line:no-shadowed-variable
         const { id, uniquifier, data, timestamp, key } = logData;
         const metric_keys = [key];
         for (let i = index + 1; i < logGroup.length; i++) {
@@ -1026,7 +1025,6 @@ export class ExperimentAssignmentService {
     let rawDataLogs = this.createDataLogsFromCLFormat(timestamp, metrics, groupedMetrics, metricDocs, userDoc, logger);
 
     rawDataLogs.forEach((rawLogs) => {
-      // tslint:disable-next-line:no-shadowed-variable
       const { metrics, data, uniquifier, timeStamp } = rawLogs;
 
       metrics.forEach((metric, index) => {
@@ -1074,7 +1072,6 @@ export class ExperimentAssignmentService {
     });
 
     // filter rawDataLogs
-    // tslint:disable-next-line:no-shadowed-variable
     rawDataLogs = rawDataLogs.filter(({ metrics }) => {
       const metricArray = metrics.filter((metric) => metric !== null);
       return metricArray.length > 0;

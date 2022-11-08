@@ -2,7 +2,6 @@ import { UpgradeLogger } from './lib/logger/UpgradeLogger';
 import { env } from './env';
 
 if (env.isProduction) {
-  // tslint:disable-next-line: no-var-requires
   require('newrelic/index');
 }
 
