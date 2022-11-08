@@ -169,7 +169,6 @@ export class FeatureFlagService {
         (variations &&
           variations.length > 0 &&
           variations.map((variation: FlagVariation) => {
-            // tslint:disable-next-line:no-shadowed-variable
             const { createdAt, updatedAt, versionNumber, ...rest } = variation;
             rest.featureFlag = featureFlagDoc;
             rest.id = rest.id || uuid();

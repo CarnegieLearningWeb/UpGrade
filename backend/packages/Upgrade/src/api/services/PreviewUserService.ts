@@ -88,7 +88,6 @@ export class PreviewUserService {
       (newAssignments &&
         newAssignments.length > 0 &&
         newAssignments.map((assignment: ExplicitIndividualAssignment) => {
-          // tslint:disable-next-line:no-shadowed-variable
           const { createdAt, updatedAt, versionNumber, ...rest } = assignment;
           rest.previewUser = previewUser;
           rest.id = rest.id || uuid();

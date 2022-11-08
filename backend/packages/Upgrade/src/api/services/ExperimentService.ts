@@ -380,7 +380,7 @@ export class ExperimentService {
   }
 
   public async importExperiment(experiments: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
-    for (let experiment of experiments) {
+    for (const experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
@@ -612,7 +612,7 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        let {
+        const {
           conditions,
           partitions: decisionPoints,
           conditionAliases,
@@ -727,7 +727,6 @@ export class ExperimentService {
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ExperimentCondition) => {
-              // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = condition;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
@@ -749,7 +748,6 @@ export class ExperimentService {
                   },
                 })
               );
-              // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
@@ -764,7 +762,6 @@ export class ExperimentService {
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
-              // tslint:disable-next-line:no-shadowed-variable
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
@@ -1144,7 +1141,7 @@ export class ExperimentService {
       // update conditionAliases condition uuids:
       if (conditionAliases) {
         conditionAliases.map((conditionAlias) => {
-          let condition = conditions.find((doc) => {
+          const condition = conditions.find((doc) => {
             return doc.conditionCode === conditionAlias.parentCondition.conditionCode;
           });
           if (condition) {
@@ -1163,13 +1160,13 @@ export class ExperimentService {
         [];
 
       // creating segmentInclude doc
-      let includeTempDoc = new ExperimentSegmentInclusion();
+      const includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
       includeTempDoc.experiment = experimentDoc;
       var { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
 
       // creating segmentExclude doc
-      let excludeTempDoc = new ExperimentSegmentExclusion();
+      const excludeTempDoc = new ExperimentSegmentExclusion();
       excludeTempDoc.segment = segmentExcludeDoc;
       excludeTempDoc.experiment = experimentDoc;
       var { createdAt, updatedAt, versionNumber, ...segmentExcludeDocToSave } = excludeTempDoc;
@@ -1181,7 +1178,6 @@ export class ExperimentService {
           queries.length > 0 &&
           queries.map((query: any) => {
             promiseArray.push(this.metricRepository.findOne(query.metric.key));
-            // tslint:disable-next-line:no-shadowed-variable
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
             rest.id = rest.id || uuid();
@@ -1339,7 +1335,7 @@ export class ExperimentService {
   public formatingConditionAlias(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
 
-    let conditionAlias: ConditionAlias[] = [];
+    const conditionAlias: ConditionAlias[] = [];
     partitions.forEach((partition) => {
       const conditionAliasData = partition.conditionAliases;
       delete partition.conditionAliases;
