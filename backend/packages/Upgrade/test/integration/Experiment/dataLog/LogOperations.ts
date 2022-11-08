@@ -571,7 +571,6 @@ export default async function LogOperations(): Promise<void> {
   );
 
   // Test results
-  // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < allQuery.length; i++) {
     const query = allQuery[i];
     const queryResult = await queryService.analyze([query.id], new UpgradeLogger());
