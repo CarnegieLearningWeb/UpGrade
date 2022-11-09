@@ -613,7 +613,6 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        // TODO: Please review this eslint error
 
         const {
           conditions,
@@ -733,7 +732,6 @@ export class ExperimentService {
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ExperimentCondition) => {
-              // TODO: please review this eslint error
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, ...rest } = condition;
               rest.experiment = experimentDoc;
@@ -756,7 +754,6 @@ export class ExperimentService {
                   },
                 })
               );
-              // TODO: please review this eslint error
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
               rest.experiment = experimentDoc;
@@ -772,7 +769,6 @@ export class ExperimentService {
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
-              // TODO: please review this eslint error
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
@@ -889,7 +885,6 @@ export class ExperimentService {
         const queryDocToReturn =
           !!queryDocs &&
           queryDocs.map((queryDoc, index) => {
-            // TODO: please review this eslint error
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { metricKey, ...rest } = queryDoc as any;
             return { ...rest, metric: queriesDocToSave[index].metric };
@@ -1175,14 +1170,12 @@ export class ExperimentService {
       const includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
       includeTempDoc.experiment = experimentDoc;
-      // TODO: Please review this eslint error
       var { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
 
       // creating segmentExclude doc
       const excludeTempDoc = new ExperimentSegmentExclusion();
       excludeTempDoc.segment = segmentExcludeDoc;
       excludeTempDoc.experiment = experimentDoc;
-      // TODO: Please review this eslint error
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       var { createdAt, updatedAt, versionNumber, ...segmentExcludeDocToSave } = excludeTempDoc;
       // creating queries docs
@@ -1192,7 +1185,6 @@ export class ExperimentService {
           queries.length > 0 &&
           queries.map((query: any) => {
             promiseArray.push(this.metricRepository.findOne(query.metric.key));
-            // TODO: please review this eslint error
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
@@ -1251,13 +1243,11 @@ export class ExperimentService {
         throw error;
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
-        // TODO: please review this eslint error
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = conditionDoc as any;
         return restDoc;
       });
       const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
-        // TODO: please review this eslint error
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = decisionPointDoc as any;
         return restDoc;
