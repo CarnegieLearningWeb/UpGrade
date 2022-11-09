@@ -67,7 +67,7 @@ export default async function testCase(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
-  let checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
+  let checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       id: experimentId,
@@ -127,7 +127,7 @@ export default async function testCase(): Promise<void> {
   // change experiment state to enrolling
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
-  checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       id: experimentId,
@@ -200,7 +200,7 @@ export default async function testCase(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName2, experimentPoint2);
 
-  checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
@@ -215,7 +215,7 @@ export default async function testCase(): Promise<void> {
   // the preview user was excluded from the experiment, but preview user is same student1 which is expUser, so enrolled
   expect(experimentConditionAssignments).toHaveLength(3);
 
-  checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 1,
@@ -248,7 +248,7 @@ export default async function testCase(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName1, experimentPoint1);
 
-  checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 2,
@@ -271,7 +271,7 @@ export default async function testCase(): Promise<void> {
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
-  checkData = await analyticsService.getDetailEnrollment(experimentId, new UpgradeLogger());
+  checkData = await analyticsService.getDetailEnrollment(experimentId);
   expect(checkData).toEqual(
     expect.objectContaining({
       users: 2,

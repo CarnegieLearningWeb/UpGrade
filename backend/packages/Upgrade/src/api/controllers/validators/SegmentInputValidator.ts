@@ -1,8 +1,7 @@
-import { IsArray, IsEnum, IsNotEmpty, IsString, IsUUID } from "class-validator";
-import { SEGMENT_TYPE } from "upgrade_types";
+import { IsArray, IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { SEGMENT_TYPE } from 'upgrade_types';
 
 export class SegmentInputValidator {
-
   @IsUUID()
   public id: string;
 
@@ -26,7 +25,7 @@ export class SegmentInputValidator {
   public userIds: string[];
 
   @IsArray()
-  public groups: {groupId:string, type:string}[];
+  public groups: { groupId: string; type: string }[];
 
   @IsArray()
   @IsString({ each: true })

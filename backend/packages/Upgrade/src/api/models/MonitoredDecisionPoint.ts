@@ -29,10 +29,9 @@ export class MonitoredDecisionPoint extends BaseModel {
   public condition: string;
 
   @Index()
-  @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;
 
-  @OneToMany((type) => MonitoredDecisionPointLog, (monitoredPointLog) => monitoredPointLog.monitoredDecisionPoint)
+  @OneToMany(() => MonitoredDecisionPointLog, (monitoredPointLog) => monitoredPointLog.monitoredDecisionPoint)
   public monitoredPointLogs: MonitoredDecisionPointLog[];
 }
-

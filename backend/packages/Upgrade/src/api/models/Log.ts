@@ -17,10 +17,10 @@ export class Log extends BaseModel {
   @Column('jsonb')
   public data: any;
 
-  @ManyToMany((type) => Metric, (metric) => metric.logs)
+  @ManyToMany(() => Metric, (metric) => metric.logs)
   public metrics: Metric[];
 
   @Index()
-  @ManyToOne((type) => ExperimentUser, (user) => user.logs)
+  @ManyToOne(() => ExperimentUser, (user) => user.logs)
   public user: ExperimentUser;
 }

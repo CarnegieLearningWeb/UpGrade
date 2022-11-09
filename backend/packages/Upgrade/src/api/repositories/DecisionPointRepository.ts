@@ -13,7 +13,9 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .insert()
       .into(DecisionPoint)
       .values(decisionPointDoc)
-      .onConflict(`("id") DO UPDATE SET "target" = :target, "description" = :description, "excludeIfReached" = :excludeIfReached, "order" = :order`)
+      .onConflict(
+        `("id") DO UPDATE SET "target" = :target, "description" = :description, "excludeIfReached" = :excludeIfReached, "order" = :order`
+      )
       .setParameter('target', decisionPointDoc.target)
       .setParameter('description', decisionPointDoc.description)
       .setParameter('excludeIfReached', decisionPointDoc.excludeIfReached)
@@ -60,7 +62,12 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'insertPartitions', { partitionsDocs: decisionPointDoc }, errorMsg);
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'insertPartitions',
+          { partitionsDocs: decisionPointDoc },
+          errorMsg
+        );
         throw errorMsgString;
       });
 
@@ -104,7 +111,9 @@ export class DecisionPointRepository extends Repository<DecisionPoint> {
     const experimentDecisionPoints = await this.createQueryBuilder('experimentPartition')
       .select('experimentPartition.twoCharacterId')
       .getMany();
-    const uniqueIdentifier = experimentDecisionPoints.map((decisionPoint: DecisionPoint) => decisionPoint.twoCharacterId);
+    const uniqueIdentifier = experimentDecisionPoints.map(
+      (decisionPoint: DecisionPoint) => decisionPoint.twoCharacterId
+    );
     return uniqueIdentifier;
   }
 }

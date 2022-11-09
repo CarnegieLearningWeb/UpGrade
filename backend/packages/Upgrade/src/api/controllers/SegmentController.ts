@@ -211,7 +211,7 @@ export class SegmentController {
    *            description: Authorization Required Error
    */
   @Get()
-  public async getAllSegments( @Req() request: AppRequest ): Promise<getSegmentData> {
+  public async getAllSegments(@Req() request: AppRequest): Promise<getSegmentData> {
     return this.segmentService.getAllSegmentWithStatus(request.logger);
   }
 
@@ -242,9 +242,9 @@ export class SegmentController {
    *          description: Segment not found
    *        '500':
    *          description: Internal Server Error, SegmentId is not valid
-  */
+   */
   @Get('/:segmentId')
-  public getSegmentById( @Param('segmentId') segmentId: string, @Req() request: AppRequest ): Promise<Segment> {
+  public getSegmentById(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
     if (!segmentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
@@ -284,11 +284,12 @@ export class SegmentController {
    *          description: Authorization Required Error
    *        '500':
    *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
-*/
+   */
   @Post()
   public upsertSegment(
     @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
-    @Req() request: AppRequest ): Promise<Segment> {
+    @Req() request: AppRequest
+  ): Promise<Segment> {
     return this.segmentService.upsertSegment(segment, request.logger);
   }
 
@@ -319,7 +320,7 @@ export class SegmentController {
    *          description: Internal Server Error, SegmentId is not valid
    */
   @Delete('/:segmentId')
-  public deleteSegment( @Param('segmentId') segmentId: string, @Req() request: AppRequest ): Promise<Segment> {
+  public deleteSegment(@Param('segmentId') segmentId: string, @Req() request: AppRequest): Promise<Segment> {
     if (!segmentId) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }
@@ -359,16 +360,17 @@ export class SegmentController {
    *          description: Authorization Required Error
    *        '500':
    *          description: Internal Server Error, Insert Error in database, SegmentId is not valid, JSON format is not valid
-*/
-@Post('/import')
-public importSegment(
-  @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
-  @Req() request: AppRequest ): Promise<Segment> {
-  return this.segmentService.importSegment(segment, request.logger);
-}
+   */
+  @Post('/import')
+  public importSegment(
+    @Body({ validate: { validationError: { target: false, value: false } } }) segment: SegmentInputValidator,
+    @Req() request: AppRequest
+  ): Promise<Segment> {
+    return this.segmentService.importSegment(segment, request.logger);
+  }
 
   @Get('/export/:id')
-  public exportSegment( @Param('id') id: string, @Req() request: AppRequest ): Promise<Segment> {
+  public exportSegment(@Param('id') id: string, @Req() request: AppRequest): Promise<Segment> {
     if (!id) {
       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : segmentId should not be null.'));
     }

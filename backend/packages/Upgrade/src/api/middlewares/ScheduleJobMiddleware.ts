@@ -7,8 +7,6 @@ import { env } from '../../env';
 import { SERVER_ERROR } from 'upgrade_types';
 
 export class ScheduleJobMiddleware implements ExpressMiddlewareInterface {
-  constructor() {}
-
   public use(req: express.Request, res: express.Response, next: express.NextFunction): any {
     try {
       const authorization = req.header('authorization');

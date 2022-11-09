@@ -5,11 +5,14 @@ import { Segment } from './Segment';
 
 @Entity()
 export class ExperimentSegmentExclusion extends BaseModel {
-  @OneToOne((type) => Segment, (segment) => segment.experimentSegmentExclusion, { onDelete: 'CASCADE', primary: true })
+  @OneToOne(() => Segment, (segment) => segment.experimentSegmentExclusion, { onDelete: 'CASCADE', primary: true })
   @JoinColumn()
   public segment: Segment;
 
-  @OneToOne((type) => Experiment, (experiment) => experiment.experimentSegmentExclusion, { onDelete: 'CASCADE', primary: true })
+  @OneToOne(() => Experiment, (experiment) => experiment.experimentSegmentExclusion, {
+    onDelete: 'CASCADE',
+    primary: true,
+  })
   @JoinColumn()
   public experiment: Experiment;
 }

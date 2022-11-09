@@ -1,4 +1,14 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError, Delete } from 'routing-controllers';
+import {
+  JsonController,
+  Post,
+  Body,
+  UseBefore,
+  Get,
+  BodyParam,
+  Req,
+  InternalServerError,
+  Delete,
+} from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -162,7 +172,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     const userDocument = await this.experimentUserService.create([experimentUser], request.logger);
@@ -239,7 +249,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group, {
@@ -302,7 +312,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(workingGroupParams.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup, {
@@ -405,7 +415,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.markExperimentPoint(
@@ -418,7 +428,7 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       },
       experiment.partitionId,
-      experiment.experimentId ? experiment.experimentId : null,
+      experiment.experimentId ? experiment.experimentId : null
     );
   }
 
@@ -570,10 +580,10 @@ export class ExperimentClientController {
    *                            attributes:
    *                              type: object
    *                              properties:
-   *                                  continuousMetricName: 
+   *                                  continuousMetricName:
    *                                    type: integer
    *                                    example: 100
-   *                                  categoricalMetricName: 
+   *                                  categoricalMetricName:
    *                                    type: string
    *                                    example: CATEGORY
    *                            groupedMetrics:
@@ -590,10 +600,10 @@ export class ExperimentClientController {
    *                                      attributes:
    *                                        type: object
    *                                        properties:
-   *                                            continuousMetricName: 
+   *                                            continuousMetricName:
    *                                              type: integer
    *                                              example: 100
-   *                                            categoricalMetricName: 
+   *                                            categoricalMetricName:
    *                                              type: string
    *                                              example: CATEGORY
    *            description: User Document
@@ -619,7 +629,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
@@ -660,17 +670,21 @@ export class ExperimentClientController {
   @Post('bloblog')
   public async blobLog(@Req() request: express.Request): Promise<any> {
     return new Promise((resolve, reject) => {
-      request.on('readable', async (data) => {
+      request.on('readable', async () => {
         const blobData = JSON.parse(request.read());
         try {
           // The function will throw error if userId doesn't exist
           const experimentUserDoc = await this.getUserDoc(blobData.userId, request.logger);
           if (experimentUserDoc) {
             // append userDoc in logger
-            request.logger.child({ userDoc : experimentUserDoc })
+            request.logger.child({ userDoc: experimentUserDoc });
             request.logger.info({ message: 'Got the original user doc' });
           }
-          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value, request.logger);
+          const response = await this.experimentAssignmentService.blobDataLog(
+            blobData.userId,
+            blobData.value,
+            request.logger
+          );
           resolve(response);
         } catch (error) {
           // The error is rejected so promise can now handle this error
@@ -678,7 +692,7 @@ export class ExperimentClientController {
         }
       });
     }).catch((error) => {
-      request.logger.error(error);     
+      request.logger.error(error);
       error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
@@ -686,7 +700,7 @@ export class ExperimentClientController {
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     });
   }
@@ -734,7 +748,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(errorBody.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.clientFailedExperimentPoint(
@@ -763,7 +777,7 @@ export class ExperimentClientController {
    *            description: Feature flags list
    */
   @Get('featureflag')
-  public getAllFlags( @Req() request: AppRequest): Promise<FeatureFlag[]> {
+  public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
   }
 
@@ -794,9 +808,11 @@ export class ExperimentClientController {
    *            description: Insert error in database
    */
   @Post('metric')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
-  @Req()
-  request: AppRequest): Promise<Metric[]> {
+  public filterMetrics(
+    @BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>,
+    @Req()
+    request: AppRequest
+  ): Promise<Metric[]> {
     return this.metricService.saveAllMetrics(metricUnit, request.logger);
   }
 
@@ -871,11 +887,12 @@ export class ExperimentClientController {
     @Body()
     @Req()
     request: AppRequest,
-    user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
+    user: ExperimentUserAliasesValidator
+  ): Promise<ExperimentUser[]> {
     const experimentUserDoc = await this.getUserDoc(user.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
@@ -893,7 +910,7 @@ export class ExperimentClientController {
           id: experimentUserDoc.id,
           requestedUserId: experimentUserId,
           group: experimentUserDoc.group,
-          workingGroup: experimentUserDoc.workingGroup
+          workingGroup: experimentUserDoc.workingGroup,
         };
         logger.info({ message: 'Got the user doc', details: userDoc });
         return userDoc;

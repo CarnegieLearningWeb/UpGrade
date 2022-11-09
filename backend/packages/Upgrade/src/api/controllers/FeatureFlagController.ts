@@ -61,7 +61,7 @@ interface FeatureFlagsPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/flags')
 export class FeatureFlagsController {
-  constructor(public featureFlagService: FeatureFlagService) { }
+  constructor(public featureFlagService: FeatureFlagService) {}
 
   /**
    * @swagger
@@ -111,7 +111,8 @@ export class FeatureFlagsController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: FeatureFlagPaginatedParamsValidator, 
+    @Body({ validate: { validationError: { target: true, value: true } } })
+    paginatedParams: FeatureFlagPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<FeatureFlagsPaginationInfo> {
     if (!paginatedParams) {
@@ -165,7 +166,7 @@ export class FeatureFlagsController {
   @Post()
   public create(
     @Body({ validate: { validationError: { target: false, value: false } } }) flag: FeatureFlag,
-    @CurrentUser() currentUser: User, 
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
     return this.featureFlagService.create(flag, request.logger);
@@ -202,10 +203,9 @@ export class FeatureFlagsController {
   @Post('/status')
   public async updateState(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    flag: FeatureFlagStatusUpdateValidator, 
-    @Req() request: AppRequest
+    flag: FeatureFlagStatusUpdateValidator
   ): Promise<FeatureFlag> {
-    return this.featureFlagService.updateState(flag.flagId, flag.status, request.logger);
+    return this.featureFlagService.updateState(flag.flagId, flag.status);
   }
 
   /**
@@ -276,7 +276,7 @@ export class FeatureFlagsController {
     @Param('id') id: string,
     @Body({ validate: { validationError: { target: false, value: false }, skipMissingProperties: true } })
     flag: FeatureFlag,
-    @CurrentUser() currentUser: User, 
+    @CurrentUser() currentUser: User,
     @Req() request: AppRequest
   ): Promise<FeatureFlag> {
     // TODO: Add error log
