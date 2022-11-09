@@ -36,6 +36,7 @@ export class AnalyticsController {
    *               type: array
    *               items:
    *                type: string
+   *                example: exp01
    *       tags:
    *         - Analytics
    *       produces:
@@ -57,11 +58,14 @@ export class AnalyticsController {
    *                properties:
    *                  users:
    *                    type: number
+   *                    example: 1049
    *                  groups:
    *                    type: number
+   *                    example: 23
    *                  id:
    *                    type: string
    *                    minLength: 1
+   *                    example: exp01
    */
   @Post('/enrollment')
   public async analyticsService(
@@ -86,6 +90,7 @@ export class AnalyticsController {
    *             properties:
    *              experimentId:
    *               type: string
+   *               example: exp01
    *       tags:
    *         - Analytics
    *       produces:
@@ -99,14 +104,19 @@ export class AnalyticsController {
    *                id:
    *                  type: string
    *                  minLength: 1
+   *                  example: exp01
    *                users:
    *                  type: number
+   *                  example: 1240
    *                groups:
    *                  type: number
+   *                  example: 13
    *                usersExcluded:
    *                  type: number
+   *                  example: 245
    *                groupsExcluded:
    *                  type: number
+   *                  example: 4
    *                conditions:
    *                  type: array
    *                  uniqueItems: true
@@ -120,10 +130,13 @@ export class AnalyticsController {
    *                      id:
    *                        type: string
    *                        minLength: 1
+   *                        example: control
    *                      users:
    *                        type: number
+   *                        example: 486
    *                      groups:
    *                        type: number
+   *                        example: 7
    *                      partitions:
    *                        type: array
    *                        uniqueItems: true
@@ -137,10 +150,13 @@ export class AnalyticsController {
    *                            id:
    *                              type: string
    *                              minLength: 1
+   *                              example: "using_fractions"
    *                            users:
    *                              type: number
+   *                              example: 158
    *                            groups:
    *                              type: number
+   *                              example: 3
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
@@ -207,6 +223,7 @@ export class AnalyticsController {
    *                            id:
    *                              type: string
    *                              minLength: 1
+   *                              example: control
    *                            partitions:
    *                              type: array
    *                              uniqueItems: true
@@ -220,10 +237,13 @@ export class AnalyticsController {
    *                                  id:
    *                                    type: string
    *                                    minLength: 1
+   *                                    example: using_fractions
    *                                  users:
    *                                    type: number
+   *                                    example: 58
    *                                  groups:
    *                                    type: number
+   *                                    example: 4
    *                    required:
    *                      - id
    *                      - conditions
