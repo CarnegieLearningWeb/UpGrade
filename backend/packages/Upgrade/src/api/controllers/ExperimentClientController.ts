@@ -108,10 +108,37 @@ export class ExperimentClientController {
    *             properties:
    *               id:
    *                 type: string
+   *                 example: user1
    *               group:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: school1
+   *                   classId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: class1
+   *                   instructorId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: instructor1
    *               workingGroup:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: string
+   *                      example: school1
+   *                   classId:
+   *                      type: string
+   *                      example: class1
+   *                   instructorId:
+   *                      type: string
+   *                      example: instructor1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -168,8 +195,25 @@ export class ExperimentClientController {
    *             properties:
    *               id:
    *                 type: string
+   *                 example: user1
    *               group:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: school1
+   *                   classId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: class1
+   *                   instructorId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: instructor1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -220,8 +264,19 @@ export class ExperimentClientController {
    *             properties:
    *               id:
    *                 type: string
+   *                 example: user1
    *               workingGroup:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: string
+   *                      example: school1
+   *                   classId:
+   *                      type: string
+   *                      example: class1
+   *                   instructorId:
+   *                      type: string
+   *                      example: instructor1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -269,15 +324,29 @@ export class ExperimentClientController {
    *           required: true
    *           schema:
    *             type: object
+   *             required:
+   *                - userId
+   *                - experimentPoint
+   *                - condition
    *             properties:
    *               userId:
    *                 type: string
+   *                 example: user1
    *               experimentPoint:
    *                 type: string
+   *                 example: point1
    *               partitionId:
    *                 type: string
+   *                 example: partition1
    *               condition:
    *                 type: string
+   *                 example: control
+   *               status:
+   *                 type: string
+   *                 example: condition applied
+   *               experimentId:
+   *                 type: string
+   *                 example: exp1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -369,8 +438,10 @@ export class ExperimentClientController {
    *             properties:
    *               userId:
    *                 type: string
+   *                 example: user1
    *               context:
    *                 type: string
+   *                 example: add
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -440,6 +511,8 @@ export class ExperimentClientController {
    *                      - order
    *          '500':
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *          '404':
+   *            description: Experiment user not defined
    */
   @Post('assign')
   public async getAllExperimentConditions(
@@ -487,6 +560,42 @@ export class ExperimentClientController {
    *                 type: array
    *                 items:
    *                   type: object
+   *                   properties:
+   *                      userId:
+   *                         type: string
+   *                         example: user1
+   *                      metrics:
+   *                         type: object
+   *                         properties:
+   *                            attributes:
+   *                              type: object
+   *                              properties:
+   *                                  continuousMetricName: 
+   *                                    type: integer
+   *                                    example: 100
+   *                                  categoricalMetricName: 
+   *                                    type: string
+   *                                    example: CATEGORY
+   *                            groupedMetrics:
+   *                              type: array
+   *                              items:
+   *                                  type: object
+   *                                  properties:
+   *                                      groupClass:
+   *                                          type: string
+   *                                          example: workspaceType
+   *                                      groupKey:
+   *                                           type: string
+   *                                           example: workspaceName
+   *                                      attributes:
+   *                                        type: object
+   *                                        properties:
+   *                                            continuousMetricName: 
+   *                                              type: integer
+   *                                              example: 100
+   *                                            categoricalMetricName: 
+   *                                              type: string
+   *                                              example: CATEGORY
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -710,10 +819,12 @@ export class ExperimentClientController {
    *             properties:
    *              userId:
    *                type: string
+   *                example: user1
    *              aliases:
    *                type: array
    *                items:
    *                 type: string
+   *                 example: alias123
    *            description: Set user aliases
    *       tags:
    *         - Client Side SDK
@@ -795,6 +906,21 @@ export class ExperimentClientController {
     }
   }
 
+  /**
+   * @swagger
+   * /clearDB:
+   *    delete:
+   *       description: Only available in DEMO mode. Removes everything except UpGrade users, metric metadata, UpGrade settings, and migrations
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Database cleared
+   *          '500':
+   *            description: DEMO mode is disabled
+   */
   @Delete('clearDB')
   public clearDB(@Req() request: AppRequest): Promise<string> {
     // if DEMO mode is enabled, then clear the database:
