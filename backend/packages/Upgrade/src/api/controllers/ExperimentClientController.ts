@@ -331,7 +331,7 @@ export class ExperimentClientController {
     request: AppRequest,
     experiment: MarkExperimentValidator
   ): Promise<MonitoredDecisionPoint> {
-    request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
+    request.logger.info({ message: 'Starting the markExperimentPoint call for user ' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
     if (experimentUserDoc) {
