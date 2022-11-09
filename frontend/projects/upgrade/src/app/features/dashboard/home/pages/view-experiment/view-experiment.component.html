@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <mat-tab-group [selectedIndex]="tabIndex">
+    <mat-tab-group [selectedIndex]="tabIndex" disableRipple>
       <mat-tab *ngIf="experiment.state == ExperimentState.ENROLLING" label = "{{ 'home.view-experiment.mattab.data.text' | translate }}"> 
         <div class="tab-body-container">
           <div class="ft-24-700 enrollment-text">

@@ -280,8 +280,9 @@ $font-size-small: 15px;
   .mat-tab-label {
     background-color: transparent;
     color: #8992A3;
-    font-size: 24px;
-    font-weight: 700;
+    font-family: Open Sans;
+    font-size: 22px;
+    font-weight: 600;
     line-height: 48px;
     margin: 28px 18px 21px 32px;
     padding: 0px;
@@ -289,6 +290,7 @@ $font-size-small: 15px;
 
   .mat-tab-label-active{
     color: #3366FF;
+    opacity: 1;
   }
 
   .tab-body-container{
