@@ -5,10 +5,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class FeatureFlagsDataService {
-  constructor(
-    private http: HttpClient,
-    @Inject(ENV) private environment: Environment
-    ) { }
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   fetchFeatureFlags(params: FeatureFlagsPaginationParams) {
     const url = this.environment.api.getPaginatedFlags;
@@ -17,7 +14,7 @@ export class FeatureFlagsDataService {
 
   createNewFeatureFlag(flag: FeatureFlag) {
     const url = this.environment.api.featureFlag;
-    return this.http.post(url , flag);
+    return this.http.post(url, flag);
   }
 
   updateFlagStatus(flagId: string, status: boolean) {

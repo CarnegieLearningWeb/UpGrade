@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { REPEATED_MEASURE } from 'upgrade_types';
 
 @Pipe({
-  name: 'repeatedMeasure'
+  name: 'repeatedMeasure',
 })
 export class RepeatedMeasurePipe implements PipeTransform {
   transform(type: REPEATED_MEASURE): string {

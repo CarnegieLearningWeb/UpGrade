@@ -17,7 +17,7 @@ xdescribe('UserRootComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ExperimentUsersRootComponent, ExperimentUsersComponent, PreviewUserComponent],
       imports: [TestingModule],
-      providers: [ExperimentService, PreviewUsersService, ExperimentUsersService, AuthService]
+      providers: [ExperimentService, PreviewUsersService, ExperimentUsersService, AuthService],
     }).compileComponents();
   }));
 

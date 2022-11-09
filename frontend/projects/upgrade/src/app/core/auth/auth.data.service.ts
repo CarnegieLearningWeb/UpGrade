@@ -4,10 +4,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class AuthDataService {
-  constructor(
-    private http: HttpClient,
-    @Inject(ENV) private environment: Environment,
-  ) {}
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   login(userInfo: any) {
     const url = this.environment.api.loginUser;

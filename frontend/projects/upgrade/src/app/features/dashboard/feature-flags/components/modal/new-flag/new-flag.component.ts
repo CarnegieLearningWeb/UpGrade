@@ -1,5 +1,10 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Inject } from '@angular/core';
-import { NewFlagDialogData, NewFlagDialogEvents, NewFlagPaths, FeatureFlag } from '../../../../../../core/feature-flags/store/feature-flags.model';
+import {
+  NewFlagDialogData,
+  NewFlagDialogEvents,
+  NewFlagPaths,
+  FeatureFlag,
+} from '../../../../../../core/feature-flags/store/feature-flags.model';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FeatureFlagsService } from '../../../../../../core/feature-flags/feature-flags.service';
 
@@ -7,7 +12,7 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
   selector: 'app-new-flag',
   templateUrl: './new-flag.component.html',
   styleUrls: ['./new-flag.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NewFlagComponent {
   newFlagData: any = {};
@@ -37,7 +42,7 @@ export class NewFlagComponent {
       case NewFlagDialogEvents.SEND_FORM_DATA:
         this.newFlagData = {
           ...this.newFlagData,
-          ...formData
+          ...formData,
         };
         this.stepper.next();
         if (path === NewFlagPaths.FLAG_VARIATIONS) {
@@ -50,7 +55,7 @@ export class NewFlagComponent {
         this.newFlagData = {
           ...this.flagInfo,
           ...this.newFlagData,
-          ...formData
+          ...formData,
         };
         this.featureFlagService.updateFeatureFlag(this.newFlagData);
         this.onNoClick();

@@ -7,10 +7,7 @@
           [(ngModel)]="selectedFlagFilterOption"
           (selectionChange)="applyFilter(searchValue); setSearchKey()"
         >
-          <mat-option
-            *ngFor="let filterOption of flagsFilterOptions"
-            [value]="filterOption.value"
-          >
+          <mat-option *ngFor="let filterOption of flagsFilterOptions" [value]="filterOption.value">
             {{ filterOption.viewValue | titlecase }}
           </mat-option>
         </mat-select>
@@ -39,20 +36,9 @@
     </button>
   </div>
 
-  <div
-    scroll
-    (scrolled)="fetchFlagsOnScroll()"
-    class="flags-list-table-container"
-    #tableContainer
-  >
+  <div scroll (scrolled)="fetchFlagsOnScroll()" class="flags-list-table-container" #tableContainer>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isLoadingFeatureFlags$ | async"></mat-progress-bar>
-    <table
-      class="flags-list"
-      mat-table
-      [dataSource]="allFeatureFlags"
-      matSort
-      (matSortChange)="changeSorting($event)"
-    >
+    <table class="flags-list" mat-table [dataSource]="allFeatureFlags" matSort (matSortChange)="changeSorting($event)">
       <ng-container matColumnDef="name">
         <th class="ft-12-700" mat-header-cell *matHeaderCellDef mat-sort-header>
           <span [matTooltip]="'feature-flags.global-name.text' | translate" matTooltipPosition="above">
@@ -60,26 +46,29 @@
           </span>
         </th>
         <td class="ft-12-600" mat-cell *matCellDef="let flag">
-          <a [routerLink]="['/featureFlags', 'detail', flag.id]" *ngIf="flag.name?.length < 30; else flagNameEllipsis" class="flag-name">
+          <a
+            [routerLink]="['/featureFlags', 'detail', flag.id]"
+            *ngIf="flag.name?.length < 30; else flagNameEllipsis"
+            class="flag-name"
+          >
             {{ flag.name }}
           </a>
           <ng-template #flagNameEllipsis>
-            <a [routerLink]="['/flag', 'detail', flag.id]" [matTooltip]="flag.name" class="flag-name" matTooltipPosition="above">
+            <a
+              [routerLink]="['/flag', 'detail', flag.id]"
+              [matTooltip]="flag.name"
+              class="flag-name"
+              matTooltipPosition="above"
+            >
               {{ flag.name | truncate: 30 }}
             </a>
           </ng-template>
           <br />
-          <span
-            class="flag-description ft-10-400"
-            *ngIf="flag.description?.length < 30; else flagDescription">
+          <span class="flag-description ft-10-400" *ngIf="flag.description?.length < 30; else flagDescription">
             {{ flag.description }}
           </span>
           <ng-template #flagDescription>
-            <span
-              class="flag-description ft-10-400"
-              [matTooltip]="flag.description"
-              matTooltipPosition="above"
-            >
+            <span class="flag-description ft-10-400" [matTooltip]="flag.description" matTooltipPosition="above">
               {{ flag.description | truncate: 35 }}
             </span>
           </ng-template>
@@ -92,11 +81,7 @@
             {{ 'feature-flags.global-key.text' | translate | uppercase }}
           </span>
         </th>
-        <td
-          class="ft-12-600"
-          mat-cell
-          *matCellDef="let flag"
-        >
+        <td class="ft-12-600" mat-cell *matCellDef="let flag">
           <span>{{ flag.key }}</span>
         </td>
       </ng-container>

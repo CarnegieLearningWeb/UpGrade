@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { series, rimraf } = require('nps-utils');
 
 module.exports = {
@@ -12,7 +13,7 @@ module.exports = {
           description: 'Runs the integration tests',
         },
         pretest: {
-          script: tslint(`./test/integration/**.ts`),
+          script: eslint(`./test/integration/**.ts`),
           hiddenFromHelp: true,
         },
         run: {
@@ -33,7 +34,7 @@ module.exports = {
           description: 'Runs the integration tests',
         },
         pretest: {
-          script: tslint(`./test/unit/**.ts`),
+          script: eslint(`./test/unit/**.ts`),
           hiddenFromHelp: true,
         },
         run: {
@@ -78,7 +79,8 @@ module.exports = {
         description: 'Serves the current app and watches for changes to restart it, you may attach inspector to it.',
       },
       production: {
-        script: 'cross-env NODE_ENV=production ts-node --project tsconfig.build.json -r tsconfig-paths/register dist/src/app.js',
+        script:
+          'cross-env NODE_ENV=production ts-node --project tsconfig.build.json -r tsconfig-paths/register dist/src/app.js',
       },
       development: {
         script: 'cross-env NODE_ENV=development node dist/src/app.js',
@@ -132,7 +134,15 @@ module.exports = {
      * Builds the app into the dist directory
      */
     build: {
-      script: series('nps banner.build', 'nps config', 'nps lint', 'nps typecheck.build', 'nps clean.dist', 'nps transpile', 'nps copy'),
+      script: series(
+        'nps banner.build',
+        'nps config',
+        'nps lint',
+        'nps typecheck.build',
+        'nps clean.dist',
+        'nps transpile',
+        'nps copy'
+      ),
       description: 'Builds the app into the dist directory',
     },
     /**
@@ -156,20 +166,20 @@ module.exports = {
 
     typecheck: {
       default: {
-        script: "tsc --noEmit" ,
-        description: "Typecheck the project without emitting the output"
+        script: 'tsc --noEmit',
+        description: 'Typecheck the project without emitting the output',
       },
       build: {
-        script: "tsc --noEmit --project ./tsconfig.build.json",
-        description: "Typecheck the project without emitting the output"
-      }
+        script: 'tsc --noEmit --project ./tsconfig.build.json',
+        description: 'Typecheck the project without emitting the output',
+      },
     },
 
     /**
-     * Runs TSLint over your project
+     * Runs ESLint over your project
      */
     lint: {
-      script: tslint(`./src/**/*.ts`),
+      script: eslint(`./src/**/*.ts`),
       hiddenFromHelp: true,
     },
     /**
@@ -212,8 +222,8 @@ module.exports = {
     },
   },
   options: {
-    silent: true
-  }
+    silent: true,
+  },
 };
 
 function copy(source, target) {
@@ -237,6 +247,6 @@ function runFast(path) {
   return `ts-node --transpile-only ${path}`;
 }
 
-function tslint(path) {
-  return `tslint ${path} -c ./tslint.json --format stylish`;
+function eslint(path) {
+  return `eslint -c ../../../.eslintrc.js --ext .ts ${path}`;
 }

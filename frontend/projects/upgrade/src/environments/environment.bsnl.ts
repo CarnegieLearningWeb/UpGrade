@@ -2,7 +2,6 @@ export const environment = {
   appName: 'UpGrade',
   envName: 'bsnl',
   apiBaseUrl: 'http://new-bsnl-upgrade-experiment-app.eba-gp6psjut.us-east-1.elasticbeanstalk.com/api',
-  appVersion: require('../../../../package.json').version,
   production: true,
   test: false,
   i18nPrefix: '',
@@ -14,8 +13,8 @@ export const environment = {
   api: {
     getAllExperiments: '/experiments/paginated',
     createNewExperiments: '/experiments',
-    importExperiment : '/experiments/import',
-    exportExperiment : '/experiments/export',
+    importExperiment: '/experiments/import',
+    exportExperiment: '/experiments/export',
     updateExperiments: '/experiments',
     experimentContext: '/experiments/context',
     getExperimentById: '/experiments/single',
@@ -47,9 +46,9 @@ export const environment = {
     queryResult: '/query/analyse',
     getVersion: '/version',
     contextMetaData: '/experiments/contextMetaData',
-    segments: `/segments`,
-    importSegment: `/segments/import`,
-    exportSegment: `/segments/export`,
-    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus'
-  }
+    segments: '/segments',
+    importSegment: '/segments/import',
+    exportSegment: '/segments/export',
+    getGroupAssignmentStatus: '/experiments/getGroupAssignmentStatus',
+  },
 };

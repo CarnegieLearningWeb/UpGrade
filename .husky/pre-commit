@@ -1,10 +1,11 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+npx lint-staged
 
 # Testing Frontend
 cd frontend
-npm test
+npm run test
 cd ..
 
 # Testing Backend Upgrade

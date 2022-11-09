@@ -15,12 +15,12 @@ export enum USER_SEARCH_SORT_KEY {
 
 export enum SORT_AS {
   ASCENDING = 'ASC',
-  DESCENDING = 'DESC'
+  DESCENDING = 'DESC',
 }
 
 export interface UpdateUser {
-  firstName: string,
-  lastName: string,
+  firstName: string;
+  lastName: string;
   email: string;
   role: UserRole;
 }

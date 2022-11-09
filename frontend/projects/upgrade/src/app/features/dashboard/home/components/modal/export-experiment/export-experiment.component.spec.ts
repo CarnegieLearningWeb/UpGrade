@@ -11,11 +11,8 @@ xdescribe('ExportModalComponent', () => {
     TestBed.configureTestingModule({
       declarations: [],
       imports: [TestingModule],
-      providers: [
-        { provide: MatDialogRef, useValue: {} },
-      ]
-    })
-    .compileComponents();
+      providers: [{ provide: MatDialogRef, useValue: {} }],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

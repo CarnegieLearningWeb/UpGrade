@@ -13,11 +13,10 @@ xdescribe('HomeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HomeComponent, ExperimentListComponent ],
+      declarations: [HomeComponent, ExperimentListComponent],
       imports: [TestingModule, NgxSkeletonLoaderModule],
-      providers: [ExperimentService, AuthService]
-    })
-    .compileComponents();
+      providers: [ExperimentService, AuthService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

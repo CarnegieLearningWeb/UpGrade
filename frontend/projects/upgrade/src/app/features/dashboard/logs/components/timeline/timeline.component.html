@@ -121,7 +121,6 @@
               </mat-expansion-panel>
             </mat-accordion>
           </div>
-
         </ng-container>
 
         <ng-template #experimentNotExist>
@@ -138,8 +137,14 @@
               <mat-expansion-panel hideToggle="true">
                 <mat-expansion-panel-header class="expansion-header" expandedHeight="*" collapsedHeight="*">
                   <mat-panel-title>
-                    <span *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient" class="ft-16-600 action-msg-error">
-                      {{ 'logs.error-logs-message.text' | translate: { errorName: log.name, endPoint: endPoint + log.endPoint } }}
+                    <span
+                      *ngIf="log.type !== ServerErrors.REPORTED_ERROR; else errorFromClient"
+                      class="ft-16-600 action-msg-error"
+                    >
+                      {{
+                        'logs.error-logs-message.text'
+                          | translate: { errorName: log.name, endPoint: endPoint + log.endPoint }
+                      }}
                     </span>
                     <ng-template #errorFromClient>
                       <span class="ft-16-600 action-msg-error">

@@ -1,21 +1,27 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-      "baseUrl": "./src",
-      "outDir": "./dist",
-      "sourceMap": true,
-      "declaration": true,
-      "moduleResolution": "node",
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "importHelpers": true,
-      "module": "commonjs",
-      "target": "es6",
-      "typeRoots": ["./node_modules/@types"],
-      "lib": ["es2018", "dom"],
-      "paths": {
-        "upgrade_types": ["../../types/src"]
-      }
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "declaration": true,
+    "strict": false,
+    "alwaysStrict": false,
+    "strictNullChecks": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "module": "commonjs",
+    "target": "es6",
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["es2018", "dom"],
+    "paths": {
+      "upgrade_types": ["../../../types"]
     }
-  }
-  
+  },
+  "include": [
+    "src",
+    ".eslintrc.js"
+  ]
+}

@@ -9,10 +9,9 @@ xdescribe('ExperimentPostConditionComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExperimentPostConditionComponent ],
-      imports: [TestingModule]
-    })
-    .compileComponents();
+      declarations: [ExperimentPostConditionComponent],
+      imports: [TestingModule],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

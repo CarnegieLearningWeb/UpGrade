@@ -5,10 +5,7 @@ import { ENV, Environment } from '../../../environments/environment-types';
 
 @Injectable()
 export class ExperimentDataService {
-  constructor(
-    private http: HttpClient, 
-    @Inject(ENV) private environment: Environment
-  ) {}
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   getAllExperiment(params: ExperimentPaginationParams) {
     const url = this.environment.api.getAllExperiments;
@@ -45,7 +42,7 @@ export class ExperimentDataService {
     return this.http.post(url, {
       experimentId,
       state: experimentStateInfo.newStatus,
-      scheduleDate: experimentStateInfo.scheduleDate
+      scheduleDate: experimentStateInfo.scheduleDate,
     });
   }
 
@@ -76,7 +73,7 @@ export class ExperimentDataService {
 
   exportExperimentDesign(experimentIds: string[]) {
     const url = `${this.environment.api.exportExperiment}`;
-    return this.http.post(url, experimentIds );
+    return this.http.post(url, experimentIds);
   }
 
   fetchExperimentGraphInfo(params: any) {

@@ -3,6 +3,7 @@ import { Repository, EntityRepository, EntityManager, Brackets } from 'typeorm';
 import { Experiment } from '../models/Experiment';
 import repositoryError from './utils/repositoryError';
 import { UpgradeLogger } from 'src/lib/logger/UpgradeLogger';
+import { createGlobalExcludeSegment } from '../../../src/init/seed/globalExcludeSegment';
 
 @EntityRepository(Experiment)
 export class ExperimentRepository extends Repository<Experiment> {
@@ -221,6 +222,8 @@ export class ExperimentRepository extends Repository<Experiment> {
           await repository.query(`TRUNCATE ${entity.tableName} CASCADE;`);
         }
       }
+      // Create global exclude segment
+      await createGlobalExcludeSegment(logger);
       return 'DB truncate successful';
     } catch (error) {
       error = new Error('DB truncate error. DB truncate unsuccessful');

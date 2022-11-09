@@ -5,10 +5,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class LogsDataService {
-  constructor(
-    private http: HttpClient,
-    @Inject(ENV) private environment: Environment
-  ) {}
+  constructor(private http: HttpClient, @Inject(ENV) private environment: Environment) {}
 
   getAllAuditLogs(params: AuditLogParams) {
     const url = this.environment.api.getAllAuditLogs;

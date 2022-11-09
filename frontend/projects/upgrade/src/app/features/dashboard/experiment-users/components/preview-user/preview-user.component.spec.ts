@@ -12,11 +12,10 @@ xdescribe('PreviewUserComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PreviewUserComponent ],
+      declarations: [PreviewUserComponent],
       imports: [TestingModule],
-      providers: [PreviewUsersService, ExperimentService, AuthService]
-    })
-    .compileComponents();
+      providers: [PreviewUsersService, ExperimentService, AuthService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

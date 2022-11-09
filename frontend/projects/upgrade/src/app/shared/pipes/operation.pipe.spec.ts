@@ -43,5 +43,4 @@ describe('OperationPipe', () => {
   it('should return empty string', () => {
     expect(operationPipe.transform('Other')).toBe('');
   });
-
 });

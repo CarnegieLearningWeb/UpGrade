@@ -13,31 +13,28 @@ import {
   selectSkipAuditLog,
   selectSkipErrorLog,
   selectAuditFilterType,
-  selectErrorFilterType
+  selectErrorFilterType,
 } from './logs.selectors';
 import { NUMBER_OF_LOGS, AuditLogParams, ErrorLogParams } from './logs.model';
 
 @Injectable()
 export class LogsEffects {
-  constructor(
-    private actions$: Actions,
-    private logsDataService: LogsDataService,
-    private store$: Store<AppState>
-  ) {}
+  constructor(private actions$: Actions, private logsDataService: LogsDataService, private store$: Store<AppState>) {}
 
   getAllAuditLogs$ = createEffect(() =>
     this.actions$.pipe(
       ofType(logsActions.actionGetAuditLogs),
-      map(action => action.fromStart),
+      map((action) => action.fromStart),
       withLatestFrom(
         this.store$.pipe(select(selectSkipAuditLog)),
         this.store$.pipe(select(selectAuditFilterType)),
         this.store$.pipe(select(selectIsAuditLogLoading)),
-        this.store$.pipe(select(selectTotalAuditLogs)),
+        this.store$.pipe(select(selectTotalAuditLogs))
       ),
-      filter(([fromStart, skipAuditLog, __, isAuditLogLoading, totalAuditLogs]) => {
-        return !isAuditLogLoading && (skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart);
-      }),
+      filter(
+        ([fromStart, skipAuditLog, __, isAuditLogLoading, totalAuditLogs]) =>
+          !isAuditLogLoading && (skipAuditLog < totalAuditLogs || totalAuditLogs === null || fromStart)
+      ),
       tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsAuditLogLoading({ isAuditLogLoading: true }));
         if (fromStart) {
@@ -45,22 +42,22 @@ export class LogsEffects {
         }
       }),
       mergeMap(([fromStart, skipAuditLog, filterType]) => {
-        let params: AuditLogParams = { skip: fromStart ? 0 : skipAuditLog, take: NUMBER_OF_LOGS }
+        let params: AuditLogParams = { skip: fromStart ? 0 : skipAuditLog, take: NUMBER_OF_LOGS };
         if (filterType) {
           params = {
             ...params,
-            filter: filterType
-          }
+            filter: filterType,
+          };
         }
         return this.logsDataService.getAllAuditLogs(params).pipe(
-          map((data: any) => {
-            return logsActions.actionGetAuditLogsSuccess({
+          map((data: any) =>
+            logsActions.actionGetAuditLogsSuccess({
               auditLogs: data.nodes,
-              totalAuditLogs: data.total
+              totalAuditLogs: data.total,
             })
-          }),
+          ),
           catchError(() => [logsActions.actionGetAuditLogsFailure()])
-        )
+        );
       })
     )
   );
@@ -68,16 +65,17 @@ export class LogsEffects {
   getAllErrorLogs$ = createEffect(() =>
     this.actions$.pipe(
       ofType(logsActions.actionGetErrorLogs),
-      map(action => action.fromStart),
+      map((action) => action.fromStart),
       withLatestFrom(
         this.store$.pipe(select(selectSkipErrorLog)),
         this.store$.pipe(select(selectErrorFilterType)),
         this.store$.pipe(select(selectIsErrorLogLoading)),
         this.store$.pipe(select(selectTotalErrorLogs))
       ),
-      filter(([fromStart, skipErrorLog, __, isErrorLogLoading, totalErrorLogs]) => {
-        return !isErrorLogLoading && (skipErrorLog < totalErrorLogs || totalErrorLogs === null || fromStart);
-      }),
+      filter(
+        ([fromStart, skipErrorLog, __, isErrorLogLoading, totalErrorLogs]) =>
+          !isErrorLogLoading && (skipErrorLog < totalErrorLogs || totalErrorLogs === null || fromStart)
+      ),
       tap(([fromStart]) => {
         this.store$.dispatch(logsActions.actionSetIsErrorLogLoading({ isErrorLogLoading: true }));
         if (fromStart) {
@@ -85,46 +83,47 @@ export class LogsEffects {
         }
       }),
       mergeMap(([fromStart, skipErrorLog, filterType]) => {
-        let params: ErrorLogParams = { skip: fromStart ? 0 : skipErrorLog, take: NUMBER_OF_LOGS }
+        let params: ErrorLogParams = { skip: fromStart ? 0 : skipErrorLog, take: NUMBER_OF_LOGS };
         if (filterType) {
           params = {
             ...params,
-            filter: filterType
-          }
+            filter: filterType,
+          };
         }
         return this.logsDataService.getAllErrorLogs(params).pipe(
-          map((data: any) => {
-            return logsActions.actionGetErrorLogsSuccess({
+          map((data: any) =>
+            logsActions.actionGetErrorLogsSuccess({
               errorLogs: data.nodes,
-              totalErrorLogs: data.total
+              totalErrorLogs: data.total,
             })
-          }
           ),
           catchError(() => [logsActions.actionGetErrorLogsFailure()])
-        )
+        );
       })
     )
   );
 
-  changeAuditFilter$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(logsActions.actionSetAuditLogFilter),
-      map(action => action.filterType),
-      tap(() => {
-        this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart: true }));
-      })
-    ),
+  changeAuditFilter$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(logsActions.actionSetAuditLogFilter),
+        map((action) => action.filterType),
+        tap(() => {
+          this.store$.dispatch(logsActions.actionGetAuditLogs({ fromStart: true }));
+        })
+      ),
     { dispatch: false }
   );
 
-  changeErrorFilter$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(logsActions.actionSetErrorLogFilter),
-      map(action => action.filterType),
-      tap(() => {
-        this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart: true }));
-      })
-    ),
+  changeErrorFilter$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(logsActions.actionSetErrorLogFilter),
+        map((action) => action.filterType),
+        tap(() => {
+          this.store$.dispatch(logsActions.actionGetErrorLogs({ fromStart: true }));
+        })
+      ),
     { dispatch: false }
   );
 }

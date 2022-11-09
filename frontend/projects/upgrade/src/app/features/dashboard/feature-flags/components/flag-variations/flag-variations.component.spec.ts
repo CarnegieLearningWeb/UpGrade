@@ -10,11 +10,10 @@ xdescribe('FlagVariationsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FlagVariationsComponent ],
+      declarations: [FlagVariationsComponent],
       imports: [TestingModule],
-      providers: [FeatureFlagsService]
-    })
-    .compileComponents();
+      providers: [FeatureFlagsService],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

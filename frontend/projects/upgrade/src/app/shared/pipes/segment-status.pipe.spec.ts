@@ -23,5 +23,4 @@ describe('ExperimentStatePipe', () => {
   it('should return #829CF8 color for Unlocked Status', () => {
     expect(segmentStatusPipe.transform(SEGMENT_STATUS.UNLOCKED, SegmentStatusPipeType.COLOR)).toBe('#829CF8');
   });
-
 });

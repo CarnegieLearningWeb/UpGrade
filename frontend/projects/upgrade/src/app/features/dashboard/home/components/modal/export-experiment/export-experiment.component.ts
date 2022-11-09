@@ -12,7 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   selector: 'experiment-export',
   templateUrl: './export-experiment.component.html',
   styleUrls: ['./export-experiment.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExportModalComponent implements OnInit {
   exportMethod = [];
@@ -26,31 +26,21 @@ export class ExportModalComponent implements OnInit {
     private _snackBar: MatSnackBar,
     public dialogRef: MatDialogRef<ExportModalComponent>,
     @Inject(MAT_DIALOG_DATA) private data: any
-    ) {
-      this.experiments = this.data.experiment;
-    }
-  
+  ) {
+    this.experiments = this.data.experiment;
+  }
+
   onCancelClick(): void {
     this.dialogRef.close();
   }
 
   ngOnInit() {
-    this.exportForm = this._formBuilder.group(
-      {
-        exportMethod: [
-          { value: ''},
-          Validators.required
-        ],
-        emailId: ''
-      }
-    );
-    this.exportMethod = [
-      { value: EXPORT_METHOD.DESIGN },
-      { value: EXPORT_METHOD.DATA }
-    ];
-    this.authService.currentUser$.pipe(
-      first()
-    ).subscribe(userInfo => {
+    this.exportForm = this._formBuilder.group({
+      exportMethod: [{ value: '' }, Validators.required],
+      emailId: '',
+    });
+    this.exportMethod = [{ value: EXPORT_METHOD.DESIGN }, { value: EXPORT_METHOD.DATA }];
+    this.authService.currentUser$.pipe(first()).subscribe((userInfo) => {
       if (userInfo.email) {
         this.emailId = userInfo.email;
       }
@@ -58,15 +48,13 @@ export class ExportModalComponent implements OnInit {
   }
 
   openSnackBar(exportType: boolean) {
-    this.authService.currentUser$.pipe(
-      first()
-    ).subscribe(userInfo => {
+    this.authService.currentUser$.pipe(first()).subscribe((userInfo) => {
       if (userInfo.email && exportType) {
         this._snackBar.open(`Email will be sent to ${userInfo.email}`, null, { duration: 2000 });
       } else if (!userInfo.email && !exportType) {
-        this._snackBar.open(`Email will be sent to registered email`, null, { duration: 2000 });
+        this._snackBar.open('Email will be sent to registered email', null, { duration: 2000 });
       } else {
-        this._snackBar.open(`Experiment Design JSON downloaded!`, null, { duration: 2000 });
+        this._snackBar.open('Experiment Design JSON downloaded!', null, { duration: 2000 });
       }
     });
   }
@@ -82,10 +70,10 @@ export class ExportModalComponent implements OnInit {
 
   exportExperiment() {
     const { exportMethod } = this.exportForm.value;
-    if (exportMethod == EXPORT_METHOD.DATA && this.experiments[0]) {
-      this.exportExperimentInfo(this.experiments[0].id, this.experiments[0].name)
-    } else if (exportMethod == EXPORT_METHOD.DESIGN) {
-      this.exportExperimentDesign(this.experiments.map(exp => exp.id));
+    if (exportMethod === EXPORT_METHOD.DATA && this.experiments[0]) {
+      this.exportExperimentInfo(this.experiments[0].id, this.experiments[0].name);
+    } else if (exportMethod === EXPORT_METHOD.DESIGN) {
+      this.exportExperimentDesign(this.experiments.map((exp) => exp.id));
     }
     this.onCancelClick();
   }

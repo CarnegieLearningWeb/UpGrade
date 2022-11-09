@@ -6,7 +6,7 @@ import { FeatureFlagsService } from '../../../../../../core/feature-flags/featur
   selector: 'app-delete-flag',
   templateUrl: './delete-flag.component.html',
   styleUrls: ['./delete-flag.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DeleteFlagComponent {
   flagName: string;
@@ -14,7 +14,7 @@ export class DeleteFlagComponent {
     public dialogRef: MatDialogRef<DeleteFlagComponent>,
     private featureFlagService: FeatureFlagsService,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) { }
+  ) {}
 
   onCancelClick(): void {
     this.dialogRef.close();

@@ -11,19 +11,18 @@ xdescribe('PostExperimentRuleComponent', () => {
   let fixture: ComponentFixture<PostExperimentRuleComponent>;
 
   const modalData = {
-    experiment: TestMockData.getExperiment()[0]
-  }
+    experiment: TestMockData.getExperiment()[0],
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ PostExperimentRuleComponent ],
+      declarations: [PostExperimentRuleComponent],
       imports: [TestingModule],
       providers: [
         ExperimentService,
         { provide: MatDialogRef, useValue: {} },
-	      { provide: MAT_DIALOG_DATA, useValue: modalData },
-      ]
-    })
-    .compileComponents();
+        { provide: MAT_DIALOG_DATA, useValue: modalData },
+      ],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

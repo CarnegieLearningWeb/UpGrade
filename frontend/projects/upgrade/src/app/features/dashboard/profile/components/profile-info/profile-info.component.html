@@ -39,8 +39,8 @@
         labelPosition="before"
         (change)="changeTheme($event)"
       >
-      {{ 'profile.action.dark-theme.text' | translate }}
-    </mat-slide-toggle>
+        {{ 'profile.action.dark-theme.text' | translate }}
+      </mat-slide-toggle>
     </div>
   </div>
   <div class="role-wrapper" *ngIf="(permissions$ | async)?.manageRoles.update">
@@ -76,12 +76,7 @@
       </mat-form-field>
     </div>
     <mat-progress-bar class="spinner" mode="indeterminate" *ngIf="isUsersLoading"></mat-progress-bar>
-    <div
-      scroll
-      (scrolled)="fetchUsersOnScroll()"
-      #usersTable
-      class="users-list-container"
-    >
+    <div scroll (scrolled)="fetchUsersOnScroll()" #usersTable class="users-list-container">
       <form [formGroup]="userDetailsForm">
         <table
           class="users-list"
@@ -99,13 +94,12 @@
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else firstNameReadOnly">
                 <mat-form-field class="ft-14-600 input">
-                <input
-                  matInput
-                  class="ft-14-400"
-                  [placeholder]="
-                    'profile.table.firstName.text' | translate"
-                  formControlName="firstName"
-                />
+                  <input
+                    matInput
+                    class="ft-14-400"
+                    [placeholder]="'profile.table.firstName.text' | translate"
+                    formControlName="firstName"
+                  />
                 </mat-form-field>
               </div>
               <ng-template #firstNameReadOnly>
@@ -124,13 +118,12 @@
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
               <div *ngIf="editMode === index; else lastNameReadOnly">
                 <mat-form-field class="ft-14-600 input">
-                <input
-                  matInput
-                  class="ft-14-400"
-                  [placeholder]="
-                    'profile.table.lastName.text' | translate"
-                  formControlName="lastName"
-                />
+                  <input
+                    matInput
+                    class="ft-14-400"
+                    [placeholder]="'profile.table.lastName.text' | translate"
+                    formControlName="lastName"
+                  />
                 </mat-form-field>
               </div>
               <ng-template #lastNameReadOnly>
@@ -204,12 +197,7 @@
           <ng-container matColumnDef="deleteUser">
             <th class="ft-12-700" mat-header-cell *matHeaderCellDef></th>
             <td class="ft-12-600" mat-cell *matCellDef="let user; let index = index">
-              <mat-icon
-                class="remove-icon"
-                (click)="openDeleteUserModal(user)"
-              >
-                delete_outline
-              </mat-icon>
+              <mat-icon class="remove-icon" (click)="openDeleteUserModal(user)"> delete_outline </mat-icon>
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedUsersColumns; sticky: true"></tr>

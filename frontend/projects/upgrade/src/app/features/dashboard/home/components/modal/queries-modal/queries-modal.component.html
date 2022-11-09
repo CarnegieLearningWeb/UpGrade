@@ -17,9 +17,8 @@
   </ng-template>
   <div class="query-view">
     <div class="query-actions">
-
       <!-- Do not shows search bar in create query view -->
-      <mat-form-field [ngClass]="{'hide-search': createQueryMode}">
+      <mat-form-field [ngClass]="{ 'hide-search': createQueryMode }">
         <input
           class="ft-16-400 search-input"
           [(ngModel)]="searchInput"
@@ -42,12 +41,7 @@
           <span>{{ 'monitor.add-query.text' | translate | uppercase }}</span>
         </button>
         <ng-template #queryListBtnTemplate>
-          <button
-            mat-flat-button
-            color="primary"
-            class="ft-14-700"
-            (click)="setCreateQueryMode()"
-          >
+          <button mat-flat-button color="primary" class="ft-14-700" (click)="setCreateQueryMode()">
             <mat-icon style="margin-right: 5px">list</mat-icon>
             <span>{{ 'monitor.metrics-list.text' | translate }}</span>
           </button>
@@ -55,15 +49,9 @@
       </ng-container>
     </div>
 
-    <mat-progress-bar
-      mode="indeterminate"
-      *ngIf="isExperimentLoading$ | async"
-    ></mat-progress-bar>
-    <div
-      class="queries-table-container"
-      *ngIf="!createQueryMode; else createQueryTemplate"
-    >
-      <ng-container  *ngIf="experimentQueries?.length; else zeroState">
+    <mat-progress-bar mode="indeterminate" *ngIf="isExperimentLoading$ | async"></mat-progress-bar>
+    <div class="queries-table-container" *ngIf="!createQueryMode; else createQueryTemplate">
+      <ng-container *ngIf="experimentQueries?.length; else zeroState">
         <table class="table" mat-table [dataSource]="experimentQueries">
           <!-- ID Column -->
           <ng-container matColumnDef="id">
@@ -90,7 +78,9 @@
             </th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
               <span>{{ element.metric?.key?.split(METRICS_JOIN_TEXT).join(' ') }}</span>
-              <span *ngIf="element.metric?.type === IMetricMetadata.CATEGORICAL">{{ '=' + element.query?.compareValue }}</span>
+              <span *ngIf="element.metric?.type === IMetricMetadata.CATEGORICAL">{{
+                '=' + element.query?.compareValue
+              }}</span>
             </td>
           </ng-container>
 
@@ -104,8 +94,8 @@
             </td>
           </ng-container>
 
-           <!-- Repeated Measure Column -->
-           <ng-container matColumnDef="repeatedMeasure">
+          <!-- Repeated Measure Column -->
+          <ng-container matColumnDef="repeatedMeasure">
             <th mat-header-cell *matHeaderCellDef class="ft-12-700">
               {{ 'query.table-repeated-measure.text' | translate }}
             </th>
@@ -116,26 +106,19 @@
 
           <!-- Execute Column -->
           <ng-container matColumnDef="execute">
-            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            </th>
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <mat-icon
-                class="icon"
-                (click)="executeQuery(element)"
-              >send</mat-icon>
+              <mat-icon class="icon" (click)="executeQuery(element)">send</mat-icon>
             </td>
           </ng-container>
 
           <!-- Delete Column -->
           <ng-container matColumnDef="delete">
-            <th mat-header-cell *matHeaderCellDef class="ft-12-700">
-            </th>
+            <th mat-header-cell *matHeaderCellDef class="ft-12-700"></th>
             <td class="ft-12-600" mat-cell *matCellDef="let element; let index = index">
-              <mat-icon
-                *ngIf="permissions?.experiments.delete"
-                class="icon"
-                (click)="deleteQuery(element)"
-              >delete_outline</mat-icon>
+              <mat-icon *ngIf="permissions?.experiments.delete" class="icon" (click)="deleteQuery(element)"
+                >delete_outline</mat-icon
+              >
             </td>
           </ng-container>
 
@@ -153,11 +136,7 @@
     </ng-template>
 
     <ng-template #zeroState>
-      <span
-        class="zero-state"
-        [innerHTML]="'global.no-monitored-metrics-tabs.text' | translate"
-      >
-      </span>
+      <span class="zero-state" [innerHTML]="'global.no-monitored-metrics-tabs.text' | translate"> </span>
     </ng-template>
   </div>
 </div>

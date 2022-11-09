@@ -19,9 +19,11 @@ import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/fe
 @Component({
   selector: 'profile-info',
   templateUrl: './profile-info.component.html',
-  styleUrls: ['./profile-info.component.scss']
+  styleUrls: ['./profile-info.component.scss'],
 })
 export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;
+
   permissions$: Observable<UserPermission>;
   theme$ = this.settingsService.theme$;
   displayedUsersColumns: string[] = ['firstName', 'lastName', 'email', 'role', 'edit', 'deleteUser'];
@@ -40,37 +42,16 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   toCheckAuth$ = this.settingsService.toCheckAuth$;
   toFilterMetric$ = this.settingsService.toFilterMetric$;
   userFilterOptions = [
-    { value: USER_SEARCH_SORT_KEY.ALL, viewValue: 'All'},
-    { value: USER_SEARCH_SORT_KEY.FIRST_NAME, viewValue: 'First Name'},
-    { value: USER_SEARCH_SORT_KEY.LAST_NAME, viewValue: 'Last Name'},
-    { value: USER_SEARCH_SORT_KEY.EMAIL, viewValue: 'Email'},
-    { value: USER_SEARCH_SORT_KEY.ROLE, viewValue: 'Role'},
+    { value: USER_SEARCH_SORT_KEY.ALL, viewValue: 'All' },
+    { value: USER_SEARCH_SORT_KEY.FIRST_NAME, viewValue: 'First Name' },
+    { value: USER_SEARCH_SORT_KEY.LAST_NAME, viewValue: 'Last Name' },
+    { value: USER_SEARCH_SORT_KEY.EMAIL, viewValue: 'Email' },
+    { value: USER_SEARCH_SORT_KEY.ROLE, viewValue: 'Role' },
   ];
   selectedUserFilterOption = USER_SEARCH_SORT_KEY.ALL;
-
-  @ViewChild('profileInfoContainer') profileInfoContainer: ElementRef;
-  @ViewChild('usersTable') set content(content: ElementRef) {
-    if (content) {
-      const windowHeight = window.innerHeight;
-      content.nativeElement.style.maxHeight = (windowHeight - 557) + 'px';
-    }
- }
- // Used to prevent execution of searchInput setter multiple times
- isSearchInputRefSet = false;
- @ViewChild('searchInput') set searchInput(searchInput: ElementRef) {
-   if (searchInput && !this.isSearchInputRefSet) {
-    this.isSearchInputRefSet = true;
-    fromEvent(searchInput.nativeElement, 'keyup').pipe(debounceTime(500)).subscribe(input => {
-      this.setSearchString((input as any).target.value);
-    });
-   }
- }
-
-  private sort: MatSort;
-  @ViewChild(MatSort) set matSort(ms: MatSort) {
-    this.sort = ms;
-    this.allUsers.sort = this.sort;
-  }
+  // Used to prevent execution of searchInput setter multiple times
+  isSearchInputRefSet = false;
+  sort: MatSort;
 
   constructor(
     private usersService: UsersService,
@@ -80,6 +61,37 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     private settingsService: SettingsService
   ) {}
 
+  get UserRole() {
+    return UserRole;
+  }
+
+  get ThemeOptions() {
+    return ThemeOptions;
+  }
+
+  @ViewChild('usersTable') set content(content: ElementRef) {
+    if (content) {
+      const windowHeight = window.innerHeight;
+      content.nativeElement.style.maxHeight = windowHeight - 557 + 'px';
+    }
+  }
+
+  @ViewChild('searchInput') set searchInput(searchInput: ElementRef) {
+    if (searchInput && !this.isSearchInputRefSet) {
+      this.isSearchInputRefSet = true;
+      fromEvent(searchInput.nativeElement, 'keyup')
+        .pipe(debounceTime(500))
+        .subscribe((input) => {
+          this.setSearchString((input as any).target.value);
+        });
+    }
+  }
+
+  @ViewChild(MatSort) set matSort(ms: MatSort) {
+    this.sort = ms;
+    this.allUsers.sort = this.sort;
+  }
+
   ngOnInit() {
     this.usersService.fetchUsers(true);
     this.permissions$ = this.authService.userPermissions$;
@@ -87,25 +99,25 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
       firstName: [null, Validators.required],
       lastName: [null, Validators.required],
       email: [null, Validators.required],
-      role: [null, Validators.required]
+      role: [null, Validators.required],
     });
-    this.currentUserSub = this.authService.currentUser$.subscribe(currentUser => {
+    this.currentUserSub = this.authService.currentUser$.subscribe((currentUser) => {
       this.currentUser = currentUser;
     });
-    this.allUsersSub = this.usersService.allUsers$.subscribe(users => {
+    this.allUsersSub = this.usersService.allUsers$.subscribe((users) => {
       this.allUsers = new MatTableDataSource(users);
       this.allUsers.sort = this.sort;
     });
-    this.isUsersLoadingSub = this.usersService.isUsersLoading$.subscribe(isUserLoaded => {
+    this.isUsersLoadingSub = this.usersService.isUsersLoading$.subscribe((isUserLoaded) => {
       this.isUsersLoading = isUserLoaded;
       if (!isUserLoaded) {
         this.applyFilter(this.searchString);
       }
     });
 
-    this.isAllUsersFetchedSub = this.usersService.isAllUsersFetched().subscribe(
-      value => this.isAllUsersFetched = value
-    );
+    this.isAllUsersFetchedSub = this.usersService
+      .isAllUsersFetched()
+      .subscribe((value) => (this.isAllUsersFetched = value));
   }
 
   // Modify angular material's table's default search behavior
@@ -113,10 +125,12 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.allUsers.filterPredicate = (data, filter: string): boolean => {
       switch (type) {
         case USER_SEARCH_SORT_KEY.ALL:
-          return (data.firstName && data.firstName.toLowerCase().includes(filter))
-            || (data.lastName && data.lastName.toLowerCase().includes(filter))
-            || data.email.toLowerCase().includes(filter)
-            || data.role.toLowerCase().includes(filter);
+          return (
+            (data.firstName && data.firstName.toLowerCase().includes(filter)) ||
+            (data.lastName && data.lastName.toLowerCase().includes(filter)) ||
+            data.email.toLowerCase().includes(filter) ||
+            data.role.toLowerCase().includes(filter)
+          );
         case USER_SEARCH_SORT_KEY.FIRST_NAME:
           return data.firstName && data.firstName.toLowerCase().includes(filter);
         case USER_SEARCH_SORT_KEY.LAST_NAME:
@@ -135,7 +149,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      role: user.role
+      role: user.role,
     });
   }
 
@@ -164,19 +178,19 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openNewUserModal() {
-    const dialogRef = this._matDialog.open(NewUserComponent, {
+    this._matDialog.open(NewUserComponent, {
       panelClass: 'new-user-modal',
       disableClose: false,
-      data: { users: this.allUsers.data }
+      data: { users: this.allUsers.data },
     });
   }
 
   openDeleteUserModal(user: User) {
     const dialogRef = this._matDialog.open(DeleteComponent, {
-      panelClass: 'delete-modal'
+      panelClass: 'delete-modal',
     });
 
-    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
       if (isDeleteButtonClicked) {
         this.usersService.deleteUser(user.email);
         // Reset the form if user is deleted after clicking on edit
@@ -231,17 +245,9 @@ export class ProfileInfoComponent implements OnInit, OnDestroy, AfterViewInit {
     this.usersService.setSortingType(null);
   }
 
-  get UserRole() {
-    return UserRole;
-  }
-
-  get ThemeOptions() {
-    return ThemeOptions;
-  }
-
   ngAfterViewInit() {
     // subtract other component's height
     const windowHeight = window.innerHeight;
-    this.profileInfoContainer.nativeElement.style.height = (windowHeight - 325) + 'px';
+    this.profileInfoContainer.nativeElement.style.height = windowHeight - 325 + 'px';
   }
 }

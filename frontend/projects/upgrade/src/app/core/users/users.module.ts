@@ -9,11 +9,7 @@ import { UsersDataService } from './users.data.service';
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    EffectsModule.forFeature([UsersEffects]),
-    StoreModule.forFeature('users', UsersReducer),
-  ],
-  providers: [UsersService, UsersDataService]
+  imports: [CommonModule, EffectsModule.forFeature([UsersEffects]), StoreModule.forFeature('users', UsersReducer)],
+  providers: [UsersService, UsersDataService],
 })
-export class UsersModule { }
+export class UsersModule {}

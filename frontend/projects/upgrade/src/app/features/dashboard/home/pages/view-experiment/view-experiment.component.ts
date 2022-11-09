@@ -7,7 +7,7 @@ import { NewExperimentComponent } from '../../components/modal/new-experiment/ne
 import {
   EXPERIMENT_STATE,
   ExperimentVM,
-  EXPERIMENT_SEARCH_KEY
+  EXPERIMENT_SEARCH_KEY,
 } from '../../../../../core/experiments/store/experiments.model';
 import { Observable, Subscription } from 'rxjs';
 import { filter, withLatestFrom } from 'rxjs/operators';
@@ -23,8 +23,8 @@ import { StateTimeLogsComponent } from '../../components/modal/state-time-logs/s
 import { ExportModalComponent } from '../../components/modal/export-experiment/export-experiment.component';
 import { FLAG_SEARCH_SORT_KEY } from '../../../../../core/feature-flags/store/feature-flags.model';
 import { EnrollmentOverTimeComponent } from '../../components/enrollment-over-time/enrollment-over-time.component';
-import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
-import { Segment, MemberTypes  } from '../../../../../core/segments/store/segments.model';
+import { FILTER_MODE } from 'upgrade_types';
+import { MemberTypes } from '../../../../../core/segments/store/segments.model';
 import { METRICS_JOIN_TEXT } from '../../../../../core/analysis/store/analysis.models';
 // Used in view-experiment component only
 enum DialogType {
@@ -32,17 +32,17 @@ enum DialogType {
   CHANGE_POST_EXPERIMENT_RULE = 'Change post experiment rule',
   EDIT_EXPERIMENT = 'Edit Experiment',
   STATE_TIME_LOGS = 'State Time Logs',
-  VIEW_PARTICIPANTS_DATA = 'View Participants Data'
+  VIEW_PARTICIPANTS_DATA = 'View Participants Data',
 }
 
 type Participants = { participant_Type: string; participant_id: string };
-type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name:string };
+type Metrics = { metric_Key: string[]; metric_Operation: string[]; metric_Name: string };
 
 @Component({
   selector: 'home-view-experiment',
   templateUrl: './view-experiment.component.html',
   styleUrls: ['./view-experiment.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class ViewExperimentComponent implements OnInit, OnDestroy {
   permissions: UserPermission;
@@ -60,8 +60,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
-  displayMetrics: Metrics[]=[];
-  tabIndex: Number  = 0;
+  displayMetrics: Metrics[] = [];
+  tabIndex = 0;
 
   constructor(
     private experimentService: ExperimentService,
@@ -71,227 +71,8 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
     private _Activatedroute: ActivatedRoute
   ) {}
 
-  ngOnInit() {
-    this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
-    this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;
-
-    this.permissionsSub = this.authService.userPermissions$.subscribe(permission => {
-      this.permissions = permission;
-    });
-
-    this.experimentIdSub = this._Activatedroute.paramMap.subscribe(params => { 
-      const experimentIdFromParams = params.get('experimentId');
-      this.experimentService.fetchExperimentById(experimentIdFromParams);
-    });
-
-    this.experimentSub = this.experimentService.selectedExperiment$      
-      .pipe(
-        withLatestFrom(
-          this.isLoadingExperimentDetailStats$,
-          this.isPollingExperimentDetailStats$,
-          (experiment, isLoadingDetails, isPolling) => {
-            return { experiment, isLoadingDetails, isPolling }
-          }
-        ),
-        filter(({ isLoadingDetails }) => !isLoadingDetails),
-      ).subscribe(({ experiment, isPolling }) => {
-        this.onExperimentChange(experiment, isPolling);
-        this.loadParticipants(experiment);
-        this.loadMetrics(experiment);
-      })
-
-      if(this.experiment) {
-        this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
-        this.experimentService.groupSatisfied$(this.experiment.id).subscribe(data => this.experiment.groupSatisfied = data);
-      }
-
-      if(this.experiment){
-        if(this.experiment.state===this.ExperimentState.ENROLLING){
-          this.tabIndex=1;
-        }else{
-          this.tabIndex=0;
-        }
-      }
-  }
-  
-  onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
-    if (experiment.stat && experiment.stat.conditions) {
-      this.experiment = experiment;
-      this.experimentService.toggleDetailsPolling(experiment, isPolling);
-    } else {
-      this.experimentService.fetchExperimentDetailStat(experiment.id);
-    }
-
-    if(this.experiment){
-      if(this.experiment.state===this.ExperimentState.ENROLLING){
-        this.tabIndex=1;
-      }else{
-        this.tabIndex=0;
-      }
-    }
-  }
-
-  loadParticipants(experiment: ExperimentVM){
-    if (this.experiment) {
-      this.includeParticipants=[];
-      this.excludeParticipants=[];
-      if(this.experiment.filterMode === FILTER_MODE.EXCLUDE_ALL) {
-        this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id:id.userId});
-        });
-        this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
-          this.includeParticipants.push({ participant_Type: group.type, participant_id:group.groupId});
-        });
-        this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id:id.name});
-        });
-        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id:id.userId});
-        });
-        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
-          this.excludeParticipants.push({ participant_Type: group.type, participant_id:group.groupId});
-        });
-        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id:id.name});
-        });
-      } else {
-        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id:id.userId});
-        });
-        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
-          this.includeParticipants.push({ participant_Type: group.type, participant_id:group.groupId});
-        });
-        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
-          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id:id.name});
-        });
-      }
-    }
-  }
-
-  loadMetrics(experiment: ExperimentVM){ 
-    if (this.experiment) {
-      this.displayMetrics=[];
-      this.experiment.queries.forEach((query, queryIndex) => {
-        let key;
-        if (query.metric.key) {
-          key = query.metric.key;
-        } else {
-          key = query.metric;
-        }
-
-        // separating keys from metric
-        const rootKey:string[]= key.split(METRICS_JOIN_TEXT);
-        //console.log(rootKey);
-
-        const statisticOperation:string[]=[query.query.operationType];
-        if(rootKey.length>1){
-          statisticOperation.push(query.repeatedMeasure)
-        }
-        this.displayMetrics.push({ metric_Key: rootKey, metric_Operation: statisticOperation, metric_Name:query.name});
-      });
-    }
-  }
-
-  openDialog(dialogType: DialogType) {
-    const dialogComponent =
-      dialogType === DialogType.CHANGE_STATUS
-        ? ExperimentStatusComponent
-        : dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE
-        ? PostExperimentRuleComponent
-        : dialogType === DialogType.STATE_TIME_LOGS
-        ? StateTimeLogsComponent
-        : NewExperimentComponent;
-    const dialogRef = this.dialog.open(dialogComponent as any, {
-      panelClass: dialogType === DialogType.STATE_TIME_LOGS ? 'state-time-logs-modal' :
-                  dialogType === DialogType.EDIT_EXPERIMENT ? 'new-experiment-modal' :
-                  'experiment-general-modal',
-      data: { experiment: clonedeep(this.experiment) },
-      disableClose : dialogType === DialogType.EDIT_EXPERIMENT
-    });
-
-    dialogRef.afterClosed().subscribe(() => {});
-  }
-
-  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: FLAG_SEARCH_SORT_KEY) {
-    this.experimentService.setSearchKey(type);
-    this.experimentService.setSearchString(value);
-    this.router.navigate(['/home']);
-  }
-
-  deleteExperiment() {
-    const dialogRef = this.dialog.open(DeleteComponent, {
-      panelClass: 'delete-modal'
-    });
-
-    dialogRef.afterClosed().subscribe(isDeleteButtonClicked => {
-      if (isDeleteButtonClicked) {
-        this.experimentService.deleteExperiment(this.experiment.id);
-        // Add code of further actions after deleting experiment
-      }
-    });
-  }
-
-  openQueriesModal() {
-    const dialogRef = this.dialog.open(QueriesModalComponent, {
-      panelClass: 'queries-modal',
-      data: { experiment: clonedeep(this.experiment) }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
-    });
-  }
-
-  openExportModal() {
-    const dialogRef = this.dialog.open(ExportModalComponent, {
-      panelClass: 'export-modal',
-      data: { experiment: [clonedeep(this.experiment)] }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
-    });
-  }
-
-  updateEndingCriteria() {
-    const dialogRef = this.dialog.open(ExperimentEndCriteriaComponent, {
-      panelClass: 'experiment-ending-criteria',
-      data: { experiment: clonedeep(this.experiment) }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
-    });
-  }
-
-  viewParticipantsData() {
-    const dialogRef = this.dialog.open(EnrollmentOverTimeComponent, {
-      panelClass: 'enrollment-over-time',
-      data: { experiment: clonedeep(this.experiment) }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      // Add code of further actions after opening query modal
-    });
-  }
-
-  getConditionCode(conditionId: string) {
-    return !!this.experiment ? '(' + this.experiment.conditions.find(condition => condition.id === conditionId).conditionCode + ')' : '';
-  }
-
   get DialogType() {
     return DialogType;
-  }
-
-  toggleVerboseLogging(event) {
-    this.experimentService.updateExperiment({...this.experiment, logging: event.checked })
-  }
-
-  ngOnDestroy() {
-    this.experimentSub.unsubscribe();
-    this.permissionsSub.unsubscribe();
-    this.experimentIdSub.unsubscribe();
-    this.experimentService.endDetailStatsPolling();
   }
 
   get ExperimentState() {
@@ -308,5 +89,216 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
 
   get isExperimentStateCancelled() {
     return this.experiment.state === EXPERIMENT_STATE.CANCELLED;
+  }
+
+  ngOnInit() {
+    this.isLoadingExperimentDetailStats$ = this.experimentService.isLoadingExperimentDetailStats$;
+    this.isPollingExperimentDetailStats$ = this.experimentService.isPollingExperimentDetailStats$;
+
+    this.permissionsSub = this.authService.userPermissions$.subscribe((permission) => {
+      this.permissions = permission;
+    });
+
+    this.experimentIdSub = this._Activatedroute.paramMap.subscribe((params) => {
+      const experimentIdFromParams = params.get('experimentId');
+      this.experimentService.fetchExperimentById(experimentIdFromParams);
+    });
+
+    this.experimentSub = this.experimentService.selectedExperiment$
+      .pipe(
+        withLatestFrom(
+          this.isLoadingExperimentDetailStats$,
+          this.isPollingExperimentDetailStats$,
+          (experiment, isLoadingDetails, isPolling) => ({ experiment, isLoadingDetails, isPolling })
+        ),
+        filter(({ isLoadingDetails }) => !isLoadingDetails)
+      )
+      .subscribe(({ experiment, isPolling }) => {
+        this.onExperimentChange(experiment, isPolling);
+        this.loadParticipants();
+        this.loadMetrics();
+      });
+
+    if (this.experiment) {
+      this.experimentService.fetchGroupAssignmentStatus(this.experiment.id);
+      this.experimentService
+        .groupSatisfied$(this.experiment.id)
+        .subscribe((data) => (this.experiment.groupSatisfied = data));
+    }
+
+    if (this.experiment) {
+      if (this.experiment.state === this.ExperimentState.ENROLLING) {
+        this.tabIndex = 1;
+      } else {
+        this.tabIndex = 0;
+      }
+    }
+  }
+
+  onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
+    if (experiment.stat && experiment.stat.conditions) {
+      this.experiment = experiment;
+      this.experimentService.toggleDetailsPolling(experiment, isPolling);
+    } else {
+      this.experimentService.fetchExperimentDetailStat(experiment.id);
+    }
+
+    if (this.experiment) {
+      if (this.experiment.state === this.ExperimentState.ENROLLING) {
+        this.tabIndex = 1;
+      } else {
+        this.tabIndex = 0;
+      }
+    }
+  }
+
+  loadParticipants() {
+    if (this.experiment) {
+      this.includeParticipants = [];
+      this.excludeParticipants = [];
+      if (this.experiment.filterMode === FILTER_MODE.EXCLUDE_ALL) {
+        this.experiment.experimentSegmentInclusion.segment.individualForSegment.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+        });
+        this.experiment.experimentSegmentInclusion.segment.groupForSegment.forEach((group) => {
+          this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+        });
+        this.experiment.experimentSegmentInclusion.segment.subSegments.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+        });
+        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+          this.excludeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+        });
+        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+          this.excludeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+        });
+        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+          this.excludeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+        });
+      } else {
+        this.experiment.experimentSegmentExclusion.segment.individualForSegment.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.INDIVIDUAL, participant_id: id.userId });
+        });
+        this.experiment.experimentSegmentExclusion.segment.groupForSegment.forEach((group) => {
+          this.includeParticipants.push({ participant_Type: group.type, participant_id: group.groupId });
+        });
+        this.experiment.experimentSegmentExclusion.segment.subSegments.forEach((id) => {
+          this.includeParticipants.push({ participant_Type: MemberTypes.SEGMENT, participant_id: id.name });
+        });
+      }
+    }
+  }
+
+  loadMetrics() {
+    if (this.experiment) {
+      this.displayMetrics = [];
+      this.experiment.queries.forEach((query) => {
+        let key;
+        if (query.metric.key) {
+          key = query.metric.key;
+        } else {
+          key = query.metric;
+        }
+
+        // separating keys from metric
+        const rootKey: string[] = key.split(METRICS_JOIN_TEXT);
+        //console.log(rootKey);
+
+        const statisticOperation: string[] = [query.query.operationType];
+        if (rootKey.length > 1) {
+          statisticOperation.push(query.repeatedMeasure);
+        }
+        this.displayMetrics.push({
+          metric_Key: rootKey,
+          metric_Operation: statisticOperation,
+          metric_Name: query.name,
+        });
+      });
+    }
+  }
+
+  openDialog(dialogType: DialogType) {
+    const dialogComponent =
+      dialogType === DialogType.CHANGE_STATUS
+        ? ExperimentStatusComponent
+        : dialogType === DialogType.CHANGE_POST_EXPERIMENT_RULE
+        ? PostExperimentRuleComponent
+        : dialogType === DialogType.STATE_TIME_LOGS
+        ? StateTimeLogsComponent
+        : NewExperimentComponent;
+    this.dialog.open(dialogComponent as any, {
+      panelClass:
+        dialogType === DialogType.STATE_TIME_LOGS
+          ? 'state-time-logs-modal'
+          : dialogType === DialogType.EDIT_EXPERIMENT
+          ? 'new-experiment-modal'
+          : 'experiment-general-modal',
+      data: { experiment: clonedeep(this.experiment) },
+      disableClose: dialogType === DialogType.EDIT_EXPERIMENT,
+    });
+  }
+
+  searchExperiment(type: EXPERIMENT_SEARCH_KEY, value: FLAG_SEARCH_SORT_KEY) {
+    this.experimentService.setSearchKey(type);
+    this.experimentService.setSearchString(value);
+    this.router.navigate(['/home']);
+  }
+
+  deleteExperiment() {
+    const dialogRef = this.dialog.open(DeleteComponent, {
+      panelClass: 'delete-modal',
+    });
+
+    dialogRef.afterClosed().subscribe((isDeleteButtonClicked) => {
+      if (isDeleteButtonClicked) {
+        this.experimentService.deleteExperiment(this.experiment.id);
+        // Add code of further actions after deleting experiment
+      }
+    });
+  }
+
+  openQueriesModal() {
+    this.dialog.open(QueriesModalComponent, {
+      panelClass: 'queries-modal',
+      data: { experiment: clonedeep(this.experiment) },
+    });
+  }
+
+  openExportModal() {
+    this.dialog.open(ExportModalComponent, {
+      panelClass: 'export-modal',
+      data: { experiment: [clonedeep(this.experiment)] },
+    });
+  }
+
+  updateEndingCriteria() {
+    this.dialog.open(ExperimentEndCriteriaComponent, {
+      panelClass: 'experiment-ending-criteria',
+      data: { experiment: clonedeep(this.experiment) },
+    });
+  }
+
+  viewParticipantsData() {
+    this.dialog.open(EnrollmentOverTimeComponent, {
+      panelClass: 'enrollment-over-time',
+      data: { experiment: clonedeep(this.experiment) },
+    });
+  }
+
+  getConditionCode(conditionId: string) {
+    return this.experiment
+      ? '(' + this.experiment.conditions.find((condition) => condition.id === conditionId).conditionCode + ')'
+      : '';
+  }
+
+  toggleVerboseLogging(event) {
+    this.experimentService.updateExperiment({ ...this.experiment, logging: event.checked });
+  }
+
+  ngOnDestroy() {
+    this.experimentSub.unsubscribe();
+    this.permissionsSub.unsubscribe();
+    this.experimentIdSub.unsubscribe();
+    this.experimentService.endDetailStatsPolling();
   }
 }

@@ -7,58 +7,54 @@
       color="primary"
       class="ft-14-600 toggle-button"
       (click)="handleHideClick()"
-      [disabled]="(isAliasTableEditMode$ | async)"
+      [disabled]="isAliasTableEditMode$ | async"
     >
       <mat-icon class="icon icon-bump-left">expand_less</mat-icon>
       <span class="toggle-text">{{ 'home.new-experiment.design.toggle-actions.conditions' | translate }}</span>
     </button>
   </div>
 
-  <mat-table
-    [dataSource]="aliasTableData$"
-    class="alias-table"
-  >
-  
+  <mat-table [dataSource]="aliasTableData$" class="alias-table">
     <!-- Site Column -->
     <ng-container matColumnDef="site">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ "home.new-experiment.design.aliases.column-header.site.text" | translate }}
+        {{ 'home.new-experiment.design.aliases.column-header.site.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.site" matTooltipPosition="above">
-          {{rowData.site | truncate: 15 }}
+          {{ rowData.site | truncate: 15 }}
         </span>
       </mat-cell>
     </ng-container>
-  
+
     <!-- Target Column -->
     <ng-container matColumnDef="target">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ "home.new-experiment.design.aliases.column-header.target.text" | translate }}
+        {{ 'home.new-experiment.design.aliases.column-header.target.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.target" matTooltipPosition="above">
-          {{rowData.target | truncate: 15 }}
+          {{ rowData.target | truncate: 15 }}
         </span>
       </mat-cell>
     </ng-container>
-  
+
     <!-- Condition Column -->
     <ng-container matColumnDef="condition">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ "home.new-experiment.design.aliases.column-header.condition.text" | translate }}
+        {{ 'home.new-experiment.design.aliases.column-header.condition.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <span [matTooltip]="rowData.condition" matTooltipPosition="above">
-          {{rowData.condition | truncate: 15 }}
+          {{ rowData.condition | truncate: 15 }}
         </span>
       </mat-cell>
     </ng-container>
-  
+
     <!-- Alias Column -->
     <ng-container matColumnDef="alias">
       <mat-header-cell *matHeaderCellDef class="ft-14-700">
-        {{ "home.new-experiment.design.aliases.column-header.alias.text" | translate }}
+        {{ 'home.new-experiment.design.aliases.column-header.alias.text' | translate }}
       </mat-header-cell>
       <mat-cell *matCellDef="let rowData">
         <ng-container *ngIf="!rowData.isEditing">
@@ -69,16 +65,19 @@
         <ng-container *ngIf="rowData.isEditing">
           <mat-form-field floatLabel="never">
             <input
-              [type]="text" 
+              [type]="text"
               matInput
               [(ngModel)]="rowData.alias"
               [placeholder]="'home.new-experiment.design.aliases.column-header.alias.text' | translate"
               required
               [matAutocomplete]="aliasRowAutoCompleteConditionCodes"
               (keyup)="handleFilterContextMetaDataConditions(rowData.alias, $event)"
-            >
+            />
             <mat-autocomplete #aliasRowAutoCompleteConditionCodes="matAutocomplete" panelWidth="fit-content">
-              <mat-option *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async" [value]="conditionCode">
+              <mat-option
+                *ngFor="let conditionCode of filteredContextMetaDataConditions$ | async"
+                [value]="conditionCode"
+              >
                 {{ conditionCode }}
               </mat-option>
             </mat-autocomplete>
@@ -90,24 +89,28 @@
     <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <mat-header-cell *matHeaderCellDef class="ft-14-700"></mat-header-cell>
-      <mat-cell *matCellDef="let rowData; let rowIndex = index" class="actions-cell" style="justify-content: flex-start;">
-          <button
-            type="button"
-            class="row-action-btn"
-            (click)="handleEditClick(rowData, rowIndex)"
-            [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
-          >
-            <ng-container *ngIf="!rowData.isEditing">
-              <mat-icon class="icon">create</mat-icon>
-            </ng-container>
-            <ng-container *ngIf="rowData.isEditing">
-              <mat-icon class="icon">done</mat-icon>
-            </ng-container>
-          </button>
+      <mat-cell
+        *matCellDef="let rowData; let rowIndex = index"
+        class="actions-cell"
+        style="justify-content: flex-start"
+      >
+        <button
+          type="button"
+          class="row-action-btn"
+          (click)="handleEditClick(rowData, rowIndex)"
+          [disabled]="(isAliasTableEditMode$ | async) && (aliasTableEditIndex$ | async) != rowIndex"
+        >
+          <ng-container *ngIf="!rowData.isEditing">
+            <mat-icon class="icon">create</mat-icon>
+          </ng-container>
+          <ng-container *ngIf="rowData.isEditing">
+            <mat-icon class="icon">done</mat-icon>
+          </ng-container>
+        </button>
       </mat-cell>
     </ng-container>
-  
+
     <mat-header-row *matHeaderRowDef="aliasesDisplayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: aliasesDisplayedColumns;"></mat-row> 
+    <mat-row *matRowDef="let row; columns: aliasesDisplayedColumns"></mat-row>
   </mat-table>
 </section>

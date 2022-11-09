@@ -1,0 +1,15 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "sourceMap": true,
+    "strict": false,
+    "alwaysStrict": false,
+    "strictNullChecks": false,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "lib": ["es2018", "dom"],
+    "paths": {
+      "upgrade_types": ["./types"]
+    }
+  }
+}

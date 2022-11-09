@@ -12,8 +12,8 @@ import { SettingsDataService } from './settings.data.service';
   imports: [
     CommonModule,
     EffectsModule.forFeature([SettingsEffects]),
-    StoreModule.forFeature('settings', settingsReducer)
+    StoreModule.forFeature('settings', settingsReducer),
   ],
-  providers: [SettingsService, SettingsDataService]
+  providers: [SettingsService, SettingsDataService],
 })
 export class SettingsModule {}

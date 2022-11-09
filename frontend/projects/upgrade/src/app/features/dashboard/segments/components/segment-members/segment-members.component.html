@@ -1,23 +1,13 @@
 <form class="segment-members" [formGroup]="segmentMembersForm">
   <!-- Members TABLE -->
-  <mat-table
-    class="members-table"
-    [dataSource]="membersDataSource"
-    formArrayName="members"
-    #membersTable
-  >
+  <mat-table class="members-table" [dataSource]="membersDataSource" formArrayName="members" #membersTable>
     <!-- Members Type Column -->
     <ng-container matColumnDef="type">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'segments.global-members-type.text' | translate }}
       </mat-header-cell>
-      <mat-cell 
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
-        <mat-select formControlName="type" 
-          [placeholder]="'segments.members-placeholder-type.text' | translate"
-        >
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+        <mat-select formControlName="type" [placeholder]="'segments.members-placeholder-type.text' | translate">
           <mat-option *ngFor="let val of segmentMemberTypes" [value]="val.value">
             {{ val.name }}
           </mat-option>
@@ -30,68 +20,43 @@
       <mat-header-cell class="ft-14-700" *matHeaderCellDef>
         {{ 'segments.global-members-id/name.text' | translate }}
       </mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
-      <ng-container *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect">
-        <mat-form-field floatLabel="never" class="form-control">
-          <mat-select formControlName="id">
-            <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
-              {{ subSegmentId }}
-            </mat-option>
-        </mat-select>
-        </mat-form-field>
-      </ng-container>
-      <ng-template #noSelect>
-        <mat-form-field floatLabel="never" class="form-control">
-          <input
-            matInput
-            [placeholder]="'segments.global-members-id/name.text' | translate"
-            formControlName="id"
-          />
-        </mat-form-field>
-      </ng-template>
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+        <ng-container
+          *ngIf="segmentMembersForm.getRawValue('type')?.members[groupIndex]?.type === 'Segment'; else noSelect"
+        >
+          <mat-form-field floatLabel="never" class="form-control">
+            <mat-select formControlName="id">
+              <mat-option *ngFor="let subSegmentId of subSegmentIds" [value]="subSegmentId">
+                {{ subSegmentId }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </ng-container>
+        <ng-template #noSelect>
+          <mat-form-field floatLabel="never" class="form-control">
+            <input matInput [placeholder]="'segments.global-members-id/name.text' | translate" formControlName="id" />
+          </mat-form-field>
+        </ng-template>
       </mat-cell>
     </ng-container>
 
     <ng-container matColumnDef="removeMember">
       <mat-header-cell class="ft-14-700" *matHeaderCellDef></mat-header-cell>
-      <mat-cell
-        *matCellDef="let element; let groupIndex = index"
-        [formGroupName]="groupIndex"
-      >
-        <mat-icon
-          class="remove-icon"
-          (click)="removeMember(groupIndex)"
-        >
-          delete_outline
-        </mat-icon>
+      <mat-cell *matCellDef="let element; let groupIndex = index" [formGroupName]="groupIndex">
+        <mat-icon class="remove-icon" (click)="removeMember(groupIndex)"> delete_outline </mat-icon>
       </mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="membersDisplayedColumns; sticky: true"></mat-header-row>
     <mat-row *matRowDef="let row; columns: membersDisplayedColumns"></mat-row>
   </mat-table>
-  <span
-    class="ft-14-600 validation-message"
-    *ngIf="membersCountError"
-    [innerHTML]="membersCountError"
-  ></span>
-  <button
-    type="button"
-    class="ft-12-700 add-member"
-    (click)="addMember()"
-  >
+  <span class="ft-14-600 validation-message" *ngIf="membersCountError" [innerHTML]="membersCountError"></span>
+  <button type="button" class="ft-12-700 add-member" (click)="addMember()">
     + {{ 'segments.members-add-members.text' | translate }}
   </button>
 
   <div class="button-container">
-    <button
-      matStepperPrevious
-      mat-raised-button
-      class="shared-modal--modal-btn default-button btn-back"
-    >
+    <button matStepperPrevious mat-raised-button class="shared-modal--modal-btn default-button btn-back">
       {{ 'global.back.text' | translate }}
     </button>
     <div>
@@ -108,7 +73,7 @@
         class="shared-modal--modal-btn default-button"
         (click)="emitEvent(NewSegmentDialogEvents.SEND_FORM_DATA)"
       >
-      {{ segmentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
+        {{ segmentInfo ? ('global.update.text' | translate) : ('global.create.text' | translate) }}
       </button>
     </div>
   </div>

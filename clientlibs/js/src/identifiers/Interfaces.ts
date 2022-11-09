@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { SERVER_ERROR, IMetricMetaData } from 'upgrade_types';
 import { Types } from './enums';
 
@@ -22,13 +23,13 @@ export namespace Interfaces {
   }
 
   export interface IUserGroup {
-    group?: Map<string, Array<string>>;
+    group?: Map<string, string[]>;
     workingGroup?: Map<string, string>;
   }
 
   export interface IUser {
     id: string;
-    group?: Map<string, Array<string>>;
+    group?: Map<string, string[]>;
     workingGroup?: Map<string, string>;
   }
 
@@ -40,7 +41,7 @@ export namespace Interfaces {
   }
 
   export interface IFailedExperimentPoint {
-    type: SERVER_ERROR,
+    type: SERVER_ERROR;
     message: string;
   }
 
@@ -58,8 +59,8 @@ export namespace Interfaces {
 
   export interface IMetric {
     key: string;
-    type: IMetricMetaData,
-    allowedData: string[]
+    type: IMetricMetaData;
+    allowedData: string[];
   }
 
   export interface IExperimentUser {

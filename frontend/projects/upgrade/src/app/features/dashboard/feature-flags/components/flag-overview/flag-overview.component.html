@@ -24,16 +24,11 @@
   <mat-form-field class="ft-14-600 variationType">
     <mat-label>{{ 'feature-flags.overview.flag-variation-type.text' | translate }}</mat-label>
     <mat-select class="ft-14-400" formControlName="variationType">
-      <mat-option
-        *ngFor="let type of variationTypes"
-        [value]="type"
-      >
+      <mat-option *ngFor="let type of variationTypes" [value]="type">
         {{ type | titlecase }}
       </mat-option>
     </mat-select>
-    <mat-error
-      *ngIf="overviewForm.controls.variationType.hasError('required')"
-    >
+    <mat-error *ngIf="overviewForm.controls.variationType.hasError('required')">
       {{ 'feature-flags.overview.flag-variation-type-error.text' | translate }}
     </mat-error>
   </mat-form-field>
@@ -48,11 +43,7 @@
   </mat-form-field>
 
   <div class="button-container">
-    <button
-      class="shared-modal--modal-btn"
-      mat-raised-button
-      (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)"
-    >
+    <button class="shared-modal--modal-btn" mat-raised-button (click)="emitEvent(NewFlagDialogEvents.CLOSE_DIALOG)">
       {{ 'global.cancel.text' | translate }}
     </button>
     <button

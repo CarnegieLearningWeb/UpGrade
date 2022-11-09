@@ -1,91 +1,98 @@
-import { HttpRequest } from "@angular/common/http";
-import { fakeAsync, tick } from "@angular/core/testing";
-import { ActivationEnd, ActivationStart } from "@angular/router";
-import { BehaviorSubject, Subject } from "rxjs";
-import { finalize } from "rxjs/operators";
-import { HttpCancelInterceptor } from "./http-cancel.interceptor";
+import { HttpRequest } from '@angular/common/http';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { ActivationEnd, ActivationStart } from '@angular/router';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { HttpCancelInterceptor } from './http-cancel.interceptor';
 
 class MockRouter {
-    events = new Subject();
+  events = new Subject();
 }
 
 describe('HttpCancelInterceptor', () => {
-    let mockRouter: any;
-    let service: HttpCancelInterceptor;
-    let mockSnapshot = {
-        data: {
-            title: 'test'
-        },
-        routeConfig: {
-            data: {
-                label: 'test'
-            }
-        }
-    } as any;
+  let mockRouter: any;
+  let service: HttpCancelInterceptor;
+  const mockSnapshot = {
+    data: {
+      title: 'test',
+    },
+    routeConfig: {
+      data: {
+        label: 'test',
+      },
+    },
+  } as any;
 
-    beforeEach(() => {
-        mockRouter = new MockRouter();
-        service = new HttpCancelInterceptor(mockRouter);
-    })
+  beforeEach(() => {
+    mockRouter = new MockRouter();
+    service = new HttpCancelInterceptor(mockRouter);
+  });
 
-    describe('#constructor', () => {
-        it('should call cancelPaymentRequests when router event type ActivationEnd is emitted', () => {
-            const cancelSpy = jest.spyOn(service, 'cancelPendingRequests')
-            
-            mockRouter.events.next(new ActivationEnd(mockSnapshot));
+  describe('#constructor', () => {
+    it('should call cancelPaymentRequests when router event type ActivationEnd is emitted', () => {
+      const cancelSpy = jest.spyOn(service, 'cancelPendingRequests');
 
-            expect(cancelSpy).toHaveBeenCalled();
-        })
+      mockRouter.events.next(new ActivationEnd(mockSnapshot));
 
-        it('should NOT call cancelPaymentRequests when router other event types are emitted', () => {
-            service.cancelPendingRequests = jest.fn();
-            
-            mockRouter.events.next(new ActivationStart(mockSnapshot));
+      expect(cancelSpy).toHaveBeenCalled();
+    });
 
-            expect(service.cancelPendingRequests).not.toHaveBeenCalled();
-        })
-    })
+    it('should NOT call cancelPaymentRequests when router other event types are emitted', () => {
+      service.cancelPendingRequests = jest.fn();
 
+      mockRouter.events.next(new ActivationStart(mockSnapshot));
 
-    describe('#intercept', () => {
-        it('should complete the observable if onCancelPendingRequests is called', fakeAsync(() => {
-            const next: any = {
-                handle: () => new BehaviorSubject(null)
-              };
-              
-            const mockRequest = new HttpRequest('GET', '/test');
-            let completed = false;
+      expect(service.cancelPendingRequests).not.toHaveBeenCalled();
+    });
+  });
 
-            const interceptedRequestObservable = service.intercept(mockRequest, next);
+  describe('#intercept', () => {
+    it('should complete the observable if onCancelPendingRequests is called', fakeAsync(() => {
+      const next: any = {
+        handle: () => new BehaviorSubject(null),
+      };
 
-            interceptedRequestObservable.pipe(finalize(() => {
-                completed = true;
-            })).subscribe();
+      const mockRequest = new HttpRequest('GET', '/test');
+      let completed = false;
 
-            service.cancelPendingRequests();
+      const interceptedRequestObservable = service.intercept(mockRequest, next);
 
-            tick(0);
+      interceptedRequestObservable
+        .pipe(
+          finalize(() => {
+            completed = true;
+          })
+        )
+        .subscribe();
 
-            expect(completed).toBeTruthy();
-        }))
+      service.cancelPendingRequests();
 
-        it('should NOT complete the observable if onCancelPendingRequests is NOT called', fakeAsync(() => {
-            const next: any = {
-                handle: () => new BehaviorSubject(null)
-              };
-              
-            const mockRequest = new HttpRequest('GET', '/test');
-            let completed = false;
+      tick(0);
 
-            const interceptedRequestObservable = service.intercept(mockRequest, next);
+      expect(completed).toBeTruthy();
+    }));
 
-            interceptedRequestObservable.pipe(finalize(() => {
-                completed = true;
-            })).subscribe();
+    it('should NOT complete the observable if onCancelPendingRequests is NOT called', fakeAsync(() => {
+      const next: any = {
+        handle: () => new BehaviorSubject(null),
+      };
 
-            tick(0);
+      const mockRequest = new HttpRequest('GET', '/test');
+      let completed = false;
 
-            expect(completed).toBeFalsy();
-        }))
-    })
-})
+      const interceptedRequestObservable = service.intercept(mockRequest, next);
+
+      interceptedRequestObservable
+        .pipe(
+          finalize(() => {
+            completed = true;
+          })
+        )
+        .subscribe();
+
+      tick(0);
+
+      expect(completed).toBeFalsy();
+    }));
+  });
+});

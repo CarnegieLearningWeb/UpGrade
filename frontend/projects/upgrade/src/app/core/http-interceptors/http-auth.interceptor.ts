@@ -5,12 +5,9 @@ import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class HttpAuthInterceptor implements HttpInterceptor {
-
   private idToken: string;
-  constructor(
-    private authService: AuthService
-  ) {
-    this.authService.getIdToken$.subscribe(token => {
+  constructor(private authService: AuthService) {
+    this.authService.getIdToken$.subscribe((token) => {
       this.idToken = token;
     });
   }
@@ -20,8 +17,8 @@ export class HttpAuthInterceptor implements HttpInterceptor {
     if (this.idToken) {
       request = request.clone({
         setHeaders: {
-          Authorization: `Bearer ${this.idToken}`
-        }
+          Authorization: `Bearer ${this.idToken}`,
+        },
       });
     }
 
