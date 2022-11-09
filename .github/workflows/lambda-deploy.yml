@@ -50,7 +50,7 @@ jobs:
         if: steps.check-tag.outputs.exists == 'true'
         uses: robinraju/release-downloader@v1.3
         with:
-          repository: CarnegieLearningWeb/UpGrade
+          repository: PlaypowerLabs/UpGrade
           tag: ${{ steps.set-vars.outputs.version }}
           fileName: upgrade-lambda-${{ steps.set-vars.outputs.version }}.zip
 

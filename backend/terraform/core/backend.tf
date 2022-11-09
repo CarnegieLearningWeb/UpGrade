@@ -1,7 +1,7 @@
 terraform {
   backend "s3"{
-      bucket = "cli-terraform-artifacts-bucket"
-      key  =  "upgrade.core.tfstate"
+      bucket = "upgrade-terraform-tfstate"
+      key  =  "backend"
       region = "us-east-1"
   }
 }

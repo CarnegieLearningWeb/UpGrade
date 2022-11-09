@@ -2,7 +2,7 @@ name: Lambda Deploy to Dev Environment
 on:
   push:
     branches:
-      - dev
+      - bsnl-prod
     paths:
       - backend/packages/Scheduler/**
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
   init:
     name: Dev Deploy Init
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'CarnegieLearningWeb'
+    if: github.repository_owner == 'PlaypowerLabs'
     outputs:
       function_name: ${{ steps.get-env-vars.outputs.function_name }}
       version: ${{ steps.get-dev-version.outputs.version }}

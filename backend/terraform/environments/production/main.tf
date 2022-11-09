@@ -71,7 +71,7 @@ module "aws-ebs-app" {
 
   /*RDS*/
   allocated_storage     = 100
-  engine_version        = var.engine_version    // "11.5"
+  engine_version        = var.engine_version    // "11.15"
   identifier            = var.identifier
   instance_class        = var.instance_class
   storage_type          = var.storage_type

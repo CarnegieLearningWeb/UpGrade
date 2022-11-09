@@ -7,11 +7,13 @@ app_version             = "1.0.0"
 
 # RDS related details 
 allocated_storage       = 100
-engine_version          = "11.5"
-identifier              = "dev-postgres" 
+engine_version          = "11.15"
+identifier              = "bsnl-postgres" 
 instance_class          = "db.t2.small"
 storage_type            = "gp2"
 multi_az                = "false"
+replica_names           = ["replica1"]
+RDS_PASSWORD            = "postgres"
 
 # EBS instance details
 app_instance_type       = "t2.micro"
@@ -22,12 +24,15 @@ autoscaling_max_size    =  4
 # APP environment variables
 GOOGLE_CLIENT_ID        = "google-project-id"
 DOMAIN_NAME             = "playpowerlabs.com"
-MONITOR_PASSWORD        = "passowrd"
-SWAGGER_PASSWORD        = "passowrd"
+MONITOR_PASSWORD        = "password"
+SWAGGER_PASSWORD        = "password"
 TYPEORM_SYNCHRONIZE     = true
+APP_DEMO                = false
 TYPEORM_MAX_QUERY_EXECUTION_TIME = 2000
-TOKEN_SECRET_KEY        = carnegielearning
+TOKEN_SECRET_KEY        = "carnegielearning"
 AUTH_CHECK              = true
+CONTEXT_METADATA        = "{'add':{'EXP_IDS':['add-id1','add-id2'],'EXP_POINTS':['add-point1','add-point2'],'GROUP_TYPES':['add-group1','add-group2'],'CONDITIONS':['add-con1','add-con2','add-con3']},'sub':{'EXP_IDS':['sub-id1','sub-id2'],'EXP_POINTS':['sub-point1','sub-point2'],'GROUP_TYPES':['sub-group1','sub-group2'],'CONDITIONS':['sub-con1','sub-con2','sub-con3']},'mul':{'EXP_IDS':['mul-id1','mul-id2'],'EXP_POINTS':['mul-point1','mul-point2'],'GROUP_TYPES':['mul-group1','mul-group2'],'CONDITIONS':['mul-con1','mul-con2','mul-con3']},'div':{'EXP_IDS':['div-id1','div-id2'],'EXP_POINTS':['div-point1','div-point2'],'GROUP_TYPES':['div-group1','div-group2'],'CONDITIONS':['div-con1','div-con2','div-con3']}}"
+METRIC                  = "[{'metric': 'totalTimeSeconds','datatype': 'continuous'}, { 'groupClass': 'masteryWorkspace', 'allowedKeys': [ 'calculating_area_various_figures', 'Compare_functions_diff_reps_quadratic' ], 'attributes': [{ 'metric': 'timeSeconds', 'datatype': 'continuous'}]}]"
 
 # CICD variables
 repository_name         = "educational-experiment-service"
@@ -35,3 +40,17 @@ branch_name             = "bsnl"
 build_image             = "aws/codebuild/standard:1.0"
 build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
+ADMIN_USERS             = "user1@company.com:admin/\user2@company.com:admin"
+
+# Email detail
+EMAIL_FROM                      = "upgrade@company.com",
+EMAIL_EXPIRE_AFTER_SECONDS      = 36000
+
+# secrets:
+CLIENT_API_KEY          = "key"
+CLIENT_API_SECRET       = "secret"
+NEW_RELIC_APP_NAME      = "Upgrade_bsnl"
+NEW_RELIC_LICENSE_KEY   = "a5917d8b00ee1fa4e6c036ffd71f3fadaa78NRAL"
+s3_lambda_bucket        = "upgrade-schedular"
+s3_lambda_key           = "schedular.zip"
+ssl_certificate_id      = "arn:aws:acm:us-east-1:781188149671:certificate/87332134-ade5-43fa-9753-12c6c8634e7c"

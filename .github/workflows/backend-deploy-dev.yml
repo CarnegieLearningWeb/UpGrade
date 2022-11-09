@@ -2,7 +2,7 @@ name: Backend Deploy to Dev Environment
 on:
   push:
     branches:
-      - dev
+      - bsnl-prod
     paths:
       - backend/**
   workflow_dispatch:
@@ -10,7 +10,7 @@ jobs:
   init:
     name: Dev Deploy Init
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'CarnegieLearningWeb'
+    if: github.repository_owner == 'PlaypowerLabs'
     outputs:
       application_name: ${{ steps.get-env-vars.outputs.application_name }}
       environment_name: ${{ steps.get-env-vars.outputs.environment_name }}

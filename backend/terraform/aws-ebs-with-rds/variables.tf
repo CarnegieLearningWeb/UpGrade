@@ -26,7 +26,7 @@ variable "engine" {
 
 variable "engine_version" {
   description = "DB engine version"
-  default     = "11.5"
+  default     = "11.15"
 }
 
 variable "instance_class" {
@@ -90,8 +90,8 @@ variable "APP_SCHEMA" { default = "http" }
 variable "APP_DEMO" { default = "false" }
 variable "AUTH_CHECK" {}
 variable "AWS_REGION" { default = "us-east-1" }
-variable "CLIENT_API_KEY"{}
-variable "CLIENT_API_SECRET"{}
+variable "CLIENT_API_KEY"{ default = "key"}
+variable "CLIENT_API_SECRET"{default = "secret"}
 variable "METRIC" {}
 variable "CONTEXT_METADATA" {}
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
@@ -124,7 +124,7 @@ variable "TOKEN_SECRET_KEY" { }
 variable "TYPEORM_CONNECTION" { default = "postgres" }
 variable "TYPEORM_ENTITIES" { default = "src/api/models/**/*.ts" }
 variable "TYPEORM_HOST" { default = "localhost" }
-variable "TYPEORM_HOSTNAME_REPLICAS" { default = [ "localhost" ] }
+variable "TYPEORM_HOSTNAME_REPLICAS" { default = "[ 'localhost' ]" }
 variable "TYPEORM_ENTITIES_DIR" { default = "src/api/models" }
 variable "TYPEORM_FACTORY" { default = "src/database/factories/**/*.factory.ts" }
 variable "TYPEORM_LOGGER" { default = "advanced-console" }

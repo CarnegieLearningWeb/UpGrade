@@ -1,6 +1,6 @@
 provider aws {
     region = "us-east-1"
-    profile = "upgrade-terraform"
+    profile = "default"
 }
 
 # resource "aws_codecommit_repository" "code_repo" {

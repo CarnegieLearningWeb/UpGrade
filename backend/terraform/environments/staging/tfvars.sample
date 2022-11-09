@@ -8,7 +8,7 @@ aws_profile             = "upgrade-terraform"
 
 # RDS related details 
 allocated_storage       = 100
-engine_version          = "11.5"
+engine_version          = "11.15"
 identifier              = "dev-postgres" 
 instance_class          = "db.t2.small"
 storage_type            = "gp2"

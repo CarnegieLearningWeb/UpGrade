@@ -46,10 +46,7 @@ resource "aws_db_instance" "app-rds" {
 # Create Read Replica DB
 resource "aws_db_instance" "app-rds-read-replica" {
   count                       = length(var.replica_names)  # Number of read replicas to create
-  name                        = var.replica_names[count.index]
   allocated_storage           = var.allocated_storage
-  engine                      = var.engine
-  engine_version              = var.engine_version
   instance_class              = var.instance_class
   identifier                  = "${var.environment}-${var.prefix}-${var.identifier}-read-replica-${count.index}"
   replicate_source_db         = aws_db_instance.app-rds.id
