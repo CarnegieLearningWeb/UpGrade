@@ -47,10 +47,13 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *     properties:
  *       id:
  *         type: string
+ *         example: exp01
  *       name:
  *         type: string
+ *         example: TextExp1
  *       description:
  *         type: string
+ *         example: a simple test experiment
  *       state:
  *         type: string
  *         enum: [inactive, demo, scheduled, enrolling, enrollmentComplete, cancelled]
@@ -65,7 +68,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *         enum: [individual, group]
  *       postExperimentRule:
  *         type: string
- *         enum: [continue, revert]
+ *         enum: [continue, revert, assign]
  *       enrollmentCompleteCondition:
  *          type: object
  *          properties:
@@ -91,25 +94,119 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *             properties:
  *               name:
  *                type: string
+ *                example: control
  *               assignmentWeight:
  *                type: number
+ *                example: 50
  *               description:
  *                type: string
+ *                example: Control Condition
  *       partitions:
  *         type: array
  *         items:
  *           type: object
  *           properties:
- *             point:
+ *             site:
  *               type: string
+ *               example: SelectSection
+ *             target:
+ *               type: string
+ *               example: using_fractions
  *             name:
  *               type: string
  *             description:
  *               type: string
- *       metrics:
+ *             excludeIfReached:
+ *                type: boolean
+ *       queries:
  *         type: array
  *         items:
  *           type: object
+ *       experimentSegmentInclusion:
+ *          type: object
+ *          properties: 
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
+ *       experimentSegmentExclusion:
+ *          type: object
+ *          properties: 
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
+ *       conditionAliases:
+ *         type: array
+ *         items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               aliasName:
+ *                 type: string
+ *               parentCondition:
+ *                 type: object
+ *               decisionPoint:
+ *                 type: object
  *   ExperimentResponse:
  *     description: ''
  *     type: object
@@ -215,8 +312,8 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *             - versionNumber
  *             - id
  *             - twoCharacterId
- *             - expPoint
- *             - expId
+ *             - site
+ *             - target
  *             - description
  *           properties:
  *             createdAt:
@@ -233,10 +330,10 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *             twoCharacterId:
  *               type: string
  *               minLength: 1
- *             expPoint:
+ *             site:
  *               type: string
  *               minLength: 1
- *             expId:
+ *             target:
  *               type: string
  *               minLength: 1
  *             description:
@@ -282,6 +379,91 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *             timeLog:
  *               type: string
  *               minLength: 1
+ *       experimentSegmentInclusion:
+ *          type: object
+ *          properties: 
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
+ *       experimentSegmentExclusion:
+ *          type: object
+ *          properties: 
+ *              segment:
+ *                type: object
+ *                properties:
+ *                  individualForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        userId:
+ *                          type: string
+ *                          example: user1
+ *                  groupForSegment:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        groupId:
+ *                          type: string
+ *                          example: school1
+ *                        type:
+ *                           type: string
+ *                           example: schoolId
+ *                  subSegments:
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                        name:
+ *                          type: string
+ *                        context:
+ *                          type: string
+ *       conditionAliases:
+ *         type: array
+ *         items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               aliasName:
+ *                 type: string
+ *               parentCondition:
+ *                 type: object
+ *               decisionPoint:
+ *                 type: object
  *     required:
  *       - createdAt
  *       - updatedAt
@@ -522,15 +704,17 @@ export class ExperimentController {
    *               items:
    *                 type: object
    *                 required:
-   *                   - expPoint
-   *                   - expId
+   *                   - site
+   *                   - target
    *                 properties:
-   *                   expPoint:
+   *                   site:
    *                     type: string
    *                     minLength: 1
-   *                   expId:
+   *                     example: SelectSection
+   *                   target:
    *                     type: string
    *                     minLength: 1
+   *                     example: using_fractions
    *          '401':
    *            description: AuthorizationRequiredError
    *          '404':
