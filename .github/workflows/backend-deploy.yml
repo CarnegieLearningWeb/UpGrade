@@ -80,7 +80,7 @@ jobs:
         run: |
           cp -R ../types packages/Upgrade
           npm ci
-          zip -qq -r upgrade-backend-${{ steps.set-vars.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json tslint.json
+          zip -qq -r upgrade-backend-${{ steps.set-vars.outputs.version }}.zip node_modules packages/Upgrade Dockerfile Dockerrun.aws.json package.json tsconfig.json
           mv upgrade-backend-${{ steps.set-vars.outputs.version }}.zip ../
       - uses: einaregilsson/beanstalk-deploy@v13
         with:

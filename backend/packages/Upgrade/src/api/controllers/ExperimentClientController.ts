@@ -1,4 +1,14 @@
-import { JsonController, Post, Body, UseBefore, Get, BodyParam, Req, InternalServerError, Delete } from 'routing-controllers';
+import {
+  JsonController,
+  Post,
+  Body,
+  UseBefore,
+  Get,
+  BodyParam,
+  Req,
+  InternalServerError,
+  Delete,
+} from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
 import { MarkExperimentValidator } from './validators/MarkExperimentValidator';
@@ -108,10 +118,37 @@ export class ExperimentClientController {
    *             properties:
    *               id:
    *                 type: string
+   *                 example: user1
    *               group:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: school1
+   *                   classId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: class1
+   *                   instructorId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: instructor1
    *               workingGroup:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: string
+   *                      example: school1
+   *                   classId:
+   *                      type: string
+   *                      example: class1
+   *                   instructorId:
+   *                      type: string
+   *                      example: instructor1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -135,7 +172,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     const userDocument = await this.experimentUserService.create([experimentUser], request.logger);
@@ -168,8 +205,25 @@ export class ExperimentClientController {
    *             properties:
    *               id:
    *                 type: string
+   *                 example: user1
    *               group:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: school1
+   *                   classId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: class1
+   *                   instructorId:
+   *                      type: array
+   *                      items:
+   *                        type: string
+   *                        example: instructor1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -195,7 +249,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(experimentUser.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentUserService.updateGroupMembership(experimentUser.id, experimentUser.group, {
@@ -220,8 +274,19 @@ export class ExperimentClientController {
    *             properties:
    *               id:
    *                 type: string
+   *                 example: user1
    *               workingGroup:
    *                 type: object
+   *                 properties:
+   *                   schoolId:
+   *                      type: string
+   *                      example: school1
+   *                   classId:
+   *                      type: string
+   *                      example: class1
+   *                   instructorId:
+   *                      type: string
+   *                      example: instructor1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -247,7 +312,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(workingGroupParams.id, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentUserService.updateWorkingGroup(workingGroupParams.id, workingGroupParams.workingGroup, {
@@ -269,15 +334,29 @@ export class ExperimentClientController {
    *           required: true
    *           schema:
    *             type: object
+   *             required:
+   *                - userId
+   *                - experimentPoint
+   *                - condition
    *             properties:
    *               userId:
    *                 type: string
+   *                 example: user1
    *               experimentPoint:
    *                 type: string
+   *                 example: point1
    *               partitionId:
    *                 type: string
+   *                 example: partition1
    *               condition:
    *                 type: string
+   *                 example: control
+   *               status:
+   *                 type: string
+   *                 example: condition applied
+   *               experimentId:
+   *                 type: string
+   *                 example: exp1
    *           description: ExperimentUser
    *       tags:
    *         - Client Side SDK
@@ -336,7 +415,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.markExperimentPoint(
@@ -349,7 +428,7 @@ export class ExperimentClientController {
         userDoc: experimentUserDoc,
       },
       experiment.partitionId,
-      experiment.experimentId ? experiment.experimentId : null,
+      experiment.experimentId ? experiment.experimentId : null
     );
   }
 
@@ -369,8 +448,10 @@ export class ExperimentClientController {
    *             properties:
    *               userId:
    *                 type: string
+   *                 example: user1
    *               context:
    *                 type: string
+   *                 example: add
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -440,6 +521,8 @@ export class ExperimentClientController {
    *                      - order
    *          '500':
    *            description: null value in column "id" of relation "experiment_user" violates not-null constraint
+   *          '404':
+   *            description: Experiment user not defined
    */
   @Post('assign')
   public async getAllExperimentConditions(
@@ -487,6 +570,42 @@ export class ExperimentClientController {
    *                 type: array
    *                 items:
    *                   type: object
+   *                   properties:
+   *                      userId:
+   *                         type: string
+   *                         example: user1
+   *                      metrics:
+   *                         type: object
+   *                         properties:
+   *                            attributes:
+   *                              type: object
+   *                              properties:
+   *                                  continuousMetricName:
+   *                                    type: integer
+   *                                    example: 100
+   *                                  categoricalMetricName:
+   *                                    type: string
+   *                                    example: CATEGORY
+   *                            groupedMetrics:
+   *                              type: array
+   *                              items:
+   *                                  type: object
+   *                                  properties:
+   *                                      groupClass:
+   *                                          type: string
+   *                                          example: workspaceType
+   *                                      groupKey:
+   *                                           type: string
+   *                                           example: workspaceName
+   *                                      attributes:
+   *                                        type: object
+   *                                        properties:
+   *                                            continuousMetricName:
+   *                                              type: integer
+   *                                              example: 100
+   *                                            categoricalMetricName:
+   *                                              type: string
+   *                                              example: CATEGORY
    *            description: User Document
    *       tags:
    *         - Client Side SDK
@@ -510,7 +629,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.dataLog(logData.userId, logData.value, {
@@ -551,17 +670,21 @@ export class ExperimentClientController {
   @Post('bloblog')
   public async blobLog(@Req() request: express.Request): Promise<any> {
     return new Promise((resolve, reject) => {
-      request.on('readable', async (data) => {
+      request.on('readable', async () => {
         const blobData = JSON.parse(request.read());
         try {
           // The function will throw error if userId doesn't exist
           const experimentUserDoc = await this.getUserDoc(blobData.userId, request.logger);
           if (experimentUserDoc) {
             // append userDoc in logger
-            request.logger.child({ userDoc : experimentUserDoc })
+            request.logger.child({ userDoc: experimentUserDoc });
             request.logger.info({ message: 'Got the original user doc' });
           }
-          const response = await this.experimentAssignmentService.blobDataLog(blobData.userId, blobData.value, request.logger);
+          const response = await this.experimentAssignmentService.blobDataLog(
+            blobData.userId,
+            blobData.value,
+            request.logger
+          );
           resolve(response);
         } catch (error) {
           // The error is rejected so promise can now handle this error
@@ -569,7 +692,7 @@ export class ExperimentClientController {
         }
       });
     }).catch((error) => {
-      request.logger.error(error);     
+      request.logger.error(error);
       error = new Error(
         JSON.stringify({
           type: SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED,
@@ -577,7 +700,7 @@ export class ExperimentClientController {
         })
       );
       (error as any).type = SERVER_ERROR.EXPERIMENT_USER_NOT_DEFINED;
-      (error as any).httpCode = 404
+      (error as any).httpCode = 404;
       throw error;
     });
   }
@@ -625,7 +748,7 @@ export class ExperimentClientController {
     const experimentUserDoc = await this.getUserDoc(errorBody.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentAssignmentService.clientFailedExperimentPoint(
@@ -654,7 +777,7 @@ export class ExperimentClientController {
    *            description: Feature flags list
    */
   @Get('featureflag')
-  public getAllFlags( @Req() request: AppRequest): Promise<FeatureFlag[]> {
+  public getAllFlags(@Req() request: AppRequest): Promise<FeatureFlag[]> {
     return this.featureFlagService.find(request.logger);
   }
 
@@ -685,9 +808,11 @@ export class ExperimentClientController {
    *            description: Insert error in database
    */
   @Post('metric')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
-  @Req()
-  request: AppRequest): Promise<Metric[]> {
+  public filterMetrics(
+    @BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>,
+    @Req()
+    request: AppRequest
+  ): Promise<Metric[]> {
     return this.metricService.saveAllMetrics(metricUnit, request.logger);
   }
 
@@ -710,10 +835,12 @@ export class ExperimentClientController {
    *             properties:
    *              userId:
    *                type: string
+   *                example: user1
    *              aliases:
    *                type: array
    *                items:
    *                 type: string
+   *                 example: alias123
    *            description: Set user aliases
    *       tags:
    *         - Client Side SDK
@@ -760,11 +887,12 @@ export class ExperimentClientController {
     @Body()
     @Req()
     request: AppRequest,
-    user: ExperimentUserAliasesValidator): Promise<ExperimentUser[]> {
+    user: ExperimentUserAliasesValidator
+  ): Promise<ExperimentUser[]> {
     const experimentUserDoc = await this.getUserDoc(user.userId, request.logger);
     if (experimentUserDoc) {
       // append userDoc in logger
-      request.logger.child({ userDoc : experimentUserDoc })
+      request.logger.child({ userDoc: experimentUserDoc });
       request.logger.info({ message: 'Got the original user doc' });
     }
     return this.experimentUserService.setAliasesForUser(user.userId, user.aliases, {
@@ -782,7 +910,7 @@ export class ExperimentClientController {
           id: experimentUserDoc.id,
           requestedUserId: experimentUserId,
           group: experimentUserDoc.group,
-          workingGroup: experimentUserDoc.workingGroup
+          workingGroup: experimentUserDoc.workingGroup,
         };
         logger.info({ message: 'Got the user doc', details: userDoc });
         return userDoc;
@@ -795,6 +923,21 @@ export class ExperimentClientController {
     }
   }
 
+  /**
+   * @swagger
+   * /clearDB:
+   *    delete:
+   *       description: Only available in DEMO mode. Removes everything except UpGrade users, metric metadata, UpGrade settings, and migrations
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Database cleared
+   *          '500':
+   *            description: DEMO mode is disabled
+   */
   @Delete('clearDB')
   public clearDB(@Req() request: AppRequest): Promise<string> {
     // if DEMO mode is enabled, then clear the database:

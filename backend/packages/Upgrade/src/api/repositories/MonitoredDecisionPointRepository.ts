@@ -7,7 +7,7 @@ export class MonitoredDecisionPointRepository extends Repository<MonitoredDecisi
   public async saveRawJson(
     rawData: Omit<MonitoredDecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber' | 'monitoredPointLogs'>
     // experimentId: string, condition: string, user: ExperimentUser, site: string, target: string): Promise<MonitoredDecisionPoint> {
-    ): Promise<MonitoredDecisionPoint> {
+  ): Promise<MonitoredDecisionPoint> {
     const result = await this.createQueryBuilder('monitoredPoint')
       .insert()
       .into(MonitoredDecisionPoint)

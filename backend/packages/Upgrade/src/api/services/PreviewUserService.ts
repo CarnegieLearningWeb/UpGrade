@@ -11,11 +11,11 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 export class PreviewUserService {
   constructor(
     @OrmRepository() private userRepository: PreviewUserRepository,
-    @OrmRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository,
+    @OrmRepository() private explicitIndividualAssignmentRepository: ExplicitIndividualAssignmentRepository
   ) {}
 
   public async find(logger: UpgradeLogger): Promise<PreviewUser[]> {
-    logger.info({ message : `Find all preview users` });
+    logger.info({ message: `Find all preview users` });
     const [previewUsers, assignments] = await Promise.all([
       this.userRepository.find(),
       this.userRepository.findWithNames(),
@@ -29,7 +29,7 @@ export class PreviewUserService {
   }
 
   public async findOne(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
-    logger.info({ message : `Find user by id => ${id}` });
+    logger.info({ message: `Find user by id => ${id}` });
     const [previewUser, assignments] = await Promise.all([
       this.userRepository.findOne({ id }),
       this.userRepository.findOneById(id),
@@ -38,16 +38,12 @@ export class PreviewUserService {
   }
 
   public getTotalCount(logger: UpgradeLogger): Promise<number> {
-    logger.info({ message : `Find count of preview users` });
+    logger.info({ message: `Find count of preview users` });
     return this.userRepository.count();
   }
 
-  public async findPaginated(
-    skip: number,
-    take: number,
-    logger: UpgradeLogger
-  ): Promise<PreviewUser[]> {
-    logger.info({ message : `Find paginated preview users` });
+  public async findPaginated(skip: number, take: number, logger: UpgradeLogger): Promise<PreviewUser[]> {
+    logger.info({ message: `Find paginated preview users` });
     const [previewUsers, assignments] = await Promise.all([
       this.userRepository.findPaginated(skip, take),
       this.userRepository.findWithNames(),
@@ -60,27 +56,30 @@ export class PreviewUserService {
     });
   }
 
-  public create(user: Partial<PreviewUser>,logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message : `Create a new preview user => ${user}` });
+  public create(user: Partial<PreviewUser>, logger: UpgradeLogger): Promise<PreviewUser> {
+    logger.info({ message: `Create a new preview user => ${user}` });
     user.id = user.id || uuid();
 
     return this.userRepository.save(user);
   }
 
   public update(id: string, user: PreviewUser, logger: UpgradeLogger): Promise<PreviewUser> {
-    logger.info({ message : `Update a preview user => ${user.toString()}` });
+    logger.info({ message: `Update a preview user => ${user.toString()}` });
     user.id = id;
     return this.userRepository.save(user);
   }
 
   public async delete(id: string, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
-    logger.info({ message : `Delete a user => ${id.toString()}` });
+    logger.info({ message: `Delete a user => ${id.toString()}` });
     const deletedDoc = await this.userRepository.deleteById(id);
     return deletedDoc;
   }
 
-  public async upsertExperimentConditionAssignment(previewUser: PreviewUser, logger: UpgradeLogger): Promise<PreviewUser | undefined> {
-    logger.info({ message : `Upsert Experiment Condition Assignment ${JSON.stringify(previewUser, undefined, 1)}` });
+  public async upsertExperimentConditionAssignment(
+    previewUser: PreviewUser,
+    logger: UpgradeLogger
+  ): Promise<PreviewUser | undefined> {
+    logger.info({ message: `Upsert Experiment Condition Assignment ${JSON.stringify(previewUser, undefined, 1)}` });
 
     const previewDocumentWithOldAssignments = await this.findOne(previewUser.id, logger);
     const newAssignments = previewUser.assignments;
@@ -89,7 +88,8 @@ export class PreviewUserService {
       (newAssignments &&
         newAssignments.length > 0 &&
         newAssignments.map((assignment: ExplicitIndividualAssignment) => {
-          // tslint:disable-next-line:no-shadowed-variable
+          // TODO: please review this eslint error
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { createdAt, updatedAt, versionNumber, ...rest } = assignment;
           rest.previewUser = previewUser;
           rest.id = rest.id || uuid();

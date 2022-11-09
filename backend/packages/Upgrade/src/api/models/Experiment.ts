@@ -15,7 +15,7 @@ import {
   IEnrollmentCompleteCondition,
   IExperimentSearchParams,
   IExperimentSortParams,
-  EXPERIMENT_TYPE
+  EXPERIMENT_TYPE,
 } from 'upgrade_types';
 import { Type } from 'class-transformer';
 import { Query } from './Query';
@@ -110,12 +110,12 @@ export class Experiment extends BaseModel {
   })
   public filterMode: FILTER_MODE;
 
-  @OneToMany((type) => ExperimentCondition, (condition) => condition.experiment)
+  @OneToMany(() => ExperimentCondition, (condition) => condition.experiment)
   @ValidateNested()
   @Type(() => ExperimentCondition)
   public conditions: ExperimentCondition[];
 
-  @OneToMany((type) => DecisionPoint, (decisionPoint) => decisionPoint.experiment)
+  @OneToMany(() => DecisionPoint, (decisionPoint) => decisionPoint.experiment)
   @ValidateNested()
   @Type(() => DecisionPoint)
   public partitions: DecisionPoint[];
@@ -123,28 +123,28 @@ export class Experiment extends BaseModel {
   @ValidateNested()
   public conditionAliases: ConditionAlias[];
 
-  @OneToMany((type) => Query, (query) => query.experiment)
+  @OneToMany(() => Query, (query) => query.experiment)
   public queries: Query[];
 
-  @OneToMany((type) => StateTimeLog, (state) => state.experiment)
+  @OneToMany(() => StateTimeLog, (state) => state.experiment)
   @Type(() => StateTimeLog)
   public stateTimeLogs: StateTimeLog[];
 
-  @OneToOne((type) => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
+  @OneToOne(() => ExperimentSegmentInclusion, (experimentSegmentInclusion) => experimentSegmentInclusion.experiment)
   @Type(() => ExperimentSegmentInclusion)
   public experimentSegmentInclusion: ExperimentSegmentInclusion;
 
-  @OneToOne((type) => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
+  @OneToOne(() => ExperimentSegmentExclusion, (experimentSegmentExclusion) => experimentSegmentExclusion.experiment)
   @Type(() => ExperimentSegmentExclusion)
   public experimentSegmentExclusion: ExperimentSegmentExclusion;
-  
+
   @Column({ default: '1.0.0' })
   public backendVersion: string;
 
-  @Column({ 
-  type: 'enum',
-  enum: EXPERIMENT_TYPE,
-  default: EXPERIMENT_TYPE.SIMPLE, 
+  @Column({
+    type: 'enum',
+    enum: EXPERIMENT_TYPE,
+    default: EXPERIMENT_TYPE.SIMPLE,
   })
   public type: string;
 }

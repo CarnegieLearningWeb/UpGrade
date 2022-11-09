@@ -36,9 +36,9 @@ export class DecisionPoint extends BaseModel {
   })
   public excludeIfReached: boolean;
 
-  @ManyToOne((type) => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, (experiment) => experiment.partitions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @OneToMany((type) => ConditionAlias, (conditionAlias) => conditionAlias.decisionPoint)
+  @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.decisionPoint)
   public conditionAliases: ConditionAlias[];
 }

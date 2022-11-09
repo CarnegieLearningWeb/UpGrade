@@ -7,9 +7,7 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class ErrorService {
-  constructor(
-    @OrmRepository() private errorRepository: ErrorRepository
-  ) {}
+  constructor(@OrmRepository() private errorRepository: ErrorRepository) {}
 
   public getTotalLogs(filter: SERVER_ERROR): Promise<number> {
     if (filter) {

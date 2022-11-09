@@ -42,8 +42,8 @@ export default class UpgradeClient {
   constructor(userId: string, hostUrl: string, options?: { token?: string; clientSessionId?: string }) {
     this.userId = userId;
     this.hostUrl = hostUrl;
-    this.token = options.token;
-    this.clientSessionId = options.clientSessionId || uuid.v4();
+    this.token = options?.token;
+    this.clientSessionId = options?.clientSessionId || uuid.v4();
     this.api = {
       init: `${hostUrl}/api/init`,
       getAllExperimentConditions: `${hostUrl}/api/assign`,

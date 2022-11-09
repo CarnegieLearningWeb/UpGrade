@@ -27,7 +27,7 @@ export class FeatureFlagService {
   }
 
   public create(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    logger.info({ message : 'Create a new feature flag' });
+    logger.info({ message: 'Create a new feature flag' });
     return this.addFeatureFlagInDB(flag, logger);
   }
 
@@ -42,7 +42,7 @@ export class FeatureFlagService {
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
   ): Promise<FeatureFlag[]> {
-    logger.info({ message : 'Find paginated Feature flags' });
+    logger.info({ message: 'Find paginated Feature flags' });
 
     let queryBuilder = this.featureFlagRepository
       .createQueryBuilder('feature_flag')
@@ -65,7 +65,7 @@ export class FeatureFlagService {
   }
 
   public async delete(featureFlagId: string, logger: UpgradeLogger): Promise<FeatureFlag | undefined> {
-    logger.info({ message : `Delete Feature Flag => ${featureFlagId}` });
+    logger.info({ message: `Delete Feature Flag => ${featureFlagId}` });
     const featureFlag = await this.featureFlagRepository.find({
       where: { id: featureFlagId },
       relations: ['variations'],
@@ -80,14 +80,14 @@ export class FeatureFlagService {
     return undefined;
   }
 
-  public async updateState(flagId: string, status: boolean, logger: UpgradeLogger): Promise<FeatureFlag> {
+  public async updateState(flagId: string, status: boolean): Promise<FeatureFlag> {
     // TODO: Add log for updating flag state
     const updatedState = await this.featureFlagRepository.updateState(flagId, status);
     return updatedState;
   }
 
   public update(flag: FeatureFlag, logger: UpgradeLogger): Promise<FeatureFlag> {
-    logger.info({ message : `Update a Feature Flag => ${flag.toString()}` });
+    logger.info({ message: `Update a Feature Flag => ${flag.toString()}` });
     // TODO add entry in log of updating feature flag
     return this.updateFeatureFlagInDB(flag, logger);
   }
@@ -134,6 +134,8 @@ export class FeatureFlagService {
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
+        // TODO: please review this eslint error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { featureFlagId, ...rest } = variationDoc as any;
         return rest;
       });
@@ -153,6 +155,8 @@ export class FeatureFlagService {
     const oldVariations = oldFeatureFlag[0].variations;
 
     return getConnection().transaction(async (transactionalEntityManager) => {
+      // TODO: please review this eslint error
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { variations, versionNumber, createdAt, updatedAt, ...flagDoc } = flag;
       let featureFlagDoc: FeatureFlag;
       try {
@@ -169,7 +173,8 @@ export class FeatureFlagService {
         (variations &&
           variations.length > 0 &&
           variations.map((variation: FlagVariation) => {
-            // tslint:disable-next-line:no-shadowed-variable
+            // TODO: please review this eslint error
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, ...rest } = variation;
             rest.featureFlag = featureFlagDoc;
             rest.id = rest.id || uuid();
@@ -210,6 +215,8 @@ export class FeatureFlagService {
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
+        // TODO: please review this eslint error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { featureFlagId, ...rest } = variationDoc as any;
         return { ...rest, featureFlag: variationDoc.featureFlag };
       });

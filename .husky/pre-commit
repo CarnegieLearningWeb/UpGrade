@@ -1,17 +1,13 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# Testing JS Client Lib
-cd clientlib/js
-lint-staged
-cd ../../
+npx lint-staged
 
 # Testing Frontend
 cd frontend
-npx lint-staged
 npm run test
 cd ..
 
 # Testing Backend Upgrade
 cd backend/packages/Upgrade
-npm start lint && npm start typecheck && npm test
+npm start typecheck && npm test

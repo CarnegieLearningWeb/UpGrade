@@ -18,7 +18,7 @@ export class IndividualEnrollmentRepository extends Repository<IndividualEnrollm
   }
 
   public async getEnrollmentCountForExperiment(experimentId: string): Promise<number> {
-    const data: Array<{count: number}> = await this.createQueryBuilder('enrollment')
+    const data: Array<{ count: number }> = await this.createQueryBuilder('enrollment')
       .select('COUNT(DISTINCT("userId"))::int as count')
       .where('"experimentId" = :experimentId', { experimentId })
       .execute();

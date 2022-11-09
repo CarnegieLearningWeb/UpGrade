@@ -46,12 +46,7 @@ export class QueryRepository extends Repository<Query> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'QueryRepository',
-          'insertQueries',
-          { queryDoc },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('QueryRepository', 'insertQueries', { queryDoc }, errorMsg);
         throw errorMsgString;
       });
     return result.raw;

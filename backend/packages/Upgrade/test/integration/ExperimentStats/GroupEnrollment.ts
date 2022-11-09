@@ -42,7 +42,7 @@ export default async function testCase(): Promise<void> {
   );
 
   const experimentId = experiments[0].id;
-  let stats = await analyticsService.getEnrollments([experimentId], new UpgradeLogger());
+  let stats = await analyticsService.getEnrollments([experimentId]);
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -66,11 +66,17 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName1, experimentPoint1);
 
   // check stats
-  stats = await analyticsService.getEnrollments([experimentId], new UpgradeLogger());
+  stats = await analyticsService.getEnrollments([experimentId]);
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -91,11 +97,17 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName1, experimentPoint1);
 
   // check stats
-  stats = await analyticsService.getEnrollments([experimentId], new UpgradeLogger());
+  stats = await analyticsService.getEnrollments([experimentId]);
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -113,10 +125,16 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName2, experimentPoint2, condition2, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[2].id,
+    experimentName2,
+    experimentPoint2,
+    condition2,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName2, experimentPoint2);
 
-  stats = await analyticsService.getEnrollments([experimentId], new UpgradeLogger());
+  stats = await analyticsService.getEnrollments([experimentId]);
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -134,10 +152,16 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName2, experimentPoint2);
 
   // mark experiment point
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName1, experimentPoint1, condition1, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[3].id,
+    experimentName1,
+    experimentPoint1,
+    condition1,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName1, experimentPoint1);
 
-  stats = await analyticsService.getEnrollments([experimentId], new UpgradeLogger());
+  stats = await analyticsService.getEnrollments([experimentId]);
   expect(stats).toEqual(
     expect.arrayContaining([
       expect.objectContaining({

@@ -10,9 +10,7 @@ import { SERVER_ERROR } from 'upgrade_types';
 
 @Service()
 export class AuthService {
-  constructor(
-    @OrmRepository() private userRepository: UserRepository
-  ) {}
+  constructor(@OrmRepository() private userRepository: UserRepository) {}
 
   public parseBasicAuthFromRequest(req: express.Request): string {
     req.logger.info({ message: 'Inside parseBasicAuthFromRequest' });

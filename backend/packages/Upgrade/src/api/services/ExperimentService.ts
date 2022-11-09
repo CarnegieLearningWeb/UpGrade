@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 import { GroupExclusion } from './../models/GroupExclusion';
 import { ErrorWithType } from './../errors/ErrorWithType';
 import { Service } from 'typedi';
@@ -18,7 +19,14 @@ import { ScheduledJobService } from './ScheduledJobService';
 import { getConnection, In, EntityManager } from 'typeorm';
 import { ExperimentAuditLogRepository } from '../repositories/ExperimentAuditLogRepository';
 import { diffString } from 'json-diff';
-import { EXPERIMENT_LOG_TYPE, EXPERIMENT_STATE, CONSISTENCY_RULE, SERVER_ERROR, EXCLUSION_CODE, SEGMENT_TYPE } from 'upgrade_types';
+import {
+  EXPERIMENT_LOG_TYPE,
+  EXPERIMENT_STATE,
+  CONSISTENCY_RULE,
+  SERVER_ERROR,
+  EXCLUSION_CODE,
+  SEGMENT_TYPE,
+} from 'upgrade_types';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
 import { MonitoredDecisionPointRepository } from '../repositories/MonitoredDecisionPointRepository';
@@ -76,7 +84,7 @@ export class ExperimentService {
       logger.info({ message: `Find all experiments` });
     }
     const experiments = await this.experimentRepository.findAllExperiments();
-    return experiments.map(x => this.formatingConditionAlias(x));
+    return experiments.map((x) => this.formatingConditionAlias(x));
   }
 
   public findAllName(logger: UpgradeLogger): Promise<Array<Pick<Experiment, 'id' | 'name'>>> {
@@ -99,9 +107,9 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
       .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
@@ -110,8 +118,8 @@ export class ExperimentService {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases','ConditionAliasesArray')
-      .leftJoinAndSelect('ConditionAliasesArray.parentCondition','parentCondition')
+      .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
+      .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
       .addOrderBy('conditions.order', 'ASC')
       .addOrderBy('partitions.order', 'ASC');
     if (searchParams) {
@@ -129,7 +137,7 @@ export class ExperimentService {
 
     queryBuilder = queryBuilder.skip(skip).take(take);
 
-    return (await queryBuilder.getMany()).map(x => this.formatingConditionAlias(x));
+    return (await queryBuilder.getMany()).map((x) => this.formatingConditionAlias(x));
   }
 
   public async findOne(id: string, logger?: UpgradeLogger): Promise<Experiment | undefined> {
@@ -142,9 +150,9 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.partitions', 'partitions')
       .leftJoinAndSelect('experiment.queries', 'queries')
       .leftJoinAndSelect('experiment.stateTimeLogs', 'stateTimeLogs')
-      .leftJoinAndSelect('experiment.experimentSegmentInclusion','experimentSegmentInclusion')
-      .leftJoinAndSelect('experimentSegmentInclusion.segment','segmentInclusion')
-      .leftJoinAndSelect('segmentInclusion.individualForSegment','individualForSegment')
+      .leftJoinAndSelect('experiment.experimentSegmentInclusion', 'experimentSegmentInclusion')
+      .leftJoinAndSelect('experimentSegmentInclusion.segment', 'segmentInclusion')
+      .leftJoinAndSelect('segmentInclusion.individualForSegment', 'individualForSegment')
       .leftJoinAndSelect('segmentInclusion.groupForSegment', 'groupForSegment')
       .leftJoinAndSelect('segmentInclusion.subSegments', 'subSegment')
       .leftJoinAndSelect('experiment.experimentSegmentExclusion', 'experimentSegmentExclusion')
@@ -153,8 +161,8 @@ export class ExperimentService {
       .leftJoinAndSelect('segmentExclusion.groupForSegment', 'groupForSegmentExclusion')
       .leftJoinAndSelect('segmentExclusion.subSegments', 'subSegmentExclusion')
       .leftJoinAndSelect('queries.metric', 'metric')
-      .leftJoinAndSelect('partitions.conditionAliases','ConditionAliasesArray')
-      .leftJoinAndSelect('ConditionAliasesArray.parentCondition','parentCondition')
+      .leftJoinAndSelect('partitions.conditionAliases', 'ConditionAliasesArray')
+      .leftJoinAndSelect('ConditionAliasesArray.parentCondition', 'parentCondition')
       .where({ id })
       .getOne();
 
@@ -172,19 +180,24 @@ export class ExperimentService {
     };
   }
 
-  public create(experiment: Experiment, currentUser: User, logger: UpgradeLogger, createType?: string): Promise<Experiment> {
+  public create(
+    experiment: Experiment,
+    currentUser: User,
+    logger: UpgradeLogger,
+    createType?: string
+  ): Promise<Experiment> {
     logger.info({ message: 'Create a new experiment =>', details: experiment });
 
     // order for condition
     let newConditionId;
     let newCondition;
     experiment.conditions.forEach((condition, index) => {
-      if ( createType && createType === 'import') {
+      if (createType && createType === 'import') {
         newConditionId = uuid();
       } else {
         newConditionId = condition.id || uuid();
       }
-      
+
       // proper reference for post experiment rule condition:
       if (experiment.postExperimentRule === 'assign') {
         if (experiment.revertTo === condition.id) {
@@ -204,7 +217,7 @@ export class ExperimentService {
     return this.addExperimentInDB(experiment, currentUser, logger);
   }
 
-  public createMultipleExperiments(experiment: Experiment[], user:User, logger: UpgradeLogger): Promise<Experiment[]> {
+  public createMultipleExperiments(experiment: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
     logger.info({ message: `Generating test experiments`, details: experiment });
     return this.addBulkExperiments(experiment, user, logger);
   }
@@ -236,7 +249,9 @@ export class ExperimentService {
         );
 
         try {
-          await transactionalEntityManager.getRepository(Segment).delete(experiment.experimentSegmentInclusion.segment.id)
+          await transactionalEntityManager
+            .getRepository(Segment)
+            .delete(experiment.experimentSegmentInclusion.segment.id);
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = 'Error in deleting Include Segment fron DB';
@@ -246,7 +261,9 @@ export class ExperimentService {
         }
 
         try {
-          await transactionalEntityManager.getRepository(Segment).delete(experiment.experimentSegmentExclusion.segment.id)
+          await transactionalEntityManager
+            .getRepository(Segment)
+            .delete(experiment.experimentSegmentExclusion.segment.id);
         } catch (err) {
           const error = err as ErrorWithType;
           error.details = 'Error in deleting Exclude Segment fron DB';
@@ -292,7 +309,10 @@ export class ExperimentService {
     logger.info({ message: 'getAllUniqueIdentifiers' });
     const conditionsUniqueIdentifier = this.experimentConditionRepository.getAllUniqueIdentifier();
     const decisionPointsUniqueIdentifier = this.decisionPointRepository.getAllUniqueIdentifier();
-    const [conditionIds, decisionPointsIds] = await Promise.all([conditionsUniqueIdentifier, decisionPointsUniqueIdentifier]);
+    const [conditionIds, decisionPointsIds] = await Promise.all([
+      conditionsUniqueIdentifier,
+      decisionPointsUniqueIdentifier,
+    ]);
     return [...conditionIds, ...decisionPointsIds];
   }
 
@@ -361,7 +381,7 @@ export class ExperimentService {
   }
 
   public async importExperiment(experiments: Experiment[], user: User, logger: UpgradeLogger): Promise<Experiment[]> {
-    for (let experiment of experiments) {
+    for (const experiment of experiments) {
       const duplicateExperiment = await this.experimentRepository.findOne(experiment.id);
       if (duplicateExperiment && experiment.id) {
         const error = new Error('Duplicate experiment');
@@ -411,10 +431,10 @@ export class ExperimentService {
     const experimentDetails = await this.experimentRepository.find({
       where: { id: In(experimentIds) },
       relations: [
-        'partitions', 
-        'conditions', 
-        'stateTimeLogs', 
-        'queries', 
+        'partitions',
+        'conditions',
+        'stateTimeLogs',
+        'queries',
         'queries.metric',
         'experimentSegmentInclusion',
         'experimentSegmentInclusion.segment',
@@ -427,10 +447,10 @@ export class ExperimentService {
         'experimentSegmentExclusion.segment.groupForSegment',
         'experimentSegmentExclusion.segment.subSegments',
         'partitions.conditionAliases',
-        'partitions.conditionAliases.parentCondition'
+        'partitions.conditionAliases.parentCondition',
       ],
     });
-    const formatedExperiments = experimentDetails.map(experiment => {
+    const formatedExperiments = experimentDetails.map((experiment) => {
       experiment.backendVersion = env.app.version;
       this.experimentAuditLogRepository.saveRawJson(
         EXPERIMENT_LOG_TYPE.EXPERIMENT_DESIGN_EXPORTED,
@@ -438,9 +458,9 @@ export class ExperimentService {
         user
       );
       return this.formatingConditionAlias(experiment);
-    }); 
-    
-    return formatedExperiments;    
+    });
+
+    return formatedExperiments;
   }
 
   private async updateExperimentSchedules(
@@ -456,11 +476,13 @@ export class ExperimentService {
     }
   }
 
-  private async getValidMoniteredDecisionPoints( excludeIfReachedDecisionPoints ) {
+  private async getValidMoniteredDecisionPoints(excludeIfReachedDecisionPoints) {
     return await this.monitoredDecisionPointRepository.find({
       relations: ['user'],
-      where: { site: In(excludeIfReachedDecisionPoints.map((x) => x.site)),
-              target: In(excludeIfReachedDecisionPoints.map((x) => x.target))},
+      where: {
+        site: In(excludeIfReachedDecisionPoints.map((x) => x.site)),
+        target: In(excludeIfReachedDecisionPoints.map((x) => x.target)),
+      },
     });
   }
 
@@ -476,11 +498,13 @@ export class ExperimentService {
     });
 
     const { consistencyRule, group } = experiment;
-    const excludeIfReachedDecisionPoints = experiment.partitions.filter((partition) => {
-      return partition.excludeIfReached;
-    }).map(({ site, target }) => {
-      return { site:site, target:target };
-    });
+    const excludeIfReachedDecisionPoints = experiment.partitions
+      .filter((partition) => {
+        return partition.excludeIfReached;
+      })
+      .map(({ site, target }) => {
+        return { site: site, target: target };
+      });
     // get all preview usersData
     const previewUsers = await this.previewUserService.find(logger);
 
@@ -563,11 +587,7 @@ export class ExperimentService {
     }
   }
 
-  private async updateExperimentInDB(
-    experiment: Experiment,
-    user: User,
-    logger: UpgradeLogger
-  ): Promise<Experiment> {
+  private async updateExperimentInDB(experiment: Experiment, user: User, logger: UpgradeLogger): Promise<Experiment> {
     // get old experiment document
     const oldExperiment = await this.findOne(experiment.id, logger);
     const oldConditions = oldExperiment.conditions;
@@ -593,7 +613,23 @@ export class ExperimentService {
           experiment.partitions = response[0];
           uniqueIdentifiers = response[1];
         }
-        let { conditions, partitions: decisionPoints, conditionAliases, queries, versionNumber, createdAt, updatedAt, experimentSegmentInclusion, experimentSegmentExclusion, ...expDoc } = experiment;
+        // TODO: Please review this eslint error
+
+        const {
+          conditions,
+          partitions: decisionPoints,
+          conditionAliases,
+          queries,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          versionNumber,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          createdAt,
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          updatedAt,
+          experimentSegmentInclusion,
+          experimentSegmentExclusion,
+          ...expDoc
+        } = experiment;
 
         let experimentDoc: Experiment;
         try {
@@ -611,20 +647,22 @@ export class ExperimentService {
         let segmentInclude;
         let segmentIncludeData;
         if (experimentDoc.experimentSegmentInclusion.segment) {
-          segmentIncludeData = { ...experimentSegmentInclusion,
+          segmentIncludeData = {
+            ...experimentSegmentInclusion,
             id: experimentDoc.experimentSegmentInclusion.segment.id,
             name: experimentDoc.experimentSegmentInclusion.segment.name,
             description: experimentDoc.experimentSegmentInclusion.segment.description,
             context: experiment.context[0],
             type: SEGMENT_TYPE.PRIVATE,
-          }
+          };
         } else {
           segmentInclude = experimentDoc.experimentSegmentInclusion;
-          segmentIncludeData = { ...segmentInclude,
+          segmentIncludeData = {
+            ...segmentInclude,
             id: uuid(),
             name: experiment.id + ' Inclusion Segment',
             description: experiment.id + ' Inclusion Segment',
-            context: experiment.context[0]
+            context: experiment.context[0],
           };
         }
 
@@ -637,15 +675,16 @@ export class ExperimentService {
             name: experimentDoc.experimentSegmentExclusion.segment.name,
             description: experimentDoc.experimentSegmentExclusion.segment.description,
             context: experiment.context[0],
-            type: SEGMENT_TYPE.PRIVATE
-          }
+            type: SEGMENT_TYPE.PRIVATE,
+          };
         } else {
           segmentExclude = experimentDoc.experimentSegmentExclusion;
-          segmentExcludeData = { ...segmentExclude,
+          segmentExcludeData = {
+            ...segmentExclude,
             id: uuid(),
             name: experiment.id + ' Exclusion Segment',
             description: experiment.id + ' Exclusion Segment',
-            context: experiment.context[0]
+            context: experiment.context[0],
           };
         }
         // for test cases:
@@ -694,7 +733,8 @@ export class ExperimentService {
           (conditions &&
             conditions.length > 0 &&
             conditions.map((condition: ExperimentCondition) => {
-              // tslint:disable-next-line:no-shadowed-variable
+              // TODO: please review this eslint error
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, ...rest } = condition;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
@@ -703,18 +743,21 @@ export class ExperimentService {
           [];
 
         // creating decision point docs
-        let promiseArray = []
+        let promiseArray = [];
         const decisionPointDocToSave =
           (decisionPoints &&
             decisionPoints.length > 0 &&
             decisionPoints.map((decisionPoint: any) => {
-              promiseArray.push(this.decisionPointRepository.findOne({
-                where: {
-                  site: decisionPoint.site,
-                  target: decisionPoint.target,
-                }
-              }));
-              // tslint:disable-next-line:no-shadowed-variable
+              promiseArray.push(
+                this.decisionPointRepository.findOne({
+                  where: {
+                    site: decisionPoint.site,
+                    target: decisionPoint.target,
+                  },
+                })
+              );
+              // TODO: please review this eslint error
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, ...rest } = decisionPoint;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
@@ -729,7 +772,8 @@ export class ExperimentService {
             queries.length > 0 &&
             queries.map((query: any) => {
               promiseArray.push(this.metricRepository.findOne(query.metric.key));
-              // tslint:disable-next-line:no-shadowed-variable
+              // TODO: please review this eslint error
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
               rest.experiment = experimentDoc;
               rest.id = rest.id || uuid();
@@ -765,7 +809,9 @@ export class ExperimentService {
               return doc.id === id && doc.site === site && doc.target === target;
             })
           ) {
-            toDeleteDecisionPoints.push(this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager));
+            toDeleteDecisionPoints.push(
+              this.decisionPointRepository.deleteDecisionPoint(id, transactionalEntityManager)
+            );
           }
         });
 
@@ -803,7 +849,10 @@ export class ExperimentService {
             ) as any,
             Promise.all(
               decisionPointDocToSave.map(async (decisionPointDoc) => {
-                return this.decisionPointRepository.upsertDecisionPoint(await decisionPointDoc, transactionalEntityManager);
+                return this.decisionPointRepository.upsertDecisionPoint(
+                  await decisionPointDoc,
+                  transactionalEntityManager
+                );
               })
             ) as any,
             Promise.all(
@@ -834,12 +883,14 @@ export class ExperimentService {
 
         const conditionAliasDocToReturn = await transactionalEntityManager.getRepository(ConditionAlias).find({
           relations: ['parentCondition', 'decisionPoint'],
-          where: { id :In(conditionAliasDocs.map(conditionAlias => conditionAlias.id)) }
+          where: { id: In(conditionAliasDocs.map((conditionAlias) => conditionAlias.id)) },
         });
 
         const queryDocToReturn =
           !!queryDocs &&
           queryDocs.map((queryDoc, index) => {
+            // TODO: please review this eslint error
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { metricKey, ...rest } = queryDoc as any;
             return { ...rest, metric: queriesDocToSave[index].metric };
           });
@@ -849,7 +900,7 @@ export class ExperimentService {
           conditions: conditionDocToReturn as any,
           partitions: decisionPointDocToReturn as any,
           conditionAliases: conditionAliasDocToReturn as any,
-          queries: (queryDocToReturn as any) || []
+          queries: (queryDocToReturn as any) || [],
         };
 
         // removing unwanted params for diff
@@ -914,11 +965,7 @@ export class ExperimentService {
         );
         return { newExperiment, toDeleteQueriesDoc };
       })
-      .then(async ({ newExperiment, toDeleteQueriesDoc }) => {
-        // check if logs need to be deleted for metric query
-        // if (toDeleteQueriesDoc.length > 0) {
-        //   await this.cleanLogsForQuery(toDeleteQueriesDoc);
-        // }
+      .then(async ({ newExperiment }) => {
         return newExperiment;
       });
   }
@@ -941,6 +988,8 @@ export class ExperimentService {
   // Used to generate twoCharacterId for condition and decision point
   private getUniqueIdentifier(uniqueIdentifiers: string[]): string {
     let identifier;
+    // TODO: remove twoCharacterId code entirely
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       identifier = Math.random().toString(36).substring(2, 4).toUpperCase();
       if (uniqueIdentifiers.indexOf(identifier) === -1) {
@@ -983,7 +1032,15 @@ export class ExperimentService {
         experiment.partitions = response[0];
         uniqueIdentifiers = response[1];
       }
-      const { conditions, partitions, queries, experimentSegmentInclusion, experimentSegmentExclusion, conditionAliases, ...expDoc } = experiment;
+      const {
+        conditions,
+        partitions,
+        queries,
+        experimentSegmentInclusion,
+        experimentSegmentExclusion,
+        conditionAliases,
+        ...expDoc
+      } = experiment;
       // Check for conditionCode is 'default' then return error:
       this.checkConditionCodeDefault(conditions);
 
@@ -1004,24 +1061,26 @@ export class ExperimentService {
       let segmentInclude;
       if (experimentDoc.experimentSegmentInclusion.segment) {
         const includeSegment = experimentDoc.experimentSegmentInclusion.segment;
-        segmentInclude = { ...experimentSegmentInclusion,
-          type : includeSegment.type,
-          userIds : includeSegment.individualForSegment.map(x => x.userId),
-          groups : includeSegment.groupForSegment.map(x => {
-            return {type: x.type, groupId: x.groupId}
+        segmentInclude = {
+          ...experimentSegmentInclusion,
+          type: includeSegment.type,
+          userIds: includeSegment.individualForSegment.map((x) => x.userId),
+          groups: includeSegment.groupForSegment.map((x) => {
+            return { type: x.type, groupId: x.groupId };
           }),
-          subSegmentIds : includeSegment.subSegments.map(x => x.id)
-        }
+          subSegmentIds: includeSegment.subSegments.map((x) => x.id),
+        };
       } else {
         segmentInclude = experimentDoc.experimentSegmentInclusion;
       }
 
-      const segmentIncludeData: SegmentInputValidator = { ...segmentInclude,
+      const segmentIncludeData: SegmentInputValidator = {
+        ...segmentInclude,
         id: uuid(),
         name: experiment.id + ' Inclusion Segment',
         description: experiment.id + ' Inclusion Segment',
         context: experiment.context[0],
-        type: SEGMENT_TYPE.PRIVATE
+        type: SEGMENT_TYPE.PRIVATE,
       };
       let segmentIncludeDoc: Segment;
       try {
@@ -1038,25 +1097,27 @@ export class ExperimentService {
       experimentDoc.experimentSegmentExclusion = experimentSegmentExclusion;
       let segmentExclude;
       if (experimentDoc.experimentSegmentExclusion.segment) {
-        const excludeSegment = experimentDoc.experimentSegmentExclusion.segment; 
-        segmentExclude = { ...experimentSegmentExclusion,
-          type : excludeSegment.type,
-          userIds : excludeSegment.individualForSegment.map(x => x.userId),
-          groups : excludeSegment.groupForSegment.map(x => {
-            return {type: x.type, groupId: x.groupId}
+        const excludeSegment = experimentDoc.experimentSegmentExclusion.segment;
+        segmentExclude = {
+          ...experimentSegmentExclusion,
+          type: excludeSegment.type,
+          userIds: excludeSegment.individualForSegment.map((x) => x.userId),
+          groups: excludeSegment.groupForSegment.map((x) => {
+            return { type: x.type, groupId: x.groupId };
           }),
-          subSegmentIds : excludeSegment.subSegments.map(x => x.id)
-        }
+          subSegmentIds: excludeSegment.subSegments.map((x) => x.id),
+        };
       } else {
         segmentExclude = experimentDoc.experimentSegmentExclusion;
       }
-      
-      const segmentExcludeData: SegmentInputValidator = { ...segmentExclude,
+
+      const segmentExcludeData: SegmentInputValidator = {
+        ...segmentExclude,
         id: uuid(),
         name: experiment.id + ' Exclusion Segment',
         description: experiment.id + ' Exclusion Segment',
         context: experiment.context[0],
-        type: SEGMENT_TYPE.PRIVATE
+        type: SEGMENT_TYPE.PRIVATE,
       };
       let segmentExcludeDoc: Segment;
       try {
@@ -1068,7 +1129,7 @@ export class ExperimentService {
         logger.error(error);
         throw error;
       }
-      
+
       // creating condition docs
       const conditionDocsToSave =
         conditions &&
@@ -1088,40 +1149,42 @@ export class ExperimentService {
           decisionPoint.experiment = experimentDoc;
           return decisionPoint;
         });
-      
+
       // update conditionAliases condition uuids:
       if (conditionAliases) {
-        conditionAliases.map(conditionAlias => {
-          let condition = conditions.find((doc) => {
+        conditionAliases.map((conditionAlias) => {
+          const condition = conditions.find((doc) => {
             return doc.conditionCode === conditionAlias.parentCondition.conditionCode;
           });
           if (condition) {
             conditionAlias.parentCondition.id = condition.id;
           }
-        })
+        });
       }
-        
-      const conditionAliasDocsToSave = 
+
+      const conditionAliasDocsToSave =
         (conditionAliases &&
-        conditionAliases.length > 0 &&
-        conditionAliases.map((conditionAlias: ConditionAlias) => {
-          conditionAlias.id = conditionAlias.id || uuid();
-          return conditionAlias;
-        })) ||
+          conditionAliases.length > 0 &&
+          conditionAliases.map((conditionAlias: ConditionAlias) => {
+            conditionAlias.id = conditionAlias.id || uuid();
+            return conditionAlias;
+          })) ||
         [];
 
       // creating segmentInclude doc
-      let includeTempDoc = new ExperimentSegmentInclusion();
+      const includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
       includeTempDoc.experiment = experimentDoc;
+      // TODO: Please review this eslint error
       var { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
 
       // creating segmentExclude doc
-      let excludeTempDoc = new ExperimentSegmentExclusion();
+      const excludeTempDoc = new ExperimentSegmentExclusion();
       excludeTempDoc.segment = segmentExcludeDoc;
       excludeTempDoc.experiment = experimentDoc;
+      // TODO: Please review this eslint error
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       var { createdAt, updatedAt, versionNumber, ...segmentExcludeDocToSave } = excludeTempDoc;
-
       // creating queries docs
       const promiseArray = [];
       let queryDocsToSave =
@@ -1129,7 +1192,8 @@ export class ExperimentService {
           queries.length > 0 &&
           queries.map((query: any) => {
             promiseArray.push(this.metricRepository.findOne(query.metric.key));
-            // tslint:disable-next-line:no-shadowed-variable
+            // TODO: please review this eslint error
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, metric, ...rest } = query;
             rest.experiment = experimentDoc;
             rest.id = rest.id || uuid();
@@ -1155,11 +1219,26 @@ export class ExperimentService {
       let conditionAliasDoc: ConditionAlias[];
       let queryDocs: any;
       try {
-        [conditionDocs, decisionPointDocs, experimentSegmentInclusionDoc, experimentSegmentExclusionDoc, conditionAliasDoc, queryDocs] = await Promise.all([
+        [
+          conditionDocs,
+          decisionPointDocs,
+          experimentSegmentInclusionDoc,
+          experimentSegmentExclusionDoc,
+          conditionAliasDoc,
+          queryDocs,
+        ] = await Promise.all([
           this.experimentConditionRepository.insertConditions(conditionDocsToSave, transactionalEntityManager),
           this.decisionPointRepository.insertDecisionPoint(decisionPointDocsToSave, transactionalEntityManager),
-          this.experimentSegmentInclusionRepository.insertData(segmentIncludeDocToSave, logger, transactionalEntityManager),
-          this.experimentSegmentExclusionRepository.insertData(segmentExcludeDocToSave, logger, transactionalEntityManager),
+          this.experimentSegmentInclusionRepository.insertData(
+            segmentIncludeDocToSave,
+            logger,
+            transactionalEntityManager
+          ),
+          this.experimentSegmentExclusionRepository.insertData(
+            segmentExcludeDocToSave,
+            logger,
+            transactionalEntityManager
+          ),
           this.conditionAliasRepository.insertConditionAlias(conditionAliasDocsToSave, transactionalEntityManager),
           queryDocsToSave.length > 0
             ? this.queryRepository.insertQueries(queryDocsToSave, transactionalEntityManager)
@@ -1172,17 +1251,21 @@ export class ExperimentService {
         throw error;
       }
       const conditionDocToReturn = conditionDocs.map((conditionDoc) => {
+        // TODO: please review this eslint error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = conditionDoc as any;
         return restDoc;
       });
       const decisionPointDocToReturn = decisionPointDocs.map((decisionPointDoc) => {
+        // TODO: please review this eslint error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { experimentId, ...restDoc } = decisionPointDoc as any;
         return restDoc;
       });
 
       const conditionAliasDocToReturn = await transactionalEntityManager.getRepository(ConditionAlias).find({
         relations: ['parentCondition', 'decisionPoint'],
-        where: { id :In(conditionAliasDoc.map(conditionAlias => conditionAlias.id)) }
+        where: { id: In(conditionAliasDoc.map((conditionAlias) => conditionAlias.id)) },
       });
 
       let queryDocToReturn = [];
@@ -1194,8 +1277,8 @@ export class ExperimentService {
         ...experimentDoc,
         conditions: conditionDocToReturn as any,
         partitions: decisionPointDocToReturn as any,
-        experimentSegmentInclusion: {...experimentSegmentInclusionDoc, segment: segmentIncludeDoc} as any,
-        experimentSegmentExclusion: {...experimentSegmentExclusionDoc, segment: segmentExcludeDoc} as any,
+        experimentSegmentInclusion: { ...experimentSegmentInclusionDoc, segment: segmentIncludeDoc } as any,
+        experimentSegmentExclusion: { ...experimentSegmentExclusionDoc, segment: segmentExcludeDoc } as any,
         conditionAliases: conditionAliasDocToReturn as any,
         queries: (queryDocToReturn as any) || [],
       };
@@ -1248,35 +1331,41 @@ export class ExperimentService {
     return searchStringConcatenated;
   }
 
-  private async addBulkExperiments(experiments: Experiment[], currentUser:User, logger: UpgradeLogger): Promise<Experiment[]> {
-    const createdExperiments = await Promise.all(experiments.map(async exp => {
-      try {
-        return await this.create(exp,currentUser,logger)
-      } catch (err) {
-        const error = err as Error;
-        error.message = `Error in creating experiment document "addBulkExperiments"`;
-        logger.error(error);
-        throw error;
-      }
-    }));
+  private async addBulkExperiments(
+    experiments: Experiment[],
+    currentUser: User,
+    logger: UpgradeLogger
+  ): Promise<Experiment[]> {
+    const createdExperiments = await Promise.all(
+      experiments.map(async (exp) => {
+        try {
+          return await this.create(exp, currentUser, logger);
+        } catch (err) {
+          const error = err as Error;
+          error.message = `Error in creating experiment document "addBulkExperiments"`;
+          logger.error(error);
+          throw error;
+        }
+      })
+    );
 
     return createdExperiments;
   }
 
   public formatingConditionAlias(experiment: Experiment): any {
     const { conditions, partitions } = experiment;
-  
-    let conditionAlias: ConditionAlias[] = [];
-    partitions.forEach(partition => {
+
+    const conditionAlias: ConditionAlias[] = [];
+    partitions.forEach((partition) => {
       const conditionAliasData = partition.conditionAliases;
       delete partition.conditionAliases;
 
-      conditionAliasData.forEach(x => {
-        if (x && conditions.filter(con => con.id === x.parentCondition.id).length > 0) {
-          conditionAlias.push({...x, decisionPoint: partition});
+      conditionAliasData.forEach((x) => {
+        if (x && conditions.filter((con) => con.id === x.parentCondition.id).length > 0) {
+          conditionAlias.push({ ...x, decisionPoint: partition });
         }
-      })
+      });
     });
-    return {...experiment, conditionAliases: conditionAlias};
-  } 
+    return { ...experiment, conditionAliases: conditionAlias };
+  }
 }

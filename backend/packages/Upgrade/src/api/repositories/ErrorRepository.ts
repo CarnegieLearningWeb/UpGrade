@@ -20,20 +20,14 @@ export class ErrorRepository extends Repository<ExperimentError> {
   }
 
   public async paginatedFind(limit: number, offset: number, filter: SERVER_ERROR): Promise<ExperimentError[]> {
-    let queryBuilder = this.createQueryBuilder('error')
-      .skip(offset)
-      .take(limit)
-      .orderBy('error.createdAt', 'DESC');
+    let queryBuilder = this.createQueryBuilder('error').skip(offset).take(limit).orderBy('error.createdAt', 'DESC');
     if (filter) {
-      queryBuilder = queryBuilder
-        .where('error.type = :filter', { filter });
+      queryBuilder = queryBuilder.where('error.type = :filter', { filter });
     }
-    return queryBuilder
-      .getMany()
-      .catch((error: any) => {
-        const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { limit, offset }, error);
-        throw errorMsg;
-      });
+    return queryBuilder.getMany().catch((error: any) => {
+      const errorMsg = repositoryError('ErrorRepository', 'paginatedFind', { limit, offset }, error);
+      throw errorMsg;
+    });
   }
 
   public getTotalLogs(filter: SERVER_ERROR): Promise<number> {
@@ -48,7 +42,7 @@ export class ErrorRepository extends Repository<ExperimentError> {
 
   public async clearLogs(limit: number): Promise<ExperimentError[]> {
     // Fetch logs which we do not want to delete
-    const errorLogOffset = await  this.createQueryBuilder('error')
+    const errorLogOffset = await this.createQueryBuilder('error')
       .select('error.id')
       .orderBy('error.createdAt', 'DESC')
       .take(limit);

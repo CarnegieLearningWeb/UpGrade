@@ -21,8 +21,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
   }
 
   public async deleteById(id: string): Promise<FeatureFlag> {
-    const result = await this
-      .createQueryBuilder('featureFlag')
+    const result = await this.createQueryBuilder('featureFlag')
       .delete()
       .from(FeatureFlag)
       .where('id = :id', { id })
@@ -44,12 +43,7 @@ export class FeatureFlagRepository extends Repository<FeatureFlag> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'FeatureFlagRepository',
-          'updateState',
-          { flagId, status },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('FeatureFlagRepository', 'updateState', { flagId, status }, errorMsg);
         throw errorMsgString;
       });
 
