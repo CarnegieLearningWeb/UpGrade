@@ -46,7 +46,7 @@ export class UserController {
    *            description: Successful
    */
   @Get()
-  public find( @Req() request: AppRequest ): Promise<ExperimentUser[]> {
+  public find(@Req() request: AppRequest): Promise<ExperimentUser[]> {
     return this.userService.find(request.logger);
   }
 
@@ -74,7 +74,7 @@ export class UserController {
    */
   @Get('/:id')
   @OnUndefined(UserNotFoundError)
-  public one(@Param('id') id: string, @Req() request: AppRequest ): Promise<ExperimentUser> {
+  public one(@Param('id') id: string, @Req() request: AppRequest): Promise<ExperimentUser> {
     if (!isUUID(id)) {
       return Promise.reject(new Error(SERVER_ERROR.INCORRECT_PARAM_FORMAT + ' : id should be of type UUID.'));
     }
@@ -141,8 +141,8 @@ export class UserController {
   @Put('/:id')
   public update(
     @Param('id') id: string,
-    @Body({ validate: { validationError: { target: false, value: false } } }) user: ExperimentUser, 
-    @Req() request: AppRequest 
+    @Body({ validate: { validationError: { target: false, value: false } } }) user: ExperimentUser,
+    @Req() request: AppRequest
   ): Promise<ExperimentUser> {
     return this.userService.update(id, user, request.logger);
   }

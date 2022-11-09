@@ -35,6 +35,6 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": "warn",
         "@typescript-eslint/no-explicit-any": "off", // TODO: this is a later task, way too many to tackle now
         "prettier/prettier": 2,
-        '@typescript-eslint/strict-boolean-expressions': 'warn'
+        '@typescript-eslint/strict-boolean-expressions': 'off'
     }
 };

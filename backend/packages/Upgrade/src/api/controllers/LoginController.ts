@@ -33,7 +33,7 @@ import { UserService } from '../services/UserService';
 @Authorized()
 @JsonController('/login')
 export class LoginController {
-  constructor(public userService: UserService) { }
+  constructor(public userService: UserService) {}
 
   /**
    * @swagger
@@ -61,9 +61,9 @@ export class LoginController {
   @Post('/user')
   public upsertUser(@Body() user: User, @Req() request: AppRequest): Promise<User> {
     if (user.role) {
-        // Create a user with default role reader if user doesn't exist as anyone with accepted google account domain can login
-        // Role can be updated later by admin users only
-        delete user.role;
+      // Create a user with default role reader if user doesn't exist as anyone with accepted google account domain can login
+      // Role can be updated later by admin users only
+      delete user.role;
     }
     return this.userService.upsertUser(user, request.logger);
   }

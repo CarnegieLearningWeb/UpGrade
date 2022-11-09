@@ -45,7 +45,8 @@ export class CacheService {
     }
 
     const data = await functionToCall();
-    //
+    // TODO: Ridham please review this eslint error
+    // eslint-disable-next-line no-useless-catch
     try {
       await Promise.all(
         keys.map((key, index) => {

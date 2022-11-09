@@ -4,8 +4,7 @@ import { Segment } from './Segment';
 
 @Entity()
 export class GroupForSegment extends BaseModel {
-  
-  @ManyToOne((type) => Segment, (segment) => segment.groupForSegment, { onDelete: 'CASCADE', primary: true })
+  @ManyToOne(() => Segment, (segment) => segment.groupForSegment, { onDelete: 'CASCADE', primary: true })
   public segment: Segment;
 
   @Column({ primary: true })
