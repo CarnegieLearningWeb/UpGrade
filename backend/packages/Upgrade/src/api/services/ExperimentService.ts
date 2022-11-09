@@ -1170,14 +1170,13 @@ export class ExperimentService {
       const includeTempDoc = new ExperimentSegmentInclusion();
       includeTempDoc.segment = segmentIncludeDoc;
       includeTempDoc.experiment = experimentDoc;
-      var { createdAt, updatedAt, versionNumber, ...segmentIncludeDocToSave } = includeTempDoc;
+      const segmentIncludeDocToSave = this.getSegmentDoc(includeTempDoc);
 
       // creating segmentExclude doc
       const excludeTempDoc = new ExperimentSegmentExclusion();
       excludeTempDoc.segment = segmentExcludeDoc;
       excludeTempDoc.experiment = experimentDoc;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      var { createdAt, updatedAt, versionNumber, ...segmentExcludeDocToSave } = excludeTempDoc;
+      const segmentExcludeDocToSave = this.getSegmentDoc(excludeTempDoc);
       // creating queries docs
       const promiseArray = [];
       let queryDocsToSave =
@@ -1357,5 +1356,11 @@ export class ExperimentService {
       });
     });
     return { ...experiment, conditionAliases: conditionAlias };
+  }
+
+  private getSegmentDoc(doc: ExperimentSegmentExclusion | ExperimentSegmentInclusion) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { createdAt, updatedAt, versionNumber, ...newDoc } = doc;
+    return newDoc;
   }
 }
