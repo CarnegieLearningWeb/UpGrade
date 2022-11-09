@@ -10,13 +10,10 @@ export const METRICS_JOIN_TEXT = '@__@';
 
 @Service()
 export class MetricService {
-  constructor(
-    @OrmRepository() private metricRepository: MetricRepository,
-    public settingService: SettingService
-  ) {}
+  constructor(@OrmRepository() private metricRepository: MetricRepository, public settingService: SettingService) {}
 
-  public async getAllMetrics( logger: UpgradeLogger): Promise<IMetricUnit[]> {
-    logger.info({ message : 'Get all metrics' });
+  public async getAllMetrics(logger: UpgradeLogger): Promise<IMetricUnit[]> {
+    logger.info({ message: 'Get all metrics' });
     // check permission for metrics
     const metricData = await this.metricRepository.find();
     return this.metricDocumentToJson(metricData);
@@ -27,14 +24,17 @@ export class MetricService {
     return await this.addAllMetrics(metrics, logger);
   }
 
-  public async upsertAllMetrics(metrics: Array<IGroupMetric | ISingleMetric>, logger: UpgradeLogger): Promise<IMetricUnit[]> {
-    logger.info({ message : 'Upsert all metrics' });
+  public async upsertAllMetrics(
+    metrics: Array<IGroupMetric | ISingleMetric>,
+    logger: UpgradeLogger
+  ): Promise<IMetricUnit[]> {
+    logger.info({ message: 'Upsert all metrics' });
     const upsertedMetrics = await this.addAllMetrics(metrics, logger);
     return this.metricDocumentToJson(upsertedMetrics);
   }
 
   public async deleteMetric(key: string, logger: UpgradeLogger): Promise<IMetricUnit[]> {
-    logger.info({ message : `Delete metric by key ${key}` });
+    logger.info({ message: `Delete metric by key ${key}` });
     await this.metricRepository.deleteMetricsByKeys(key, METRICS_JOIN_TEXT);
     const rootKey = key.split(METRICS_JOIN_TEXT);
     const updatedMetric = await this.metricRepository.getMetricsByKeys(rootKey[0], METRICS_JOIN_TEXT);
@@ -122,7 +122,7 @@ export class MetricService {
     metrics.forEach((metric) => {
       const keyArray = metric.key.split(METRICS_JOIN_TEXT);
       let metricPointer = metricUnitArray;
-      keyArray.forEach((key, index) => {
+      keyArray.forEach((key) => {
         const keyExist = metricPointer.reduce((aggregator, unit) => {
           const isKey = unit && unit.key === key ? true : false;
           if (isKey) {

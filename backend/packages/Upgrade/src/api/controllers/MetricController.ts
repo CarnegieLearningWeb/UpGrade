@@ -70,8 +70,10 @@ export class MetricController {
    *            description: Filtered Metrics
    */
   @Post('/save')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
-  @Req() request: AppRequest): Promise<IMetricUnit[]> {
+  public filterMetrics(
+    @BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>,
+    @Req() request: AppRequest
+  ): Promise<IMetricUnit[]> {
     return this.metricService.upsertAllMetrics(metricUnit, request.logger);
   }
 

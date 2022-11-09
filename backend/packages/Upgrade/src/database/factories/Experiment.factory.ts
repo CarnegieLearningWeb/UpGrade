@@ -10,7 +10,7 @@ import {
   IEnrollmentCompleteCondition,
 } from 'upgrade_types';
 
-define(Experiment, (faker: typeof Faker, settings: {}) => {
+define(Experiment, (faker: typeof Faker) => {
   const name = faker.name.firstName();
   const description = faker.name.jobTitle();
   const state = faker.random.arrayElement([

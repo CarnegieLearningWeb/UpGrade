@@ -50,7 +50,11 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
     return result.raw;
   }
 
-  public async deleteIndividualForSegment(segmentId: string, userId: string, logger: UpgradeLogger): Promise<IndividualForSegment> {
+  public async deleteIndividualForSegment(
+    segmentId: string,
+    userId: string,
+    logger: UpgradeLogger
+  ): Promise<IndividualForSegment> {
     const result = await this.createQueryBuilder()
       .delete()
       .from(IndividualForSegment)
@@ -71,7 +75,10 @@ export class IndividualForSegmentRepository extends Repository<IndividualForSegm
     return result.raw;
   }
 
-  public async deleteIndividualForSegmentById(segmentId: string, logger: UpgradeLogger): Promise<IndividualForSegment[]> {
+  public async deleteIndividualForSegmentById(
+    segmentId: string,
+    logger: UpgradeLogger
+  ): Promise<IndividualForSegment[]> {
     const result = await this.createQueryBuilder('individualForSegment')
       .delete()
       .from(IndividualForSegment)

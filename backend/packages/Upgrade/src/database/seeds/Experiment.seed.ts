@@ -8,7 +8,7 @@ import { POST_EXPERIMENT_RULE } from 'upgrade_types';
 export class CreateExperiments implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
     const em = connection.createEntityManager();
-    await times(10, async (n) => {
+    await times(10, async () => {
       // create and save experiment here
       const experiment = await factory(Experiment)().make();
       await em.save(experiment);
@@ -38,7 +38,7 @@ export class CreateExperiments implements Seeder {
     });
   }
 
-  private generateRandomNumber(length: number, totalSum: number = 1): number[] {
+  private generateRandomNumber(length: number, totalSum = 1): number[] {
     const randomGeneratorArray = [];
     let assignLeft = totalSum;
     new Array(length - 1).forEach(() => {

@@ -10,16 +10,16 @@ export class GroupEnrollment extends BaseModel {
   public id: string;
 
   @Index()
-  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
   @Index()
-  @ManyToOne((type) => DecisionPoint, { onDelete: 'CASCADE' })
+  @ManyToOne(() => DecisionPoint, { onDelete: 'CASCADE' })
   public partition: DecisionPoint;
 
   @Column()
   public groupId: string;
 
-  @ManyToOne((type) => ExperimentCondition, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExperimentCondition, { onDelete: 'CASCADE' })
   public condition: ExperimentCondition;
 }

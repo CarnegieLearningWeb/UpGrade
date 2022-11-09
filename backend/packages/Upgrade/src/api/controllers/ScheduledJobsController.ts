@@ -9,7 +9,7 @@ import { AppRequest } from '../../types';
 @UseBefore(ScheduleJobMiddleware)
 @UseBefore(bodyParser.json())
 export class ScheduledJobsController {
-  constructor(public scheduledJobService: ScheduledJobService) { }
+  constructor(public scheduledJobService: ScheduledJobService) {}
 
   /**
    * @swagger
@@ -41,7 +41,7 @@ export class ScheduledJobsController {
   @Post('/start')
   public async startExperiment(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    scheduledParams: ScheduledJobsParamsValidator, 
+    scheduledParams: ScheduledJobsParamsValidator,
     @Req() request: AppRequest
   ): Promise<any> {
     return this.scheduledJobService.startExperiment(scheduledParams.id, request.logger);
@@ -77,7 +77,7 @@ export class ScheduledJobsController {
   @Post('/end')
   public async endExperiment(
     @Body({ validate: { validationError: { target: true, value: true } } })
-    scheduledParams: ScheduledJobsParamsValidator, 
+    scheduledParams: ScheduledJobsParamsValidator,
     @Req() request: AppRequest
   ): Promise<any> {
     return this.scheduledJobService.endExperiment(scheduledParams.id, request.logger);

@@ -6,11 +6,13 @@ import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 
 @Service()
 export class SettingService {
-  constructor(
-    @OrmRepository() private settingRepository: SettingRepository
-  ) {}
+  constructor(@OrmRepository() private settingRepository: SettingRepository) {}
 
-  public async setClientCheck(checkAuth: boolean | null, filterMetric: boolean | null, logger: UpgradeLogger): Promise<Setting> {
+  public async setClientCheck(
+    checkAuth: boolean | null,
+    filterMetric: boolean | null,
+    logger: UpgradeLogger
+  ): Promise<Setting> {
     logger.info({ message: `Update project setting: checkAuth ${checkAuth}, filterMetric ${filterMetric}` });
     const settingDoc: Setting = await this.settingRepository.findOne();
     const newDoc = {

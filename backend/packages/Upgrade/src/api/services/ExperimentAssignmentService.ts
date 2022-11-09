@@ -239,11 +239,7 @@ export class ExperimentAssignmentService {
     }
 
     // experiment level inclusion and exclusion
-    let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
-      globalFilteredExperiments,
-      experimentUser,
-      logger
-    );
+    let [filteredExperiments] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, experimentUser);
 
     if (filteredExperiments.length) {
       // filter experiments based on decision point
@@ -329,8 +325,7 @@ export class ExperimentAssignmentService {
               groupEnrollment: groupEnrollments,
               groupExclusion: groupExclusions,
             },
-            status,
-            logger
+            status
           );
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
@@ -529,8 +524,7 @@ export class ExperimentAssignmentService {
       // experiment level inclusion and exclusion
       let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
-        experimentUser,
-        logger
+        experimentUser
       );
 
       // Create experiment pool
@@ -1314,19 +1308,14 @@ export class ExperimentAssignmentService {
       groupEnrollment: GroupEnrollment;
       groupExclusion: GroupExclusion;
     },
-    status: MARKED_DECISION_POINT_STATUS,
-    logger: UpgradeLogger
+    status: MARKED_DECISION_POINT_STATUS
   ): Promise<void> {
     const { assignmentUnit, state, consistencyRule } = experiment;
 
     // Check if user or group is in global exclusion list
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(user);
 
-    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion(
-      [experiment],
-      user,
-      logger
-    );
+    const [includedExperiments, excludedExperiment] = await this.experimentLevelExclusionInclusion([experiment], user);
     // experiment level exclusion
     let experimentExcluded = false;
     if (includedExperiments.length === 0) {
@@ -1676,8 +1665,7 @@ export class ExperimentAssignmentService {
 
   private async experimentLevelExclusionInclusion(
     experiments: Experiment[],
-    experimentUser: ExperimentUser,
-    logger: UpgradeLogger
+    experimentUser: ExperimentUser
   ): Promise<[Experiment[], { experiment: Experiment; reason: string }[]]> {
     let segmentDetails: Segment[] = [];
     let segmentObj = {};
