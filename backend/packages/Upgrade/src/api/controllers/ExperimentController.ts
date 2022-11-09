@@ -124,7 +124,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *           type: object
  *       experimentSegmentInclusion:
  *          type: object
- *          properties: 
+ *          properties:
  *              segment:
  *                type: object
  *                properties:
@@ -160,7 +160,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                          type: string
  *       experimentSegmentExclusion:
  *          type: object
- *          properties: 
+ *          properties:
  *              segment:
  *                type: object
  *                properties:
@@ -381,7 +381,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *               minLength: 1
  *       experimentSegmentInclusion:
  *          type: object
- *          properties: 
+ *          properties:
  *              segment:
  *                type: object
  *                properties:
@@ -417,7 +417,7 @@ interface ExperimentPaginationInfo extends PaginationResponse {
  *                          type: string
  *       experimentSegmentExclusion:
  *          type: object
- *          properties: 
+ *          properties:
  *              segment:
  *                type: object
  *                properties:

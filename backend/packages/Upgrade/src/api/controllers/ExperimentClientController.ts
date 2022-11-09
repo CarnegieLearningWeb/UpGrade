@@ -580,10 +580,10 @@ export class ExperimentClientController {
    *                            attributes:
    *                              type: object
    *                              properties:
-   *                                  continuousMetricName: 
+   *                                  continuousMetricName:
    *                                    type: integer
    *                                    example: 100
-   *                                  categoricalMetricName: 
+   *                                  categoricalMetricName:
    *                                    type: string
    *                                    example: CATEGORY
    *                            groupedMetrics:
@@ -600,10 +600,10 @@ export class ExperimentClientController {
    *                                      attributes:
    *                                        type: object
    *                                        properties:
-   *                                            continuousMetricName: 
+   *                                            continuousMetricName:
    *                                              type: integer
    *                                              example: 100
-   *                                            categoricalMetricName: 
+   *                                            categoricalMetricName:
    *                                              type: string
    *                                              example: CATEGORY
    *            description: User Document
