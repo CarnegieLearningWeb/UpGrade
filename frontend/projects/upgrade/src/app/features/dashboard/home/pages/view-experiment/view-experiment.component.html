@@ -63,30 +63,7 @@
       </div>
     </div>
 
-    <mat-tab-group [selectedIndex]="tabIndex" disableRipple>
-      <mat-tab *ngIf="experiment.state == ExperimentState.ENROLLING" label = "{{ 'home.view-experiment.mattab.data.text' | translate }}"> 
-        <div class="tab-body-container">
-          <div class="ft-24-700 enrollment-text">
-            {{ 'home.view-experiment.mattab.data.enrollment.text' | translate  }} 
-          </div>
-          <div class="ft-12-600 enrollment-details-text">
-            {{ 'home.view-experiment.mattab.data.enrollment-detail.text' | translate  }} 
-          </div>
-          
-          <!-- Enrollment over time section -->
-          <home-enrollment-over-time [experiment]="experiment"></home-enrollment-over-time>
-
-          <!-- Enrollment by condition table -->
-          <home-enrollment-condition-table [experiment]="experiment"></home-enrollment-condition-table>
-
-          <ng-container *ngIf="experiment.queries.length">
-            <div class="box-shadow"></div>
-            <!-- Experiment queries results -->
-            <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
-          </ng-container>
-        </div>
-      </mat-tab>
-
+    <mat-tab-group [selectedIndex]=0 disableRipple>
       <mat-tab label="{{ 'home.view-experiment.mattab.overview.text' | translate }}">
         <div class="experiment-secondary-info tab-body-container">
           <div class="experiment-secondary-info-container">
@@ -580,6 +557,28 @@
         
       </mat-tab>
 
+      <mat-tab label = "{{ 'home.view-experiment.mattab.data.text' | translate }}"> 
+        <div class="tab-body-container">
+          <div class="ft-24-700 enrollment-text">
+            {{ 'home.view-experiment.mattab.data.enrollment.text' | translate  }} 
+          </div>
+          <div class="ft-12-600 enrollment-details-text">
+            {{ 'home.view-experiment.mattab.data.enrollment-detail.text' | translate  }} 
+          </div>
+          
+          <!-- Enrollment over time section -->
+          <home-enrollment-over-time [experiment]="experiment"></home-enrollment-over-time>
+
+          <!-- Enrollment by condition table -->
+          <home-enrollment-condition-table [experiment]="experiment"></home-enrollment-condition-table>
+
+          <ng-container *ngIf="experiment.queries.length">
+            <div class="box-shadow"></div>
+            <!-- Experiment queries results -->
+            <home-experiment-query-result [experiment]="experiment"></home-experiment-query-result>
+          </ng-container>
+        </div>
+      </mat-tab>
     </mat-tab-group>  
   </mat-card>
 </mat-card>

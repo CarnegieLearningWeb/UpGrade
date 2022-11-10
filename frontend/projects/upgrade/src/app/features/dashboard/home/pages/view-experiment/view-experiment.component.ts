@@ -61,7 +61,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
   includeParticipants: Participants[] = [];
   excludeParticipants: Participants[] = [];
   displayMetrics: Metrics[] = [];
-  tabIndex = 0;
 
   constructor(
     private experimentService: ExperimentService,
@@ -125,14 +124,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
         .groupSatisfied$(this.experiment.id)
         .subscribe((data) => (this.experiment.groupSatisfied = data));
     }
-
-    if (this.experiment) {
-      if (this.experiment.state === this.ExperimentState.ENROLLING) {
-        this.tabIndex = 1;
-      } else {
-        this.tabIndex = 0;
-      }
-    }
   }
 
   onExperimentChange(experiment: ExperimentVM, isPolling: boolean) {
@@ -141,14 +132,6 @@ export class ViewExperimentComponent implements OnInit, OnDestroy {
       this.experimentService.toggleDetailsPolling(experiment, isPolling);
     } else {
       this.experimentService.fetchExperimentDetailStat(experiment.id);
-    }
-
-    if (this.experiment) {
-      if (this.experiment.state === this.ExperimentState.ENROLLING) {
-        this.tabIndex = 1;
-      } else {
-        this.tabIndex = 0;
-      }
     }
   }
 
