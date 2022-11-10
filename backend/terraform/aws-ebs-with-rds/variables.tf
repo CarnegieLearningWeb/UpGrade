@@ -100,10 +100,10 @@ variable "EMAIL_BUCKET" {}
 variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
 variable "EMAIL_FROM" {}
 variable "GOOGLE_CLIENT_ID" { }
-variable "HOST_URL" { default = "https://upgrade-dev-backend.edoptimize.com/api" }
+variable "HOST_URL" { default = "https://upgrade-bsnl-backend.edoptimize.com/api" }
 variable "INTERCEPTORS" { default = "src/api/interceptors/**/*Interceptor.ts" }
 variable "LOG_LEVEL" { default = "debug" }
-variable "LOG_OUTPUT" { default = "dev" }
+variable "LOG_OUTPUT" { default = "bsnl" }
 variable "MIDDLEWARES" { default = "src/api/middlewares/**/*Middleware.ts" }
 variable "MONITOR_ENABLED" { default = true }
 variable "MONITOR_PASSWORD" {}
@@ -124,7 +124,7 @@ variable "TOKEN_SECRET_KEY" { }
 variable "TYPEORM_CONNECTION" { default = "postgres" }
 variable "TYPEORM_ENTITIES" { default = "src/api/models/**/*.ts" }
 variable "TYPEORM_HOST" { default = "localhost" }
-variable "TYPEORM_HOSTNAME_REPLICAS" { default = "[ 'localhost' ]" }
+variable "TYPEORM_HOSTNAME_REPLICAS" { default = "['localhost']" }
 variable "TYPEORM_ENTITIES_DIR" { default = "src/api/models" }
 variable "TYPEORM_FACTORY" { default = "src/database/factories/**/*.factory.ts" }
 variable "TYPEORM_LOGGER" { default = "advanced-console" }
@@ -134,13 +134,3 @@ variable "TYPEORM_MIGRATIONS_DIR" { default = "src/database/migrations" }
 variable "TYPEORM_SEED" { default = "src/database/seeds/**/*.seed.ts" }
 variable "TYPEORM_SYNCHRONIZE" {}
 variable "TYPEORM_MAX_QUERY_EXECUTION_TIME" { default = 2000 }
-
-
-
-
-
-
-
-
-
-
