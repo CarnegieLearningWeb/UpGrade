@@ -18,6 +18,7 @@ export default async function addMetrics(
     );
     if (response.status) {
       response.data = response.data.map((metric) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { createdAt, updatedAt, versionNumber, ...rest } = metric;
         return rest;
       });
