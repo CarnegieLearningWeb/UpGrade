@@ -7,8 +7,8 @@ export default async function init(
   userId: string,
   token: string,
   clientSessionId: string,
-  group?: Map<string, string[]>,
-  workingGroup?: Map<string, string>
+  group?: Record<string, Array<string>>,
+  workingGroup?: Record<string, string>
 ): Promise<Interfaces.IUser> {
   try {
     let data: any = {

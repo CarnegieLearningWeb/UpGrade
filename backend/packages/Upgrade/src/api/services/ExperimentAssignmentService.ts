@@ -107,7 +107,7 @@ export class ExperimentAssignmentService {
     requestContext: { logger: UpgradeLogger; userDoc: any },
     target?: string,
     experimentId?: string
-  ): Promise<MonitoredDecisionPoint> {
+  ): Promise<Omit<MonitoredDecisionPoint, 'createdAt | updatedAt | versionNumber'>> {
     // find working group for user
     const { logger, userDoc } = requestContext;
 
@@ -362,10 +362,9 @@ export class ExperimentAssignmentService {
 
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
-      monitoredDocument = modifiedMarkResponse(monitoredDocument);
       return monitoredDocument;
     } else {
-      let monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
+      const monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
         id: uuid(),
         experimentId: experimentId,
         condition: condition,
@@ -376,7 +375,6 @@ export class ExperimentAssignmentService {
 
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
-      monitoredDocument = modifiedMarkResponse(monitoredDocument);
       return monitoredDocument;
     }
   }
@@ -1817,11 +1815,4 @@ export class ExperimentAssignmentService {
 
     return [includedExperiments, excludedExperiments];
   }
-}
-function modifiedMarkResponse(monitoredDocument: MonitoredDecisionPoint): MonitoredDecisionPoint {
-  monitoredDocument['experimentId'] = monitoredDocument['site'];
-  monitoredDocument['experimentPoint'] = monitoredDocument['target'];
-  delete monitoredDocument['site'];
-  delete monitoredDocument['target'];
-  return monitoredDocument;
 }

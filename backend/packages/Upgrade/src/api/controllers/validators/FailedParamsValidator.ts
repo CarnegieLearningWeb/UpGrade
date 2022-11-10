@@ -3,7 +3,7 @@ export class FailedParamsValidator {
   @IsDefined()
   @IsNotEmpty()
   @IsString()
-  public experimentPoint: string;
+  public site: string;
 
   @IsString()
   @IsDefined()
@@ -14,5 +14,5 @@ export class FailedParamsValidator {
   public userId: string;
 
   @IsString()
-  public experimentId?: string;
+  public target?: string;
 }

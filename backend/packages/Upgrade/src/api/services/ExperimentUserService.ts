@@ -5,7 +5,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { ExperimentUserRepository } from '../repositories/ExperimentUserRepository';
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentRepository } from '../repositories/ExperimentRepository';
-import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, SERVER_ERROR } from 'upgrade_types';
+import { ASSIGNMENT_UNIT, CONSISTENCY_RULE, EXPERIMENT_STATE, IUserAliases, SERVER_ERROR } from 'upgrade_types';
 import { getConnection, In, Not } from 'typeorm';
 import { IndividualExclusionRepository } from '../repositories/IndividualExclusionRepository';
 import { GroupExclusionRepository } from '../repositories/GroupExclusionRepository';
@@ -65,7 +65,7 @@ export class ExperimentUserService {
     userId: string,
     aliases: string[],
     requestContext: { logger: UpgradeLogger; userDoc: any }
-  ): Promise<ExperimentUser[]> {
+  ): Promise<IUserAliases> {
     const { logger, userDoc } = requestContext;
     const userExist = userDoc;
     logger.info({ message: 'Set aliases for experiment user => ' + userId, details: aliases });
@@ -148,6 +148,8 @@ export class ExperimentUserService {
       logger.error(error);
       throw error;
     }
+
+    const userToReturn: IUserAliases = { userId: userId, aliases: [] };
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {
         id: aliasId,
@@ -159,15 +161,18 @@ export class ExperimentUserService {
       const { originalUser, ...rest } = user;
       return { ...rest, originalUser: originalUser.id };
     });
+
+    let aliasesToReturn = alreadyLinkedAliases.map((alias) => alias.id);
+
     if (userAliasesDocs.length) {
       let aliasesUsers = await this.userRepository.save(userAliasesDocs);
       aliasesUsers = aliasesUsers.map((user) => {
         const { originalUser, ...rest } = user;
         return { ...rest, originalUser: originalUser.id };
       });
-      return [...aliasesUsers, ...alreadyLinkedAliases];
+      aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
     }
-    return alreadyLinkedAliases;
+    return { ...userToReturn, aliases: aliasesToReturn };
   }
 
   public async updateWorkingGroup(
@@ -272,11 +277,10 @@ export class ExperimentUserService {
     }
   }
 
-  public async clearDB(logger: UpgradeLogger): Promise<string> {
+  public async clearDB(logger: UpgradeLogger): Promise<void> {
     await getConnection().transaction(async (transactionalEntityManager) => {
       await this.experimentRepository.clearDB(transactionalEntityManager, logger);
     });
-    return Promise.resolve('Cleared DB');
   }
 
   private async removeEnrollments(userId: string, groupMembership: any, oldGroupMembership: any): Promise<void> {

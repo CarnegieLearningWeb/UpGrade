@@ -39,4 +39,7 @@ export {
   ILogInput,
   IGroupMetric,
   ISingleMetric,
+  IWorkingGroup,
+  IGroupMembership,
+  IUserAliases,
 } from './Experiment/interfaces';

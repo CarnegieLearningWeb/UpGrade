@@ -22,16 +22,6 @@ export default async function getAllExperimentConditions(
       Types.REQUEST_TYPES.POST
     );
     if (experimentConditionResponse.status) {
-      experimentConditionResponse.data = experimentConditionResponse.data.map((data) => {
-        return {
-          ...data,
-          assignedCondition: {
-            conditionCode: data.assignedCondition.conditionCode,
-            twoCharacterId: data.assignedCondition.twoCharacterId,
-            description: data.assignedCondition.description,
-          },
-        };
-      });
       return experimentConditionResponse.data;
     } else {
       throw new Error(JSON.stringify(experimentConditionResponse.message));

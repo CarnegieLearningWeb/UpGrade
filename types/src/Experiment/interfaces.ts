@@ -39,18 +39,10 @@ export interface IExperimentEnrollmentDetailStats {
 }
 
 // TODO Delete this after changing in clientSDK
-export type INewExperimentAssignment = Pick<
-  IExperimentAssignment,
-  'twoCharacterId' | 'description' | 'assignedCondition'
-> & {
+export interface INewExperimentAssignment {
   target: string;
   site: string;
   experimentId: string;
-};
-
-export interface IExperimentAssignment {
-  expId: string;
-  expPoint: string;
   twoCharacterId: string;
   description: string;
   assignedCondition: {
@@ -60,6 +52,15 @@ export interface IExperimentAssignment {
   };
 }
 
+export interface IExperimentAssignment {
+  site: string;
+  target: string;
+  assignedCondition: AssignedCondition;
+}
+
+interface AssignedCondition {
+  condition: string;
+}
 interface ExperimentCreatedData {
   experimentId: string;
   experimentName: string;
@@ -159,4 +160,19 @@ export interface ISingleMetric {
   metric: string;
   datatype: IMetricMetaData;
   allowedValues?: Array<string | number>;
+}
+
+export interface IGroupMembership {
+  id: string;
+  group: object;
+}
+
+export interface IWorkingGroup {
+  id: string;
+  workingGroup: object;
+}
+
+export interface IUserAliases {
+  userId: string;
+  aliases: string[];
 }
