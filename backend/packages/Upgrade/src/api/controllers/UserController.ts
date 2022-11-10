@@ -40,7 +40,7 @@ interface UserPaginationInfo extends PaginationResponse {
 @Authorized()
 @JsonController('/users')
 export class UserController {
-  constructor(public userService: UserService) { }
+  constructor(public userService: UserService) {}
 
   /**
    * @swagger
@@ -90,13 +90,17 @@ export class UserController {
    */
   @Post('/paginated')
   public async paginatedFind(
-    @Body({ validate: { validationError: { target: true, value: true } } }) paginatedParams: UserPaginatedParamsValidator, 
+    @Body({ validate: { validationError: { target: true, value: true } } })
+    paginatedParams: UserPaginatedParamsValidator,
     @Req() request: AppRequest
   ): Promise<UserPaginationInfo> {
     if (!paginatedParams || Object.keys(paginatedParams).length === 0) {
       return Promise.reject(
         new Error(
-          JSON.stringify({ type: SERVER_ERROR.MISSING_PARAMS, message: ' : paginatedParams should not be null or empty object.' })
+          JSON.stringify({
+            type: SERVER_ERROR.MISSING_PARAMS,
+            message: ' : paginatedParams should not be null or empty object.',
+          })
         )
       );
     }
@@ -167,8 +171,7 @@ export class UserController {
    *            description: New User is created
    */
   @Post()
-  public create(@Body() user: User, 
-  @Req() request: AppRequest): Promise<User> {
+  public create(@Body() user: User, @Req() request: AppRequest): Promise<User> {
     return this.userService.upsertUser(user, request.logger);
   }
 
@@ -236,11 +239,11 @@ export class UserController {
    *          '200':
    *            description: Delete User By email
    */
-   @Delete('/:email')
-   public delete(@Param('email') email: string): Promise<User> {
-     if (!email) {
-       return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : email should not be null.'));
-     }
-     return this.userService.deleteUser(email);
-   }
+  @Delete('/:email')
+  public delete(@Param('email') email: string): Promise<User> {
+    if (!email) {
+      return Promise.reject(new Error(SERVER_ERROR.MISSING_PARAMS + ' : email should not be null.'));
+    }
+    return this.userService.deleteUser(email);
+  }
 }

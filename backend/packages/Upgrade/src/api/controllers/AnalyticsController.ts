@@ -36,6 +36,7 @@ export class AnalyticsController {
    *               type: array
    *               items:
    *                type: string
+   *                example: exp01
    *       tags:
    *         - Analytics
    *       produces:
@@ -57,18 +58,20 @@ export class AnalyticsController {
    *                properties:
    *                  users:
    *                    type: number
+   *                    example: 1049
    *                  groups:
    *                    type: number
+   *                    example: 23
    *                  id:
    *                    type: string
    *                    minLength: 1
+   *                    example: exp01
    */
   @Post('/enrollment')
   public async analyticsService(
-    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator, 
-    @Req() request: AppRequest 
+    @Body({ validate: { validationError: { target: false, value: false } } }) auditParams: EnrollmentAnalyticsValidator
   ): Promise<IExperimentEnrollmentStats[]> {
-    return this.auditService.getEnrollments(auditParams.experimentIds, request.logger);
+    return this.auditService.getEnrollments(auditParams.experimentIds);
   }
 
   /**
@@ -87,6 +90,7 @@ export class AnalyticsController {
    *             properties:
    *              experimentId:
    *               type: string
+   *               example: exp01
    *       tags:
    *         - Analytics
    *       produces:
@@ -100,14 +104,19 @@ export class AnalyticsController {
    *                id:
    *                  type: string
    *                  minLength: 1
+   *                  example: exp01
    *                users:
    *                  type: number
+   *                  example: 1240
    *                groups:
    *                  type: number
+   *                  example: 13
    *                usersExcluded:
    *                  type: number
+   *                  example: 245
    *                groupsExcluded:
    *                  type: number
+   *                  example: 4
    *                conditions:
    *                  type: array
    *                  uniqueItems: true
@@ -121,10 +130,13 @@ export class AnalyticsController {
    *                      id:
    *                        type: string
    *                        minLength: 1
+   *                        example: control
    *                      users:
    *                        type: number
+   *                        example: 486
    *                      groups:
    *                        type: number
+   *                        example: 7
    *                      partitions:
    *                        type: array
    *                        uniqueItems: true
@@ -138,18 +150,20 @@ export class AnalyticsController {
    *                            id:
    *                              type: string
    *                              minLength: 1
+   *                              example: "using_fractions"
    *                            users:
    *                              type: number
+   *                              example: 158
    *                            groups:
    *                              type: number
+   *                              example: 3
    */
   @Post('/enrollment/detail')
   public async analyticsDetailService(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentDetailAnalyticsValidator, 
-    @Req() request: AppRequest 
+    auditParams: EnrollmentDetailAnalyticsValidator
   ): Promise<IExperimentEnrollmentDetailStats> {
-    return this.auditService.getDetailEnrollment(auditParams.experimentId, request.logger);
+    return this.auditService.getDetailEnrollment(auditParams.experimentId);
   }
 
   /**
@@ -209,6 +223,7 @@ export class AnalyticsController {
    *                            id:
    *                              type: string
    *                              minLength: 1
+   *                              example: control
    *                            partitions:
    *                              type: array
    *                              uniqueItems: true
@@ -222,10 +237,13 @@ export class AnalyticsController {
    *                                  id:
    *                                    type: string
    *                                    minLength: 1
+   *                                    example: using_fractions
    *                                  users:
    *                                    type: number
+   *                                    example: 58
    *                                  groups:
    *                                    type: number
+   *                                    example: 4
    *                    required:
    *                      - id
    *                      - conditions
@@ -233,10 +251,13 @@ export class AnalyticsController {
   @Post('/enrollment/date')
   public async enrollmentByDate(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    auditParams: EnrollmentAnalyticsDateValidator, 
-    @Req() request: AppRequest 
+    auditParams: EnrollmentAnalyticsDateValidator
   ): Promise<any> {
-    return this.auditService.getEnrollmentStatsByDate(auditParams.experimentId, auditParams.dateEnum, auditParams.clientOffset, request.logger);
+    return this.auditService.getEnrollmentStatsByDate(
+      auditParams.experimentId,
+      auditParams.dateEnum,
+      auditParams.clientOffset
+    );
   }
 
   /**
@@ -265,8 +286,8 @@ export class AnalyticsController {
   @Post('/csv')
   public async downloadCSV(
     @Body({ validate: { validationError: { target: false, value: false } } })
-    csvInfo: DataExportValidator, 
-    @Req() request: AppRequest 
+    csvInfo: DataExportValidator,
+    @Req() request: AppRequest
   ): Promise<string> {
     request.logger.info({ message: `Request received for csv download ${JSON.stringify(csvInfo, null, 2)}` });
     return this.auditService.getCSVData(csvInfo.experimentId, csvInfo.email, request.logger);

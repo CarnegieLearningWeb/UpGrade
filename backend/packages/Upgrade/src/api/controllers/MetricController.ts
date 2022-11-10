@@ -46,7 +46,20 @@ export class MetricController {
    *             type: object
    *             properties:
    *              metricUnit:
-   *                type: object
+   *                type: array
+   *                items:
+   *                  type: object
+   *                  properties:
+   *                    metric:
+   *                      type: string
+   *                      example: completionStatus
+   *                    datatype:
+   *                      type: string
+   *                      enum: [categorical, continuous]
+   *                    allowedValues:
+   *                      type: array
+   *                    children:
+   *                      type: array
    *            description: Filtered Metrics
    *       tags:
    *         - Experiment Point
@@ -57,8 +70,10 @@ export class MetricController {
    *            description: Filtered Metrics
    */
   @Post('/save')
-  public filterMetrics(@BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>, 
-  @Req() request: AppRequest): Promise<IMetricUnit[]> {
+  public filterMetrics(
+    @BodyParam('metricUnit') metricUnit: Array<ISingleMetric | IGroupMetric>,
+    @Req() request: AppRequest
+  ): Promise<IMetricUnit[]> {
     return this.metricService.upsertAllMetrics(metricUnit, request.logger);
   }
 

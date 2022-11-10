@@ -24,7 +24,7 @@ import { UserRepository } from '../repositories/UserRepository';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { METRICS_JOIN_TEXT } from './MetricService';
 import { getCustomRepository } from 'typeorm';
-import moment from "moment-timezone";
+import moment from 'moment-timezone';
 
 interface IEnrollmentStatByDate {
   date: string;
@@ -46,22 +46,18 @@ export class AnalyticsService {
     public errorService: ErrorService
   ) {}
 
-  public async getEnrollments(experimentIds: string[], logger: UpgradeLogger): Promise<IExperimentEnrollmentStats[]> {
+  public async getEnrollments(experimentIds: string[]): Promise<IExperimentEnrollmentStats[]> {
     return this.analyticsRepository.getEnrollments(experimentIds);
   }
 
-  public async getDetailEnrollment(
-    experimentId: string,
-    logger: UpgradeLogger
-  ): Promise<IExperimentEnrollmentDetailStats> {
+  public async getDetailEnrollment(experimentId: string): Promise<IExperimentEnrollmentDetailStats> {
     return this.analyticsRepository.getEnrollmentPerPartitionCondition(experimentId);
   }
 
   public async getEnrollmentStatsByDate(
     experimentId: string,
     dateRange: DATE_RANGE,
-    clientOffset: number,
-    logger: UpgradeLogger
+    clientOffset: number
   ): Promise<IEnrollmentStatByDate[]> {
     const keyToReturn = {};
     switch (dateRange) {
@@ -117,36 +113,38 @@ export class AnalyticsService {
     return Object.keys(keyToReturn).map((date) => {
       const stats: IExperimentEnrollmentDetailDateStats = {
         id: experimentId,
-        conditions: experiment ? experiment.conditions.map(({ id }) => {
-          return {
-            id,
-            partitions: experiment.partitions.map((decisionPointDoc) => {
-              const userInConditionDecisionPoint = individualEnrollmentConditionAndDecisionPoint.find(
-                ({ conditionId, partitionId, date_range }) => {
-                  return (
-                    partitionId === decisionPointDoc.id &&
-                    conditionId === id &&
-                    new Date(date).getTime() === (date_range as any).getTime()
-                  );
-                }
-              );
-              const groupInConditionDecisionPoint = groupEnrollmentConditionAndDecisionPoint.find(
-                ({ conditionId, partitionId, date_range }) => {
-                  return (
-                    partitionId === decisionPointDoc.id &&
-                    conditionId === id &&
-                    new Date(date).getTime() === (date_range as any).getTime()
-                  );
-                }
-              );
+        conditions: experiment
+          ? experiment.conditions.map(({ id }) => {
               return {
-                id: decisionPointDoc.id,
-                users: (userInConditionDecisionPoint && userInConditionDecisionPoint.count) || 0,
-                groups: (groupInConditionDecisionPoint && groupInConditionDecisionPoint.count) || 0,
+                id,
+                partitions: experiment.partitions.map((decisionPointDoc) => {
+                  const userInConditionDecisionPoint = individualEnrollmentConditionAndDecisionPoint.find(
+                    ({ conditionId, partitionId, date_range }) => {
+                      return (
+                        partitionId === decisionPointDoc.id &&
+                        conditionId === id &&
+                        new Date(date).getTime() === (date_range as any).getTime()
+                      );
+                    }
+                  );
+                  const groupInConditionDecisionPoint = groupEnrollmentConditionAndDecisionPoint.find(
+                    ({ conditionId, partitionId, date_range }) => {
+                      return (
+                        partitionId === decisionPointDoc.id &&
+                        conditionId === id &&
+                        new Date(date).getTime() === (date_range as any).getTime()
+                      );
+                    }
+                  );
+                  return {
+                    id: decisionPointDoc.id,
+                    users: (userInConditionDecisionPoint && userInConditionDecisionPoint.count) || 0,
+                    groups: (groupInConditionDecisionPoint && groupInConditionDecisionPoint.count) || 0,
+                  };
+                }),
               };
-            }),
-          };
-        }) : [],
+            })
+          : [],
       };
       return {
         date,
@@ -172,7 +170,6 @@ export class AnalyticsService {
           where: { id: experimentId },
         }),
         userRepository.findOne({ email }),
-
       ]);
       const { localTimeZone } = user;
 
@@ -302,7 +299,9 @@ export class AnalyticsService {
             GroupId: row.groupId,
             ConditionName: row.conditionName,
             FirstDecisionPointReachedOn: new Date(row.firstDecisionPointReachedOn).toISOString(),
-            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn).tz(localTimeZone).toISOString(true),
+            FirstDecisionPointReachedOn_LocalTime: moment(row.firstDecisionPointReachedOn)
+              .tz(localTimeZone)
+              .toISOString(true),
             UniqueDecisionPointsMarked: row.decisionPointReachedCount,
             ...queryDataToAdd,
           };
@@ -327,9 +326,6 @@ export class AnalyticsService {
       const email_expiry_time = env.email.expireAfterSeconds;
       const email_from = env.email.from;
 
-      let monitorFileBuffer;
-      let signedURLMonitored;
-
       const fileName = `${folderPath}${simpleExportCSV}`;
       if (!fs.existsSync(fileName)) {
         // if file doesn't exist create a empty file
@@ -348,22 +344,21 @@ export class AnalyticsService {
         await csv.toDisk(`${folderPath}${simpleExportCSV}`, { append: true });
       }
 
-      let emailText;
-      monitorFileBuffer = fs.readFileSync(fileName);
+      const monitorFileBuffer = fs.readFileSync(fileName);
       // delete local file copy:
       fs.unlinkSync(`${folderPath}${simpleExportCSV}`);
 
       await Promise.all([this.awsService.uploadCSV(monitorFileBuffer, email_export, simpleExportCSV)]);
 
-      signedURLMonitored = await Promise.all([
+      const signedURLMonitored = await Promise.all([
         this.awsService.generateSignedURL(email_export, simpleExportCSV, email_expiry_time),
       ]);
 
-      emailText = `Hey,
+      const emailText = `Hey,
       <br>
       Here is the exported experiment data:
       <br>
-      <a href=\"${signedURLMonitored[0]}\">Monitored Experiment Data</a>`;
+      <a href="${signedURLMonitored[0]}">Monitored Experiment Data</a>`;
 
       const emailSubject = `Exported Data for the experiment: ${experiment.name}`;
       // send email to the user

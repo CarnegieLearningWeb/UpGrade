@@ -10,13 +10,13 @@ export class IndividualExclusion extends BaseModel {
   @PrimaryColumn()
   public id: string;
 
-  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
   @IsNotEmpty()
   @Column({ type: 'enum', enum: EXCLUSION_CODE, nullable: true })
   public exclusionCode: EXCLUSION_CODE;
 
-  @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;
 }

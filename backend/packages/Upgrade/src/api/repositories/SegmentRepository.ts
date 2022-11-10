@@ -11,12 +11,7 @@ export class SegmentRepository extends Repository<Segment> {
       .leftJoinAndSelect('segment.groupForSegment', 'groupForSegment')
       .getMany()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'segmentRepository',
-          'getAllSegments',
-          {},
-          errorMsg
-        );
+        const errorMsgString = repositoryError('segmentRepository', 'getAllSegments', {}, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });
@@ -27,12 +22,7 @@ export class SegmentRepository extends Repository<Segment> {
       .where('segment.id=:id', { id })
       .getOne()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'segmentRepository',
-          'getSegmentById',
-          { id },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('segmentRepository', 'getSegmentById', { id }, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });
@@ -50,12 +40,7 @@ export class SegmentRepository extends Repository<Segment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'segmentRepository',
-          'insertSegment',
-          { data },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('segmentRepository', 'insertSegment', { data }, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });
@@ -71,12 +56,7 @@ export class SegmentRepository extends Repository<Segment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'segmentRepository',
-          'insertSegment',
-          { data },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('segmentRepository', 'insertSegment', { data }, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });
@@ -92,12 +72,7 @@ export class SegmentRepository extends Repository<Segment> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'segmentRepository',
-          'deleteSegmentById',
-          { id },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('segmentRepository', 'deleteSegmentById', { id }, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });

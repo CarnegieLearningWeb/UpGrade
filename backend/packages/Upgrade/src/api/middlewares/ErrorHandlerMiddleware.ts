@@ -106,9 +106,7 @@ export class ErrorHandlerMiddleware implements ExpressErrorMiddlewareInterface {
     experimentError.errorCode = error.httpCode;
     experimentError.type = type;
     req.logger.error(experimentError);
-    experimentError.type
-      ? await this.errorService.create(experimentError, req.logger)
-      : await Promise.resolve(error);
+    experimentError.type ? await this.errorService.create(experimentError, req.logger) : await Promise.resolve(error);
     if (!res.headersSent) {
       res.statusCode = error.httpCode || 500;
       res.json(error);

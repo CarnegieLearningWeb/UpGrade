@@ -29,7 +29,7 @@ export class ExperimentCondition extends BaseModel {
 
   @IsNotEmpty()
   @IsNumber()
-  @Column({ type: 'real'})
+  @Column({ type: 'real' })
   public assignmentWeight: number;
 
   @IsNotEmpty()
@@ -39,9 +39,9 @@ export class ExperimentCondition extends BaseModel {
   })
   public order: number;
 
-  @ManyToOne((type) => Experiment, (experiment) => experiment.conditions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, (experiment) => experiment.conditions, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
-  @OneToMany((type) => ConditionAlias, (conditionAlias) => conditionAlias.aliasName)
+  @OneToMany(() => ConditionAlias, (conditionAlias) => conditionAlias.aliasName)
   public parentCondition: ConditionAlias[];
 }
