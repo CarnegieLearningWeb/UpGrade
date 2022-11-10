@@ -9,7 +9,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -23,6 +23,8 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
 import { DialogService } from '../../../../../shared/services/dialog.service';
+import { Store } from '@ngrx/store';
+import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
 
 type ParticipantMember = {
   id: string;
@@ -39,8 +41,6 @@ export class ExperimentParticipantsComponent implements OnInit {
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
-  @Input() dataChanged = false;
-  @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('members1Table', { static: false, read: ElementRef }) members1Table: ElementRef;
   @ViewChild('members2Table', { static: false, read: ElementRef }) members2Table: ElementRef;
@@ -67,13 +67,21 @@ export class ExperimentParticipantsComponent implements OnInit {
   groupsToSend = [];
   groupString = ' ( group )';
 
+  // Used for speedbump when clicked on close
+  dataChanged$: Observable<boolean>;
+  flag: boolean = false;
+
   constructor(
     private _formBuilder: FormBuilder,
     private _formBuilder2: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
-    private dialogService: DialogService
-  ) {}
+    private dialogService: DialogService,
+    private store: Store<{ dataChanged: boolean }>
+    ) {
+      this.dataChanged$ = store.select('dataChanged');
+      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
+    }
 
   ngOnChanges() {
     if (this.currentContext) {
@@ -247,7 +255,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.dataChanged || this.participantsForm.dirty || this.participantsForm2.dirty || this.isRowRemoved) {
+        if (this.flag || this.participantsForm.dirty || this.participantsForm2.dirty || this.isRowRemoved) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -261,12 +269,12 @@ export class ExperimentParticipantsComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.checkDataChangedEvent.emit(this.participantsForm.dirty || this.participantsForm2.dirty);
+        this.data_changed();
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.dataChanged = false;
+        this.flag_reset();
         this.isRowRemoved = false;
         this.participantsForm.markAsPristine();
         this.participantsForm2.markAsPristine();
@@ -325,6 +333,16 @@ export class ExperimentParticipantsComponent implements OnInit {
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
     }
+  }
+
+  data_changed() {
+    if(this.participantsForm.dirty || this.participantsForm2.dirty){
+      this.store.dispatch(formDataChanged());
+    }
+  }
+ 
+  flag_reset() {
+    this.store.dispatch(formDataReset());
   }
 
   get members1(): FormArray {

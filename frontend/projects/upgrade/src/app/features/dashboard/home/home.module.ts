@@ -35,6 +35,8 @@ import { StateTimeLogsComponent } from './components/modal/state-time-logs/state
 import { ExperimentParticipantsComponent } from './components/experiment-participants/experiment-participants.component';
 import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
 import { AliasesTableComponent } from './components/experiment-design/aliases-table/aliases-table.component';
+import { StoreModule } from '@ngrx/store';
+import { dataChangedReducer } from './data-change-flag/data-change-flag.reducer';
 @NgModule({
   declarations: [
     HomeComponent,
@@ -73,6 +75,7 @@ import { AliasesTableComponent } from './components/experiment-design/aliases-ta
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
     NgxSkeletonLoaderModule,
+    StoreModule.forFeature( 'dataChanged', dataChangedReducer )
   ],
   providers: [OperationPipe],
 })

@@ -22,6 +22,8 @@ import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
+import { Store } from '@ngrx/store';
+import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
 
 @Component({
   selector: 'home-monitored-metrics',
@@ -34,8 +36,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
-  @Input() dataChanged = false;
-  @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('metricTable', { static: false, read: ElementRef }) metricTable: ElementRef;
 
@@ -74,12 +74,20 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   queryStatisticError = [];
   queryComparisonStatisticError = [];
 
+  // Used for speedbump when clicked on close
+  dataChanged$: Observable<boolean>;
+  flag: boolean = false;
+
   constructor(
     private analysisService: AnalysisService,
     private _formBuilder: FormBuilder,
     private translate: TranslateService,
-    private dialogService: DialogService
-  ) {}
+    private dialogService: DialogService,
+    private store: Store<{ dataChanged: boolean }>
+    ) {
+      this.dataChanged$ = store.select('dataChanged');
+      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
+    }
 
   optionsSub() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
@@ -551,7 +559,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.dataChanged || this.queryForm.dirty || this.isRowRemoved) {
+        if (this.flag || this.queryForm.dirty || this.isRowRemoved) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -565,12 +573,12 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.checkDataChangedEvent.emit(this.queryForm.dirty);
+        this.data_changed();
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.dataChanged = false;
+        this.flag_reset();
         this.isRowRemoved = false;
         this.queryForm.markAsPristine();
         break;
@@ -648,6 +656,16 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  data_changed() {
+    if(this.queryForm.dirty){
+      this.store.dispatch(formDataChanged());
+    }
+  }
+ 
+  flag_reset() {
+    this.store.dispatch(formDataReset());
+  }
+  
   ngOnChanges() {
     if (this.isContextChanged) {
       this.isContextChanged = false;

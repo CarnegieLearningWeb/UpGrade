@@ -9,6 +9,9 @@ import {
   EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
 import { DialogService } from '../../../../../shared/services/dialog.service';
+import { Store } from '@ngrx/store';
+import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'home-experiment-schedule',
@@ -19,13 +22,22 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 export class ExperimentScheduleComponent implements OnInit {
   @Input() groupType: string;
   @Input() experimentInfo: ExperimentVM;
-  @Input() dataChanged = false;
-  @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   experimentScheduleForm: FormGroup;
   minDate = new Date();
 
-  constructor(private _formBuilder: FormBuilder, private dialogService: DialogService) {}
+  // Used for speedbump when clicked on close
+  dataChanged$: Observable<boolean>;
+  flag: boolean = false;
+
+  constructor(
+    private _formBuilder: FormBuilder, 
+    private dialogService: DialogService,
+    private store: Store<{ dataChanged: boolean }>
+    ) {
+      this.dataChanged$ = store.select('dataChanged');
+      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
+    }
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
@@ -165,7 +177,7 @@ export class ExperimentScheduleComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.dataChanged || this.experimentScheduleForm.dirty) {
+        if (this.flag || this.experimentScheduleForm.dirty) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -179,12 +191,12 @@ export class ExperimentScheduleComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.checkDataChangedEvent.emit(this.experimentScheduleForm.dirty);
+        this.data_changed();
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.dataChanged = false;
+        this.flag_reset();
         this.experimentScheduleForm.markAsPristine();
         break;
     }
@@ -264,5 +276,15 @@ export class ExperimentScheduleComponent implements OnInit {
         path: NewExperimentPaths.EXPERIMENT_SCHEDULE,
       });
     }
+  }
+
+  data_changed() {
+    if(this.experimentScheduleForm.dirty){
+      this.store.dispatch(formDataChanged());
+    }
+  }
+ 
+  flag_reset() {
+    this.store.dispatch(formDataReset());
   }
 }

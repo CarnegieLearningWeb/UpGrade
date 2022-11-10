@@ -25,7 +25,8 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Observable, Subscription } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-
+import { Store } from '@ngrx/store';
+import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
@@ -34,8 +35,6 @@ import { DialogService } from '../../../../../shared/services/dialog.service';
 })
 export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   @Input() experimentInfo: ExperimentVM;
-  @Input() dataChanged = false;
-  @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
   @ViewChild('contextInput') contextInput: ElementRef<HTMLInputElement>;
   overviewForm: FormGroup;
@@ -62,13 +61,21 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   contextMetaDataSub: Subscription;
   isLoadingContextMetaData$: Observable<boolean>;
 
+  // Used for speedbump when clicked on close
+  dataChanged$: Observable<boolean>;
+  flag: boolean = false;
+
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
-    private dialogService: DialogService
-  ) {}
+    private dialogService: DialogService,
+    private store: Store<{ dataChanged: boolean }>
+  ) {
+    this.dataChanged$ = store.select('dataChanged');
+    this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
+  }
 
   ngOnInit() {
     this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
@@ -212,7 +219,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.dataChanged || this.overviewForm.dirty) {
+        if (this.flag || this.overviewForm.dirty) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -226,13 +233,13 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.checkDataChangedEvent.emit(this.overviewForm.dirty);
+        this.data_changed();
         this.overviewForm.markAllAsTouched();
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.dataChanged = false;
+        this.flag_reset();
         this.overviewForm.markAsPristine();
         break;
     }
@@ -269,6 +276,16 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
       });
     }
+  }
+
+  data_changed() {
+    if(this.overviewForm.dirty){
+      this.store.dispatch(formDataChanged());
+    }
+  }
+ 
+  flag_reset() {
+    this.store.dispatch(formDataReset());
   }
 
   ngOnDestroy() {

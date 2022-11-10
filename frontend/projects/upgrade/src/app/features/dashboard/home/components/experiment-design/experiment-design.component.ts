@@ -32,7 +32,8 @@ import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-
+import { Store } from '@ngrx/store';
+import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -44,8 +45,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   @Input() currentContext: string;
   @Input() isContextChanged: boolean;
   @Input() animationCompleteStepperIndex: number;
-  @Input() dataChanged = false;
-  @Output() checkDataChangedEvent = new EventEmitter<boolean>();
   @Output() emitExperimentDialogEvent = new EventEmitter<NewExperimentDialogData>();
 
   @ViewChild('stepContainer', { read: ElementRef }) stepContainer: ElementRef;
@@ -93,13 +92,20 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   isAliasTableEditMode$: Observable<boolean>;
   isExperimentEditable = true;
 
+  // Used for speedbump when clicked on close
+  dataChanged$: Observable<boolean>;
+  flag: boolean = false;
+
   constructor(
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private experimentUtilityService: ExperimentUtilityService,
     private translate: TranslateService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private store: Store<{ dataChanged: boolean }>
   ) {
+    this.dataChanged$ = store.select('dataChanged');
+    this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
     this.partitionErrorMessagesSub = this.translate
       .get([
         'home.new-experiment.design.assignment-partition-error-1.text',
@@ -563,7 +569,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.dataChanged || this.experimentDesignForm.dirty || this.isRowRemoved) {
+        if (this.flag || this.experimentDesignForm.dirty || this.isRowRemoved) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -577,7 +583,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.checkDataChangedEvent.emit(this.experimentDesignForm.dirty);
+        this.data_changed();
         if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
             type: eventType,
@@ -598,8 +604,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
         this.saveData(eventType);
-        this.dataChanged = false;
-        this.isRowRemoved = false;
+        console.log("before flag:"+this.flag);
+        this.flag_reset();
+        console.log("after flag:"+this.flag);
         this.experimentDesignForm.markAsPristine();
         break;
     }
@@ -653,6 +660,16 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       // scroll back to the conditions table
       this.scrollToConditionsTable();
     }
+  }
+
+  data_changed() {
+    if(this.experimentDesignForm.dirty){
+      this.store.dispatch(formDataChanged());
+    }
+  }
+ 
+  flag_reset() {
+    this.store.dispatch(formDataReset());
   }
 
   createExperimentConditionAliasRequestObject(
