@@ -19,7 +19,7 @@ export class Metric extends BaseModel {
   @Column({ type: 'simple-array', nullable: true })
   public allowedData: string[];
 
-  @ManyToMany((type) => Log, (log) => log.metrics, {
+  @ManyToMany(() => Log, (log) => log.metrics, {
     cascade: true,
   })
   @JoinTable({
@@ -27,6 +27,6 @@ export class Metric extends BaseModel {
   })
   public logs: Log[];
 
-  @OneToMany((type) => Query, (query) => query.metric)
+  @OneToMany(() => Query, (query) => query.metric)
   public queries: Query[];
 }

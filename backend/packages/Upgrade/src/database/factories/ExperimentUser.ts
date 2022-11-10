@@ -3,7 +3,7 @@ import { define } from 'typeorm-seeding';
 import { ExperimentUser } from '../../api/models/ExperimentUser';
 import * as uuid from 'uuid';
 
-define(ExperimentUser, (faker: typeof Faker, settings: {}) => {
+define(ExperimentUser, (faker: typeof Faker) => {
   const id = uuid.v4();
   const group = { class: faker.random.number(5), teacher: faker.name.firstName(), school: faker.name.findName };
 

@@ -21,7 +21,7 @@ export class ScheduledJobService {
     @OrmRepository() private scheduledJobRepository: ScheduledJobRepository,
     @OrmRepository() private errorRepository: ErrorRepository,
     @OrmRepository() private experimentAuditLogRepository: ExperimentAuditLogRepository,
-    private awsService: AWSService,
+    private awsService: AWSService
   ) {}
 
   public async startExperiment(id: string, logger: UpgradeLogger): Promise<any> {
@@ -35,8 +35,8 @@ export class ScheduledJobService {
         const fiveHoursInMS = 18000000;
 
         if (timeDiff > fiveHoursInMS) {
-          const errorMsg =  'Time Difference of more than 5 hours is found';
-          await scheduledJobRepository.delete({id: scheduledJob.id});
+          const errorMsg = 'Time Difference of more than 5 hours is found';
+          await scheduledJobRepository.delete({ id: scheduledJob.id });
           logger.error({ message: errorMsg });
           throw new Error(errorMsg);
         }
@@ -84,8 +84,8 @@ export class ScheduledJobService {
         const fiveHoursInMS = 18000000;
 
         if (timeDiff > fiveHoursInMS) {
-          const errorMsg =  'Time Difference of more than 5 hours is found';
-          await scheduledJobRepository.delete({id: scheduledJob.id});
+          const errorMsg = 'Time Difference of more than 5 hours is found';
+          await scheduledJobRepository.delete({ id: scheduledJob.id });
           logger.error({ message: errorMsg });
           throw new Error(errorMsg);
         }
@@ -103,7 +103,7 @@ export class ScheduledJobService {
             systemUser,
             logger,
             null,
-            transactionalEntityManager,
+            transactionalEntityManager
           );
         }
         return {};
@@ -132,7 +132,11 @@ export class ScheduledJobService {
     });
   }
 
-  public async updateExperimentSchedules(experiment: Experiment, logger: UpgradeLogger, entityManager?: EntityManager): Promise<void> {
+  public async updateExperimentSchedules(
+    experiment: Experiment,
+    logger: UpgradeLogger,
+    entityManager?: EntityManager
+  ): Promise<void> {
     try {
       const scheduledJobRepo = entityManager ? entityManager.getRepository(ScheduledJob) : this.scheduledJobRepository;
 
@@ -168,11 +172,14 @@ export class ScheduledJobService {
           }
 
           // add or update document
-          await this.scheduledJobRepository.upsertScheduledJob({
-            ...startDoc,
-            timeStamp: startOn,
-            executionArn: response.executionArn,
-          }, entityManager);
+          await this.scheduledJobRepository.upsertScheduledJob(
+            {
+              ...startDoc,
+              timeStamp: startOn,
+              executionArn: response.executionArn,
+            },
+            entityManager
+          );
         }
       } else if (startExperimentDoc) {
         // delete event here
@@ -207,11 +214,14 @@ export class ScheduledJobService {
             await this.stopExperimentScheduler(endExperimentDoc.executionArn);
           }
           // add or update document
-          await this.scheduledJobRepository.upsertScheduledJob({
-            ...endDoc,
-            timeStamp: endOn,
-            executionArn: response.executionArn,
-          }, entityManager);
+          await this.scheduledJobRepository.upsertScheduledJob(
+            {
+              ...endDoc,
+              timeStamp: endOn,
+              executionArn: response.executionArn,
+            },
+            entityManager
+          );
         }
       } else if (endExperimentDoc) {
         // delete event here

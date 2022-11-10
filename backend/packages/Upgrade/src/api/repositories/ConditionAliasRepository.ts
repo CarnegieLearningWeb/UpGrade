@@ -9,12 +9,7 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
     return await this.createQueryBuilder('conditionAlias')
       .getMany()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'conditionAliasRepository',
-          'getAllConditionAlias',
-          {},
-          errorMsg
-        );
+        const errorMsgString = repositoryError('conditionAliasRepository', 'getAllConditionAlias', {}, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });
@@ -32,8 +27,12 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(this.constructor.name, 'insertConditionAlias',
-        { conditionAliasDoc: conditionAliasDoc }, errorMsg);
+        const errorMsgString = repositoryError(
+          this.constructor.name,
+          'insertConditionAlias',
+          { conditionAliasDoc: conditionAliasDoc },
+          errorMsg
+        );
         throw errorMsgString;
       });
     return result.raw || [];
@@ -48,9 +47,7 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
       .insert()
       .into(ConditionAlias)
       .values(conditionAliasDoc)
-      .onConflict(
-        `("id") DO UPDATE SET "aliasName" = :aliasName`
-      )
+      .onConflict(`("id") DO UPDATE SET "aliasName" = :aliasName`)
       .setParameter('aliasName', conditionAliasDoc.aliasName)
       .returning('*')
       .execute()
@@ -75,12 +72,7 @@ export class ConditionAliasRepository extends Repository<ConditionAlias> {
       .returning('*')
       .execute()
       .catch((errorMsg: any) => {
-        const errorMsgString = repositoryError(
-          'conditionAliasRepository',
-          'deleteConditionAlias',
-          { id },
-          errorMsg
-        );
+        const errorMsgString = repositoryError('conditionAliasRepository', 'deleteConditionAlias', { id }, errorMsg);
         logger.error(errorMsg);
         throw errorMsgString;
       });

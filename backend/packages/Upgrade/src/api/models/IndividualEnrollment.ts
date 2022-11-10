@@ -13,15 +13,15 @@ export class IndividualEnrollment extends BaseModel {
   public id: string;
 
   @Index()
-  @ManyToOne((type) => Experiment, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Experiment, { onDelete: 'CASCADE' })
   public experiment: Experiment;
 
   @Index()
-  @ManyToOne((type) => DecisionPoint, { onDelete: 'CASCADE' })
+  @ManyToOne(() => DecisionPoint, { onDelete: 'CASCADE' })
   public partition: DecisionPoint;
 
   @Index()
-  @ManyToOne((type) => ExperimentUser, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExperimentUser, { onDelete: 'CASCADE' })
   public user: ExperimentUser;
 
   @Column({ nullable: true })
@@ -31,6 +31,6 @@ export class IndividualEnrollment extends BaseModel {
   @Column({ type: 'enum', enum: ENROLLMENT_CODE, nullable: true })
   public enrollmentCode: ENROLLMENT_CODE;
 
-  @ManyToOne((type) => ExperimentCondition, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExperimentCondition, { onDelete: 'CASCADE' })
   public condition: ExperimentCondition;
 }

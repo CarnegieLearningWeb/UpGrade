@@ -3,7 +3,11 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import { UserRepository } from '../repositories/UserRepository';
 import { User } from '../models/User';
 import { SERVER_ERROR, UserRole } from 'upgrade_types';
-import { IUserSearchParams, IUserSortParams, USER_SEARCH_SORT_KEY } from '../controllers/validators/UserPaginatedParamsValidator';
+import {
+  IUserSearchParams,
+  IUserSortParams,
+  USER_SEARCH_SORT_KEY,
+} from '../controllers/validators/UserPaginatedParamsValidator';
 import { systemUserDoc } from '../../init/seed/systemUser';
 import { UpgradeLogger } from '../../lib/logger/UpgradeLogger';
 import { AWSService } from './AWSService';
@@ -23,12 +27,12 @@ export class UserService {
   public async upsertUser(user: User, logger: UpgradeLogger): Promise<User> {
     logger.info({ message: `Upsert a new user => ${JSON.stringify(user, undefined, 2)}` });
 
-    const isUserExists = await this.userRepository.find({ where: {email: user.email }});
+    const isUserExists = await this.userRepository.find({ where: { email: user.email } });
     const response = await this.userRepository.upsertUser(user);
     if (!isUserExists && response) {
-      this.sendWelcomeEmail(user.email)
+      this.sendWelcomeEmail(user.email);
     }
-    return response
+    return response;
   }
 
   public async upsertAdminUser(user: User, logger: UpgradeLogger): Promise<User> {
@@ -44,7 +48,7 @@ export class UserService {
 
   public async getTotalCount(logger: UpgradeLogger): Promise<number> {
     logger.info({ message: 'Find a count of total users' });
-    const totalUsers = await this.userRepository.count() - 1; // Subtract system User
+    const totalUsers = (await this.userRepository.count()) - 1; // Subtract system User
     return totalUsers;
   }
 
@@ -56,8 +60,7 @@ export class UserService {
     sortParams?: IUserSortParams
   ): Promise<any[]> {
     logger.info({ message: `Find paginated Users` });
-    let queryBuilder  = this.userRepository
-    .createQueryBuilder('users');
+    let queryBuilder = this.userRepository.createQueryBuilder('users');
 
     if (searchParams) {
       const customSearchString = searchParams.string.split(' ').join(`:*&`);
@@ -73,10 +76,7 @@ export class UserService {
       queryBuilder = queryBuilder.addOrderBy(`users.${sortParams.key}`, sortParams.sortAs);
     }
     const systemEmail = systemUserDoc.email;
-    queryBuilder = queryBuilder
-      .where('users.email != :email', { email: systemEmail })
-      .skip(skip)
-      .take(take);
+    queryBuilder = queryBuilder.where('users.email != :email', { email: systemEmail }).skip(skip).take(take);
 
     return queryBuilder.getMany();
   }
@@ -116,7 +116,7 @@ export class UserService {
         break;
       default:
         // TODO: Update column name
-        // searchString.push("coalesce(users.firstName::TEXT,'')"); 
+        // searchString.push("coalesce(users.firstName::TEXT,'')");
         // searchString.push("coalesce(users.lastName::TEXT,'')");
         searchString.push("coalesce(users.email::TEXT,'')");
         searchString.push("coalesce(users.role::TEXT,'')");
@@ -126,7 +126,7 @@ export class UserService {
     const searchStringConcatenated = `concat_ws(' ', ${stringConcat})`;
     return searchStringConcatenated;
   }
-  
+
   public sendWelcomeEmail(email: string): void {
     const emailSubject = `Welcome to UpGrade!`;
     const emailBody = this.emails.welcomeEmailBody();
@@ -139,7 +139,7 @@ export class UserService {
     this.sendEmail(email, emailSubject, emailBody);
   }
 
-  public async sendEmail(email_to: string, emailSubject: string, emailBody: string):Promise<string> {
+  public async sendEmail(email_to: string, emailSubject: string, emailBody: string): Promise<string> {
     try {
       const email_from = env.email.from;
       const emailText = this.emails.generateEmailText(emailBody);
@@ -148,7 +148,7 @@ export class UserService {
       const error = err as ErrorWithType;
       error.type = SERVER_ERROR.EMAIL_SEND_ERROR;
       throw error;
-    } 
+    }
 
     return '';
   }

@@ -1,10 +1,10 @@
 import SplunkStreamEvent from 'winston-splunk-httplogger';
-import { MicroframeworkLoader, MicroframeworkSettings } from 'microframework';
+import { MicroframeworkLoader } from 'microframework';
 import { configure, format, transports } from 'winston';
 import { env } from '../env';
 import TransportStream from 'winston-transport';
 
-export const winstonLoader: MicroframeworkLoader = (settings: MicroframeworkSettings | undefined) => {
+export const winstonLoader: MicroframeworkLoader = () => {
   const transportConfig: TransportStream[] = [];
 
   const formatter =
@@ -29,7 +29,7 @@ export const winstonLoader: MicroframeworkLoader = (settings: MicroframeworkSett
           host: env.splunk.host,
           token: env.splunk.token,
           index: env.splunk.index,
-          eventFormatter: (message, severity) => {
+          eventFormatter: (message) => {
             const { meta } = message;
             return { ...meta };
           },
