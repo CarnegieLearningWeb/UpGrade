@@ -262,6 +262,7 @@ export class ExperimentAssignmentService {
           target: target,
           user: userId,
         },
+        relations: ['user'],
       });
 
       if (experimentDecisionPoint.length && experimentId) {
@@ -349,16 +350,15 @@ export class ExperimentAssignmentService {
         }
       }
       // adding in monitored experiment point table
-      if (!monitoredDocument) {
-        monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
-          id: uuid(),
-          experimentId: experimentId,
-          condition: condition,
-          user: userDoc,
-          site: site,
-          target: target,
-        });
-      }
+
+      monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
+        id: monitoredDocument.id || uuid(),
+        experimentId: experimentId,
+        condition: condition,
+        user: userDoc,
+        site: site,
+        target: target,
+      });
 
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
