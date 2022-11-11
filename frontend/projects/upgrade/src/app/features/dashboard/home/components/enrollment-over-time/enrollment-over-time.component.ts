@@ -92,9 +92,9 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
           ? [INDIVIDUAL]
           : [INDIVIDUAL, this.experiment.group];
     }
-    if (this.totalMarkedUsers>0){
+    if (this.totalMarkedUsers > 0) {
       this.showLabelOfxAxis = true;
-    }else{
+    } else {
       this.showLabelOfxAxis = false;
     }
   }
