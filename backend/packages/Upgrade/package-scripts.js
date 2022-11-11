@@ -34,7 +34,7 @@ module.exports = {
           description: 'Runs the integration tests',
         },
         pretest: {
-          script: eslint(`./test/unit`),
+          // script: eslint(`./test/unit`),
           hiddenFromHelp: true,
         },
         run: {
@@ -179,14 +179,14 @@ module.exports = {
      * Runs ESLint over your project
      */
     lint: {
-      eslint: {
-        script: eslint('./src'),
-        hiddenFromHelp: true,
-      },
-      prettier: {
-        script: prettier(),
-        hiddenFromHelp: true,
-      },
+      // eslint: {
+      script: eslint('./src'),
+      hiddenFromHelp: true,
+      // },
+      // prettier: {
+      //   script: prettier(),
+      //   hiddenFromHelp: true,
+      // },
     },
     /**
      * Transpile your app into javascript
@@ -255,12 +255,12 @@ function runFast(path) {
 
 function eslint(path) {
   let command = `eslint -c ../../../.eslintrc.js --ext .ts ${path}`;
-  // console.log('Running eslint and prettier on dir:', command);
+  console.log('Running eslint and prettier on dir:', command);
   return command;
 }
 
 function prettier() {
   const command = `prettier --config ../../../.prettierrc './{src, test}/**/*.ts' --write`;
-  // console.log('Running prettier on dir:', command);
+  console.log('Running prettier on dir:', command);
   return command;
 }

@@ -8,7 +8,6 @@
         "dev": "npm start serve",
         "build": "npm start build",
         "production": "npm start serve.production",
-        "lint": "npm start lint.eslint",
         "prettier": "npm start lint.prettier",
         "test": "npm start test",
         "test:watch": "npm start test.watch",
