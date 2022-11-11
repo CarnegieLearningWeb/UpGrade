@@ -13,7 +13,7 @@ module.exports = {
           description: 'Runs the integration tests',
         },
         pretest: {
-          script: eslint('./test/integration'),
+          // script: eslint('./test/integration'),
           hiddenFromHelp: true,
         },
         run: {
@@ -137,7 +137,7 @@ module.exports = {
       script: series(
         'nps banner.build',
         'nps config',
-        'nps lint.eslint',
+        // 'nps lint.eslint',
         'nps typecheck.build',
         'nps clean.dist',
         'nps transpile',
@@ -255,12 +255,12 @@ function runFast(path) {
 
 function eslint(path) {
   let command = `eslint -c ../../../.eslintrc.js --ext .ts ${path}`;
-  console.log('Running eslint and prettier on dir:', command);
+  // console.log('Running eslint and prettier on dir:', command);
   return command;
 }
 
 function prettier() {
   const command = `prettier --config ../../../.prettierrc './{src, test}/**/*.ts' --write`;
-  console.log('Running prettier on dir:', command);
+  // console.log('Running prettier on dir:', command);
   return command;
 }
