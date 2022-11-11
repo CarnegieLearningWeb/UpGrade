@@ -88,7 +88,6 @@ export class PreviewUserService {
       (newAssignments &&
         newAssignments.length > 0 &&
         newAssignments.map((assignment: ExplicitIndividualAssignment) => {
-          // TODO: please review this eslint error
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { createdAt, updatedAt, versionNumber, ...rest } = assignment;
           rest.previewUser = previewUser;

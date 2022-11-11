@@ -257,7 +257,6 @@ export class ExperimentUserService {
           return userDoc[0].originalUser;
         } else {
           // If user is original user
-          // TODO: please review this eslint error
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { originalUser, ...rest } = userDoc[0];
           return rest as any;

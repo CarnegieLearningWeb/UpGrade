@@ -134,7 +134,6 @@ export class FeatureFlagService {
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
-        // TODO: please review this eslint error
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { featureFlagId, ...rest } = variationDoc as any;
         return rest;
@@ -155,7 +154,6 @@ export class FeatureFlagService {
     const oldVariations = oldFeatureFlag[0].variations;
 
     return getConnection().transaction(async (transactionalEntityManager) => {
-      // TODO: please review this eslint error
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { variations, versionNumber, createdAt, updatedAt, ...flagDoc } = flag;
       let featureFlagDoc: FeatureFlag;
@@ -173,7 +171,6 @@ export class FeatureFlagService {
         (variations &&
           variations.length > 0 &&
           variations.map((variation: FlagVariation) => {
-            // TODO: please review this eslint error
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { createdAt, updatedAt, versionNumber, ...rest } = variation;
             rest.featureFlag = featureFlagDoc;
@@ -215,7 +212,6 @@ export class FeatureFlagService {
       }
 
       const variationDocToReturn = variationDocs.map((variationDoc) => {
-        // TODO: please review this eslint error
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { featureFlagId, ...rest } = variationDoc as any;
         return { ...rest, featureFlag: variationDoc.featureFlag };
