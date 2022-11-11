@@ -57,6 +57,30 @@ import { AnalyticsRepository } from '../repositories/AnalyticsRepository';
 import { Segment } from '../models/Segment';
 import { ConditionAliasRepository } from '../repositories/ConditionAliasRepository';
 import { In } from 'typeorm';
+
+class SpitTimes {
+  private start = null;
+  private previous = null;
+  private uuid = 'spit' + uuid();
+
+  constructor(private functionName: string) {}
+
+  public spit(label: string) {
+    if (!this.start) {
+      this.start = new Date().getTime();
+      this.previous = new Date().getTime();
+    }
+
+    const now = new Date().getTime();
+    const total = now - this.start;
+    const fromPrev = now - this.previous;
+
+    console.log(`${this.uuid} [${this.functionName}] [${label}]`);
+    console.log(`${this.uuid} [total elapsed: ${total} ms | from previous checkpoint ${fromPrev} ms]`);
+
+    this.previous = new Date().getTime();
+  }
+}
 @Service()
 export class ExperimentAssignmentService {
   constructor(
@@ -99,6 +123,7 @@ export class ExperimentAssignmentService {
     public segmentService: SegmentService,
     public experimentService: ExperimentService
   ) {}
+
   public async markExperimentPoint(
     userId: string,
     site: string,
@@ -108,6 +133,8 @@ export class ExperimentAssignmentService {
     target?: string,
     experimentId?: string
   ): Promise<MonitoredDecisionPoint> {
+    const spitter = new SpitTimes('markExperimentPoint');
+    spitter.spit('BEGIN');
     // find working group for user
     const { logger, userDoc } = requestContext;
 
@@ -121,6 +148,7 @@ export class ExperimentAssignmentService {
     }
 
     const previewUser: PreviewUser = await this.previewUserService.findOne(userId, logger);
+    spitter.spit('after previewuser fetch');
 
     // search decision points in experiments:
     const dpExperiments = await this.decisionPointRepository.find({
@@ -130,6 +158,8 @@ export class ExperimentAssignmentService {
       },
       relations: ['experiment'],
     });
+
+    spitter.spit('after dpExperiments fetch');
 
     const { workingGroup } = userDoc;
 
@@ -151,6 +181,8 @@ export class ExperimentAssignmentService {
       ],
     });
 
+    spitter.spit('after experimentDecisionPoint fetch');
+
     logger.info({
       message: `markExperimentPoint: Target: ${target}, Site: ${site} for User: ${userId}`,
     });
@@ -169,6 +201,8 @@ export class ExperimentAssignmentService {
       }
     }
 
+    spitter.spit('after dpExperiments.filter');
+
     // experiment filtering based on inclusion exclusion criterias:
     let experiments;
     let context;
@@ -184,8 +218,12 @@ export class ExperimentAssignmentService {
       experiments = await this.experimentRepository.getValidExperiments(context);
     }
 
+    spitter.spit('after experiments fetch');
+
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
+    spitter.spit('after groupExperiments filter');
+
     // check for group and working group
     const experimentUser = userDoc;
     if (groupExperiments.length > 0) {
@@ -207,6 +245,7 @@ export class ExperimentAssignmentService {
         );
         const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
         experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
+        spitter.spit('after experiments filter/includes when has NO group');
       } else {
         const experimentWithInvalidGroupOrWorkingGroup = this.experimentsWithInvalidGroupAndWorkingGroup(
           experimentUser,
@@ -219,11 +258,13 @@ export class ExperimentAssignmentService {
         );
         const invalidGroupExperimentIds = invalidGroupExperiment.map((experiment) => experiment.id);
         experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
+        spitter.spit('after experiments filter/includes when has group');
       }
     }
 
     // ============= check if user or group is excluded
     const [userExcluded, groupExcluded] = await this.checkUserOrGroupIsGloballyExcluded(experimentUser);
+    spitter.spit('after user, groupExcluded');
 
     if (userExcluded || groupExcluded.length > 0) {
       // no experiments if the user or group is excluded from the experiment
@@ -232,7 +273,7 @@ export class ExperimentAssignmentService {
 
     const globalFilteredExperiments: Experiment[] = [...experiments];
     const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
-
+    spitter.spit('after user, globalFilteredExperiments.map');
     // no experiment
     if (experimentIds.length === 0) {
       experiments = [];
@@ -240,12 +281,14 @@ export class ExperimentAssignmentService {
 
     // experiment level inclusion and exclusion
     let [filteredExperiments] = await this.experimentLevelExclusionInclusion(globalFilteredExperiments, experimentUser);
+    spitter.spit('after user, experimentLevelExclusionInclusion fetch');
 
     if (filteredExperiments.length) {
       // filter experiments based on decision point
       filteredExperiments = filteredExperiments.filter((exp) => {
         return exp.partitions.some((dp) => dp.site === site && dp.target === target);
       });
+      spitter.spit('after filteredExperiments.filter/some');
 
       if (!experimentId) {
         if (filteredExperiments.length > 1) {
@@ -263,6 +306,7 @@ export class ExperimentAssignmentService {
           user: userId,
         },
       });
+      spitter.spit('after monitoredDoc fetch');
 
       if (experimentDecisionPoint.length && experimentId) {
         const selectedExperimentDP = experimentDecisionPoint.filter((dp) => dp.experiment.id === experimentId);
@@ -303,6 +347,7 @@ export class ExperimentAssignmentService {
               })) ||
               Promise.resolve(undefined),
           ]);
+          spitter.spit('after enrollments and exclusions fetch');
         } catch (error) {
           const err: any = error;
           logger.error(err);
@@ -315,6 +360,7 @@ export class ExperimentAssignmentService {
           !previewUser
         ) {
           const experiment = await this.experimentService.findOne(experimentId);
+          spitter.spit('after experiment findOne fetch');
           await this.updateEnrollmentExclusion(
             userDoc,
             experiment,
@@ -327,9 +373,11 @@ export class ExperimentAssignmentService {
             },
             status
           );
+          spitter.spit('after updateEnrollmentExclusion insert');
           if (experiment.enrollmentCompleteCondition) {
             await this.checkEnrollmentEndingCriteriaForCount(experiment, logger);
           }
+          spitter.spit('after checkEnrollmentEndingCriteriaForCount');
         }
 
         const { conditions, partitions } = experiment;
@@ -338,6 +386,7 @@ export class ExperimentAssignmentService {
           relations: ['parentCondition', 'decisionPoint'],
           where: { parentCondition: In(conditions.map((x) => x.id)), decisionPoint: In(partitions.map((x) => x.id)) },
         });
+        spitter.spit('after aliasConditions fetch');
 
         const matchedCondition = conditions.filter((dbCondition) => dbCondition.conditionCode === condition);
         const matchedAliasCondition = aliasConditions.filter((con) => con.aliasName === condition);
@@ -347,6 +396,8 @@ export class ExperimentAssignmentService {
           logger.error(error);
           throw error;
         }
+
+        spitter.spit('after alias-conditions match filters');
       }
       // adding in monitored experiment point table
       if (!monitoredDocument) {
@@ -363,6 +414,8 @@ export class ExperimentAssignmentService {
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
       monitoredDocument = modifiedMarkResponse(monitoredDocument);
+
+      spitter.spit('after monitored decision point save [END]');
       return monitoredDocument;
     } else {
       let monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
@@ -377,6 +430,7 @@ export class ExperimentAssignmentService {
       // save monitored log document
       await this.monitoredDecisionPointLogRepository.save({ monitoredDecisionPoint: monitoredDocument });
       monitoredDocument = modifiedMarkResponse(monitoredDocument);
+      spitter.spit('after monitored decision point save [END]');
       return monitoredDocument;
     }
   }
@@ -386,6 +440,9 @@ export class ExperimentAssignmentService {
     context: string,
     requestContext: { logger: UpgradeLogger; userDoc: any }
   ): Promise<INewExperimentAssignment[]> {
+    const spitter = new SpitTimes('getAllExperimentConditions');
+
+    spitter.spit('BEGIN');
     const { logger, userDoc } = requestContext;
     logger.info({ message: `getAllExperimentConditions: User: ${userId}` });
 
@@ -393,6 +450,7 @@ export class ExperimentAssignmentService {
       this.previewUserService.findOne(userId, logger),
       this.experimentUserService.getOriginalUserDoc(userId, logger),
     ]);
+    spitter.spit('after preview user fetch');
 
     // throw error if user not defined
     if (!experimentUserDoc || !experimentUserDoc.id) {
@@ -432,10 +490,14 @@ export class ExperimentAssignmentService {
         this.checkUserOrGroupIsGloballyExcluded(experimentUser),
       ]);
     }
+
+    spitter.spit('after experiments fetch');
     experiments = experiments.map((exp) => this.experimentService.formatingConditionAlias(exp));
+    spitter.spit('after experiments.map');
 
     // Experiment has assignment type as GROUP_ASSIGNMENT
     const groupExperiments = experiments.filter(({ assignmentUnit }) => assignmentUnit === ASSIGNMENT_UNIT.GROUP);
+    spitter.spit('after group experiments.filter');
     // check for group and working group
     if (groupExperiments.length > 0) {
       /**
@@ -470,6 +532,7 @@ export class ExperimentAssignmentService {
         experiments = experiments.filter(({ id }) => !invalidGroupExperimentIds.includes(id));
       }
     }
+    spitter.spit('after check already assigned');
 
     // try catch block for experiment assignment error
     try {
@@ -485,6 +548,7 @@ export class ExperimentAssignmentService {
 
       const globalFilteredExperiments: Experiment[] = [...experiments];
       const experimentIds = globalFilteredExperiments.map((experiment) => experiment.id);
+      spitter.spit('after globalFilteredExperiments.map');
 
       // return if no experiment
       if (experimentIds.length === 0) {
@@ -508,6 +572,8 @@ export class ExperimentAssignmentService {
           : Promise.resolve([] as GroupExclusion[]),
       ]);
 
+      spitter.spit('after Promise.all fetch enrollments and exclusions');
+
       let mergedIndividualAssignment = individualEnrollments;
       // add assignments for individual assignments if preview user
       if (previewUser && previewUser.assignments) {
@@ -521,18 +587,25 @@ export class ExperimentAssignmentService {
         mergedIndividualAssignment = [...previewAssignment, ...mergedIndividualAssignment];
       }
 
+      spitter.spit('after previewUser assignments.map and merge');
+
       // experiment level inclusion and exclusion
       let [filteredExperiments] = await this.experimentLevelExclusionInclusion(
         globalFilteredExperiments,
         experimentUser
       );
 
+      spitter.spit('after filteredExperiments fetch');
+
       // Create experiment pool
       const experimentPools = this.createExperimentPool(filteredExperiments);
+      // TODO: remove this!!
       console.log(
         'experimentPools',
         experimentPools.map((exp) => exp.map(({ id }) => id))
       );
+
+      spitter.spit('after createExperimentPool');
 
       // filter pools which are not assigned
       const unassignedPools = experimentPools.filter((pool) => {
@@ -550,12 +623,15 @@ export class ExperimentAssignmentService {
         });
       });
 
+      spitter.spit('after unassignedPools filter/find/some');
+
       // Assign experiments inside the pools
       const random = seedrandom(userId)();
       filteredExperiments = unassignedPools.map((pool) => {
         return pool[Math.floor(random * pool.length)];
       });
-      console.log('Assigned pools', filteredExperiments);
+      // console.log('Assigned pools', filteredExperiments);
+      spitter.spit('after unassignedPools.map');
 
       // Create new filtered experiment
       const alreadyAssignedExperiment = experimentPools.map((pool) => {
@@ -573,7 +649,11 @@ export class ExperimentAssignmentService {
         });
       });
 
+      spitter.spit('after experimentPools.map');
+
       filteredExperiments = alreadyAssignedExperiment.flat().concat(filteredExperiments);
+
+      spitter.spit('after alreadyAssignedExperiment.flat.concat');
 
       // assign remaining experiment
       const experimentAssignment = await Promise.all(
@@ -611,7 +691,9 @@ export class ExperimentAssignmentService {
         })
       );
 
-      return filteredExperiments.reduce((accumulator, experiment, index) => {
+      spitter.spit('after experimentAssignment Promise.all');
+
+      const exp = filteredExperiments.reduce((accumulator, experiment, index) => {
         const assignment = experimentAssignment[index];
         // const { state, logging, name, id } = experiment;
         const { state, logging, name, conditionAliases } = experiment;
@@ -655,6 +737,10 @@ export class ExperimentAssignmentService {
         });
         return assignment ? [...accumulator, ...decisionPoints] : accumulator;
       }, []);
+
+      spitter.spit('[END] after experiments reduce algrorithm');
+
+      return exp;
     } catch (err) {
       const error = err as ErrorWithType;
       error.details = 'Error in assignment';
