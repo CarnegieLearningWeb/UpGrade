@@ -39,7 +39,13 @@ export default async function StartExperiment(): Promise<void> {
 
   // change experiment status to SCHEDULED
   const experimentId = experiments[0].id;
-  await experimentService.updateState(experimentId, EXPERIMENT_STATE.SCHEDULED, user, new UpgradeLogger(), experiments[0].startOn);
+  await experimentService.updateState(
+    experimentId,
+    EXPERIMENT_STATE.SCHEDULED,
+    user,
+    new UpgradeLogger(),
+    experiments[0].startOn
+  );
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -55,7 +61,7 @@ export default async function StartExperiment(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   const startExperiment = await scheduledJobService.getAllStartExperiment(new UpgradeLogger());
 
   expect(startExperiment).toEqual(

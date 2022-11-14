@@ -4,10 +4,7 @@ import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { aliasConditionExperiment } from '../../mockData/experiment/index';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNotDefault,
-} from '../../utils/index';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNotDefault } from '../../utils/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
@@ -23,10 +20,10 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   const experimentObject: any = aliasConditionExperiment;
 
   // remove 1 condition
-  experimentObject.conditions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experimentObject.conditions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
-  experimentObject.conditions.pop()
+  experimentObject.conditions.pop();
 
   const experimentName = experimentObject.partitions[0].target;
   const experimentPoint = experimentObject.partitions[0].site;
@@ -66,25 +63,30 @@ export default async function EnrollmentWithConditionAlias(): Promise<void> {
   );
 
   // get all experiment condition for user 1
-  let experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
+  const experimentConditionAssignments = await getAllExperimentCondition(experimentUsers[0].id, new UpgradeLogger());
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
   expect(experimentConditionAssignments).toHaveLength(3);
   expect(experimentConditionAssignments).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({conditionCode: "ConditionA_W1"})
+        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA_W1' }),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({conditionCode: "ConditionA_W2"})
+        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA_W2' }),
       }),
       expect.objectContaining({
-        assignedCondition: expect.objectContaining({conditionCode: "ConditionA"})
+        assignedCondition: expect.objectContaining({ conditionCode: 'ConditionA' }),
       }),
     ])
   );
 
   // mark experiment point for user 1
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, aliasCondition, new UpgradeLogger());
+  const markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName,
+    experimentPoint,
+    aliasCondition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
-
 }

@@ -20,17 +20,17 @@ export default class ExperimentUserServiceMock {
     return Promise.resolve([]);
   }
 
-  public getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<[]>{
+  public getOriginalUserDoc(userId: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 
-  public find (logger: UpgradeLogger): Promise<[]>{
+  public find(logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
-  public findOne(id: string, logger: UpgradeLogger): Promise<[]>{
+  public findOne(id: string, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
-  public update(id: string, user: ExperimentUser, logger: UpgradeLogger): Promise<[]>{
+  public update(id: string, user: ExperimentUser, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 }

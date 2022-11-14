@@ -19,8 +19,8 @@ export default async function NoPartitionPoint(): Promise<void> {
   const experiments = await experimentService.find(new UpgradeLogger());
 
   // sort conditions
-  experiments[0].conditions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experiments[0].conditions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
 
   expect(experiments[0].conditions).toEqual(
@@ -44,7 +44,7 @@ export default async function NoPartitionPoint(): Promise<void> {
     ])
   );
 
-  // adding new condition 
+  // adding new condition
   const newExperimentDoc = {
     ...experiments[0],
     conditions: [
@@ -57,14 +57,14 @@ export default async function NoPartitionPoint(): Promise<void> {
         twoCharacterId: 'CC',
       },
     ],
-  }
+  };
 
   // delete first condition
-  newExperimentDoc.conditions.shift()
+  newExperimentDoc.conditions.shift();
 
   // order for condition
-  newExperimentDoc.conditions.forEach((condition,index) => {
-    const newCondition = {...condition, order: index + 1};
+  newExperimentDoc.conditions.forEach((condition, index) => {
+    const newCondition = { ...condition, order: index + 1 };
     newExperimentDoc.conditions[index] = newCondition;
   });
 
@@ -89,5 +89,5 @@ export default async function NoPartitionPoint(): Promise<void> {
         order: 2,
       }),
     ])
-  )
+  );
 }

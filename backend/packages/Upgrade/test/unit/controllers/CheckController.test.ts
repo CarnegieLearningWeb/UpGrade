@@ -15,52 +15,37 @@ describe('Check Controller Testing', () => {
     routingUseContainer(Container);
     ormUseContainer(Container);
     classValidatorUseContainer(Container);
-  
+
     // set mock container
     Container.set(CheckService, new CheckServiceMock());
   });
-  
+
   afterAll(() => {
     Container.reset();
   });
-  
-  test('Get request for /api/check/groupAssignment', async done => {
-    await request(app)
-      .get('/api/check/groupAssignment')
-      .expect('Content-Type', /json/)
-      .expect(200);
+
+  test('Get request for /api/check/groupAssignment', async (done) => {
+    await request(app).get('/api/check/groupAssignment').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Get request for /api/check/individualAssignment', async done => {
-    await request(app)
-      .get('/api/check/individualAssignment')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/check/individualAssignment', async (done) => {
+    await request(app).get('/api/check/individualAssignment').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Get request for /api/check/individualExclusion', async done => {
-    await request(app)
-      .get('/api/check/individualExclusion')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/check/individualExclusion', async (done) => {
+    await request(app).get('/api/check/individualExclusion').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Get request for /api/check/groupExclusion', async done => {
-    await request(app)
-      .get('/api/check/groupExclusion')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/check/groupExclusion', async (done) => {
+    await request(app).get('/api/check/groupExclusion').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Get request for /api/check/monitoredExperimentPoint', async done => {
-    await request(app)
-      .get('/api/check/monitoredExperimentPoint')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/check/monitoredExperimentPoint', async (done) => {
+    await request(app).get('/api/check/monitoredExperimentPoint').expect('Content-Type', /json/).expect(200);
     done();
   });
 });

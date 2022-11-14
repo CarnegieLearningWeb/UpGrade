@@ -5,16 +5,15 @@ import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 @Service()
 export default class ErrorServiceMock {
+  public getTotalLogs(filter: SERVER_ERROR): Promise<[]> {
+    return Promise.resolve([]);
+  }
 
-    public getTotalLogs(filter: SERVER_ERROR): Promise<[]> {
-        return Promise.resolve([]);
-    }
+  public getErrorLogs(limit: number, offset: number, filter: SERVER_ERROR): Promise<[]> {
+    return Promise.resolve([]);
+  }
 
-    public getErrorLogs(limit: number, offset: number, filter: SERVER_ERROR): Promise<[]> {
-        return Promise.resolve([]);
-    }
-
-    public create(error: ExperimentError, logger: UpgradeLogger): Promise<[]> {
-        return Promise.resolve([]);
-    }
+  public create(error: ExperimentError, logger: UpgradeLogger): Promise<[]> {
+    return Promise.resolve([]);
+  }
 }

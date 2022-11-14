@@ -64,7 +64,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
 
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
@@ -80,7 +80,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
 
   startExperiment = await scheduledJobService.getAllStartExperiment(new UpgradeLogger());
   expect(startExperiment.length).toEqual(0);
@@ -100,7 +100,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   // change experiment status to Enrollment Complete
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   // fetch experiment
   experiments = await experimentService.find(new UpgradeLogger());
   expect(experiments).toEqual(

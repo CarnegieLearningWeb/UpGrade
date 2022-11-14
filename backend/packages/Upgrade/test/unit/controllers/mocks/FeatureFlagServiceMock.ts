@@ -1,6 +1,9 @@
 import { User } from 'aws-sdk/clients/appstream';
 import { Service } from 'typedi';
-import { IFeatureFlagSearchParams, IFeatureFlagSortParams } from '../../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
+import {
+  IFeatureFlagSearchParams,
+  IFeatureFlagSortParams,
+} from '../../../../src/api/controllers/validators/FeatureFlagsPaginatedParamsValidator';
 import { FeatureFlag } from '../../../../src/api/models/FeatureFlag';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
@@ -15,7 +18,7 @@ export default class FeatureFlagServiceMock {
     logger: UpgradeLogger,
     searchParams?: IFeatureFlagSearchParams,
     sortParams?: IFeatureFlagSortParams
-  ): Promise<[]>{
+  ): Promise<[]> {
     return Promise.resolve([]);
   }
 
@@ -23,7 +26,7 @@ export default class FeatureFlagServiceMock {
     return Promise.resolve([]);
   }
 
-  public updateState(flagId: string, status: boolean, logger: UpgradeLogger): Promise<[]>{
+  public updateState(flagId: string, status: boolean, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
 

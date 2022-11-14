@@ -2,7 +2,6 @@ import { Service } from 'typedi';
 
 @Service()
 export default class ExperimentExcludeServiceMock {
-
   public experimentExcludeUser(): Promise<[]> {
     return Promise.resolve([]);
   }
@@ -15,7 +14,7 @@ export default class ExperimentExcludeServiceMock {
   }
 
   public deleteExperimentUser(): Promise<[]> {
-      return Promise.resolve([]);
+    return Promise.resolve([]);
   }
 
   public deleteExperimentGroup(): Promise<[]> {
@@ -30,6 +29,6 @@ export default class ExperimentExcludeServiceMock {
   }
 
   public getAllExperimentGroups(): Promise<[]> {
-      return Promise.resolve([]);
+    return Promise.resolve([]);
   }
 }

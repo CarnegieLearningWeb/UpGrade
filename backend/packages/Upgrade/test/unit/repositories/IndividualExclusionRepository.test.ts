@@ -1,9 +1,9 @@
-import { DeleteQueryBuilder, InsertQueryBuilder, SelectQueryBuilder } from "typeorm";
+import { DeleteQueryBuilder, InsertQueryBuilder, SelectQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
-import { IndividualExclusionRepository } from "../../../src/api/repositories/IndividualExclusionRepository";
-import { IndividualExclusion } from "../../../src/api/models/IndividualExclusion";
-import { Experiment } from "../../../src/api/models/Experiment";
-import { ExperimentUser } from "../../../src/api/models/ExperimentUser";
+import { IndividualExclusionRepository } from '../../../src/api/repositories/IndividualExclusionRepository';
+import { IndividualExclusion } from '../../../src/api/models/IndividualExclusion';
+import { Experiment } from '../../../src/api/models/Experiment';
+import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 
 let sandbox;
 let createQueryBuilderStub;
@@ -12,7 +12,7 @@ let insertQueryBuilder = new InsertQueryBuilder<IndividualExclusionRepository>(n
 let deleteQueryBuilder = new DeleteQueryBuilder<IndividualExclusionRepository>(null);
 let selectQueryBuilder = new SelectQueryBuilder<IndividualExclusionRepository>(null);
 let repo = new IndividualExclusionRepository();
-const err =  new Error("test error")
+const err = new Error('test error');
 
 let individual = new IndividualExclusion();
 individual.id = 'id1';
@@ -24,213 +24,204 @@ individual.experiment = exp;
 individual.user = user;
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
+  sandbox = sinon.createSandbox();
 
-    insertMock = sandbox.mock(insertQueryBuilder);
-    deleteMock = sandbox.mock(deleteQueryBuilder);
-    selectMock = sandbox.mock(selectQueryBuilder)
+  insertMock = sandbox.mock(insertQueryBuilder);
+  deleteMock = sandbox.mock(deleteQueryBuilder);
+  selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('IndividualExclusionRepository Testing', () => {
+  it('should insert a new individual experiment exclusion', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(insertQueryBuilder);
+    const result = {
+      identifiers: [{ id: individual.id }],
+      generatedMaps: [individual],
+      raw: [individual],
+    };
 
-    it('should insert a new individual experiment exclusion', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        const result =  {
-            identifiers: [ { id: individual.id } ],
-            generatedMaps: [
-                individual
-            ],
-            raw: [
-                individual
-            ]
-          }
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    let res = await repo.saveRawJson([individual]);
 
-        let res = await repo.saveRawJson([individual]);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+    expect(res).toEqual([individual]);
+  });
 
-        expect(res).toEqual([individual])
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(insertQueryBuilder);
 
-    });
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    expect(async () => {
+      await repo.saveRawJson([individual]);
+    }).rejects.toThrow(err);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        expect(async() => {await repo.saveRawJson([individual])}).rejects.toThrow(err);
+  it('should delete a individual experiment exclusion', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
+    const result = {
+      identifiers: [{ id: individual.id }],
+      generatedMaps: [individual],
+      raw: [individual],
+    };
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('whereInIds').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should delete a individual experiment exclusion', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
-        const result =  {
-                identifiers: [ { id: individual.id } ],
-                generatedMaps: [
-                    individual
-                ],
-                raw: [
-                    individual
-                ]
-              }
+    let res = await repo.deleteExperimentsForUserId(individual.id, [exp.id]);
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('whereInIds').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-        let res = await repo.deleteExperimentsForUserId(individual.id, [exp.id]);
+    expect(res).toEqual([individual]);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        expect(res).toEqual([individual])
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('whereInIds').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.deleteExperimentsForUserId(individual.id, [exp.id]);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('whereInIds').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+  it('should determine if user is excluded from experiment', async () => {
+    createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 'count').returns(Promise.resolve(1));
 
-        expect(async() => {await repo.deleteExperimentsForUserId(individual.id, [exp.id])}).rejects.toThrow(err);
+    let res = await repo.isUserExcludedFromExperiment(individual.id, exp.id);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    sinon.assert.calledOnce(createQueryBuilderStub);
 
-    });
+    expect(res).toEqual(true);
+  });
 
-    it('should determine if user is excluded from experiment', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'count').returns(Promise.resolve(1));
+  it('should throw an error when count fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'count')
+      .returns(Promise.reject(err));
 
-        let res = await repo.isUserExcludedFromExperiment(individual.id, exp.id);
+    expect(async () => {
+      await repo.isUserExcludedFromExperiment(individual.id, exp.id);
+    }).rejects.toThrow(err);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+  });
 
-        expect(res).toEqual(true)
+  it('should find excluded users', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-    });
+    const result = {
+      identifiers: [{ id: individual.id }],
+      generatedMaps: [individual],
+      raw: [individual],
+    };
 
-    it('should throw an error when count fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'count').returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
+    selectMock.expects('whereInIds').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-        expect(async() => {await repo.isUserExcludedFromExperiment(individual.id, exp.id)}).rejects.toThrow(err);
+    let res = await repo.findExcluded(individual.id, [exp.id]);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-    });
+    expect(res).toEqual(result);
+  });
 
-    it('should find excluded users', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+  it('should throw an error when find excluded users fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        const result =  {
-                identifiers: [ { id: individual.id } ],
-                generatedMaps: [
-                    individual
-                ],
-                raw: [
-                    individual
-                ]
-              }
+    selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
+    selectMock.expects('whereInIds').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-        selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
-        selectMock.expects('whereInIds').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve(result));
+    expect(async () => {
+      await repo.findExcluded(individual.id, [exp.id]);
+    }).rejects.toThrow(err);
 
-        let res = await repo.findExcluded(individual.id, [exp.id]);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
+  it('should find excluded users by experiment Id', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
+    const result = {
+      identifiers: [{ id: individual.id }],
+      generatedMaps: [individual],
+      raw: [individual],
+    };
 
-        expect(res).toEqual(result)
+    selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-    });
+    let res = await repo.findExcludedByExperimentId(exp.id);
 
-    it('should throw an error when find excluded users fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-        selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
-        selectMock.expects('whereInIds').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
+    expect(res).toEqual(result);
+  });
 
-        expect(async() => {await repo.findExcluded(individual.id, [exp.id])}).rejects.toThrow(err);
+  it('should throw an error when find excluded users by experiment Id fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualExclusionRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-    });
+    selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-    it('should find excluded users by experiment Id', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-        const result =  {
-                identifiers: [ { id: individual.id } ],
-                generatedMaps: [
-                    individual
-                ],
-                raw: [
-                    individual
-                ]
-              }
+    expect(async () => {
+      await repo.findExcludedByExperimentId(exp.id);
+    }).rejects.toThrow(err);
 
-        selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve(result));
-
-        let res = await repo.findExcludedByExperimentId(exp.id);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-        expect(res).toEqual(result)
-
-    });
-
-    it('should throw an error when find excluded users by experiment Id fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualExclusionRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-
-        selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.findExcludedByExperimentId(exp.id)}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-    });
-
-
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
+});
