@@ -61,6 +61,8 @@ Generate ssh key using `ssh-keygen` (if you generate it with a different name, m
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
 
+( Note: You can use `terraform destroy` to terminate and delete all the resources created above. You can also delete one or more specific resources using resource names from `terraform state list` and providing resource names with -target flag `terraform destroy -target RESOURCE_TYPE.NAME1 -target RESOURCE_TYPE.NAME2`)
+
 ### Phase 2 - Environment-specific Resources
 
 - Change Directory - `cd terraform/environments/<envname>`
@@ -69,6 +71,8 @@ Generate ssh key using `ssh-keygen` (if you generate it with a different name, m
 - Run - `terraform init` to initialize the project.
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
+
+( Note: You can use `terraform destroy` to terminate and delete all the resources created above. You can also delete one or more specific resources using resource names from `terraform state list` and providing resource names with -target flag `terraform destroy -target RESOURCE_TYPE.NAME1 -target RESOURCE_TYPE.NAME2`)
 
 **note: If you change the output_path, make sure the path exists. The build script will generate a zip of a serverless function and store it on output_path.**
 
@@ -141,9 +145,8 @@ pushes the `Docker` image to an `ECR` repository, and deploys the `Docker` image
 CLI Upgrade Account - Terraform user credentials:
 <https://vault.carnegielearning.com:8200/ui/vault/secrets/secret/show/providers/aws/cli-upgrade/terraform>
 
-EB URLs:
-<http://development-cli-upgrade-experiment-app.eba-3bk2y9gi.us-east-1.elasticbeanstalk.com>
-<http://staging-cli-upgrade-experiment-app.eba-3bk2y9gi.us-east-1.elasticbeanstalk.com>
+Elastic Beanstalk Backend URL (BSNL):
+<http://bsnl-upgrade-experiment-app.eba-xkparwve.us-east-1.elasticbeanstalk.com/api>
 
 Secrets:
 <https://vault.carnegielearning.com:8200/ui/vault/internal/upgrade-experiment-service/environments/dev>

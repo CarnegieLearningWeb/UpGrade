@@ -120,11 +120,11 @@ variable "SWAGGER_FILE" { default = "api/swagger.json" }
 variable "SWAGGER_PASSWORD" {}
 variable "SWAGGER_ROUTE" { default = "/swagger" }
 variable "SWAGGER_USERNAME" { default = "admin" }
-variable "TOKEN_SECRET_KEY" { }
+variable "TOKEN_SECRET_KEY" {}
 variable "TYPEORM_CONNECTION" { default = "postgres" }
 variable "TYPEORM_ENTITIES" { default = "src/api/models/**/*.ts" }
-variable "TYPEORM_HOST" { default = "localhost" }
-variable "TYPEORM_HOSTNAME_REPLICAS" { default = "['localhost']" }
+variable "TYPEORM_HOST" { default = ""}
+variable "TYPEORM_HOSTNAME_REPLICAS" { default = "" }
 variable "TYPEORM_ENTITIES_DIR" { default = "src/api/models" }
 variable "TYPEORM_FACTORY" { default = "src/database/factories/**/*.factory.ts" }
 variable "TYPEORM_LOGGER" { default = "advanced-console" }
