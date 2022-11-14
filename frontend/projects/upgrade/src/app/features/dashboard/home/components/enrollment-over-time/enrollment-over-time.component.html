@@ -1,5 +1,5 @@
 <div class="enrollment-over-time">
-  <span class="ft-24-700 title">{{ 'home.view-experiment.enrollments-over-time.text' | translate }}</span>
+  <span class="ft-18-700 title">{{ 'home.view-experiment.enrollments-by-decision-point.title.text' | translate }}</span>
   <div class="enrollment-filters">
     <mat-form-field>
       <mat-label class="ft-16-700 dropdown-label">{{
@@ -90,7 +90,7 @@
         <ngx-charts-bar-vertical-stacked
           [scheme]="colorScheme"
           [results]="graphData"
-          [xAxis]="true"
+          [xAxis]="showLabelOfxAxis"
           [yAxis]="true"
           [legend]="false"
           [barPadding]="8"

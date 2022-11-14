@@ -43,6 +43,7 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
   graphData = [];
   copyGraphData: IEnrollmentStatByDate[] = [];
   isInitialLoad = true;
+  showLabelOfxAxis = true;
 
   colors = ['#31e8dd', '#7dc7fb', '#fedb64', '#51ed8f', '#ddaaf8', '#fd9099', '#14c9be'];
   colorScheme = {
@@ -90,6 +91,11 @@ export class EnrollmentOverTimeComponent implements OnChanges, OnInit, OnDestroy
         this.experiment.assignmentUnit === ASSIGNMENT_UNIT.INDIVIDUAL
           ? [INDIVIDUAL]
           : [INDIVIDUAL, this.experiment.group];
+    }
+    if (this.totalMarkedUsers > 0) {
+      this.showLabelOfxAxis = true;
+    } else {
+      this.showLabelOfxAxis = false;
     }
   }
 
