@@ -149,7 +149,6 @@ export class ExperimentUserService {
       throw error;
     }
 
-    const userToReturn: IUserAliases = { userId: userId, aliases: [] };
     const userAliasesDocs = aliasesUserIds.map((aliasId) => {
       const aliasUser: any = {
         id: aliasId,
@@ -172,7 +171,7 @@ export class ExperimentUserService {
       });
       aliasesToReturn = [...aliasesToReturn, ...aliasesUsers.map((alias) => alias.id)];
     }
-    return { ...userToReturn, aliases: aliasesToReturn };
+    return { userId, aliases: aliasesToReturn };
   }
 
   public async updateWorkingGroup(

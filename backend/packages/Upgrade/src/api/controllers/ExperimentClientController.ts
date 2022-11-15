@@ -9,6 +9,7 @@ import {
   InternalServerError,
   Delete,
   Patch,
+  OnUndefined,
 } from 'routing-controllers';
 import { ExperimentService } from '../services/ExperimentService';
 import { ExperimentAssignmentService } from '../services/ExperimentAssignmentService';
@@ -17,7 +18,6 @@ import { ExperimentAssignmentValidator } from './validators/ExperimentAssignment
 import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
-import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
 import {
   IExperimentAssignment,
   ISingleMetric,
@@ -33,14 +33,32 @@ import { FeatureFlag } from '../models/FeatureFlag';
 import { FeatureFlagService } from '../services/FeatureFlagService';
 import { ClientLibMiddleware } from '../middlewares/ClientLibMiddleware';
 import { LogValidator } from './validators/LogValidator';
-import { Log } from '../models/Log';
 import { MetricService } from '../services/MetricService';
 import { ExperimentUserAliasesValidator } from './validators/ExperimentUserAliasesValidator';
 import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
+import { MonitoredDecisionPointLog } from '../models/MonitoredDecisionPointLog';
 
+interface ILog {
+  id: string;
+  uniquifier: string;
+  timeStamp: Date;
+  data: any;
+  metrics: Metric[];
+  user: ExperimentUser;
+}
+
+interface IMonitoredDeciosionPoint {
+  id: string;
+  user: ExperimentUser;
+  site: string;
+  target: string;
+  experimentId: string;
+  condition: string;
+  monitoredPointLogs: MonitoredDecisionPointLog[];
+}
 /**
  * @swagger
  * definitions:
@@ -404,7 +422,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     experiment: MarkExperimentValidator
-  ): Promise<Omit<MonitoredDecisionPoint, 'createdAt' | 'updatedAt' | 'versionNumber'>> {
+  ): Promise<IMonitoredDeciosionPoint> {
     request.logger.info({ message: 'Starting the markExperimentPoint call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(experiment.userId, request.logger);
@@ -581,7 +599,7 @@ export class ExperimentClientController {
     @Req()
     request: AppRequest,
     logData: LogValidator
-  ): Promise<Omit<Log, 'createdAt' | 'updatedAt' | 'versionNumber'>[]> {
+  ): Promise<ILog[]> {
     request.logger.info({ message: 'Starting the log call for user' });
     // getOriginalUserDoc call for alias
     const experimentUserDoc = await this.getUserDoc(logData.userId, request.logger);
@@ -883,11 +901,13 @@ export class ExperimentClientController {
    *            description: DEMO mode is disabled
    */
   @Delete('clearDB')
+  @OnUndefined(204)
   public clearDB(@Req() request: AppRequest) {
     // if DEMO mode is enabled, then clear the database:
-    if (env.app.demo) {
-      this.experimentUserService.clearDB(request.logger);
+    if (!env.app.demo) {
+      return this.experimentUserService.clearDB(request.logger);
+    } else {
+      request.logger.error({ message: 'DEMO mode is disabled. You cannot clear DB.' });
     }
-    request.logger.error({ message: 'DEMO mode is disabled. You cannot clear DB.' });
   }
 }
