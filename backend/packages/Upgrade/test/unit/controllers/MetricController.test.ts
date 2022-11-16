@@ -17,27 +17,22 @@ describe('Metric Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(MetricService, new MetricServiceMock());
-
   });
-  
+
   afterAll(() => {
     Container.reset();
   });
 
-  test('Get request for /api/metric', async done => {
-    await request(app)
-      .get('/api/metric')
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/metric', async (done) => {
+    await request(app).get('/api/metric').set('Accept', 'application/json').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Post request for /api/metric/save', async done => {
+  test('Post request for /api/metric/save', async (done) => {
     await request(app)
       .post('/api/metric/save')
       .send({
-        metricUnit: {}
+        metricUnit: {},
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -45,7 +40,7 @@ describe('Metric Controller Testing', () => {
     done();
   });
 
-  test('Delete request for /api/metric/:key', async done => {
+  test('Delete request for /api/metric/:key', async (done) => {
     await request(app)
       .delete(`/api/metric/${uuid()}`)
       .set('Accept', 'application/json')
@@ -53,5 +48,4 @@ describe('Metric Controller Testing', () => {
       .expect(200);
     done();
   });
-
 });

@@ -1,7 +1,7 @@
-import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, SelectQueryBuilder } from "typeorm";
+import { Connection, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, SelectQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
-import { QueryRepository } from "../../../src/api/repositories/QueryRepository";
-import { Query } from "../../../src/api/models/Query";
+import { QueryRepository } from '../../../src/api/repositories/QueryRepository';
+import { Query } from '../../../src/api/models/Query';
 
 let sandbox;
 let connection;
@@ -12,211 +12,187 @@ let insertQueryBuilder = new InsertQueryBuilder<QueryRepository>(null);
 let deleteQueryBuilder = new DeleteQueryBuilder<QueryRepository>(null);
 let selectQueryBuilder = new SelectQueryBuilder<QueryRepository>(null);
 let repo = new QueryRepository();
-const err =  new Error("test error")
+const err = new Error('test error');
 
 let query = new Query();
 query.id = 'id1';
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    connection = sinon.createStubInstance(Connection)
-    manager = new EntityManager(connection);
+  sandbox = sinon.createSandbox();
+  connection = sinon.createStubInstance(Connection);
+  manager = new EntityManager(connection);
 
-    insertMock = sandbox.mock(insertQueryBuilder);
-    deleteMock = sandbox.mock(deleteQueryBuilder);
-    selectMock = sandbox.mock(selectQueryBuilder);
+  insertMock = sandbox.mock(insertQueryBuilder);
+  deleteMock = sandbox.mock(deleteQueryBuilder);
+  selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('QueryRepository Testing', () => {
+  it('should upsert a new query', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
+    const result = {
+      identifiers: [{ id: query.id }],
+      generatedMaps: [query],
+      raw: [query],
+    };
 
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should upsert a new query', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        const result =  {
-            identifiers: [ { id: query.id } ],
-            generatedMaps: [
-                query
-            ],
-            raw: [
-                query
-            ]
-          }
+    let res = await repo.upsertQuery(query, manager);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        let res = await repo.upsertQuery(query, manager);
+    expect(res).toEqual(query);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        expect(res).toEqual(query)
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.upsertQuery(query, manager);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').thrice().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should delete a query', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
+    const result = {
+      identifiers: [{ id: query.id }],
+      generatedMaps: [query],
+      raw: [query],
+    };
 
-        expect(async() => {await repo.upsertQuery(query, manager)}).rejects.toThrow(err);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    await repo.deleteQuery(query.id, manager);
 
-    it('should delete a query', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
-        const result =  {
-                identifiers: [ { id: query.id } ],
-                generatedMaps: [
-                    query
-                ],
-                raw: [
-                    query
-                ]
-              }
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(deleteQueryBuilder);
 
-        await repo.deleteQuery(query.id, manager);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
-    });
+    expect(async () => {
+      await repo.deleteQuery(query.id, manager);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+  it('should insert several queries', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
+    const result = {
+      identifiers: [{ id: query.id }],
+      generatedMaps: [query],
+      raw: [query],
+    };
 
-        expect(async() => {await repo.deleteQuery(query.id, manager)}).rejects.toThrow(err);
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    let res = await repo.insertQueries([query, query], manager);
 
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-    it('should insert several queries', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        const result =  {
-            identifiers: [ { id: query.id } ],
-            generatedMaps: [
-                query
-            ],
-            raw: [
-                query
-            ]
-          }
+    expect(res).toEqual([query]);
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+  it('should throw an error when inserting queries fail', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        let res = await repo.insertQueries([query, query], manager);
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+    expect(async () => {
+      await repo.insertQueries([query, query], manager);
+    }).rejects.toThrow(err);
 
-        expect(res).toEqual([query])
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-    });
+  it('should check if query exists and return true when query exists', async () => {
+    createQueryBuilderStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const result = [query];
 
-    it('should throw an error when inserting queries fail', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+    let res = await repo.checkIfQueryExists(query.id);
 
-        expect(async() => {await repo.insertQueries([query, query], manager)}).rejects.toThrow(err);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    expect(res).toEqual(true);
+  });
 
-    it('should check if query exists and return true when query exists', async () => {
-        createQueryBuilderStub = sandbox.stub(QueryRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-        const result =  [
-                query
-            ]
+  it('should check if query exists and return false when query does not exist', async () => {
+    createQueryBuilderStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
+    const result = [];
 
-        selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve(result));
+    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.resolve(result));
 
-        let res = await repo.checkIfQueryExists(query.id);
+    let res = await repo.checkIfQueryExists('id2');
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-        expect(res).toEqual(true)
+    expect(res).toEqual(false);
+  });
 
-    });
+  it('should throw an error when finding a query fails', async () => {
+    createQueryBuilderStub = sandbox.stub(QueryRepository.prototype, 'createQueryBuilder').returns(selectQueryBuilder);
 
-    it('should check if query exists and return false when query does not exist', async () => {
-        createQueryBuilderStub = sandbox.stub(QueryRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-        const result =  []
+    selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-        selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve(result));
+    expect(async () => {
+      await repo.checkIfQueryExists(query.id);
+    }).rejects.toThrow(err);
 
-        let res = await repo.checkIfQueryExists('id2');
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-        expect(res).toEqual(false)
-
-    });
-
-    it('should throw an error when finding a query fails', async () => {
-        createQueryBuilderStub = sandbox.stub(QueryRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-
-        selectMock.expects('innerJoinAndSelect').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.checkIfQueryExists(query.id)}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-    });
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
+});

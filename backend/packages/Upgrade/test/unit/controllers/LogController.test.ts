@@ -18,21 +18,20 @@ describe('Log Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(AuditService, new AuditServiceMock());
-    Container.set(ErrorService, new ErrorServiceMock())
-
+    Container.set(ErrorService, new ErrorServiceMock());
   });
-  
+
   afterAll(() => {
     Container.reset();
   });
 
-  test('Post request for /api/audit', async done => {
+  test('Post request for /api/audit', async (done) => {
     await request(app)
       .post('/api/audit')
       .send({
         skip: 0,
         take: 0,
-        filter: "experimentCreated"
+        filter: 'experimentCreated',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -40,18 +39,17 @@ describe('Log Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/error', async done => {
+  test('Post request for /api/error', async (done) => {
     await request(app)
       .post('/api/error')
       .send({
         skip: 0,
         take: 0,
-        filter: "Database not reachable"
+        filter: 'Database not reachable',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
     done();
   });
-
 });

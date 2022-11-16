@@ -7,7 +7,6 @@ import uuid from 'uuid/v4';
 import { QueryService } from '../../../src/api/services/QueryService';
 import QueryServiceMock from './mocks/QueryServiceMock';
 
-
 describe('Query Controller Testing', () => {
   beforeAll(() => {
     configureLogger();
@@ -21,13 +20,11 @@ describe('Query Controller Testing', () => {
     Container.reset();
   });
 
-  test('Post request for /api/query/analyse', async done => {
+  test('Post request for /api/query/analyse', async (done) => {
     await request(app)
       .post('/api/query/analyse')
       .send({
-        queryIds: [
-          uuid()
-        ]
+        queryIds: [uuid()],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

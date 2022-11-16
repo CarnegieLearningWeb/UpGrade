@@ -14,14 +14,8 @@ describe('Version Controller Testing', () => {
     Container.reset();
   });
 
-  test('Get request for /api/version', async done => {
-    await request(app)
-      .get('/api/version')
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/version', async (done) => {
+    await request(app).get('/api/version').set('Accept', 'application/json').expect('Content-Type', /json/).expect(200);
     done();
   });
-
-
 });
