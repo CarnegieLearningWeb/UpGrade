@@ -19,21 +19,21 @@ describe('Feature Flag Controller Testing', () => {
 
     Container.set(FeatureFlagService, new FeatureFlagServiceMock());
   });
-  
+
   afterAll(() => {
     Container.reset();
   });
 
-  test('Post request for /api/flags/paginated', async done => {
+  test('Post request for /api/flags/paginated', async (done) => {
     await request(app)
       .post('/api/flags/paginated')
       .send({
-        skip:0,
-        take:20,
-        sortParams:{
-            key:"name",
-            sortAs:"ASC"
-        }
+        skip: 0,
+        take: 20,
+        sortParams: {
+          key: 'name',
+          sortAs: 'ASC',
+        },
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -41,24 +41,24 @@ describe('Feature Flag Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/flags', async done => {
+  test('Post request for /api/flags', async (done) => {
     await request(app)
       .post('/api/flags')
       .send({
-        id: "string",
-        name: "string",
-        key: "string",
-        description: "string",
-        variationType: "string",
+        id: 'string',
+        name: 'string',
+        key: 'string',
+        description: 'string',
+        variationType: 'string',
         status: true,
         variations: [
           {
-            value: "string",
-            name: "string",
-            description: "string",
-            defaultVariation: "Unknown Type: boolean[]"
-          }
-        ]
+            value: 'string',
+            name: 'string',
+            description: 'string',
+            defaultVariation: 'Unknown Type: boolean[]',
+          },
+        ],
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -66,7 +66,7 @@ describe('Feature Flag Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/flags/status', async done => {
+  test('Post request for /api/flags/status', async (done) => {
     await request(app)
       .post('/api/flags/status')
       .send('flagid')
@@ -76,7 +76,7 @@ describe('Feature Flag Controller Testing', () => {
     done();
   });
 
-  test('Delete request for /api/flags/id', async done => {
+  test('Delete request for /api/flags/id', async (done) => {
     await request(app)
       .delete('/api/flags/' + uuid())
       .set('Accept', 'application/json')
@@ -85,7 +85,7 @@ describe('Feature Flag Controller Testing', () => {
     done();
   });
 
-  test('Put request for /api/flags/id', async done => {
+  test('Put request for /api/flags/id', async (done) => {
     await request(app)
       .put('/api/flags/flagid')
       .send('flagid')
@@ -94,5 +94,4 @@ describe('Feature Flag Controller Testing', () => {
       .expect(200);
     done();
   });
-
 });

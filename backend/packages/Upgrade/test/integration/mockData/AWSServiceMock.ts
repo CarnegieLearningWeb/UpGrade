@@ -16,12 +16,7 @@ export default class AWSServiceMock {
     });
   }
 
-  public sendEmail(
-    fromAddress: string,
-    toAddress: string,
-    text: string,
-    subject: string
-  ): Promise<any> {
+  public sendEmail(fromAddress: string, toAddress: string, text: string, subject: string): Promise<any> {
     return Promise.resolve({});
   }
 }

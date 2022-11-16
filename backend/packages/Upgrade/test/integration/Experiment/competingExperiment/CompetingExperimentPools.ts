@@ -1,15 +1,16 @@
 import { Container } from 'typedi';
-import { competingExperimentAssignmentExperiment1, competingExperimentAssignmentExperiment2, competingExperimentAssignmentExperiment3 } from '../../mockData/experiment';
+import {
+  competingExperimentAssignmentExperiment1,
+  competingExperimentAssignmentExperiment2,
+  competingExperimentAssignmentExperiment3,
+} from '../../mockData/experiment';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
 import { EXPERIMENT_STATE } from 'upgrade_types';
 import { getAllExperimentCondition, markExperimentPoint } from '../../utils';
 import { UserService } from '../../../../src/api/services/UserService';
 import { systemUser } from '../../mockData/user/index';
 import { experimentUsers } from '../../mockData/experimentUsers/index';
-import {
-  checkMarkExperimentPointForUser,
-  checkExperimentAssignedIsNull,
-} from '../../utils/index';
+import { checkMarkExperimentPointForUser, checkExperimentAssignedIsNull } from '../../utils/index';
 import { UpgradeLogger } from '../../../../src/lib/logger/UpgradeLogger';
 
 export default async function CompetingExperiment(): Promise<void> {
@@ -113,6 +114,12 @@ export default async function CompetingExperiment(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(2);
 
   // mark experiment point for user 4
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, target, site, condition, new UpgradeLogger());
+  const markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    target,
+    site,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, target, site, 1);
 }

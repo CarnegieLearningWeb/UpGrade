@@ -20,12 +20,12 @@ export default async function SegmentMemberGroupEnrollment(): Promise<void> {
   const userIn = await userService.upsertUser(systemUser as any, logger);
 
   // create segment
-  let segmentObject = segment;
+  const segmentObject = segment;
   await segmentService.upsertSegment(segmentObject, logger);
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
-	experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
+  experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
 

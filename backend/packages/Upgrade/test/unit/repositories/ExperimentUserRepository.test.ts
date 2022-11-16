@@ -1,7 +1,7 @@
-import { InsertQueryBuilder, UpdateQueryBuilder } from "typeorm";
+import { InsertQueryBuilder, UpdateQueryBuilder } from 'typeorm';
 import * as sinon from 'sinon';
-import { ExperimentUserRepository } from "../../../src/api/repositories/ExperimentUserRepository";
-import { ExperimentUser } from "../../../src/api/models/ExperimentUser";
+import { ExperimentUserRepository } from '../../../src/api/repositories/ExperimentUserRepository';
+import { ExperimentUser } from '../../../src/api/models/ExperimentUser';
 
 let sandbox;
 let createQueryBuilderStub;
@@ -9,114 +9,110 @@ let insertMock, updateMock;
 let insertQueryBuilder = new InsertQueryBuilder<ExperimentUserRepository>(null);
 let updateQueryBuilder = new UpdateQueryBuilder<ExperimentUserRepository>(null);
 let repo = new ExperimentUserRepository();
-const err =  new Error("test error")
+const err = new Error('test error');
 
 let user = new ExperimentUser();
 user.id = 'user1';
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
+  sandbox = sinon.createSandbox();
 
-    insertMock = sandbox.mock(insertQueryBuilder);
-    updateMock = sandbox.mock(updateQueryBuilder);
+  insertMock = sandbox.mock(insertQueryBuilder);
+  updateMock = sandbox.mock(updateQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('ExperimentUserRepository Testing', () => {
+  it('should insert a new experiment user', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
+      .returns(insertQueryBuilder);
+    const result = {
+      identifiers: [{ id: user.id }],
+      generatedMaps: [user],
+      raw: [user],
+    };
 
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should insert a new experiment user', async () => {
-        createQueryBuilderStub = sandbox.stub(ExperimentUserRepository.prototype, 
-            'createQueryBuilder').returns(insertQueryBuilder);
-        const result =  {
-            identifiers: [ { id: user.id } ],
-            generatedMaps: [
-                user
-            ],
-            raw: [
-                user
-            ]
-          }
+    let res = await repo.saveRawJson(user);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        let res = await repo.saveRawJson(user);
+    expect(res).toEqual([user]);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
+      .returns(insertQueryBuilder);
 
-        expect(res).toEqual([user])
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('setParameter').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.saveRawJson(user);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(ExperimentUserRepository.prototype, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('setParameter').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should update working group', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
+      .returns(updateQueryBuilder);
+    const result = {
+      identifiers: [{ id: user.id }],
+      generatedMaps: [user],
+      raw: [user],
+    };
 
-        expect(async() => {await repo.saveRawJson(user)}).rejects.toThrow(err);
+    updateMock.expects('update').once().returns(updateQueryBuilder);
+    updateMock.expects('set').once().returns(updateQueryBuilder);
+    updateMock.expects('where').once().returns(updateQueryBuilder);
+    updateMock.expects('returning').once().returns(updateQueryBuilder);
+    updateMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    let res = await repo.updateWorkingGroup(user.id, 'group1');
 
-    it('should update working group', async () => {
-        createQueryBuilderStub = sandbox.stub(ExperimentUserRepository.prototype, 
-            'createQueryBuilder').returns(updateQueryBuilder);
-        const result =  {
-                identifiers: [ { id: user.id } ],
-                generatedMaps: [
-                    user
-                ],
-                raw: [
-                    user
-                ]
-              }
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    updateMock.verify();
 
-        updateMock.expects('update').once().returns(updateQueryBuilder);
-        updateMock.expects('set').once().returns(updateQueryBuilder);
-        updateMock.expects('where').once().returns(updateQueryBuilder);
-        updateMock.expects('returning').once().returns(updateQueryBuilder);
-        updateMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(res).toEqual(user);
+  });
 
-        let res = await repo.updateWorkingGroup(user.id, 'group1');
+  it('should throw an error when update working group fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(ExperimentUserRepository.prototype, 'createQueryBuilder')
+      .returns(updateQueryBuilder);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        updateMock.verify();
+    updateMock.expects('update').once().returns(updateQueryBuilder);
+    updateMock.expects('set').once().returns(updateQueryBuilder);
+    updateMock.expects('where').once().returns(updateQueryBuilder);
+    updateMock.expects('returning').once().returns(updateQueryBuilder);
+    updateMock.expects('execute').once().returns(Promise.reject(err));
 
-        expect(res).toEqual(user)
-    });
+    expect(async () => {
+      await repo.updateWorkingGroup(user.id, 'group1');
+    }).rejects.toThrow(err);
 
-    it('should throw an error when update working group fails', async () => {
-        createQueryBuilderStub = sandbox.stub(ExperimentUserRepository.prototype, 
-            'createQueryBuilder').returns(updateQueryBuilder);
-
-        updateMock.expects('update').once().returns(updateQueryBuilder);
-        updateMock.expects('set').once().returns(updateQueryBuilder);
-        updateMock.expects('where').once().returns(updateQueryBuilder);
-        updateMock.expects('returning').once().returns(updateQueryBuilder);
-        updateMock.expects('execute').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.updateWorkingGroup(user.id, 'group1')}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        updateMock.verify();
-    });
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    updateMock.verify();
+  });
+});

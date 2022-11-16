@@ -33,7 +33,7 @@ export default async function NoExperiment(): Promise<void> {
     experimentPoint,
     condition,
     new UpgradeLogger(),
-    experimentID,
+    experimentID
   );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 

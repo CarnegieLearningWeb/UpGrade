@@ -19,7 +19,12 @@ export default class ExperimentAssignmentServieMock {
     return Promise.resolve([]);
   }
 
-  public clientFailedExperimentPoint(reasone: string,  experimentPoint: string, userId: string, experimentId: string): Promise<[]> {
+  public clientFailedExperimentPoint(
+    reasone: string,
+    experimentPoint: string,
+    userId: string,
+    experimentId: string
+  ): Promise<[]> {
     return Promise.resolve([]);
   }
 }

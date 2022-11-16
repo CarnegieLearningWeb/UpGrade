@@ -30,7 +30,7 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
       }),
     ])
   );
-  
+
   // edited conditions
   const editedConditions = experiments[0].conditions.map((condition, index) => {
     return {
@@ -69,7 +69,7 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
         name: 'Condition C',
         description: 'Condition C',
         conditionCode: 'Condition C',
-        assignmentWeight: 39.50,
+        assignmentWeight: 39.5,
         twoCharacterId: 'CC',
       },
     ],
@@ -99,14 +99,17 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
         name: 'Condition C',
         description: 'Condition C',
         conditionCode: 'Condition C',
-        assignmentWeight: 39.50,
+        assignmentWeight: 39.5,
         twoCharacterId: 'CC',
       }),
     ])
   );
 
   // get all experimental conditions
-  const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id, new UpgradeLogger());
+  const experimentCondition = await experimentService.getExperimentalConditions(
+    updatedExperimentDoc.id,
+    new UpgradeLogger()
+  );
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
 
   // check the decision points
@@ -130,7 +133,10 @@ export default async function DecimalAssignmentWeight(): Promise<void> {
   );
 
   // get all experimental decision points
-  const experimentDecisionPoint = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
+  const experimentDecisionPoint = await experimentService.getExperimentPartitions(
+    updatedExperimentDoc.id,
+    new UpgradeLogger()
+  );
   expect(experimentDecisionPoint.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // delete the experiment

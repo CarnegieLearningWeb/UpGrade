@@ -67,9 +67,9 @@ export const SegmentMemberUserEnrollment = async () => {
 export const SegmentMemberGroupEnrollment = async () => {
   await initialChecks();
   await TestCase5();
-}
+};
 
 export const SubSegmentEnrollment = async () => {
   await initialChecks();
   await TestCase6();
-}
+};
