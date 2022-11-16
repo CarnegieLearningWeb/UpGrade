@@ -17,7 +17,7 @@ if (window.self !== window.top) {
       case 'profile-tab':
         return document.querySelector('div.user a.profile');
       case 'signout-button':
-        return document.querySelector('div.mat-list-item-content a.logout-link');
+        return document.querySelector('span.mat-list-item-content a.logout-link');
       case 'import-experiment-button':
         return document.querySelectorAll('mat-card.mat-card button.mat-flat-button')[0];
       case 'import-experiment-choose-file-button':
@@ -39,7 +39,7 @@ if (window.self !== window.top) {
       case 'experiment-detail-status':
         return document.querySelectorAll('div.section-data span.section-data-value--editable')[0];
       case 'experiment-detail-status-new-status-select':
-        return document.querySelectorAll('div.mat-form-field-wrapper div.mat-form-field-flex')[5];
+        return document.querySelectorAll('div.mat-form-field-wrapper div.mat-form-field-flex')[1];
       case 'experiment-detail-status-new-status-select-preview':
         return document.querySelectorAll('div.mat-select-panel mat-option.mat-option')[0];
       case 'experiment-detail-status-new-status-select-scheduled':
@@ -49,9 +49,9 @@ if (window.self !== window.top) {
       case 'experiment-detail-status-new-status-select-cancelled':
         return document.querySelectorAll('div.mat-select-panel mat-option.mat-option')[3];
       case 'experiment-detail-status-close-button':
-        return document.querySelectorAll('div.experiment-status button.modal-btn')[0];
+        return document.querySelectorAll('div.button-container button.mat-raised-button')[0];
       case 'experiment-detail-status-save-button':
-        return document.querySelectorAll('div.experiment-status button.modal-btn')[1];
+        return document.querySelectorAll('div.button-container button.mat-raised-button')[1];
       case 'experiment-detail-post-experiment-rule':
         return document.querySelectorAll('div.section-data span.section-data-value--editable')[1];
       case 'experiment-detail-enrollment-time-logs':
