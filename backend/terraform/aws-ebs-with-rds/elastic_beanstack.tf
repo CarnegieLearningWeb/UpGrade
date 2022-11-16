@@ -397,6 +397,11 @@ resource "aws_elastic_beanstalk_environment" "upgrade-app-prod" {
     name      = "TYPEORM_SYNCHRONIZE"
     value     = var.TYPEORM_SYNCHRONIZE
   }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "NODE_OPTIONS"
+    value     = var.NODE_OPTIONS   
+  }
 }
 
 output "rds-endpoints" {
