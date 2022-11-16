@@ -61,8 +61,7 @@ export default class ExperimentServieMock {
     return Promise.resolve([]);
   }
 
-  public  exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<[]> {
+  public exportExperiment(experimentId: string, user: User, logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
-
 }

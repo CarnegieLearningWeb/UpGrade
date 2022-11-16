@@ -61,7 +61,12 @@ import { QueryCRUD } from './Experiment/query';
 import { StatsDetailIndividualExperiment, StatsDetailGroupExperiment } from './ExperimentStats/index';
 import { GroupAndParticipants, ParticipantsOnly } from './EndingCriteria';
 import DecimalAssignmentWeight from './Experiment/createWithDecimal/DecimalAssigmentWeight';
-import { ConditionOrder, PartitionOrder, ConditionAlias, EnrollmentWithConditionAlias } from './Experiment/conditionAndPartition';
+import {
+  ConditionOrder,
+  PartitionOrder,
+  ConditionAlias,
+  EnrollmentWithConditionAlias,
+} from './Experiment/conditionAndPartition';
 import { UserNotDefined } from './UserNotDefined';
 import {
   SegmentCreate,
@@ -69,7 +74,7 @@ import {
   SegmentUpdate,
   SegmentMemberGroupEnrollment,
   SegmentMemberUserEnrollment,
-  SubSegmentEnrollment
+  SubSegmentEnrollment,
 } from './Segment/index';
 import { UpgradeLogger } from '../../src/lib/logger/UpgradeLogger';
 import { CompetingExperiment } from './Experiment/competingExperiment';
@@ -405,20 +410,20 @@ describe('Integration Tests', () => {
     done();
   });
 
-   // test('Individual Experiment Enrollment Code', async (done) => {
-   //   await IndividualExperimentEnrollmentCode();
-   //   done();
-   // });
+  // test('Individual Experiment Enrollment Code', async (done) => {
+  //   await IndividualExperimentEnrollmentCode();
+  //   done();
+  // });
 
-   // test('Group Experiment Enrollment Code', async (done) => {
-   //   await GroupExperimentEnrollmentCode();
-   //   done();
-   // });
+  // test('Group Experiment Enrollment Code', async (done) => {
+  //   await GroupExperimentEnrollmentCode();
+  //   done();
+  // });
 
-   // test('Experiment Experiment Enrollment Code', async (done) => {
-   //   await ExperimentExperimentEnrollmentCode();
-   //   done();
-   // });
+  // test('Experiment Experiment Enrollment Code', async (done) => {
+  //   await ExperimentExperimentEnrollmentCode();
+  //   done();
+  // });
 
   test('Experiment Context Assignment', async (done) => {
     await ExperimentContextAssignments();

@@ -23,13 +23,13 @@ export default async function testCase(): Promise<void> {
   const experiments = await experimentService.find(new UpgradeLogger());
 
   // sort conditions
-  experiments[0].conditions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experiments[0].conditions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
 
   // sort decision points
-  experiments[0].partitions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experiments[0].partitions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
 
   expect(experiments).toEqual(
@@ -93,8 +93,8 @@ export default async function testCase(): Promise<void> {
   };
 
   // order for condition
-  newExperimentDoc.conditions.forEach((condition,index) => {
-    const newCondition = {...condition, order: index + 1};
+  newExperimentDoc.conditions.forEach((condition, index) => {
+    const newCondition = { ...condition, order: index + 1 };
     newExperimentDoc.conditions[index] = newCondition;
   });
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());

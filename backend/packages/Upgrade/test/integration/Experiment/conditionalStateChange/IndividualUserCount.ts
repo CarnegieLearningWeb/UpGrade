@@ -50,7 +50,13 @@ export default async function IndividualUserCount(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to Enrolling
@@ -76,7 +82,13 @@ export default async function IndividualUserCount(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[1].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[1].id, experimentName, experimentPoint);
 
   experiments = await experimentService.find(new UpgradeLogger());
@@ -97,7 +109,13 @@ export default async function IndividualUserCount(): Promise<void> {
   checkExperimentAssignedIsNull(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[0].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 3
@@ -105,7 +123,13 @@ export default async function IndividualUserCount(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 3
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[2].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[2].id, experimentName, experimentPoint);
 
   experiments = await experimentService.find(new UpgradeLogger());
@@ -126,7 +150,13 @@ export default async function IndividualUserCount(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 4
-  markedExperimentPoint = await markExperimentPoint(experimentUsers[3].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    experimentUsers[3].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, experimentUsers[3].id, experimentName, experimentPoint);
 
   experiments = await experimentService.find(new UpgradeLogger());
