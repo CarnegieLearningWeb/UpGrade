@@ -39,9 +39,13 @@ export default async function ExperimentEndDate(): Promise<void> {
   await experimentService.updateState(experiment.id, experiment.state, user, new UpgradeLogger());
 
   experiments = await experimentService.find(new UpgradeLogger());
-  
+
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
-  expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE).map((timelogs) => timelogs.timeLog)).toHaveLength(1);
+  expect(
+    experiments[0].stateTimeLogs
+      .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE)
+      .map((timelogs) => timelogs.timeLog)
+  ).toHaveLength(1);
 
   await experimentService.delete(experiment.id, user, new UpgradeLogger());
 
@@ -56,7 +60,11 @@ export default async function ExperimentEndDate(): Promise<void> {
   experiments = await experimentService.find(new UpgradeLogger());
 
   expect(experiments[0].stateTimeLogs).toHaveLength(2);
-  expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE).map((timelogs) => timelogs.timeLog)).toHaveLength(1);
+  expect(
+    experiments[0].stateTimeLogs
+      .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE)
+      .map((timelogs) => timelogs.timeLog)
+  ).toHaveLength(1);
 
   // with second entry
   await experimentService.updateState(experiment.id, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
@@ -64,5 +72,9 @@ export default async function ExperimentEndDate(): Promise<void> {
   experiments = await experimentService.find(new UpgradeLogger());
 
   expect(experiments[0].stateTimeLogs).toHaveLength(4);
-  expect(experiments[0].stateTimeLogs.filter(state => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE).map((timelogs) => timelogs.timeLog)).toHaveLength(2);
+  expect(
+    experiments[0].stateTimeLogs
+      .filter((state) => state.toState === EXPERIMENT_STATE.ENROLLMENT_COMPLETE)
+      .map((timelogs) => timelogs.timeLog)
+  ).toHaveLength(2);
 }

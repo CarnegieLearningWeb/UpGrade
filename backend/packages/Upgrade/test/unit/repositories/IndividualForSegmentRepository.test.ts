@@ -1,8 +1,15 @@
-import { Connection, ConnectionManager, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, SelectQueryBuilder } from "typeorm";
+import {
+  Connection,
+  ConnectionManager,
+  DeleteQueryBuilder,
+  EntityManager,
+  InsertQueryBuilder,
+  SelectQueryBuilder,
+} from 'typeorm';
 import * as sinon from 'sinon';
-import { IndividualForSegmentRepository } from "../../../src/api/repositories/IndividualForSegmentRepository";
-import { UpgradeLogger } from "../../../src/lib/logger/UpgradeLogger";
-import { IndividualForSegment } from "../../../src/api/models/IndividualForSegment";
+import { IndividualForSegmentRepository } from '../../../src/api/repositories/IndividualForSegmentRepository';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { IndividualForSegment } from '../../../src/api/models/IndividualForSegment';
 
 let sandbox;
 let connection;
@@ -13,184 +20,187 @@ let insertQueryBuilder = new InsertQueryBuilder<IndividualForSegmentRepository>(
 let deleteQueryBuilder = new DeleteQueryBuilder<IndividualForSegmentRepository>(null);
 let selectQueryBuilder = new SelectQueryBuilder<IndividualForSegmentRepository>(null);
 let repo = new IndividualForSegmentRepository();
-const err =  new Error("test error")
-let logger = new UpgradeLogger()
+const err = new Error('test error');
+let logger = new UpgradeLogger();
 
 let segment = new IndividualForSegment();
 segment.userId = 'id1';
 
-const result =  {
-    identifiers: [ { id: segment.userId } ],
-    generatedMaps: [
-        segment
-    ],
-    raw: [
-        segment
-    ]
-  }
+const result = {
+  identifiers: [{ id: segment.userId }],
+  generatedMaps: [segment],
+  raw: [segment],
+};
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    
-    const repocallback = sinon.stub()
-    repocallback.returns(IndividualForSegmentRepository.prototype)
+  sandbox = sinon.createSandbox();
 
-    sandbox.stub(ConnectionManager.prototype, 'get').returns({
-        getRepository: repocallback
-    } as unknown as Connection)
+  const repocallback = sinon.stub();
+  repocallback.returns(IndividualForSegmentRepository.prototype);
 
-    connection = sinon.createStubInstance(Connection)
-    manager = new EntityManager(connection);
-    
-    insertMock = sandbox.mock(insertQueryBuilder);
-    deleteMock = sandbox.mock(deleteQueryBuilder);
-    selectMock = sandbox.mock(selectQueryBuilder);
+  sandbox.stub(ConnectionManager.prototype, 'get').returns({
+    getRepository: repocallback,
+  } as unknown as Connection);
+
+  connection = sinon.createStubInstance(Connection);
+  manager = new EntityManager(connection);
+
+  insertMock = sandbox.mock(insertQueryBuilder);
+  deleteMock = sandbox.mock(deleteQueryBuilder);
+  selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('IndividualForSegmentRepository Testing', () => {
+  it('should insert a new individual for segment', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should insert a new individual for segment', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    let res = await repo.insertIndividualForSegment([segment], manager, logger);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        let res = await repo.insertIndividualForSegment([segment], manager, logger);
+    expect(res).toEqual([segment]);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        expect(res).toEqual([segment])
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.insertIndividualForSegment([segment], manager, logger);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should delete an individual segment', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        expect(async() => {await repo.insertIndividualForSegment([segment], manager, logger)}).rejects.toThrow(err);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    let res = await repo.deleteIndividualForSegment('segment1', segment.userId, logger);
 
-    it('should delete an individual segment', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(res).toEqual([segment]);
+  });
 
-        let res = await repo.deleteIndividualForSegment('segment1', segment.userId, logger);
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        expect(res).toEqual([segment])
-    });
+    expect(async () => {
+      await repo.deleteIndividualForSegment('segment1', segment.userId, logger);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+  it('should delete an individual for segment by id', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        expect(async() => {await repo.deleteIndividualForSegment('segment1', segment.userId, logger)}).rejects.toThrow(err);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    let res = await repo.deleteIndividualForSegmentById(segment.userId, logger);
 
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-    it('should delete an individual for segment by id', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    expect(res).toEqual([segment]);
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        let res = await repo.deleteIndividualForSegmentById(segment.userId, logger);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    expect(async () => {
+      await repo.deleteIndividualForSegmentById(segment.userId, logger);
+    }).rejects.toThrow(err);
 
-        expect(res).toEqual([segment])
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+  it('should get individual for segment by id', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock
+      .expects('getMany')
+      .once()
+      .returns(Promise.resolve([segment, segment]));
 
-        expect(async() => {await repo.deleteIndividualForSegmentById(segment.userId, logger)}).rejects.toThrow(err);
+    let res = await repo.getIndividualForSegmentById(segment.userId, logger);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-    });
+    expect(res).toEqual([segment, segment]);
+  });
 
-    it('should get individual for segment by id', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+  it('should throw an error when get individual for segment by id fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(IndividualForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve([segment, segment]));
+    selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-        let res = await repo.getIndividualForSegmentById(segment.userId, logger);
+    expect(async () => {
+      await repo.getIndividualForSegmentById(segment.userId, logger);
+    }).rejects.toThrow(err);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-        expect(res).toEqual([segment, segment])
-    });
-
-    it('should throw an error when get individual for segment by id fails', async () => {
-        createQueryBuilderStub = sandbox.stub(IndividualForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-
-        selectMock.expects('leftJoinAndSelect').twice().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.getIndividualForSegmentById(segment.userId, logger)}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-    });
-
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
+});

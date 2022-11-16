@@ -22,13 +22,13 @@ export default async function UpdateExperiment(): Promise<void> {
   let experiments = await experimentService.find(new UpgradeLogger());
 
   // sort conditions
-  experiments[0].conditions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experiments[0].conditions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
 
   // sort decision points
-  experiments[0].partitions.sort((a,b) => {
-    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0
+  experiments[0].partitions.sort((a, b) => {
+    return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
   });
 
   expect(experiments).toEqual(
@@ -96,20 +96,20 @@ export default async function UpdateExperiment(): Promise<void> {
   };
 
   // order for condition
-  newExperimentDoc.conditions.forEach((condition,index) => {
-    const newCondition = {...condition, order: index + 1};
+  newExperimentDoc.conditions.forEach((condition, index) => {
+    const newCondition = { ...condition, order: index + 1 };
     newExperimentDoc.conditions[index] = newCondition;
   });
 
   // order for decision points
-  newExperimentDoc.partitions.forEach((decisionPoint,index) => {    
-    const newCondition = {...decisionPoint, order: index + 1};
+  newExperimentDoc.partitions.forEach((decisionPoint, index) => {
+    const newCondition = { ...decisionPoint, order: index + 1 };
     newExperimentDoc.partitions[index] = newCondition;
   });
 
   const updatedExperimentDoc = await experimentService.update(newExperimentDoc as any, user, new UpgradeLogger());
   // check the conditions
-   expect(updatedExperimentDoc.conditions).toEqual(
+  expect(updatedExperimentDoc.conditions).toEqual(
     expect.arrayContaining([
       ...editedConditions.map((condition) => {
         return expect.objectContaining({
@@ -131,7 +131,10 @@ export default async function UpdateExperiment(): Promise<void> {
   );
 
   // get all experimental conditions
-  const experimentCondition = await experimentService.getExperimentalConditions(updatedExperimentDoc.id, new UpgradeLogger());
+  const experimentCondition = await experimentService.getExperimentalConditions(
+    updatedExperimentDoc.id,
+    new UpgradeLogger()
+  );
   expect(experimentCondition.length).toEqual(updatedExperimentDoc.conditions.length);
 
   // check the decision points
@@ -156,11 +159,19 @@ export default async function UpdateExperiment(): Promise<void> {
   );
 
   // get all experimental decision points
-  const experimentDecisionPoints = await experimentService.getExperimentPartitions(updatedExperimentDoc.id, new UpgradeLogger());
+  const experimentDecisionPoints = await experimentService.getExperimentPartitions(
+    updatedExperimentDoc.id,
+    new UpgradeLogger()
+  );
   console.log(experimentDecisionPoints);
   expect(experimentDecisionPoints.length).toEqual(updatedExperimentDoc.partitions.length);
 
   // update the experiment state
-  await experimentService.updateState(updatedExperimentDoc.id, EXPERIMENT_STATE.ENROLLMENT_COMPLETE, user, new UpgradeLogger());
+  await experimentService.updateState(
+    updatedExperimentDoc.id,
+    EXPERIMENT_STATE.ENROLLMENT_COMPLETE,
+    user,
+    new UpgradeLogger()
+  );
   experiments = await experimentService.find(new UpgradeLogger());
 }

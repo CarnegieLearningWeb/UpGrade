@@ -9,7 +9,7 @@ export default async function SegmentCreate(): Promise<void> {
 
   // create segment
 
-  let segmentObject = segment;
+  const segmentObject = segment;
 
   await segmentService.upsertSegment(segmentObject, new UpgradeLogger());
   let segments = await segmentService.getAllSegments(new UpgradeLogger());
@@ -33,21 +33,21 @@ export default async function SegmentCreate(): Promise<void> {
         type: segmentObject.type,
         individualForSegment: expect.arrayContaining([
           expect.objectContaining({
-            userId: segmentObject.userIds[0]
+            userId: segmentObject.userIds[0],
           }),
           expect.objectContaining({
-            userId: segmentObject.userIds[1]
-          })
+            userId: segmentObject.userIds[1],
+          }),
         ]),
         groupForSegment: expect.arrayContaining([
           expect.objectContaining({
             groupId: segmentObject.groups[0].groupId,
-            type: segmentObject.groups[0].type
+            type: segmentObject.groups[0].type,
           }),
           expect.objectContaining({
             groupId: segmentObject.groups[1].groupId,
-            type: segmentObject.groups[1].type
-          })
+            type: segmentObject.groups[1].type,
+          }),
         ]),
       }),
     ])
@@ -56,7 +56,7 @@ export default async function SegmentCreate(): Promise<void> {
   // create segment2
   // making segment1 as child/subSegment of segment2
 
-  let segmentObject2 = segmentSecond;
+  const segmentObject2 = segmentSecond;
 
   await segmentService.upsertSegment(segmentObject2, new UpgradeLogger());
   segments = await segmentService.getAllSegments(new UpgradeLogger());
@@ -79,21 +79,21 @@ export default async function SegmentCreate(): Promise<void> {
         type: segmentObject.type,
         individualForSegment: expect.arrayContaining([
           expect.objectContaining({
-            userId: segmentObject.userIds[0]
+            userId: segmentObject.userIds[0],
           }),
           expect.objectContaining({
-            userId: segmentObject.userIds[1]
-          })
+            userId: segmentObject.userIds[1],
+          }),
         ]),
         groupForSegment: expect.arrayContaining([
           expect.objectContaining({
             groupId: segmentObject.groups[0].groupId,
-            type: segmentObject.groups[0].type
+            type: segmentObject.groups[0].type,
           }),
           expect.objectContaining({
             groupId: segmentObject.groups[1].groupId,
-            type: segmentObject.groups[1].type
-          })
+            type: segmentObject.groups[1].type,
+          }),
         ]),
       }),
       expect.objectContaining({
@@ -103,27 +103,27 @@ export default async function SegmentCreate(): Promise<void> {
         type: segmentObject2.type,
         individualForSegment: expect.arrayContaining([
           expect.objectContaining({
-            userId: segmentObject2.userIds[0]
+            userId: segmentObject2.userIds[0],
           }),
           expect.objectContaining({
-            userId: segmentObject2.userIds[1]
-          })
+            userId: segmentObject2.userIds[1],
+          }),
         ]),
         groupForSegment: expect.arrayContaining([
           expect.objectContaining({
             groupId: segmentObject2.groups[0].groupId,
-            type: segmentObject2.groups[0].type
+            type: segmentObject2.groups[0].type,
           }),
           expect.objectContaining({
             groupId: segmentObject2.groups[1].groupId,
-            type: segmentObject2.groups[1].type
-          })
+            type: segmentObject2.groups[1].type,
+          }),
         ]),
         subSegments: expect.arrayContaining([
           expect.objectContaining({
-            id: segmentObject.id
+            id: segmentObject.id,
           }),
-        ])
+        ]),
       }),
     ])
   );

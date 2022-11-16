@@ -2,8 +2,8 @@ import { Service } from 'typedi';
 
 @Service()
 export default class CheckServiceMock {
-    public getAllGroupAssignments(): Promise<[]> {
-        return Promise.resolve([]);
+  public getAllGroupAssignments(): Promise<[]> {
+    return Promise.resolve([]);
   }
 
   public getAllIndividualAssignment(): Promise<[]> {
@@ -21,5 +21,4 @@ export default class CheckServiceMock {
   public getAllMarkedExperimentPoints(): Promise<[]> {
     return Promise.resolve([]);
   }
-
 }

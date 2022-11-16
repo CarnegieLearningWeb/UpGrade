@@ -16,23 +16,22 @@ describe('Login Controller Testing', () => {
     classValidatorUseContainer(Container);
 
     Container.set(UserService, new UserServiceMock());
-
   });
-  
+
   afterAll(() => {
     Container.reset();
   });
 
-  test('Post request for /api/login/user when user exists', async done => {
+  test('Post request for /api/login/user when user exists', async (done) => {
     await request(app)
       .post('/api/login/user')
       .send({
-        id: "string",
-        email: "string",
-        firstName: "string",
-        lastName: "string",
-        imageUrl: "string",
-        role: "string"
+        id: 'string',
+        email: 'string',
+        firstName: 'string',
+        lastName: 'string',
+        imageUrl: 'string',
+        role: 'string',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
@@ -40,20 +39,19 @@ describe('Login Controller Testing', () => {
     done();
   });
 
-  test('Post request for /api/login/user when user does not exist', async done => {
+  test('Post request for /api/login/user when user does not exist', async (done) => {
     await request(app)
       .post('/api/login/user')
       .send({
-        id: "string",
-        email: "string",
-        firstName: "string",
-        lastName: "string",
-        imageUrl: "string"
+        id: 'string',
+        email: 'string',
+        firstName: 'string',
+        lastName: 'string',
+        imageUrl: 'string',
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200);
     done();
   });
-
 });

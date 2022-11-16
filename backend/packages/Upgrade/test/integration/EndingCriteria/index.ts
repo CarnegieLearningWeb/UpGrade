@@ -46,6 +46,6 @@ export const GroupAndParticipants = async () => {
 };
 
 export const ParticipantsOnly = async () => {
-    await initialChecks();
-    await TestCase2();
-  };
+  await initialChecks();
+  await TestCase2();
+};

@@ -20,21 +20,21 @@ export default async function SubSegmentEnrollment(): Promise<void> {
   const userIn = await userService.upsertUser(systemUser as any, logger);
 
   // create segment
-  let segmentObject = segment;
+  const segmentObject = segment;
   await segmentService.upsertSegment(segmentObject, logger);
 
   // create segment2
   // making segment1 as child/subSegment of segment2
 
-  let segmentObject2 = segmentSecond;
+  const segmentObject2 = segmentSecond;
   await segmentService.upsertSegment(segmentObject2, new UpgradeLogger());
 
   // experiment object
   const experimentObject = individualAssignmentExperiment;
-	experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
+  experimentObject.filterMode = FILTER_MODE.INCLUDE_ALL;
   experimentObject.experimentSegmentInclusion = { ...experimentObject.experimentSegmentInclusion };
   const context = experimentObject.context[0];
-  console.log("context: ", context);
+  console.log('context: ', context);
   // create experiment
   await experimentService.create(individualAssignmentExperiment as any, userIn, logger);
   let experiments = await experimentService.find(logger);

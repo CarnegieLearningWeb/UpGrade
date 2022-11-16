@@ -1,6 +1,3 @@
-
-
-
 import { scheduleJobUpdateExperiment } from '../../mockData/experiment/index';
 // import { Logger as WinstonLogger } from '../../../../src/lib/logger';
 import { ExperimentService } from '../../../../src/api/services/ExperimentService';
@@ -38,7 +35,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   const createAuditLog = await auditLogService.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_CREATED);
 
   expect(createAuditLog).toEqual(
@@ -67,7 +64,7 @@ export default async function UpdateExperimentState(): Promise<void> {
     // ])
   );
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
   const updateAuditLog = await auditLogService.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_UPDATED);
 
   expect(updateAuditLog).toEqual(
@@ -82,7 +79,7 @@ export default async function UpdateExperimentState(): Promise<void> {
   const experimentId = experiments[0].id;
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
 
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise((r) => setTimeout(r, 1000));
 
   const updateStateAuditLog = await auditLogService.getAuditLogByType(EXPERIMENT_LOG_TYPE.EXPERIMENT_STATE_CHANGED);
 

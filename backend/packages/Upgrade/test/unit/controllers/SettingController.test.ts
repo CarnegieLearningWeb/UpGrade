@@ -19,22 +19,18 @@ describe('Setting Controller Testing', () => {
     Container.reset();
   });
 
-  test('Get request for /api/setting', async done => {
-    await request(app)
-      .get('/api/setting')
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/setting', async (done) => {
+    await request(app).get('/api/setting').set('Accept', 'application/json').expect('Content-Type', /json/).expect(200);
 
     done();
   });
 
-  test('Post request for /api/setting', async done => {
+  test('Post request for /api/setting', async (done) => {
     await request(app)
       .post('/api/setting')
       .send({
         toCheckAuth: true,
-        toFilterMetric: true
+        toFilterMetric: true,
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)

@@ -2,7 +2,6 @@ import { Service } from 'typedi';
 
 @Service()
 export default class ExcludeServiceMock {
-
   public getAllUser(): Promise<[]> {
     return Promise.resolve([]);
   }
