@@ -9,10 +9,7 @@ import {
   EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { Store } from '@ngrx/store';
-import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
-import { Observable } from 'rxjs';
-
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
 @Component({
   selector: 'home-experiment-schedule',
   templateUrl: './experiment-schedule.component.html',
@@ -26,18 +23,11 @@ export class ExperimentScheduleComponent implements OnInit {
   experimentScheduleForm: FormGroup;
   minDate = new Date();
 
-  // Used for speedbump when clicked on close
-  dataChanged$: Observable<boolean>;
-  flag: boolean = false;
-
   constructor(
     private _formBuilder: FormBuilder, 
     private dialogService: DialogService,
-    private store: Store<{ dataChanged: boolean }>
-    ) {
-      this.dataChanged$ = store.select('dataChanged');
-      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
-    }
+    public experimentDesignStepperService: ExperimentDesignStepperService
+    ) {}
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
@@ -177,7 +167,7 @@ export class ExperimentScheduleComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.flag || this.experimentScheduleForm.dirty) {
+        if ( this.experimentScheduleForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged() ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -191,12 +181,14 @@ export class ExperimentScheduleComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.data_changed();
+        if ( this.experimentScheduleForm.dirty ) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.flag_reset();
+        this.experimentDesignStepperService.experimentStepperDataUpdated();
         this.experimentScheduleForm.markAsPristine();
         break;
     }
@@ -276,15 +268,5 @@ export class ExperimentScheduleComponent implements OnInit {
         path: NewExperimentPaths.EXPERIMENT_SCHEDULE,
       });
     }
-  }
-
-  data_changed() {
-    if(this.experimentScheduleForm.dirty){
-      this.store.dispatch(formDataChanged());
-    }
-  }
- 
-  flag_reset() {
-    this.store.dispatch(formDataReset());
   }
 }

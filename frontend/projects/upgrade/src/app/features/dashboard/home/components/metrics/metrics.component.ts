@@ -22,9 +22,7 @@ import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { Store } from '@ngrx/store';
-import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
-
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
@@ -67,27 +65,19 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   metricsDisplayedColumns = ['keys', 'operationType', 'queryName', 'removeMetric'];
   queryIndex = 0;
   editMode = false;
-  isRowRemoved = false;
 
   queryMetricKeyError = [];
   queryNameError = [];
   queryStatisticError = [];
   queryComparisonStatisticError = [];
 
-  // Used for speedbump when clicked on close
-  dataChanged$: Observable<boolean>;
-  flag: boolean = false;
-
   constructor(
     private analysisService: AnalysisService,
     private _formBuilder: FormBuilder,
     private translate: TranslateService,
     private dialogService: DialogService,
-    private store: Store<{ dataChanged: boolean }>
-    ) {
-      this.dataChanged$ = store.select('dataChanged');
-      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
-    }
+    public experimentDesignStepperService: ExperimentDesignStepperService
+    ) {}
 
   optionsSub() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
@@ -327,7 +317,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentInfo.queries.splice(queryIndex, 1);
       }
     }
-    this.isRowRemoved = true;
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     // reset options for metric keys:
     this.firstSelectedNode[queryIndex] = null;
     this.optionsSub();
@@ -559,7 +549,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.flag || this.queryForm.dirty || this.isRowRemoved) {
+        if ( this.queryForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged() ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -573,13 +563,14 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.data_changed();
+        if ( this.queryForm.dirty ) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.flag_reset();
-        this.isRowRemoved = false;
+        this.experimentDesignStepperService.experimentStepperDataUpdated();
         this.queryForm.markAsPristine();
         break;
     }
@@ -654,16 +645,6 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         path: NewExperimentPaths.MONITORED_METRIC,
       });
     }
-  }
-
-  data_changed() {
-    if(this.queryForm.dirty){
-      this.store.dispatch(formDataChanged());
-    }
-  }
- 
-  flag_reset() {
-    this.store.dispatch(formDataReset());
   }
   
   ngOnChanges() {

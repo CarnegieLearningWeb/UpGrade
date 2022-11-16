@@ -21,9 +21,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Observable, Subscription } from 'rxjs';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { Store } from '@ngrx/store';
-import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
-
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
 @Component({
   selector: 'home-experiment-post-condition',
   templateUrl: './experiment-post-condition.component.html',
@@ -39,20 +37,13 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   experimentConditions = [{ value: 'default', id: 'default' }];
   experimentSub: Subscription;
 
-  // Used for speedbump when clicked on close
-  dataChanged$: Observable<boolean>;
-  flag: boolean = false;
-  
   constructor(
     private experimentService: ExperimentService,
     private dialogService: DialogService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _formBuilder: FormBuilder,
-    private store: Store<{ dataChanged: boolean }>
-    ) {
-      this.dataChanged$ = store.select('dataChanged');
-      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
-    }
+    public experimentDesignStepperService: ExperimentDesignStepperService
+    ) {}
 
   ngOnChanges() {
     this.experimentConditions = [{ value: 'default', id: 'default' }];
@@ -111,7 +102,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.flag || this.postExperimentRuleForm.dirty) {
+        if ( this.postExperimentRuleForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged() ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -125,12 +116,14 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.data_changed();
+        if ( this.postExperimentRuleForm.dirty ) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.flag_reset();
+        this.experimentDesignStepperService.experimentStepperDataUpdated();
         this.postExperimentRuleForm.markAsPristine();
         break;
     }
@@ -151,16 +144,6 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
       },
       path: NewExperimentPaths.POST_EXPERIMENT_RULE,
     });
-  }
-
-  data_changed() {
-    if(this.postExperimentRuleForm.dirty){
-      this.store.dispatch(formDataChanged());
-    }
-  }
- 
-  flag_reset() {
-    this.store.dispatch(formDataReset());
   }
 
   get NewExperimentDialogEvents() {

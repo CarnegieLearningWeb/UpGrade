@@ -23,8 +23,7 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { Store } from '@ngrx/store';
-import { formDataChanged,formDataReset } from '../../data-change-flag/data-change-flag.actions';
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
 
 type ParticipantMember = {
   id: string;
@@ -53,7 +52,6 @@ export class ExperimentParticipantsComponent implements OnInit {
   inclusionCriteria = [{ value: INCLUSION_CRITERIA.INCLUDE_SPECIFIC }, { value: INCLUSION_CRITERIA.EXCEPT }];
   membersDisplayedColumns = ['type', 'id', 'removeMember'];
 
-  isRowRemoved = false;
   enableSave = true;
   contextMetaData: IContextMetaData | Record<string, unknown> = {};
   contextMetaDataSub: Subscription;
@@ -67,21 +65,13 @@ export class ExperimentParticipantsComponent implements OnInit {
   groupsToSend = [];
   groupString = ' ( group )';
 
-  // Used for speedbump when clicked on close
-  dataChanged$: Observable<boolean>;
-  flag: boolean = false;
-
   constructor(
     private _formBuilder: FormBuilder,
     private _formBuilder2: FormBuilder,
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private dialogService: DialogService,
-    private store: Store<{ dataChanged: boolean }>
-    ) {
-      this.dataChanged$ = store.select('dataChanged');
-      this.dataChanged$.subscribe((isdataChanged)=>this.flag=isdataChanged);
-    }
+    public experimentDesignStepperService: ExperimentDesignStepperService) {}
 
   ngOnChanges() {
     if (this.currentContext) {
@@ -195,13 +185,13 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   removeMember1(groupIndex: number) {
     this.members1.removeAt(groupIndex);
-    this.isRowRemoved = true;
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView1();
   }
 
   removeMember2(groupIndex: number) {
     this.members2.removeAt(groupIndex);
-    this.isRowRemoved = true;
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView2();
   }
 
@@ -255,7 +245,7 @@ export class ExperimentParticipantsComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if (this.flag || this.participantsForm.dirty || this.participantsForm2.dirty || this.isRowRemoved) {
+        if ( this.participantsForm.dirty || this.participantsForm2.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -269,13 +259,14 @@ export class ExperimentParticipantsComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        this.data_changed();
+        if(this.participantsForm.dirty || this.participantsForm2.dirty){
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
         this.saveData(eventType);
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.flag_reset();
-        this.isRowRemoved = false;
+        this.experimentDesignStepperService.experimentStepperDataUpdated();
         this.participantsForm.markAsPristine();
         this.participantsForm2.markAsPristine();
         break;
@@ -333,16 +324,6 @@ export class ExperimentParticipantsComponent implements OnInit {
         path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
       });
     }
-  }
-
-  data_changed() {
-    if(this.participantsForm.dirty || this.participantsForm2.dirty){
-      this.store.dispatch(formDataChanged());
-    }
-  }
- 
-  flag_reset() {
-    this.store.dispatch(formDataReset());
   }
 
   get members1(): FormArray {

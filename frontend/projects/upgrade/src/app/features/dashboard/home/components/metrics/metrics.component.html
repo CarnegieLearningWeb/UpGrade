@@ -218,7 +218,7 @@
         matStepperPrevious
         mat-raised-button
         class="shared-modal--modal-btn btn-back default-button"
-        (click)="data_changed()"
+        (click)="queryForm.dirty? experimentDesignStepperService.experimentStepperDataChanged() : ''"
       >
         {{ 'global.back.text' | translate }}
       </button>

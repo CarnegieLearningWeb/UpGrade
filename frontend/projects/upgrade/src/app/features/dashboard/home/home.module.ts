@@ -36,7 +36,6 @@ import { ExperimentParticipantsComponent } from './components/experiment-partici
 import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
 import { AliasesTableComponent } from './components/experiment-design/aliases-table/aliases-table.component';
 import { StoreModule } from '@ngrx/store';
-import { dataChangedReducer } from './data-change-flag/data-change-flag.reducer';
 @NgModule({
   declarations: [
     HomeComponent,
@@ -75,7 +74,6 @@ import { dataChangedReducer } from './data-change-flag/data-change-flag.reducer'
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
     NgxSkeletonLoaderModule,
-    StoreModule.forFeature( 'dataChanged', dataChangedReducer )
   ],
   providers: [OperationPipe],
 })

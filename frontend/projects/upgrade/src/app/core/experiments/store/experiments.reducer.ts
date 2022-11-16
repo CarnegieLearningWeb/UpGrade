@@ -36,6 +36,7 @@ export const initialState: ExperimentState = adapter.getInitialState({
   currentUserSelectedContext: null,
   isAliasTableEditMode: false,
   aliasTableEditIndex: null,
+  hasExperimentStepperDataChanged: false
 });
 
 const reducer = createReducer(
@@ -159,6 +160,14 @@ const reducer = createReducer(
     ...state,
     isAliasTableEditMode,
     aliasTableEditIndex,
+  })),
+  on(experimentsAction.experimentStepperDataChanged, (state) => ({
+    ...state,
+    hasExperimentStepperDataChanged:true
+  })),
+  on(experimentsAction.experimentStepperDataReset, (state) => ({
+    ...state,
+    hasExperimentStepperDataChanged:false
   }))
 );
 
