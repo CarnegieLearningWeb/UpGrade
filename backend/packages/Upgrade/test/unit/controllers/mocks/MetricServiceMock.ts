@@ -16,8 +16,7 @@ export default class MetricServiceMock {
     return Promise.resolve([]);
   }
 
-  public  getAllMetrics( logger: UpgradeLogger): Promise<[]> {
+  public getAllMetrics(logger: UpgradeLogger): Promise<[]> {
     return Promise.resolve([]);
   }
-
 }

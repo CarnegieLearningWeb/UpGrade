@@ -1,4 +1,4 @@
-import { FILTER_MODE } from "upgrade_types";
+import { FILTER_MODE } from 'upgrade_types';
 
 export const revertToExperiment = {
   id: 'be3ae74f-370a-4015-93f3-7761d16f8b11',
@@ -15,8 +15,8 @@ export const revertToExperiment = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -54,7 +54,7 @@ export const revertToExperiment = {
       twoCharacterId: 'NP',
     },
   ],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 
@@ -72,8 +72,8 @@ export const experiment = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -115,7 +115,7 @@ export const experiment = {
     },
   ],
   conditionAliases: [],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 
@@ -133,8 +133,8 @@ export const experimentSecond = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: 'bb8844a9-085b-4ceb-b893-eaaea3b739af',
@@ -170,7 +170,7 @@ export const experimentSecond = {
     },
   ],
   conditionAliases: [],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 
@@ -188,8 +188,8 @@ export const experimentThird = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e1',
@@ -225,7 +225,7 @@ export const experimentThird = {
     },
   ],
   conditionAliases: [],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 
@@ -243,8 +243,8 @@ export const experimentFourth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: '74684fa9-fcd8-44ef-a2d1-b5bdf96076e2',
@@ -280,7 +280,7 @@ export const experimentFourth = {
     },
   ],
   conditionAliases: [],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 
@@ -298,8 +298,8 @@ export const experimentFifth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -345,19 +345,19 @@ export const experimentFifth = {
   ],
   conditionAliases: [
     {
-      id: "9d753b90-1111-44b5-8acc-2483c0507ea0",
-      aliasName: "ConditionA_W1",
-      parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-      decisionPoint: "d22467b1-f0e9-4444-9517-cc03037bc079"
+      id: '9d753b90-1111-44b5-8acc-2483c0507ea0',
+      aliasName: 'ConditionA_W1',
+      parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      decisionPoint: 'd22467b1-f0e9-4444-9517-cc03037bc079',
     },
     {
-      id: "9d753b90-1111-44b5-8acc-2483c0507ea1",
-      aliasName: "ConditionA_W2",
-      parentCondition: "c22467b1-f0e9-4444-9517-cc03037bc079",
-      decisionPoint: "e22467b1-f0e9-4444-9517-cc03037bc079"
-    }
+      id: '9d753b90-1111-44b5-8acc-2483c0507ea1',
+      aliasName: 'ConditionA_W2',
+      parentCondition: 'c22467b1-f0e9-4444-9517-cc03037bc079',
+      decisionPoint: 'e22467b1-f0e9-4444-9517-cc03037bc079',
+    },
   ],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 
@@ -375,8 +375,8 @@ export const experimentSixth = {
   tags: [],
   queries: [],
   filterMode: FILTER_MODE.INCLUDE_ALL,
-  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
-  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: []}},
+  experimentSegmentInclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
+  experimentSegmentExclusion: { segment: { individualForSegment: [], groupForSegment: [], subSegments: [] } },
   conditions: [
     {
       id: 'c22467b1-f0e9-4444-9517-cc03037bc079',
@@ -414,7 +414,7 @@ export const experimentSixth = {
     },
   ],
   conditionAliases: [],
-  backendVersion: "1.0.0",
+  backendVersion: '1.0.0',
   groupSatisfied: 0,
 };
 

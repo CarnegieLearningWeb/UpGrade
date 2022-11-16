@@ -26,21 +26,18 @@ describe('Exclude Controller Testing', () => {
   });
 
   const excludedGroups = {
-    "type": "schoolId",
-    "id": "abc123"
-  }
+    type: 'schoolId',
+    id: 'abc123',
+  };
 
   const user_uuid = uuid();
 
-  test('Get request for /api/explicitExclude/global/user', async done => {
-    await request(app)
-      .get('/api/explicitExclude/global/user')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/explicitExclude/global/user', async (done) => {
+    await request(app).get('/api/explicitExclude/global/user').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Put request for /api/explicitExclude/global/user', async done => {
+  test('Put request for /api/explicitExclude/global/user', async (done) => {
     await request(app)
       .put('/api/explicitExclude/global/user')
       .send(user_uuid)
@@ -49,7 +46,7 @@ describe('Exclude Controller Testing', () => {
     done();
   });
 
-  test('Delete request for /api/explicitExclude/global/user/:id', async done => {
+  test('Delete request for /api/explicitExclude/global/user/:id', async (done) => {
     await request(app)
       .delete(`/api/explicitExclude/global/user/${user_uuid}`)
       .expect('Content-Type', /json/)
@@ -57,15 +54,12 @@ describe('Exclude Controller Testing', () => {
     done();
   });
 
-  test('Get request for /api/explicitExclude/global/group', async done => {
-    await request(app)
-      .get('/api/explicitExclude/global/group')
-      .expect('Content-Type', /json/)
-      .expect(200);
+  test('Get request for /api/explicitExclude/global/group', async (done) => {
+    await request(app).get('/api/explicitExclude/global/group').expect('Content-Type', /json/).expect(200);
     done();
   });
 
-  test('Put request for /api/explicitExclude/global/group', async done => {
+  test('Put request for /api/explicitExclude/global/group', async (done) => {
     await request(app)
       .put('/api/explicitExclude/global/group')
       .send(excludedGroups)
@@ -74,7 +68,7 @@ describe('Exclude Controller Testing', () => {
     done();
   });
 
-  test('Delete request for /api/explicitExclude/global/group/:type/:id', async done => {
+  test('Delete request for /api/explicitExclude/global/group/:type/:id', async (done) => {
     await request(app)
       .delete(`/api/explicitExclude/global/group/${excludedGroups.type}/${excludedGroups.id}`)
       .send(excludedGroups)
@@ -82,5 +76,4 @@ describe('Exclude Controller Testing', () => {
       .expect(200);
     done();
   });
-  
 });

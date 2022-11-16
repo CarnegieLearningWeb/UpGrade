@@ -8,13 +8,12 @@ import { experimentUsers } from '../mockData/experimentUsers/index';
 export const UserNotDefined = async () => {
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
-  let experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
+  const experimentUserDoc = await experimentUserService.getOriginalUserDoc(experimentUsers[0].id, new UpgradeLogger());
   await expect(
-    experimentAssignmentService.getAllExperimentConditions(
-      experimentUsers[0].id,
-      null,
-      { logger: new UpgradeLogger(), userDoc: experimentUserDoc }
-    )
+    experimentAssignmentService.getAllExperimentConditions(experimentUsers[0].id, null, {
+      logger: new UpgradeLogger(),
+      userDoc: experimentUserDoc,
+    })
   ).rejects.toThrow();
 
   await expect(

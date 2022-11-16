@@ -39,7 +39,7 @@ const initialChecks = async () => {
   // get all user here
   const userList = await userService.find(new UpgradeLogger());
   expect(userList.length).toBe(experimentUsers.length);
-  experimentUsers.map(user => {
+  experimentUsers.map((user) => {
     expect(userList).toContainEqual(user);
   });
 };

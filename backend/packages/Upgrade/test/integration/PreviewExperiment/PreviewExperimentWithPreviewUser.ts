@@ -1,4 +1,3 @@
-
 import { Container } from 'typedi';
 import { ExperimentService } from '../../../src/api/services/ExperimentService';
 import { getAllExperimentCondition } from '../utils';
@@ -39,7 +38,7 @@ export default async function testCase(): Promise<void> {
   );
 
   // get all experiment condition for preview user
-  let experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
+  const experimentConditionAssignments = await getAllExperimentCondition(previewUser.id, new UpgradeLogger());
   expect(experimentConditionAssignments).toHaveLength(experimentObject.partitions.length);
 
   // // get all experiment for non preview user

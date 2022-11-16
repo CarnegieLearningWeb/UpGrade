@@ -7,10 +7,7 @@ import { UserService } from '../../../src/api/services/UserService';
 import { systemUser } from '../mockData/user/index';
 import { previewUsers } from '../mockData/previewUsers/index';
 import { PreviewUserService } from '../../../src/api/services/PreviewUserService';
-import {
-  checkExperimentAssignedIsNotDefault,
-  checkMarkExperimentPointForUser,
-} from '../utils/index';
+import { checkExperimentAssignedIsNotDefault, checkMarkExperimentPointForUser } from '../utils/index';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 
 export default async function testCase(): Promise<void> {
@@ -54,7 +51,13 @@ export default async function testCase(): Promise<void> {
   expect(experimentConditionAssignments).toHaveLength(0);
 
   // mark experiment point
-  let markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  let markedExperimentPoint = await markExperimentPoint(
+    previewUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // change experiment status to PREVIEW
@@ -83,16 +86,18 @@ export default async function testCase(): Promise<void> {
   const assignedConditionUser1 = experiments[0].conditions[0];
 
   // add forced assignment for preview user 1
-  await previewService.upsertExperimentConditionAssignment({
-    ...previewUser1,
-    assignments: [
-      {
-        experiment: { id: experimentId },
-        experimentCondition: { id: assignedConditionUser1.id },
-      },
-    ],
-  } as any,
-  new UpgradeLogger());
+  await previewService.upsertExperimentConditionAssignment(
+    {
+      ...previewUser1,
+      assignments: [
+        {
+          experiment: { id: experimentId },
+          experimentCondition: { id: assignedConditionUser1.id },
+        },
+      ],
+    } as any,
+    new UpgradeLogger()
+  );
 
   previewUser1 = await previewService.findOne(previewUsers[0].id, new UpgradeLogger());
   expect((previewUser1.assignments && previewUser1.assignments.length) || 0).toEqual(1);
@@ -102,7 +107,13 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUsers[1].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
 
   // get all experiment condition for user 1
@@ -110,7 +121,13 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // check assignment is the one assigned
@@ -121,16 +138,18 @@ export default async function testCase(): Promise<void> {
   const assignedConditionUser2 = experiments[0].conditions[1];
 
   // add forced assignment for preview user 1
-  await previewService.upsertExperimentConditionAssignment({
-    ...previewUser2,
-    assignments: [
-      {
-        experiment: { id: experimentId },
-        experimentCondition: { id: assignedConditionUser2.id },
-      },
-    ],
-  } as any,
-  new UpgradeLogger());
+  await previewService.upsertExperimentConditionAssignment(
+    {
+      ...previewUser2,
+      assignments: [
+        {
+          experiment: { id: experimentId },
+          experimentCondition: { id: assignedConditionUser2.id },
+        },
+      ],
+    } as any,
+    new UpgradeLogger()
+  );
 
   previewUser2 = await previewService.findOne(previewUsers[1].id, new UpgradeLogger());
   expect((previewUser2.assignments && previewUser2.assignments.length) || 0).toEqual(1);
@@ -140,7 +159,13 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUsers[2].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 
   await experimentService.updateState(experimentId, EXPERIMENT_STATE.ENROLLING, user, new UpgradeLogger());
@@ -164,15 +189,23 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 2
-  markedExperimentPoint = await markExperimentPoint(previewUsers[1].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUsers[1].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[1].id, experimentName, experimentPoint);
 
   // add forced assignment for preview user 1
-  await previewService.upsertExperimentConditionAssignment({
-    ...previewUser1,
-    assignments: [],
-  } as any,
-  new UpgradeLogger());
+  await previewService.upsertExperimentConditionAssignment(
+    {
+      ...previewUser1,
+      assignments: [],
+    } as any,
+    new UpgradeLogger()
+  );
 
   // check assignment is the one assigned
   expect(experimentConditionAssignments[0].assignedCondition.conditionCode).toEqual(
@@ -187,7 +220,13 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[0].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUsers[0].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[0].id, experimentName, experimentPoint);
 
   // check assignment is the one assigned
@@ -200,6 +239,12 @@ export default async function testCase(): Promise<void> {
   checkExperimentAssignedIsNotDefault(experimentConditionAssignments, experimentName, experimentPoint);
 
   // mark experiment point for user 1
-  markedExperimentPoint = await markExperimentPoint(previewUsers[2].id, experimentName, experimentPoint, condition, new UpgradeLogger());
+  markedExperimentPoint = await markExperimentPoint(
+    previewUsers[2].id,
+    experimentName,
+    experimentPoint,
+    condition,
+    new UpgradeLogger()
+  );
   checkMarkExperimentPointForUser(markedExperimentPoint, previewUsers[2].id, experimentName, experimentPoint);
 }

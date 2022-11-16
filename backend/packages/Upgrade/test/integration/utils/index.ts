@@ -13,11 +13,7 @@ import { GroupExclusion } from './../../../src/api/models/GroupExclusion';
 import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
 import { ExperimentUserService } from '../../../src/api/services/ExperimentUserService';
 
-export function checkExperimentAssignedIsNull(
-  experimentConditionAssignments: any,
-  target: string,
-  site: string
-): void {
+export function checkExperimentAssignedIsNull(experimentConditionAssignments: any, target: string, site: string): void {
   expect(experimentConditionAssignments).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -45,7 +41,7 @@ export function checkMarkExperimentPointForUser(
   userId: string,
   target: string,
   site: string,
-  markExperimentPointLogLength?: number,
+  markExperimentPointLogLength?: number
 ): void {
   if (!markExperimentPointLogLength) {
     expect(markedDecisionPoint).toEqual(
@@ -82,7 +78,7 @@ export function checkMarkExperimentPointForUser(
 export async function getAllExperimentCondition(
   userId: string,
   logger: UpgradeLogger,
-  context: string = 'home'
+  context = 'home'
 ): Promise<INewExperimentAssignment[]> {
   const experimentAssignmentService = Container.get<ExperimentAssignmentService>(ExperimentAssignmentService);
   const experimentUserService = Container.get<ExperimentUserService>(ExperimentUserService);

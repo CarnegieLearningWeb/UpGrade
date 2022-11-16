@@ -1,4 +1,12 @@
-import { getExperiment, getRevertToExperiment, getSecondExperiment, getThirdExperiment, getFourthExperiment, getFifthExperiment, getSixthExperiment} from './raw';
+import {
+  getExperiment,
+  getRevertToExperiment,
+  getSecondExperiment,
+  getThirdExperiment,
+  getFourthExperiment,
+  getFifthExperiment,
+  getSixthExperiment,
+} from './raw';
 import { CONSISTENCY_RULE, ASSIGNMENT_UNIT, POST_EXPERIMENT_RULE, EXPERIMENT_STATE } from 'upgrade_types';
 
 export const individualAssignmentExperiment = {
@@ -10,7 +18,7 @@ export const individualAssignmentExperiment = {
 };
 
 export const individualAssignmentExperimentConsistencyRuleRevertToExperiment = {
-  ...getRevertToExperiment()
+  ...getRevertToExperiment(),
 };
 
 export const individualAssignmentExperimentConsistencyRuleExperiment = {

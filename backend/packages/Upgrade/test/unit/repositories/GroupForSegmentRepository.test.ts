@@ -1,8 +1,15 @@
-import { Connection, ConnectionManager, DeleteQueryBuilder, EntityManager, InsertQueryBuilder, SelectQueryBuilder } from "typeorm";
+import {
+  Connection,
+  ConnectionManager,
+  DeleteQueryBuilder,
+  EntityManager,
+  InsertQueryBuilder,
+  SelectQueryBuilder,
+} from 'typeorm';
 import * as sinon from 'sinon';
-import { GroupForSegmentRepository } from "../../../src/api/repositories/GroupForSegmentRepository";
-import { UpgradeLogger } from "../../../src/lib/logger/UpgradeLogger";
-import { GroupForSegment } from "../../../src/api/models/GroupForSegment";
+import { GroupForSegmentRepository } from '../../../src/api/repositories/GroupForSegmentRepository';
+import { UpgradeLogger } from '../../../src/lib/logger/UpgradeLogger';
+import { GroupForSegment } from '../../../src/api/models/GroupForSegment';
 
 let sandbox;
 let connection;
@@ -13,185 +20,188 @@ let insertQueryBuilder = new InsertQueryBuilder<GroupForSegmentRepository>(null)
 let deleteQueryBuilder = new DeleteQueryBuilder<GroupForSegmentRepository>(null);
 let selectQueryBuilder = new SelectQueryBuilder<GroupForSegmentRepository>(null);
 let repo = new GroupForSegmentRepository();
-const err =  new Error("test error")
-let logger = new UpgradeLogger()
+const err = new Error('test error');
+let logger = new UpgradeLogger();
 
 let segment = new GroupForSegment();
 segment.groupId = 'id1';
 segment.type = 'schoolId';
 
-const result =  {
-    identifiers: [ { id: segment.groupId } ],
-    generatedMaps: [
-        segment
-    ],
-    raw: [
-        segment
-    ]
-  }
+const result = {
+  identifiers: [{ id: segment.groupId }],
+  generatedMaps: [segment],
+  raw: [segment],
+};
 
 beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    
-    const repocallback = sinon.stub()
-    repocallback.returns(GroupForSegmentRepository.prototype)
+  sandbox = sinon.createSandbox();
 
-    sandbox.stub(ConnectionManager.prototype, 'get').returns({
-        getRepository: repocallback
-    } as unknown as Connection)
+  const repocallback = sinon.stub();
+  repocallback.returns(GroupForSegmentRepository.prototype);
 
-    connection = sinon.createStubInstance(Connection)
-    manager = new EntityManager(connection);
-    
-    insertMock = sandbox.mock(insertQueryBuilder);
-    deleteMock = sandbox.mock(deleteQueryBuilder);
-    selectMock = sandbox.mock(selectQueryBuilder);
+  sandbox.stub(ConnectionManager.prototype, 'get').returns({
+    getRepository: repocallback,
+  } as unknown as Connection);
+
+  connection = sinon.createStubInstance(Connection);
+  manager = new EntityManager(connection);
+
+  insertMock = sandbox.mock(insertQueryBuilder);
+  deleteMock = sandbox.mock(deleteQueryBuilder);
+  selectMock = sandbox.mock(selectQueryBuilder);
 });
 
 afterEach(() => {
-    sandbox.restore();
+  sandbox.restore();
 });
 
 describe('GroupForSegmentRepository Testing', () => {
+  it('should insert a new group for segment', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.resolve(result));
 
-    it('should insert a new group for segment', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    let res = await repo.insertGroupForSegment([segment], manager, logger);
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.resolve(result));
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
 
-        let res = await repo.insertGroupForSegment([segment], manager, logger);
+    expect(res).toEqual([segment]);
+  });
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
+  it('should throw an error when insert fails', async () => {
+    createQueryBuilderStub = sandbox.stub(manager, 'createQueryBuilder').returns(insertQueryBuilder);
 
-        expect(res).toEqual([segment])
+    insertMock.expects('insert').once().returns(insertQueryBuilder);
+    insertMock.expects('into').once().returns(insertQueryBuilder);
+    insertMock.expects('values').once().returns(insertQueryBuilder);
+    insertMock.expects('onConflict').once().returns(insertQueryBuilder);
+    insertMock.expects('returning').once().returns(insertQueryBuilder);
+    insertMock.expects('execute').once().returns(Promise.reject(err));
 
-    });
+    expect(async () => {
+      await repo.insertGroupForSegment([segment], manager, logger);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when insert fails', async () => {
-        createQueryBuilderStub = sandbox.stub(manager, 
-            'createQueryBuilder').returns(insertQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    insertMock.verify();
+  });
 
-        insertMock.expects('insert').once().returns(insertQueryBuilder);
-        insertMock.expects('into').once().returns(insertQueryBuilder);
-        insertMock.expects('values').once().returns(insertQueryBuilder);
-        insertMock.expects('onConflict').once().returns(insertQueryBuilder);
-        insertMock.expects('returning').once().returns(insertQueryBuilder);
-        insertMock.expects('execute').once().returns(Promise.reject(err));
+  it('should delete a group segment', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(GroupForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        expect(async() => {await repo.insertGroupForSegment([segment], manager, logger)}).rejects.toThrow(err);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        insertMock.verify();
-    });
+    let res = await repo.deleteGroupForSegment('segment1', segment.groupId, segment.type, logger);
 
-    it('should delete a group segment', async () => {
-        createQueryBuilderStub = sandbox.stub(GroupForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+    expect(res).toEqual([segment]);
+  });
 
-        let res = await repo.deleteGroupForSegment('segment1', segment.groupId, segment.type, logger);
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(GroupForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        expect(res).toEqual([segment])
-    });
+    expect(async () => {
+      await repo.deleteGroupForSegment('segment1', segment.groupId, segment.type, logger);
+    }).rejects.toThrow(err);
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(GroupForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+  it('should delete a group for segment by id', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(GroupForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        expect(async() => {await repo.deleteGroupForSegment('segment1', segment.groupId, segment.type, logger)}).rejects.toThrow(err);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.resolve(result));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    let res = await repo.deleteGroupForSegmentById(segment.groupId, logger);
 
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
 
-    it('should delete a group for segment by id', async () => {
-        createQueryBuilderStub = sandbox.stub(GroupForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+    expect(res).toEqual([segment]);
+  });
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.resolve(result));
+  it('should throw an error when delete fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(GroupForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(deleteQueryBuilder);
 
-        let res = await repo.deleteGroupForSegmentById(segment.groupId, logger);
+    deleteMock.expects('delete').once().returns(deleteQueryBuilder);
+    deleteMock.expects('from').once().returns(deleteQueryBuilder);
+    deleteMock.expects('where').once().returns(deleteQueryBuilder);
+    deleteMock.expects('returning').once().returns(deleteQueryBuilder);
+    deleteMock.expects('execute').once().returns(Promise.reject(err));
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    expect(async () => {
+      await repo.deleteGroupForSegmentById(segment.groupId, logger);
+    }).rejects.toThrow(err);
 
-        expect(res).toEqual([segment])
-    });
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    deleteMock.verify();
+  });
 
-    it('should throw an error when delete fails', async () => {
-        createQueryBuilderStub = sandbox.stub(GroupForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(deleteQueryBuilder);
+  it('should get group for segment by id', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(GroupForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        deleteMock.expects('delete').once().returns(deleteQueryBuilder);
-        deleteMock.expects('from').once().returns(deleteQueryBuilder);
-        deleteMock.expects('where').once().returns(deleteQueryBuilder);
-        deleteMock.expects('returning').once().returns(deleteQueryBuilder);
-        deleteMock.expects('execute').once().returns(Promise.reject(err));
+    selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock
+      .expects('getMany')
+      .once()
+      .returns(Promise.resolve([segment, segment]));
 
-        expect(async() => {await repo.deleteGroupForSegmentById(segment.groupId, logger)}).rejects.toThrow(err);
+    let res = await repo.getGroupForSegmentById(segment.groupId, logger);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        deleteMock.verify();
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
 
-    });
+    expect(res).toEqual([segment, segment]);
+  });
 
-    it('should get group for segment by id', async () => {
-        createQueryBuilderStub = sandbox.stub(GroupForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
+  it('should throw an error when get group for segment by id fails', async () => {
+    createQueryBuilderStub = sandbox
+      .stub(GroupForSegmentRepository.prototype, 'createQueryBuilder')
+      .returns(selectQueryBuilder);
 
-        selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.resolve([segment, segment]));
+    selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
+    selectMock.expects('where').once().returns(selectQueryBuilder);
+    selectMock.expects('getMany').once().returns(Promise.reject(err));
 
-        let res = await repo.getGroupForSegmentById(segment.groupId, logger);
+    expect(async () => {
+      await repo.getGroupForSegmentById(segment.groupId, logger);
+    }).rejects.toThrow(err);
 
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-        expect(res).toEqual([segment, segment])
-    });
-
-    it('should throw an error when get group for segment by id fails', async () => {
-        createQueryBuilderStub = sandbox.stub(GroupForSegmentRepository.prototype, 
-            'createQueryBuilder').returns(selectQueryBuilder);
-
-        selectMock.expects('leftJoinAndSelect').once().returns(selectQueryBuilder);
-        selectMock.expects('where').once().returns(selectQueryBuilder);
-        selectMock.expects('getMany').once().returns(Promise.reject(err));
-
-        expect(async() => {await repo.getGroupForSegmentById(segment.groupId, logger)}).rejects.toThrow(err);
-
-        sinon.assert.calledOnce(createQueryBuilderStub);
-        selectMock.verify();
-
-    });
-
-
-})
+    sinon.assert.calledOnce(createQueryBuilderStub);
+    selectMock.verify();
+  });
+});
