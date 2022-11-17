@@ -18,10 +18,10 @@ import {
 } from '../../../../../core/experiments/store/experiments.model';
 import { ExperimentFormValidators } from '../../validators/experiment-form.validators';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-post-condition',
   templateUrl: './experiment-post-condition.component.html',
@@ -43,7 +43,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private _formBuilder: FormBuilder,
     public experimentDesignStepperService: ExperimentDesignStepperService
-    ) {}
+  ) {}
 
   ngOnChanges() {
     this.experimentConditions = [{ value: 'default', id: 'default' }];
@@ -102,7 +102,10 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if ( this.postExperimentRuleForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged() ) {
+        if (
+          this.postExperimentRuleForm.dirty ||
+          this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()
+        ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -116,7 +119,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if ( this.postExperimentRuleForm.dirty ) {
+        if (this.postExperimentRuleForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
         this.saveData(eventType);

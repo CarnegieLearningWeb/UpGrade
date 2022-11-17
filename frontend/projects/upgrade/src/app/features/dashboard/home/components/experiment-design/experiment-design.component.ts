@@ -32,7 +32,7 @@ import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -96,7 +96,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     private experimentUtilityService: ExperimentUtilityService,
     private translate: TranslateService,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService,
+    public experimentDesignStepperService: ExperimentDesignStepperService
   ) {
     this.partitionErrorMessagesSub = this.translate
       .get([
@@ -560,7 +560,10 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if ( this.experimentDesignForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
+        if (
+          this.experimentDesignForm.dirty ||
+          this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()
+        ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -574,7 +577,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if(this.experimentDesignForm.dirty){
+        if (this.experimentDesignForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
         if (!this.isExperimentEditable) {

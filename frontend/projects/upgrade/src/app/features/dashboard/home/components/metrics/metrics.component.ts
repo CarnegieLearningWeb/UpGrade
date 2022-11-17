@@ -22,7 +22,7 @@ import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
@@ -77,7 +77,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
     private translate: TranslateService,
     private dialogService: DialogService,
     public experimentDesignStepperService: ExperimentDesignStepperService
-    ) {}
+  ) {}
 
   optionsSub() {
     this.allMetricsSub = this.analysisService.allMetrics$.subscribe((metrics) => {
@@ -549,7 +549,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if ( this.queryForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged() ) {
+        if (this.queryForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -563,7 +563,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if ( this.queryForm.dirty ) {
+        if (this.queryForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
         this.saveData(eventType);
@@ -646,7 +646,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
       });
     }
   }
-  
+
   ngOnChanges() {
     if (this.isContextChanged) {
       this.isContextChanged = false;

@@ -35,7 +35,6 @@ import { StateTimeLogsComponent } from './components/modal/state-time-logs/state
 import { ExperimentParticipantsComponent } from './components/experiment-participants/experiment-participants.component';
 import { ExportModalComponent } from './components/modal/export-experiment/export-experiment.component';
 import { AliasesTableComponent } from './components/experiment-design/aliases-table/aliases-table.component';
-import { StoreModule } from '@ngrx/store';
 @NgModule({
   declarations: [
     HomeComponent,

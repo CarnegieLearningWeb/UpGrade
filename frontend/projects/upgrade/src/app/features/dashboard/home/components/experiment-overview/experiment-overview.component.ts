@@ -25,7 +25,7 @@ import { ExperimentService } from '../../../../../core/experiments/experiments.s
 import { Observable, Subscription } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
@@ -66,7 +66,8 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private experimentDesignStepperService: ExperimentDesignStepperService,
-    private dialogService: DialogService) {}
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
@@ -210,7 +211,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if ( this.overviewForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
+        if (this.overviewForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -224,7 +225,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if(this.overviewForm.dirty){
+        if (this.overviewForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
         this.overviewForm.markAllAsTouched();

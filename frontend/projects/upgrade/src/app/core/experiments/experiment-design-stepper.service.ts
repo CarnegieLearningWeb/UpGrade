@@ -6,32 +6,28 @@ import * as experimentAction from './store//experiments.actions';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ExperimentDesignStepperService {
-  expStepperDataChangedflag: boolean = false;
-  hasExperimentStepperDataChanged$ : Observable<boolean>;
+  expStepperDataChangedflag = false;
+  hasExperimentStepperDataChanged$: Observable<boolean>;
 
-  constructor(
-    private store$: Store<AppState>,
-  ) { 
+  constructor(private store$: Store<AppState>) {
     this.hasExperimentStepperDataChanged$ = this.store$.pipe(select(selecthasExperimentStepperDataChanged));
-    this.hasExperimentStepperDataChanged$.subscribe((isdataChanged)=>this.expStepperDataChangedflag=isdataChanged);  
-  }
-
-  getHasExperimentDesignStepperDataChanged(){
-    return  this.expStepperDataChangedflag;
-  }
-
-  experimentStepperDataChanged(){
-    this.store$.dispatch(
-      experimentAction.experimentStepperDataChanged()
+    this.hasExperimentStepperDataChanged$.subscribe(
+      (isdataChanged) => (this.expStepperDataChangedflag = isdataChanged)
     );
   }
 
-  experimentStepperDataUpdated(){
-    this.store$.dispatch(
-      experimentAction.experimentStepperDataReset()
-    );
+  getHasExperimentDesignStepperDataChanged() {
+    return this.expStepperDataChangedflag;
+  }
+
+  experimentStepperDataChanged() {
+    this.store$.dispatch(experimentAction.experimentStepperDataChanged());
+  }
+
+  experimentStepperDataUpdated() {
+    this.store$.dispatch(experimentAction.experimentStepperDataReset());
   }
 }

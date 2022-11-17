@@ -9,7 +9,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { FormGroup, AbstractControl, FormBuilder, Validators, FormArray } from '@angular/forms';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import {
   NewExperimentDialogEvents,
   NewExperimentDialogData,
@@ -23,12 +23,8 @@ import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 
-type ParticipantMember = {
-  id: string;
-  type: string;
-};
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -71,7 +67,8 @@ export class ExperimentParticipantsComponent implements OnInit {
     private segmentsService: SegmentsService,
     private experimentService: ExperimentService,
     private dialogService: DialogService,
-    public experimentDesignStepperService: ExperimentDesignStepperService) {}
+    public experimentDesignStepperService: ExperimentDesignStepperService
+  ) {}
 
   ngOnChanges() {
     if (this.currentContext) {
@@ -245,7 +242,11 @@ export class ExperimentParticipantsComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if ( this.participantsForm.dirty || this.participantsForm2.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
+        if (
+          this.participantsForm.dirty ||
+          this.participantsForm2.dirty ||
+          this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()
+        ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -259,7 +260,7 @@ export class ExperimentParticipantsComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if(this.participantsForm.dirty || this.participantsForm2.dirty){
+        if (this.participantsForm.dirty || this.participantsForm2.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
         this.saveData(eventType);

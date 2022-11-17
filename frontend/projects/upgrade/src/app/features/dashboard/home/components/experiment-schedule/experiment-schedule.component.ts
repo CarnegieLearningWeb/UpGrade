@@ -9,7 +9,7 @@ import {
   EXPERIMENT_STATE,
 } from '../../../../../core/experiments/store/experiments.model';
 import { DialogService } from '../../../../../shared/services/dialog.service';
-import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service'
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-schedule',
   templateUrl: './experiment-schedule.component.html',
@@ -24,10 +24,10 @@ export class ExperimentScheduleComponent implements OnInit {
   minDate = new Date();
 
   constructor(
-    private _formBuilder: FormBuilder, 
+    private _formBuilder: FormBuilder,
     private dialogService: DialogService,
     public experimentDesignStepperService: ExperimentDesignStepperService
-    ) {}
+  ) {}
 
   get NewExperimentDialogEvents() {
     return NewExperimentDialogEvents;
@@ -167,7 +167,10 @@ export class ExperimentScheduleComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        if ( this.experimentScheduleForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged() ) {
+        if (
+          this.experimentScheduleForm.dirty ||
+          this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()
+        ) {
           this.dialogService
             .openConfirmDialog()
             .afterClosed()
@@ -181,7 +184,7 @@ export class ExperimentScheduleComponent implements OnInit {
         }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-        if ( this.experimentScheduleForm.dirty ) {
+        if (this.experimentScheduleForm.dirty) {
           this.experimentDesignStepperService.experimentStepperDataChanged();
         }
         this.saveData(eventType);
