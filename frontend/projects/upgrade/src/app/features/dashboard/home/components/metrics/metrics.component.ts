@@ -570,7 +570,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataUpdated();
+        this.experimentDesignStepperService.experimentStepperDataReset();
         this.queryForm.markAsPristine();
         break;
     }

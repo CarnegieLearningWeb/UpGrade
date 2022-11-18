@@ -126,7 +126,7 @@ export class ExperimentPostConditionComponent implements OnInit, OnChanges {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataUpdated();
+        this.experimentDesignStepperService.experimentStepperDataReset();
         this.postExperimentRuleForm.markAsPristine();
         break;
     }

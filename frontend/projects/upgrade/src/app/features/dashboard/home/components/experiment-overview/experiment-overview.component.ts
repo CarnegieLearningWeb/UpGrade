@@ -233,7 +233,7 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataUpdated();
+        this.experimentDesignStepperService.experimentStepperDataReset();
         this.overviewForm.markAsPristine();
         break;
     }

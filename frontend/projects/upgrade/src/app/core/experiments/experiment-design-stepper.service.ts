@@ -27,7 +27,7 @@ export class ExperimentDesignStepperService {
     this.store$.dispatch(experimentAction.experimentStepperDataChanged());
   }
 
-  experimentStepperDataUpdated() {
+  experimentStepperDataReset() {
     this.store$.dispatch(experimentAction.experimentStepperDataReset());
   }
 }

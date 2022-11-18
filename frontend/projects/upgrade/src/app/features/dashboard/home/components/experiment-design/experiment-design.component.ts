@@ -600,7 +600,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataUpdated();
+        this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentDesignForm.markAsPristine();
         break;
     }

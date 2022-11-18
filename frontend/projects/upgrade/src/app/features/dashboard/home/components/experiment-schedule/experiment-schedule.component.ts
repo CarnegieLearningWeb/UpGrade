@@ -191,7 +191,7 @@ export class ExperimentScheduleComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataUpdated();
+        this.experimentDesignStepperService.experimentStepperDataReset();
         this.experimentScheduleForm.markAsPristine();
         break;
     }

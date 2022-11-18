@@ -267,7 +267,7 @@ export class ExperimentParticipantsComponent implements OnInit {
         break;
       case NewExperimentDialogEvents.SAVE_DATA:
         this.saveData(eventType);
-        this.experimentDesignStepperService.experimentStepperDataUpdated();
+        this.experimentDesignStepperService.experimentStepperDataReset();
         this.participantsForm.markAsPristine();
         this.participantsForm2.markAsPristine();
         break;
