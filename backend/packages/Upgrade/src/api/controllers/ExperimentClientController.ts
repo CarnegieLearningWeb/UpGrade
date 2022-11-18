@@ -905,9 +905,10 @@ export class ExperimentClientController {
   public clearDB(@Req() request: AppRequest) {
     // if DEMO mode is enabled, then clear the database:
     if (!env.app.demo) {
-      return this.experimentUserService.clearDB(request.logger);
+      this.experimentUserService.clearDB(request.logger);
     } else {
       request.logger.error({ message: 'DEMO mode is disabled. You cannot clear DB.' });
     }
+    return;
   }
 }
