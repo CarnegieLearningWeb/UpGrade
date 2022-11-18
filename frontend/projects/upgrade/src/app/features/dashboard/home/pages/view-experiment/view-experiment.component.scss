@@ -283,8 +283,12 @@ $font-size-small: 15px;
     font-size: 22px;
     font-weight: 600;
     line-height: 48px;
-    margin: 28px 18px 21px 32px;
+    margin: 28px 0px 21px 0px;
     padding: 0px;
+
+    &:first-of-type {
+      margin-left: 34px;
+    }
   }
 
   .mat-tab-label-active {
