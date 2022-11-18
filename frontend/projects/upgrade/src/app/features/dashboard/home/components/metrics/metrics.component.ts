@@ -21,7 +21,8 @@ import { ExperimentVM } from '../../../../../core/experiments/store/experiments.
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-
+import { DialogService } from '../../../../../shared/services/dialog.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-monitored-metrics',
   templateUrl: './metrics.component.html',
@@ -73,7 +74,9 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private analysisService: AnalysisService,
     private _formBuilder: FormBuilder,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private dialogService: DialogService,
+    public experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   optionsSub() {
@@ -314,6 +317,7 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
         this.experimentInfo.queries.splice(queryIndex, 1);
       }
     }
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     // reset options for metric keys:
     this.firstSelectedNode[queryIndex] = null;
     this.optionsSub();
@@ -545,81 +549,101 @@ export class MonitoredMetricsComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        this.emitExperimentDialogEvent.emit({ type: eventType });
+        if (this.queryForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
+          this.dialogService
+            .openConfirmDialog()
+            .afterClosed()
+            .subscribe((res) => {
+              if (res) {
+                this.emitExperimentDialogEvent.emit({ type: eventType });
+              }
+            });
+        } else {
+          this.emitExperimentDialogEvent.emit({ type: eventType });
+        }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
-      case NewExperimentDialogEvents.SAVE_DATA: {
-        this.queryMetricKeyError = [];
-        this.queryStatisticError = [];
-        this.queryComparisonStatisticError = [];
-        this.queryNameError = [];
-        const monitoredMetricsFormData = this.queryForm.getRawValue();
-        monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map((query, index) => {
-          const { operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
-          let { keys } = query;
+        if (this.queryForm.dirty) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
+        this.saveData(eventType);
+        break;
+      case NewExperimentDialogEvents.SAVE_DATA:
+        this.saveData(eventType);
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.queryForm.markAsPristine();
+        break;
+    }
+  }
 
-          if (keys) {
-            // check for metric key required except default row:
-            if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
-              this.checkMetricKeyRequiredError(keys);
-            }
-            keys = keys
-              .filter((key) => key.metricKey !== null)
-              .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
-            if (keys.length) {
-              this.checkQueryNameRequiredError(queryName);
-              this.checkStatisticRequiredError(operationType);
-              const metric = this.allMetrics.find((metric) => metric.key === keys[0]);
-              const {
-                metadata: { type },
-              } = metric;
-              if (type === IMetricMetaData.CATEGORICAL) {
-                this.checkComparisonStatisticRequiredError(compareFn, compareValue);
-              }
+  saveData(eventType) {
+    this.queryMetricKeyError = [];
+    this.queryStatisticError = [];
+    this.queryComparisonStatisticError = [];
+    this.queryNameError = [];
+    const monitoredMetricsFormData = this.queryForm.getRawValue();
+    monitoredMetricsFormData.queries = monitoredMetricsFormData.queries.map((query, index) => {
+      let { keys } = query;
+      const { operationType, queryName, compareFn, compareValue, repeatedMeasure } = query;
 
-              let queryObj: Query = {
-                name: queryName,
-                query: {
-                  operationType,
-                },
-                metric: {
-                  key: keys.join(METRICS_JOIN_TEXT),
-                },
-                repeatedMeasure,
-              };
-              if (compareFn && !!compareValue) {
-                queryObj = {
-                  ...queryObj,
-                  query: {
-                    ...queryObj.query,
-                    compareFn,
-                    compareValue,
-                  },
-                };
-              }
-              return this.experimentInfo
-                ? { ...this.experimentInfo.queries[index], ...queryObj }
-                : queryObj.metric.key
-                ? { ...queryObj }
-                : { ...this.removeMetricName(queryObj) };
-            }
+      if (keys) {
+        // check for metric key required except default row:
+        if (keys[0].metricKey || operationType || queryName || compareFn || compareValue) {
+          this.checkMetricKeyRequiredError(keys);
+        }
+        keys = keys
+          .filter((key) => key.metricKey !== null)
+          .map((key) => (key.metricKey.key ? key.metricKey.key : key.metricKey));
+        if (keys.length) {
+          this.checkQueryNameRequiredError(queryName);
+          this.checkStatisticRequiredError(operationType);
+          const metric = this.allMetrics.find((metric) => metric.key === keys[0]);
+          const {
+            metadata: { type },
+          } = metric;
+          if (type === IMetricMetaData.CATEGORICAL) {
+            this.checkComparisonStatisticRequiredError(compareFn, compareValue);
           }
-        });
-
-        if (
-          this.queryMetricKeyError.length === 0 &&
-          this.queryStatisticError.length === 0 &&
-          this.queryComparisonStatisticError.length === 0 &&
-          this.queryNameError.length === 0
-        ) {
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: monitoredMetricsFormData,
-            path: NewExperimentPaths.MONITORED_METRIC,
-          });
-          break;
+          let queryObj: Query = {
+            name: queryName,
+            query: {
+              operationType,
+            },
+            metric: {
+              key: keys.join(METRICS_JOIN_TEXT),
+            },
+            repeatedMeasure,
+          };
+          if (compareFn && !!compareValue) {
+            queryObj = {
+              ...queryObj,
+              query: {
+                ...queryObj.query,
+                compareFn,
+                compareValue,
+              },
+            };
+          }
+          return this.experimentInfo
+            ? { ...this.experimentInfo.queries[index], ...queryObj }
+            : queryObj.metric.key
+            ? { ...queryObj }
+            : { ...this.removeMetricName(queryObj) };
         }
       }
+    });
+
+    if (
+      this.queryMetricKeyError.length === 0 &&
+      this.queryStatisticError.length === 0 &&
+      this.queryComparisonStatisticError.length === 0 &&
+      this.queryNameError.length === 0
+    ) {
+      this.emitExperimentDialogEvent.emit({
+        type: eventType,
+        formData: monitoredMetricsFormData,
+        path: NewExperimentPaths.MONITORED_METRIC,
+      });
     }
   }
 

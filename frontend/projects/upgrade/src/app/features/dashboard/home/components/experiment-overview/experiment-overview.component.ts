@@ -24,7 +24,8 @@ import * as find from 'lodash.find';
 import { ExperimentService } from '../../../../../core/experiments/experiments.service';
 import { Observable, Subscription } from 'rxjs';
 import { MatChipInputEvent } from '@angular/material/chips';
-
+import { DialogService } from '../../../../../shared/services/dialog.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-overview',
   templateUrl: './experiment-overview.component.html',
@@ -61,7 +62,12 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
 
-  constructor(private _formBuilder: FormBuilder, private experimentService: ExperimentService) {}
+  constructor(
+    private _formBuilder: FormBuilder,
+    private experimentService: ExperimentService,
+    private experimentDesignStepperService: ExperimentDesignStepperService,
+    private dialogService: DialogService
+  ) {}
 
   ngOnInit() {
     this.isLoadingContextMetaData$ = this.experimentService.isLoadingContextMetaData$;
@@ -205,44 +211,64 @@ export class ExperimentOverviewComponent implements OnInit, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        this.emitExperimentDialogEvent.emit({ type: eventType });
+        if (this.overviewForm.dirty || this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()) {
+          this.dialogService
+            .openConfirmDialog()
+            .afterClosed()
+            .subscribe((res) => {
+              if (res) {
+                this.emitExperimentDialogEvent.emit({ type: eventType });
+              }
+            });
+        } else {
+          this.emitExperimentDialogEvent.emit({ type: eventType });
+        }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+        if (this.overviewForm.dirty) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
         this.overviewForm.markAllAsTouched();
-      // TODO: look into code here to see if we really need fallthrough
-      // eslint-disable-next-line no-fallthrough
-      case NewExperimentDialogEvents.SAVE_DATA:
-        if (
-          this.experimentInfo &&
-          (this.experimentInfo.state == this.ExperimentState.ENROLLING ||
-            this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)
-        ) {
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: this.experimentInfo,
-            path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
-          });
-        }
-        if (this.overviewForm.valid) {
-          const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, tags, logging } =
-            this.overviewForm.value;
-          const overviewFormData = {
-            name: experimentName,
-            description: description || '',
-            consistencyRule: consistencyRule,
-            assignmentUnit: unitOfAssignment,
-            group: groupType,
-            context: [context],
-            tags,
-            logging,
-          };
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: overviewFormData,
-            path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
-          });
-        }
+        this.saveData(eventType);
         break;
+      case NewExperimentDialogEvents.SAVE_DATA:
+        this.saveData(eventType);
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.overviewForm.markAsPristine();
+        break;
+    }
+  }
+
+  saveData(eventType) {
+    if (
+      this.experimentInfo &&
+      (this.experimentInfo.state == this.ExperimentState.ENROLLING ||
+        this.experimentInfo.state == this.ExperimentState.ENROLLMENT_COMPLETE)
+    ) {
+      this.emitExperimentDialogEvent.emit({
+        type: eventType,
+        formData: this.experimentInfo,
+        path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
+      });
+    }
+    if (this.overviewForm.valid) {
+      const { experimentName, description, unitOfAssignment, groupType, consistencyRule, context, tags, logging } =
+        this.overviewForm.value;
+      const overviewFormData = {
+        name: experimentName,
+        description: description || '',
+        consistencyRule: consistencyRule,
+        assignmentUnit: unitOfAssignment,
+        group: groupType,
+        context: [context],
+        tags,
+        logging,
+      };
+      this.emitExperimentDialogEvent.emit({
+        type: eventType,
+        formData: overviewFormData,
+        path: NewExperimentPaths.EXPERIMENT_OVERVIEW,
+      });
     }
   }
 
