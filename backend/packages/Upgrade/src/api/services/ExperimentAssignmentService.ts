@@ -352,7 +352,7 @@ export class ExperimentAssignmentService {
       // adding in monitored experiment point table
 
       monitoredDocument = await this.monitoredDecisionPointRepository.saveRawJson({
-        id: monitoredDocument.id || uuid(),
+        id: monitoredDocument?.id || uuid(),
         experimentId: experimentId,
         condition: condition,
         user: userDoc,
