@@ -13,6 +13,8 @@ import addMetrics from './functions/addMetrics';
 import getFeatureFlag from './functions/getFeatureFlag';
 import init from './functions/init';
 import * as uuid from 'uuid';
+import { Assessment } from '../../../types/src/Experiment/interfaces';
+import logCaliper from './functions/logCaliper';
 
 export default class UpgradeClient {
   // Endpoints URLs
@@ -25,6 +27,7 @@ export default class UpgradeClient {
     failedExperimentPoint: null,
     getAllFeatureFlag: null,
     log: null,
+    logCaliper: null,
     altUserIds: null,
     addMetrics: null,
   };
@@ -44,6 +47,7 @@ export default class UpgradeClient {
     this.hostUrl = hostUrl;
     this.token = options?.token;
     this.clientSessionId = options?.clientSessionId || uuid.v4();
+    console.log("CONSTRUCTOR")
     this.api = {
       init: `${hostUrl}/api/init`,
       getAllExperimentConditions: `${hostUrl}/api/assign`,
@@ -53,6 +57,7 @@ export default class UpgradeClient {
       failedExperimentPoint: `${hostUrl}/api/failed`,
       getAllFeatureFlag: `${hostUrl}/api/featureflag`,
       log: `${hostUrl}/api/log`,
+      logCaliper: `${hostUrl}/api/log/caliper`,
       altUserIds: `${hostUrl}/api/useraliases`,
       addMetrics: `${hostUrl}/api/metric`,
     };
@@ -175,6 +180,11 @@ export default class UpgradeClient {
   async log(value: ILogInput[], sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
     this.validateClient();
     return await log(this.api.log, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
+  }
+
+  async logCaliper(value: Assessment, sendAsAnalytics = false): Promise<Interfaces.ILog[]> {
+    this.validateClient();
+    return await logCaliper(this.api.logCaliper, this.userId, this.token, this.clientSessionId, value, sendAsAnalytics);
   }
 
   async setAltUserIds(altUserIds: string[]): Promise<Interfaces.IExperimentUserAliases[]> {

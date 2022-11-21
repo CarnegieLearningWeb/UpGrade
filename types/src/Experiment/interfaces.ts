@@ -160,3 +160,19 @@ export interface ISingleMetric {
   datatype: IMetricMetaData;
   allowedValues?: Array<string | number>;
 }
+
+export interface AssessmentObject{
+  id: string;
+  type: string;
+  name: string;
+  extensions?: object;
+}
+
+export interface Assessment{
+  type: string;
+  profile: string;
+  actor: object;
+  action: string;
+  object: AssessmentObject;
+  extensions?: object;
+}

@@ -17,7 +17,7 @@ import { ExperimentUser } from '../models/ExperimentUser';
 import { ExperimentUserService } from '../services/ExperimentUserService';
 import { UpdateWorkingGroupValidator } from './validators/UpdateWorkingGroupValidator';
 import { MonitoredDecisionPoint } from '../models/MonitoredDecisionPoint';
-import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR } from 'upgrade_types';
+import { IExperimentAssignment, ISingleMetric, IGroupMetric, SERVER_ERROR, ILogInput } from 'upgrade_types';
 import { FailedParamsValidator } from './validators/FailedParamsValidator';
 import { ExperimentError } from '../models/ExperimentError';
 import { FeatureFlag } from '../models/FeatureFlag';
@@ -31,6 +31,7 @@ import { Metric } from '../models/Metric';
 import * as express from 'express';
 import { AppRequest } from '../../types';
 import { env } from '../../env';
+import { CaliperLogValidator } from './validators/CaliperLogValidator';
 
 /**
  * @swagger
@@ -637,6 +638,71 @@ export class ExperimentClientController {
       userDoc: experimentUserDoc,
     });
   }
+
+
+  /**
+   * @swagger
+   * /log/caliper:
+   *    post:
+   *       description: Post log data
+   *       consumes:
+   *         - application/json
+   *       parameters:
+   *          - in: body
+   *            name: data
+   *            required: true
+   *            description: User Document
+   *       tags:
+   *         - Client Side SDK
+   *       produces:
+   *         - application/json
+   *       responses:
+   *          '200':
+   *            description: Log data
+   *          '500':
+   *            description: null value in column "id\" of relation \"experiment_user\" violates not-null constraint
+   */
+   @Post('log/caliper')
+   public async caliperLog(
+     @Body({ validate: { validationError: { target: false, value: false } } })
+     @Req()
+     request: AppRequest,
+     logData: CaliperLogValidator
+   ): Promise<Log[]> {
+     request.logger.info({ message: 'Starting the log call for user' });
+     console.log(logData)
+     const userId = logData.actor.id
+     // getOriginalUserDoc call for alias
+     const experimentUserDoc = await this.getUserDoc(userId, request.logger);
+     if (experimentUserDoc) {
+       // append userDoc in logger
+       request.logger.child({ userDoc: experimentUserDoc });
+       request.logger.info({ message: 'Got the original user doc' });
+     }
+     let attributes = logData.assessment.extensions || {}
+     let groupedMetrics = [
+      {
+        groupClass: logData.assessment.object.id,
+        groupKey: logData.assessment.object.name,
+        groupUniquifier: '',
+        attributes: logData.assessment.object.extensions
+      }
+     ]
+     const logs: ILogInput[] = [{
+       "metrics": {
+         "attributes": attributes,
+         "groupedMetrics": groupedMetrics
+       },
+       timestamp: '2021-01-12T06:59:00.000Z'
+     }];
+
+     return this.experimentAssignmentService.dataLog(userId, logs, {
+       logger: request.logger,
+       userDoc: experimentUserDoc,
+     });
+
+   }
+
 
   /**
    * @swagger
