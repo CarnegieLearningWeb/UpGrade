@@ -643,11 +643,34 @@ export class ExperimentService {
 
         experimentDoc.experimentSegmentInclusion = oldExperiment.experimentSegmentInclusion;
         experimentDoc.experimentSegmentExclusion = oldExperiment.experimentSegmentExclusion;
+
+        const currentIncludeData = experimentSegmentInclusion.segment
+          ? {
+              ...experimentSegmentInclusion.segment,
+              userIds: experimentSegmentInclusion.segment.individualForSegment.map((x) => x.userId),
+              groups: experimentSegmentInclusion.segment.groupForSegment.map((x) => {
+                return { groupId: x.groupId, type: x.type };
+              }),
+              subSegmentIds: experimentSegmentInclusion.segment.subSegments.map((x) => x.id),
+            }
+          : experimentSegmentInclusion;
+
+        const currentExcludeData = experimentSegmentExclusion.segment
+          ? {
+              ...experimentSegmentExclusion.segment,
+              userIds: experimentSegmentExclusion.segment.individualForSegment.map((x) => x.userId),
+              groups: experimentSegmentExclusion.segment.groupForSegment.map((x) => {
+                return { groupId: x.groupId, type: x.type };
+              }),
+              subSegmentIds: experimentSegmentExclusion.segment.subSegments.map((x) => x.id),
+            }
+          : experimentSegmentExclusion;
+
         let segmentInclude;
         let segmentIncludeData;
         if (experimentDoc.experimentSegmentInclusion.segment) {
           segmentIncludeData = {
-            ...experimentSegmentInclusion,
+            ...currentIncludeData,
             id: experimentDoc.experimentSegmentInclusion.segment.id,
             name: experimentDoc.experimentSegmentInclusion.segment.name,
             description: experimentDoc.experimentSegmentInclusion.segment.description,
@@ -669,7 +692,7 @@ export class ExperimentService {
         let segmentExcludeData;
         if (experimentDoc.experimentSegmentExclusion.segment) {
           segmentExcludeData = {
-            ...experimentSegmentExclusion,
+            ...currentExcludeData,
             id: experimentDoc.experimentSegmentExclusion.segment.id,
             name: experimentDoc.experimentSegmentExclusion.segment.name,
             description: experimentDoc.experimentSegmentExclusion.segment.description,
