@@ -1,6 +1,6 @@
 ### Deployment Overview
 
-- Phase 1 - Create core resources shared by all environments:
+- Phase 1 - Create core resources shared by all environments
 - Phase 2 - Create resources for frontend
 
 ### Phase 1 - Core Resources
@@ -25,3 +25,10 @@
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
 
 ( Note: You can use `terraform destroy` to terminate and delete all the resources created above. You can also delete one or more specific resources using resource names from `terraform state list` and providing resource names with -target flag `terraform destroy -target RESOURCE_TYPE.NAME1 -target RESOURCE_TYPE.NAME2`)
+
+Lastly after github actions you need to once upload the `environment.json` file with the endpointApi and gapiClientId in the frontend s3 bucket for prod deployment in the below format:
+
+{
+    "endpointApi": "<Your Deployed AWS Beanstalk endpoint url>",
+    "gapiClientId": "<Your Google OAuth 2.0 Client ID>"
+}
