@@ -58,7 +58,8 @@ Generate ssh key using `ssh-keygen` (if you generate it with a different name, m
 - Edit - `core.tf` - replace aws profile name.
 - Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
 - Run - `terraform init` to initialize the project.
-- Run - `terraform apply` to create the core resources.
+- Run - `terraform plan` to check for the changes to be applied.
+- Run - `terraform apply` to create the core resources. You would be asked to enter the CLIENT_API_KEY and CLIENT_API_SECRET that would be used to form the JWT Bearer token based authentication verification.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
 
 ( Note: You can use `terraform destroy` to terminate and delete all the resources created above. You can also delete one or more specific resources using resource names from `terraform state list` and providing resource names with -target flag `terraform destroy -target RESOURCE_TYPE.NAME1 -target RESOURCE_TYPE.NAME2`)
@@ -69,6 +70,7 @@ Generate ssh key using `ssh-keygen` (if you generate it with a different name, m
 - Edit - `backend.tf` - replace the tfstate bucket, path, and aws profile name.
 - Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
 - Run - `terraform init` to initialize the project.
+- Run - `terraform plan` to check for the changes to be applied.
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
 

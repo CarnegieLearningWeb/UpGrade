@@ -10,6 +10,7 @@
 - Edit - `core.tf` - replace aws profile name.
 - Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
 - Run - `terraform init` to initialize the project.
+- Run - `terraform plan` to check for the changes to be applied.
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
 
@@ -21,6 +22,7 @@
 - Edit - `backend.tf` - replace the tfstate bucket, path, and aws profile name.
 - Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
 - Run - `terraform init` to initialize the project.
+- Run - `terraform plan` to check for the changes to be applied.
 - Run - `terraform apply` to create the core resources.
 - Confirm - Terraform will show the list of resources it plans to create. Review them and enter `yes`.
 

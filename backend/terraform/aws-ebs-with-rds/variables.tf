@@ -90,8 +90,8 @@ variable "APP_SCHEMA" { default = "http" }
 variable "APP_DEMO" { default = "false" }
 variable "AUTH_CHECK" {}
 variable "AWS_REGION" { default = "us-east-1" }
-variable "CLIENT_API_KEY"{ default = "key"}
-variable "CLIENT_API_SECRET"{default = "secret"}
+variable "CLIENT_API_KEY"{}
+variable "CLIENT_API_SECRET"{}
 variable "METRIC" {}
 variable "CONTEXT_METADATA" {}
 variable "CONTROLLERS" { default = "src/api/controllers/**/*Controller.ts" }
@@ -100,10 +100,10 @@ variable "EMAIL_BUCKET" {}
 variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
 variable "EMAIL_FROM" {}
 variable "GOOGLE_CLIENT_ID" { }
-variable "HOST_URL" { default = "https://upgrade-bsnl-backend.edoptimize.com/api" }
+variable "HOST_URL" { default = "https://upgrade-dev-backend.edoptimize.com/api" }
 variable "INTERCEPTORS" { default = "src/api/interceptors/**/*Interceptor.ts" }
 variable "LOG_LEVEL" { default = "debug" }
-variable "LOG_OUTPUT" { default = "bsnl" }
+variable "LOG_OUTPUT" { default = "dev" }
 variable "MIDDLEWARES" { default = "src/api/middlewares/**/*Middleware.ts" }
 variable "MONITOR_ENABLED" { default = true }
 variable "MONITOR_PASSWORD" {}
