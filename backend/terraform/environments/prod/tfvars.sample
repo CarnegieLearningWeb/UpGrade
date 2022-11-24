@@ -1,47 +1,56 @@
 # General variables
-current_directory       = "staging"
+current_directory       = "prod"
 aws_region              = "us-east-1"
-environment             = "staging"
+environment             = "prod"
 prefix                  = "upgrade" 
 app_version             = "1.0.0"
-aws_profile             = "upgrade-terraform"
 
 # RDS related details 
 allocated_storage       = 100
 engine_version          = "11.15"
-identifier              = "dev-postgres" 
+identifier              = "prod-postgres" 
 instance_class          = "db.t2.small"
 storage_type            = "gp2"
 multi_az                = "false"
-replica_names           = ["replica1", "replica2"]
+replica_names           = ["replica1"]
+RDS_PASSWORD            = "postgres"
 
 # EBS instance details
-app_instance_type       = "t2.micro"
+app_instance_type       = "t2.small"
 ebs_app_name            = "upgrade-experiment-app"
 autoscaling_min_size    =  1 
 autoscaling_max_size    =  4 
 
 # APP environment variables
 GOOGLE_CLIENT_ID        = "google-project-id"
-DOMAIN_NAME             = "company.com"
-MONITOR_PASSWORD        = "passowrd"
-SWAGGER_PASSWORD        = "passowrd"
+DOMAIN_NAME             = "playpowerlabs.com"
+MONITOR_PASSWORD        = "password"
+SWAGGER_PASSWORD        = "password"
 TYPEORM_SYNCHRONIZE     = false
 APP_DEMO                = false
 TYPEORM_MAX_QUERY_EXECUTION_TIME = 2000
-TOKEN_SECRET_KEY        = "secret-key"
 AUTH_CHECK              = true
 CONTEXT_METADATA        = "{\"add\":{\"EXP_IDS\":[\"add-id1\",\"add-id2\"],\"EXP_POINTS\":[\"add-point1\",\"add-point2\"],\"GROUP_TYPES\":[\"add-group1\",\"add-group2\"],\"CONDITIONS\":[\"add-con1\",\"add-con2\",\"add-con3\"]},\"sub\":{\"EXP_IDS\":[\"sub-id1\",\"sub-id2\"],\"EXP_POINTS\":[\"sub-point1\",\"sub-point2\"],\"GROUP_TYPES\":[\"sub-group1\",\"sub-group2\"],\"CONDITIONS\":[\"sub-con1\",\"sub-con2\",\"sub-con3\"]},\"mul\":{\"EXP_IDS\":[\"mul-id1\",\"mul-id2\"],\"EXP_POINTS\":[\"mul-point1\",\"mul-point2\"],\"GROUP_TYPES\":[\"mul-group1\",\"mul-group2\"],\"CONDITIONS\":[\"mul-con1\",\"mul-con2\",\"mul-con3\"]},\"div\":{\"EXP_IDS\":[\"div-id1\",\"div-id2\"],\"EXP_POINTS\":[\"div-point1\",\"div-point2\"],\"GROUP_TYPES\":[\"div-group1\",\"div-group2\"],\"CONDITIONS\":[\"div-con1\",\"div-con2\",\"div-con3\"]}}"
 METRIC                  = "[{\"metric\": \"totalTimeSeconds\",\"datatype\": \"continuous\"}, { \"groupClass\": \"masteryWorkspace\", \"allowedKeys\": [ \"calculating_area_various_figures\", \"Compare_functions_diff_reps_quadratic\" ], \"attributes\": [{ \"metric\": \"timeSeconds\", \"datatype\": \"continuous\"}]}]"
-ADMIN_USERS             = "user1@company.com:admin/\user2@company.com:admin"
 
 # CICD variables
 repository_name         = "educational-experiment-service"
-branch_name             = "staging"
+branch_name             = "prod"
 build_image             = "aws/codebuild/standard:1.0"
-build_compute_type      =  "BUILD_GENERAL1_LARGE"
+build_compute_type      = "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
+ADMIN_USERS             = "user1@company.com:admin/\user2@company.com:admin"
 
 # Email detail
-EMAIL_FROM                      = "upgrade@company.com",
+EMAIL_FROM                      = "upgrade@company.com"
 EMAIL_EXPIRE_AFTER_SECONDS      = 36000
+
+# secrets:
+CLIENT_API_KEY          = ""
+CLIENT_API_SECRET       = ""
+TOKEN_SECRET_KEY        = ""
+NEW_RELIC_APP_NAME      = "Upgrade_prod"
+NEW_RELIC_LICENSE_KEY   = ""
+s3_lambda_bucket        = "upgrade-schedular"
+s3_lambda_key           = "schedular.zip"
+ssl_certificate_id      = ""

@@ -28,6 +28,7 @@ variable "s3_lambda_key" {}
 # APP environment variables
 variable "ADMIN_USERS"{}
 variable "AUTH_CHECK"{}
+variable "APP_DEMO"{}
 variable "CLIENT_API_KEY"{}
 variable "CLIENT_API_SECRET"{}
 variable "CONTEXT_METADATA"{}
@@ -36,6 +37,7 @@ variable "EMAIL_EXPIRE_AFTER_SECONDS" {}
 variable "EMAIL_FROM" {}
 variable "GOOGLE_CLIENT_ID"{}
 variable "MONITOR_PASSWORD"{}
+variable "METRIC"{}
 variable "NEW_RELIC_APP_NAME" {}
 variable "NEW_RELIC_LICENSE_KEY" {}
 variable "RDS_PASSWORD"{}

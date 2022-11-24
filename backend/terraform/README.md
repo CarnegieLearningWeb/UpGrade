@@ -10,6 +10,8 @@ These terraform scripts provide for creating infrastructure for Upgrade as well 
 - Setup an aws provider profile using `aws configure`
 - Create an s3 Bucket to store `tfstate` files remotely. We recommend enable versioning on that bucket.
 
+YOUR_BACKEND_TF-STATE_BUCKET : upgrade-terraform-tfstate
+
 > aws s3api create-bucket --acl private --bucket YOUR_BACKEND_TF-STATE_BUCKET
 > aws s3api put-bucket-versioning --bucket YOUR_BACKEND_TF-STATE_BUCKET --versioning-configuration Status=Enabled
 

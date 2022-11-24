@@ -43,5 +43,5 @@ build_compute_type      =  "BUILD_GENERAL1_LARGE"
 privileged_mode         =  true
 
 # Email detail
-EMAIL_FROM                      = "upgrade@company.com",
+EMAIL_FROM                      = "upgrade@company.com"
 EMAIL_EXPIRE_AFTER_SECONDS      = 36000

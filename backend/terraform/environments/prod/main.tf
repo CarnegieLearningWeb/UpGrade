@@ -26,11 +26,11 @@ module "aws_lambda_function" {
 
   environment           = var.environment 
   prefix                = var.prefix 
-  app_version           = var.app_version 
+  app_version           = var.app_version  
   output_path           = "../environments/${var.current_directory}/.terraform"  
   function_name         = "Schedule" 
   function_handler      = "schedule.schedule"
-  runtime               =  "nodejs16.x"
+  runtime               = "nodejs16.x"
   s3_lambda_bucket      = var.s3_lambda_bucket
   s3_lambda_key         = var.s3_lambda_key
 }
@@ -61,7 +61,6 @@ module "aws-email-bucket" {
 output "email-bucket" {
   value = module.aws-email-bucket.s3-bucket
 }
-
 
 module "aws-ebs-app" {
 
@@ -109,8 +108,8 @@ module "aws-ebs-app" {
   TYPEORM_SYNCHRONIZE        = var.TYPEORM_SYNCHRONIZE
   TYPEORM_MAX_QUERY_EXECUTION_TIME = var.TYPEORM_MAX_QUERY_EXECUTION_TIME
 
-  PATH_TO_PRIVATE_KEY     = "id_rsa"
-  PATH_TO_PUBLIC_KEY      = "id_rsa.pub"
+  PATH_TO_PRIVATE_KEY        = "~/.ssh/id_rsa"
+  PATH_TO_PUBLIC_KEY         = "~/.ssh/id_rsa.pub"
 }
 
 resource "null_resource" "update-ebs-env" { 
