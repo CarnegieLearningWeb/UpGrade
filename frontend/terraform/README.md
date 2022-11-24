@@ -18,6 +18,9 @@
 
 ### Phase 2 - Environment-specific Resources
 
+This will create: aws_cloudfront_distribution, aws_s3_bucket, .aws_s3_bucket_policy,
+
+
 - Change Directory - `cd terraform/environments/<envname>`
 - Edit - `backend.tf` - replace the tfstate bucket, path, and aws profile name.
 - Copy - `cp tfvars.sample core.auto.tfvars` - change [variables](#variables) if necessary. All \*.auto.tfvars are used automatically by terraform.
