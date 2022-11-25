@@ -31,6 +31,9 @@ This will create: aws_cloudfront_distribution, aws_s3_bucket, .aws_s3_bucket_pol
 
 ( Note: You can use `terraform destroy` to terminate and delete all the resources created above. You can also delete one or more specific resources using resource names from `terraform state list` and providing resource names with -target flag `terraform destroy -target RESOURCE_TYPE.NAME1 -target RESOURCE_TYPE.NAME2`)
 
+
+Now, register Google OAuth 2.0 Client ID for the endpoint on your GCP project. You will also get the Client ID for the environment variables.
+
 Lastly after github actions you need to once upload the `environment.json` file with the endpointApi and gapiClientId in the frontend s3 bucket for prod deployment in the below format:
 
 {
