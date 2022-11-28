@@ -267,15 +267,15 @@ public class ExperimentClient implements AutoCloseable {
 		return resultCondition;
 	}
 
-	public void markExperimentPoint(final String experimentPoint, String condition, MarkedDecisionPointStatus status,
+	public void markExperimentPoint(final String site, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		markExperimentPoint(experimentPoint, "", condition, status, callbacks);
+		markExperimentPoint(site, "", condition, status, callbacks);
 	}
 
-	public void markExperimentPoint(final String experimentPoint, String experimentId, String condition, MarkedDecisionPointStatus status,
+	public void markExperimentPoint(final String site, String target, String condition, MarkedDecisionPointStatus status,
 			final ResponseCallback<MarkExperimentPoint> callbacks) {
-		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, experimentPoint,
-				experimentId, condition, status.toString());
+		MarkExperimentRequest markExperimentRequest = new MarkExperimentRequest(this.userId, site,
+				target, condition, status.toString());
 		AsyncInvoker invocation = this.apiService.prepareRequest(MARK_EXPERIMENT_POINT);
 
 		Entity<MarkExperimentRequest> requestContent = Entity.json(markExperimentRequest);
@@ -288,7 +288,7 @@ public class ExperimentClient implements AutoCloseable {
 			public void completed(Response response) {
 				if (response.getStatus() == Response.Status.OK.getStatusCode()) {
 
-				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), experimentId, experimentPoint, status));
+				    readResponseToCallback(response, callbacks, MarkExperimentPoint.class, mep -> new MarkExperimentPoint(mep.getUserId(), status, site, target));
 				} else {
 					String status = Response.Status.fromStatusCode(response.getStatus()).toString();
 					ErrorResponse error = new ErrorResponse(response.getStatus(), response.readEntity( String.class ), status );

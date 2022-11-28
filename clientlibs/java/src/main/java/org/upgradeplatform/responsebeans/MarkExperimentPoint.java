@@ -5,40 +5,14 @@ import org.upgradeplatform.utils.Utils.MarkedDecisionPointStatus;
 public class MarkExperimentPoint {
 	
 
-	private String createdAt;
-	private String updatedAt;
-	private Integer versionNumber;
 	private String userId;
 	private String experimentId;
 	private String enrollmentCode;
 	private String condition;
+	private String site;
+	private String target;
 	private String id;
 	private MarkedDecisionPointStatus status;
-	private String decisionPoint;
-	
-	public String getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(String createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public String getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(String updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-
-	public Integer getVersionNumber() {
-		return versionNumber;
-	}
-
-	public void setVersionNumber(Integer versionNumber) {
-		this.versionNumber = versionNumber;
-	}
 
 	public String getId() {
 		return id;
@@ -58,19 +32,20 @@ public class MarkExperimentPoint {
 
 	public MarkExperimentPoint() {}
 	
-	public MarkExperimentPoint(String userId, String experimentId, String decisionPoint) {
+	public MarkExperimentPoint(String userId, String experimentId, String site, String target) {
 		super();
 		this.userId = userId;
 		this.experimentId = experimentId;
-		this.decisionPoint = decisionPoint;
+		this.site = site;
+		this.target = target;
 	}
 
-	public MarkExperimentPoint(String userId, String experimentId, String decisionPoint, MarkedDecisionPointStatus status) {
+	public MarkExperimentPoint(String userId, MarkedDecisionPointStatus status, String site, String target) {
 		super();
 		this.userId = userId;
-		this.experimentId = experimentId;
-		this.decisionPoint = decisionPoint;
 		this.status = status;
+		this.site = site;
+		this.target = target;
 	}
 
 
@@ -109,20 +84,27 @@ public class MarkExperimentPoint {
 	    this.condition = condition;
 	}
 
-	public String getDecisionPoint() {
-		return decisionPoint;
+	public String getSite() {
+		return site;
 	}
 
-	public void setDecisionPoint(String decisionPoint) {
-		this.decisionPoint = decisionPoint;
+	public void setSite(String site) {
+		this.site = site;
+	}
+
+	public String getTarget() {
+		return target;
+	}
+
+	public void setTarget(String target) {
+		this.target = target;
 	}
 
     @Override
     public String toString(){
-        return "MarkExperimentPoint [createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", versionNumber="
-               + versionNumber + ", userId=" + userId + ", experimentId=" + experimentId + ", enrollmentCode=" 
-			   + enrollmentCode + ", condition=" + condition + ", decisionPoint="
-			   + decisionPoint + ", status=" + status + ", id=" + id + "]";
+        return "MarkExperimentPoint [userId=" + userId + ", experimentId=" + experimentId + ", enrollmentCode=" 
+			   + enrollmentCode + ", condition=" + condition + ", site="
+			   + site + ", target=" + target + ", status=" + status + ", id=" + id + "]";
     }
 
 	

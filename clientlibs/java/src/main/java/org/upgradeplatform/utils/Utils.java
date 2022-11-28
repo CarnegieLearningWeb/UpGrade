@@ -37,7 +37,8 @@ public class Utils
 
 	public static enum RequestType {
 		GET,
-		POST
+		POST,
+		PATCH
 	}
 	
 	public static enum MetricMetaData {
