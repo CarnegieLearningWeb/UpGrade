@@ -72,9 +72,9 @@
       </span>
     </ng-template>
     <home-experiment-schedule
-      (emitExperimentDialogEvent)="getExperimentData($event)"
       [experimentInfo]="experimentInfo"
       [groupType]="newExperimentData?.group"
+      (emitExperimentDialogEvent)="getExperimentData($event)"
     ></home-experiment-schedule>
   </mat-step>
 

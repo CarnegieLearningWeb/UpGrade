@@ -22,6 +22,9 @@ import { Segment, MemberTypes } from '../../../../../core/segments/store/segment
 import { SegmentsService } from '../../../../../core/segments/segments.service';
 import { SEGMENT_TYPE, FILTER_MODE } from 'upgrade_types';
 import { INCLUSION_CRITERIA } from 'upgrade_types';
+import { DialogService } from '../../../../../shared/services/dialog.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
+
 @Component({
   selector: 'home-experiment-participants',
   templateUrl: './experiment-participants.component.html',
@@ -62,7 +65,9 @@ export class ExperimentParticipantsComponent implements OnInit {
     private _formBuilder: FormBuilder,
     private _formBuilder2: FormBuilder,
     private segmentsService: SegmentsService,
-    private experimentService: ExperimentService
+    private experimentService: ExperimentService,
+    private dialogService: DialogService,
+    public experimentDesignStepperService: ExperimentDesignStepperService
   ) {}
 
   ngOnChanges() {
@@ -177,11 +182,13 @@ export class ExperimentParticipantsComponent implements OnInit {
 
   removeMember1(groupIndex: number) {
     this.members1.removeAt(groupIndex);
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView1();
   }
 
   removeMember2(groupIndex: number) {
     this.members2.removeAt(groupIndex);
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView2();
   }
 
@@ -235,63 +242,88 @@ export class ExperimentParticipantsComponent implements OnInit {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        this.emitExperimentDialogEvent.emit({ type: eventType });
-        break;
-      case NewExperimentDialogEvents.SEND_FORM_DATA:
-      case NewExperimentDialogEvents.SAVE_DATA:
-        {
-          this.participantsForm.markAllAsTouched();
-          this.participantsForm2.markAllAsTouched();
-
-          const filterMode =
-            this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
-              ? FILTER_MODE.EXCLUDE_ALL
-              : FILTER_MODE.INCLUDE_ALL;
-
-          if (filterMode === FILTER_MODE.INCLUDE_ALL) {
-            this.members2.clear();
-          }
-
-          const { members1 } = this.participantsForm.value;
-          const { members2 } = this.participantsForm2.value;
-
-          // TODO: Handle member2:
-          if (this.participantsForm.valid && this.participantsForm2.valid) {
-            this.gettingMembersValueToSend(members1);
-            const segmentMembers1FormData = {
-              userIds: this.userIdsToSend,
-              groups: this.groupsToSend,
-              subSegmentIds: this.subSegmentIdsToSend,
-              type: SEGMENT_TYPE.PRIVATE,
-            };
-
-            // if dropdown is includeall except then members2.clear()
-            this.gettingMembersValueToSend(members2);
-            const segmentMembers2FormData = {
-              userIds: this.userIdsToSend,
-              groups: this.groupsToSend,
-              subSegmentIds: this.subSegmentIdsToSend,
-              type: SEGMENT_TYPE.PRIVATE,
-            };
-            this.emitExperimentDialogEvent.emit({
-              type: eventType,
-              formData:
-                filterMode === FILTER_MODE.EXCLUDE_ALL
-                  ? {
-                      experimentSegmentInclusion: segmentMembers1FormData,
-                      experimentSegmentExclusion: segmentMembers2FormData,
-                      filterMode: filterMode,
-                    }
-                  : {
-                      experimentSegmentInclusion: segmentMembers2FormData,
-                      experimentSegmentExclusion: segmentMembers1FormData,
-                      filterMode: filterMode,
-                    },
-              path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
+        if (
+          this.participantsForm.dirty ||
+          this.participantsForm2.dirty ||
+          this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()
+        ) {
+          this.dialogService
+            .openConfirmDialog()
+            .afterClosed()
+            .subscribe((res) => {
+              if (res) {
+                this.emitExperimentDialogEvent.emit({ type: eventType });
+              }
             });
-          }
+        } else {
+          this.emitExperimentDialogEvent.emit({ type: eventType });
         }
         break;
+      case NewExperimentDialogEvents.SEND_FORM_DATA:
+        if (this.participantsForm.dirty || this.participantsForm2.dirty) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
+        this.saveData(eventType);
+        break;
+      case NewExperimentDialogEvents.SAVE_DATA:
+        this.saveData(eventType);
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.participantsForm.markAsPristine();
+        this.participantsForm2.markAsPristine();
+        break;
+    }
+  }
+
+  saveData(eventType) {
+    this.participantsForm.markAllAsTouched();
+    this.participantsForm2.markAllAsTouched();
+
+    const filterMode =
+      this.participantsForm.get('inclusionCriteria').value === INCLUSION_CRITERIA.INCLUDE_SPECIFIC
+        ? FILTER_MODE.EXCLUDE_ALL
+        : FILTER_MODE.INCLUDE_ALL;
+
+    if (filterMode === FILTER_MODE.INCLUDE_ALL) {
+      this.members2.clear();
+    }
+
+    const { members1 } = this.participantsForm.value;
+    const { members2 } = this.participantsForm2.value;
+
+    // TODO: Handle member2:
+    if (this.participantsForm.valid && this.participantsForm2.valid) {
+      this.gettingMembersValueToSend(members1);
+      const segmentMembers1FormData = {
+        userIds: this.userIdsToSend,
+        groups: this.groupsToSend,
+        subSegmentIds: this.subSegmentIdsToSend,
+        type: SEGMENT_TYPE.PRIVATE,
+      };
+
+      // if dropdown is includeall except then members2.clear()
+      this.gettingMembersValueToSend(members2);
+      const segmentMembers2FormData = {
+        userIds: this.userIdsToSend,
+        groups: this.groupsToSend,
+        subSegmentIds: this.subSegmentIdsToSend,
+        type: SEGMENT_TYPE.PRIVATE,
+      };
+      this.emitExperimentDialogEvent.emit({
+        type: eventType,
+        formData:
+          filterMode === FILTER_MODE.EXCLUDE_ALL
+            ? {
+                experimentSegmentInclusion: segmentMembers1FormData,
+                experimentSegmentExclusion: segmentMembers2FormData,
+                filterMode: filterMode,
+              }
+            : {
+                experimentSegmentInclusion: segmentMembers2FormData,
+                experimentSegmentExclusion: segmentMembers1FormData,
+                filterMode: filterMode,
+              },
+        path: NewExperimentPaths.EXPERIMENT_PARTICIPANTS,
+      });
     }
   }
 

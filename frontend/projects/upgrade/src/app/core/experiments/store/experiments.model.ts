@@ -261,6 +261,7 @@ export interface ExperimentState extends EntityState<Experiment> {
   updatedStat?: IExperimentEnrollmentDetailStats;
   isAliasTableEditMode: boolean;
   aliasTableEditIndex: number | null;
+  hasExperimentStepperDataChanged: boolean;
 }
 
 export interface State extends AppState {

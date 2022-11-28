@@ -31,7 +31,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { filter, map, pairwise, startWith } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { ExperimentUtilityService } from '../../../../../core/experiments/experiment-utility.service';
-
+import { DialogService } from '../../../../../shared/services/dialog.service';
+import { ExperimentDesignStepperService } from '../../../../../core/experiments/experiment-design-stepper.service';
 @Component({
   selector: 'home-experiment-design',
   templateUrl: './experiment-design.component.html',
@@ -93,7 +94,9 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     private _formBuilder: FormBuilder,
     private experimentService: ExperimentService,
     private experimentUtilityService: ExperimentUtilityService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private dialogService: DialogService,
+    public experimentDesignStepperService: ExperimentDesignStepperService
   ) {
     this.partitionErrorMessagesSub = this.translate
       .get([
@@ -140,7 +143,6 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
     this.contextMetaDataSub = this.experimentService.contextMetaData$.subscribe((contextMetaData) => {
       this.contextMetaData = contextMetaData;
     });
-
     this.allPartitionsSub = this.experimentService.allPartitions$
       .pipe(filter((partitions) => !!partitions))
       .subscribe((partitions: any) => {
@@ -346,6 +348,7 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
       this.previousAssignmentWeightValues.splice(groupIndex, 1);
       this.applyEqualWeight();
     }
+    this.experimentDesignStepperService.experimentStepperDataChanged();
     this.updateView();
   }
 
@@ -557,9 +560,36 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
   emitEvent(eventType: NewExperimentDialogEvents) {
     switch (eventType) {
       case NewExperimentDialogEvents.CLOSE_DIALOG:
-        this.emitExperimentDialogEvent.emit({ type: eventType });
+        if (
+          this.experimentDesignForm.dirty ||
+          this.experimentDesignStepperService.getHasExperimentDesignStepperDataChanged()
+        ) {
+          this.dialogService
+            .openConfirmDialog()
+            .afterClosed()
+            .subscribe((res) => {
+              if (res) {
+                this.emitExperimentDialogEvent.emit({ type: eventType });
+              }
+            });
+        } else {
+          this.emitExperimentDialogEvent.emit({ type: eventType });
+        }
         break;
       case NewExperimentDialogEvents.SEND_FORM_DATA:
+        if (this.experimentDesignForm.dirty) {
+          this.experimentDesignStepperService.experimentStepperDataChanged();
+        }
+        if (!this.isExperimentEditable) {
+          this.emitExperimentDialogEvent.emit({
+            type: eventType,
+            formData: this.experimentInfo,
+            path: NewExperimentPaths.EXPERIMENT_DESIGN,
+          });
+          break;
+        }
+        this.saveData(eventType);
+        break;
       case NewExperimentDialogEvents.SAVE_DATA:
         if (!this.isExperimentEditable) {
           this.emitExperimentDialogEvent.emit({
@@ -569,55 +599,60 @@ export class ExperimentDesignComponent implements OnInit, OnChanges, OnDestroy {
           });
           break;
         }
-        this.validateForm();
-
-        // TODO: Uncomment to validate partitions with predefined site and target
-        // this.validatePartitions();
-
-        // enabling Assignment weight for form to validate
-        if (
-          !this.partitionPointErrors.length &&
-          !this.expPointAndIdErrors.length &&
-          !this.conditionCodeErrors.length &&
-          !this.partitionCountError
-        ) {
-          (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach((control) => {
-            control.get('assignmentWeight').enable({ emitEvent: false });
-          });
-        }
-        if (this.isFormValid()) {
-          const experimentDesignFormData = this.experimentDesignForm.value;
-          let order = 1;
-          experimentDesignFormData.conditions = experimentDesignFormData.conditions.map((condition, index) => {
-            if (isNaN(condition.assignmentWeight)) {
-              condition.assignmentWeight = Number(condition.assignmentWeight.slice(0, -1));
-            }
-            return this.experimentInfo
-              ? { ...this.experimentInfo.conditions[index], ...condition, order: order++ }
-              : { id: uuidv4(), ...condition, name: '', order: order++ };
-          });
-          order = 1;
-          experimentDesignFormData.partitions = experimentDesignFormData.partitions.map((partition, index) =>
-            this.experimentInfo
-              ? { ...this.experimentInfo.partitions[index], ...partition, order: order++ }
-              : partition.target
-              ? { ...partition, order: order++, id: uuidv4() }
-              : { ...this.removePartitionName(partition), order: order++ }
-          );
-          experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
-            this.aliasTableData,
-            experimentDesignFormData.conditions,
-            experimentDesignFormData.partitions
-          );
-          this.emitExperimentDialogEvent.emit({
-            type: eventType,
-            formData: experimentDesignFormData,
-            path: NewExperimentPaths.EXPERIMENT_DESIGN,
-          });
-          // scroll back to the conditions table
-          this.scrollToConditionsTable();
-        }
+        this.saveData(eventType);
+        this.experimentDesignStepperService.experimentStepperDataReset();
+        this.experimentDesignForm.markAsPristine();
         break;
+    }
+  }
+
+  saveData(eventType) {
+    this.validateForm();
+
+    // TODO: Uncomment to validate partitions with predefined site and target
+    // this.validatePartitions()
+    // enabling Assignment weight for form to validate
+    if (
+      !this.partitionPointErrors.length &&
+      !this.expPointAndIdErrors.length &&
+      !this.conditionCodeErrors.length &&
+      !this.partitionCountError
+    ) {
+      (this.experimentDesignForm.get('conditions') as FormArray).controls.forEach((control) => {
+        control.get('assignmentWeight').enable({ emitEvent: false });
+      });
+    }
+    if (this.isFormValid()) {
+      const experimentDesignFormData = this.experimentDesignForm.value;
+      let order = 1;
+      experimentDesignFormData.conditions = experimentDesignFormData.conditions.map((condition, index) => {
+        if (isNaN(condition.assignmentWeight)) {
+          condition.assignmentWeight = Number(condition.assignmentWeight.slice(0, -1));
+        }
+        return this.experimentInfo
+          ? { ...this.experimentInfo.conditions[index], ...condition, order: order++ }
+          : { id: uuidv4(), ...condition, name: '', order: order++ };
+      });
+      order = 1;
+      experimentDesignFormData.partitions = experimentDesignFormData.partitions.map((partition, index) => {
+        return this.experimentInfo
+          ? { ...this.experimentInfo.partitions[index], ...partition, order: order++ }
+          : partition.target
+          ? { ...partition, order: order++ }
+          : { ...this.removePartitionName(partition), order: order++ };
+      });
+      experimentDesignFormData.conditionAliases = this.createExperimentConditionAliasRequestObject(
+        this.aliasTableData,
+        experimentDesignFormData.conditions,
+        experimentDesignFormData.partitions
+      );
+      this.emitExperimentDialogEvent.emit({
+        type: eventType,
+        formData: experimentDesignFormData,
+        path: NewExperimentPaths.EXPERIMENT_DESIGN,
+      });
+      // scroll back to the conditions table
+      this.scrollToConditionsTable();
     }
   }
 

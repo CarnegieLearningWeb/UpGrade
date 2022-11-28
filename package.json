@@ -21,7 +21,9 @@
   },
   "lint-staged": {
     "./frontend/projects/upgrade/src/**/*.{ts,js,html,json,scss}": [
-      "prettier --config .prettierrc --write",
+      "prettier --config .prettierrc --write"
+    ],
+    "./frontend/projects/upgrade/src/**/*.ts": [
       "eslint -c .eslintrc.js --ext .ts"
     ],
     "./clientlibs/js/{src, test}/**/*.ts": [
